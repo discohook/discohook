@@ -4,11 +4,9 @@ import { APIWebhook } from "discord-api-types/v10";
 import { useReducer, useState } from "react";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
-import { TextInput } from "~/components/TextInput";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { ZodQueryData } from "~/types/QueryData";
-import { WEBHOOK_URL_RE } from "~/util/constants";
-import { cdn, getWebhook } from "~/util/discord";
+import { cdn } from "~/util/discord";
 
 export const meta: V2_MetaFunction = () => {
   return [
