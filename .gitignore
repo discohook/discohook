@@ -1,8 +1,10 @@
 node_modules
 .wrangler
 coverage
+.env
 .dev.vars
 wrangler.toml
 yarn-error.log
-/.cache
-/build
+build/
+.cache/
+app/styles/app.css
