@@ -1,4 +1,5 @@
 import { ReactNode, useState } from "react";
+import { CoolIcon } from "./CoolIcon";
 
 export const TextInput = (
   props: React.DetailedHTMLProps<
@@ -7,6 +8,7 @@ export const TextInput = (
   > & {
     label: ReactNode;
     delayOnInput?: number;
+    errors?: ReactNode[];
   }
 ) => {
   const { label, onInput, delayOnInput } = props;
@@ -50,6 +52,13 @@ export const TextInput = (
           props.className ?? ""
         }`}
       />
+      {props.errors &&
+        props.errors.filter(e => e !== undefined).map((error, i) => (
+          <p key={`${props.id ?? label}-error-${i}`} className="text-rose-500 font-medium mt-1 text-sm">
+            <CoolIcon icon="Circle_Warning" className="mr-1.5" />
+            {error}
+          </p>
+        ))}
     </label>
   );
 };
