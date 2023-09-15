@@ -2,11 +2,12 @@ import type { V2_MetaFunction } from "@remix-run/node";
 import { useSearchParams } from "@remix-run/react";
 import { APIWebhook } from "discord-api-types/v10";
 import { useReducer, useState } from "react";
-import { zx } from "zodix";
 import { Button } from "~/components/Button";
+import { Message } from "~/components/preview/Message";
 import { TargetAddModal } from "~/modals/TargetAddModal";
-import { ZodQueryData } from "~/types/QueryData";
+import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { cdn } from "~/util/discord";
+import { base64Decode } from "~/util/text";
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -20,9 +21,9 @@ export const meta: V2_MetaFunction = () => {
 
 export default function Index() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const parsed = zx.parseQuerySafe(searchParams, { data: ZodQueryData });
-  const [data, setData] = useState(
-    parsed.success ? parsed.data.data : { messages: [] }
+  const parsed = ZodQueryData.safeParse(JSON.parse(base64Decode(searchParams.get("data") ?? "{}") ?? "{}"))
+  const [data, setData] = useState<QueryData>(
+    parsed.success ? parsed.data : { messages: [] }
   );
 
   type Targets = Record<string, APIWebhook>;
@@ -50,7 +51,10 @@ export default function Index() {
               : cdn.defaultAvatar(1);
 
             return (
-              <div key={`target-${webhook.id}`} className="flex rounded bg-gray-300 p-2 mb-2">
+              <div
+                key={`target-${webhook.id}`}
+                className="flex rounded bg-gray-300 p-2 mb-2"
+              >
                 <img
                   className="rounded-full mr-4 h-12 my-auto"
                   src={avatarUrl}
@@ -69,7 +73,11 @@ export default function Index() {
             Add Webhook
           </Button>
         </div>
-        <div className="border-l-4 border-l-gray-400 p-4 w-1/2 overflow-y-auto"></div>
+        <div className="border-l-4 border-l-gray-400 p-4 w-1/2 overflow-y-auto">
+          {data.messages.map((message, i) => (
+            <Message key={`message-${i}`} message={message.data} />
+          ))}
+        </div>
       </div>
     </div>
   );
