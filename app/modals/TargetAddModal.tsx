@@ -1,6 +1,6 @@
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { Modal, ModalProps } from "./Modal";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { TextInput } from "~/components/TextInput";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdn, getSnowflakeDate, getWebhook } from "~/util/discord";
@@ -12,7 +12,7 @@ export const TargetAddModal = (
   }
 ) => {
   const [webhook, setWebhook] = useState<APIWebhook>();
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<ReactNode>();
 
   const avatarUrl = webhook
     ? webhook.avatar
@@ -23,14 +23,10 @@ export const TargetAddModal = (
   const setOpen = (s: boolean) => {
     props.setOpen(s);
     if (!s) setWebhook(undefined);
-  }
+  };
 
   return (
-    <Modal
-      title="Add Target"
-      {...props}
-      setOpen={setOpen}
-    >
+    <Modal title="Add Target" {...props} setOpen={setOpen}>
       <div>
         <TextInput
           label="Webhook URL"
@@ -45,7 +41,10 @@ export const TargetAddModal = (
             const match = e.currentTarget.value.match(WEBHOOK_URL_RE);
             if (!match) {
               setError(
-                "Invalid webhook URL. They look like this: https://discord.com/api/webhooks/.../..."
+                <>
+                  Invalid webhook URL. They start with{" "}
+                  https://discord.com/api/webhooks/...
+                </>
               );
               return;
             }
@@ -114,12 +113,18 @@ export const TargetAddModal = (
         </div>
       </div>
       <div className="flex mt-4">
-        <Button className="mx-auto" disabled={!webhook} onClick={() => {
-          if (webhook) {
-            props.updateTargets({ [webhook.id]: webhook });
-            setOpen(false);
-          }
-        }}>Add Webhook</Button>
+        <Button
+          className="mx-auto"
+          disabled={!webhook}
+          onClick={() => {
+            if (webhook) {
+              props.updateTargets({ [webhook.id]: webhook });
+              setOpen(false);
+            }
+          }}
+        >
+          Add Webhook
+        </Button>
       </div>
     </Modal>
   );
