@@ -28,7 +28,7 @@ export default function Index() {
   );
   const [data, setData] = useState<QueryData>(
     parsed.success
-      ? { version: "d2", ...parsed.data }
+      ? { version: "d2", ...parsed.data as QueryData }
       : { version: "d2", messages: [] }
   );
 

@@ -40,7 +40,7 @@ export const ZodQueryData = z.object({
                 title: z.optional(z.string()),
                 description: z.optional(z.string()),
                 url: z.optional(z.string()),
-                color: z.optional(z.number()),
+                color: z.optional(z.nullable(z.number())),
                 fields: z.optional(
                   z.array(
                     z.object({
