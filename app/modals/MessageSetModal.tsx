@@ -167,6 +167,7 @@ export const MessageSetModal = (
                       content: msg.content,
                       embeds: msg.embeds,
                       attachments: msg.attachments,
+                      webhook_id: msg.webhook_id,
                     },
                     reference: messageLink[0]
                       ? `https://discord.com/channels/${messageLink[0]}/${messageLink[1]}/${messageLink[2]}`
