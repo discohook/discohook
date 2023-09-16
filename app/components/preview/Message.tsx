@@ -44,8 +44,8 @@ export const Message: React.FC<{
         )}
         {message.embeds && message.embeds.length > 0 && (
           <div className="space-y-1 mt-1">
-            {message.embeds.map(embed => (
-              <Embed embed={embed} resolved={resolved} />
+            {message.embeds.map((embed, i) => (
+              <Embed key={`message-preview-embed-${i}`} embed={embed} resolved={resolved} />
             ))}
           </div>
         )}

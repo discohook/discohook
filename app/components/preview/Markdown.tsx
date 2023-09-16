@@ -11,7 +11,8 @@ export const markdownFeatures = [
   "inline-code",
   "block-code",
   "quotes",
-  "mentions", // users, roles, channels, commands, emojis
+  "mentions", // users, roles, channels, commands
+  "emojis",
 ] as const;
 export type MarkdownFeature = (typeof markdownFeatures)[number];
 
@@ -46,7 +47,7 @@ export const Markdown: React.FC<{
       markdown={text.replace(/(<)([^<]+)/g, "&lt;$2")}
       options={{
         tables: false,
-        emoji: f("mentions"),
+        emoji: f("emojis"),
         ellipsis: false,
         strikethrough: f("basic"),
         simpleLineBreaks: true,
