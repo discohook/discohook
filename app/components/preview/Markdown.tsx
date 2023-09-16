@@ -124,6 +124,7 @@ export const Markdown: React.FC<{
             <p>- {props.children}</p>
           ),
         li: (props) => <li className="ml-4" {...props} />,
+        code: (props) => <code className="bg-gray-300 text-[0.85em] leading-[1.125rem] whitespace-pre-wrap p-[0.2em] -my-[0.2em] rounded" {...props} />,
       }}
       extensions={[
         {
