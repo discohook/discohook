@@ -104,13 +104,19 @@ export const Markdown: React.FC<{
         h4: (props) => <p>#### {props.children}</p>,
         h5: (props) => <p>##### {props.children}</p>,
         h6: (props) => <p>###### {props.children}</p>,
-        a: (props) => (
-          <a
-            className="text-[#006ce7] dark:text-[#00a8fc] hover:underline underline-offset-1"
-            title={`${props.children}\n\n(${props.href})`}
-            {...props}
-          />
-        ),
+        a: (props) =>
+          f("hyperlinks") ? (
+            <a
+              className="text-[#006ce7] dark:text-[#00a8fc] hover:underline underline-offset-1"
+              title={`${props.title ?? props.children}\n\n(${props.href})`}
+              {...props}
+            />
+          ) : (
+            <span>
+              [{props.children}
+              {props.title && ` "${props.title}"`}]({props.href})
+            </span>
+          ),
         ul: (props) =>
           f("lists") ? (
             <ul className="list-disc" {...props} />
@@ -124,138 +130,154 @@ export const Markdown: React.FC<{
             <p>- {props.children}</p>
           ),
         li: (props) => <li className="ml-4" {...props} />,
-        code: (props) => <code className="bg-gray-300 text-[0.85em] leading-[1.125rem] whitespace-pre-wrap p-[0.2em] -my-[0.2em] rounded" {...props} />,
+        code: (props) =>
+          f("inline-code") ? (
+            <code
+              className="bg-gray-300 text-[0.85em] leading-[1.125rem] whitespace-pre-wrap p-[0.2em] -my-[0.2em] rounded"
+              {...props}
+            />
+          ) : (
+            <span>`{props.children}`</span>
+          ),
       }}
       extensions={[
         {
           type: "lang",
           filter: (text) => {
-            return text.replace(
-              new RegExp(CUSTOM_EMOJI_RE.source.replace(/^\^/, ""), "g"),
-              (found) => {
-                const match = found.match(CUSTOM_EMOJI_RE)!;
-                return `<img src="${cdn.emoji(
-                  match[3]
-                )}" class="inline-flex h-5 align-text-bottom" alt="${
-                  match[2]
-                }" title=":${match[2]}:" />`;
-              }
-            );
+            return !f("emojis")
+              ? text
+              : text.replace(
+                  new RegExp(CUSTOM_EMOJI_RE.source.replace(/^\^/, ""), "g"),
+                  (found) => {
+                    const match = found.match(CUSTOM_EMOJI_RE)!;
+                    return `<img src="${cdn.emoji(
+                      match[3]
+                    )}" class="inline-flex h-5 align-text-bottom" alt="${
+                      match[2]
+                    }" title=":${match[2]}:" />`;
+                  }
+                );
           },
         },
         {
           type: "lang",
           filter: (text) => {
-            return text.replace(
-              new RegExp(MENTION_RE.source.replace(CARET_RE, "$1"), "g"),
-              (found) => {
-                const match = found.match(MENTION_RE)!;
-                let text, type;
-                switch (match[1]) {
-                  case "@!":
-                  case "@":
-                    text = "@user";
-                    type = "user";
-                    break;
-                  case "@&":
-                    text = "@role";
-                    type = "role";
-                    break;
-                  case "#":
-                    text = "#channel";
-                    type = "channel";
-                    break;
-                  default:
-                    if (match[3]) {
-                      text = match[3];
-                      type = "command";
-                    } else if (match[5]) {
-                      text = match[5];
-                      type = "everyone-here";
-                    } else {
-                      text = `${match[1]}unknown`;
-                      type = "unknown";
+            return !f("mentions")
+              ? text
+              : text.replace(
+                  new RegExp(MENTION_RE.source.replace(CARET_RE, "$1"), "g"),
+                  (found) => {
+                    const match = found.match(MENTION_RE)!;
+                    let text, type;
+                    switch (match[1]) {
+                      case "@!":
+                      case "@":
+                        text = "@user";
+                        type = "user";
+                        break;
+                      case "@&":
+                        text = "@role";
+                        type = "role";
+                        break;
+                      case "#":
+                        text = "#channel";
+                        type = "channel";
+                        break;
+                      default:
+                        if (match[3]) {
+                          text = match[3];
+                          type = "command";
+                        } else if (match[5]) {
+                          text = match[5];
+                          type = "everyone-here";
+                        } else {
+                          text = `${match[1]}unknown`;
+                          type = "unknown";
+                        }
+                        break;
                     }
-                    break;
-                }
 
-                return `<span class="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition" data-mention-type="${type}" data-mention-id="${match[2]}">${text}</span>`;
-              }
-            );
+                    return `<span class="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition" data-mention-type="${type}" data-mention-id="${match[2]}">${text}</span>`;
+                  }
+                );
           },
         },
         {
           type: "lang",
           filter: (text) => {
-            return text.replace(
-              new RegExp(TIMESTAMP_RE.source.replace(/^\^/, ""), "g"),
-              (found) => {
-                const match = found.match(TIMESTAMP_RE)!;
+            return !f("mentions")
+              ? text
+              : text.replace(
+                  new RegExp(TIMESTAMP_RE.source.replace(/^\^/, ""), "g"),
+                  (found) => {
+                    const match = found.match(TIMESTAMP_RE)!;
 
-                const timestamp = new Date(Number(match[1]) * 1000);
-                let text;
-                switch (match[2]) {
-                  case "t":
-                    text = timestamp.toLocaleTimeString(undefined, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    });
-                    break;
-                  case "T":
-                    text = timestamp.toLocaleTimeString(undefined, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      second: "2-digit",
-                    });
-                    break;
-                  case "d":
-                    text = timestamp.toLocaleDateString();
-                    break;
-                  case "D":
-                    text = timestamp.toLocaleDateString(undefined, {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    });
-                    break;
-                  case "F":
-                    // Includes "at" before time in en-US, not sure how to get rid of that
-                    text = timestamp.toLocaleString(undefined, {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                      weekday: "long",
-                    });
-                    break;
-                  case "R":
-                    text = relativeTime(timestamp);
-                    break;
-                  default:
-                    // same as "f" style
-                    text = timestamp.toLocaleString(undefined, {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    });
-                    break;
-                }
+                    const timestamp = new Date(Number(match[1]) * 1000);
+                    let text;
+                    switch (match[2]) {
+                      case "t":
+                        text = timestamp.toLocaleTimeString(undefined, {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        });
+                        break;
+                      case "T":
+                        text = timestamp.toLocaleTimeString(undefined, {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        });
+                        break;
+                      case "d":
+                        text = timestamp.toLocaleDateString();
+                        break;
+                      case "D":
+                        text = timestamp.toLocaleDateString(undefined, {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        });
+                        break;
+                      case "F":
+                        // Includes "at" before time in en-US, not sure how to get rid of that
+                        text = timestamp.toLocaleString(undefined, {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          weekday: "long",
+                        });
+                        break;
+                      case "R":
+                        text = relativeTime(timestamp);
+                        break;
+                      default:
+                        // same as "f" style
+                        text = timestamp.toLocaleString(undefined, {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        });
+                        break;
+                    }
 
-                return `<span class="bg-black/5 rounded">${text}</span>`;
-              }
-            );
+                    return `<span class="bg-black/5 rounded">${text}</span>`;
+                  }
+                );
           },
         },
         {
           type: "lang",
           filter: (text) => {
-            return text.replace(/\|\|([^||]+)\|\|/g, (found) => {
-              const match = found.match(SPOILER_RE)!;
-              return `<span class="bg-black/10 rounded">${match[1]}</span>`;
-            });
+            return !f("basic")
+              ? text
+              : text.replace(/\|\|([^||]+)\|\|/g, (found) => {
+                  const match = found.match(SPOILER_RE)!;
+                  return `<span class="bg-black/10 rounded">${match[1]}</span>`;
+                });
           },
         },
         // I'm aware of the `underline` option, but it disables underscore italics,
@@ -263,10 +285,12 @@ export const Markdown: React.FC<{
         {
           type: "lang",
           filter: (text) => {
-            return text.replace(/__([^__]+)__/g, (found) => {
-              const match = found.match(UNDERLINE_RE)!;
-              return `<span class="underline">${match[1]}</span>`;
-            });
+            return !f("basic")
+              ? text
+              : text.replace(/__([^__]+)__/g, (found) => {
+                  const match = found.match(UNDERLINE_RE)!;
+                  return `<span class="underline">${match[1]}</span>`;
+                });
           },
         },
       ]}
