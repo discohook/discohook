@@ -1,6 +1,7 @@
 import MarkdownView from "react-showdown";
 import { CUSTOM_EMOJI_RE, MENTION_RE } from "~/util/constants";
 import { cdn } from "~/util/discord";
+import { relativeTime } from "~/util/time";
 
 export const markdownFeatures = [
   "basic", // bold, italic, underline, spoiler
@@ -17,6 +18,8 @@ export type MarkdownFeature = (typeof markdownFeatures)[number];
 const UNDERLINE_RE = /^__([^__]+)__/;
 
 const SPOILER_RE = /^\|\|([^||]+)\|\|/;
+
+const TIMESTAMP_RE = /^<t:(\d+)(?::(t|T|d|D|f|F|R))?>/;
 
 export const Markdown: React.FC<{
   text: string;
@@ -117,6 +120,71 @@ export const Markdown: React.FC<{
                 }
 
                 return `<span class="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition">${mention}${text}</span>`;
+              }
+            );
+          },
+        },
+        {
+          type: "lang",
+          filter: (text) => {
+            return text.replace(
+              new RegExp(TIMESTAMP_RE.source.replace(/^\^/, ""), "g"),
+              (found) => {
+                const match = found.match(TIMESTAMP_RE)!;
+
+                const timestamp = new Date(Number(match[1]) * 1000);
+                let text;
+                switch (match[2]) {
+                  case "t":
+                    text = timestamp.toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
+                    break;
+                  case "T":
+                    text = timestamp.toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    });
+                    break;
+                  case "d":
+                    text = timestamp.toLocaleDateString();
+                    break;
+                  case "D":
+                    text = timestamp.toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    });
+                    break;
+                  case "F":
+                    // Includes "at" before time in en-US, not sure how to get rid of that
+                    text = timestamp.toLocaleString(undefined, {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      weekday: "long",
+                    });
+                    break;
+                  case "R":
+                    text = relativeTime(timestamp);
+                    break;
+                  default:
+                    // same as "f" style
+                    text = timestamp.toLocaleString(undefined, {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
+                    break;
+                }
+
+                return `<span class="bg-black/5 rounded">${text}</span>`;
               }
             );
           },
