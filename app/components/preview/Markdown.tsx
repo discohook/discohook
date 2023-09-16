@@ -2,6 +2,7 @@ import MarkdownView from "react-showdown";
 import { PartialResource } from "~/types/Resources";
 import { cdn } from "~/util/discord";
 import { relativeTime } from "~/util/time";
+import { CoolIcon } from "../CoolIcon";
 
 export const markdownFeatures = [
   "basic", // bold, italic, underline, spoiler
@@ -32,6 +33,8 @@ const CUSTOM_EMOJI_RE = /^(?:<|&lt;)(a)?:(\w+):(\d+)>/;
 
 const MENTION_RE =
   /^(?:<|&lt;)(@!?|@&|#)(\d+)>|^(?:<|&lt;)(\/(?! )[\w -]*[\w-]):(\d+)>|^(@(?:everyone|here))/;
+
+const MESSAGE_LINK_RE = /^https:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/channels\/(\d+|@me)\/(\d+)\/(\d+)/
 
 export const Markdown: React.FC<{
   text: string;
@@ -72,6 +75,21 @@ export const Markdown: React.FC<{
           >
             {text}
           </span>
+        ),
+        MessageLink: ({  guildId,channelId,messageId,}: {
+          guildId: string;
+          channelId: string;
+          messageId: string;
+        }) => (
+          <a
+            className="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition inline-flex"
+            href={`https://discord.com/channels/${guildId}/${channelId}/${messageId}`}
+            target="_blank"
+            // data-mention-type="message"
+            // data-mention-id={messageId}
+          >
+            #channel <CoolIcon icon="Chevron_Right_MD" className="my-auto" /> <CoolIcon icon="Chat" className="my-auto" />
+          </a>
         ),
         Emoji: ({
           id,
@@ -325,6 +343,20 @@ export const Markdown: React.FC<{
                   const match = found.match(UNDERLINE_RE)!;
                   return `<span class="underline">${match[1]}</span>`;
                 });
+          },
+        },
+        {
+          type: "lang",
+          filter: (text) => {
+            return !f("basic")
+              ? text
+              : text.replace(
+                  new RegExp(MESSAGE_LINK_RE.source.replace(/^\^/, ""), "g"),
+                  (found) => {
+                    const match = found.match(MESSAGE_LINK_RE)!;
+                    return `<MessageLink guildId="${match[1]}" channelId="${match[2]}" messageId="${match[3]}" />`;
+                  }
+                );
           },
         },
       ]}
