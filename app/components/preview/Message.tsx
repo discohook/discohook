@@ -3,12 +3,12 @@ import { QueryData } from "~/types/QueryData";
 import { cdn } from "~/util/discord";
 import { Markdown } from "./Markdown";
 import { PartialResource } from "~/types/Resources";
+import { Embed } from "./Embed";
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
   webhook?: APIWebhook;
   compact?: boolean;
-  theme?: "light" | "dark";
   date?: Date;
   resolved?: Record<string, PartialResource>;
 }> = ({ message, webhook, date, resolved }) => {
@@ -41,6 +41,13 @@ export const Message: React.FC<{
         </p>
         {message.content && (
           <Markdown text={message.content} features="all" resolved={resolved} />
+        )}
+        {message.embeds && message.embeds.length > 0 && (
+          <div className="space-y-1 mt-1">
+            {message.embeds.map(embed => (
+              <Embed embed={embed} resolved={resolved} />
+            ))}
+          </div>
         )}
       </div>
     </div>
