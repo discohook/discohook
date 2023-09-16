@@ -7,6 +7,7 @@ export const TextInput = (
     HTMLInputElement
   > & {
     label: ReactNode;
+    description?: ReactNode;
     delayOnInput?: number;
     errors?: ReactNode[];
   }
@@ -21,7 +22,15 @@ export const TextInput = (
 
   return (
     <label className="block">
-      <p className="text-sm">{label}</p>
+      <p className="text-sm font-medium flex">
+        {label}
+        {props.maxLength && (
+          <span className="ml-auto">max. {props.maxLength}</span>
+        )}
+      </p>
+      {props.description && (
+        <p className="text-sm">{props.description}</p>
+      )}
       <input
         type="text"
         {...newProps}

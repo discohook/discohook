@@ -7,6 +7,7 @@ export const TextArea = (
     HTMLTextAreaElement
   > & {
     label: ReactNode;
+    description?: ReactNode;
     delayOnInput?: number;
     errors?: ReactNode[];
   }
@@ -27,6 +28,9 @@ export const TextArea = (
           <span className="ml-auto">max. {props.maxLength}</span>
         )}
       </p>
+      {props.description && (
+        <p className="text-sm">{props.description}</p>
+      )}
       <textarea
         {...newProps}
         onInput={(e) => {
