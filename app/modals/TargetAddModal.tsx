@@ -17,7 +17,7 @@ export const TargetAddModal = (
   const avatarUrl = webhook
     ? webhook.avatar
       ? cdn.avatar(webhook.id, webhook.avatar, { size: 128 })
-      : cdn.defaultAvatar(1)
+      : cdn.defaultAvatar(6)
     : null;
 
   const setOpen = (s: boolean) => {
@@ -80,7 +80,7 @@ export const TargetAddModal = (
                 {webhook?.user ? webhook.user.username : "someone"}
               </p>
               <hr className="border border-gray-400 my-2" />
-              <p>
+              <p className="text-gray-500 hover:text-gray-700 transition">
                 Channel ID{" "}
                 <a
                   className="hover:underline"
@@ -90,7 +90,7 @@ export const TargetAddModal = (
                   {webhook.channel_id}
                 </a>
               </p>
-              <p>
+              <p className="text-gray-500 hover:text-gray-700 transition">
                 Server ID{" "}
                 <a
                   className="hover:underline"

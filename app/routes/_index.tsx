@@ -44,11 +44,11 @@ export default function Index() {
         updateTargets={updateTargets}
       />
       <div className="md:flex h-full">
-        <div className="p-4 w-1/2 overflow-y-auto">
+        <div className="p-4 md:w-1/2 overflow-y-auto">
           {Object.values(targets).map((webhook) => {
             const avatarUrl = webhook.avatar
               ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
-              : cdn.defaultAvatar(1);
+              : cdn.defaultAvatar(5);
 
             return (
               <div
@@ -72,8 +72,9 @@ export default function Index() {
           >
             Add Webhook
           </Button>
+          <hr className="border rounded border-gray-400 my-4" />
         </div>
-        <div className="border-l-4 border-l-gray-400 p-4 w-1/2 overflow-y-auto">
+        <div className="md:border-l-2 border-l-gray-400 p-4 md:w-1/2 overflow-y-auto">
           {data.messages.map((message, i) => (
             <Message key={`message-${i}`} message={message.data} />
           ))}
