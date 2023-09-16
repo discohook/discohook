@@ -23,7 +23,7 @@ export default function Index() {
   const [searchParams, setSearchParams] = useSearchParams();
   const parsed = ZodQueryData.safeParse(JSON.parse(base64Decode(searchParams.get("data") ?? "{}") ?? "{}"))
   const [data, setData] = useState<QueryData>(
-    parsed.success ? parsed.data : { messages: [] }
+    parsed.success ? { version: "d2", ...parsed.data } : { version: "d2", messages: [] }
   );
 
   type Targets = Record<string, APIWebhook>;

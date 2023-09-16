@@ -1,7 +1,10 @@
-import { APIEmbed } from "discord.js";
+import { APIEmbed, EmbedType } from "discord-api-types/v10";
 import { z } from "zod";
 
+export type QueryDataVersion = "d2";
+
 export interface QueryData {
+  version?: QueryDataVersion,
   messages: {
     data: {
       author?: {
@@ -18,6 +21,7 @@ export interface QueryData {
 }
 
 export const ZodQueryData = z.object({
+  version: z.optional(z.enum(["d2"])),
   messages: z.array(
     z.object({
       data: z.object({
@@ -32,9 +36,6 @@ export const ZodQueryData = z.object({
           z.nullable(
             z.array(
               z.object({
-                type: z.optional(
-                  z.enum(["rich", "image", "video", "gifv", "article", "link"])
-                ),
                 title: z.optional(z.string()),
                 description: z.optional(z.string()),
                 url: z.optional(z.string()),
@@ -50,7 +51,7 @@ export const ZodQueryData = z.object({
                 ),
                 author: z.optional(
                   z.object({
-                    name: z.optional(z.string()),
+                    name: z.string(),
                     icon_url: z.optional(z.string()),
                     proxy_icon_url: z.optional(z.string()),
                     url: z.optional(z.string()),
@@ -58,7 +59,7 @@ export const ZodQueryData = z.object({
                 ),
                 footer: z.optional(
                   z.object({
-                    name: z.optional(z.string()),
+                    text: z.string(),
                     icon_url: z.optional(z.string()),
                     proxy_icon_url: z.optional(z.string()),
                   })
