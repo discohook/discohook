@@ -38,6 +38,10 @@ export const Markdown: React.FC<{
         emoji: f("mentions"),
         ellipsis: false,
         strikethrough: f("basic"),
+        simpleLineBreaks: true,
+        openLinksInNewWindow: true,
+        disableForced4SpacesIndentedSublists: true,
+        noHeaderId: true,
       }}
       components={{
         strong: (props) =>
@@ -95,6 +99,9 @@ export const Markdown: React.FC<{
             {...props}
           />
         ),
+        ul: (props) => f("lists") ? <ul className="list-disc" {...props}/> : <p>- {props.children}</p>,
+        ol: (props) => f("lists") ? <ul className="list-decimal" {...props}/> : <p>- {props.children}</p>,
+        li: (props) => <li className="ml-4" {...props} />
       }}
       extensions={[
         {
@@ -218,6 +225,8 @@ export const Markdown: React.FC<{
             });
           },
         },
+        // I'm aware of the `underline` option, but it disables underscore italics,
+        // which means I would need an extension anyway.
         {
           type: "lang",
           filter: (text) => {
