@@ -3,6 +3,8 @@ import { useSearchParams } from "@remix-run/react";
 import { APIWebhook } from "discord-api-types/v10";
 import { useReducer, useState } from "react";
 import { Button } from "~/components/Button";
+import { TextArea } from "~/components/TextArea";
+import { TextInput } from "~/components/TextInput";
 import { Message } from "~/components/preview/Message";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
@@ -21,9 +23,13 @@ export const meta: V2_MetaFunction = () => {
 
 export default function Index() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const parsed = ZodQueryData.safeParse(JSON.parse(base64Decode(searchParams.get("data") ?? "{}") ?? "{}"))
+  const parsed = ZodQueryData.safeParse(
+    JSON.parse(base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
+  );
   const [data, setData] = useState<QueryData>(
-    parsed.success ? { version: "d2", ...parsed.data } : { version: "d2", messages: [] }
+    parsed.success
+      ? { version: "d2", ...parsed.data }
+      : { version: "d2", messages: [] }
   );
 
   type Targets = Record<string, APIWebhook>;
@@ -72,11 +78,38 @@ export default function Index() {
           >
             Add Webhook
           </Button>
-          <hr className="border rounded border-gray-400 my-4" />
+          {data.messages.map((message, i) => {
+            return (
+              <div key={`edit-message-${i}`} className="mt-4">
+                <div className="font-bold text-base flex">
+                  Message #{i + 1}
+                  <div className="ml-auto space-x-1">
+                  </div>
+                </div>
+                <div className="rounded bg-gray-100 p-2 mt-1 space-y-2">
+                  <TextArea
+                    label="Content"
+                    className="w-full h-40"
+                    defaultValue={message.data.content ?? undefined}
+                    maxLength={2000}
+                    onInput={(e) => {
+                      message.data.content = e.currentTarget.value;
+                      setData({ ...data });
+                    }}
+                  />
+                  <TextInput
+                    label="Message Link"
+                    className="w-full"
+                    placeholder="https://discord.com/channels/123/456/789"
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
         <div className="md:border-l-2 border-l-gray-400 p-4 md:w-1/2 overflow-y-auto">
           {data.messages.map((message, i) => (
-            <Message key={`message-${i}`} message={message.data} />
+            <Message key={`preview-message-${i}`} message={message.data} />
           ))}
         </div>
       </div>

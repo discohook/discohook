@@ -37,7 +37,7 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode; }> = ({
         },
       }}
     >
-      <div className="rounded-lg bg-gray-100 text-black dark:bg-gray-800 dark:text-gray-50">
+      <div className="rounded-lg bg-gray-50 text-black dark:bg-gray-800 dark:text-gray-50">
         {title && (
           <div className="px-5 py-3 bg-gray-200 dark:bg-gray-900 flex rounded-t-lg">
             <p className="text-xl font-black my-auto">{title}</p>

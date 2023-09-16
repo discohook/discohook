@@ -1,10 +1,10 @@
 import { ReactNode, useState } from "react";
 import { CoolIcon } from "./CoolIcon";
 
-export const TextInput = (
+export const TextArea = (
   props: React.DetailedHTMLProps<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
+    React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+    HTMLTextAreaElement
   > & {
     label: ReactNode;
     delayOnInput?: number;
@@ -21,9 +21,13 @@ export const TextInput = (
 
   return (
     <label className="block">
-      <p className="text-sm">{label}</p>
-      <input
-        type="text"
+      <p className="text-sm font-medium flex">
+        {label}
+        {props.maxLength && (
+          <span className="ml-auto">max. {props.maxLength}</span>
+        )}
+      </p>
+      <textarea
         {...newProps}
         onInput={(e) => {
           // For some reason, currentTarget is only available while processing
@@ -48,7 +52,7 @@ export const TextInput = (
             return onInput(event);
           }
         }}
-        className={`rounded-lg border bg-gray-200 border-gray-100 placeholder-gray-500 focus:border-blurple-500 dark:border-gray-600 dark:bg-gray-700 dark:placeholder-gray-400 p-2 invalid:border-rose-400 dark:invalid:border-rose-400 transition ${
+        className={`rounded-lg border bg-gray-200 border-gray-100 focus:border-blurple-500 dark:border-gray-600 dark:bg-gray-700 p-2 invalid:border-rose-400 dark:invalid:border-rose-400 transition ${
           props.className ?? ""
         }`}
       />
@@ -62,3 +66,4 @@ export const TextInput = (
     </label>
   );
 };
+
