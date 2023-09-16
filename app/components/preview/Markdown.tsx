@@ -48,17 +48,17 @@ export const Markdown: React.FC<{
             <span>*{props.children}*</span>
           ),
         h1: (props) => (
-          <p className={f("headers") ? "font-bold text-2xl" : undefined}>
+          <p className={f("headers") ? "font-bold text-2xl leading-[33px] my-2" : undefined}>
             {props.children}
           </p>
         ),
         h2: (props) => (
-          <p className={f("headers") ? "font-bold text-xl" : undefined}>
+          <p className={f("headers") ? "font-bold text-xl leading-[27.5px] mb-2 mt-4" : undefined}>
             {props.children}
           </p>
         ),
         h3: (props) => (
-          <p className={f("headers") ? "font-bold text-lg" : undefined}>
+          <p className={f("headers") ? "font-bold text-base leading-[22px] mb-2 mt-4" : undefined}>
             {props.children}
           </p>
         ),
