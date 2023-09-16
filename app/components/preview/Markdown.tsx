@@ -34,7 +34,8 @@ const CUSTOM_EMOJI_RE = /^(?:<|&lt;)(a)?:(\w+):(\d+)>/;
 const MENTION_RE =
   /^(?:<|&lt;)(@!?|@&|#)(\d+)>|^(?:<|&lt;)(\/(?! )[\w -]*[\w-]):(\d+)>|^(@(?:everyone|here))/;
 
-const MESSAGE_LINK_RE = /^https:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/channels\/(\d+|@me)\/(\d+)\/(\d+)/
+const MESSAGE_LINK_RE =
+  /^https:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/channels\/(\d+|@me)\/(\d+)\/(\d+)/;
 
 export const Markdown: React.FC<{
   text: string;
@@ -76,7 +77,11 @@ export const Markdown: React.FC<{
             {text}
           </span>
         ),
-        MessageLink: ({  guildId,channelId,messageId,}: {
+        MessageLink: ({
+          guildId,
+          channelId,
+          messageId,
+        }: {
           guildId: string;
           channelId: string;
           messageId: string;
@@ -88,7 +93,8 @@ export const Markdown: React.FC<{
             // data-mention-type="message"
             // data-mention-id={messageId}
           >
-            #channel <CoolIcon icon="Chevron_Right_MD" className="my-auto" /> <CoolIcon icon="Chat" className="my-auto" />
+            #channel <CoolIcon icon="Chevron_Right_MD" className="my-auto" />{" "}
+            <CoolIcon icon="Chat" className="my-auto" />
           </a>
         ),
         Emoji: ({
