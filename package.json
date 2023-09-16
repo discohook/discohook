@@ -1,6 +1,7 @@
 {
   "private": true,
   "sideEffects": false,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "build": "npm run build:css && remix build",
     "dev": "concurrently \"npm run dev:css\" \"remix dev\"",
