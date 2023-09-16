@@ -1,4 +1,4 @@
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { APIWebhook } from "discord-api-types/v10";
 import { Modal, ModalProps } from "./Modal";
 import { ReactNode, useState } from "react";
 import { TextInput } from "~/components/TextInput";

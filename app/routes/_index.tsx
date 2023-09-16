@@ -4,8 +4,8 @@ import { APIWebhook } from "discord-api-types/v10";
 import { useReducer, useState } from "react";
 import { Button } from "~/components/Button";
 import { TextArea } from "~/components/TextArea";
-import { TextInput } from "~/components/TextInput";
 import { Message } from "~/components/preview/Message";
+import { MessageSetModal } from "~/modals/MessageSetModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { cdn } from "~/util/discord";
@@ -39,6 +39,7 @@ export default function Index() {
     {}
   );
   const [addingTarget, setAddingTarget] = useState(false);
+  const [settingMessageIndex, setSettingMessageIndex] = useState<number>();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -48,6 +49,15 @@ export default function Index() {
         open={addingTarget}
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
+      />
+      <MessageSetModal
+        open={settingMessageIndex !== undefined}
+        setOpen={() => setSettingMessageIndex(undefined)}
+        targets={targets}
+        setAddingTarget={setAddingTarget}
+        data={data}
+        setData={setData}
+        messageIndex={settingMessageIndex}
       />
       <div className="md:flex h-full">
         <div className="p-4 md:w-1/2 overflow-y-auto">
@@ -66,8 +76,8 @@ export default function Index() {
                   src={avatarUrl}
                 />
                 <div className="my-auto grow">
-                  <p className="font-bold">{webhook.name}</p>
-                  <p className="text-sm">{webhook.user?.username}</p>
+                  <p className="font-semibold">{webhook.name}</p>
+                  <p className="text-sm leading-none">{webhook.user?.username}</p>
                 </div>
               </div>
             );
@@ -81,7 +91,7 @@ export default function Index() {
           {data.messages.map((message, i) => {
             return (
               <div key={`edit-message-${i}`} className="mt-4">
-                <div className="font-bold text-base flex">
+                <div className="font-semibold text-base flex">
                   Message #{i + 1}
                   <div className="ml-auto space-x-1">
                   </div>
@@ -90,18 +100,14 @@ export default function Index() {
                   <TextArea
                     label="Content"
                     className="w-full h-40"
-                    defaultValue={message.data.content ?? undefined}
+                    value={message.data.content ?? undefined}
                     maxLength={2000}
                     onInput={(e) => {
                       message.data.content = e.currentTarget.value;
                       setData({ ...data });
                     }}
                   />
-                  <TextInput
-                    label="Message Link"
-                    className="w-full"
-                    placeholder="https://discord.com/channels/123/456/789"
-                  />
+                  <Button onClick={() => setSettingMessageIndex(i)}>Set Reference</Button>
                 </div>
               </div>
             );

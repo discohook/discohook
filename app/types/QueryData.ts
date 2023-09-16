@@ -14,6 +14,7 @@ export interface QueryData {
       content?: string | null;
       embeds?: APIEmbed[] | null;
       attachments?: { id: string }[];
+      webhook_id?: string;
     };
     reference?: string;
   }[];
@@ -100,6 +101,7 @@ export const ZodQueryData = z.object({
           )
         ),
         attachments: z.optional(z.array(z.object({ id: z.string() }))),
+        webhook_id: z.optional(z.string()),
       }),
       reference: z.optional(z.string()),
     })

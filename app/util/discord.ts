@@ -1,6 +1,6 @@
 import { CDN, REST, RequestData, RouteLike } from "@discordjs/rest";
 import { DiscordSnowflake } from "@sapphire/snowflake";
-import { APIWebhook } from "discord-api-types/v10";
+import { RESTGetAPIWebhookWithTokenMessageResult, RESTGetAPIWebhookWithTokenResult } from "discord-api-types/v10";
 
 const rest = new REST({ version: "10" });
 export const cdn = new CDN();
@@ -25,5 +25,11 @@ export const discordRequest = async (
 
 export const getWebhook = async (id: string, token: string) => {
   const data = await discordRequest("GET", `/webhooks/${id}/${token}`);
-  return (await data.json()) as APIWebhook;
+  return (await data.json()) as RESTGetAPIWebhookWithTokenResult;
+};
+
+export const getWebhookMessage = async (webhookId: string, webhookToken: string, messageId: string, threadId?: string) => {
+  const query = threadId ? new URLSearchParams({thread_id: threadId}) : undefined;
+  const data = await discordRequest("GET", `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`, {query});
+  return (await data.json()) as RESTGetAPIWebhookWithTokenMessageResult;
 };
