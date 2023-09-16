@@ -1,6 +1,5 @@
 import MarkdownView from "react-showdown";
 import { PartialResource } from "~/types/Resources";
-import { CUSTOM_EMOJI_RE, MENTION_RE } from "~/util/constants";
 import { cdn } from "~/util/discord";
 import { relativeTime } from "~/util/time";
 
@@ -22,7 +21,16 @@ const UNDERLINE_RE = /^__([^__]+)__/;
 
 const SPOILER_RE = /^\|\|([^||]+)\|\|/;
 
-const TIMESTAMP_RE = /^<t:(\d+)(?::(t|T|d|D|f|F|R))?>/;
+const TIMESTAMP_RE = /^(?:<|&lt;)t:(\d+)(?::(t|T|d|D|f|F|R))?>/;
+
+const PLAINTEXT_EMOJIS = new Set(["™", "™️", "©", "©️", "®", "®️"]);
+
+const EMOJI_NAME_RE = /^:([^\s:]+?(?:::skin-tone-\d)?):/;
+
+const CUSTOM_EMOJI_RE = /^(?:<|&lt;)(a)?:(\w+):(\d+)>/;
+
+const MENTION_RE =
+  /^(?:<|&lt;)(@!?|@&|#)(\d+)>|^(?:<|&lt;)(\/(?! )[\w -]*[\w-]):(\d+)>|^(@(?:everyone|here))/;
 
 export const Markdown: React.FC<{
   text: string;
@@ -34,7 +42,8 @@ export const Markdown: React.FC<{
   return (
     <MarkdownView
       flavor="vanilla"
-      markdown={text}
+      // sanitize-html was being a bit overzealous with mentions
+      markdown={text.replace(/(<)([^<]+)/g, "&lt;$2")}
       options={{
         tables: false,
         emoji: f("mentions"),
