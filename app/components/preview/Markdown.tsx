@@ -16,6 +16,8 @@ export const markdownFeatures = [
 ] as const;
 export type MarkdownFeature = (typeof markdownFeatures)[number];
 
+const CARET_RE = /(?:^\^)|(?:([^(\\^)])\^)/g;
+
 const UNDERLINE_RE = /^__([^__]+)__/;
 
 const SPOILER_RE = /^\|\|([^||]+)\|\|/;
@@ -99,9 +101,19 @@ export const Markdown: React.FC<{
             {...props}
           />
         ),
-        ul: (props) => f("lists") ? <ul className="list-disc" {...props}/> : <p>- {props.children}</p>,
-        ol: (props) => f("lists") ? <ul className="list-decimal" {...props}/> : <p>- {props.children}</p>,
-        li: (props) => <li className="ml-4" {...props} />
+        ul: (props) =>
+          f("lists") ? (
+            <ul className="list-disc" {...props} />
+          ) : (
+            <p>- {props.children}</p>
+          ),
+        ol: (props) =>
+          f("lists") ? (
+            <ul className="list-decimal" {...props} />
+          ) : (
+            <p>- {props.children}</p>
+          ),
+        li: (props) => <li className="ml-4" {...props} />,
       }}
       extensions={[
         {
@@ -124,29 +136,39 @@ export const Markdown: React.FC<{
           type: "lang",
           filter: (text) => {
             return text.replace(
-              new RegExp(MENTION_RE.source.replace(/^\^/, ""), "g"),
+              new RegExp(MENTION_RE.source.replace(CARET_RE, "$1"), "g"),
               (found) => {
                 const match = found.match(MENTION_RE)!;
-                let mention = match[1],
-                  text;
+                let text, type;
                 switch (match[1]) {
                   case "@!":
                   case "@":
-                    text = "user";
+                    text = "@user";
+                    type = "user";
                     break;
                   case "@&":
-                    mention = "@";
-                    text = "role";
+                    text = "@role";
+                    type = "role";
                     break;
                   case "#":
-                    text = "channel";
+                    text = "#channel";
+                    type = "channel";
                     break;
                   default:
-                    text = "unknown";
+                    if (match[3]) {
+                      text = match[3];
+                      type = "command";
+                    } else if (match[5]) {
+                      text = match[5];
+                      type = "everyone-here";
+                    } else {
+                      text = `${match[1]}unknown`;
+                      type = "unknown";
+                    }
                     break;
                 }
 
-                return `<span class="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition">${mention}${text}</span>`;
+                return `<span class="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition" data-mention-type="${type}" data-mention-id="${match[2]}">${text}</span>`;
               }
             );
           },
