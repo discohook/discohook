@@ -2,6 +2,7 @@ import { APIWebhook } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
 import { cdn } from "~/util/discord";
 import { Markdown } from "./Markdown";
+import { PartialResource } from "~/types/Resources";
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
@@ -9,7 +10,8 @@ export const Message: React.FC<{
   compact?: boolean;
   theme?: "light" | "dark";
   date?: Date;
-}> = ({ message, webhook, date }) => {
+  resolved?: Record<string, PartialResource>;
+}> = ({ message, webhook, date, resolved }) => {
   const username = message.author?.name ?? webhook?.name ?? "Boogiehook",
     avatarUrl =
       message.author?.icon_url ??
@@ -38,7 +40,7 @@ export const Message: React.FC<{
           </span>
         </p>
         {message.content && (
-          <Markdown text={message.content} features="all" />
+          <Markdown text={message.content} features="all" resolved={resolved} />
         )}
       </div>
     </div>

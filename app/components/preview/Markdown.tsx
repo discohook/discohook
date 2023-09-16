@@ -1,4 +1,5 @@
 import MarkdownView from "react-showdown";
+import { PartialResource } from "~/types/Resources";
 import { CUSTOM_EMOJI_RE, MENTION_RE } from "~/util/constants";
 import { cdn } from "~/util/discord";
 import { relativeTime } from "~/util/time";
@@ -24,6 +25,7 @@ const TIMESTAMP_RE = /^<t:(\d+)(?::(t|T|d|D|f|F|R))?>/;
 export const Markdown: React.FC<{
   text: string;
   features: "all" | MarkdownFeature[];
+  resolved?: Record<string, PartialResource>;
 }> = ({ text, features }) => {
   const f = (search: MarkdownFeature) =>
     features === "all" ? true : features.includes(search);
