@@ -56,6 +56,40 @@ export const Markdown: React.FC<{
         noHeaderId: true,
       }}
       components={{
+        Mention: ({
+          type,
+          id,
+          text,
+        }: {
+          type: string;
+          id?: string;
+          text: string;
+        }) => (
+          <span
+            className="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition"
+            data-mention-type={type}
+            data-mention-id={id}
+          >
+            {text}
+          </span>
+        ),
+        Emoji: ({
+          id,
+          name,
+          animated,
+        }: {
+          id: string;
+          name: string;
+          animated?: boolean;
+        }) => (
+          <img
+            src={cdn.emoji(id, animated ? "gif" : "webp")}
+            className="inline-flex h-5 align-text-bottom"
+            alt={name}
+            title={`:${name}:`}
+            draggable={false}
+          />
+        ),
         strong: (props) =>
           f("basic") ? (
             <span className="font-bold">{props.children}</span>
@@ -150,11 +184,9 @@ export const Markdown: React.FC<{
                   new RegExp(CUSTOM_EMOJI_RE.source.replace(/^\^/, ""), "g"),
                   (found) => {
                     const match = found.match(CUSTOM_EMOJI_RE)!;
-                    return `<img src="${cdn.emoji(
-                      match[3]
-                    )}" class="inline-flex h-5 align-text-bottom" alt="${
+                    return `<Emoji id="${match[3]}" name="${
                       match[2]
-                    }" title=":${match[2]}:" />`;
+                    }" animated="${match[1] === "a"}" />`;
                   }
                 );
           },
@@ -197,7 +229,9 @@ export const Markdown: React.FC<{
                         break;
                     }
 
-                    return `<span class="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition" data-mention-type="${type}" data-mention-id="${match[2]}">${text}</span>`;
+                    return `<Mention type="${type}" id="${
+                      match[2] ?? match[4]
+                    }" text="${text}" />`;
                   }
                 );
           },
