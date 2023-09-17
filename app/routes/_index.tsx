@@ -1,10 +1,11 @@
 import type { V2_MetaFunction } from "@remix-run/node";
 import { useSearchParams } from "@remix-run/react";
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { APIEmbed, APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useReducer, useState } from "react";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { TextArea } from "~/components/TextArea";
+import { TextInput } from "~/components/TextInput";
 import { Message } from "~/components/preview/Message";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
@@ -132,6 +133,95 @@ export default function Index() {
                       setData({ ...data });
                     }}
                   />
+                  {message.data.embeds && message.data.embeds.length > 0 && (
+                    <div className="mt-1 space-y-1">
+                      {message.data.embeds.map((embed, ei) => {
+                        const updateEmbed = (partialEmbed: Partial<APIEmbed>) =>
+                          setData({
+                            ...data,
+                            messages: data.messages.splice(i, 1, {
+                              ...message,
+                              data: {
+                                ...message.data,
+                                embeds: message.data.embeds!.splice(ei, 1, {
+                                  ...embed,
+                                  ...partialEmbed,
+                                }),
+                              },
+                            }),
+                          });
+                        return (
+                          <div
+                            key={`edit-message-${i}-embed-${ei}`}
+                            className="rounded p-4 bg-gray-400"
+                          >
+                            <div className="flex">
+                              <div className="grow">
+                                <TextInput
+                                  label="Title"
+                                  className="w-full"
+                                  maxLength={256}
+                                  value={embed.title}
+                                      onInput={(e) =>
+                                        updateEmbed({
+                                          title: e.currentTarget.value,
+                                        })
+                                      }
+                                />
+                              </div>
+                              {embed.url === undefined && (
+                                <Button
+                                  className="ml-2 mt-auto shrink-0"
+                                  onClick={() =>
+                                    updateEmbed({ url: location.origin })
+                                  }
+                                >
+                                  Add URL
+                                </Button>
+                              )}
+                            </div>
+                            <div className="grid gap-2 mt-2">
+                              {embed.url !== undefined && (
+                                <div className="flex">
+                                  <div className="grow">
+                                    <TextInput
+                                      label="Title URL"
+                                      className="w-full"
+                                      type="url"
+                                      value={embed.url}
+                                      onInput={(e) =>
+                                        updateEmbed({
+                                          url: e.currentTarget.value,
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <Button
+                                    className="ml-2 mt-auto shrink-0"
+                                    onClick={() =>
+                                      updateEmbed({ url: undefined })
+                                    }
+                                  >
+                                    Remove<span className="hidden sm:inline"> URL</span>
+                                  </Button>
+                                </div>
+                              )}
+                              <TextInput
+                                label="Sidebar Color"
+                                className="w-full"
+                                value={embed.color? `#${embed.color.toString(16)}` : undefined}
+                                      onInput={(e) =>
+                                        updateEmbed({
+                                          color: e.currentTarget.value ? Number(e.currentTarget.value) : undefined,
+                                        })
+                                      }
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                   <Button onClick={() => setSettingMessageIndex(i)}>
                     Set Reference
                   </Button>

@@ -57,7 +57,7 @@ export const TextInput = (
             return onInput(event);
           }
         }}
-        className={`rounded-lg border bg-gray-200 border-gray-100 placeholder-gray-500 focus:border-blurple-500 dark:border-gray-600 dark:bg-gray-700 dark:placeholder-gray-400 p-2 invalid:border-rose-400 dark:invalid:border-rose-400 transition ${
+        className={`rounded border min-h-[36px] max-h-9 py-0 px-[14px] bg-gray-200 border-gray-100 placeholder-gray-500 focus:border-blurple-500 dark:border-gray-600 dark:bg-gray-700 dark:placeholder-gray-400 invalid:border-rose-400 dark:invalid:border-rose-400 transition ${
           props.className ?? ""
         }`}
       />
