@@ -1,12 +1,12 @@
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import { Modal, ModalProps } from "./Modal";
 import { ReactNode, useState } from "react";
-import { TextInput } from "~/components/TextInput";
-import { MESSAGE_REF_RE } from "~/util/constants";
-import { cdn, getWebhookMessage } from "~/util/discord";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
+import { TextInput } from "~/components/TextInput";
 import { QueryData } from "~/types/QueryData";
+import { MESSAGE_REF_RE } from "~/util/constants";
+import { cdn, getWebhookMessage } from "~/util/discord";
+import { Modal, ModalProps } from "./Modal";
 
 export const MessageSetModal = (
   props: ModalProps & {
@@ -150,6 +150,9 @@ export const MessageSetModal = (
                   messageLink[2]
                 );
                 if ("code" in msg && msg.code === 10008 && messageLink[1]) {
+                  console.log(
+                    `Message ID ${messageLink[2]} not found in webhook channel, trying again with ${messageLink[1]} as thread ID`
+                  );
                   msg = await getWebhookMessage(
                     webhook.id,
                     webhook.token!,
