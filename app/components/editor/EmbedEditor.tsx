@@ -28,7 +28,10 @@ export const EmbedEditor: React.FC<{
       }),
     });
   return (
-    <div className="rounded p-2 bg-gray-400">
+    <div className="rounded p-2 bg-gray-400 border-l-4 border-l-gray-500"
+    style={embed.color ? {
+      borderLeftColor: `#${embed.color.toString(16)}`
+    } : undefined}>
       <EmbedEditorSection name="Author">
         <div className="flex">
           <div className="grow">
