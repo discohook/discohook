@@ -7,6 +7,7 @@ import { CoolIcon } from "~/components/CoolIcon";
 import { MessageEditor } from "~/components/editor/MessageEditor";
 import { Message } from "~/components/preview/Message";
 import { MessageSetModal } from "~/modals/MessageSetModal";
+import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
@@ -49,6 +50,7 @@ export default function Index() {
       ({ ...d, ...partialD } as Targets),
     {}
   );
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [addingTarget, setAddingTarget] = useState(false);
   const [settingMessageIndex, setSettingMessageIndex] = useState<number>();
 
@@ -56,10 +58,9 @@ export default function Index() {
 
   return (
     <div className="h-screen">
-      <TargetAddModal
-        open={addingTarget}
-        setOpen={setAddingTarget}
-        updateTargets={updateTargets}
+      <PreviewDisclaimerModal
+        open={showDisclaimer}
+        setOpen={setShowDisclaimer}
       />
       <MessageSetModal
         open={settingMessageIndex !== undefined}
@@ -69,6 +70,11 @@ export default function Index() {
         data={data}
         setData={setData}
         messageIndex={settingMessageIndex}
+      />
+      <TargetAddModal
+        open={addingTarget}
+        setOpen={setAddingTarget}
+        updateTargets={updateTargets}
       />
       <div className="md:flex h-full">
         <div
@@ -126,7 +132,7 @@ export default function Index() {
           ))}
         </div>
         <div
-          className={`md:border-l-2 border-l-gray-400 p-4 md:w-1/2 overflow-y-auto ${
+          className={`md:border-l-2 border-l-gray-400 p-4 md:w-1/2 overflow-y-auto relative ${
             tab === "preview" ? "" : "hidden md:block"
           }`}
         >
@@ -142,6 +148,10 @@ export default function Index() {
           {data.messages.map((message, i) => (
             <Message key={`preview-message-${i}`} message={message.data} />
           ))}
+          <Button className="absolute bottom-4 right-4 transition-transform" discordstyle={ButtonStyle.Secondary} onClick={() => setShowDisclaimer(true)}>
+            <CoolIcon icon="Info" className="mr-1.5" />
+            Preview Info
+          </Button>
         </div>
       </div>
     </div>
