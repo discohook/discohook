@@ -9,7 +9,7 @@ export const Embed: React.FC<{
 }> = ({ embed, resolved }) => {
   return (
     <div
-      className="rounded bg-gray-100 border-l-4 border-l-gray-300 grid max-w-[520px] pt-2 pr-4 pb-4 pl-3"
+      className="rounded bg-gray-100 border-l-4 border-l-gray-300 inline-grid max-w-[520px] pt-2 pr-4 pb-4 pl-3"
       style={
         embed.color
           ? { borderColor: `#${embed.color.toString(16)}` }
@@ -53,19 +53,21 @@ export const Embed: React.FC<{
               <Markdown
                 text={embed.title}
                 features={["basic", "inline-code", "emojis"]}
+                resolved={resolved}
               />
             </a>
           ) : (
             <Markdown
               text={embed.title}
               features={["basic", "inline-code", "emojis"]}
+              resolved={resolved}
             />
           )}
         </div>
       )}
       {embed.description && (
         <div className="text-sm font-medium text-black mt-2 inline-block whitespace-pre-line">
-          <Markdown text={embed.description} features="all" />
+          <Markdown text={embed.description} features="all" resolved={resolved} />
         </div>
       )}
       {embed.fields && embed.fields.length > 0 && (
@@ -102,10 +104,10 @@ export const Embed: React.FC<{
                 }}
               >
                 <div className="font-semibold mb-px">
-                  <Markdown text={field.name} features={["basic", "emojis"]} />
+                  <Markdown text={field.name} features={["basic", "emojis"]} resolved={resolved} />
                 </div>
                 <div>
-                  <Markdown text={field.value} features="all" />
+                  <Markdown text={field.value} features="all" resolved={resolved} />
                 </div>
               </div>
             );
