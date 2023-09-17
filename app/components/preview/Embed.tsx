@@ -42,7 +42,7 @@ export const Embed: React.FC<{
         </div>
       )}
       {embed.title && (
-        <div className="text-base font-semibold text-black mt-2 inline-block">
+        <div className="text-base leading-[1.375] font-semibold text-black mt-2 inline-block">
           {embed.url ? (
             <a
               href={embed.url}

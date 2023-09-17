@@ -1,9 +1,9 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
-import { cdn } from "~/util/discord";
-import { Markdown } from "./Markdown";
 import { PartialResource } from "~/types/Resources";
+import { cdn } from "~/util/discord";
 import { Embed } from "./Embed";
+import { Markdown } from "./Markdown";
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
@@ -40,7 +40,7 @@ export const Message: React.FC<{
           </span>
         </p>
         {message.content && (
-          <div className="font-medium text-base">
+          <div className="font-medium text-base leading-[1.375] whitespace-pre-wrap break-words">
             <Markdown text={message.content} features="all" resolved={resolved} />
           </div>
         )}
