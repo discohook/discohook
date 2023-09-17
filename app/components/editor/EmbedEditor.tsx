@@ -29,6 +29,91 @@ export const EmbedEditor: React.FC<{
     });
   return (
     <div className="rounded p-2 bg-gray-400">
+      <EmbedEditorSection name="Author">
+        <div className="flex">
+          <div className="grow">
+            <TextInput
+              label="Name"
+              className="w-full"
+              maxLength={256}
+              value={embed.author?.name}
+              onInput={(e) =>
+                updateEmbed({
+                  author: {
+                    ...(embed.author ?? {}),
+                    name: e.currentTarget.value,
+                  },
+                })
+              }
+            />
+          </div>
+          {embed.author?.url === undefined && (
+            <Button
+              className="ml-2 mt-auto shrink-0"
+              onClick={() =>
+                updateEmbed({
+                  author: {
+                    ...(embed.author ?? { name: "" }),
+                    url: location.origin,
+                  },
+                })
+              }
+            >
+              Add URL
+            </Button>
+          )}
+        </div>
+        <div className="grid gap-2 mt-2">
+          {embed.author?.url !== undefined && (
+            <div className="flex">
+              <div className="grow">
+                <TextInput
+                  label="Author URL"
+                  className="w-full"
+                  type="url"
+                  value={embed.author?.url}
+                  onInput={(e) =>
+                    updateEmbed({
+                      author: {
+                        ...(embed.author ?? { name: "" }),
+                        url: e.currentTarget.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <Button
+                className="ml-2 mt-auto shrink-0"
+                onClick={() =>
+                  updateEmbed({
+                    author: {
+                      ...(embed.author ?? { name: "" }),
+                      url: undefined,
+                    },
+                  })
+                }
+              >
+                Remove
+                <span className="hidden sm:inline"> URL</span>
+              </Button>
+            </div>
+          )}
+          <TextInput
+            label="Icon URL"
+            className="w-full"
+            type="url"
+            value={embed.author?.icon_url}
+            onInput={(e) =>
+              updateEmbed({
+                author: {
+                  ...(embed.author ?? { name: "" }),
+                  icon_url: e.currentTarget.value,
+                },
+              })
+            }
+          />
+        </div>
+      </EmbedEditorSection>
       <EmbedEditorSection name="Body">
         <div className="flex">
           <div className="grow">
@@ -112,7 +197,7 @@ export const EmbedEditorSection: React.FC<
 > = ({ name, open, children }) => {
   return (
     <details className="group p-2" open={open}>
-      <summary className="group-open:mb-2 transition-[margin] marker:content-none flex text-medium">
+      <summary className="group-open:mb-2 transition-[margin] marker:content-none flex text-semibold cursor-default">
         <CoolIcon
           icon="Chevron_Right"
           className="group-open:rotate-90 mr-2 my-auto transition-transform"
