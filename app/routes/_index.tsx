@@ -232,9 +232,26 @@ export default function Index() {
                       })}
                     </div>
                   )}
-                  <Button onClick={() => setSettingMessageIndex(i)}>
-                    Set Reference
-                  </Button>
+                  <div className="flex">
+                    <Button onClick={() => setSettingMessageIndex(i)}>
+                      Set Reference
+                    </Button>
+                    <Button
+                      className="ml-auto"
+                      onClick={() => {
+                        message.data.embeds = message.data.embeds
+                          ? [...message.data.embeds, {}]
+                          : [{}];
+                        setData({ ...data });
+                      }}
+                      disabled={
+                        !!message.data.embeds &&
+                        message.data.embeds.length >= 10
+                      }
+                    >
+                      Add Embed
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
