@@ -1,8 +1,9 @@
 import type { V2_MetaFunction } from "@remix-run/node";
 import { useSearchParams } from "@remix-run/react";
-import { APIWebhook } from "discord-api-types/v10";
+import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useReducer, useState } from "react";
 import { Button } from "~/components/Button";
+import { CoolIcon } from "~/components/CoolIcon";
 import { TextArea } from "~/components/TextArea";
 import { Message } from "~/components/preview/Message";
 import { MessageSetModal } from "~/modals/MessageSetModal";
@@ -70,7 +71,11 @@ export default function Index() {
         messageIndex={settingMessageIndex}
       />
       <div className="md:flex h-full">
-        <div className="p-4 md:w-1/2 overflow-y-auto">
+        <div
+          className={`p-4 md:w-1/2 overflow-y-auto ${
+            tab === "editor" ? "" : "hidden md:block"
+          }`}
+        >
           {Object.values(targets).map((webhook) => {
             const avatarUrl = webhook.avatar
               ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
@@ -94,12 +99,21 @@ export default function Index() {
               </div>
             );
           })}
-          <Button
-            onClick={() => setAddingTarget(true)}
-            disabled={Object.keys(targets).length >= 10}
-          >
-            Add Webhook
-          </Button>
+          <div className="flex">
+            <Button
+              onClick={() => setAddingTarget(true)}
+              disabled={Object.keys(targets).length >= 10}
+            >
+              Add Webhook
+            </Button>
+            <Button
+              className="ml-auto md:hidden"
+              onClick={() => setTab("preview")}
+              discordstyle={ButtonStyle.Secondary}
+            >
+              Preview <CoolIcon icon="Chevron_Right" />
+            </Button>
+          </div>
           {data.messages.map((message, i) => {
             return (
               <div key={`edit-message-${i}`} className="mt-4">
@@ -126,7 +140,20 @@ export default function Index() {
             );
           })}
         </div>
-        <div className="md:border-l-2 border-l-gray-400 p-4 md:w-1/2 overflow-y-auto">
+        <div
+          className={`md:border-l-2 border-l-gray-400 p-4 md:w-1/2 overflow-y-auto ${
+            tab === "preview" ? "" : "hidden md:block"
+          }`}
+        >
+          <div className="md:hidden">
+            <Button
+              onClick={() => setTab("editor")}
+              discordstyle={ButtonStyle.Secondary}
+            >
+              <CoolIcon icon="Chevron_Left" /> Editor
+            </Button>
+            <hr className="border border-gray-400 my-4" />
+          </div>
           {data.messages.map((message, i) => (
             <Message key={`preview-message-${i}`} message={message.data} />
           ))}
