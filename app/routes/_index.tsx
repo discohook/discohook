@@ -148,7 +148,7 @@ export default function Index() {
           {data.messages.map((message, i) => (
             <Message key={`preview-message-${i}`} message={message.data} />
           ))}
-          <Button className="absolute bottom-4 right-4 transition-transform" discordstyle={ButtonStyle.Secondary} onClick={() => setShowDisclaimer(true)}>
+          <Button className="absolute bottom-4 right-4" discordstyle={ButtonStyle.Secondary} onClick={() => setShowDisclaimer(true)}>
             <CoolIcon icon="Info" className="mr-1.5" />
             Preview Info
           </Button>
