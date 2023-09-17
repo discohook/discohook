@@ -1,5 +1,3 @@
-import styles from "./styles/app.css";
-import icons from "./styles/coolicons.css";
 import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction } from "@remix-run/node";
 import {
@@ -10,6 +8,8 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
+import styles from "./styles/app.css";
+import icons from "./styles/coolicons.css";
 
 export const links: LinksFunction = () => {
   const bundleStyles = cssBundleHref
@@ -37,7 +37,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-gray-50 text-black dark:bg-gray-600 dark:text-gray-50">
+      <body className="bg-white text-black dark:bg-gray-600 dark:text-gray-50">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
