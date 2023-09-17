@@ -12,7 +12,7 @@ export const markdownFeatures = [
   "inline-code",
   "block-code",
   "quotes",
-  "mentions", // users, roles, channels, commands
+  "mentions", // users, roles, channels, commands, everyone/here
   "emojis",
 ] as const;
 export type MarkdownFeature = (typeof markdownFeatures)[number];
@@ -44,6 +44,10 @@ export const Markdown: React.FC<{
 }> = ({ text, features }) => {
   const f = (search: MarkdownFeature) =>
     features === "all" ? true : features.includes(search);
+
+  const replaceIf = (feature: MarkdownFeature, text: string) =>
+    f(feature) ? text : (t: string) => t;
+
   return (
     <MarkdownView
       flavor="vanilla"
@@ -61,22 +65,57 @@ export const Markdown: React.FC<{
       }}
       components={{
         Mention: ({
-          type,
+          token,
           id,
-          text,
+          commandName,
+          commandId,
+          everyoneHere,
         }: {
-          type: string;
+          token: string;
           id?: string;
-          text: string;
-        }) => (
-          <span
-            className="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition"
-            data-mention-type={type}
-            data-mention-id={id}
-          >
-            {text}
-          </span>
-        ),
+          commandName?: string;
+          commandId?: string;
+          everyoneHere?: "everyone" | "here";
+        }) => {
+          let type, content;
+          switch (token) {
+            case "@!":
+            case "@":
+              content = "@user";
+              type = "user";
+              break;
+            case "@&":
+              content = "@role";
+              type = "role";
+              break;
+            case "#":
+              content = "#channel";
+              type = "channel";
+              break;
+            default:
+              if (commandName) {
+                content = commandName;
+                type = "command";
+              } else if (everyoneHere) {
+                content = everyoneHere;
+                type = "everyone-here";
+              } else {
+                content = `${token}unknown`;
+                type = "unknown";
+              }
+              break;
+          }
+
+          return (
+            <span
+              className="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition"
+              data-mention-type={type}
+              data-mention-id={id ?? commandId}
+            >
+              {content}
+            </span>
+          );
+        },
         MessageLink: ({
           guildId,
           channelId,
@@ -100,20 +139,84 @@ export const Markdown: React.FC<{
         Emoji: ({
           id,
           name,
-          animated,
+          flag,
         }: {
           id: string;
           name: string;
-          animated?: boolean;
+          flag?: "a";
         }) => (
           <img
-            src={cdn.emoji(id, animated ? "gif" : "webp")}
+            src={cdn.emoji(id, flag === "a" ? "gif" : "webp")}
             className="inline-flex h-5 align-text-bottom"
             alt={name}
             title={`:${name}:`}
             draggable={false}
           />
         ),
+        Timestamp: ({ source }: { source: string }) => {
+          const match = source.match(TIMESTAMP_RE)!;
+          const timestamp = new Date(Number(match[1]) * 1000);
+          let text;
+          switch (match[2]) {
+            case "t":
+              text = timestamp.toLocaleTimeString(undefined, {
+                hour: "numeric",
+                minute: "2-digit",
+              });
+              break;
+            case "T":
+              text = timestamp.toLocaleTimeString(undefined, {
+                hour: "numeric",
+                minute: "2-digit",
+                second: "2-digit",
+              });
+              break;
+            case "d":
+              text = timestamp.toLocaleDateString();
+              break;
+            case "D":
+              text = timestamp.toLocaleDateString(undefined, {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              });
+              break;
+            case "F":
+              // Includes "at" before time in en-US, not sure how to get rid of that
+              text = timestamp.toLocaleString(undefined, {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                weekday: "long",
+              });
+              break;
+            case "R":
+              text = relativeTime(timestamp);
+              break;
+            default:
+              // same as "f" style
+              text = timestamp.toLocaleString(undefined, {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              });
+              break;
+          }
+
+          return (
+            <time
+              className="bg-black/5 rounded"
+              dateTime={timestamp.toISOString()}
+              data-timestamp-style={match[2]}
+            >
+              {text}
+            </time>
+          );
+        },
         strong: (props) =>
           f("basic") ? (
             <span className="font-bold">{props.children}</span>
@@ -201,169 +304,50 @@ export const Markdown: React.FC<{
       extensions={[
         {
           type: "lang",
-          filter: (text) => {
-            return !f("emojis")
-              ? text
-              : text.replace(
-                  new RegExp(CUSTOM_EMOJI_RE.source.replace(/^\^/, ""), "g"),
-                  (found) => {
-                    const match = found.match(CUSTOM_EMOJI_RE)!;
-                    return `<Emoji id="${match[3]}" name="${
-                      match[2]
-                    }" animated="${match[1] === "a"}" />`;
-                  }
-                );
+          regex: new RegExp(CUSTOM_EMOJI_RE.source.replace(/^\^/, ""), "g"),
+          replace: replaceIf("emojis", `<Emoji id="$3" name="$2" flag="$1" />`),
+        },
+        {
+          type: "lang",
+          regex: new RegExp(MENTION_RE.source.replace(CARET_RE, "$1"), "g"),
+          replace: replaceIf(
+            "mentions",
+            `<Mention token="$1" id="$2" commandName="$3" commandId="$4" everyoneHere="$5" />`
+          ),
+        },
+        {
+          type: "lang",
+          regex: new RegExp(TIMESTAMP_RE.source.replace(/^\^/, ""), "g"),
+          replace: (t: string) => {
+            if (!f("mentions")) return t;
+
+            // For some reason, the second group was not being properly passed to Timestamp,
+            // so we just pass the whole match and parse in the component
+            return `<Timestamp source="${t}" />`;
           },
         },
         {
           type: "lang",
-          filter: (text) => {
-            return !f("mentions")
-              ? text
-              : text.replace(
-                  new RegExp(MENTION_RE.source.replace(CARET_RE, "$1"), "g"),
-                  (found) => {
-                    const match = found.match(MENTION_RE)!;
-                    let text, type;
-                    switch (match[1]) {
-                      case "@!":
-                      case "@":
-                        text = "@user";
-                        type = "user";
-                        break;
-                      case "@&":
-                        text = "@role";
-                        type = "role";
-                        break;
-                      case "#":
-                        text = "#channel";
-                        type = "channel";
-                        break;
-                      default:
-                        if (match[3]) {
-                          text = match[3];
-                          type = "command";
-                        } else if (match[5]) {
-                          text = match[5];
-                          type = "everyone-here";
-                        } else {
-                          text = `${match[1]}unknown`;
-                          type = "unknown";
-                        }
-                        break;
-                    }
-
-                    return `<Mention type="${type}" id="${
-                      match[2] ?? match[4]
-                    }" text="${text}" />`;
-                  }
-                );
-          },
-        },
-        {
-          type: "lang",
-          filter: (text) => {
-            return !f("mentions")
-              ? text
-              : text.replace(
-                  new RegExp(TIMESTAMP_RE.source.replace(/^\^/, ""), "g"),
-                  (found) => {
-                    const match = found.match(TIMESTAMP_RE)!;
-
-                    const timestamp = new Date(Number(match[1]) * 1000);
-                    let text;
-                    switch (match[2]) {
-                      case "t":
-                        text = timestamp.toLocaleTimeString(undefined, {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        });
-                        break;
-                      case "T":
-                        text = timestamp.toLocaleTimeString(undefined, {
-                          hour: "numeric",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        });
-                        break;
-                      case "d":
-                        text = timestamp.toLocaleDateString();
-                        break;
-                      case "D":
-                        text = timestamp.toLocaleDateString(undefined, {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        });
-                        break;
-                      case "F":
-                        // Includes "at" before time in en-US, not sure how to get rid of that
-                        text = timestamp.toLocaleString(undefined, {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                          weekday: "long",
-                        });
-                        break;
-                      case "R":
-                        text = relativeTime(timestamp);
-                        break;
-                      default:
-                        // same as "f" style
-                        text = timestamp.toLocaleString(undefined, {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        });
-                        break;
-                    }
-
-                    return `<span class="bg-black/5 rounded">${text}</span>`;
-                  }
-                );
-          },
-        },
-        {
-          type: "lang",
-          filter: (text) => {
-            return !f("basic")
-              ? text
-              : text.replace(/\|\|([^||]+)\|\|/g, (found) => {
-                  const match = found.match(SPOILER_RE)!;
-                  return `<span class="bg-black/10 rounded">${match[1]}</span>`;
-                });
-          },
+          regex: /\|\|([^||]+)\|\|/g,
+          replace: replaceIf(
+            "basic",
+            `<span class="bg-black/10 rounded">$1</span>`
+          ),
         },
         // I'm aware of the `underline` option, but it disables underscore italics,
         // which means I would need an extension anyway.
         {
           type: "lang",
-          filter: (text) => {
-            return !f("basic")
-              ? text
-              : text.replace(/__([^__]+)__/g, (found) => {
-                  const match = found.match(UNDERLINE_RE)!;
-                  return `<span class="underline">${match[1]}</span>`;
-                });
-          },
+          regex: /__([^__]+)__/g,
+          replace: replaceIf("basic", `<span class="underline">$1</span>`),
         },
         {
           type: "lang",
-          filter: (text) => {
-            return !f("basic")
-              ? text
-              : text.replace(
-                  new RegExp(MESSAGE_LINK_RE.source.replace(/^\^/, ""), "g"),
-                  (found) => {
-                    const match = found.match(MESSAGE_LINK_RE)!;
-                    return `<MessageLink guildId="${match[1]}" channelId="${match[2]}" messageId="${match[3]}" />`;
-                  }
-                );
-          },
+          regex: new RegExp(MESSAGE_LINK_RE.source.replace(/^\^/, ""), "g"),
+          replace: replaceIf(
+            "basic",
+            `<MessageLink guildId="$1" channelId="$2" messageId="$3" />`
+          ),
         },
       ]}
     />
