@@ -15,9 +15,8 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
     embeds: [
       {
         title: "Discohook",
-        description: `You may be familiar with this interface from [Discohook](https://discohook.app)!
-
-This site is not maintained by the original creator of Discohook. 
+        description: `You may be familiar with this interface from [Discohook](https://discohook.app)! \
+This site is not maintained by the original creator of Discohook.
         `
       },
     ],

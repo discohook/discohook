@@ -162,11 +162,11 @@ export default function Index() {
                                   className="w-full"
                                   maxLength={256}
                                   value={embed.title}
-                                      onInput={(e) =>
-                                        updateEmbed({
-                                          title: e.currentTarget.value,
-                                        })
-                                      }
+                                  onInput={(e) =>
+                                    updateEmbed({
+                                      title: e.currentTarget.value,
+                                    })
+                                  }
                                 />
                               </div>
                               {embed.url === undefined && (
@@ -202,19 +202,29 @@ export default function Index() {
                                       updateEmbed({ url: undefined })
                                     }
                                   >
-                                    Remove<span className="hidden sm:inline"> URL</span>
+                                    Remove
+                                    <span className="hidden sm:inline">
+                                      {" "}
+                                      URL
+                                    </span>
                                   </Button>
                                 </div>
                               )}
                               <TextInput
                                 label="Sidebar Color"
                                 className="w-full"
-                                value={embed.color? `#${embed.color.toString(16)}` : undefined}
-                                      onInput={(e) =>
-                                        updateEmbed({
-                                          color: e.currentTarget.value ? Number(e.currentTarget.value) : undefined,
-                                        })
-                                      }
+                                value={
+                                  embed.color
+                                    ? `#${embed.color.toString(16)}`
+                                    : undefined
+                                }
+                                onInput={(e) =>
+                                  updateEmbed({
+                                    color: e.currentTarget.value
+                                      ? Number(e.currentTarget.value)
+                                      : undefined,
+                                  })
+                                }
                               />
                             </div>
                           </div>
