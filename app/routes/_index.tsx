@@ -8,6 +8,7 @@ import { Message } from "~/components/preview/Message";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
+import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { cdn } from "~/util/discord";
 import { base64Decode } from "~/util/text";
 
@@ -23,13 +24,22 @@ export const meta: V2_MetaFunction = () => {
 
 export default function Index() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const parsed = ZodQueryData.safeParse(
-    JSON.parse(base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
-  );
+  let parsed;
+  try {
+    parsed = ZodQueryData.safeParse(
+      JSON.parse(
+        searchParams.get("data")
+          ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
+          : JSON.stringify({ messages: [INDEX_MESSAGE] })
+      )
+    );
+  } catch {
+    parsed = {};
+  }
   const [data, setData] = useState<QueryData>(
     parsed.success
-      ? { version: "d2", ...parsed.data as QueryData }
-      : { version: "d2", messages: [] }
+      ? { version: "d2", ...(parsed.data as QueryData) }
+      : { version: "d2", messages: [INDEX_FAILURE_MESSAGE] }
   );
 
   type Targets = Record<string, APIWebhook>;
@@ -77,7 +87,9 @@ export default function Index() {
                 />
                 <div className="my-auto grow">
                   <p className="font-semibold">{webhook.name}</p>
-                  <p className="text-sm leading-none">{webhook.user?.username}</p>
+                  <p className="text-sm leading-none">
+                    {webhook.user?.username}
+                  </p>
                 </div>
               </div>
             );
@@ -93,8 +105,7 @@ export default function Index() {
               <div key={`edit-message-${i}`} className="mt-4">
                 <div className="font-semibold text-base flex">
                   Message #{i + 1}
-                  <div className="ml-auto space-x-1">
-                  </div>
+                  <div className="ml-auto space-x-1"></div>
                 </div>
                 <div className="rounded bg-gray-100 p-2 mt-1 space-y-2">
                   <TextArea
@@ -107,7 +118,9 @@ export default function Index() {
                       setData({ ...data });
                     }}
                   />
-                  <Button onClick={() => setSettingMessageIndex(i)}>Set Reference</Button>
+                  <Button onClick={() => setSettingMessageIndex(i)}>
+                    Set Reference
+                  </Button>
                 </div>
               </div>
             );
