@@ -155,7 +155,7 @@ export default function Index() {
             <Message key={`preview-message-${i}`} message={message.data} />
           ))}
           <Button
-            className="absolute bottom-4 right-4"
+            className="fixed bottom-4 right-4"
             discordstyle={ButtonStyle.Secondary}
             onClick={() => setShowDisclaimer(true)}
           >
