@@ -124,6 +124,7 @@ export const EmbedEditor: React.FC<{
           />
         </div>
       </EmbedEditorSection>
+      <hr className="border border-gray-500/20" />
       <EmbedEditorSection name="Body">
         <div className="flex">
           <div className="grow">
