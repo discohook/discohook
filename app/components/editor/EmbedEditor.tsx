@@ -30,7 +30,15 @@ export const EmbedEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   open?: boolean;
-}> = ({ message, messageIndex: mi, embed, embedIndex: i, data, setData, open }) => {
+}> = ({
+  message,
+  messageIndex: mi,
+  embed,
+  embedIndex: i,
+  data,
+  setData,
+  open,
+}) => {
   const updateEmbed = (partialEmbed: Partial<APIEmbed>) => {
     if (
       partialEmbed.author &&
@@ -66,7 +74,7 @@ export const EmbedEditor: React.FC<{
   const previewText = getEmbedText(embed);
   return (
     <details
-      className="group/embed rounded p-2 bg-gray-400 border-l-4 border-l-gray-500"
+      className="group/embed rounded p-2 bg-gray-100 border border-l-4 border-gray-300 border-l-gray-500 shadow"
       open={open}
       style={
         embed.color
@@ -76,13 +84,56 @@ export const EmbedEditor: React.FC<{
           : undefined
       }
     >
-      <summary className="group-open/embed:mb-2 py-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
+      <summary className="group-open/embed:mb-2 py-1 px-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
           className="group-open/embed:rotate-90 mr-2 my-auto transition-transform"
         />
         <span className="shrink-0">Embed {i + 1}</span>
-        {previewText ? <span className="truncate ml-1">- {previewText}</span> : ""}
+        {previewText ? (
+          <span className="truncate ml-1">- {previewText}</span>
+        ) : (
+          ""
+        )}
+        <div className="ml-auto text-xl space-x-2.5 my-auto">
+          <button
+            className={i === 0 ? "hidden" : ""}
+            onClick={() => {
+              message.data.embeds!.splice(i, 1);
+              message.data.embeds!.splice(i - 1, 0, embed);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            className={i === message.data.embeds!.length - 1 ? "hidden" : ""}
+            onClick={() => {
+              message.data.embeds!.splice(i, 1);
+              message.data.embeds!.splice(i + 1, 0, embed);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            className={message.data.embeds!.length >= 10 ? "hidden" : ""}
+            onClick={() => {
+              message.data.embeds!.splice(i + 1, 0, embed);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            onClick={() => {
+              message.data.embeds!.splice(i, 1);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
       </summary>
       <EmbedEditorSection name="Author" open={open}>
         <div className="flex">
@@ -91,7 +142,7 @@ export const EmbedEditor: React.FC<{
               label="Name"
               className="w-full"
               maxLength={256}
-              value={embed.author?.name}
+              value={embed.author?.name ?? ""}
               onInput={(e) =>
                 updateEmbed({
                   author: {
@@ -126,7 +177,7 @@ export const EmbedEditor: React.FC<{
                   label="Author URL"
                   className="w-full"
                   type="url"
-                  value={embed.author?.url}
+                  value={embed.author?.url ?? ""}
                   onInput={(e) =>
                     updateEmbed({
                       author: {
@@ -157,7 +208,7 @@ export const EmbedEditor: React.FC<{
             label="Icon URL"
             className="w-full"
             type="url"
-            value={embed.author?.icon_url}
+            value={embed.author?.icon_url ?? ""}
             onInput={(e) =>
               updateEmbed({
                 author: {
@@ -177,7 +228,7 @@ export const EmbedEditor: React.FC<{
               label="Title"
               className="w-full"
               maxLength={256}
-              value={embed.title}
+              value={embed.title ?? ""}
               onInput={(e) =>
                 updateEmbed({
                   title: e.currentTarget.value.trim() || undefined,
@@ -202,7 +253,7 @@ export const EmbedEditor: React.FC<{
                   label="Title URL"
                   className="w-full"
                   type="url"
-                  value={embed.url}
+                  value={embed.url ?? ""}
                   onInput={(e) =>
                     updateEmbed({
                       url: e.currentTarget.value.trim(),
@@ -256,7 +307,7 @@ export const EmbedEditor: React.FC<{
         <TextArea
           label="Description"
           className="w-full h-40"
-          value={embed.description ?? undefined}
+          value={embed.description ?? ""}
           maxLength={2000}
           onInput={(e) =>
             updateEmbed({
