@@ -6,6 +6,22 @@ import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { ColorPicker } from "./ColorPicker";
 
+export const isEmbedEmpty = (embed: APIEmbed): boolean =>
+  !embed.author &&
+  !embed.title &&
+  !embed.description &&
+  (!embed.fields || embed.fields.length === 0) &&
+  !embed.image?.url &&
+  !embed.thumbnail?.url &&
+  !embed.footer;
+
+export const getEmbedText = (embed: APIEmbed): string | undefined =>
+  embed.author?.name ||
+  embed.title ||
+  (embed.fields ? embed.fields.find((f) => !!f.name)?.name : undefined) ||
+  embed.description ||
+  embed.footer?.text;
+
 export const EmbedEditor: React.FC<{
   message: QueryData["messages"][number];
   messageIndex: number;
@@ -13,7 +29,8 @@ export const EmbedEditor: React.FC<{
   embedIndex: number;
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
-}> = ({ message, messageIndex: mi, embed, embedIndex: i, data, setData }) => {
+  open?: boolean;
+}> = ({ message, messageIndex: mi, embed, embedIndex: i, data, setData, open }) => {
   const updateEmbed = (partialEmbed: Partial<APIEmbed>) => {
     if (
       partialEmbed.author &&
@@ -22,6 +39,13 @@ export const EmbedEditor: React.FC<{
       !partialEmbed.author.url
     ) {
       partialEmbed.author = undefined;
+    }
+    if (
+      partialEmbed.footer &&
+      !partialEmbed.footer.text &&
+      !partialEmbed.footer.icon_url
+    ) {
+      partialEmbed.footer = undefined;
     }
 
     setData({
@@ -38,9 +62,12 @@ export const EmbedEditor: React.FC<{
       }),
     });
   };
+
+  const previewText = getEmbedText(embed);
   return (
-    <div
-      className="rounded p-2 bg-gray-400 border-l-4 border-l-gray-500"
+    <details
+      className="group/embed rounded p-2 bg-gray-400 border-l-4 border-l-gray-500"
+      open={open}
       style={
         embed.color
           ? {
@@ -49,7 +76,15 @@ export const EmbedEditor: React.FC<{
           : undefined
       }
     >
-      <EmbedEditorSection name="Author">
+      <summary className="group-open/embed:mb-2 py-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
+        <CoolIcon
+          icon="Chevron_Right"
+          className="group-open/embed:rotate-90 mr-2 my-auto transition-transform"
+        />
+        <span className="shrink-0">Embed {i + 1}</span>
+        {previewText ? <span className="truncate ml-1">- {previewText}</span> : ""}
+      </summary>
+      <EmbedEditorSection name="Author" open={open}>
         <div className="flex">
           <div className="grow">
             <TextInput
@@ -135,7 +170,7 @@ export const EmbedEditor: React.FC<{
         </div>
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
-      <EmbedEditorSection name="Body">
+      <EmbedEditorSection name="Body" open={open}>
         <div className="flex">
           <div className="grow">
             <TextInput
@@ -230,7 +265,7 @@ export const EmbedEditor: React.FC<{
           }
         />
       </EmbedEditorSection>
-    </div>
+    </details>
   );
 };
 
@@ -238,11 +273,11 @@ export const EmbedEditorSection: React.FC<
   React.PropsWithChildren<{ name: string; open?: boolean }>
 > = ({ name, open, children }) => {
   return (
-    <details className="group p-2" open={open}>
-      <summary className="group-open:mb-2 transition-[margin] marker:content-none marker-none flex text-semibold cursor-default">
+    <details className="group/section p-2" open={open}>
+      <summary className="group-open/section:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open:rotate-90 mr-2 my-auto transition-transform"
+          className="group-open/section:rotate-90 mr-2 my-auto transition-transform"
         />
         {name}
       </summary>
