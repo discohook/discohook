@@ -25,7 +25,7 @@ export const MessageEditor: React.FC<{
           value={message.data.content ?? undefined}
           maxLength={2000}
           onInput={(e) => {
-            message.data.content = e.currentTarget.value;
+            message.data.content = e.currentTarget.value.trim() || undefined;
             setData({ ...data });
           }}
         />

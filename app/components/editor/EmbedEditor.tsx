@@ -14,7 +14,16 @@ export const EmbedEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
 }> = ({ message, messageIndex: mi, embed, embedIndex: i, data, setData }) => {
-  const updateEmbed = (partialEmbed: Partial<APIEmbed>) =>
+  const updateEmbed = (partialEmbed: Partial<APIEmbed>) => {
+    if (
+      partialEmbed.author &&
+      !partialEmbed.author.name &&
+      !partialEmbed.author.icon_url &&
+      !partialEmbed.author.url
+    ) {
+      partialEmbed.author = undefined;
+    }
+
     setData({
       ...data,
       messages: data.messages.splice(mi, 1, {
@@ -28,6 +37,7 @@ export const EmbedEditor: React.FC<{
         },
       }),
     });
+  };
   return (
     <div
       className="rounded p-2 bg-gray-400 border-l-4 border-l-gray-500"
@@ -51,7 +61,7 @@ export const EmbedEditor: React.FC<{
                 updateEmbed({
                   author: {
                     ...(embed.author ?? {}),
-                    name: e.currentTarget.value,
+                    name: e.currentTarget.value.trim(),
                   },
                 })
               }
@@ -135,7 +145,7 @@ export const EmbedEditor: React.FC<{
               value={embed.title}
               onInput={(e) =>
                 updateEmbed({
-                  title: e.currentTarget.value,
+                  title: e.currentTarget.value.trim() || undefined,
                 })
               }
             />
@@ -160,7 +170,7 @@ export const EmbedEditor: React.FC<{
                   value={embed.url}
                   onInput={(e) =>
                     updateEmbed({
-                      url: e.currentTarget.value,
+                      url: e.currentTarget.value.trim(),
                     })
                   }
                 />
@@ -215,7 +225,7 @@ export const EmbedEditor: React.FC<{
           maxLength={2000}
           onInput={(e) =>
             updateEmbed({
-              description: e.currentTarget.value,
+              description: e.currentTarget.value.trim() || undefined,
             })
           }
         />
