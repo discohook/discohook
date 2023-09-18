@@ -17,7 +17,7 @@ export const Embed: React.FC<{
             : undefined
         }
       >
-        {embed.author && (
+        {embed.author && embed.author.name && (
           <div className="min-w-0 flex mt-2">
             {embed.author.icon_url && (
               <img
