@@ -1,4 +1,5 @@
 import { APIEmbed } from "discord-api-types/v10";
+import { SketchPicker } from "react-color";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
@@ -28,10 +29,16 @@ export const EmbedEditor: React.FC<{
       }),
     });
   return (
-    <div className="rounded p-2 bg-gray-400 border-l-4 border-l-gray-500"
-    style={embed.color ? {
-      borderLeftColor: `#${embed.color.toString(16)}`
-    } : undefined}>
+    <div
+      className="rounded p-2 bg-gray-400 border-l-4 border-l-gray-500"
+      style={
+        embed.color
+          ? {
+              borderLeftColor: `#${embed.color.toString(16)}`,
+            }
+          : undefined
+      }
+    >
       <EmbedEditorSection name="Author">
         <div className="flex">
           <div className="grow">
@@ -166,18 +173,63 @@ export const EmbedEditor: React.FC<{
               </Button>
             </div>
           )}
-          <TextInput
-            label="Sidebar Color"
-            className="w-full"
-            value={embed.color ? `#${embed.color.toString(16)}` : undefined}
-            onInput={(e) =>
-              updateEmbed({
-                color: e.currentTarget.value
-                  ? Number(e.currentTarget.value)
-                  : undefined,
-              })
-            }
-          />
+          <details className="relative">
+            <summary className="flex cursor-pointer">
+              <div className="grow">
+                <p className="text-sm font-medium">Sidebar Color</p>
+                <p className="rounded border h-9 py-0 px-[14px] bg-gray-200 dark:bg-gray-700">
+                  <span className="align-middle">
+                    {embed.color
+                      ? `#${embed.color.toString(16)}`
+                      : "Click to set"}
+                  </span>
+                </p>
+              </div>
+              <div
+                className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
+                style={{
+                  backgroundColor: embed.color
+                    ? `#${embed.color.toString(16)}`
+                    : undefined,
+                }}
+              />
+            </summary>
+            <SketchPicker
+              className="absolute right-0 top-16 w-full"
+              color={embed.color ? `#${embed.color.toString(16)}` : undefined}
+              presetColors={[
+                "#1ABC9C",
+                "#11806A",
+                "#2ECC71",
+                "#1F8B4C",
+                "#3498DB",
+                "#206694",
+                "#9B59B6",
+                "#71368A",
+                "#E91E63",
+                "#AD1457",
+                "#F1C40F",
+                "#C27C0E",
+                "#E67E22",
+                "#A84300",
+                "#E74C3C",
+                "#992D22",
+                "#95A5A6",
+                "#979C9F",
+                "#607D8B",
+                "#546E7A",
+              ]}
+              // onChange={(color) => {
+              //   console.log(color);
+              // }}
+              onChange={(color) => {
+                updateEmbed({
+                  color: parseInt(color.hex.replace("#", "0x"), 16),
+                });
+              }}
+              disableAlpha
+            />
+          </details>
         </div>
         <TextArea
           label="Description"
