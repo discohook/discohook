@@ -1,10 +1,10 @@
 import { APIEmbed } from "discord-api-types/v10";
-import { SketchPicker } from "react-color";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
+import { ColorPicker } from "./ColorPicker";
 
 export const EmbedEditor: React.FC<{
   message: QueryData["messages"][number];
@@ -194,40 +194,16 @@ export const EmbedEditor: React.FC<{
                 }}
               />
             </summary>
-            <SketchPicker
-              className="absolute right-0 top-16 w-full"
+            <ColorPicker
               color={embed.color ? `#${embed.color.toString(16)}` : undefined}
-              presetColors={[
-                "#1ABC9C",
-                "#11806A",
-                "#2ECC71",
-                "#1F8B4C",
-                "#3498DB",
-                "#206694",
-                "#9B59B6",
-                "#71368A",
-                "#E91E63",
-                "#AD1457",
-                "#F1C40F",
-                "#C27C0E",
-                "#E67E22",
-                "#A84300",
-                "#E74C3C",
-                "#992D22",
-                "#95A5A6",
-                "#979C9F",
-                "#607D8B",
-                "#546E7A",
-              ]}
-              // onChange={(color) => {
-              //   console.log(color);
-              // }}
               onChange={(color) => {
                 updateEmbed({
-                  color: parseInt(color.hex.replace("#", "0x"), 16),
+                  color:
+                    color.rgb.a === 0
+                      ? undefined
+                      : parseInt(color.hex.replace("#", "0x"), 16),
                 });
               }}
-              disableAlpha
             />
           </details>
         </div>
