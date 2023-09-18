@@ -71,3 +71,8 @@
   opacity: 0;
   transform: scale(0.7);
 }
+
+/* Thanks https://stackoverflow.com/a/6202729 */
+details summary.marker-none::-webkit-details-marker {
+  display: none;
+}

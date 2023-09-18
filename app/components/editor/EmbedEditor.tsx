@@ -239,7 +239,7 @@ export const EmbedEditorSection: React.FC<
 > = ({ name, open, children }) => {
   return (
     <details className="group p-2" open={open}>
-      <summary className="group-open:mb-2 transition-[margin] marker:content-none flex text-semibold cursor-default">
+      <summary className="group-open:mb-2 transition-[margin] marker:content-none marker-none flex text-semibold cursor-default">
         <CoolIcon
           icon="Chevron_Right"
           className="group-open:rotate-90 mr-2 my-auto transition-transform"
