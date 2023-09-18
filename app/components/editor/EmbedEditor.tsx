@@ -149,7 +149,7 @@ export const EmbedEditor: React.FC<{
             </Button>
           )}
         </div>
-        <div className="grid gap-2 mt-2">
+        <div className="grid gap-2">
           {embed.url !== undefined && (
             <div className="flex">
               <div className="grow">
@@ -236,7 +236,7 @@ export const EmbedEditorSection: React.FC<
         />
         {name}
       </summary>
-      <div>{children}</div>
+      <div className="space-y-2">{children}</div>
     </details>
   );
 };
