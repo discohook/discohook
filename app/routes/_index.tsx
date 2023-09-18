@@ -1,7 +1,7 @@
 import type { V2_MetaFunction } from "@remix-run/node";
 import { useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { MessageEditor } from "~/components/editor/MessageEditor";
@@ -12,7 +12,7 @@ import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { cdn } from "~/util/discord";
-import { base64Decode } from "~/util/text";
+import { base64Decode, base64Encode } from "~/util/text";
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -43,6 +43,12 @@ export default function Index() {
       ? { version: "d2", ...(parsed.data as QueryData) }
       : { version: "d2", messages: [INDEX_FAILURE_MESSAGE] }
   );
+  useEffect(() => {
+    setSearchParams(
+      { data: base64Encode(JSON.stringify(data)) },
+      { replace: true, preventScrollReset: true }
+    );
+  }, [data]);
 
   type Targets = Record<string, APIWebhook>;
   const [targets, updateTargets] = useReducer(
@@ -148,7 +154,11 @@ export default function Index() {
           {data.messages.map((message, i) => (
             <Message key={`preview-message-${i}`} message={message.data} />
           ))}
-          <Button className="absolute bottom-4 right-4" discordstyle={ButtonStyle.Secondary} onClick={() => setShowDisclaimer(true)}>
+          <Button
+            className="absolute bottom-4 right-4"
+            discordstyle={ButtonStyle.Secondary}
+            onClick={() => setShowDisclaimer(true)}
+          >
             <CoolIcon icon="Info" className="mr-1.5" />
             Preview Info
           </Button>
