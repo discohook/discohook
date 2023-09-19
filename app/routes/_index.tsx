@@ -27,6 +27,8 @@ export const meta: V2_MetaFunction = () => {
 
 export default function Index() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const defaultModal = searchParams.get("m");
+
   let parsed;
   try {
     parsed = ZodQueryData.safeParse(
@@ -57,9 +59,19 @@ export default function Index() {
       ({ ...d, ...partialD } as Targets),
     {}
   );
-  const [showDisclaimer, setShowDisclaimer] = useState(false);
-  const [addingTarget, setAddingTarget] = useState(false);
-  const [settingMessageIndex, setSettingMessageIndex] = useState<number>();
+  const [showDisclaimer, setShowDisclaimer] = useState(
+    defaultModal === "preview"
+  );
+  const [addingTarget, setAddingTarget] = useState(
+    defaultModal === "add-target"
+  );
+  const [settingMessageIndex, setSettingMessageIndex] = useState<
+    number | undefined
+  >(
+    defaultModal && defaultModal.startsWith("set-reference")
+      ? Number(defaultModal.split("-")[2])
+      : undefined
+  );
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
