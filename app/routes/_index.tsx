@@ -4,6 +4,7 @@ import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
+import { Header } from "~/components/Header";
 import { MessageEditor } from "~/components/editor/MessageEditor";
 import { Message } from "~/components/preview/Message";
 import { MessageSetModal } from "~/modals/MessageSetModal";
@@ -63,7 +64,7 @@ export default function Index() {
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
   return (
-    <div className="h-screen">
+    <div className="h-screen overflow-hidden">
       <PreviewDisclaimerModal
         open={showDisclaimer}
         setOpen={setShowDisclaimer}
@@ -82,9 +83,10 @@ export default function Index() {
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
       />
-      <div className="md:flex h-full">
+      <Header />
+      <div className="md:flex h-[calc(100%_-_3rem)]">
         <div
-          className={`p-4 md:w-1/2 overflow-y-auto ${
+          className={`p-4 md:w-1/2 h-full overflow-y-scroll ${
             tab === "editor" ? "" : "hidden md:block"
           }`}
         >
@@ -138,7 +140,7 @@ export default function Index() {
           ))}
         </div>
         <div
-          className={`md:border-l-2 border-l-gray-400 p-4 md:w-1/2 overflow-y-auto relative ${
+          className={`md:border-l-2 border-l-gray-400 p-4 md:w-1/2 h-full overflow-y-scroll relative ${
             tab === "preview" ? "" : "hidden md:block"
           }`}
         >

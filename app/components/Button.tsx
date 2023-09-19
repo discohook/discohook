@@ -13,7 +13,7 @@ export const Button = (
   return (
     <button
       {...props}
-      className={`rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed ${
+      className={`rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex ${
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
           ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
           : [ButtonStyle.Link, ButtonStyle.Secondary].includes(
@@ -23,9 +23,9 @@ export const Button = (
           : ""
       } ${props.className ?? ""}`}
     >
-      {props.children}
+      <div className="m-auto">{props.children}</div>
       {props.discordstyle === ButtonStyle.Link && (
-        <CoolIcon icon="External_Link" className="ml-1.5" />
+        <CoolIcon icon="External_Link" className="ml-1.5 my-auto" />
       )}
     </button>
   );
