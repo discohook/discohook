@@ -275,7 +275,7 @@ export const EmbedEditor: React.FC<{
             <summary className="flex cursor-pointer">
               <div className="grow">
                 <p className="text-sm font-medium">Sidebar Color</p>
-                <p className="rounded border h-9 py-0 px-[14px] bg-gray-200 dark:bg-gray-700">
+                <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:bg-gray-700">
                   <span className="align-middle">
                     {embed.color
                       ? `#${embed.color.toString(16)}`
