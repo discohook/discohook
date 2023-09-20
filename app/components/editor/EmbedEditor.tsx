@@ -1,6 +1,7 @@
 import { APIEmbed } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
+import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
@@ -316,6 +317,61 @@ export const EmbedEditor: React.FC<{
           }
         />
       </EmbedEditorSection>
+      <hr className="border border-gray-500/20" />
+      <EmbedEditorSection name="Fields" open={open}>
+        {embed.fields && (
+          <div className="ml-2 md:ml-4 transition-[margin-left]">
+            {embed.fields.map((field, fI) => (
+              <EmbedFieldEditorSection index={fI} open={open}>
+                <div className="flex">
+                  <div className="grow">
+                    <TextInput
+                      label="Name"
+                      value={field.name}
+                      maxLength={256}
+                      className="w-full"
+                      onInput={(e) => {
+                        field.name = e.currentTarget.value;
+                        updateEmbed({});
+                      }}
+                    />
+                  </div>
+                  <div className="ml-2 my-auto">
+                    <Checkbox
+                      label="Inline"
+                      checked={field.inline ?? false}
+                      onChange={(e) => {
+                        field.inline = e.currentTarget.checked;
+                        updateEmbed({});
+                      }}
+                    />
+                  </div>
+                </div>
+                <TextArea
+                  label="Name"
+                  value={field.value}
+                  maxLength={1024}
+                  className="w-full"
+                  onInput={(e) => {
+                    field.value = e.currentTarget.value;
+                    updateEmbed({});
+                  }}
+                />
+              </EmbedFieldEditorSection>
+            ))}
+          </div>
+        )}
+        <Button
+          disabled={embed.fields && embed.fields.length >= 25}
+          onClick={() =>
+            updateEmbed({
+              fields: [...(embed.fields ?? []), { name: "", value: "" }],
+            })
+          }
+        >
+          Add Field
+        </Button>
+      </EmbedEditorSection>
     </details>
   );
 };
@@ -331,6 +387,23 @@ export const EmbedEditorSection: React.FC<
           className="group-open/section:rotate-90 mr-2 my-auto transition-transform"
         />
         {name}
+      </summary>
+      <div className="space-y-2">{children}</div>
+    </details>
+  );
+};
+
+export const EmbedFieldEditorSection: React.FC<
+  React.PropsWithChildren<{ index: number; open?: boolean }>
+> = ({ index, open, children }) => {
+  return (
+    <details className="group/field pb-2 -my-1" open={open}>
+      <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 font-semibold cursor-default select-none">
+        <CoolIcon
+          icon="Chevron_Right"
+          className="group-open/field:rotate-90 mr-2 my-auto transition-transform"
+        />
+        Field {index + 1}
       </summary>
       <div className="space-y-2">{children}</div>
     </details>
