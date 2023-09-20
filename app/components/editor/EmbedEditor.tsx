@@ -1,4 +1,4 @@
-import { APIEmbed } from "discord-api-types/v10";
+import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
@@ -96,7 +96,7 @@ export const EmbedEditor: React.FC<{
         ) : (
           ""
         )}
-        <div className="ml-auto text-xl space-x-2.5 my-auto">
+        <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
           <button
             className={i === 0 ? "hidden" : ""}
             onClick={() => {
@@ -322,7 +322,13 @@ export const EmbedEditor: React.FC<{
         {embed.fields && (
           <div className="ml-2 md:ml-4 transition-[margin-left]">
             {embed.fields.map((field, fI) => (
-              <EmbedFieldEditorSection index={fI} open={open}>
+              <EmbedFieldEditorSection
+                embed={embed}
+                updateEmbed={updateEmbed}
+                field={field}
+                index={fI}
+                open={open}
+              >
                 <div className="flex">
                   <div className="grow">
                     <TextInput
@@ -394,8 +400,15 @@ export const EmbedEditorSection: React.FC<
 };
 
 export const EmbedFieldEditorSection: React.FC<
-  React.PropsWithChildren<{ index: number; open?: boolean }>
-> = ({ index, open, children }) => {
+  React.PropsWithChildren<{
+    embed: APIEmbed;
+    updateEmbed: (partialEmbed: Partial<APIEmbed>) => void;
+    field: APIEmbedField;
+    index: number;
+    open?: boolean;
+  }>
+> = ({ embed, updateEmbed, field, index, open, children }) => {
+  const previewText = field.name.trim() || field.value.trim();
   return (
     <details className="group/field pb-2 -my-1" open={open}>
       <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 font-semibold cursor-default select-none">
@@ -403,7 +416,47 @@ export const EmbedFieldEditorSection: React.FC<
           icon="Chevron_Right"
           className="group-open/field:rotate-90 mr-2 my-auto transition-transform"
         />
-        Field {index + 1}
+        <span className="shrink-0">Field {index + 1}</span>
+        {previewText && <span className="truncate ml-1">- {previewText}</span>}
+        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+          <button
+            className={index === 0 ? "hidden" : ""}
+            onClick={() => {
+              embed.fields!.splice(index, 1);
+              embed.fields!.splice(index - 1, 0, field);
+              updateEmbed({});
+            }}
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            className={index === embed.fields!.length - 1 ? "hidden" : ""}
+            onClick={() => {
+              embed.fields!.splice(index, 1);
+              embed.fields!.splice(index + 1, 0, field);
+              updateEmbed({});
+            }}
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            className={embed.fields!.length >= 25 ? "hidden" : ""}
+            onClick={() => {
+              embed.fields!.splice(index + 1, 0, field);
+              updateEmbed({});
+            }}
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            onClick={() => {
+              embed.fields!.splice(index, 1);
+              updateEmbed({});
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
       </summary>
       <div className="space-y-2">{children}</div>
     </details>
