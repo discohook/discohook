@@ -309,7 +309,7 @@ export const EmbedEditor: React.FC<{
           label="Description"
           className="w-full h-40"
           value={embed.description ?? ""}
-          maxLength={2000}
+          maxLength={4096}
           onInput={(e) =>
             updateEmbed({
               description: e.currentTarget.value.trim() || undefined,
