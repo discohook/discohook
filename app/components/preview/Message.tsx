@@ -19,9 +19,11 @@ export const Message: React.FC<{
   const username = message.author?.name ?? webhook?.name ?? "Boogiehook",
     avatarUrl =
       message.author?.icon_url ??
-      (webhook?.avatar
-        ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
-        : cdn.defaultAvatar(5)),
+      (webhook
+        ? webhook.avatar
+          ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
+          : cdn.defaultAvatar(5)
+        : "/logos/boogiehook.svg"),
     badge: string | undefined = "BOT";
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
