@@ -423,33 +423,38 @@ export const EmbedEditor: React.FC<{
         </>
       )}
       <EmbedEditorSection name="Images" open={isChild || open}>
-        <TextInput
-          label="Large Image URL"
-          type="url"
-          className="w-full"
-          value={embed.image?.url ?? ""}
-          onInput={(e) =>
-            updateEmbed({ image: { url: e.currentTarget.value } })
-          }
-        />
-        {!galleryChildren.includes(embed) && (
-          <Button
-            disabled={
-              !embed.image?.url ||
-              message.data.embeds!.length >= 10 ||
-              galleryEmbeds.length >= 4
-            }
-            onClick={() => {
-              const url = embed.url || location.origin;
-              embed.url = url;
-              message.data.embeds = message.data.embeds ?? [];
-              message.data.embeds.splice(i + 1, 0, { url });
-              setData({ ...data });
-            }}
-          >
-            Add Another
-          </Button>
-        )}
+        <div className="flex">
+          <div className="grow">
+            <TextInput
+              label="Large Image URL"
+              type="url"
+              className="w-full"
+              value={embed.image?.url ?? ""}
+              onInput={(e) =>
+                updateEmbed({ image: { url: e.currentTarget.value } })
+              }
+            />
+          </div>
+          {!galleryChildren.includes(embed) && (
+            <Button
+              className="ml-2 mt-auto shrink-0"
+              disabled={
+                !embed.image?.url ||
+                message.data.embeds!.length >= 10 ||
+                galleryEmbeds.length >= 4
+              }
+              onClick={() => {
+                const url = embed.url || location.origin;
+                embed.url = url;
+                message.data.embeds = message.data.embeds ?? [];
+                message.data.embeds.splice(i + 1, 0, { url });
+                setData({ ...data });
+              }}
+            >
+              Add Another
+            </Button>
+          )}
+        </div>
       </EmbedEditorSection>
     </details>
   );
