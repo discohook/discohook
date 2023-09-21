@@ -254,7 +254,11 @@ export const EmbedEditor: React.FC<{
             </div>
           </EmbedEditorSection>
           <hr className="border border-gray-500/20" />
-          <EmbedEditorSection name="Body" open={open}>
+        </>
+      )}
+      <EmbedEditorSection name="Body" open={open}>
+        {!isChild && (
+          <>
             <div className="flex">
               <div className="grow">
                 <TextInput
@@ -280,87 +284,99 @@ export const EmbedEditor: React.FC<{
                 </Button>
               )}
             </div>
-            <div className="grid gap-2">
-              {embed.url !== undefined && (
-                <div className="flex">
-                  <div className="grow">
-                    <TextInput
-                      label="Title URL"
-                      className="w-full"
-                      type="url"
-                      value={embed.url ?? ""}
-                      onInput={(e) => {
-                        for (const emb of galleryEmbeds) {
-                          emb.url = e.currentTarget.value;
-                        }
-                        setData({ ...data });
-                      }}
-                    />
-                  </div>
-                  <Button
-                    className="ml-2 mt-auto shrink-0"
-                    onClick={() => {
-                      embed.url = undefined;
-                      message.data.embeds = message.data.embeds!.filter(
-                        (e) => !galleryChildren.includes(e)
-                      );
-                      setData({ ...data });
-                    }}
-                  >
-                    Remove
-                    <span className="hidden sm:inline"> URL</span>
-                  </Button>
-                </div>
-              )}
-              <details className="relative">
-                <summary className="flex cursor-pointer">
-                  <div className="grow">
-                    <p className="text-sm font-medium">Sidebar Color</p>
-                    <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:bg-gray-700">
-                      <span className="align-middle">
-                        {embed.color
-                          ? `#${embed.color.toString(16)}`
-                          : "Click to set"}
-                      </span>
-                    </p>
-                  </div>
-                  <div
-                    className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
-                    style={{
-                      backgroundColor: embed.color
-                        ? `#${embed.color.toString(16)}`
-                        : undefined,
-                    }}
-                  />
-                </summary>
-                <ColorPicker
-                  color={
-                    embed.color ? `#${embed.color.toString(16)}` : undefined
+          </>
+        )}
+        <div className="grid gap-2">
+          {(isChild || embed.url !== undefined) && (
+            <div className="flex">
+              <div className="grow">
+                <TextInput
+                  label="Title URL"
+                  description={
+                    isChild
+                      ? "This is set automatically by the main embed in the gallery. Only change this if you want to change which gallery this image belongs to."
+                      : undefined
                   }
-                  onChange={(color) => {
-                    updateEmbed({
-                      color:
-                        color.rgb.a === 0
-                          ? undefined
-                          : parseInt(color.hex.replace("#", "0x"), 16),
-                    });
+                  className="w-full"
+                  type="url"
+                  value={embed.url ?? ""}
+                  onInput={(e) => {
+                    for (const emb of galleryEmbeds) {
+                      emb.url = e.currentTarget.value;
+                    }
+                    setData({ ...data });
                   }}
                 />
-              </details>
+              </div>
+              <Button
+                disabled={isChild}
+                className="ml-2 mt-auto shrink-0"
+                onClick={() => {
+                  embed.url = undefined;
+                  message.data.embeds = message.data.embeds!.filter(
+                    (e) => !galleryChildren.includes(e)
+                  );
+                  setData({ ...data });
+                }}
+              >
+                Remove
+                <span className="hidden sm:inline"> URL</span>
+              </Button>
             </div>
-            <TextArea
-              label="Description"
-              className="w-full h-40"
-              value={embed.description ?? ""}
-              maxLength={4096}
-              onInput={(e) =>
-                updateEmbed({
-                  description: e.currentTarget.value || undefined,
-                })
-              }
-            />
-          </EmbedEditorSection>
-          <hr className="border border-gray-500/20" />
+          )}
+          {!isChild && (
+            <details className="relative">
+              <summary className="flex cursor-pointer">
+                <div className="grow">
+                  <p className="text-sm font-medium">Sidebar Color</p>
+                  <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:bg-gray-700">
+                    <span className="align-middle">
+                      {embed.color
+                        ? `#${embed.color.toString(16)}`
+                        : "Click to set"}
+                    </span>
+                  </p>
+                </div>
+                <div
+                  className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
+                  style={{
+                    backgroundColor: embed.color
+                      ? `#${embed.color.toString(16)}`
+                      : undefined,
+                  }}
+                />
+              </summary>
+              <ColorPicker
+                color={embed.color ? `#${embed.color.toString(16)}` : undefined}
+                onChange={(color) => {
+                  updateEmbed({
+                    color:
+                      color.rgb.a === 0
+                        ? undefined
+                        : parseInt(color.hex.replace("#", "0x"), 16),
+                  });
+                }}
+              />
+            </details>
+          )}
+        </div>
+        {!isChild && (
+          <TextArea
+            label="Description"
+            className="w-full h-40"
+            value={embed.description ?? ""}
+            maxLength={4096}
+            onInput={(e) =>
+              updateEmbed({
+                description: e.currentTarget.value || undefined,
+              })
+            }
+          />
+        )}
+      </EmbedEditorSection>
+      <hr className="border border-gray-500/20" />
+      {!isChild && (
+        <>
           <EmbedEditorSection name="Fields" open={open}>
             {embed.fields && (
               <div className="ml-2 md:ml-4 transition-[margin-left]">
