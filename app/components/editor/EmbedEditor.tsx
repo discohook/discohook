@@ -1,5 +1,6 @@
 import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
+import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
@@ -277,7 +278,9 @@ export const EmbedEditor: React.FC<{
                 <Button
                   className="ml-2 mt-auto shrink-0"
                   onClick={() =>
-                    updateEmbed({ url: location.origin + "#default" })
+                    updateEmbed({
+                      url: location.origin + `#default-${randomString(8)}`,
+                    })
                   }
                 >
                   Add URL
@@ -462,7 +465,8 @@ export const EmbedEditor: React.FC<{
                 galleryEmbeds.length >= 4
               }
               onClick={() => {
-                const url = embed.url || (location.origin + "#gallery");
+                const url =
+                  embed.url || location.origin + `#gallery-${randomString(8)}`;
                 embed.url = url;
                 message.data.embeds = message.data.embeds ?? [];
                 message.data.embeds.splice(i + 1, 0, { url });
