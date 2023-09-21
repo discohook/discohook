@@ -72,6 +72,19 @@ export const EmbedEditor: React.FC<{
     });
   };
 
+  // The first embed in the gallery is the parent that the children will be merged into
+  const galleryEmbeds = message.data.embeds!.filter(
+    (e) => embed.url && e.url === embed.url
+  );
+  const galleryChildren = galleryEmbeds.slice(1);
+  const isChild = galleryChildren.includes(embed);
+
+  const localIndex = isChild ? galleryChildren.indexOf(embed) : i;
+  const localIndexMax = isChild
+    ? galleryChildren.length - 1
+    : message.data.embeds!.length - 1;
+  const localMaxMembers = isChild ? 3 : 10;
+
   const previewText = getEmbedText(embed);
   return (
     <details
@@ -90,42 +103,59 @@ export const EmbedEditor: React.FC<{
           icon="Chevron_Right"
           className="group-open/embed:rotate-90 mr-2 my-auto transition-transform"
         />
-        <span className="shrink-0">Embed {i + 1}</span>
-        {previewText ? (
-          <span className="truncate ml-1">- {previewText}</span>
+        {isChild ? (
+          <>
+            <span className="shrink-0">Gallery Image {localIndex + 2}</span>
+            {embed.image?.url && (
+              <span className="truncate ml-1"> - {embed.image.url}</span>
+            )}
+          </>
         ) : (
-          ""
+          <>
+            <span className="shrink-0">Embed {i + 1}</span>
+            {previewText ? (
+              <span className="truncate ml-1">- {previewText}</span>
+            ) : (
+              ""
+            )}
+          </>
         )}
         <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
-          <button
-            className={i === 0 ? "hidden" : ""}
-            onClick={() => {
-              message.data.embeds!.splice(i, 1);
-              message.data.embeds!.splice(i - 1, 0, embed);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            className={i === message.data.embeds!.length - 1 ? "hidden" : ""}
-            onClick={() => {
-              message.data.embeds!.splice(i, 1);
-              message.data.embeds!.splice(i + 1, 0, embed);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            className={message.data.embeds!.length >= 10 ? "hidden" : ""}
-            onClick={() => {
-              message.data.embeds!.splice(i + 1, 0, embed);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
+          {!isChild && (
+            // Was having issues with this, may re-introduce later
+            // For now users just have to manually move gallery items
+            <>
+              <button
+                className={localIndex === 0 ? "hidden" : ""}
+                onClick={() => {
+                  message.data.embeds!.splice(i, 1);
+                  message.data.embeds!.splice(i - 1, 0, embed);
+                  setData({ ...data });
+                }}
+              >
+                <CoolIcon icon="Chevron_Up" />
+              </button>
+              <button
+                className={localIndex === localIndexMax ? "hidden" : ""}
+                onClick={() => {
+                  message.data.embeds!.splice(i, 1);
+                  message.data.embeds!.splice(i + 1, 0, embed);
+                  setData({ ...data });
+                }}
+              >
+                <CoolIcon icon="Chevron_Down" />
+              </button>
+              <button
+                className={localIndexMax + 1 >= localMaxMembers ? "hidden" : ""}
+                onClick={() => {
+                  message.data.embeds!.splice(i + 1, 0, embed);
+                  setData({ ...data });
+                }}
+              >
+                <CoolIcon icon="Copy" />
+              </button>
+            </>
+          )}
           <button
             onClick={() => {
               message.data.embeds!.splice(i, 1);
@@ -136,247 +166,290 @@ export const EmbedEditor: React.FC<{
           </button>
         </div>
       </summary>
-      <EmbedEditorSection name="Author" open={open}>
-        <div className="flex">
-          <div className="grow">
-            <TextInput
-              label="Name"
-              className="w-full"
-              maxLength={256}
-              value={embed.author?.name ?? ""}
-              onInput={(e) =>
-                updateEmbed({
-                  author: {
-                    ...(embed.author ?? {}),
-                    name: e.currentTarget.value.trim(),
-                  },
-                })
-              }
-            />
-          </div>
-          {embed.author?.url === undefined && (
-            <Button
-              className="ml-2 mt-auto shrink-0"
-              onClick={() =>
-                updateEmbed({
-                  author: {
-                    ...(embed.author ?? { name: "" }),
-                    url: location.origin,
-                  },
-                })
-              }
-            >
-              Add URL
-            </Button>
-          )}
-        </div>
-        <div className="grid gap-2 mt-2">
-          {embed.author?.url !== undefined && (
+      {!isChild && (
+        <>
+          <EmbedEditorSection name="Author" open={open}>
             <div className="flex">
               <div className="grow">
                 <TextInput
-                  label="Author URL"
+                  label="Name"
                   className="w-full"
-                  type="url"
-                  value={embed.author?.url ?? ""}
+                  maxLength={256}
+                  value={embed.author?.name ?? ""}
                   onInput={(e) =>
                     updateEmbed({
                       author: {
-                        ...(embed.author ?? { name: "" }),
-                        url: e.currentTarget.value,
+                        ...(embed.author ?? {}),
+                        name: e.currentTarget.value,
                       },
                     })
                   }
                 />
               </div>
-              <Button
-                className="ml-2 mt-auto shrink-0"
-                onClick={() =>
+              {embed.author?.url === undefined && (
+                <Button
+                  className="ml-2 mt-auto shrink-0"
+                  onClick={() =>
+                    updateEmbed({
+                      author: {
+                        ...(embed.author ?? { name: "" }),
+                        url: location.origin,
+                      },
+                    })
+                  }
+                >
+                  Add URL
+                </Button>
+              )}
+            </div>
+            <div className="grid gap-2 mt-2">
+              {embed.author?.url !== undefined && (
+                <div className="flex">
+                  <div className="grow">
+                    <TextInput
+                      label="Author URL"
+                      className="w-full"
+                      type="url"
+                      value={embed.author?.url ?? ""}
+                      onInput={(e) =>
+                        updateEmbed({
+                          author: {
+                            ...(embed.author ?? { name: "" }),
+                            url: e.currentTarget.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <Button
+                    className="ml-2 mt-auto shrink-0"
+                    onClick={() =>
+                      updateEmbed({
+                        author: {
+                          ...(embed.author ?? { name: "" }),
+                          url: undefined,
+                        },
+                      })
+                    }
+                  >
+                    Remove
+                    <span className="hidden sm:inline"> URL</span>
+                  </Button>
+                </div>
+              )}
+              <TextInput
+                label="Icon URL"
+                className="w-full"
+                type="url"
+                value={embed.author?.icon_url ?? ""}
+                onInput={(e) =>
                   updateEmbed({
                     author: {
                       ...(embed.author ?? { name: "" }),
-                      url: undefined,
+                      icon_url: e.currentTarget.value,
                     },
                   })
                 }
-              >
-                Remove
-                <span className="hidden sm:inline"> URL</span>
-              </Button>
+              />
             </div>
-          )}
-          <TextInput
-            label="Icon URL"
-            className="w-full"
-            type="url"
-            value={embed.author?.icon_url ?? ""}
-            onInput={(e) =>
-              updateEmbed({
-                author: {
-                  ...(embed.author ?? { name: "" }),
-                  icon_url: e.currentTarget.value,
-                },
-              })
-            }
-          />
-        </div>
-      </EmbedEditorSection>
-      <hr className="border border-gray-500/20" />
-      <EmbedEditorSection name="Body" open={open}>
-        <div className="flex">
-          <div className="grow">
-            <TextInput
-              label="Title"
-              className="w-full"
-              maxLength={256}
-              value={embed.title ?? ""}
-              onInput={(e) =>
-                updateEmbed({
-                  title: e.currentTarget.value.trim() || undefined,
-                })
-              }
-            />
-          </div>
-          {embed.url === undefined && (
-            <Button
-              className="ml-2 mt-auto shrink-0"
-              onClick={() => updateEmbed({ url: location.origin })}
-            >
-              Add URL
-            </Button>
-          )}
-        </div>
-        <div className="grid gap-2">
-          {embed.url !== undefined && (
+          </EmbedEditorSection>
+          <hr className="border border-gray-500/20" />
+          <EmbedEditorSection name="Body" open={open}>
             <div className="flex">
               <div className="grow">
                 <TextInput
-                  label="Title URL"
+                  label="Title"
                   className="w-full"
-                  type="url"
-                  value={embed.url ?? ""}
+                  maxLength={256}
+                  value={embed.title ?? ""}
                   onInput={(e) =>
                     updateEmbed({
-                      url: e.currentTarget.value.trim(),
+                      title: e.currentTarget.value || undefined,
                     })
                   }
                 />
               </div>
-              <Button
-                className="ml-2 mt-auto shrink-0"
-                onClick={() => updateEmbed({ url: undefined })}
-              >
-                Remove
-                <span className="hidden sm:inline"> URL</span>
-              </Button>
+              {embed.url === undefined && (
+                <Button
+                  className="ml-2 mt-auto shrink-0"
+                  onClick={() => updateEmbed({ url: location.origin })}
+                >
+                  Add URL
+                </Button>
+              )}
             </div>
-          )}
-          <details className="relative">
-            <summary className="flex cursor-pointer">
-              <div className="grow">
-                <p className="text-sm font-medium">Sidebar Color</p>
-                <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:bg-gray-700">
-                  <span className="align-middle">
-                    {embed.color
-                      ? `#${embed.color.toString(16)}`
-                      : "Click to set"}
-                  </span>
-                </p>
-              </div>
-              <div
-                className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
-                style={{
-                  backgroundColor: embed.color
-                    ? `#${embed.color.toString(16)}`
-                    : undefined,
-                }}
-              />
-            </summary>
-            <ColorPicker
-              color={embed.color ? `#${embed.color.toString(16)}` : undefined}
-              onChange={(color) => {
-                updateEmbed({
-                  color:
-                    color.rgb.a === 0
-                      ? undefined
-                      : parseInt(color.hex.replace("#", "0x"), 16),
-                });
-              }}
-            />
-          </details>
-        </div>
-        <TextArea
-          label="Description"
-          className="w-full h-40"
-          value={embed.description ?? ""}
-          maxLength={4096}
-          onInput={(e) =>
-            updateEmbed({
-              description: e.currentTarget.value.trim() || undefined,
-            })
-          }
-        />
-      </EmbedEditorSection>
-      <hr className="border border-gray-500/20" />
-      <EmbedEditorSection name="Fields" open={open}>
-        {embed.fields && (
-          <div className="ml-2 md:ml-4 transition-[margin-left]">
-            {embed.fields.map((field, fI) => (
-              <EmbedFieldEditorSection
-                embed={embed}
-                updateEmbed={updateEmbed}
-                field={field}
-                index={fI}
-                open={open}
-              >
+            <div className="grid gap-2">
+              {embed.url !== undefined && (
                 <div className="flex">
                   <div className="grow">
                     <TextInput
-                      label="Name"
-                      value={field.name}
-                      maxLength={256}
+                      label="Title URL"
                       className="w-full"
+                      type="url"
+                      value={embed.url ?? ""}
                       onInput={(e) => {
-                        field.name = e.currentTarget.value;
-                        updateEmbed({});
+                        for (const emb of galleryEmbeds) {
+                          emb.url = e.currentTarget.value;
+                        }
+                        setData({ ...data });
                       }}
                     />
                   </div>
-                  <div className="ml-2 my-auto">
-                    <Checkbox
-                      label="Inline"
-                      checked={field.inline ?? false}
-                      onChange={(e) => {
-                        field.inline = e.currentTarget.checked;
-                        updateEmbed({});
-                      }}
-                    />
-                  </div>
+                  <Button
+                    className="ml-2 mt-auto shrink-0"
+                    onClick={() => {
+                      embed.url = undefined;
+                      message.data.embeds = message.data.embeds!.filter(
+                        (e) => !galleryChildren.includes(e)
+                      );
+                      setData({ ...data });
+                    }}
+                  >
+                    Remove
+                    <span className="hidden sm:inline"> URL</span>
+                  </Button>
                 </div>
-                <TextArea
-                  label="Name"
-                  value={field.value}
-                  maxLength={1024}
-                  className="w-full"
-                  onInput={(e) => {
-                    field.value = e.currentTarget.value;
-                    updateEmbed({});
+              )}
+              <details className="relative">
+                <summary className="flex cursor-pointer">
+                  <div className="grow">
+                    <p className="text-sm font-medium">Sidebar Color</p>
+                    <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:bg-gray-700">
+                      <span className="align-middle">
+                        {embed.color
+                          ? `#${embed.color.toString(16)}`
+                          : "Click to set"}
+                      </span>
+                    </p>
+                  </div>
+                  <div
+                    className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
+                    style={{
+                      backgroundColor: embed.color
+                        ? `#${embed.color.toString(16)}`
+                        : undefined,
+                    }}
+                  />
+                </summary>
+                <ColorPicker
+                  color={
+                    embed.color ? `#${embed.color.toString(16)}` : undefined
+                  }
+                  onChange={(color) => {
+                    updateEmbed({
+                      color:
+                        color.rgb.a === 0
+                          ? undefined
+                          : parseInt(color.hex.replace("#", "0x"), 16),
+                    });
                   }}
                 />
-              </EmbedFieldEditorSection>
-            ))}
-          </div>
-        )}
-        <Button
-          disabled={embed.fields && embed.fields.length >= 25}
-          onClick={() =>
-            updateEmbed({
-              fields: [...(embed.fields ?? []), { name: "", value: "" }],
-            })
+              </details>
+            </div>
+            <TextArea
+              label="Description"
+              className="w-full h-40"
+              value={embed.description ?? ""}
+              maxLength={4096}
+              onInput={(e) =>
+                updateEmbed({
+                  description: e.currentTarget.value || undefined,
+                })
+              }
+            />
+          </EmbedEditorSection>
+          <hr className="border border-gray-500/20" />
+          <EmbedEditorSection name="Fields" open={open}>
+            {embed.fields && (
+              <div className="ml-2 md:ml-4 transition-[margin-left]">
+                {embed.fields.map((field, fI) => (
+                  <EmbedFieldEditorSection
+                    embed={embed}
+                    updateEmbed={updateEmbed}
+                    field={field}
+                    index={fI}
+                    open={open}
+                  >
+                    <div className="flex">
+                      <div className="grow">
+                        <TextInput
+                          label="Name"
+                          value={field.name}
+                          maxLength={256}
+                          className="w-full"
+                          onInput={(e) => {
+                            field.name = e.currentTarget.value;
+                            updateEmbed({});
+                          }}
+                        />
+                      </div>
+                      <div className="ml-2 my-auto">
+                        <Checkbox
+                          label="Inline"
+                          checked={field.inline ?? false}
+                          onChange={(e) => {
+                            field.inline = e.currentTarget.checked;
+                            updateEmbed({});
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <TextArea
+                      label="Value"
+                      value={field.value}
+                      maxLength={1024}
+                      className="w-full"
+                      onInput={(e) => {
+                        field.value = e.currentTarget.value;
+                        updateEmbed({});
+                      }}
+                    />
+                  </EmbedFieldEditorSection>
+                ))}
+              </div>
+            )}
+            <Button
+              disabled={embed.fields && embed.fields.length >= 25}
+              onClick={() =>
+                updateEmbed({
+                  fields: [...(embed.fields ?? []), { name: "", value: "" }],
+                })
+              }
+            >
+              Add Field
+            </Button>
+          </EmbedEditorSection>
+          <hr className="border border-gray-500/20" />
+        </>
+      )}
+      <EmbedEditorSection name="Images" open={isChild || open}>
+        <TextInput
+          label="Large Image URL"
+          type="url"
+          className="w-full"
+          value={embed.image?.url ?? ""}
+          onInput={(e) =>
+            updateEmbed({ image: { url: e.currentTarget.value } })
           }
-        >
-          Add Field
-        </Button>
+        />
+        {!galleryChildren.includes(embed) && (
+          <Button
+            disabled={
+              !embed.image?.url ||
+              message.data.embeds!.length >= 10 ||
+              galleryEmbeds.length >= 4
+            }
+            onClick={() => {
+              const url = embed.url || location.origin;
+              embed.url = url;
+              message.data.embeds = message.data.embeds ?? [];
+              message.data.embeds.splice(i + 1, 0, { url });
+              setData({ ...data });
+            }}
+          >
+            Add Another
+          </Button>
+        )}
       </EmbedEditorSection>
     </details>
   );
