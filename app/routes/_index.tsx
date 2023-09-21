@@ -7,6 +7,7 @@ import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { MessageEditor } from "~/components/editor/MessageEditor";
 import { Message } from "~/components/preview/Message";
+import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
@@ -72,6 +73,7 @@ export default function Index() {
       ? Number(defaultModal.split("-")[2])
       : undefined
   );
+  const [imageModalData, setImageModalData] = useState<ImageModalProps>();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -94,6 +96,11 @@ export default function Index() {
         open={addingTarget}
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
+      />
+      <ImageModal
+        images={imageModalData?.images}
+        startIndex={imageModalData?.startIndex}
+        clear={() => setImageModalData(undefined)}
       />
       <Header />
       <div className="md:flex h-[calc(100%_-_3rem)]">
@@ -166,7 +173,11 @@ export default function Index() {
             <hr className="border border-gray-400 my-4" />
           </div>
           {data.messages.map((message, i) => (
-            <Message key={`preview-message-${i}`} message={message.data} />
+            <Message
+              key={`preview-message-${i}`}
+              message={message.data}
+              setImageModalData={setImageModalData}
+            />
           ))}
           <Button
             className="fixed bottom-4 right-4"

@@ -1,8 +1,10 @@
 import { APIEmbed, APIEmbedImage, APIWebhook } from "discord-api-types/v10";
+import { SetImageModalData } from "~/modals/ImageModal";
 import { QueryData } from "~/types/QueryData";
 import { PartialResource } from "~/types/Resources";
 import { cdn } from "~/util/discord";
 import { Embed } from "./Embed";
+import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 
 export const Message: React.FC<{
@@ -11,7 +13,8 @@ export const Message: React.FC<{
   compact?: boolean;
   date?: Date;
   resolved?: Record<string, PartialResource>;
-}> = ({ message, webhook, date, resolved }) => {
+  setImageModalData?: SetImageModalData;
+}> = ({ message, webhook, date, resolved, setImageModalData }) => {
   const username = message.author?.name ?? webhook?.name ?? "Boogiehook",
     avatarUrl =
       message.author?.icon_url ??
@@ -29,9 +32,17 @@ export const Message: React.FC<{
 
     embeds.push({
       embed,
-      extraImages: galleryChildren.filter(e => !!e.image).map((e) => e.image!),
+      extraImages: galleryChildren
+        .filter((e) => !!e.image)
+        .map((e) => e.image!),
     });
   }
+
+  const mediaAttachments = (message.attachments ?? []).filter(
+    (a) =>
+      a.content_type &&
+      ["video", "image"].includes(a.content_type.split("/")[0])
+  );
 
   return (
     <div className="flex">
@@ -69,6 +80,16 @@ export const Message: React.FC<{
             />
           </div>
         )}
+        {message.attachments && (
+          <div className="max-w-[550px] mt-1 space-y-1">
+            {mediaAttachments.length > 0 && (
+              <Gallery
+                attachments={mediaAttachments}
+                setImageModalData={setImageModalData}
+              />
+            )}
+          </div>
+        )}
         {embeds.length > 0 && (
           <div className="space-y-1 mt-1">
             {embeds.map((embedData, i) => (
@@ -76,6 +97,7 @@ export const Message: React.FC<{
                 key={`message-preview-embed-${i}`}
                 {...embedData}
                 resolved={resolved}
+                setImageModalData={setImageModalData}
               />
             ))}
           </div>

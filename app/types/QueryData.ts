@@ -1,10 +1,10 @@
-import { APIEmbed, EmbedType } from "discord-api-types/v10";
+import { APIAttachment, APIEmbed } from "discord-api-types/v10";
 import { z } from "zod";
 
 export type QueryDataVersion = "d2";
 
 export interface QueryData {
-  version?: QueryDataVersion,
+  version?: QueryDataVersion;
   messages: {
     data: {
       author?: {
@@ -13,7 +13,7 @@ export interface QueryData {
       };
       content?: string | null;
       embeds?: APIEmbed[] | null;
-      attachments?: { id: string }[];
+      attachments?: APIAttachment[];
       webhook_id?: string;
     };
     reference?: string;
@@ -100,7 +100,18 @@ export const ZodQueryData = z.object({
             )
           )
         ),
-        attachments: z.optional(z.array(z.object({ id: z.string() }))),
+        attachments: z.optional(
+          z.array(
+            z.object({
+              id: z.string(),
+              content_type: z.optional(z.string()),
+              filename: z.string(),
+              description: z.optional(z.string()),
+              url: z.string(),
+              size: z.optional(z.number()),
+            })
+          )
+        ),
         webhook_id: z.optional(z.string()),
       }),
       reference: z.optional(z.string()),

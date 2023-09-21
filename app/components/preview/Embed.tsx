@@ -1,4 +1,10 @@
-import { APIEmbed, APIEmbedField, APIEmbedImage } from "discord-api-types/v10";
+import {
+  APIAttachment,
+  APIEmbed,
+  APIEmbedField,
+  APIEmbedImage,
+} from "discord-api-types/v10";
+import { SetImageModalData } from "~/modals/ImageModal";
 import { PartialResource } from "~/types/Resources";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
@@ -7,7 +13,8 @@ export const Embed: React.FC<{
   embed: APIEmbed;
   extraImages?: APIEmbedImage[];
   resolved?: Record<string, PartialResource>;
-}> = ({ embed, extraImages, resolved }) => {
+  setImageModalData?: SetImageModalData;
+}> = ({ embed, extraImages, resolved, setImageModalData }) => {
   const fieldLines: APIEmbedField[][] = [];
   for (const field of embed.fields ?? []) {
     const currentLine = fieldLines[fieldLines.length - 1];
@@ -32,7 +39,7 @@ export const Embed: React.FC<{
     images.push(embed.image);
   }
   if (extraImages) {
-    images.push(...extraImages)
+    images.push(...extraImages);
   }
 
   return (
@@ -163,11 +170,17 @@ export const Embed: React.FC<{
         {images.length > 0 && (
           <div className="mt-2">
             <Gallery
-              attachments={images.map(image => ({
-                // It doesn't actually matter, we only need to know it's an image
-                mimeType: image.url.endsWith(".gif") ? "image/gif" : "image/png",
-                url: image.url,
-              }))}
+              attachments={images.map(
+                (image) =>
+                  ({
+                    // It doesn't actually matter, we only need to know it's an image
+                    content_type: image.url.endsWith(".gif")
+                      ? "image/gif"
+                      : "image/png",
+                    url: image.url,
+                  } as APIAttachment)
+              )}
+              setImageModalData={setImageModalData}
             />
           </div>
         )}
