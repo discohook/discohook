@@ -1,0 +1,23 @@
+{
+  "name": "Boogiehook",
+  "short_name": "Boogiehook",
+  "start_url": ".",
+  "description": "Free, intuitive interface for creating webhook messages in your Discord server",
+  "icons": [
+    {
+      "src": "logos/boogiehook_72w.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "logos/boogiehook_144w.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "logos/boogiehook_512w.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

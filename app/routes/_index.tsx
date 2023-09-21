@@ -21,7 +21,12 @@ export const meta: V2_MetaFunction = () => {
     { title: "Boogiehook" },
     {
       name: "description",
-      content: "The funkiest webhook interface since Discohook.",
+      content:
+        "Free, intuitive interface for creating webhook messages in your Discord server.",
+    },
+    {
+      property: "og:image",
+      content: "logos/boogiehook_512w.png",
     },
   ];
 };
