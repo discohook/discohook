@@ -184,6 +184,30 @@ export const Embed: React.FC<{
             />
           </div>
         )}
+        {embed.thumbnail?.url && (
+          <button
+            className="flex mt-2 ml-4 justify-self-end h-fit"
+            style={{ gridArea: "1 / 2 / 8 / 3" }}
+            onClick={() => {
+              if (setImageModalData) {
+                setImageModalData({
+                  images: [
+                    {
+                      url: embed.thumbnail!.url,
+                    },
+                  ],
+                  startIndex: 0,
+                });
+              }
+            }}
+          >
+            <img
+              src={embed.thumbnail.url}
+              className="rounded max-w-[80px] max-h-20"
+              alt="Thumbnail"
+            />
+          </button>
+        )}
       </div>
     </div>
   );
