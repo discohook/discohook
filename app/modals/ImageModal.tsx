@@ -22,7 +22,7 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
 
   return (
     <ReactModal
-      isOpen={!!images && !!startIndex}
+      isOpen={!!images && startIndex !== undefined}
       onRequestClose={props.clear}
       ariaHideApp={false}
       closeTimeoutMS={100}
