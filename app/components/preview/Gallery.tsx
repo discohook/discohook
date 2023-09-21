@@ -72,7 +72,7 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
   3: ({ attachments }) => (
     <div className="w-full grid grid-cols-2 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
       <GalleryItem
-        className="rounded-l-lg rounded-r h-[200px]"
+        className="rounded-l-lg rounded-r h-[200px] w-full"
         itemClassName="rounded-l-lg rounded-r"
         {...attachments[0]}
       />
