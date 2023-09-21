@@ -1,4 +1,4 @@
-import { APIWebhook } from "discord-api-types/v10";
+import { APIEmbed, APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
 import { PartialResource } from "~/types/Resources";
 import { cdn } from "~/util/discord";
@@ -19,6 +19,19 @@ export const Message: React.FC<{
         ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
         : cdn.defaultAvatar(5)),
     badge: string | undefined = "BOT";
+
+  const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
+  for (const embed of message.embeds ?? []) {
+    const galleryChildren = message
+      .embeds!.filter((e) => embed.url && e.url === embed.url)
+      .slice(1);
+    if (galleryChildren.includes(embed)) continue;
+
+    embeds.push({
+      embed,
+      extraImages: galleryChildren.filter(e => !!e.image).map((e) => e.image!),
+    });
+  }
 
   return (
     <div className="flex">
@@ -56,12 +69,12 @@ export const Message: React.FC<{
             />
           </div>
         )}
-        {message.embeds && message.embeds.length > 0 && (
+        {embeds.length > 0 && (
           <div className="space-y-1 mt-1">
-            {message.embeds.map((embed, i) => (
+            {embeds.map((embedData, i) => (
               <Embed
                 key={`message-preview-embed-${i}`}
-                embed={embed}
+                {...embedData}
                 resolved={resolved}
               />
             ))}

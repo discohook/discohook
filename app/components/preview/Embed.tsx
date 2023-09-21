@@ -1,12 +1,13 @@
 import { APIEmbed, APIEmbedField, APIEmbedImage } from "discord-api-types/v10";
 import { PartialResource } from "~/types/Resources";
+import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 
 export const Embed: React.FC<{
   embed: APIEmbed;
   extraImages?: APIEmbedImage[];
   resolved?: Record<string, PartialResource>;
-}> = ({ embed, resolved }) => {
+}> = ({ embed, extraImages, resolved }) => {
   const fieldLines: APIEmbedField[][] = [];
   for (const field of embed.fields ?? []) {
     const currentLine = fieldLines[fieldLines.length - 1];
@@ -24,6 +25,14 @@ export const Embed: React.FC<{
         fieldLines.push([field]);
       }
     }
+  }
+
+  const images: APIEmbedImage[] = [];
+  if (embed.image) {
+    images.push(embed.image);
+  }
+  if (extraImages) {
+    images.push(...extraImages)
   }
 
   return (
@@ -149,6 +158,17 @@ export const Embed: React.FC<{
                 })}
               </div>
             ))}
+          </div>
+        )}
+        {images.length > 0 && (
+          <div className="mt-2">
+            <Gallery
+              attachments={images.map(image => ({
+                // It doesn't actually matter, we only need to know it's an image
+                mimeType: image.url.endsWith(".gif") ? "image/gif" : "image/png",
+                url: image.url,
+              }))}
+            />
           </div>
         )}
       </div>
