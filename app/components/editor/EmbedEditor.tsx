@@ -272,7 +272,9 @@ export const EmbedEditor: React.FC<{
               {embed.url === undefined && (
                 <Button
                   className="ml-2 mt-auto shrink-0"
-                  onClick={() => updateEmbed({ url: location.origin })}
+                  onClick={() =>
+                    updateEmbed({ url: location.origin + "#default" })
+                  }
                 >
                   Add URL
                 </Button>
@@ -444,7 +446,7 @@ export const EmbedEditor: React.FC<{
                 galleryEmbeds.length >= 4
               }
               onClick={() => {
-                const url = embed.url || location.origin;
+                const url = embed.url || (location.origin + "#gallery");
                 embed.url = url;
                 message.data.embeds = message.data.embeds ?? [];
                 message.data.embeds.splice(i + 1, 0, { url });
