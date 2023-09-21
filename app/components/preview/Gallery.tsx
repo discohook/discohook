@@ -49,34 +49,34 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
   1: ({ attachments }) => (
     <div className="w-full">
       <GalleryItem
-        className="rounded-lg max-w-[clamp(0px,_400px,_calc(100%_+_1px))] max-h-[400px]"
+        className="rounded-lg max-w-full max-h-[350px]"
         itemClassName="rounded-lg"
         {...attachments[0]}
       />
     </div>
   ),
   2: ({ attachments }) => (
-    <div className="w-full grid grid-cols-2 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid grid-cols-2 gap-1 max-w-full max-h-[350px]">
       <GalleryItem
-        className="rounded-l-lg rounded-r w-full h-[200px]"
+        className="rounded-l-lg rounded-r w-full object-center"
         itemClassName="rounded-l-lg rounded-r"
         {...attachments[0]}
       />
       <GalleryItem
-        className="rounded-r-lg rounded-l w-full h-[200px]"
+        className="rounded-r-lg rounded-l w-full object-center"
         itemClassName="rounded-r-lg rounded-l"
         {...attachments[1]}
       />
     </div>
   ),
   3: ({ attachments }) => (
-    <div className="w-full grid grid-cols-2 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full flex gap-1 max-w-full max-h-[350px]">
       <GalleryItem
-        className="rounded-l-lg rounded-r h-[200px] w-full"
+        className="rounded-l-lg rounded-r h-[350px] w-2/3"
         itemClassName="rounded-l-lg rounded-r"
         {...attachments[0]}
       />
-      <div className="grid grid-rows-2 gap-1 h-[200px]">
+      <div className="grid grid-rows-2 gap-1 h-[350px] w-1/3">
         <GalleryItem
           className="rounded rounded-tr-lg w-full h-full object-center"
           itemClassName="rounded rounded-tr-lg"
@@ -91,56 +91,56 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   4: ({ attachments }) => (
-    <div className="w-full grid grid-cols-2 grid-rows-2 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid grid-cols-2 grid-rows-2 gap-1 max-w-full max-h-[350px]">
       <GalleryItem
-        className="rounded rounded-tl-lg h-full object-center aspect-video"
+        className="rounded rounded-tl-lg h-full w-full object-contain"
         itemClassName="rounded rounded-tl-lg"
         {...attachments[0]}
       />
       <GalleryItem
-        className="rounded rounded-tr-lg h-full object-center aspect-video"
+        className="rounded rounded-tr-lg h-full w-full object-contain"
         itemClassName="rounded rounded-tr-lg"
         {...attachments[1]}
       />
       <GalleryItem
-        className="rounded rounded-bl-lg h-full object-center aspect-video"
+        className="rounded rounded-bl-lg h-full w-full object-contain"
         itemClassName="rounded rounded-bl-lg"
         {...attachments[2]}
       />
       <GalleryItem
-        className="rounded rounded-br-lg h-full object-center aspect-video"
+        className="rounded rounded-br-lg h-full w-full object-contain"
         itemClassName="rounded rounded-br-lg"
         {...attachments[3]}
       />
     </div>
   ),
   5: ({ attachments }) => (
-    <div className="w-full grid grid-cols-1 grid-rows-2 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid gap-1 max-w-full max-h-full">
       <div className="w-full grid grid-cols-2 gap-1">
         <GalleryItem
-          className="rounded rounded-tl-lg w-full h-[200px]"
+          className="rounded rounded-tl-lg w-full object-contain aspect-square"
           itemClassName="rounded rounded-tl-lg"
           {...attachments[0]}
         />
         <GalleryItem
-          className="rounded rounded-tr-lg w-full h-[200px]"
+          className="rounded rounded-tr-lg w-full object-contain aspect-square"
           itemClassName="rounded rounded-tr-lg"
           {...attachments[1]}
         />
       </div>
       <div className="w-full grid grid-cols-3 gap-1">
         <GalleryItem
-          className="rounded rounded-bl-lg h-full object-center aspect-video"
+          className="rounded rounded-bl-lg w-full object-contain aspect-square"
           itemClassName="rounded rounded-bl-lg"
           {...attachments[2]}
         />
         <GalleryItem
-          className="rounded rounded-br-lg h-full object-center aspect-video"
+          className="rounded rounded-br-lg w-full object-contain aspect-square"
           itemClassName="rounded rounded-br-lg"
           {...attachments[3]}
         />
         <GalleryItem
-          className="rounded rounded-br-lg h-full object-center aspect-video"
+          className="rounded rounded-br-lg w-full object-contain aspect-square"
           itemClassName="rounded rounded-br-lg"
           {...attachments[4]}
         />
@@ -148,7 +148,7 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   6: ({ attachments }) => (
-    <div className="w-full grid grid-cols-3 grid-rows-2 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid grid-cols-3 grid-rows-2 gap-1 max-w-full">
       {attachments.map((attachment, i) => {
         const largeRound =
           i === 0
@@ -172,9 +172,9 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   7: ({ attachments }) => (
-    <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-full">
       <GalleryItem
-        className="rounded rounded-t-lg w-full object-center h-[200px]"
+        className="rounded rounded-t-lg w-full object-center h-[250px]"
         itemClassName="rounded rounded-t-lg"
         {...attachments[0]}
       />
@@ -195,7 +195,7 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   8: ({ attachments }) => (
-    <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-full">
       <div className="w-full grid grid-rows-1 grid-cols-2 gap-1">
         <GalleryItem
           className="rounded rounded-tl-lg w-full h-full object-center aspect-square"
@@ -225,7 +225,7 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   9: ({ attachments }) => (
-    <div className="w-full grid grid-cols-3 grid-rows-3 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid grid-cols-3 grid-rows-3 gap-1 max-w-full">
       {attachments.map((attachment, i) => {
         const largeRound =
           i === 0
@@ -249,9 +249,9 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   10: ({ attachments }) => (
-    <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-[clamp(0px,_400px,_calc(100%_+_1px))]">
+    <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-full">
       <GalleryItem
-        className="rounded rounded-t-lg w-full object-center h-[200px]"
+        className="rounded rounded-t-lg w-full object-center h-[250px]"
         itemClassName="rounded rounded-t-lg"
         {...attachments[0]}
       />
