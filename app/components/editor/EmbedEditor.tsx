@@ -477,6 +477,17 @@ export const EmbedEditor: React.FC<{
             </Button>
           )}
         </div>
+        {!isChild && (
+          <TextInput
+            label="Thumbnail URL"
+            type="url"
+            className="w-full"
+            value={embed.thumbnail?.url ?? ""}
+            onInput={(e) =>
+              updateEmbed({ thumbnail: { url: e.currentTarget.value } })
+            }
+          />
+        )}
       </EmbedEditorSection>
     </details>
   );
