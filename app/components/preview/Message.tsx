@@ -4,6 +4,7 @@ import { QueryData } from "~/types/QueryData";
 import { PartialResource } from "~/types/Resources";
 import { cdn } from "~/util/discord";
 import { Embed } from "./Embed";
+import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 
@@ -38,6 +39,11 @@ export const Message: React.FC<{
     });
   }
 
+  const fileAttachments = (message.attachments ?? []).filter(
+    (a) =>
+      a.content_type &&
+      !["video", "image"].includes(a.content_type.split("/")[0])
+  );
   const mediaAttachments = (message.attachments ?? []).filter(
     (a) =>
       a.content_type &&
@@ -82,6 +88,12 @@ export const Message: React.FC<{
         )}
         {message.attachments && (
           <div className="max-w-[550px] mt-1 space-y-1">
+            {fileAttachments.map((attachment) => (
+              <FileAttachment
+                key={`attachment-${attachment.id}`}
+                attachment={attachment}
+              />
+            ))}
             {mediaAttachments.length > 0 && (
               <Gallery
                 attachments={mediaAttachments}
