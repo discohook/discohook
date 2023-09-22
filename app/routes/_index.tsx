@@ -8,7 +8,8 @@ import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { MessageEditor } from "~/components/editor/MessageEditor";
 import { Message } from "~/components/preview/Message";
-import { AuthSuccessModal } from "~/modals/AuthSuccess";
+import { AuthFailureModal } from "~/modals/AuthFaillureModal";
+import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
@@ -102,6 +103,9 @@ export default function Index() {
   const [authSuccessOpen, setAuthSuccessOpen] = useState(
     defaultModal === "auth-success"
   );
+  const [authFailureOpen, setAuthFailureOpen] = useState(
+    defaultModal === "auth-failure"
+  );
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -129,6 +133,10 @@ export default function Index() {
         open={authSuccessOpen}
         setOpen={setAuthFailureOpen}
         user={discordUser}
+      />
+      <AuthFailureModal
+        open={authFailureOpen}
+        setOpen={setAuthFailureOpen}
       />
       <ImageModal
         images={imageModalData?.images}
