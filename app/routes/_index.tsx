@@ -13,7 +13,7 @@ import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
-import { cdn } from "~/util/discord";
+import { cdn, executeWebhook } from "~/util/discord";
 import { base64Decode, base64Encode } from "~/util/text";
 
 export const meta: V2_MetaFunction = () => {
@@ -29,6 +29,18 @@ export const meta: V2_MetaFunction = () => {
       content: "logos/boogiehook_512w.png",
     },
   ];
+};
+
+export const submitMessage = async (
+  target: APIWebhook,
+  message: QueryData["messages"][number]
+) => {
+  const data = await executeWebhook(target.id, target.token!, {
+    username: message.data.author?.name,
+    avatar_url: message.data.author?.icon_url,
+    content: message.data.content?.trim() || undefined,
+    embeds: message.data.embeds || undefined,
+  });
 };
 
 export default function Index() {
@@ -134,6 +146,14 @@ export default function Index() {
                     {webhook.user?.username}
                   </p>
                 </div>
+                <Button
+                  className="ml-auto my-auto"
+                  onClick={async () => {
+                    await submitMessage(webhook, data.messages[0]);
+                  }}
+                >
+                  Send
+                </Button>
               </div>
             );
           })}
