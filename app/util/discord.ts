@@ -4,6 +4,7 @@ import {
   RESTGetAPIWebhookWithTokenMessageResult,
   RESTGetAPIWebhookWithTokenResult,
   RESTPostAPIWebhookWithTokenJSONBody,
+  RESTPostAPIWebhookWithTokenWaitResult,
 } from "discord-api-types/v10";
 
 const rest = new REST({ version: "10" });
@@ -79,5 +80,5 @@ export const executeWebhook = async (
     }
   );
 
-  return (await data.json()) as RESTGetAPIWebhookWithTokenMessageResult;
+  return (await data.json()) as RESTPostAPIWebhookWithTokenWaitResult;
 };
