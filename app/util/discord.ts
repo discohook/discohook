@@ -3,6 +3,8 @@ import { DiscordSnowflake } from "@sapphire/snowflake";
 import {
   RESTGetAPIWebhookWithTokenMessageResult,
   RESTGetAPIWebhookWithTokenResult,
+  RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  RESTPatchAPIWebhookWithTokenMessageResult,
   RESTPostAPIWebhookWithTokenJSONBody,
   RESTPostAPIWebhookWithTokenWaitResult,
 } from "discord-api-types/v10";
@@ -81,4 +83,36 @@ export const executeWebhook = async (
   );
 
   return (await data.json()) as RESTPostAPIWebhookWithTokenWaitResult;
+};
+
+export const updateWebhookMessage = async (
+  webhookId: string,
+  webhookToken: string,
+  messageId: string,
+  payload: RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  files?: RawFile[],
+  threadId?: string
+) => {
+  const query = new URLSearchParams();
+  if (threadId) {
+    query.set("thread_id", threadId);
+  }
+
+  const data = await discordRequest(
+    "PATCH",
+    `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
+    {
+      query,
+      body: JSON.stringify(payload),
+      files,
+      headers: {
+        "Content-Type":
+          files && files.length > 0
+            ? "multipart/form-data"
+            : "application/json",
+      },
+    }
+  );
+
+  return (await data.json()) as RESTPatchAPIWebhookWithTokenMessageResult;
 };
