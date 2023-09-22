@@ -5,6 +5,16 @@
   "description": "Free, intuitive interface for creating webhook messages in your Discord server",
   "icons": [
     {
+      "src": "favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logos/boogiehook_32w.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
       "src": "logos/boogiehook_72w.png",
       "sizes": "72x72",
       "type": "image/png"
