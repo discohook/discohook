@@ -1,10 +1,10 @@
 import { APIWebhook } from "discord-api-types/v10";
-import { Modal, ModalProps } from "./Modal";
 import { ReactNode, useState } from "react";
+import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdn, getSnowflakeDate, getWebhook } from "~/util/discord";
-import { Button } from "~/components/Button";
+import { Modal, ModalProps } from "./Modal";
 
 export const TargetAddModal = (
   props: ModalProps & {
@@ -17,7 +17,7 @@ export const TargetAddModal = (
   const avatarUrl = webhook
     ? webhook.avatar
       ? cdn.avatar(webhook.id, webhook.avatar, { size: 128 })
-      : cdn.defaultAvatar(6)
+      : cdn.defaultAvatar(5)
     : null;
 
   const setOpen = (s: boolean) => {
