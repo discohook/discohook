@@ -15,6 +15,11 @@
       "type": "image/png"
     },
     {
+      "src": "logos/boogiehook_64w.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
       "src": "logos/boogiehook_72w.png",
       "sizes": "72x72",
       "type": "image/png"
