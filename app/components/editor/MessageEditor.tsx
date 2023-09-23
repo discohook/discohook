@@ -15,7 +15,7 @@ export const MessageEditor: React.FC<{
   return (
     <div className="mt-4">
       <div className="font-semibold text-base flex">
-        Message #{i + 1}
+        Message {i + 1}
         <div className="ml-auto space-x-1"></div>
       </div>
       <div className="rounded bg-gray-100 p-2 mt-1 space-y-2">
