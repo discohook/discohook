@@ -194,14 +194,18 @@ export default function Index() {
             </Button>
           </div>
           {data.messages.map((message, i) => (
-            <MessageEditor
-              key={`edit-message-${i}`}
-              message={message}
-              index={i}
-              data={data}
-              setData={setData}
-              setSettingMessageIndex={setSettingMessageIndex}
-            />
+            <div key={`edit-message-${i}`}>
+              <MessageEditor
+                message={message}
+                index={i}
+                data={data}
+                setData={setData}
+                setSettingMessageIndex={setSettingMessageIndex}
+              />
+              {i < data.messages.length - 1 && (
+                <hr className="border border-gray-500/20 mt-4" />
+              )}
+            </div>
           ))}
           <Button
             className="mt-4 w-full"
