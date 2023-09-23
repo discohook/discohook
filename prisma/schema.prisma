@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  firstSubscribed DateTime?
+  subscribedSince DateTime?
+  lifetime        Boolean   @default(false)
+
+  discordId   BigInt?      @unique
+  discordUser DiscordUser? @relation(fields: [discordId], references: [id])
+  guildedId   String?      @unique
+  guildedUser GuildedUser? @relation(fields: [guildedId], references: [id])
+}
+
+model DiscordUser {
+  id            BigInt          @unique
+  name          String
+  globalName    String
+  discriminator String
+  avatar        String?
+  members       DiscordMember[]
+
+  user User?
+}
+
+model GuildedUser {
+  id        String  @unique
+  name      String
+  avatarUrl String?
+
+  user User?
+}
+
+model DiscordGuild {
+  id   BigInt  @unique
+  name String
+  icon String?
+
+  roles   DiscordRole[]
+  members DiscordMember[]
+}
+
+model DiscordRole {
+  id      BigInt       @unique
+  guildId BigInt
+  guild   DiscordGuild @relation(fields: [guildId], references: [id])
+
+  name         String
+  color        Int     @default(0)
+  permissions  BigInt  @default(0)
+  icon         String?
+  unicodeEmoji String?
+  position     Int
+  hoist        Boolean @default(false)
+  managed      Boolean @default(false)
+  mentionable  Boolean @default(false)
+
+  @@unique([guildId, id])
+}
+
+model DiscordMember {
+  userId  BigInt
+  guildId BigInt
+
+  user  DiscordUser  @relation(fields: [userId], references: [id])
+  guild DiscordGuild @relation(fields: [guildId], references: [id])
+
+  @@unique([guildId, userId])
+}
+
+model GuildedServer {
+  id        String  @unique
+  name      String
+  avatarUrl String?
+}

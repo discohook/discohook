@@ -14,5 +14,8 @@
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   },
   "eslint.onIgnoredFiles": "off",
-  "eslint.run": "onType" // optional but recommended
+  "eslint.run": "onType",
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  } // optional but recommended
 }
