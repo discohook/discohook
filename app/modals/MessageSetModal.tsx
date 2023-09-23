@@ -1,5 +1,5 @@
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { TextInput } from "~/components/TextInput";
@@ -18,8 +18,12 @@ export const MessageSetModal = (
   }
 ) => {
   const { targets, setAddingTarget, data, setData, messageIndex } = props;
+  const message =
+    messageIndex !== undefined ? data.messages[messageIndex] : undefined;
 
-  const [webhook, setWebhook] = useState<(typeof targets)[string]>();
+  const [webhook, setWebhook] = useState<
+    (typeof targets)[string] | undefined
+  >();
   const [messageLink, setMessageLink] =
     useState<[string | undefined, string | undefined, string]>();
   const [error, setError] = useState<ReactNode>();
@@ -37,14 +41,35 @@ export const MessageSetModal = (
       ? w.guild_id === messageLink[0]
       : true
   );
+  if (message?.data?.webhook_id) {
+    const extantWebhookMatch = targets[message.data.webhook_id];
+    if (extantWebhookMatch && !possibleWebhooks.includes(extantWebhookMatch)) {
+      possibleWebhooks.splice(0, 0, extantWebhookMatch);
+    }
+  }
+
+  useEffect(() => {
+    if (message) {
+      if (message.data.webhook_id) {
+        setWebhook(targets[message.data.webhook_id]);
+      }
+      if (message.reference) {
+        const match = message.reference.match(MESSAGE_REF_RE);
+        if (match) {
+          setMessageLink([match[1], match[2], match[3]]);
+        }
+      }
+    }
+  }, [message]);
 
   return (
-    <Modal title="Set Message" {...props} setOpen={setOpen}>
+    <Modal title="Set Message Reference" {...props} setOpen={setOpen}>
       <div>
         <TextInput
           label="Message Link"
           className="w-full"
           errors={[error]}
+          defaultValue={message?.reference}
           onInput={async (e) => {
             setError(undefined);
             setMessageLink(undefined);

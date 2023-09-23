@@ -1,3 +1,4 @@
+import { ButtonStyle } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { TextArea } from "../TextArea";
@@ -45,7 +46,12 @@ export const MessageEditor: React.FC<{
           </div>
         )}
         <div className="flex">
-          <Button onClick={() => setSettingMessageIndex(i)}>
+          <Button
+            onClick={() => setSettingMessageIndex(i)}
+            discordstyle={
+              message.reference ? ButtonStyle.Secondary : ButtonStyle.Primary
+            }
+          >
             Set Reference
           </Button>
           <Button
