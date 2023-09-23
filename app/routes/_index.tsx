@@ -131,7 +131,7 @@ export default function Index() {
       />
       <AuthSuccessModal
         open={authSuccessOpen}
-        setOpen={setAuthFailureOpen}
+        setOpen={setAuthSuccessOpen}
         user={discordUser}
       />
       <AuthFailureModal
