@@ -27,7 +27,7 @@ model User {
 model DiscordUser {
   id            BigInt          @unique
   name          String
-  globalName    String
+  globalName    String?
   discriminator String
   avatar        String?
   members       DiscordMember[]

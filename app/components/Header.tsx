@@ -1,13 +1,13 @@
 import { useSearchParams } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
-import { DiscordUser } from "~/auth-discord.server";
 import { ExampleModal } from "~/modals/ExampleModal";
 import { HelpModal } from "~/modals/HelpModal";
-import { getUserAvatar, getUserTag } from "~/util/discord";
+import { User } from "~/session.server";
+import { getUserAvatar, getUserTag } from "~/util/users";
 import { Button } from "./Button";
 
-export const Header: React.FC<{ user?: DiscordUser | null }> = ({ user }) => {
+export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const [searchParams] = useSearchParams();
   const [helpOpen, setHelpOpen] = useState(searchParams.get("m") === "help");
   const [exampleOpen, setExampleOpen] = useState(
@@ -26,7 +26,7 @@ export const Header: React.FC<{ user?: DiscordUser | null }> = ({ user }) => {
             src={getUserAvatar(user, { size: 64 })}
           />
           <p className="text-base font-medium hidden sm:block my-auto">
-            {user.globalName ?? getUserTag(user)}
+            {user.discordUser?.globalName ?? getUserTag(user)}
           </p>
         </div>
       )}

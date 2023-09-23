@@ -1,21 +1,17 @@
 import { APIUser } from "discord-api-types/v10";
 import { Authenticator } from "remix-auth";
-import type { DiscordProfile, PartialDiscordGuild } from "remix-auth-discord";
 import { DiscordStrategy } from "remix-auth-discord";
-import { sessionStorage } from "~/session.server";
+import { User, sessionStorage, writeOauthUser } from "~/session.server";
+import { prisma } from "./prisma.server";
+import { getCurrentUserGuilds } from "./util/discord";
 
-export interface DiscordUser {
-  type: "discord";
-  id: string;
-  username: string;
-  globalName: string | null;
-  discriminator: string;
-  avatar: DiscordProfile["__json"]["avatar"];
+export type UserWithAuth = User & {
+  authType: "discord";
   accessToken: string;
   refreshToken: string;
-}
+};
 
-export const discordAuth = new Authenticator<DiscordUser>(sessionStorage);
+export const discordAuth = new Authenticator<UserWithAuth>(sessionStorage);
 
 const strategy = new DiscordStrategy(
   {
@@ -29,28 +25,36 @@ const strategy = new DiscordStrategy(
     refreshToken,
     extraParams,
     profile,
-  }): Promise<DiscordUser> => {
-    const userGuilds: Array<PartialDiscordGuild> = await (
-      await fetch("https://discord.com/api/v10/users/@me/guilds", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-    )?.json();
-    const guilds: Array<PartialDiscordGuild> = userGuilds.filter(
-      // Owner or manage webhooks
-      (g) => g.owner || (BigInt(g.permissions) & BigInt(0x29)) == BigInt(0x29)
-    );
-    console.log(guilds)
-
+  }): Promise<UserWithAuth> => {
     const j = profile.__json as APIUser;
+    await prisma.discordUser.upsert({
+      where: { id: BigInt(j.id) },
+      create: {
+        id: BigInt(j.id),
+        name: j.username,
+        globalName: j.global_name,
+        discriminator: j.discriminator,
+        avatar: j.avatar,
+      },
+      update: {
+        name: j.username,
+        globalName: j.global_name,
+        discriminator: j.discriminator,
+        avatar: j.avatar,
+      },
+    });
+    const user = await writeOauthUser({ discord: profile });
+
+    const userGuilds = await getCurrentUserGuilds(accessToken);
+    console.log(userGuilds)
+    //const guilds = userGuilds.filter(
+    //  // Owner or manage webhooks
+    //  (g) => g.owner || (BigInt(g.permissions) & BigInt(0x29)) == BigInt(0x29)
+    //);
+
     return {
-      type: "discord",
-      id: profile.id,
-      username: j.username,
-      globalName: j.global_name,
-      discriminator: j.discriminator,
-      avatar: j.avatar,
+      ...user,
+      authType: "discord",
       accessToken,
       refreshToken,
     };

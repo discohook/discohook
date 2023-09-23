@@ -1,11 +1,9 @@
-import { DiscordUser } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
-import { getUserAvatar, getUserTag } from "~/util/discord";
+import { User } from "~/session.server";
+import { getUserAvatar, getUserTag } from "~/util/users";
 import { Modal, ModalProps } from "./Modal";
 
-export const AuthSuccessModal = (
-  props: ModalProps & { user: DiscordUser | null }
-) => {
+export const AuthSuccessModal = (props: ModalProps & { user: User | null }) => {
   return (
     <Modal title="Success" {...props}>
       {props.user && (

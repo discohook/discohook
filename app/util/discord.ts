@@ -1,6 +1,5 @@
 import {
   CDN,
-  ImageURLOptions,
   REST,
   RawFile,
   RequestData,
@@ -8,6 +7,7 @@ import {
 } from "@discordjs/rest";
 import { DiscordSnowflake } from "@sapphire/snowflake";
 import {
+  RESTGetAPICurrentUserGuildsResult,
   RESTGetAPIWebhookWithTokenMessageResult,
   RESTGetAPIWebhookWithTokenResult,
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
@@ -15,7 +15,6 @@ import {
   RESTPostAPIWebhookWithTokenJSONBody,
   RESTPostAPIWebhookWithTokenWaitResult,
 } from "discord-api-types/v10";
-import { DiscordUser } from "~/auth-discord.server";
 
 const rest = new REST({ version: "10" });
 export const cdn = new CDN();
@@ -125,16 +124,12 @@ export const updateWebhookMessage = async (
   return (await data.json()) as RESTPatchAPIWebhookWithTokenMessageResult;
 };
 
-export const getUserTag = (user: DiscordUser) =>
-  user.discriminator === "0"
-    ? user.username
-    : `${user.username}#${user.discriminator}`;
+export const getCurrentUserGuilds = async (accessToken: string) => {
+  const data = await discordRequest("GET", `/users/@me/guilds`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
-export const getUserAvatar = (user: DiscordUser, options?: ImageURLOptions) =>
-  user.avatar
-    ? cdn.avatar(user.id, user.avatar, options)
-    : cdn.defaultAvatar(
-        user.discriminator === "0"
-          ? Number((BigInt(user.id) >> BigInt(22)) % BigInt(6))
-          : Number(user.discriminator) % 5
-      );
+  return (await data.json()) as RESTGetAPICurrentUserGuildsResult;
+};
