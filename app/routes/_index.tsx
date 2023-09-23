@@ -19,10 +19,10 @@ import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { cdn, executeWebhook } from "~/util/discord";
 import { base64Decode, base64Encode } from "~/util/text";
 
-export const loader = async ({request}: LoaderArgs) => {
+export const loader = async ({ request }: LoaderArgs) => {
   const discordUser = await discordAuth.isAuthenticated(request);
   return { discordUser };
-}
+};
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -134,10 +134,7 @@ export default function Index() {
         setOpen={setAuthSuccessOpen}
         user={discordUser}
       />
-      <AuthFailureModal
-        open={authFailureOpen}
-        setOpen={setAuthFailureOpen}
-      />
+      <AuthFailureModal open={authFailureOpen} setOpen={setAuthFailureOpen} />
       <ImageModal
         images={imageModalData?.images}
         startIndex={imageModalData?.startIndex}
@@ -206,6 +203,16 @@ export default function Index() {
               setSettingMessageIndex={setSettingMessageIndex}
             />
           ))}
+          <Button
+            className="mt-4 w-full"
+            disabled={data.messages.length >= 10}
+            onClick={() => {
+              data.messages.push({ data: {} });
+              setData({ ...data });
+            }}
+          >
+            Add Message
+          </Button>
         </div>
         <div
           className={`md:border-l-2 border-l-gray-400 p-4 md:w-1/2 h-full overflow-y-scroll relative ${
@@ -225,6 +232,8 @@ export default function Index() {
             <Message
               key={`preview-message-${i}`}
               message={message.data}
+              index={i}
+              data={data}
               setImageModalData={setImageModalData}
             />
           ))}

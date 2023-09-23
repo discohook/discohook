@@ -10,12 +10,14 @@ import { Markdown } from "./Markdown";
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
+  index?: number;
+  data?: QueryData;
   webhook?: APIWebhook;
   compact?: boolean;
   date?: Date;
   resolved?: Record<string, PartialResource>;
   setImageModalData?: SetImageModalData;
-}> = ({ message, webhook, date, resolved, setImageModalData }) => {
+}> = ({ message, index, data, webhook, date, resolved, setImageModalData }) => {
   const username = message.author?.name ?? webhook?.name ?? "Boogiehook",
     avatarUrl =
       message.author?.icon_url ??
@@ -25,6 +27,13 @@ export const Message: React.FC<{
           : cdn.defaultAvatar(5)
         : "/logos/boogiehook.svg"),
     badge: string | undefined = "BOT";
+
+  const lastMessage =
+    data && index !== undefined ? data.messages[index - 1] : undefined;
+  const showProfile = lastMessage
+    ? lastMessage.data.author?.name !== message.author?.name ||
+      lastMessage.data.author?.icon_url !== message.author?.icon_url
+    : true;
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
   for (const embed of message.embeds ?? []) {
@@ -53,32 +62,38 @@ export const Message: React.FC<{
   );
 
   return (
-    <div className="flex">
+    <div className={`flex ${showProfile && lastMessage ? "mt-4" : ""}`}>
       <div className="hidden sm:block w-fit shrink-0">
-        <img
-          className="rounded-full mr-3 h-10 w-10 cursor-pointer hover:shadow-lg active:translate-y-px"
-          src={avatarUrl}
-          alt={username}
-        />
+        {showProfile ? (
+          <img
+            className="rounded-full mr-3 h-10 w-10 cursor-pointer hover:shadow-lg active:translate-y-px"
+            src={avatarUrl}
+            alt={username}
+          />
+        ) : (
+          <div className="w-10 mr-3" />
+        )}
       </div>
       <div className="grow">
-        <p className="leading-none h-4">
-          <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold">
-            {username}
-          </span>
-          {badge && (
-            <span className="font-medium ml-1 mt-[0.75px] text-[10px] rounded px-1.5 py-px bg-blurple text-white items-center inline-flex h-4">
-              {badge}
+        {showProfile && (
+          <p className="leading-none h-4">
+            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold">
+              {username}
             </span>
-          )}
-          <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-            Today at{" "}
-            {(date ?? new Date()).toLocaleTimeString(undefined, {
-              hour: "numeric",
-              minute: "2-digit",
-            })}
-          </span>
-        </p>
+            {badge && (
+              <span className="font-medium ml-1 mt-[0.75px] text-[10px] rounded px-1.5 py-px bg-blurple text-white items-center inline-flex h-4">
+                {badge}
+              </span>
+            )}
+            <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
+              Today at{" "}
+              {(date ?? new Date()).toLocaleTimeString(undefined, {
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+          </p>
+        )}
         {message.content && (
           <div className="font-medium text-base leading-[1.375] whitespace-pre-wrap break-words">
             <Markdown
