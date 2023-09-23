@@ -58,19 +58,12 @@ export const EmbedEditor: React.FC<{
       partialEmbed.footer = undefined;
     }
 
-    setData({
-      ...data,
-      messages: data.messages.splice(mi, 1, {
-        ...message,
-        data: {
-          ...message.data,
-          embeds: message.data.embeds!.splice(i, 1, {
-            ...embed,
-            ...partialEmbed,
-          }),
-        },
-      }),
+    message.data.embeds!.splice(i, 1, {
+      ...embed,
+      ...partialEmbed,
     });
+
+    setData({ ...data });
   };
 
   // The first embed in the gallery is the parent that the children will be merged into
