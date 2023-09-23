@@ -208,6 +208,20 @@ export const Embed: React.FC<{
             />
           </button>
         )}
+        {embed.footer && embed.footer.text && (
+          <div className="min-w-0 flex mt-2">
+            {embed.footer.icon_url && (
+              <img
+                className="h-5 w-5 mr-2 object-contain rounded-full"
+                src={embed.footer.icon_url}
+                alt="Footer"
+              />
+            )}
+            <p className="font-medium text-xs text-[#313338] dark:text-[#dbdee1] whitespace-pre-wrap inline-block my-auto">
+              {embed.footer.text}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

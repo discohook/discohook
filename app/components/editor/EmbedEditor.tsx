@@ -489,6 +489,47 @@ export const EmbedEditor: React.FC<{
           />
         )}
       </EmbedEditorSection>
+      {!isChild && (
+        <>
+          <hr className="border border-gray-500/20" />
+          <EmbedEditorSection name="Footer" open={open}>
+            <div className="flex">
+              <div className="grow">
+                <TextInput
+                  label="Text"
+                  className="w-full"
+                  maxLength={2048}
+                  value={embed.footer?.text ?? ""}
+                  onInput={(e) =>
+                    updateEmbed({
+                      footer: {
+                        ...(embed.footer ?? {}),
+                        text: e.currentTarget.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="grid gap-2 mt-2">
+              <TextInput
+                label="Icon URL"
+                className="w-full"
+                type="url"
+                value={embed.footer?.icon_url ?? ""}
+                onInput={(e) =>
+                  updateEmbed({
+                    footer: {
+                      ...(embed.footer ?? { text: "" }),
+                      icon_url: e.currentTarget.value,
+                    },
+                  })
+                }
+              />
+            </div>
+          </EmbedEditorSection>
+        </>
+      )}
     </details>
   );
 };
