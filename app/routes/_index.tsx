@@ -85,11 +85,26 @@ export default function Index() {
       ? { version: "d2", ...(parsed.data as QueryData) }
       : { version: "d2", messages: [INDEX_FAILURE_MESSAGE] }
   );
+  const [urlTooLong, setUrlTooLong] = useState(false);
+
   useEffect(() => {
-    setSearchParams(
-      { data: base64Encode(JSON.stringify(data)) },
-      { replace: true, preventScrollReset: true }
+    const encoded = base64Encode(JSON.stringify(data));
+    // URLs on Cloudflare are limited to 16KB
+    const fullUrl = new URL(
+      location.origin + location.pathname + `?data=${encoded}`
     );
+    if (fullUrl.toString().length >= 16000) {
+      setUrlTooLong(true);
+      if (searchParams.get("data")) {
+        setSearchParams({}, { replace: true, preventScrollReset: true });
+      }
+    } else {
+      setUrlTooLong(false);
+      setSearchParams(
+        { data: encoded },
+        { replace: true, preventScrollReset: true }
+      );
+    }
   }, [data]);
 
   type Targets = Record<string, APIWebhook>;
@@ -159,6 +174,13 @@ export default function Index() {
             tab === "editor" ? "" : "hidden md:block"
           }`}
         >
+          {urlTooLong && (
+            <p className="mb-4 text-sm font-regular p-2 rounded bg-yellow-100 border-2 border-yellow-200">
+              <CoolIcon icon="Triangle_Warning" /> Your message data is too
+              large to be shown in the page URL. If you need to share this page,
+              use the "Share Message" button.
+            </p>
+          )}
           {Object.values(targets).map((webhook) => {
             const avatarUrl = webhook.avatar
               ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
