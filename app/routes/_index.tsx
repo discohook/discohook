@@ -2,6 +2,7 @@ import type { LoaderArgs, V2_MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
+import LocalizedStrings from "react-localization";
 import { discordAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -50,6 +51,17 @@ export const submitMessage = async (
     embeds: message.data.embeds || undefined,
   });
 };
+
+const strings = new LocalizedStrings({
+  en: {
+    editor: "Editor",
+    preview: "Preview",
+    send: "Send",
+    addWebhook: "Add Webhook",
+    addMessage: "Add Message",
+    previewInfo: "Preview Info",
+  },
+});
 
 export default function Index() {
   const { discordUser } = useLoaderData<typeof loader>();
@@ -173,7 +185,7 @@ export default function Index() {
                     await submitMessage(webhook, data.messages[0]);
                   }}
                 >
-                  Send
+                  {strings.send}
                 </Button>
               </div>
             );
@@ -183,14 +195,14 @@ export default function Index() {
               onClick={() => setAddingTarget(true)}
               disabled={Object.keys(targets).length >= 10}
             >
-              Add Webhook
+              {strings.addWebhook}
             </Button>
             <Button
               className="ml-auto md:hidden"
               onClick={() => setTab("preview")}
               discordstyle={ButtonStyle.Secondary}
             >
-              Preview <CoolIcon icon="Chevron_Right" />
+              {strings.preview} <CoolIcon icon="Chevron_Right" />
             </Button>
           </div>
           {data.messages.map((message, i) => (
@@ -215,7 +227,7 @@ export default function Index() {
               setData({ ...data });
             }}
           >
-            Add Message
+            {strings.addMessage}
           </Button>
         </div>
         <div
@@ -228,7 +240,7 @@ export default function Index() {
               onClick={() => setTab("editor")}
               discordstyle={ButtonStyle.Secondary}
             >
-              <CoolIcon icon="Chevron_Left" /> Editor
+              <CoolIcon icon="Chevron_Left" /> {strings.editor}
             </Button>
             <hr className="border border-gray-400 my-4" />
           </div>
@@ -247,7 +259,7 @@ export default function Index() {
             onClick={() => setShowDisclaimer(true)}
           >
             <CoolIcon icon="Info" className="mr-1.5" />
-            Preview Info
+            {strings.previewInfo}
           </Button>
         </div>
       </div>
