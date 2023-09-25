@@ -73,14 +73,16 @@ export const MessageEditor: React.FC<{
           >
             <CoolIcon icon="Copy" />
           </button>
-          <button
-            onClick={() => {
-              data.messages.splice(i, 1);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
+          {data.messages.length > 1 && (
+            <button
+              onClick={() => {
+                data.messages.splice(i, 1);
+                setData({ ...data });
+              }}
+            >
+              <CoolIcon icon="Trash_Full" />
+            </button>
+          )}
         </div>
       </summary>
       <div className="rounded bg-gray-100 p-2 mt-1 space-y-2">
