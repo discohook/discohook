@@ -46,8 +46,6 @@ const strings = new LocalizedStrings({
     editor: "Editor",
     preview: "Preview",
     send: "Send",
-    sendAll: "Send All",
-    edit: "Edit",
     addWebhook: "Add Webhook",
     addMessage: "Add Message",
     previewInfo: "Preview Info",
@@ -200,11 +198,6 @@ export default function Index() {
                     {webhook.user?.username}
                   </p>
                 </div>
-                {data.messages.length > 1 && (
-                  <Button className="ml-auto my-auto" onClick={async () => {}}>
-                    {strings.sendAll}
-                  </Button>
-                )}
               </div>
             );
           })}
