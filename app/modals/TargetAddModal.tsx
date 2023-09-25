@@ -30,8 +30,11 @@ export const TargetAddModal = (
       <div>
         <TextInput
           label="Webhook URL"
+          type="password"
           className="w-full"
           errors={[error]}
+          onFocus={(e) => e.currentTarget.type = "text"}
+          onBlur={(e) => e.currentTarget.type = "password"}
           delayOnInput={200}
           onInput={async (e) => {
             setError(undefined);
