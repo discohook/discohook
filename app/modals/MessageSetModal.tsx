@@ -124,7 +124,6 @@ export const MessageSetModal = (
                   onChange={(e) => {
                     if (e.currentTarget.checked) setWebhook(target);
                   }}
-                  className="peer"
                   hidden
                 />
                 <CoolIcon
