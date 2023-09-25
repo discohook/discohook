@@ -65,7 +65,7 @@ const strings = new LocalizedStrings({
 
 export default function Index() {
   const { discordUser } = useLoaderData<typeof loader>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const defaultModal = searchParams.get("m");
 
   let parsed;
@@ -96,14 +96,12 @@ export default function Index() {
     if (fullUrl.toString().length >= 16000) {
       setUrlTooLong(true);
       if (searchParams.get("data")) {
-        setSearchParams({}, { replace: true, preventScrollReset: true });
+        const urlWithoutQuery = location.origin + location.pathname;
+        history.pushState({ path: urlWithoutQuery }, "", urlWithoutQuery);
       }
     } else {
       setUrlTooLong(false);
-      setSearchParams(
-        { data: encoded },
-        { replace: true, preventScrollReset: true }
-      );
+      history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
     }
   }, [data]);
 
