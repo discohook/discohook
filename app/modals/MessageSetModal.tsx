@@ -96,10 +96,9 @@ export const MessageSetModal = (
         {Object.keys(possibleWebhooks).length > 0 ? (
           Object.entries(possibleWebhooks).map(([targetId, target]) => {
             return (
-              <button
+              <label
                 key={`target-${targetId}`}
-                className="flex rounded bg-gray-200 py-2 px-4 w-full"
-                onClick={() => setWebhook(target)}
+                className="flex rounded bg-gray-200 py-2 px-4 w-full cursor-pointer"
               >
                 <img
                   src={
@@ -118,13 +117,25 @@ export const MessageSetModal = (
                     Channel ID {target.channel_id}
                   </p>
                 </div>
+                <input
+                  type="radio"
+                  name="webhook"
+                  checked={!!webhook && target.id === webhook.id}
+                  onChange={(e) => {
+                    if (e.currentTarget.checked) setWebhook(target);
+                  }}
+                  className="peer"
+                  hidden
+                />
                 <CoolIcon
                   icon={
-                    webhook?.id === targetId ? "Radio_Fill" : "Radio_Unchecked"
+                    !!webhook && webhook.id === target.id
+                      ? "Radio_Fill"
+                      : "Radio_Unchecked"
                   }
                   className="ml-auto my-auto text-2xl text-blurple"
                 />
-              </button>
+              </label>
             );
           })
         ) : (
