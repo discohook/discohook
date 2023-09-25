@@ -11,8 +11,9 @@ datasource db {
 }
 
 model User {
-  id   Int    @id @default(autoincrement())
-  name String
+  id      Int      @id @default(autoincrement())
+  name    String
+  backups Backup[]
 
   firstSubscribed DateTime?
   subscribedSince DateTime?
@@ -25,7 +26,7 @@ model User {
 }
 
 model DiscordUser {
-  id            BigInt          @unique
+  id            BigInt          @id
   name          String
   globalName    String?
   discriminator String
@@ -36,7 +37,7 @@ model DiscordUser {
 }
 
 model GuildedUser {
-  id        String  @unique
+  id        String  @id
   name      String
   avatarUrl String?
 
@@ -44,16 +45,17 @@ model GuildedUser {
 }
 
 model DiscordGuild {
-  id   BigInt  @unique
+  id   BigInt  @id
   name String
   icon String?
 
   roles   DiscordRole[]
   members DiscordMember[]
+  backups Backup[]
 }
 
 model DiscordRole {
-  id      BigInt       @unique
+  id      BigInt       @id
   guildId BigInt
   guild   DiscordGuild @relation(fields: [guildId], references: [id])
 
@@ -81,7 +83,22 @@ model DiscordMember {
 }
 
 model GuildedServer {
-  id        String  @unique
+  id        String  @id
   name      String
   avatarUrl String?
+
+  backups Backup[]
+}
+
+model Backup {
+  id          Int      @id @default(autoincrement())
+  name        String
+  createdAt   DateTime @default(now())
+  dataVersion String
+  data        Json
+
+  ownerId Int
+  owner   User            @relation(fields: [ownerId], references: [id])
+  guilds  DiscordGuild[]
+  servers GuildedServer[]
 }
