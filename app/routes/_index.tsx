@@ -175,7 +175,7 @@ export default function Index() {
           }`}
         >
           {urlTooLong && (
-            <p className="mb-4 text-sm font-regular p-2 rounded bg-yellow-100 border-2 border-yellow-200">
+            <p className="mb-4 text-sm font-regular p-2 rounded bg-yellow-100 border-2 border-yellow-200 select-none">
               <CoolIcon icon="Triangle_Warning" /> Your message data is too
               large to be shown in the page URL. If you need to share this page,
               use the "Share Message" button.
