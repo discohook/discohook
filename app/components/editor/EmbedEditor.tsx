@@ -25,9 +25,7 @@ export const getEmbedText = (embed: APIEmbed): string | undefined =>
   embed.description ||
   embed.footer?.text;
 
-export const getEmbedErrors = (embed: APIEmbed) => {
-  const errors: string[] = [];
-
+export const getEmbedLength = (embed: APIEmbed) => {
   let totalCharacters =
     (embed.title ?? "").length +
     (embed.description ?? "").length +
@@ -40,17 +38,13 @@ export const getEmbedErrors = (embed: APIEmbed) => {
   if (fieldLengths.length > 0) {
     totalCharacters += fieldLengths.reduce((a, b) => a + b);
   }
+  return totalCharacters;
+}
 
-  if (totalCharacters > 6000) {
-    const error = strings.formatString(
-      strings.embedTooLarge,
-      totalCharacters - 6000
-    );
-    if (typeof error === "string") {
-      errors.push(error);
-    }
-  }
+export const getEmbedErrors = (embed: APIEmbed) => {
+  const errors: string[] = [];
 
+  const totalCharacters = getEmbedLength(embed)
   if (totalCharacters === 0 && !embed.image?.url && !embed.thumbnail?.url) {
     errors.push(strings.embedEmpty);
   }
@@ -60,8 +54,6 @@ export const getEmbedErrors = (embed: APIEmbed) => {
 
 const strings = new LocalizedStrings({
   en: {
-    embedTooLarge:
-      "Must contain at most 6000 characters (currently {0} over the limit)",
     embedEmpty: "Must contain text or an image",
   },
 });

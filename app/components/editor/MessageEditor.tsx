@@ -1,8 +1,16 @@
+import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { TextArea } from "../TextArea";
-import { EmbedEditor, getEmbedText } from "./EmbedEditor";
+import { EmbedEditor, getEmbedLength, getEmbedText } from "./EmbedEditor";
+
+const strings = new LocalizedStrings({
+  en: {
+    embedsTooLarge:
+      "Embeds must contain at most 6000 characters total (currently {0} over)",
+  },
+});
 
 export const getMessageText = (
   message: QueryData["messages"][number]["data"]
@@ -21,6 +29,10 @@ export const MessageEditor: React.FC<{
     React.SetStateAction<number | undefined>
   >;
 }> = ({ message, index: i, data, setData, setSettingMessageIndex }) => {
+  const embedsLength =
+    message.data.embeds && message.data.embeds.length > 0
+      ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
+      : 0;
   const previewText = getMessageText(message.data);
   return (
     <details className="group/message mt-4 pb-2" open>
@@ -43,7 +55,7 @@ export const MessageEditor: React.FC<{
             <CoolIcon icon="Chevron_Up" />
           </button>
           <button
-            className={i === (data.messages.length - 1) ? "hidden" : ""}
+            className={i === data.messages.length - 1 ? "hidden" : ""}
             onClick={() => {
               data.messages.splice(i, 1);
               data.messages.splice(i + 1, 0, message);
@@ -84,6 +96,15 @@ export const MessageEditor: React.FC<{
         />
         {message.data.embeds && message.data.embeds.length > 0 && (
           <div className="mt-1 space-y-1">
+            {embedsLength > 6000 && (
+              <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 select-none">
+                <CoolIcon icon="Circle_Warning" />{" "}
+                {strings.formatString(
+                  strings.embedsTooLarge,
+                  embedsLength - 6000
+                )}
+              </p>
+            )}
             {message.data.embeds.map((embed, ei) => (
               <EmbedEditor
                 key={`edit-message-${i}-embed-${ei}`}
