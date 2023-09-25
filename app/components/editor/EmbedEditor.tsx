@@ -1,4 +1,5 @@
 import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
+import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -23,6 +24,47 @@ export const getEmbedText = (embed: APIEmbed): string | undefined =>
   (embed.fields ? embed.fields.find((f) => !!f.name)?.name : undefined) ||
   embed.description ||
   embed.footer?.text;
+
+export const getEmbedErrors = (embed: APIEmbed) => {
+  const errors: string[] = [];
+
+  let totalCharacters =
+    (embed.title ?? "").length +
+    (embed.description ?? "").length +
+    (embed.author?.name ?? "").length +
+    (embed.footer?.text ?? "").length;
+
+  const fieldLengths = (embed.fields ?? []).map(
+    (f) => f.name.length + f.value.length
+  );
+  if (fieldLengths.length > 0) {
+    totalCharacters += fieldLengths.reduce((a, b) => a + b);
+  }
+
+  if (totalCharacters > 6000) {
+    const error = strings.formatString(
+      strings.embedTooLarge,
+      totalCharacters - 6000
+    );
+    if (typeof error === "string") {
+      errors.push(error);
+    }
+  }
+
+  if (totalCharacters === 0 && !embed.image?.url && !embed.thumbnail?.url) {
+    errors.push(strings.embedEmpty);
+  }
+
+  return errors;
+};
+
+const strings = new LocalizedStrings({
+  en: {
+    embedTooLarge:
+      "Must contain at most 6000 characters (currently {0} over the limit)",
+    embedEmpty: "Must contain text or an image",
+  },
+});
 
 export const EmbedEditor: React.FC<{
   message: QueryData["messages"][number];
@@ -80,6 +122,7 @@ export const EmbedEditor: React.FC<{
   const localMaxMembers = isChild ? 3 : 10;
 
   const previewText = getEmbedText(embed);
+  const errors = getEmbedErrors(embed);
   return (
     <details
       className="group/embed rounded p-2 bg-gray-100 border border-l-4 border-gray-300 border-l-gray-500 shadow"
@@ -97,6 +140,12 @@ export const EmbedEditor: React.FC<{
           icon="Chevron_Right"
           className="group-open/embed:rotate-90 mr-2 my-auto transition-transform"
         />
+        {errors.length > 0 && (
+          <CoolIcon
+            icon="Circle_Warning"
+            className="my-auto text-rose-600 mr-1.5"
+          />
+        )}
         {isChild ? (
           <>
             <span className="shrink-0">Gallery Image {localIndex + 2}</span>
@@ -160,6 +209,15 @@ export const EmbedEditor: React.FC<{
           </button>
         </div>
       </summary>
+      {errors.length > 0 && (
+        <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 select-none">
+          {errors.map((e) => (
+            <span className="block">
+              <CoolIcon icon="Circle_Warning" /> {e}
+            </span>
+          ))}
+        </p>
+      )}
       {!isChild && (
         <>
           <EmbedEditorSection name="Author" open={open}>
