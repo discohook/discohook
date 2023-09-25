@@ -2,7 +2,7 @@ import { APIEmbed, APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import LocalizedStrings from "react-localization";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { QueryData } from "~/types/QueryData";
-import { PartialResource } from "~/types/Resources";
+import { PartialResource } from "~/types/resources";
 import { cdn } from "~/util/discord";
 import { Embed } from "./Embed";
 import { FileAttachment } from "./FileAttachment";

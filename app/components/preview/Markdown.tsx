@@ -1,5 +1,5 @@
 import MarkdownView from "react-showdown";
-import { PartialResource } from "~/types/Resources";
+import { PartialResource } from "~/types/resources";
 import { cdn } from "~/util/discord";
 import { relativeTime } from "~/util/time";
 import { CoolIcon } from "../CoolIcon";

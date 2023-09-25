@@ -5,7 +5,7 @@ import {
   APIEmbedImage,
 } from "discord-api-types/v10";
 import { SetImageModalData } from "~/modals/ImageModal";
-import { PartialResource } from "~/types/Resources";
+import { PartialResource } from "~/types/resources";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 
