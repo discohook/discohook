@@ -12,12 +12,13 @@ import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
+import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
-import { cdn, executeWebhook } from "~/util/discord";
+import { cdn } from "~/util/discord";
 import { base64Decode, base64Encode } from "~/util/text";
 
 export const loader = async ({ request }: LoaderArgs) => {
@@ -40,23 +41,13 @@ export const meta: V2_MetaFunction = () => {
   ];
 };
 
-export const submitMessage = async (
-  target: APIWebhook,
-  message: QueryData["messages"][number]
-) => {
-  const data = await executeWebhook(target.id, target.token!, {
-    username: message.data.author?.name,
-    avatar_url: message.data.author?.icon_url,
-    content: message.data.content?.trim() || undefined,
-    embeds: message.data.embeds || undefined,
-  });
-};
-
 const strings = new LocalizedStrings({
   en: {
     editor: "Editor",
     preview: "Preview",
     send: "Send",
+    sendAll: "Send All",
+    edit: "Edit",
     addWebhook: "Add Webhook",
     addMessage: "Add Message",
     previewInfo: "Preview Info",
@@ -131,6 +122,9 @@ export default function Index() {
   const [authFailureOpen, setAuthFailureOpen] = useState(
     defaultModal === "auth-failure"
   );
+  const [sendingMessages, setSendingMessages] = useState(
+    defaultModal === "submit"
+  );
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -148,6 +142,13 @@ export default function Index() {
         data={data}
         setData={setData}
         messageIndex={settingMessageIndex}
+      />
+      <MessageSendModal
+        open={sendingMessages}
+        setOpen={setSendingMessages}
+        setAddingTarget={setAddingTarget}
+        targets={targets}
+        data={data}
       />
       <TargetAddModal
         open={addingTarget}
@@ -187,7 +188,7 @@ export default function Index() {
             return (
               <div
                 key={`target-${webhook.id}`}
-                className="flex rounded bg-gray-300 p-2 mb-2"
+                className="flex rounded bg-gray-300 p-2 md:px-4 mb-2"
               >
                 <img
                   className="rounded-full mr-4 h-12 my-auto"
@@ -199,14 +200,11 @@ export default function Index() {
                     {webhook.user?.username}
                   </p>
                 </div>
-                <Button
-                  className="ml-auto my-auto"
-                  onClick={async () => {
-                    await submitMessage(webhook, data.messages[0]);
-                  }}
-                >
-                  {strings.send}
-                </Button>
+                {data.messages.length > 1 && (
+                  <Button className="ml-auto my-auto" onClick={async () => {}}>
+                    {strings.sendAll}
+                  </Button>
+                )}
               </div>
             );
           })}
@@ -216,6 +214,13 @@ export default function Index() {
               disabled={Object.keys(targets).length >= 10}
             >
               {strings.addWebhook}
+            </Button>
+            <Button
+              className="ml-2"
+              onClick={() => setSendingMessages(true)}
+              disabled={data.messages.length === 0}
+            >
+              {strings.send}
             </Button>
             <Button
               className="ml-auto md:hidden"
