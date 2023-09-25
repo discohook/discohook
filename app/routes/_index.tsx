@@ -192,11 +192,21 @@ export default function Index() {
                   className="rounded-full mr-4 h-12 my-auto"
                   src={avatarUrl}
                 />
-                <div className="my-auto grow">
-                  <p className="font-semibold">{webhook.name}</p>
-                  <p className="text-sm leading-none">
+                <div className="my-auto grow truncate">
+                  <p className="font-semibold truncate">{webhook.name}</p>
+                  <p className="text-sm leading-none truncate">
                     {webhook.user?.username}
                   </p>
+                </div>
+                <div className="ml-auto space-x-2 my-auto shrink-0 text-xl">
+                  <button
+                    onClick={() => {
+                      delete targets[webhook.id];
+                      updateTargets({ ...targets });
+                    }}
+                  >
+                    <CoolIcon icon="Trash_Full" />
+                  </button>
                 </div>
               </div>
             );
