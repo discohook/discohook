@@ -35,7 +35,7 @@ export const Embed: React.FC<{
   }
 
   const images: APIEmbedImage[] = [];
-  if (embed.image) {
+  if (embed.image?.url) {
     images.push(embed.image);
   }
   if (extraImages) {
