@@ -17,3 +17,4 @@ The spiritual successor to [Discohook](https://github.com/discohook).
 | Backups            | ⌛                                               | ✅ stored in-browser                                    |
 | Scheduled messages | ⌛                                               | ✅ [with utils site](https://dutils.shay.cat/scheduler) |
 | Message logs       | ⌛                                               | ❌                                                      |
+| Languages supported | English                                          | English                                                  |
