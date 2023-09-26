@@ -2,6 +2,7 @@ import { ActionArgs, json } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
 import { redis } from "~/redis.server";
+import { getUser } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { randomString } from "~/util/text";
 
@@ -11,6 +12,7 @@ export interface ShortenedData {
   id: string;
   data: string;
   origin?: string;
+  userId?: number;
 }
 
 export const generateUniqueShortenKey = async (
@@ -59,6 +61,8 @@ export const action = async ({ request }: ActionArgs) => {
     throw json({ message: "Invalid payload" }, 400);
   }
 
+  const user = await getUser(request);
+
   const ttl = ttl_ ?? 604800000;
   const expires = new Date(new Date().getTime() + ttl);
 
@@ -69,6 +73,7 @@ export const action = async ({ request }: ActionArgs) => {
     id,
     data: JSON.stringify(data),
     origin,
+    userId: user?.id,
   };
   await redis.set(key, JSON.stringify(shortened), {
     EX: ttl / 1000,
@@ -79,5 +84,6 @@ export const action = async ({ request }: ActionArgs) => {
     origin,
     url: `${new URL(request.url).origin}/go/${id}`,
     expires,
+    userId: user?.id,
   };
 };
