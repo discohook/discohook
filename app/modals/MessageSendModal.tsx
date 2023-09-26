@@ -1,6 +1,6 @@
-import { DiscordAPIError } from "@discordjs/rest";
+import { DiscordErrorData } from "@discordjs/rest";
 import { APIMessage, APIWebhook } from "discord-api-types/v10";
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import LocalizedStrings from "react-localization";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -8,6 +8,7 @@ import { getMessageText } from "~/components/editor/MessageEditor";
 import { QueryData } from "~/types/QueryData";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
+import { MessageSendResultModal } from "./MessageSendResultModal";
 import { Modal, ModalProps } from "./Modal";
 
 const strings = new LocalizedStrings({
@@ -21,14 +22,14 @@ const strings = new LocalizedStrings({
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
 
-type SubmitMessageResult =
+export type SubmitMessageResult =
   | {
       status: "success";
       data: APIMessage;
     }
   | {
       status: "error";
-      data: DiscordAPIError;
+      data: DiscordErrorData;
     };
 
 export const submitMessage = async (
@@ -56,7 +57,7 @@ export const submitMessage = async (
   }
   return {
     status: "code" in data ? "error" : "success",
-    data: "code" in data ? (data as unknown as DiscordAPIError) : data,
+    data: "code" in data ? (data as unknown as DiscordErrorData) : data,
   } as SubmitMessageResult;
 };
 
@@ -98,7 +99,9 @@ export const MessageSendModal = (
     }),
     {}
   );
-  const enabledMessagesCount = Object.values(messages).filter((d) => d.enabled).length
+  const enabledMessagesCount = Object.values(messages).filter(
+    (d) => d.enabled
+  ).length;
   useEffect(() => {
     // Reset all messages to be enabled by default
     // since the index is not a static identifier
@@ -127,70 +130,84 @@ export const MessageSendModal = (
     }
   };
 
+  const [showingResult, setShowingResult] = useState<SubmitMessageResult>();
+
   return (
     <Modal
       title={`Send Message${data.messages.length === 1 ? "" : "s"}`}
       {...props}
       setOpen={setOpen}
     >
+      <MessageSendResultModal
+        open={!!showingResult}
+        setOpen={() => setShowingResult(undefined)}
+        result={showingResult}
+      />
       <p className="text-sm font-medium">Messages</p>
       <div className="space-y-1">
         {data.messages.length > 0 ? (
           data.messages.map((message, i) => {
             const previewText = getMessageText(message.data);
             return (
-              <label
-                key={`message-send-${i}`}
-                className="flex rounded bg-gray-200 py-2 px-4 w-full cursor-pointer"
-              >
-                {!!messages[i]?.result && (
+              <div key={`message-send-${i}`} className="flex">
+                <label className="flex grow rounded bg-gray-200 py-2 px-4 w-full cursor-pointer">
+                  {!!messages[i]?.result && (
+                    <CoolIcon
+                      icon={
+                        messages[i]?.result!.status === "success"
+                          ? "Check"
+                          : "Close_MD"
+                      }
+                      className={`text-2xl my-auto mr-1 ${
+                        messages[i]?.result!.status === "success"
+                          ? "text-green-600"
+                          : "text-rose-600"
+                      }`}
+                    />
+                  )}
+                  <div className="my-auto grow text-left truncate">
+                    <p className="font-semibold text-base truncate">
+                      Message {i + 1}
+                      {!!previewText && (
+                        <span className="truncate ml-1">- {previewText}</span>
+                      )}
+                    </p>
+                    {messages[i]?.result?.status === "error" && (
+                      <p className="text-rose-500 text-sm leading-none">
+                        <CoolIcon icon="Circle_Warning" className="mr-1" />
+                        {(messages[i].result?.data as DiscordErrorData).message}
+                      </p>
+                    )}
+                  </div>
+                  <input
+                    type="checkbox"
+                    name="message"
+                    checked={!!messages[i]?.enabled}
+                    onChange={(e) =>
+                      updateMessages({
+                        [i]: { enabled: e.currentTarget.checked },
+                      })
+                    }
+                    hidden
+                  />
                   <CoolIcon
                     icon={
-                      messages[i]?.result!.status === "success"
-                        ? "Check"
-                        : "Close_MD"
+                      messages[i]?.enabled
+                        ? "Checkbox_Check"
+                        : "Checkbox_Unchecked"
                     }
-                    className={`text-2xl my-auto mr-1 ${
-                      messages[i]?.result!.status === "success"
-                        ? "text-green-600"
-                        : "text-rose-600"
-                    }`}
+                    className="ml-auto my-auto text-2xl text-blurple"
                   />
+                </label>
+                {messages[i]?.result && (
+                  <button
+                    className="flex ml-2 p-2 text-2xl rounded bg-gray-200 hover:bg-gray-300 text-blurple hover:text-blurple-400 transition"
+                    onClick={() => setShowingResult(messages[i].result)}
+                  >
+                    <CoolIcon icon="Info" className="m-auto" />
+                  </button>
                 )}
-                <div className="my-auto grow text-left">
-                  <p className="font-semibold text-base">
-                    Message {i + 1}
-                    {!!previewText && (
-                      <span className="truncate ml-1">- {previewText}</span>
-                    )}
-                  </p>
-                  {messages[i]?.result?.status === "error" && (
-                    <p className="text-rose-500 text-sm leading-none">
-                      <CoolIcon icon="Circle_Warning" className="mr-1" />
-                      {(messages[i].result?.data as DiscordAPIError).message}
-                    </p>
-                  )}
-                </div>
-                <input
-                  type="checkbox"
-                  name="message"
-                  checked={messages[i]?.enabled}
-                  onChange={(e) =>
-                    updateMessages({
-                      [i]: { enabled: e.currentTarget.checked },
-                    })
-                  }
-                  hidden
-                />
-                <CoolIcon
-                  icon={
-                    messages[i]?.enabled
-                      ? "Checkbox_Check"
-                      : "Checkbox_Unchecked"
-                  }
-                  className="ml-auto my-auto text-2xl text-blurple"
-                />
-              </label>
+              </div>
             );
           })
         ) : (
@@ -227,7 +244,7 @@ export const MessageSendModal = (
                 <input
                   type="checkbox"
                   name="webhook"
-                  checked={selectedWebhooks[target.id]}
+                  checked={!!selectedWebhooks[target.id]}
                   onChange={(e) =>
                     updateSelectedWebhooks({
                       [target.id]: e.currentTarget.checked,
@@ -269,6 +286,8 @@ export const MessageSendModal = (
                   ([_, v]) => v.enabled
                 )) {
                   const message = data.messages[Number(index)];
+                  if (!message) continue;
+
                   const result = await submitMessage(webhook, message);
                   updateMessages({
                     [index]: { result, enabled: true },
@@ -277,8 +296,7 @@ export const MessageSendModal = (
               }
             }}
           >
-            {countSelected(selectedWebhooks) <= 1 &&
-            enabledMessagesCount > 1
+            {countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
               ? strings.sendAll
               : countSelected(selectedWebhooks) > 1
               ? strings.sendToAll
