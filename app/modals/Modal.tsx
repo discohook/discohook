@@ -26,6 +26,7 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode; }> = ({
         content: {
           zIndex: 11,
           padding: 0,
+          inset: "1rem",
           background: "none",
           border: "none",
           borderRadius: "0.5rem",
