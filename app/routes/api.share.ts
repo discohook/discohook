@@ -44,7 +44,12 @@ export const action = async ({ request }: ActionArgs) => {
         }
       })
       .transform((val) => JSON.parse(val)),
-    ttl: z.onumber(),
+    // Max 4 weeks, min 5 minutes
+    ttl: z.optional(
+      zx.IntAsString.refine(
+        (val) => val !== undefined && val >= 300000 && val <= 2419200000
+      )
+    ),
     origin: z.optional(z.enum(ALLOWED_EXTERNAL_ORIGINS)),
   });
   let data;
@@ -54,8 +59,7 @@ export const action = async ({ request }: ActionArgs) => {
     throw json({ message: "Invalid payload" }, 400);
   }
 
-  // Default 1 week, max 4 weeks, min 5 minutes
-  const ttl = Math.min(Math.max(ttl_ ?? 604800000, 2419200000), 300000);
+  const ttl = ttl_ ?? 604800000;
   const expires = new Date(new Date().getTime() + ttl);
 
   const origin = origin_ ?? new URL(request.url).origin;
