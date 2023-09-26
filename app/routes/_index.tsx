@@ -3,7 +3,6 @@ import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import LocalizedStrings from "react-localization";
-import { discordAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
@@ -17,14 +16,15 @@ import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { ShareCreateModal } from "~/modals/ShareCreateModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
+import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { cdn } from "~/util/discord";
 import { base64Decode, base64Encode } from "~/util/text";
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const discordUser = await discordAuth.isAuthenticated(request);
-  return { discordUser };
+  const user = await getUser(request);
+  return { user };
 };
 
 export const meta: V2_MetaFunction = () => {
@@ -55,7 +55,7 @@ const strings = new LocalizedStrings({
 });
 
 export default function Index() {
-  const { discordUser } = useLoaderData<typeof loader>();
+  const { user } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const defaultModal = searchParams.get("m");
 
@@ -165,7 +165,7 @@ export default function Index() {
       <AuthSuccessModal
         open={authSuccessOpen}
         setOpen={setAuthSuccessOpen}
-        user={discordUser}
+        user={user}
       />
       <AuthFailureModal open={authFailureOpen} setOpen={setAuthFailureOpen} />
       <ImageModal
@@ -173,7 +173,7 @@ export default function Index() {
         startIndex={imageModalData?.startIndex}
         clear={() => setImageModalData(undefined)}
       />
-      <Header user={discordUser} />
+      <Header user={user} />
       <div className="md:flex h-[calc(100%_-_3rem)]">
         <div
           className={`p-4 md:w-1/2 h-full overflow-y-scroll ${

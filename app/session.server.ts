@@ -1,6 +1,7 @@
 import { createCookieSessionStorage } from "@remix-run/node";
 import { APIUser } from "discord-api-types/v10";
 import { DiscordProfile } from "remix-auth-discord";
+import { discordAuth } from "./auth-discord.server";
 import { prisma } from "./prisma.server";
 
 export const sessionStorage = createCookieSessionStorage({
@@ -53,3 +54,38 @@ export const writeOauthUser = async ({
 };
 
 export type User = Awaited<ReturnType<typeof writeOauthUser>>;
+
+export const getUserId = async (request: Request) => {
+  const data = await discordAuth.isAuthenticated(request);
+  const userId = data?.id;
+  if (!userId || typeof userId !== "number") {
+    return null;
+  }
+  return userId;
+}
+
+export const getUser = async(request: Request): Promise<User | null> => {
+  const userId = await getUserId(request);
+  if (!userId) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      discordUser: {
+        select: {
+          id: true,
+          name: true,
+          globalName: true,
+          discriminator: true,
+          avatar: true,
+        },
+      },
+    },
+  });
+
+  return user;
+}

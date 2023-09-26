@@ -1,17 +1,18 @@
 import { APIUser } from "discord-api-types/v10";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
-import { User, sessionStorage, writeOauthUser } from "~/session.server";
+import { sessionStorage, writeOauthUser } from "~/session.server";
 import { prisma } from "./prisma.server";
 import { getCurrentUserGuilds } from "./util/discord";
 
-export type UserWithAuth = User & {
+export type UserAuth = {
+  id: number;
   authType: "discord";
   accessToken: string;
   refreshToken: string;
 };
 
-export const discordAuth = new Authenticator<UserWithAuth>(sessionStorage);
+export const discordAuth = new Authenticator<UserAuth>(sessionStorage);
 
 const strategy = new DiscordStrategy(
   {
@@ -25,7 +26,7 @@ const strategy = new DiscordStrategy(
     refreshToken,
     extraParams,
     profile,
-  }): Promise<UserWithAuth> => {
+  }): Promise<UserAuth> => {
     const j = profile.__json as APIUser;
     await prisma.discordUser.upsert({
       where: { id: BigInt(j.id) },
@@ -53,7 +54,7 @@ const strategy = new DiscordStrategy(
     //);
 
     return {
-      ...user,
+      id: user.id,
       authType: "discord",
       accessToken,
       refreshToken,
