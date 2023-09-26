@@ -15,6 +15,7 @@ import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
+import { ShareCreateModal } from "~/modals/ShareCreateModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
@@ -46,6 +47,7 @@ const strings = new LocalizedStrings({
     editor: "Editor",
     preview: "Preview",
     send: "Send",
+    shareMessage: "Share Message",
     addWebhook: "Add Webhook",
     addMessage: "Add Message",
     previewInfo: "Preview Info",
@@ -123,6 +125,7 @@ export default function Index() {
   const [sendingMessages, setSendingMessages] = useState(
     defaultModal === "submit"
   );
+  const [sharing, setSharing] = useState(defaultModal === "share-create");
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -145,6 +148,12 @@ export default function Index() {
         open={sendingMessages}
         setOpen={setSendingMessages}
         setAddingTarget={setAddingTarget}
+        targets={targets}
+        data={data}
+      />
+      <ShareCreateModal
+        open={sharing}
+        setOpen={setSharing}
         targets={targets}
         data={data}
       />
@@ -224,6 +233,14 @@ export default function Index() {
               disabled={data.messages.length === 0}
             >
               {strings.send}
+            </Button>
+            <Button
+              className="ml-2"
+              onClick={() => setSharing(true)}
+              discordstyle={ButtonStyle.Secondary}
+              disabled={data.messages.length === 0}
+            >
+              {strings.shareMessage}
             </Button>
             <Button
               className="ml-auto md:hidden"
