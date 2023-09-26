@@ -47,7 +47,7 @@ export const action = async ({ request }: ActionArgs) => {
     // Max 4 weeks, min 5 minutes
     ttl: z.optional(
       zx.IntAsString.refine(
-        (val) => val !== undefined && val >= 300000 && val <= 2419200000
+        (val) => val >= 300000 && val <= 2419200000
       )
     ),
     origin: z.optional(z.enum(ALLOWED_EXTERNAL_ORIGINS)),
