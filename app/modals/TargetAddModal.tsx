@@ -1,5 +1,5 @@
-import { APIWebhook } from "discord-api-types/v10";
-import { ReactNode, useState } from "react";
+import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { ReactNode, useEffect, useState } from "react";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
 import { WEBHOOK_URL_RE } from "~/util/constants";
@@ -25,6 +25,14 @@ export const TargetAddModal = (
     if (!s) setWebhook(undefined);
   };
 
+  useEffect(() => {
+    // @ts-ignore
+    window.handlePopupClose = (result: APIWebhook) => {
+      props.updateTargets({ [result.id]: result });
+      setOpen(false);
+    };
+  }, [webhook]);
+
   return (
     <Modal title="Add Target" {...props} setOpen={setOpen}>
       <div>
@@ -33,8 +41,8 @@ export const TargetAddModal = (
           type="password"
           className="w-full"
           errors={[error]}
-          onFocus={(e) => e.currentTarget.type = "text"}
-          onBlur={(e) => e.currentTarget.type = "password"}
+          onFocus={(e) => (e.currentTarget.type = "text")}
+          onBlur={(e) => (e.currentTarget.type = "password")}
           delayOnInput={200}
           onInput={async (e) => {
             setError(undefined);
@@ -116,18 +124,27 @@ export const TargetAddModal = (
         </div>
       </div>
       <div className="flex mt-4">
-        <Button
-          className="mx-auto"
-          disabled={!webhook}
-          onClick={() => {
-            if (webhook) {
-              props.updateTargets({ [webhook.id]: webhook });
-              setOpen(false);
+        <div className="mx-auto space-x-2">
+          <Button
+            disabled={!webhook}
+            onClick={() => {
+              if (webhook) {
+                props.updateTargets({ [webhook.id]: webhook });
+                setOpen(false);
+              }
+            }}
+          >
+            Add Webhook
+          </Button>
+          <Button
+            discordstyle={ButtonStyle.Link}
+            onClick={() =>
+              window.open("/auth/discord-webhook", "_blank", "popup width=530 height=750")
             }
-          }}
-        >
-          Add Webhook
-        </Button>
+          >
+            Create Webhook
+          </Button>
+        </div>
       </div>
     </Modal>
   );
