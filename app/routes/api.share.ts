@@ -1,6 +1,7 @@
 import { ActionArgs, json } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
+import { prisma } from "~/prisma.server";
 import { redis } from "~/redis.server";
 import { getUser } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
@@ -9,7 +10,6 @@ import { randomString } from "~/util/text";
 const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 
 export interface ShortenedData {
-  id: string;
   data: string;
   origin?: string;
   userId?: number;
@@ -48,9 +48,7 @@ export const action = async ({ request }: ActionArgs) => {
       .transform((val) => JSON.parse(val)),
     // Max 4 weeks, min 5 minutes
     ttl: z.optional(
-      zx.IntAsString.refine(
-        (val) => val >= 300000 && val <= 2419200000
-      )
+      zx.IntAsString.refine((val) => val >= 300000 && val <= 2419200000)
     ),
     origin: z.optional(z.enum(ALLOWED_EXTERNAL_ORIGINS)),
   });
@@ -70,7 +68,6 @@ export const action = async ({ request }: ActionArgs) => {
 
   const { id, key } = await generateUniqueShortenKey(8);
   const shortened: ShortenedData = {
-    id,
     data: JSON.stringify(data),
     origin,
     userId: user?.id,
@@ -78,6 +75,16 @@ export const action = async ({ request }: ActionArgs) => {
   await redis.set(key, JSON.stringify(shortened), {
     EX: ttl / 1000,
   });
+  if (user) {
+    await prisma.shareLink.create({
+      data: {
+        userId: user.id,
+        shareId: id,
+        expiresAt: expires,
+        origin: origin_,
+      },
+    });
+  }
 
   return {
     id,

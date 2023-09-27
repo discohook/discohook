@@ -11,18 +11,19 @@ datasource db {
 }
 
 model User {
-  id      Int      @id @default(autoincrement())
-  name    String
-  backups Backup[]
+  id         Int         @id @default(autoincrement())
+  name       String
+  backups    Backup[]
+  shareLinks ShareLink[]
 
   firstSubscribed DateTime?
   subscribedSince DateTime?
   lifetime        Boolean   @default(false)
 
   discordId   BigInt?      @unique
-  discordUser DiscordUser? @relation(fields: [discordId], references: [id])
+  discordUser DiscordUser? @relation(fields: [discordId], references: [id], onDelete: SetNull)
   guildedId   String?      @unique
-  guildedUser GuildedUser? @relation(fields: [guildedId], references: [id])
+  guildedUser GuildedUser? @relation(fields: [guildedId], references: [id], onDelete: SetNull)
 }
 
 model DiscordUser {
@@ -57,7 +58,7 @@ model DiscordGuild {
 model DiscordRole {
   id      BigInt       @id
   guildId BigInt
-  guild   DiscordGuild @relation(fields: [guildId], references: [id])
+  guild   DiscordGuild @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   name         String
   color        Int     @default(0)
@@ -76,8 +77,8 @@ model DiscordMember {
   userId  BigInt
   guildId BigInt
 
-  user  DiscordUser  @relation(fields: [userId], references: [id])
-  guild DiscordGuild @relation(fields: [guildId], references: [id])
+  user  DiscordUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guild DiscordGuild @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@unique([guildId, userId])
 }
@@ -90,6 +91,17 @@ model GuildedServer {
   backups Backup[]
 }
 
+model ShareLink {
+  id        Int      @id @default(autoincrement())
+  shareId   String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  origin    String?
+
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id])
+}
+
 model Backup {
   id          Int      @id @default(autoincrement())
   name        String
@@ -98,7 +110,7 @@ model Backup {
   data        Json
 
   ownerId Int
-  owner   User            @relation(fields: [ownerId], references: [id])
+  owner   User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   guilds  DiscordGuild[]
   servers GuildedServer[]
 }

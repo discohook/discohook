@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage, json } from "@remix-run/node";
 import { APIUser } from "discord-api-types/v10";
 import { DiscordProfile } from "remix-auth-discord";
 import { prisma } from "./prisma.server";
@@ -63,10 +63,25 @@ export const getUserId = async (request: Request) => {
   return userId;
 };
 
-export const getUser = async (request: Request): Promise<User | null> => {
+export async function getUser(
+  request: Request,
+  throwIfNull?: false
+): Promise<User | null>;
+export async function getUser(
+  request: Request,
+  throwIfNull?: true
+): Promise<User>;
+export async function getUser(
+  request: Request,
+  throwIfNull?: boolean
+): Promise<User | null> {
   const userId = await getUserId(request);
   if (!userId) {
-    return null;
+    if (throwIfNull) {
+      throw json({ message: "Must be logged in." }, 401);
+    } else {
+      return null;
+    }
   }
 
   const user = await prisma.user.findUnique({
@@ -85,6 +100,13 @@ export const getUser = async (request: Request): Promise<User | null> => {
       },
     },
   });
+  if (!user) {
+    if (throwIfNull) {
+      throw json({ message: "Must be logged in." }, 401);
+    } else {
+      return null;
+    }
+  }
 
-  return user;
-};
+  return user as User;
+}
