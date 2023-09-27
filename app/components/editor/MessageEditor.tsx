@@ -21,14 +21,14 @@ export const getMessageText = (
     : undefined);
 
 export const MessageEditor: React.FC<{
-  message: QueryData["messages"][number];
-  index: number;
   data: QueryData;
+  index: number;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
-}> = ({ message, index: i, data, setData, setSettingMessageIndex }) => {
+}> = ({ index: i, data, setData, setSettingMessageIndex }) => {
+  const message = data.messages[i];
   const embedsLength =
     message.data.embeds && message.data.embeds.length > 0
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
@@ -67,7 +67,7 @@ export const MessageEditor: React.FC<{
           <button
             className={data.messages.length >= 10 ? "hidden" : ""}
             onClick={() => {
-              data.messages.splice(i + 1, 0, message);
+              data.messages.splice(i + 1, 0, structuredClone(message));
               setData({ ...data });
             }}
           >

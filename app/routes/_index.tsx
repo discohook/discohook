@@ -250,10 +250,9 @@ export default function Index() {
               {strings.preview} <CoolIcon icon="Chevron_Right" />
             </Button>
           </div>
-          {data.messages.map((message, i) => (
+          {data.messages.map((_, i) => (
             <div key={`edit-message-${i}`}>
               <MessageEditor
-                message={message}
                 index={i}
                 data={data}
                 setData={setData}
