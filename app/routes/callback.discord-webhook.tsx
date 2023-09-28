@@ -1,4 +1,4 @@
-import { LoaderArgs } from "@remix-run/node";
+import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
 import LocalizedStrings from "react-localization";
@@ -12,7 +12,7 @@ const strings = new LocalizedStrings({
   },
 });
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const search = new URL(request.url).searchParams;
   if (search.get("error")) {
     return {

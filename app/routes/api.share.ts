@@ -1,4 +1,4 @@
-import { ActionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, json } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
 import { prisma } from "~/prisma.server";
@@ -29,7 +29,7 @@ export const generateUniqueShortenKey = async (
   return await generateUniqueShortenKey(defaultLength + 1);
 };
 
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const {
     data: data_,
     ttl: ttl_,

@@ -1,4 +1,4 @@
-import { ActionArgs, LoaderArgs, V2_MetaFunction, json } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction, json } from "@remix-run/node";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import LocalizedStrings from "react-localization";
 import { z } from "zod";
@@ -20,7 +20,7 @@ const strings = new LocalizedStrings({
   },
 });
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request, true);
 
   const links = await prisma.shareLink.findMany({
@@ -33,7 +33,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   return { user, links };
 };
 
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request, true);
   const { action, linkId } = await zx.parseForm(request, {
     action: z.enum(["DELETE_SHARE_LINK"]),
@@ -64,7 +64,7 @@ export const action = async ({ request }: ActionArgs) => {
   return null;
 };
 
-export const meta: V2_MetaFunction = () => [
+export const meta: MetaFunction = () => [
   { title: "Your Data - Boogiehook" },
 ];
 

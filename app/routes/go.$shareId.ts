@@ -1,11 +1,11 @@
-import { LoaderArgs, json, redirect } from "@remix-run/node";
+import { LoaderFunctionArgs, json, redirect } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
 import { redis } from "~/redis.server";
 import { base64UrlEncode } from "~/util/text";
 import { ShortenedData } from "./api.share";
 
-export const loader = async ({ request, params }: LoaderArgs) => {
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { shareId: id } = zx.parseParams(params, { shareId: z.string() });
 
   const key = `boogiehook-shorten-${id}`;
