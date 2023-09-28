@@ -1,9 +1,7 @@
-import {
-  CDN,
-  REST,
+import type {
+  BaseImageURLOptions,
+  ImageExtension,
   RawFile,
-  RequestData,
-  RouteLike,
 } from "@discordjs/rest";
 import { DiscordSnowflake } from "@sapphire/snowflake";
 import {
@@ -16,27 +14,27 @@ import {
   RESTPostAPIWebhookWithTokenWaitResult,
 } from "discord-api-types/v10";
 
-const rest = new REST({ version: "10" });
-export const cdn = new CDN();
+export const DISCORD_API = "https://discord.com/api";
+export const DISCORD_API_V = "10";
 
 export const getSnowflakeDate = (snowflake: string) =>
   new Date(Number(DiscordSnowflake.deconstruct(snowflake).timestamp));
 
 export const discordRequest = async (
   method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
-  route: RouteLike,
-  options?: RequestData
+  route: `/${string}`,
+  options?: {
+    query?: URLSearchParams;
+    init?: Omit<RequestInit, "method">;
+  }
 ) => {
   const search = options?.query ? "?" + options.query.toString() : "";
+  const init = options?.init ?? {};
 
-  return await rest.options.makeRequest(
-    `${rest.options.api}/v${rest.options.version}${route}${search}`,
-    // @ts-ignore
-    {
-      method,
-      ...(options ?? {}),
-    }
-  );
+  return await fetch(`${DISCORD_API}/v${DISCORD_API_V}${route}${search}`, {
+    method,
+    ...init,
+  });
 };
 
 export const getWebhook = async (id: string, token: string) => {
@@ -78,13 +76,15 @@ export const executeWebhook = async (
     `/webhooks/${webhookId}/${webhookToken}`,
     {
       query,
-      body: JSON.stringify(payload),
-      files,
-      headers: {
-        "Content-Type":
-          files && files.length > 0
-            ? "multipart/form-data"
-            : "application/json",
+      init: {
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type":
+            files && files.length > 0
+              ? "multipart/form-data"
+              : "application/json",
+        },
+        // files,
       },
     }
   );
@@ -110,13 +110,15 @@ export const updateWebhookMessage = async (
     `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
     {
       query,
-      body: JSON.stringify(payload),
-      files,
-      headers: {
-        "Content-Type":
-          files && files.length > 0
-            ? "multipart/form-data"
-            : "application/json",
+      init: {
+        body: JSON.stringify(payload),
+        // files,
+        headers: {
+          "Content-Type":
+            files && files.length > 0
+              ? "multipart/form-data"
+              : "application/json",
+        },
       },
     }
   );
@@ -126,10 +128,45 @@ export const updateWebhookMessage = async (
 
 export const getCurrentUserGuilds = async (accessToken: string) => {
   const data = await discordRequest("GET", `/users/@me/guilds`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
+    init: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
   });
 
   return (await data.json()) as RESTGetAPICurrentUserGuildsResult;
 };
+
+class CDN {
+  readonly BASE = "https://cdn.discordapp.com";
+
+  constructor() {}
+
+  _withOpts(
+    options: BaseImageURLOptions | undefined,
+    defaultSize?: BaseImageURLOptions["size"]
+  ): string {
+    return `.${options?.extension ?? "webp"}?size=${
+      options?.size ?? defaultSize ?? 1024
+    }`;
+  }
+
+  avatar(
+    id: string,
+    avatarHash: string,
+    options?: BaseImageURLOptions
+  ): string {
+    return this.BASE + `/avatars/${id}/${avatarHash}` + this._withOpts(options);
+  }
+
+  defaultAvatar(index: number): string {
+    return this.BASE + `/embed/avatars/${index}.png`;
+  }
+
+  emoji(id: string, extension?: ImageExtension): string {
+    return this.BASE + `/emojis/${id}${extension ? `.${extension}` : ""}`;
+  }
+}
+
+export const cdn = new CDN();
