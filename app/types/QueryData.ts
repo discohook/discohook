@@ -1,6 +1,12 @@
 import { APIAttachment, APIEmbed } from "discord-api-types/v10";
 import { z } from "zod";
 
+/** The version of the query data, defaults to `d2`
+ *
+ * `d2` is based on Discohook's second data format, which supports multiple
+ * messages and targets. `d2`-versioned data can also include `webhook_id`
+ * for messages, which is backwards compatible with Discohook.
+ */
 export type QueryDataVersion = "d2";
 
 export interface QueryData {
