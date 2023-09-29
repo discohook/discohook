@@ -3,21 +3,27 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
 import { ExampleModal } from "~/modals/ExampleModal";
 import { HelpModal } from "~/modals/HelpModal";
+import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { Button } from "./Button";
 
 export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const [searchParams] = useSearchParams();
-  const [helpOpen, setHelpOpen] = useState(searchParams.get("m") === "help");
-  const [exampleOpen, setExampleOpen] = useState(
-    searchParams.get("m") === "embed-example"
-  );
+  const dm = searchParams.get("m");
+  const [helpOpen, setHelpOpen] = useState(dm === "help");
+  const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");
+  const [settingsOpen, setSettingsOpen] = useState(dm === "settings");
 
   return (
     <div className="sticky top-0 left-0 z-10 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
       <HelpModal open={helpOpen} setOpen={setHelpOpen} />
       <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
+      <SettingsModal
+        open={settingsOpen}
+        setOpen={setSettingsOpen}
+        user={user}
+      />
       <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
       {user && (
         <div className="flex my-auto">
@@ -30,20 +36,29 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           </p>
         </div>
       )}
-      <Button
-        className="my-auto ml-auto"
-        discordstyle={ButtonStyle.Secondary}
-        onClick={() => setHelpOpen(true)}
-      >
-        Help
-      </Button>
-      <Button
-        className="my-auto ml-2"
-        discordstyle={ButtonStyle.Secondary}
-        onClick={() => setExampleOpen(true)}
-      >
-        Embed Example
-      </Button>
+      <div className="grow flex overflow-x-auto ml-6">
+        <Button
+          className="my-auto mr-2 shrink-0"
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => setSettingsOpen(true)}
+        >
+          Settings
+        </Button>
+        <Button
+          className="my-auto ml-auto shrink-0"
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => setHelpOpen(true)}
+        >
+          Help
+        </Button>
+        <Button
+          className="my-auto ml-2 shrink-0"
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => setExampleOpen(true)}
+        >
+          Embed Example
+        </Button>
+      </div>
     </div>
   );
 };
