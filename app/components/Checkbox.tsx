@@ -36,7 +36,7 @@ const ConditionalBox: React.FC<{ check?: boolean; className?: string }> = ({
     } ${className ?? ""}`}
   >
     {check && (
-      <CoolIcon icon="Check" className="m-auto mr-[2px] group-hover/checkbox:opacity-0 transition" />
+      <CoolIcon icon="Check" className="m-auto mr-[2px] transition" />
     )}
   </div>
 );
