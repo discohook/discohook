@@ -72,7 +72,6 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           <Radio
             name="display"
             label="Cozy"
-            description="Nice and spacious"
             checked={
               !settings.messageDisplay || settings.messageDisplay === "cozy"
             }
@@ -85,7 +84,6 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           <Radio
             name="display"
             label="Compact"
-            description="Get shrunk"
             checked={settings.messageDisplay === "compact"}
             onChange={(e) => {
               if (e.currentTarget.checked) {
