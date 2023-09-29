@@ -1,8 +1,11 @@
 import { Button } from "~/components/Button";
 import { Message } from "~/components/preview/Message";
+import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
 export const ExampleModal = (props: ModalProps) => {
+  const [settings] = useLocalStorage();
+
   return (
     <Modal title="Embed Example" {...props}>
       <p>
@@ -11,6 +14,8 @@ export const ExampleModal = (props: ModalProps) => {
       </p>
       <div className="mt-4">
         <Message
+          messageDisplay={settings.messageDisplay}
+          compactAvatars={settings.compactAvatars}
           message={{
             content: "Content",
             embeds: [

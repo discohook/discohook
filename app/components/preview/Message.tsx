@@ -90,7 +90,7 @@ export const Message: React.FC<{
   );
 
   return (
-    <div className={`flex ${showProfile && lastMessage ? "mt-4" : ""}`}>
+    <div className={`flex dark:text-[#dbdee1] ${showProfile && lastMessage ? "mt-4" : ""}`}>
       {messageDisplay !== "compact" && (
         <div className="hidden sm:block w-fit shrink-0">
           {showProfile ? (
