@@ -107,7 +107,7 @@ export const Message: React.FC<{
       <div className="grow">
         {showProfile && messageDisplay !== "compact" && (
           <p className="leading-none h-4">
-            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium">
+            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
               {username}
             </span>
             {badge && (
@@ -152,7 +152,7 @@ export const Message: React.FC<{
                     {badge}
                   </span>
                 )}
-                <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium">
+                <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
                   {username}
                 </span>
               </span>
