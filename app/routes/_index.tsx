@@ -20,6 +20,7 @@ import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { cdn } from "~/util/discord";
+import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64Encode } from "~/util/text";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -58,6 +59,7 @@ export default function Index() {
   const { user } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
+  const [settings] = useLocalStorage();
 
   let parsed;
   try {
@@ -282,6 +284,8 @@ export default function Index() {
               index={i}
               data={data}
               setImageModalData={setImageModalData}
+              messageDisplay={settings.messageDisplay}
+              compactAvatars={settings.compactAvatars}
             />
           ))}
           <Button

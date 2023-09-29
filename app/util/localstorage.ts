@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-interface Settings {
+export interface Settings {
   theme?: "light" | "dark" | "sync";
   messageDisplay?: "cozy" | "compact";
   compactAvatars?: boolean;

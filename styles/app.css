@@ -76,3 +76,8 @@
 details summary.marker-none::-webkit-details-marker {
   display: none;
 }
+
+/* Properly inline content while in compact mode */
+.markdown-container>div {
+  display: contents;
+}

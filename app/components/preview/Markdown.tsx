@@ -217,6 +217,7 @@ export const Markdown: React.FC<{
             </time>
           );
         },
+        p: (props) => <span {...props} />,
         strong: (props) =>
           f("basic") ? (
             <span className="font-bold">{props.children}</span>
@@ -230,7 +231,7 @@ export const Markdown: React.FC<{
             <span>*{props.children}*</span>
           ),
         h1: (props) => (
-          <p
+          <span
             className={
               f("headers")
                 ? "font-bold text-2xl leading-[33px] my-2"
@@ -238,10 +239,10 @@ export const Markdown: React.FC<{
             }
           >
             {props.children}
-          </p>
+          </span>
         ),
         h2: (props) => (
-          <p
+          <span
             className={
               f("headers")
                 ? "font-bold text-xl leading-[27.5px] mb-2 mt-4"
@@ -249,10 +250,10 @@ export const Markdown: React.FC<{
             }
           >
             {props.children}
-          </p>
+          </span>
         ),
         h3: (props) => (
-          <p
+          <span
             className={
               f("headers")
                 ? "font-bold text-base leading-[22px] mb-2 mt-4"
@@ -260,11 +261,11 @@ export const Markdown: React.FC<{
             }
           >
             {props.children}
-          </p>
+          </span>
         ),
-        h4: (props) => <p>#### {props.children}</p>,
-        h5: (props) => <p>##### {props.children}</p>,
-        h6: (props) => <p>###### {props.children}</p>,
+        h4: (props) => <span>#### {props.children}</span>,
+        h5: (props) => <span>##### {props.children}</span>,
+        h6: (props) => <span>###### {props.children}</span>,
         a: (props) =>
           f("hyperlinks") ? (
             <a
@@ -282,13 +283,13 @@ export const Markdown: React.FC<{
           f("lists") ? (
             <ul className="list-disc" {...props} />
           ) : (
-            <p>- {props.children}</p>
+            <span>- {props.children}</span>
           ),
         ol: (props) =>
           f("lists") ? (
             <ul className="list-decimal" {...props} />
           ) : (
-            <p>- {props.children}</p>
+            <span>- {props.children}</span>
           ),
         li: (props) => <li className="ml-4" {...props} />,
         code: (props) =>
