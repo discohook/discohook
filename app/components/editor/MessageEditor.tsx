@@ -85,7 +85,7 @@ export const MessageEditor: React.FC<{
           )}
         </div>
       </summary>
-      <div className="rounded bg-gray-100 p-2 mt-1 space-y-2">
+      <div className="rounded bg-gray-100 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 dark:px-3 dark:-mx-1 mt-1 space-y-2">
         <TextArea
           label="Content"
           className="w-full h-40"
@@ -99,7 +99,7 @@ export const MessageEditor: React.FC<{
         {message.data.embeds && message.data.embeds.length > 0 && (
           <div className="mt-1 space-y-1">
             {embedsLength > 6000 && (
-              <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 select-none">
+              <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 dark:bg-rose-400 dark:border-rose-400 dark:text-black dark:font-medium select-none">
                 <CoolIcon icon="Circle_Warning" />{" "}
                 {strings.formatString(
                   strings.embedsTooLarge,

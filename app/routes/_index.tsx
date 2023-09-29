@@ -181,12 +181,27 @@ export default function Index() {
           }`}
         >
           {urlTooLong && (
-            <p className="mb-4 text-sm font-regular p-2 rounded bg-yellow-100 border-2 border-yellow-200 select-none">
+            <p className="mb-4 text-sm font-regular p-2 rounded bg-yellow-100 border-2 border-yellow-200 dark:bg-yellow-300 dark:border-yellow-300 dark:text-black dark:font-medium select-none">
               <CoolIcon icon="Triangle_Warning" /> Your message data is too
               large to be shown in the page URL. If you need to share this page,
               use the "Share Message" button.
             </p>
           )}
+          <div className="flex mb-2">
+            <Button
+              onClick={() => setAddingTarget(true)}
+              disabled={Object.keys(targets).length >= 10}
+            >
+              {strings.addWebhook}
+            </Button>
+            <Button
+              className="ml-auto md:hidden"
+              onClick={() => setTab("preview")}
+              discordstyle={ButtonStyle.Secondary}
+            >
+              {strings.preview} <CoolIcon icon="Chevron_Right" />
+            </Button>
+          </div>
           {Object.values(targets).map((webhook) => {
             const avatarUrl = webhook.avatar
               ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
@@ -195,7 +210,7 @@ export default function Index() {
             return (
               <div
                 key={`target-${webhook.id}`}
-                className="flex rounded bg-gray-300 p-2 md:px-4 mb-2"
+                className="flex rounded bg-gray-300 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 md:px-4 mb-2"
               >
                 <img
                   className="rounded-full mr-4 h-12 my-auto"
@@ -222,16 +237,9 @@ export default function Index() {
           })}
           <div className="flex">
             <Button
-              onClick={() => setAddingTarget(true)}
-              disabled={Object.keys(targets).length >= 10}
-            >
-              {strings.addWebhook}
-            </Button>
-            <Button
-              className="ml-2"
               onClick={() => setSendingMessages(true)}
               disabled={data.messages.length === 0}
-            >
+              >
               {strings.send}
             </Button>
             <Button
@@ -241,13 +249,6 @@ export default function Index() {
               disabled={data.messages.length === 0}
             >
               {strings.shareMessage}
-            </Button>
-            <Button
-              className="ml-auto md:hidden"
-              onClick={() => setTab("preview")}
-              discordstyle={ButtonStyle.Secondary}
-            >
-              {strings.preview} <CoolIcon icon="Chevron_Right" />
             </Button>
           </div>
           {data.messages.map((_, i) => (
@@ -275,7 +276,7 @@ export default function Index() {
           </Button>
         </div>
         <div
-          className={`md:border-l-2 border-l-gray-400 p-4 md:w-1/2 h-full overflow-y-scroll relative ${
+          className={`md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] p-4 md:w-1/2 h-full overflow-y-scroll relative ${
             tab === "preview" ? "" : "hidden md:block"
           }`}
         >
@@ -286,7 +287,7 @@ export default function Index() {
             >
               <CoolIcon icon="Chevron_Left" /> {strings.editor}
             </Button>
-            <hr className="border border-gray-400 my-4" />
+            <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           </div>
           {data.messages.map((message, i) => (
             <Message

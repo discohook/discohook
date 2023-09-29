@@ -56,7 +56,7 @@ export const TextArea = (
             return onInput(event);
           }
         }}
-        className={`rounded border bg-gray-300 border-gray-200 focus:border-blurple-500 dark:border-gray-600 dark:bg-gray-700 p-2 invalid:border-rose-400 dark:invalid:border-rose-400 transition ${
+        className={`rounded border bg-gray-300 border-gray-200 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] p-2 invalid:border-rose-400 dark:invalid:border-rose-400 transition ${
           props.className ?? ""
         }`}
       />

@@ -90,7 +90,7 @@ export const MessageSetModal = (
           }}
         />
       </div>
-      <hr className="border border-gray-400 my-4" />
+      <hr className="border border-gray-400 dark:border-gray-600 my-4" />
       <p className="text-sm font-medium">Webhook</p>
       <div className="space-y-1">
         {Object.keys(possibleWebhooks).length > 0 ? (

@@ -117,7 +117,7 @@ export const EmbedEditor: React.FC<{
   const errors = getEmbedErrors(embed);
   return (
     <details
-      className="group/embed rounded p-2 bg-gray-100 border border-l-4 border-gray-300 border-l-gray-500 shadow"
+      className="group/embed rounded p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-gray-500 dark:border-l-[#1E1F22] shadow"
       open={open}
       style={
         embed.color
@@ -135,7 +135,7 @@ export const EmbedEditor: React.FC<{
         {errors.length > 0 && (
           <CoolIcon
             icon="Circle_Warning"
-            className="my-auto text-rose-600 mr-1.5"
+            className="my-auto text-rose-600 dark:text-rose-400 mr-1.5"
           />
         )}
         {isChild ? (
@@ -202,7 +202,7 @@ export const EmbedEditor: React.FC<{
         </div>
       </summary>
       {errors.length > 0 && (
-        <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 select-none">
+        <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 dark:border-rose-300 dark:text-black select-none">
           {errors.map((e) => (
             <span className="block">
               <CoolIcon icon="Circle_Warning" /> {e}
@@ -375,7 +375,7 @@ export const EmbedEditor: React.FC<{
               <summary className="flex cursor-pointer">
                 <div className="grow">
                   <p className="text-sm font-medium">Sidebar Color</p>
-                  <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:bg-gray-700">
+                  <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
                     <span className="align-middle">
                       {embed.color
                         ? `#${embed.color.toString(16)}`
@@ -582,7 +582,7 @@ export const EmbedEditorSection: React.FC<
 > = ({ name, open, children }) => {
   return (
     <details className="group/section p-2" open={open}>
-      <summary className="group-open/section:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 font-semibold cursor-default select-none">
+      <summary className="group-open/section:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
           className="group-open/section:rotate-90 mr-2 my-auto transition-transform"
@@ -606,7 +606,7 @@ export const EmbedFieldEditorSection: React.FC<
   const previewText = field.name.trim() || field.value.trim();
   return (
     <details className="group/field pb-2 -my-1" open={open}>
-      <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 font-semibold cursor-default select-none">
+      <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
           className="group-open/field:rotate-90 mr-2 my-auto transition-transform"

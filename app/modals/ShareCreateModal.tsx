@@ -78,7 +78,7 @@ export const ShareCreateModal = (
           )}
         </p>
       )}
-      <hr className="border border-gray-400 my-4" />
+      <hr className="border border-gray-400 dark:border-gray-600 my-4" />
       <p className="text-sm font-medium">{strings.options}</p>
       <Checkbox
         label="Include webhook URLs"

@@ -16,6 +16,7 @@ const strings = new LocalizedStrings({
     send: "Send",
     sendToAll: "Send to All",
     sendAll: "Send All",
+    noMessages: "You have no messages to send.",
   },
 });
 
@@ -150,7 +151,7 @@ export const MessageSendModal = (
             const previewText = getMessageText(message.data);
             return (
               <div key={`message-send-${i}`} className="flex">
-                <label className="flex grow rounded bg-gray-200 py-2 px-4 w-full cursor-pointer">
+                <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer">
                   {!!messages[i]?.result && (
                     <CoolIcon
                       icon={
@@ -196,12 +197,12 @@ export const MessageSendModal = (
                         ? "Checkbox_Check"
                         : "Checkbox_Unchecked"
                     }
-                    className="ml-auto my-auto text-2xl text-blurple"
+                    className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
                   />
                 </label>
                 {messages[i]?.result && (
                   <button
-                    className="flex ml-2 p-2 text-2xl rounded bg-gray-200 hover:bg-gray-300 text-blurple hover:text-blurple-400 transition"
+                    className="flex ml-2 p-2 text-2xl rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-gray-600 text-blurple dark:text-blurple-400 hover:text-blurple-400 hover:dark:text-blurple-300 transition"
                     onClick={() => setShowingResult(messages[i].result)}
                   >
                     <CoolIcon icon="Info" className="m-auto" />
@@ -211,10 +212,10 @@ export const MessageSendModal = (
             );
           })
         ) : (
-          <p>You have no messages to send.</p>
+          <p>{strings.noMessages}</p>
         )}
       </div>
-      <hr className="border border-gray-400 my-4" />
+      <hr className="border border-gray-400 dark:border-gray-600 my-4" />
       <p className="text-sm font-medium">Webhooks</p>
       <div className="space-y-1">
         {Object.keys(targets).length > 0 ? (
@@ -222,7 +223,7 @@ export const MessageSendModal = (
             return (
               <label
                 key={`target-${targetId}`}
-                className="flex rounded bg-gray-200 py-2 px-4 w-full cursor-pointer"
+                className="flex rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer"
               >
                 <img
                   src={
@@ -258,7 +259,7 @@ export const MessageSendModal = (
                       ? "Checkbox_Check"
                       : "Checkbox_Unchecked"
                   }
-                  className="ml-auto my-auto text-2xl text-blurple"
+                  className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
                 />
               </label>
             );

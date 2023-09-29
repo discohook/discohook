@@ -45,7 +45,7 @@ export const Embed: React.FC<{
   return (
     <div>
       <div
-        className="rounded bg-gray-100 border-l-4 border-l-gray-300 inline-grid max-w-[520px] pt-2 pr-4 pb-4 pl-3"
+        className="rounded bg-gray-100 border-l-4 border-l-gray-300 dark:bg-[#2B2D31] dark:border-l-[#1E1F22] dark:text-gray-100 inline-grid max-w-[520px] pt-2 pr-4 pb-4 pl-3"
         style={
           embed.color
             ? { borderColor: `#${embed.color.toString(16)}` }
@@ -61,7 +61,7 @@ export const Embed: React.FC<{
                 alt="Author"
               />
             )}
-            <p className="font-medium text-sm text-black whitespace-pre-wrap inline-block my-auto">
+            <p className="font-medium text-sm whitespace-pre-wrap inline-block my-auto">
               {embed.author.url ? (
                 <a
                   className="hover:underline"
@@ -78,7 +78,7 @@ export const Embed: React.FC<{
           </div>
         )}
         {embed.title && (
-          <div className="text-base leading-[1.375] font-semibold text-black mt-2 inline-block">
+          <div className="text-base leading-[1.375] font-semibold mt-2 inline-block">
             {embed.url ? (
               <a
                 href={embed.url}
@@ -102,7 +102,7 @@ export const Embed: React.FC<{
           </div>
         )}
         {embed.description && (
-          <div className="text-sm font-medium text-black mt-2 inline-block whitespace-pre-line">
+          <div className="text-sm font-medium dark:font-normal mt-2 inline-block whitespace-pre-line">
             <Markdown
               text={embed.description}
               features="all"

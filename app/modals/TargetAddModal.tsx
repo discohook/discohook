@@ -69,7 +69,7 @@ export const TargetAddModal = (
           }}
         />
       </div>
-      <hr className="border border-gray-400 my-4" />
+      <hr className="border border-gray-400 dark:border-gray-600 my-4" />
       <div className={`flex py-4 ${!webhook ? "animate-pulse" : ""}`}>
         <div className="w-1/3 mr-4 my-auto">
           {avatarUrl ? (
@@ -79,7 +79,7 @@ export const TargetAddModal = (
               alt={webhook!.name ?? "Webhook"}
             />
           ) : (
-            <div className="rounded-full h-24 w-24 bg-gray-400 m-auto" />
+            <div className="rounded-full h-24 w-24 bg-gray-400 dark:bg-gray-600 m-auto" />
           )}
         </div>
         <div className="grow">
@@ -90,7 +90,7 @@ export const TargetAddModal = (
                 Created {getSnowflakeDate(webhook.id).toLocaleDateString()} by{" "}
                 {webhook?.user ? webhook.user.username : "someone"}
               </p>
-              <hr className="border border-gray-400 my-2" />
+              <hr className="border border-gray-400 dark:border-gray-600 my-2" />
               <p className="text-gray-500 hover:text-gray-700 transition">
                 Channel ID{" "}
                 <a
@@ -114,11 +114,11 @@ export const TargetAddModal = (
             </>
           ) : (
             <div>
-              <div className="h-5 rounded-full bg-gray-400 w-1/3" />
-              <div className="h-4 rounded-full bg-gray-400 mt-1 w-1/2" />
-              <hr className="border border-gray-400 my-4" />
-              <div className="h-4 rounded-full bg-gray-400 mt-1 w-4/6" />
-              <div className="h-4 rounded-full bg-gray-400 mt-1 w-3/6" />
+              <div className="h-5 rounded-full bg-gray-400 dark:bg-gray-600 w-1/3" />
+              <div className="h-4 rounded-full bg-gray-400 dark:bg-gray-600 mt-1 w-1/2" />
+              <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+              <div className="h-4 rounded-full bg-gray-400 dark:bg-gray-600 mt-1 w-4/6" />
+              <div className="h-4 rounded-full bg-gray-400 dark:bg-gray-600 mt-1 w-3/6" />
             </div>
           )}
         </div>

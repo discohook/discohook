@@ -39,10 +39,10 @@ export const MessageSendResultModal = (
             <span className="my-auto">{strings[result.status]}</span>
           </p>
           {success && <p>{strings.successTroubleshoot}</p>}
-          <hr className="border border-gray-400 my-4" />
+          <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           {success ? (
             <div>
-              <details className="p-2 bg-gray-200 rounded">
+              <details className="p-2 bg-gray-200 dark:bg-gray-700 rounded">
                 <summary className="font-medium">
                   {strings.messageDetails}
                 </summary>
@@ -59,7 +59,7 @@ export const MessageSendResultModal = (
           ) : (
             <div>
               <p>{strings.fullError}</p>
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-gray-200 p-2">
+              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-gray-200 dark:bg-gray-700 p-2">
                 {JSON.stringify(result.data, null, 2)}
               </pre>
             </div>

@@ -93,7 +93,7 @@ export const Message: React.FC<{
       <div className="grow">
         {showProfile && (
           <p className="leading-none h-4">
-            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold">
+            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium">
               {username}
             </span>
             {badge && (
@@ -113,7 +113,7 @@ export const Message: React.FC<{
           </p>
         )}
         {message.content && (
-          <div className="font-medium text-base leading-[1.375] whitespace-pre-wrap break-words">
+          <div className="font-medium dark:font-normal text-base leading-[1.375] whitespace-pre-wrap break-words">
             <Markdown
               text={message.content}
               features="all"
