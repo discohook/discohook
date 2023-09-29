@@ -31,6 +31,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             onChange={(e) => {
               if (e.currentTarget.checked) {
                 updateSettings({ theme: "light" });
+                document.documentElement.classList.remove("dark");
               }
             }}
           />
@@ -40,20 +41,26 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             onChange={(e) => {
               if (e.currentTarget.checked) {
                 updateSettings({ theme: "dark" });
+                document.documentElement.classList.add("dark");
               }
             }}
           />
           {/* <ThemeRadio value="amoled" bg="bg-black" /> */}
           <ThemeRadio
             bg="bg-gray-800"
-            checked={!settings.theme || settings.theme === "sync"}
+            checked={!settings.theme}
             onChange={(e) => {
               if (e.currentTarget.checked) {
-                updateSettings({ theme: "sync" });
+                updateSettings({ theme: undefined });
+                if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+                  document.documentElement.classList.remove("dark");
+                } else {
+                  document.documentElement.classList.add("dark");
+                }
               }
             }}
           >
-            <CoolIcon icon="Redo" className="m-auto text-xl" />
+            <CoolIcon icon="Redo" className="m-auto text-xl text-gray-50" />
           </ThemeRadio>
         </div>
       </div>
