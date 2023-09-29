@@ -57,7 +57,7 @@ const strings = new LocalizedStrings({
 export default function Index() {
   const { user } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
-  const defaultModal = searchParams.get("m");
+  const dm = searchParams.get("m");
 
   let parsed;
   try {
@@ -102,30 +102,16 @@ export default function Index() {
       ({ ...d, ...partialD } as Targets),
     {}
   );
-  const [showDisclaimer, setShowDisclaimer] = useState(
-    defaultModal === "preview"
-  );
-  const [addingTarget, setAddingTarget] = useState(
-    defaultModal === "add-target"
-  );
-  const [settingMessageIndex, setSettingMessageIndex] = useState<
-    number | undefined
-  >(
-    defaultModal && defaultModal.startsWith("set-reference")
-      ? Number(defaultModal.split("-")[2])
-      : undefined
+  const [showDisclaimer, setShowDisclaimer] = useState(dm === "preview");
+  const [addingTarget, setAddingTarget] = useState(dm === "add-target");
+  const [settingMessageIndex, setSettingMessageIndex] = useState(
+    dm && dm.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined
   );
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
-  const [authSuccessOpen, setAuthSuccessOpen] = useState(
-    defaultModal === "auth-success"
-  );
-  const [authFailureOpen, setAuthFailureOpen] = useState(
-    defaultModal === "auth-failure"
-  );
-  const [sendingMessages, setSendingMessages] = useState(
-    defaultModal === "submit"
-  );
-  const [sharing, setSharing] = useState(defaultModal === "share-create");
+  const [authSuccessOpen, setAuthSuccessOpen] = useState(dm === "auth-success");
+  const [authFailureOpen, setAuthFailureOpen] = useState(dm === "auth-failure");
+  const [sendingMessages, setSendingMessages] = useState(dm === "submit");
+  const [sharing, setSharing] = useState(dm === "share-create");
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -239,7 +225,7 @@ export default function Index() {
             <Button
               onClick={() => setSendingMessages(true)}
               disabled={data.messages.length === 0}
-              >
+            >
               {strings.send}
             </Button>
             <Button
