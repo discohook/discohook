@@ -121,7 +121,7 @@ const ThemeRadio: React.FC<
       hidden
     />
     <div
-      className={`rounded-full flex ${bg} h-[60px] w-[60px] cursor-pointer peer-checked:cursor-default border border-gray-50/50 peer-checked:border-2 peer-checked:border-blurple`}
+      className={`rounded-full flex ${bg} h-[60px] w-[60px] cursor-pointer peer-checked:cursor-default border border-black/50 dark:border-gray-50/50 peer-checked:border-2 peer-checked:border-blurple`}
     >
       {children}
     </div>
