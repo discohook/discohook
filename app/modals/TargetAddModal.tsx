@@ -91,7 +91,7 @@ export const TargetAddModal = (
                 {webhook?.user ? webhook.user.username : "someone"}
               </p>
               <hr className="border border-gray-400 dark:border-gray-600 my-2" />
-              <p className="text-gray-500 hover:text-gray-700 transition">
+              <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
                 Channel ID{" "}
                 <a
                   className="hover:underline"
@@ -101,7 +101,7 @@ export const TargetAddModal = (
                   {webhook.channel_id}
                 </a>
               </p>
-              <p className="text-gray-500 hover:text-gray-700 transition">
+              <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
                 Server ID{" "}
                 <a
                   className="hover:underline"
