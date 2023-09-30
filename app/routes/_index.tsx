@@ -147,6 +147,7 @@ export default function Index() {
         targets={targets}
         updateTargets={updateTargets}
         webhookId={editingWebhook}
+        user={user}
       />
       <ShareCreateModal
         open={sharing}
