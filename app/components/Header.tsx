@@ -8,12 +8,14 @@ import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { Button } from "./Button";
+import { CoolIcon } from "./CoolIcon";
 
 const strings = new LocalizedStrings({
   en: {
     settings: "Settings",
     help: "Help",
     embedExample: "Embed Example",
+    logIn: "Log In",
   },
   fr: {
     settings: "Paramètres",
@@ -40,14 +42,33 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
         user={user}
       />
       <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
-      {user && (
-        <Link to="/me" className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition" target={location.pathname === "/" ? "_blank" : undefined}>
+      {user ? (
+        <Link
+          to="/me"
+          className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
+          target={location.pathname === "/" ? "_blank" : undefined}
+        >
           <img
-            className="rounded-full h-7 w-7 mr-1.5"
+            className="rounded-full h-7 w-7"
             src={getUserAvatar(user, { size: 64 })}
           />
-          <p className="text-base font-medium hidden sm:block my-auto">
+          <p className="ml-1.5 text-base font-medium hidden sm:block my-auto">
             {user.discordUser?.globalName ?? getUserTag(user)}
+          </p>
+        </Link>
+      ) : (
+        <Link
+          to="/auth/discord"
+          className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
+          target={location.pathname === "/" ? "_blank" : undefined}
+        >
+          <CoolIcon
+            icon="Log_Out"
+            className="text-[28px] text-blurple dark:text-blurple-400 rotate-180"
+            title={strings.logIn}
+          />
+          <p className="ml-1.5 text-base font-medium hidden sm:block my-auto">
+            {strings.logIn}
           </p>
         </Link>
       )}
