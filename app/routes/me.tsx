@@ -79,7 +79,7 @@ export default function Me() {
       <Prose>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           <div className="w-full">
-            <p className="text-xl font-semibold">{strings.yourLinks}</p>
+            <p className="text-xl font-semibold dark:text-gray-100">{strings.yourLinks}</p>
             <p>{strings.contentUnavailable}</p>
             {links.length > 0 ? (
               <div className="space-y-1 mt-1">
@@ -89,7 +89,7 @@ export default function Me() {
                   return (
                     <div
                       key={`link-${link.id}`}
-                      className="w-full rounded p-2 bg-gray-100 flex"
+                      className="w-full rounded p-2 bg-gray-100 dark:bg-gray-700 flex"
                     >
                       <div className="truncate shrink-0">
                         <p className="font-medium">
@@ -103,7 +103,7 @@ export default function Me() {
                           })}
                           <span
                             className={`ml-1 ${
-                              expires < now ? "text-rose-400" : "text-gray-600"
+                              expires < now ? "text-rose-400" : "text-gray-600 dark:text-gray-500"
                             }`}
                           >
                             -{" "}
@@ -117,7 +117,7 @@ export default function Me() {
                             })}
                           </span>
                         </p>
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-gray-600 dark:text-gray-500 text-sm">
                           {strings.id} {link.shareId}
                         </p>
                       </div>
