@@ -444,7 +444,8 @@ export type CoolIconsGlyph =
 
 export const CoolIcon: React.FC<{
   icon: CoolIconsGlyph;
+  title?: string;
   className?: string;
-}> = ({ icon, className }) => (
-  <i className={`ci-${icon} ${className ?? ""}`.trim()} />
+}> = ({ icon, title, className }) => (
+  <i title={title} className={`ci-${icon} ${className ?? ""}`.trim()} />
 );

@@ -17,6 +17,8 @@ const strings = new LocalizedStrings({
     sendToAll: "Send to All",
     sendAll: "Send All",
     noMessages: "You have no messages to send.",
+    willBeEdited: "This message has a reference set, so it will be edited.",
+    skippedEdit: "Skipped edit due to mismatched webhook ID.",
   },
 });
 
@@ -42,7 +44,7 @@ export const submitMessage = async (
     data = await updateWebhookMessage(
       target.id,
       target.token!,
-      message.reference.match(MESSAGE_REF_RE)![2],
+      message.reference.match(MESSAGE_REF_RE)![3],
       {
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
@@ -191,14 +193,21 @@ export const MessageSendModal = (
                     }
                     hidden
                   />
-                  <CoolIcon
-                    icon={
-                      messages[i]?.enabled
-                        ? "Checkbox_Check"
-                        : "Checkbox_Unchecked"
-                    }
-                    className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
-                  />
+                  <div className="ml-auto my-auto space-x-2 text-2xl text-blurple dark:text-blurple-400">
+                    {message.reference && (
+                      <CoolIcon
+                        title={strings.willBeEdited}
+                        icon="Edit_Pencil_01"
+                      />
+                    )}
+                    <CoolIcon
+                      icon={
+                        messages[i]?.enabled
+                          ? "Checkbox_Check"
+                          : "Checkbox_Unchecked"
+                      }
+                    />
+                  </div>
                 </label>
                 {messages[i]?.result && (
                   <button
@@ -288,6 +297,24 @@ export const MessageSendModal = (
                 )) {
                   const message = data.messages[Number(index)];
                   if (!message) continue;
+                  if (
+                    message.data.webhook_id &&
+                    targetId !== message.data.webhook_id
+                  ) {
+                    updateMessages({
+                      [index]: {
+                        result: {
+                          status: "error",
+                          data: {
+                            code: 0,
+                            message: strings.skippedEdit,
+                          },
+                        },
+                        enabled: true,
+                      },
+                    });
+                    continue;
+                  }
 
                   const result = await submitMessage(webhook, message);
                   updateMessages({
