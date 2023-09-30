@@ -13,8 +13,7 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
       {
         title: "Discohook",
         description: `You may be familiar with this interface from [Discohook](https://discohook.app)! \
-This site is not maintained by the original creator of Discohook.
-        `
+This site is not maintained by the original creator of Discohook.`,
       },
     ],
   },
@@ -23,6 +22,6 @@ This site is not maintained by the original creator of Discohook.
 export const INDEX_FAILURE_MESSAGE: QueryData["messages"][number] = {
   data: {
     content:
-      "The data you loaded this page with was invalid. If you're a developer, [check out the docs](/docs).",
+      "The data you loaded this page with was invalid. If you're a developer, [check out the schema](https://github.com/shayypy/boogiehook/blob/master/app/types/QueryData.ts). If you need help, [join the support server](/discord).",
   },
 };
