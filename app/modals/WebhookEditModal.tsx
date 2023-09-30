@@ -74,7 +74,12 @@ export const WebhookEditModal = (
             webhook.token,
             {
               ...parsed.data,
-              avatar: payload.avatarUrl === null ? null : parsed.data.avatar,
+              avatar:
+                payload.avatarUrl === null
+                  ? null
+                  : !parsed.data.avatar
+                  ? undefined
+                  : parsed.data.avatar,
             },
             strings
               .formatString(
