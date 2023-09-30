@@ -151,7 +151,7 @@ export const MessageSendModal = (
             const previewText = getMessageText(message.data);
             return (
               <div key={`message-send-${i}`} className="flex">
-                <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer">
+                <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer overflow-hidden">
                   {!!messages[i]?.result && (
                     <CoolIcon
                       icon={
@@ -166,7 +166,7 @@ export const MessageSendModal = (
                       }`}
                     />
                   )}
-                  <div className="my-auto grow text-left truncate">
+                  <div className="my-auto grow text-left mr-2 truncate">
                     <p className="font-semibold text-base truncate">
                       Message {i + 1}
                       {!!previewText && (
@@ -232,13 +232,13 @@ export const MessageSendModal = (
                       : cdn.defaultAvatar(5)
                   }
                   alt={target.name ?? "Webhook"}
-                  className="rounded-full h-12 w-12 mr-2 my-auto"
+                  className="rounded-full h-12 w-12 mr-2 my-auto shrink-0"
                 />
-                <div className="my-auto grow text-left">
-                  <p className="font-semibold text-base">
+                <div className="my-auto grow text-left truncate mr-2">
+                  <p className="font-semibold text-base truncate">
                     {target.name ?? "Webhook"}
                   </p>
-                  <p className="text-sm leading-none">
+                  <p className="text-sm leading-none truncate">
                     Channel ID {target.channel_id}
                   </p>
                 </div>
