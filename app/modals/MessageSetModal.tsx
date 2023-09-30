@@ -98,7 +98,7 @@ export const MessageSetModal = (
             return (
               <label
                 key={`target-${targetId}`}
-                className="flex rounded bg-gray-200 py-2 px-4 w-full cursor-pointer"
+                className="flex rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 hover:dark:bg-gray-600 transition py-2 px-4 w-full cursor-pointer"
               >
                 <img
                   src={
@@ -132,7 +132,7 @@ export const MessageSetModal = (
                       ? "Radio_Fill"
                       : "Radio_Unchecked"
                   }
-                  className="ml-auto my-auto text-2xl text-blurple"
+                  className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
                 />
               </label>
             );
