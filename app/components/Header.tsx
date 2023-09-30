@@ -1,12 +1,26 @@
 import { useSearchParams } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
+import LocalizedStrings from "react-localization";
 import { ExampleModal } from "~/modals/ExampleModal";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { Button } from "./Button";
+
+const strings = new LocalizedStrings({
+  en: {
+    settings: "Settings",
+    help: "Help",
+    embedExample: "Embed Example",
+  },
+  fr: {
+    settings: "Paramètres",
+    help: "Aide",
+    embedExample: "Exemple",
+  },
+});
 
 export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const [searchParams] = useSearchParams();
@@ -42,21 +56,21 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setSettingsOpen(true)}
         >
-          Settings
+          {strings.settings}
         </Button>
         <Button
           className="my-auto ml-auto shrink-0"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setHelpOpen(true)}
         >
-          Help
+          {strings.help}
         </Button>
         <Button
           className="my-auto ml-2 shrink-0"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setExampleOpen(true)}
         >
-          Embed Example
+          {strings.embedExample}
         </Button>
       </div>
     </div>
