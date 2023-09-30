@@ -19,7 +19,9 @@ export const Button = (
           : [ButtonStyle.Link, ButtonStyle.Secondary].includes(
               props.discordstyle
             )
-          ? "bg-[#6d6f78] hover:bg-[#4e5058] dark:bg-[#4e5058] dark:hover:bg-[#6d6f78]"
+          ? "bg-[#6d6f78] hover:bg-[#4e5058] dark:bg-[#4e5058] hover:dark:bg-[#6d6f78]"
+          : props.discordstyle === ButtonStyle.Danger
+          ? "bg-[#da373c] hover:bg-[#a12828]"
           : ""
       } ${props.className ?? ""}`}
     >

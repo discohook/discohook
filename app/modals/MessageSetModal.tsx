@@ -219,6 +219,20 @@ export const MessageSetModal = (
           >
             Overwrite Message
           </Button>
+          <Button
+            disabled={!message?.reference}
+            discordstyle={ButtonStyle.Danger}
+            onClick={() => {
+              if (message) {
+                message.data.webhook_id = undefined;
+                message.reference = undefined;
+                setData({ ...data });
+                setOpen(false);
+              }
+            }}
+          >
+            Remove Reference
+          </Button>
         </div>
       </div>
     </Modal>
