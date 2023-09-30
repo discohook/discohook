@@ -63,7 +63,7 @@ export const TextInput = (
       />
       {props.errors &&
         props.errors.filter(e => e !== undefined).map((error, i) => (
-          <p key={`${props.id ?? label}-error-${i}`} className="text-rose-500 font-medium mt-1 text-sm">
+          <p key={`${props.id ?? label}-error-${i}`} className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm">
             <CoolIcon icon="Circle_Warning" className="mr-1.5" />
             {error}
           </p>
