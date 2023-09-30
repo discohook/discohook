@@ -1,4 +1,4 @@
-import { useSearchParams } from "@remix-run/react";
+import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
 import LocalizedStrings from "react-localization";
@@ -23,6 +23,7 @@ const strings = new LocalizedStrings({
 });
 
 export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
   const [helpOpen, setHelpOpen] = useState(dm === "help");
@@ -40,7 +41,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
       />
       <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
       {user && (
-        <div className="flex my-auto">
+        <Link to="/me" className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition" target={location.pathname === "/" ? "_blank" : undefined}>
           <img
             className="rounded-full h-7 w-7 mr-1.5"
             src={getUserAvatar(user, { size: 64 })}
@@ -48,7 +49,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           <p className="text-base font-medium hidden sm:block my-auto">
             {user.discordUser?.globalName ?? getUserTag(user)}
           </p>
-        </div>
+        </Link>
       )}
       <div className="grow flex overflow-x-auto ml-6">
         <Button
