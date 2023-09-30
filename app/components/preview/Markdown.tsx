@@ -52,7 +52,7 @@ export const Markdown: React.FC<{
     <MarkdownView
       flavor="vanilla"
       // sanitize-html was being a bit overzealous with mentions
-      markdown={text.replace(/(<)([^<]+)/g, "&lt;$2")}
+      markdown={text.replace(/(<)([^<]+)/g, "&lt;$2").split("\n").join("<br/>")}
       options={{
         tables: false,
         emoji: f("emojis"),
