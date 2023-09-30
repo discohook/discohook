@@ -1,14 +1,22 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction, json } from "@remix-run/node";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+  json,
+} from "@remix-run/node";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import { ButtonStyle } from "discord-api-types/v10";
 import LocalizedStrings from "react-localization";
 import { z } from "zod";
 import { zx } from "zodix";
+import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { prisma } from "~/prisma.server";
 import { redis } from "~/redis.server";
 import { getUser } from "~/session.server";
+import { getUserAvatar, getUserTag } from "~/util/users";
 
 const strings = new LocalizedStrings({
   en: {
@@ -17,6 +25,11 @@ const strings = new LocalizedStrings({
     id: "ID:",
     contentUnavailable:
       "Share link data is not kept after expiration. If you need to permanently store a message, use the backups feature instead.",
+    logOut: "Log Out",
+    subscribedSince: "Subscribed Since",
+    notSubscribed: "Not subscribed",
+    firstSubscribed: "First Subscribed",
+    never: "Never",
   },
 });
 
@@ -64,9 +77,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return null;
 };
 
-export const meta: MetaFunction = () => [
-  { title: "Your Data - Boogiehook" },
-];
+export const meta: MetaFunction = () => [{ title: "Your Data - Boogiehook" }];
 
 export default function Me() {
   const { user, links } = useLoaderData<typeof loader>();
@@ -78,8 +89,67 @@ export default function Me() {
       <Header user={user} />
       <Prose>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          <div className="w-full">
-            <p className="text-xl font-semibold dark:text-gray-100">{strings.yourLinks}</p>
+          <div className="w-full rounded-lg bg-gray-200 dark:bg-gray-700 shadow-md p-2 h-fit">
+            <div className="flex">
+              <img
+                className="rounded-full mr-4 h-16 w-16"
+                src={getUserAvatar(user)}
+              />
+              <div className="grow my-auto">
+                <p className="text-2xl font-semibold dark:text-gray-100">
+                  {user.name}
+                </p>
+                <p className="leading-none">{getUserTag(user)}</p>
+              </div>
+            </div>
+            <div className="grid gap-2 grid-cols-2 mt-4">
+              <div>
+                <p className="uppercase font-bold text-xs leading-4 dark:text-gray-100">
+                  {strings.subscribedSince}
+                </p>
+                <p className="text-sm font-normal">
+                  {user.subscribedSince
+                    ? new Date(user.subscribedSince).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )
+                    : strings.notSubscribed}
+                </p>
+              </div>
+              <div>
+                <p className="uppercase font-bold text-xs leading-4 dark:text-gray-100">
+                  {strings.firstSubscribed}
+                </p>
+                <p className="text-sm font-normal">
+                  {user.firstSubscribed
+                    ? new Date(user.firstSubscribed).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )
+                    : strings.never}
+                </p>
+              </div>
+            </div>
+            <div className="w-full flex mt-4">
+              <Link to="/auth/logout" className="ml-auto">
+                <Button discordstyle={ButtonStyle.Secondary}>
+                  {strings.logOut}
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className="w-full h-fit">
+            <p className="text-xl font-semibold dark:text-gray-100">
+              {strings.yourLinks}
+            </p>
             <p>{strings.contentUnavailable}</p>
             {links.length > 0 ? (
               <div className="space-y-1 mt-1">
@@ -103,7 +173,9 @@ export default function Me() {
                           })}
                           <span
                             className={`ml-1 ${
-                              expires < now ? "text-rose-400" : "text-gray-600 dark:text-gray-500"
+                              expires < now
+                                ? "text-rose-400"
+                                : "text-gray-600 dark:text-gray-500"
                             }`}
                           >
                             -{" "}
