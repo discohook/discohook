@@ -1,4 +1,9 @@
-import { createCookieSessionStorage, json } from "@remix-run/node";
+import {
+  SerializeFrom,
+  createCookieSessionStorage,
+  json,
+} from "@remix-run/node";
+import { Jsonify } from "@remix-run/server-runtime/node_modules/type-fest";
 import { APIUser } from "discord-api-types/v10";
 import { DiscordProfile } from "remix-auth-discord";
 import { prisma } from "./prisma.server";
@@ -21,13 +26,17 @@ BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
+const doubleDecode = <T>(data: unknown) => {
+  return JSON.parse(JSON.stringify(data)) as Jsonify<T>;
+};
+
 export const writeOauthUser = async ({
   discord,
 }: {
   discord?: DiscordProfile;
 }) => {
   const j = (discord ? discord.__json : {}) as APIUser;
-  return await prisma.user.upsert({
+  const user = await prisma.user.upsert({
     where: discord ? { discordId: BigInt(discord.id) } : { id: 0 },
     create: {
       name: discord ? j.global_name ?? j.username : "no name",
@@ -39,6 +48,8 @@ export const writeOauthUser = async ({
     select: {
       id: true,
       name: true,
+      firstSubscribed: true,
+      subscribedSince: true,
       discordUser: {
         select: {
           id: true,
@@ -50,9 +61,10 @@ export const writeOauthUser = async ({
       },
     },
   });
+  return doubleDecode<typeof user>(user);
 };
 
-export type User = Awaited<ReturnType<typeof writeOauthUser>>;
+export type User = SerializeFrom<typeof writeOauthUser>;
 
 export const getUserId = async (request: Request) => {
   const session = await getSession(request.headers.get("Cookie"));
@@ -89,6 +101,8 @@ export async function getUser(
     select: {
       id: true,
       name: true,
+      firstSubscribed: true,
+      subscribedSince: true,
       discordUser: {
         select: {
           id: true,
@@ -108,5 +122,5 @@ export async function getUser(
     }
   }
 
-  return user as User;
+  return doubleDecode<typeof user>(user) as User;
 }
