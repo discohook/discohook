@@ -8,8 +8,10 @@ import {
   RESTGetAPICurrentUserGuildsResult,
   RESTGetAPIWebhookWithTokenMessageResult,
   RESTGetAPIWebhookWithTokenResult,
+  RESTPatchAPIWebhookWithTokenJSONBody,
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
   RESTPatchAPIWebhookWithTokenMessageResult,
+  RESTPatchAPIWebhookWithTokenResult,
   RESTPostAPIWebhookWithTokenJSONBody,
   RESTPostAPIWebhookWithTokenWaitResult,
 } from "discord-api-types/v10";
@@ -124,6 +126,33 @@ export const updateWebhookMessage = async (
   );
 
   return (await data.json()) as RESTPatchAPIWebhookWithTokenMessageResult;
+};
+
+export const modifyWebhook = async (
+  webhookId: string,
+  webhookToken: string,
+  payload: RESTPatchAPIWebhookWithTokenJSONBody,
+  reason?: string
+) => {
+  const data = await discordRequest(
+    "PATCH",
+    `/webhooks/${webhookId}/${webhookToken}`,
+    {
+      init: {
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          ...(reason
+            ? {
+                "X-Audit-Log-Reason": reason,
+              }
+            : {}),
+        },
+      },
+    }
+  );
+
+  return (await data.json()) as RESTPatchAPIWebhookWithTokenResult;
 };
 
 export const getCurrentUserGuilds = async (accessToken: string) => {

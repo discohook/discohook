@@ -16,6 +16,7 @@ import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { ShareCreateModal } from "~/modals/ShareCreateModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
+import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
@@ -114,6 +115,7 @@ export default function Index() {
   const [authFailureOpen, setAuthFailureOpen] = useState(dm === "auth-failure");
   const [sendingMessages, setSendingMessages] = useState(dm === "submit");
   const [sharing, setSharing] = useState(dm === "share-create");
+  const [editingWebhook, setEditingWebhook] = useState<string>();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -138,6 +140,13 @@ export default function Index() {
         setAddingTarget={setAddingTarget}
         targets={targets}
         data={data}
+      />
+      <WebhookEditModal
+        open={editingWebhook !== undefined}
+        setOpen={() => setEditingWebhook(undefined)}
+        targets={targets}
+        updateTargets={updateTargets}
+        webhookId={editingWebhook}
       />
       <ShareCreateModal
         open={sharing}
@@ -211,6 +220,9 @@ export default function Index() {
                   </p>
                 </div>
                 <div className="ml-auto space-x-2 my-auto shrink-0 text-xl">
+                  <button onClick={() => setEditingWebhook(webhook.id)}>
+                    <CoolIcon icon="Edit_Pencil_01" />
+                  </button>
                   <button
                     onClick={() => {
                       delete targets[webhook.id];
