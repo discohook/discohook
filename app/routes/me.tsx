@@ -153,7 +153,7 @@ export default function Me() {
             </p>
             <p>{strings.contentUnavailable}</p>
             {links.length > 0 ? (
-              <div className="space-y-1 mt-1">
+              <div className="space-y-1 mt-1 overflow-y-auto max-h-96">
                 {links.map((link) => {
                   const created = new Date(link.createdAt),
                     expires = new Date(link.expiresAt);
