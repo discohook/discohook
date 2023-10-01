@@ -1,6 +1,6 @@
 import { Link, useFetcher } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LocalizedStrings from "react-localization";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
@@ -18,11 +18,17 @@ const strings = new LocalizedStrings({
   en: {
     title: "Save Message",
     temporaryUrl: "Temporary Share URL",
+    generate: "Generate",
+    clickGenerate: `Click "Generate" to generate a share link`,
     copy: "Copy",
+    includeWebhookUrls: "Include webhook URLs",
     expiresAt: "This link expires at {0} ({1}).",
     options: "Options",
     manageBackups: "Visit your user page to manage backups.",
     logInToSave: "Log in to save permanent backups.",
+    savedAutomatically: "Saved automatically",
+    unlink: "Unlink",
+    saveBackup: "Save Backup",
   },
 });
 
@@ -41,23 +47,26 @@ export const MessageSaveModal = (
   const shareFetcher = useFetcher<typeof shareCreateAction>(),
     backupFetcher = useFetcher<typeof backupCreateAction>();
 
-  useEffect(() => {
-    if (props.open) {
+  const generateShareData = useCallback(
+    (options?: { includeTargets_?: boolean }) => {
+      const { includeTargets_ } = options ?? {};
       shareFetcher.submit(
         {
           data: JSON.stringify({
             ...data,
-            targets: includeTargets
-              ? Object.values(targets).map((t) => ({
-                  url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-                }))
-              : undefined,
+            targets:
+              includeTargets_ ?? includeTargets
+                ? Object.values(targets).map((t) => ({
+                    url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
+                  }))
+                : undefined,
           }),
         },
         { method: "POST", action: "/api/share" }
       );
-    }
-  }, [props.open, includeTargets, data, targets]);
+    },
+    [includeTargets, data, targets]
+  );
 
   const [backup, setBackup] = useState<typeof backupFetcher.data>();
   useEffect(() => setBackup(backupFetcher.data), [backupFetcher.data]);
@@ -78,17 +87,22 @@ export const MessageSaveModal = (
             label={strings.temporaryUrl}
             className="w-full"
             value={shareFetcher.data ? shareFetcher.data.url : ""}
+            placeholder={strings.clickGenerate}
             readOnly
           />
         </div>
         <Button
-          disabled={!shareFetcher.data || shareFetcher.state !== "idle"}
-          onClick={() =>
-            copyText(shareFetcher.data ? shareFetcher.data.url : "")
-          }
+          disabled={shareFetcher.state !== "idle"}
+          onClick={() => {
+            if (shareFetcher.data) {
+              copyText(shareFetcher.data.url);
+            } else {
+              generateShareData();
+            }
+          }}
           className="ml-2 mt-auto"
         >
-          {strings.copy}
+          {shareFetcher.data ? strings.copy : strings.generate}
         </Button>
       </div>
       {shareFetcher.data && (
@@ -104,9 +118,14 @@ export const MessageSaveModal = (
       )}
       <p className="text-sm font-medium mt-1">{strings.options}</p>
       <Checkbox
-        label="Include webhook URLs"
+        label={strings.includeWebhookUrls}
         checked={includeTargets}
-        onChange={(e) => setIncludeTargets(e.currentTarget.checked)}
+        onChange={(e) => {
+          setIncludeTargets(e.currentTarget.checked);
+          if (shareFetcher.data) {
+            generateShareData({ includeTargets_: e.currentTarget.checked });
+          }
+        }}
       />
       <hr className="border border-gray-400 dark:border-gray-600 my-4" />
       <p className="text-lg font-medium">Backup</p>
@@ -131,19 +150,19 @@ export const MessageSaveModal = (
                 ) : (
                   <div className="h-5 rounded-full bg-gray-400 dark:bg-gray-600 w-1/5 mt-px" />
                 )}
-                <p className="text-sm">Saved automatically</p>
+                <p className="text-sm">{strings.savedAutomatically}</p>
               </div>
               <Button
                 disabled={!backup}
                 className="my-auto ml-auto"
                 discordstyle={ButtonStyle.Danger}
                 onClick={() => {
-                  delete data.backup_id
+                  delete data.backup_id;
                   setData({ ...data });
                   setBackup(undefined);
                 }}
               >
-                Unlink
+                {strings.unlink}
               </Button>
             </div>
           ) : (
@@ -161,7 +180,7 @@ export const MessageSaveModal = (
                   )
                 }
               >
-                Save Backup
+                {strings.saveBackup}
               </Button>
             </div>
           )}
