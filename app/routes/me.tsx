@@ -39,8 +39,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const links = await prisma.shareLink.findMany({
     where: { userId: user.id },
     orderBy: {
-      createdAt: "desc",
+      expiresAt: "desc",
     },
+    take: 50,
   });
 
   return { user, links };
