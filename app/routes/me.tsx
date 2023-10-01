@@ -20,9 +20,12 @@ import { getUserAvatar, getUserTag } from "~/util/users";
 
 const strings = new LocalizedStrings({
   en: {
+    yourBackups: "Your Backups",
+    noBackups: "You haven't created any backups.",
+    version: "Version: {0}",
     yourLinks: "Your Links",
     noLinks: "You haven't created any share links.",
-    id: "ID:",
+    id: "ID: {0}",
     contentUnavailable:
       "Share link data is not kept after expiration. If you need to permanently store a message, use the backups feature instead.",
     logOut: "Log Out",
@@ -36,28 +39,53 @@ const strings = new LocalizedStrings({
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request, true);
 
-  const links = await prisma.shareLink.findMany({
-    where: { userId: user.id },
-    orderBy: {
-      expiresAt: "desc",
+  const { backups, shareLinks: links } = (await prisma.user.findUnique({
+    where: { id: user.id },
+    select: {
+      backups: {
+        select: {
+          id: true,
+          name: true,
+          dataVersion: true,
+          createdAt: true,
+        },
+        orderBy: {
+          name: "desc",
+        },
+        take: 50,
+      },
+      shareLinks: {
+        orderBy: {
+          expiresAt: "desc",
+        },
+        take: 50,
+      },
     },
-    take: 50,
-  });
+  }))!;
 
-  return { user, links };
+  return { user, backups, links };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request, true);
-  const { action, linkId } = await zx.parseForm(request, {
-    action: z.enum(["DELETE_SHARE_LINK"]),
-    linkId: zx.NumAsString,
-  });
+  const data = await zx.parseForm(
+    request,
+    z.discriminatedUnion("action", [
+      z.object({
+        action: z.literal("DELETE_SHARE_LINK"),
+        linkId: zx.NumAsString,
+      }),
+      z.object({
+        action: z.literal("DELETE_BACKUP"),
+        backupId: zx.NumAsString,
+      }),
+    ])
+  );
 
-  switch (action) {
+  switch (data.action) {
     case "DELETE_SHARE_LINK": {
       const link = await prisma.shareLink.findUnique({
-        where: { id: linkId },
+        where: { id: data.linkId },
       });
       if (!link) {
         throw json({ message: "No link with that ID." }, 404);
@@ -67,7 +95,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const key = `boogiehook-shorten-${link.shareId}`;
       await redis.del(key);
       await prisma.shareLink.delete({
-        where: { id: linkId },
+        where: { id: data.linkId },
+      });
+      return new Response(null, { status: 204 });
+    }
+    case "DELETE_BACKUP": {
+      const backup = await prisma.backup.findUnique({
+        where: { id: data.backupId },
+      });
+      if (!backup) {
+        throw json({ message: "No backup with that ID." }, 404);
+      } else if (backup.ownerId !== user.id) {
+        throw json({ message: "You do not own this backup." }, 403);
+      }
+      await prisma.backup.delete({
+        where: { id: data.backupId },
       });
       return new Response(null, { status: 204 });
     }
@@ -81,7 +123,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export const meta: MetaFunction = () => [{ title: "Your Data - Boogiehook" }];
 
 export default function Me() {
-  const { user, links } = useLoaderData<typeof loader>();
+  const { user, backups, links } = useLoaderData<typeof loader>();
   const submit = useSubmit();
   const now = new Date();
 
@@ -149,6 +191,59 @@ export default function Me() {
           </div>
           <div className="w-full h-fit">
             <p className="text-xl font-semibold dark:text-gray-100">
+              {strings.yourBackups}
+            </p>
+            {backups.length > 0 ? (
+              <div className="space-y-1 mt-1 overflow-y-auto max-h-96">
+                {backups.map((backup) => {
+                  return (
+                    <div
+                      key={`backup-${backup.id}`}
+                      className="w-full rounded p-2 bg-gray-100 dark:bg-gray-700 flex"
+                    >
+                      <div className="truncate shrink-0">
+                        <p className="font-medium">{backup.name}</p>
+                        <p className="text-gray-600 dark:text-gray-500 text-sm">
+                          {strings.formatString(
+                            strings.version,
+                            backup.dataVersion
+                          )}
+                        </p>
+                      </div>
+                      <div className="ml-auto pl-2 my-auto flex flex-col">
+                        <Link to={`/go/backup/${backup.id}`} target="_blank">
+                          <CoolIcon icon="External_Link" />
+                        </Link>
+                        <button
+                          onClick={() => {
+                            submit(
+                              {
+                                action: "DELETE_BACKUP",
+                                backupId: backup.id,
+                              },
+                              {
+                                method: "POST",
+                                replace: true,
+                              }
+                            );
+                          }}
+                        >
+                          <CoolIcon
+                            icon="Trash_Full"
+                            className="text-rose-600"
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-gray-500">{strings.noBackups}</p>
+            )}
+          </div>
+          <div className="w-full h-fit">
+            <p className="text-xl font-semibold dark:text-gray-100">
               {strings.yourLinks}
             </p>
             <p>{strings.contentUnavailable}</p>
@@ -191,7 +286,7 @@ export default function Me() {
                           </span>
                         </p>
                         <p className="text-gray-600 dark:text-gray-500 text-sm">
-                          {strings.id} {link.shareId}
+                          {strings.formatString(strings.id, link.shareId)}
                         </p>
                       </div>
                       <div className="ml-auto pl-2 my-auto flex flex-col">
