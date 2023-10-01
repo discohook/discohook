@@ -89,7 +89,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return {
     id,
     origin,
-    url: `${new URL(request.url).origin}/go/${id}`,
+    url: `${new URL(request.url).origin}/?share=${id}`,
     expires,
     userId: user?.id,
   };

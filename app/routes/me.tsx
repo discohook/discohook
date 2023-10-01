@@ -211,7 +211,7 @@ export default function Me() {
                         </p>
                       </div>
                       <div className="ml-auto pl-2 my-auto flex flex-col">
-                        <Link to={`/go/backup/${backup.id}`} target="_blank">
+                        <Link to={`/?backup=${backup.id}`} target="_blank">
                           <CoolIcon icon="External_Link" />
                         </Link>
                         <button
@@ -291,7 +291,7 @@ export default function Me() {
                       </div>
                       <div className="ml-auto pl-2 my-auto flex flex-col">
                         {expires > now && (
-                          <Link to={`/go/${link.shareId}`} target="_blank">
+                          <Link to={`/?share=${link.shareId}`} target="_blank">
                             <CoolIcon icon="External_Link" />
                           </Link>
                         )}

@@ -26,7 +26,7 @@ BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
-const doubleDecode = <T>(data: unknown) => {
+export const doubleDecode = <T>(data: unknown) => {
   return JSON.parse(JSON.stringify(data)) as Jsonify<T>;
 };
 

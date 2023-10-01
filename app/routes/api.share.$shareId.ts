@@ -2,6 +2,7 @@ import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
 import { redis } from "~/redis.server";
+import { QueryData } from "~/types/QueryData";
 import { ShortenedData } from "./api.share";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
@@ -18,7 +19,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   const shortened: ShortenedData = JSON.parse(shortenedRaw);
 
   return {
-    data: JSON.parse(shortened.data),
+    data: JSON.parse(shortened.data) as QueryData,
     origin: shortened.origin,
     expires: new Date(new Date().getTime() + (await redis.expireTime(key))),
   };

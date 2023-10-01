@@ -1,8 +1,13 @@
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import type {
+  LoaderFunctionArgs,
+  MetaFunction,
+  SerializeFrom,
+} from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import LocalizedStrings from "react-localization";
+import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
@@ -23,6 +28,7 @@ import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64Encode } from "~/util/text";
+import { loader as getShareLoader } from "../routes/api.share.$shareId";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
@@ -58,28 +64,57 @@ const strings = new LocalizedStrings({
 
 export default function Index() {
   const { user } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
-  const dm = searchParams.get("m");
   const [settings] = useLocalStorage();
 
-  let parsed;
-  try {
-    parsed = ZodQueryData.safeParse(
-      JSON.parse(
-        searchParams.get("data")
-          ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
-          : JSON.stringify({ messages: [INDEX_MESSAGE] })
-      )
-    );
-  } catch {
-    parsed = {};
-  }
-  const [data, setData] = useState<QueryData>(
-    parsed.success
-      ? { version: "d2", ...(parsed.data as QueryData) }
-      : { version: "d2", messages: [INDEX_FAILURE_MESSAGE] }
-  );
+  const [searchParams] = useSearchParams();
+  const dm = searchParams.get("m");
+  const shareId = searchParams.get("share");
+  const backupIdParsed = zx.NumAsString.safeParse(searchParams.get("backup"));
+
+  const [data, setData] = useState<QueryData>({
+    version: "d2",
+    messages: [],
+  });
   const [urlTooLong, setUrlTooLong] = useState(false);
+
+  useEffect(() => {
+    if (shareId) {
+      fetch(`/api/share/${shareId}`, { method: "GET" }).then((r) => {
+        if (r.status === 200) {
+          r.json().then((d: SerializeFrom<typeof getShareLoader>) =>
+            setData(d.data)
+          );
+        }
+      });
+    } else if (backupIdParsed.success) {
+      fetch(`/api/backups/${backupIdParsed.data}?data=true`, {
+        method: "GET",
+      }).then((r) => {
+        if (r.status === 200) {
+          r.json().then((d) => setData(d.data));
+        }
+      });
+    } else {
+      let parsed;
+      try {
+        parsed = ZodQueryData.safeParse(
+          JSON.parse(
+            searchParams.get("data")
+              ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
+              : JSON.stringify({ messages: [INDEX_MESSAGE] })
+          )
+        );
+      } catch {
+        parsed = {};
+      }
+
+      if (parsed.success) {
+        setData({ version: "d2", ...(parsed.data as QueryData) });
+      } else {
+        setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const encoded = base64Encode(JSON.stringify(data));
