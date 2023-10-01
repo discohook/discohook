@@ -8,7 +8,7 @@ import { ZodQueryData } from "~/types/QueryData";
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request, true);
   const { name, data: data_ } = await zx.parseForm(request, {
-    name: z.ostring().refine((val) => val ? val.length <= 100 : true),
+    name: z.string().refine((val) => val.length <= 100),
     data: z
       .string()
       .refine((val) => {
@@ -30,7 +30,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const backup = await prisma.backup.create({
     data: {
-      name: name ?? new Date().toLocaleDateString(),
+      name,
       data,
       dataVersion: data.version ?? "d2",
       ownerId: user.id,

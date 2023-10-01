@@ -171,6 +171,7 @@ export const MessageSaveModal = (
                 onClick={() =>
                   backupFetcher.submit(
                     {
+                      name: new Date().toLocaleDateString(),
                       data: JSON.stringify(data),
                     },
                     {
