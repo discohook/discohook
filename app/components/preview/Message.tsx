@@ -159,7 +159,7 @@ export const Message: React.FC<{
             </h3>
           )}
           {message.content && (
-            <div className="contents markdown-container font-medium dark:font-normal text-base leading-[1.375] whitespace-pre-wrap break-words">
+            <div className="contents font-medium text-[#313338] dark:text-[#dbdee1] dark:font-normal text-base leading-[1.375]">
               <Markdown
                 text={message.content}
                 features="all"

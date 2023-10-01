@@ -67,6 +67,7 @@ export const Markdown: React.FC<{
         noHeaderId: true,
         simplifiedAutoLink: true,
       }}
+      className="contents whitespace-pre-wrap break-words break-all"
       components={{
         Mention: ({
           token,
