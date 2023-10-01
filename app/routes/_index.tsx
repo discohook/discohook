@@ -11,10 +11,10 @@ import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
+import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
-import { ShareCreateModal } from "~/modals/ShareCreateModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
@@ -49,7 +49,7 @@ const strings = new LocalizedStrings({
     editor: "Editor",
     preview: "Preview",
     send: "Send",
-    shareMessage: "Share Message",
+    saveMessage: "Save Message",
     addWebhook: "Add Webhook",
     addMessage: "Add Message",
     previewInfo: "Preview Info",
@@ -149,11 +149,13 @@ export default function Index() {
         webhookId={editingWebhook}
         user={user}
       />
-      <ShareCreateModal
+      <MessageSaveModal
         open={sharing}
         setOpen={setSharing}
         targets={targets}
         data={data}
+        setData={setData}
+        user={user}
       />
       <TargetAddModal
         open={addingTarget}
@@ -249,7 +251,7 @@ export default function Index() {
               discordstyle={ButtonStyle.Secondary}
               disabled={data.messages.length === 0}
             >
-              {strings.shareMessage}
+              {strings.saveMessage}
             </Button>
           </div>
           {data.messages.map((_, i) => (

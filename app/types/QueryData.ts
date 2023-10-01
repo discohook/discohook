@@ -5,12 +5,14 @@ import { z } from "zod";
  *
  * `d2` is based on Discohook's second data format, which supports multiple
  * messages and targets. `d2`-versioned data can also include `webhook_id`
- * for messages, which is backwards compatible with Discohook.
+ * for messages and `backup_id` at the top level, both of which are backwards
+ * compatible with Discohook.
  */
 export type QueryDataVersion = "d2";
 
 export interface QueryData {
   version?: QueryDataVersion;
+  backup_id?: number;
   messages: {
     data: {
       author?: {
@@ -29,6 +31,7 @@ export interface QueryData {
 
 export const ZodQueryData = z.object({
   version: z.optional(z.enum(["d2"])),
+  backup_id: z.onumber(),
   messages: z.array(
     z.object({
       data: z.object({
