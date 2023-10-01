@@ -66,6 +66,8 @@ export const Markdown: React.FC<{
         disableForced4SpacesIndentedSublists: true,
         noHeaderId: true,
         simplifiedAutoLink: true,
+        ghCodeBlocks: true,
+        smoothLivePreview: true,
       }}
       className="contents whitespace-pre-wrap break-words break-all"
       components={{
@@ -222,6 +224,14 @@ export const Markdown: React.FC<{
             </time>
           );
         },
+        Quote: ({ children }: React.PropsWithChildren) => {
+          return (
+            <div className="flex">
+              <div className="w-1 rounded bg-[#c4c9ce] dark:bg-[#4e5058] shrink-0" />
+              <blockquote className="grow pr-2 pl-3">{children}</blockquote>
+            </div>
+          );
+        },
         p: (props) => <span {...props} />,
         strong: (props) =>
           f("basic") ? (
@@ -354,6 +364,19 @@ export const Markdown: React.FC<{
             "basic",
             `<MessageLink guildId="$1" channelId="$2" messageId="$3" />`
           ),
+        },
+        {
+          type: "lang",
+          filter: (text) => {
+            return text.replace(/^>( )?(.+)$/gm, (found) => {
+              const match = found.match(/^>( )?(.+)$/)!;
+              if (!match[1]) {
+                return `>${match[2]}`;
+              } else {
+                return `<Quote>${match[2]}</Quote>`;
+              }
+            });
+          },
         },
       ]}
     />
