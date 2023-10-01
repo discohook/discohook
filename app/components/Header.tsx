@@ -2,7 +2,6 @@ import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
 import LocalizedStrings from "react-localization";
-import { ExampleModal } from "~/modals/ExampleModal";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
@@ -14,13 +13,11 @@ const strings = new LocalizedStrings({
   en: {
     settings: "Settings",
     help: "Help",
-    embedExample: "Embed Example",
     logIn: "Log In",
   },
   fr: {
     settings: "Paramètres",
     help: "Aide",
-    embedExample: "Exemple",
   },
 });
 
@@ -29,13 +26,11 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
   const [helpOpen, setHelpOpen] = useState(dm === "help");
-  const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");
   const [settingsOpen, setSettingsOpen] = useState(dm === "settings");
 
   return (
     <div className="sticky top-0 left-0 z-10 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
       <HelpModal open={helpOpen} setOpen={setHelpOpen} />
-      <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
       <SettingsModal
         open={settingsOpen}
         setOpen={setSettingsOpen}
@@ -86,13 +81,6 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           onClick={() => setHelpOpen(true)}
         >
           {strings.help}
-        </Button>
-        <Button
-          className="my-auto ml-2 shrink-0"
-          discordstyle={ButtonStyle.Secondary}
-          onClick={() => setExampleOpen(true)}
-        >
-          {strings.embedExample}
         </Button>
       </div>
     </div>

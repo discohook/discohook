@@ -15,6 +15,7 @@ import { MessageEditor } from "~/components/editor/MessageEditor";
 import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
+import { ExampleModal } from "~/modals/ExampleModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
@@ -58,7 +59,11 @@ const strings = new LocalizedStrings({
     saveMessage: "Save Message",
     addWebhook: "Add Webhook",
     addMessage: "Add Message",
+    embedExample: "Embed Example",
     previewInfo: "Preview Info",
+  },
+  fr: {
+    embedExample: "Exemple",
   },
 });
 
@@ -146,6 +151,7 @@ export default function Index() {
     dm && dm.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined
   );
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
+  const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");
   const [authSuccessOpen, setAuthSuccessOpen] = useState(dm === "auth-success");
   const [authFailureOpen, setAuthFailureOpen] = useState(dm === "auth-failure");
   const [sendingMessages, setSendingMessages] = useState(dm === "submit");
@@ -160,6 +166,7 @@ export default function Index() {
         open={showDisclaimer}
         setOpen={setShowDisclaimer}
       />
+      <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
       <MessageSetModal
         open={settingMessageIndex !== undefined}
         setOpen={() => setSettingMessageIndex(undefined)}
@@ -338,14 +345,21 @@ export default function Index() {
               compactAvatars={settings.compactAvatars}
             />
           ))}
-          <Button
-            className="fixed bottom-4 right-4"
-            discordstyle={ButtonStyle.Secondary}
-            onClick={() => setShowDisclaimer(true)}
-          >
-            <CoolIcon icon="Info" className="mr-1.5" />
-            {strings.previewInfo}
-          </Button>
+          <div className="fixed bottom-4 right-4 grid gap-2 grid-cols-1">
+            <Button
+              discordstyle={ButtonStyle.Secondary}
+              onClick={() => setExampleOpen(true)}
+            >
+              {strings.embedExample}
+            </Button>
+            <Button
+              discordstyle={ButtonStyle.Secondary}
+              onClick={() => setShowDisclaimer(true)}
+            >
+              <CoolIcon icon="Info" className="mr-1.5" />
+              {strings.previewInfo}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
