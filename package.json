@@ -45,8 +45,11 @@
     "concurrently": "^8.2.1",
     "eslint": "^8.38.0",
     "postcss": "^8.4.29",
+    "string-width": "4.2.3",
+    "string-width-cjs": "4.2.3",
     "tailwindcss": "^3.3.3",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "wrap-ansi": "7.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
