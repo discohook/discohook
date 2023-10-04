@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
 import { prisma } from "~/prisma.server";
@@ -6,6 +6,7 @@ import { redis } from "~/redis.server";
 import { getUser } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { randomString } from "~/util/text";
+import { jsonAsString } from "~/util/zod";
 
 const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 
@@ -31,33 +32,17 @@ export const generateUniqueShortenKey = async (
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const {
-    data: data_,
+    data,
     ttl: ttl_,
     origin: origin_,
   } = await zx.parseForm(request, {
-    data: z
-      .string()
-      .refine((val) => {
-        try {
-          JSON.parse(val);
-          return true;
-        } catch {
-          return false;
-        }
-      })
-      .transform((val) => JSON.parse(val)),
+    data: jsonAsString(ZodQueryData),
     // Max 4 weeks, min 5 minutes
     ttl: z.optional(
       zx.IntAsString.refine((val) => val >= 300000 && val <= 2419200000)
     ),
     origin: z.optional(z.enum(ALLOWED_EXTERNAL_ORIGINS)),
   });
-  let data;
-  try {
-    data = ZodQueryData.parse(data_);
-  } catch {
-    throw json({ message: "Invalid payload" }, 400);
-  }
 
   const user = await getUser(request);
 

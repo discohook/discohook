@@ -1,32 +1,17 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
 import { prisma } from "~/prisma.server";
 import { getUser } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
+import { jsonAsString } from "~/util/zod";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request, true);
-  const { name, data: data_ } = await zx.parseForm(request, {
+  const { name, data } = await zx.parseForm(request, {
     name: z.string().refine((val) => val.length <= 100),
-    data: z
-      .string()
-      .refine((val) => {
-        try {
-          JSON.parse(val);
-          return true;
-        } catch {
-          return false;
-        }
-      })
-      .transform((val) => JSON.parse(val)),
+    data: jsonAsString(ZodQueryData),
   });
-  let data;
-  try {
-    data = ZodQueryData.parse(data_);
-  } catch {
-    throw json({ message: "Invalid payload" }, 400);
-  }
 
   const backup = await prisma.backup.create({
     data: {
