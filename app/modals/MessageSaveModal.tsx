@@ -27,7 +27,7 @@ const strings = new LocalizedStrings({
     manageBackups: "Visit your user page to manage backups.",
     logInToSave: "Log in to save permanent backups.",
     savedAutomatically: "Saved automatically",
-    unlink: "Unlink",
+    manuallySave: "Save",
     saveBackup: "Save Backup",
   },
 });
@@ -155,14 +155,20 @@ export const MessageSaveModal = (
               <Button
                 disabled={!backup}
                 className="my-auto ml-auto"
-                discordstyle={ButtonStyle.Danger}
+                discordstyle={ButtonStyle.Success}
                 onClick={() => {
-                  delete data.backup_id;
-                  setData({ ...data });
-                  setBackup(undefined);
+                  backupFetcher.submit(
+                    {
+                      data: JSON.stringify(data),
+                    },
+                    {
+                      action: `/api/backups/${backup!.id}`,
+                      method: "PATCH",
+                    }
+                  );
                 }}
               >
-                {strings.unlink}
+                {strings.manuallySave}
               </Button>
             </div>
           ) : (

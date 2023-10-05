@@ -22,6 +22,8 @@ export const Button = (
           ? "bg-[#6d6f78] hover:bg-[#4e5058] dark:bg-[#4e5058] hover:dark:bg-[#6d6f78]"
           : props.discordstyle === ButtonStyle.Danger
           ? "bg-[#da373c] hover:bg-[#a12828]"
+          : props.discordstyle === ButtonStyle.Success
+          ? "bg-[#248046] hover:bg-[#15562b] dark:bg-[#248046] dark:hover:bg-[#1a6334]"
           : ""
       } ${props.className ?? ""}`}
     >
