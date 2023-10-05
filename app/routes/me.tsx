@@ -271,6 +271,8 @@ export default function Me() {
                             className={`ml-1 ${
                               expires < now
                                 ? "text-rose-400"
+                                : expires.getTime() - now.getTime() <= 86400000
+                                ? "text-yellow-500 dark:text-yellow-400"
                                 : "text-gray-600 dark:text-gray-500"
                             }`}
                           >
