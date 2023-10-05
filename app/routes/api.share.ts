@@ -51,12 +51,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const origin = origin_ ?? new URL(request.url).origin;
 
-  const { id, key } = await generateUniqueShortenKey(8);
+  delete data.backup_id;
   const shortened: ShortenedData = {
     data: JSON.stringify(data),
     origin,
     userId: user?.id,
   };
+
+  const { id, key } = await generateUniqueShortenKey(8);
   await redis.set(key, JSON.stringify(shortened), {
     EX: ttl / 1000,
   });

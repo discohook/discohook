@@ -13,7 +13,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     data: jsonAsString(ZodQueryData),
   });
 
-  const backup = await prisma.backup.create({
+  return await prisma.backup.create({
     data: {
       name,
       data,
@@ -26,6 +26,4 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       dataVersion: true,
     },
   });
-
-  return backup;
 };

@@ -77,7 +77,7 @@ export const MessageSaveModal = (
     if (props.open && backup && typeof data.backup_id !== "number") {
       setData({ ...data, backup_id: backup.id });
     }
-  }, [props.open, backup]);
+  }, [props.open, data.backup_id, backup]);
 
   return (
     <Modal title={strings.title} {...props}>

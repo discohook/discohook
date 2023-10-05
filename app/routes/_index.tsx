@@ -69,6 +69,7 @@ const strings = new LocalizedStrings({
     embedExample: "Embed Example",
     previewInfo: "Preview Info",
     history: "History",
+    editingBackup: "You're editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the \"Save Message\" button.",
   },
   fr: {
     embedExample: "Exemple",
@@ -106,7 +107,9 @@ export default function Index() {
       }).then((r) => {
         if (r.status === 200) {
           setBackupId(backupIdParsed.data);
-          r.json().then((d) => setData(d.data));
+          r.json().then((d) =>
+            setData({ ...d.data, backup_id: backupIdParsed.data })
+          );
         }
       });
     } else {
@@ -124,6 +127,9 @@ export default function Index() {
       }
 
       if (parsed.success) {
+        if (parsed.data?.backup_id !== undefined) {
+          setBackupId(parsed.data.backup_id);
+        }
         setData({ version: "d2", ...(parsed.data as QueryData) });
       } else {
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
@@ -142,33 +148,41 @@ export default function Index() {
         !lastHistoryItem ||
         JSON.stringify(lastHistoryItem.data) !== JSON.stringify(data)
       ) {
-        setLocalHistory(
-          [
-            ...localHistory,
-            {
-              id: randomString(10),
-              createdAt: new Date(),
-              data: structuredClone(data),
-            },
-          ].slice(-20)
-        );
+        if (data.messages.length > 0) {
+          setLocalHistory(
+            [
+              ...localHistory,
+              {
+                id: randomString(10),
+                createdAt: new Date(),
+                data: structuredClone(data),
+              },
+            ].slice(-20)
+          );
+        }
+        setUpdateCount(updateCount + 1);
         if (backupId !== undefined) {
-          console.log("Save backup here");
+          console.log("Saving backup", backupId);
+          fetch(`/api/backups/${backupId}`, {
+            method: "PATCH",
+            body: new URLSearchParams({
+              data: JSON.stringify(data),
+            }),
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          });
         }
       }
     }
 
+    const pathUrl = location.origin + location.pathname;
     const encoded = base64Encode(JSON.stringify(data));
     if (backupId === undefined) {
       // URLs on Cloudflare are limited to 16KB
-      const fullUrl = new URL(
-        location.origin + location.pathname + `?data=${encoded}`
-      );
+      const fullUrl = new URL(pathUrl + `?data=${encoded}`);
       if (fullUrl.toString().length >= 16000) {
         setUrlTooLong(true);
         if (searchParams.get("data")) {
-          const urlWithoutQuery = location.origin + location.pathname;
-          history.pushState({ path: urlWithoutQuery }, "", urlWithoutQuery);
+          history.pushState({ path: pathUrl }, "", pathUrl);
         }
       } else {
         setUrlTooLong(false);
@@ -177,7 +191,7 @@ export default function Index() {
     } else {
       // Make sure it stays there, we also want to wipe any other params
       setUrlTooLong(false);
-      const fullUrl = location.origin + location.pathname + `?backup=${backupId}`
+      const fullUrl = pathUrl + `?backup=${backupId}`;
       history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
     }
   }, [backupId, data, updateCount]);
@@ -278,6 +292,11 @@ export default function Index() {
               <CoolIcon icon="Triangle_Warning" /> Your message data is too
               large to be shown in the page URL. If you need to share this page,
               use the "Share Message" button.
+            </p>
+          )}
+          {backupId !== undefined && (
+            <p className="mb-4 text-sm font-regular p-2 rounded bg-blurple-100 border-2 border-blurple-200 dark:bg-blurple-300 dark:border-blurple-300 dark:text-black dark:font-medium select-none">
+              <CoolIcon icon="Save" /> {strings.editingBackup}
             </p>
           )}
           <div className="flex mb-2">
