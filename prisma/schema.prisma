@@ -20,10 +20,11 @@ model User {
   subscribedSince DateTime?
   lifetime        Boolean   @default(false)
 
-  discordId   BigInt?      @unique
-  discordUser DiscordUser? @relation(fields: [discordId], references: [id], onDelete: SetNull)
-  guildedId   String?      @unique
-  guildedUser GuildedUser? @relation(fields: [guildedId], references: [id], onDelete: SetNull)
+  discordId         BigInt?           @unique
+  discordUser       DiscordUser?      @relation(fields: [discordId], references: [id], onDelete: SetNull)
+  guildedId         String?           @unique
+  guildedUser       GuildedUser?      @relation(fields: [guildedId], references: [id], onDelete: SetNull)
+  messageLogEntries MessageLogEntry[]
 }
 
 model DiscordUser {
@@ -50,9 +51,10 @@ model DiscordGuild {
   name String
   icon String?
 
-  roles   DiscordRole[]
-  members DiscordMember[]
-  backups Backup[]
+  roles    DiscordRole[]
+  members  DiscordMember[]
+  backups  Backup[]
+  webhooks Webhook[]
 }
 
 model DiscordRole {
@@ -88,7 +90,8 @@ model GuildedServer {
   name      String
   avatarUrl String?
 
-  backups Backup[]
+  backups  Backup[]
+  webhooks Webhook[]
 }
 
 model ShareLink {
@@ -113,4 +116,40 @@ model Backup {
   owner   User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   guilds  DiscordGuild[]
   servers GuildedServer[]
+}
+
+model Webhook {
+  platform  String
+  id        String  @id
+  token     String?
+  name      String
+  avatar    String?
+  channelId String
+
+  discordGuildId  BigInt?
+  discordGuild    DiscordGuild?  @relation(fields: [discordGuildId], references: [id])
+  guildedServerId String?
+  guildedServer   GuildedServer? @relation(fields: [guildedServerId], references: [id])
+
+  messageLogEntries MessageLogEntry[]
+}
+
+model MessageLogEntry {
+  id   Int    @id @default(autoincrement())
+  type String // send, edit, delete
+
+  webhookId String
+  webhook   Webhook @relation(fields: [webhookId], references: [id])
+  channelId String
+  messageId String
+  threadId  String?
+
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id])
+
+  notifiedEveryoneHere Boolean  @default(false)
+  notifiedRoles        String[]
+  notifiedUsers        String[]
+  hasContent           Boolean  @default(false)
+  embedCount           Int      @default(0)
 }

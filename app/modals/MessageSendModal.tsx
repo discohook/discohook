@@ -1,4 +1,5 @@
 import { DiscordErrorData } from "@discordjs/rest";
+import { useFetcher } from "@remix-run/react";
 import { APIMessage, APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import LocalizedStrings from "react-localization";
@@ -8,6 +9,7 @@ import { getMessageText } from "~/components/editor/MessageEditor";
 import { QueryData } from "~/types/QueryData";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
+import { action as ApiAuditLogAction } from "../routes/api.audit-log";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { Modal, ModalProps } from "./Modal";
 
@@ -72,6 +74,8 @@ export const MessageSendModal = (
   }
 ) => {
   const { targets, setAddingTarget, data } = props;
+
+  const auditLogFetcher = useFetcher<typeof ApiAuditLogAction>();
 
   const [selectedWebhooks, updateSelectedWebhooks] = useReducer(
     (d: Record<string, boolean>, partialD: Record<string, boolean>) => ({
@@ -317,6 +321,19 @@ export const MessageSendModal = (
                   }
 
                   const result = await submitMessage(webhook, message);
+                  if (result.status === "success") {
+                    auditLogFetcher.submit({
+                      type: message.reference ? "edit" : "send",
+                      webhookId: webhook.id,
+                      webhookToken: webhook.token!,
+                      messageId: result.data.id,
+                      // threadId: ,
+                    }, {
+                      method: "POST",
+                      action: "/api/audit-log",
+                    });
+                  }
+
                   updateMessages({
                     [index]: { result, enabled: true },
                   });
