@@ -89,19 +89,29 @@ export const HistoryModal = (
                     ))}
                   </div>
                   <div className="space-y-1 ml-2 text-xl">
-                    <button onClick={() => {
-                      setData(item.data);
-                      setLocalHistory(localHistory.filter((_, i) => i < itemI));
-                      props.setOpen(false);
-                    }}>
+                    <button
+                      className="block"
+                      onClick={() => {
+                        setData(item.data);
+                        setLocalHistory(
+                          localHistory.filter((_, i) => i < itemI)
+                        );
+                        props.setOpen(false);
+                      }}
+                    >
                       <CoolIcon
                         icon="Redo"
                         className="text-blurple dark:text-blurple-400"
                       />
                     </button>
-                    <button onClick={() => {
-                      setLocalHistory(localHistory.filter((_, i) => i !== itemI));
-                    }}>
+                    <button
+                      className="block"
+                      onClick={() => {
+                        setLocalHistory(
+                          localHistory.filter((_, i) => i !== itemI)
+                        );
+                      }}
+                    >
                       <CoolIcon
                         icon="Trash_Full"
                         className="text-rose-500 dark:text-rose-400"
