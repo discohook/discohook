@@ -16,6 +16,7 @@ import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import { ExampleModal } from "~/modals/ExampleModal";
+import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
@@ -28,7 +29,7 @@ import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
-import { base64Decode, base64Encode } from "~/util/text";
+import { base64Decode, base64Encode, randomString } from "~/util/text";
 import { loader as getShareLoader } from "../routes/api.share.$shareId";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -51,6 +52,12 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export interface HistoryItem {
+  id: string;
+  createdAt: Date;
+  data: QueryData;
+}
+
 const strings = new LocalizedStrings({
   en: {
     editor: "Editor",
@@ -61,6 +68,7 @@ const strings = new LocalizedStrings({
     addMessage: "Add Message",
     embedExample: "Embed Example",
     previewInfo: "Preview Info",
+    history: "History",
   },
   fr: {
     embedExample: "Exemple",
@@ -76,6 +84,7 @@ export default function Index() {
   const shareId = searchParams.get("share");
   const backupIdParsed = zx.NumAsString.safeParse(searchParams.get("backup"));
 
+  const [backupId, setBackupId] = useState<number>();
   const [data, setData] = useState<QueryData>({
     version: "d2",
     messages: [],
@@ -96,6 +105,7 @@ export default function Index() {
         method: "GET",
       }).then((r) => {
         if (r.status === 200) {
+          setBackupId(backupIdParsed.data);
           r.json().then((d) => setData(d.data));
         }
       });
@@ -121,23 +131,56 @@ export default function Index() {
     }
   }, []);
 
+  const [localHistory, setLocalHistory] = useState<HistoryItem[]>([]);
+  const [updateCount, setUpdateCount] = useState(-1);
+  useEffect(() => setUpdateCount(updateCount + 1), [data]);
+
   useEffect(() => {
+    if (updateCount % 20 === 0) {
+      const lastHistoryItem = localHistory.slice(-1)[0];
+      if (
+        !lastHistoryItem ||
+        JSON.stringify(lastHistoryItem.data) !== JSON.stringify(data)
+      ) {
+        setLocalHistory(
+          [
+            ...localHistory,
+            {
+              id: randomString(10),
+              createdAt: new Date(),
+              data: structuredClone(data),
+            },
+          ].slice(-20)
+        );
+        if (backupId !== undefined) {
+          console.log("Save backup here");
+        }
+      }
+    }
+
     const encoded = base64Encode(JSON.stringify(data));
-    // URLs on Cloudflare are limited to 16KB
-    const fullUrl = new URL(
-      location.origin + location.pathname + `?data=${encoded}`
-    );
-    if (fullUrl.toString().length >= 16000) {
-      setUrlTooLong(true);
-      if (searchParams.get("data")) {
-        const urlWithoutQuery = location.origin + location.pathname;
-        history.pushState({ path: urlWithoutQuery }, "", urlWithoutQuery);
+    if (backupId === undefined) {
+      // URLs on Cloudflare are limited to 16KB
+      const fullUrl = new URL(
+        location.origin + location.pathname + `?data=${encoded}`
+      );
+      if (fullUrl.toString().length >= 16000) {
+        setUrlTooLong(true);
+        if (searchParams.get("data")) {
+          const urlWithoutQuery = location.origin + location.pathname;
+          history.pushState({ path: urlWithoutQuery }, "", urlWithoutQuery);
+        }
+      } else {
+        setUrlTooLong(false);
+        history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
       }
     } else {
+      // Make sure it stays there, we also want to wipe any other params
       setUrlTooLong(false);
+      const fullUrl = location.origin + location.pathname + `?backup=${backupId}`
       history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
     }
-  }, [data]);
+  }, [backupId, data, updateCount]);
 
   type Targets = Record<string, APIWebhook>;
   const [targets, updateTargets] = useReducer(
@@ -157,6 +200,7 @@ export default function Index() {
   const [sendingMessages, setSendingMessages] = useState(dm === "submit");
   const [sharing, setSharing] = useState(dm === "share-create");
   const [editingWebhook, setEditingWebhook] = useState<string>();
+  const [showHistory, setShowHistory] = useState(dm === "history");
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -198,6 +242,13 @@ export default function Index() {
         data={data}
         setData={setData}
         user={user}
+      />
+      <HistoryModal
+        open={showHistory}
+        setOpen={setShowHistory}
+        localHistory={localHistory}
+        setLocalHistory={setLocalHistory}
+        setData={setData}
       />
       <TargetAddModal
         open={addingTarget}
@@ -294,6 +345,14 @@ export default function Index() {
               disabled={data.messages.length === 0}
             >
               {strings.saveMessage}
+            </Button>
+            <Button
+              className="ml-2"
+              onClick={() => setShowHistory(true)}
+              discordstyle={ButtonStyle.Secondary}
+              disabled={localHistory.length === 0}
+            >
+              {strings.history}
             </Button>
           </div>
           {data.messages.map((_, i) => (

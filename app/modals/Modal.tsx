@@ -35,6 +35,7 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode; }> = ({
           maxHeight: "calc(100% - 4rem)",
           margin: "auto",
           overflow: "visible",
+          overflowY: "auto",
         },
       }}
     >
