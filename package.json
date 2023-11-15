@@ -9,7 +9,6 @@
     "start": "ts-node src/server.ts",
     "dev": "wrangler dev src/server.ts",
     "ngrok": "ngrok http 8787",
-    "test": "c8 mocha test",
     "fix": "eslint --fix '**/*.ts'",
     "lint": "eslint '**/*.ts'",
     "register": "ts-node src/register.ts",
