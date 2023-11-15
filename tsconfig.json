@@ -1,0 +1,14 @@
+{
+    "extends": "@tsconfig/node18/tsconfig.json",
+    "compilerOptions": {
+        "lib": [
+            "es2017",
+            "dom",
+        ]
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"],
+    "ts-node": {
+        "esm": true
+    }
+}
