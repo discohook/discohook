@@ -1,4 +1,5 @@
-import { AWW_COMMAND, INVITE_COMMAND } from './commands.js';
+import { RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types/v10';
+import { appCommands } from './commands.js';
 import dotenv from 'dotenv';
 import process from 'node:process';
 
@@ -28,13 +29,27 @@ if (!applicationId) {
  */
 const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
 
+const payload = [];
+for (const [type, commands] of Object.entries(appCommands)) {
+  for (const command of Object.values(commands)) {
+    const c = {
+      type: Number(type),
+      ...command,
+      handlers: {},
+    };
+    // @ts-ignore
+    delete c.handlers
+    payload.push(c);
+  }
+}
+
 const response = await fetch(url, {
   headers: {
     'Content-Type': 'application/json',
     Authorization: `Bot ${token}`,
   },
   method: 'PUT',
-  body: JSON.stringify([AWW_COMMAND, INVITE_COMMAND]),
+  body: JSON.stringify(payload),
 });
 
 if (response.ok) {

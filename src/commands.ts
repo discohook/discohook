@@ -1,14 +1,39 @@
-import { APIInteractionResponse } from "discord-api-types/v10";
+import { APIInteractionResponse, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
+import { InteractionContext } from "./interactions.js";
+import { addButtonCallback } from "./components/command.js";
 
-export const AWW_COMMAND = {
-  name: 'awwww',
-  description: 'Drop some cuteness on this channel.',
+export type AppCommandCallback = (ctx: InteractionContext) => Promise<APIInteractionResponse>
+
+export type AppCommand = RESTPostAPIApplicationCommandsJSONBody & {
+  handlers: Record<string, AppCommandCallback>
 };
 
-export const INVITE_COMMAND = {
-  name: 'invite',
-  description: 'Get an invite link to add the bot to your server',
-};
+export const appCommands: Record<ApplicationCommandType, Record<string, AppCommand>> = {
+  [ApplicationCommandType.ChatInput]: {
+    buttons: {
+      name: 'buttons',
+      description: 'Manage buttons',
+      options: [
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "add",
+          description: "Add a button",
+          options: [{
+            type: ApplicationCommandOptionType.String,
+            name: "message-link",
+            description: "Message link",
+            required: true,
+          }]
+        }
+      ],
+      handlers: {
+        add: addButtonCallback,
+      }
+    },
+  },
+  [ApplicationCommandType.Message]: {},
+  [ApplicationCommandType.User]: {},
+}
 
 export type DiscordInteractionResponse = APIInteractionResponse | { error: string; status?: number };
 

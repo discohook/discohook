@@ -17,6 +17,7 @@
   "keywords": [],
   "license": "MIT",
   "dependencies": {
+    "discord-api-methods": "^0.0.5",
     "discord-api-types": "^0.37.63",
     "discord-verify": "^1.2.0",
     "itty-router": "^4.0.13"

@@ -1,8 +1,9 @@
 import { Router } from 'itty-router';
 import { PlatformAlgorithm, isValidRequest } from 'discord-verify';
-import { AWW_COMMAND, INVITE_COMMAND, respond } from './commands.js';
-import { getCuteUrl } from './reddit.js';
-import { InteractionType, InteractionResponseType, MessageFlags, APIInteraction } from 'discord-api-types/v10'
+import { appCommands, respond } from './commands.js';
+import { InteractionType, InteractionResponseType, APIInteraction, APIApplicationCommandInteractionDataOption, ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
+import { client } from 'discord-api-methods';
+import { InteractionContext } from './interactions.js';
 
 const router = Router();
 
@@ -19,35 +20,42 @@ router.post('/', async (request, env) => {
     return new Response('Bad request signature.', { status: 401 });
   }
 
+  client.setToken(env.DISCORD_TOKEN);
+
   if (interaction.type === InteractionType.Ping) {
     return respond({ type: InteractionResponseType.Pong });
   }
 
   if (interaction.type === InteractionType.ApplicationCommand) {
-    switch (interaction.data.name.toLowerCase()) {
-      case AWW_COMMAND.name.toLowerCase(): {
-        const cuteUrl = await getCuteUrl();
-        return respond({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            content: cuteUrl,
-          },
-        });
+    let qualifiedOptions = '';
+    if (interaction.data.type === ApplicationCommandType.ChatInput) {
+      const appendOption = (option: APIApplicationCommandInteractionDataOption) => {
+        if (option.type === ApplicationCommandOptionType.SubcommandGroup) {
+          qualifiedOptions += ' ' + option.name;
+          for (const opt of option.options) {
+            appendOption(opt)
+          }
+        } else if (option.type === ApplicationCommandOptionType.Subcommand) {
+          qualifiedOptions += ' ' + option.name;
+        }
       }
-      case INVITE_COMMAND.name.toLowerCase(): {
-        const applicationId = env.DISCORD_APPLICATION_ID;
-        const INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${applicationId}&scope=applications.commands`;
-        return respond({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            content: INVITE_URL,
-            flags: MessageFlags.Ephemeral,
-          },
-        });
+      for (const option of interaction.data.options ?? []) {
+        appendOption(option);
       }
-      default:
-        return respond({ error: 'Unknown Type' });
     }
+
+    const appCommand = appCommands[interaction.data.type][interaction.data.name];
+    if (!appCommand) {
+      return respond({ error: 'Unknown command' });
+    }
+
+    const handler = appCommand.handlers[qualifiedOptions.trim() || "BASE"]
+    if (!handler) {
+      return respond({ error: 'Cannot handle this command' });
+    }
+
+    const ctx = new InteractionContext(client, interaction, env.DISCORD_APPLICATION_ID);
+    return respond(await handler(ctx));
   }
 
   console.error('Unknown Type');
