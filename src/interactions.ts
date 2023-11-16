@@ -1,15 +1,58 @@
 import { DiscordApiClient } from "discord-api-methods";
-import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataIntegerOption, APIApplicationCommandInteractionDataNumberOption, APIApplicationCommandInteractionDataStringOption, APIAttachment, APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIInteractionResponseChannelMessageWithSource, APIInteractionResponseDeferredChannelMessageWithSource, APIInteractionResponseDeferredMessageUpdate, APIInteractionResponseUpdateMessage, APIModalInteractionResponse, APIModalInteractionResponseCallbackData, APIPremiumRequiredInteractionResponse, ApplicationCommandOptionType, InteractionResponseType, InteractionType, RESTGetAPIInteractionFollowupResult, RESTGetAPIInteractionOriginalResponseResult, RESTPatchAPIInteractionFollowupJSONBody, RESTPatchAPIInteractionFollowupResult, RESTPatchAPIInteractionOriginalResponseResult, RESTPostAPIInteractionFollowupJSONBody, RESTPostAPIInteractionFollowupResult } from "discord-api-types/v10";
+import { getDate, Snowflake } from "discord-snowflake";
+import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataIntegerOption, APIApplicationCommandInteractionDataNumberOption, APIApplicationCommandInteractionDataStringOption, APIAttachment, APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIInteractionResponseChannelMessageWithSource, APIInteractionResponseDeferredChannelMessageWithSource, APIInteractionResponseDeferredMessageUpdate, APIInteractionResponseUpdateMessage, APIMessage, APIMessageApplicationCommandInteraction, APIMessageComponentInteraction, APIModalInteractionResponse, APIModalInteractionResponseCallbackData, APIPremiumRequiredInteractionResponse, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, InteractionType, RESTGetAPIInteractionFollowupResult, RESTGetAPIInteractionOriginalResponseResult, RESTPatchAPIInteractionFollowupJSONBody, RESTPatchAPIInteractionFollowupResult, RESTPatchAPIInteractionOriginalResponseResult, RESTPostAPIInteractionFollowupJSONBody, RESTPostAPIInteractionFollowupResult, Routes } from "discord-api-types/v10";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 
-export class InteractionContext {
+export class InteractionContext<T extends APIInteraction> {
     public client: DiscordApiClient;
-    public interaction: APIInteraction;
+    public interaction: T;
     public followup: InteractionFollowup;
 
-    constructor(client: DiscordApiClient, interaction: APIInteraction, applicationId: string) {
+    constructor(client: DiscordApiClient, interaction: T, applicationId: string) {
       this.client = client;
       this.interaction = interaction;
       this.followup = new InteractionFollowup(client, interaction, applicationId);
+    }
+
+    get createdAt(): Date {
+      return getDate(this.interaction.id as Snowflake);
+    }
+
+    get appPermissons() {
+      return new PermissionsBitField(this.interaction.app_permissions
+        ? BigInt(this.interaction.app_permissions)
+        : 0
+      );
+    }
+
+    get permissons() {
+      return new PermissionsBitField(this.interaction.member
+        ? BigInt(this.interaction.member.permissions)
+        : PermissionFlags.ViewChannel
+          | PermissionFlags.ReadMessageHistory
+          | PermissionFlags.SendMessages
+          | PermissionFlags.AddReactions
+          | PermissionFlags.EmbedLinks
+      );
+    }
+
+    get user() {
+      return this.interaction.member ? this.interaction.member.user : this.interaction.user!
+    }
+
+    getMessage(): T extends APIMessageApplicationCommandInteraction ? APIMessage : undefined;
+    getMessage(): T extends APIMessageComponentInteraction ? APIMessage : undefined;
+    getMessage(): APIMessage | undefined {
+      if (
+        this.interaction.type === InteractionType.ApplicationCommand &&
+        this.interaction.data.type === ApplicationCommandType.Message
+      ) {
+        return this.interaction.data.resolved.messages[this.interaction.data.target_id];
+      } else if (
+        this.interaction.type === InteractionType.MessageComponent
+      ) {
+        return this.interaction.message;
+      }
     }
   
     _getOption(name: string) {
@@ -91,7 +134,7 @@ export class InteractionContext {
       | APIInteractionResponseDeferredMessageUpdate
     {
       return {
-        type: type ?? InteractionResponseType.DeferredChannelMessageWithSource
+        type: type ?? InteractionResponseType.DeferredChannelMessageWithSource,
       }
     }
 
@@ -142,20 +185,20 @@ class InteractionFollowup {
 
   getMessage(messageId: string) {
     return this.client.get(
-      `/webhooks/${this.applicationId}/${this.interaction.token}/messages/${messageId}`,
+      Routes.webhookMessage(this.applicationId, this.interaction.token, messageId),
     ) as Promise<RESTGetAPIInteractionFollowupResult>
   }
 
   editMessage(messageId: string, data: RESTPatchAPIInteractionFollowupJSONBody) {
     return this.client.patch(
-      `/webhooks/${this.applicationId}/${this.interaction.token}/messages/${messageId}`,
+      Routes.webhookMessage(this.applicationId, this.interaction.token, messageId),
       { body: data },
     ) as Promise<RESTPatchAPIInteractionFollowupResult>
   }
 
   deleteMessage(messageId: string) {
     return this.client.delete(
-      `/webhooks/${this.applicationId}/${this.interaction.token}/messages/${messageId}`,
+      Routes.webhookMessage(this.applicationId, this.interaction.token, messageId),
     ) as Promise<null>
   }
 

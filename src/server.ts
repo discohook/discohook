@@ -1,9 +1,10 @@
 import { Router } from 'itty-router';
 import { PlatformAlgorithm, isValidRequest } from 'discord-verify';
-import { appCommands, respond } from './commands.js';
-import { InteractionType, InteractionResponseType, APIInteraction, APIApplicationCommandInteractionDataOption, ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
+import { AppCommandCallbackT, appCommands, respond } from './commands.js';
+import { InteractionType, InteractionResponseType, APIInteraction, APIApplicationCommandInteractionDataOption, ApplicationCommandOptionType, ApplicationCommandType, APIApplicationCommandInteraction, APIChatInputApplicationCommandInteraction, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction } from 'discord-api-types/v10'
 import { client } from 'discord-api-methods';
 import { InteractionContext } from './interactions.js';
+import { getErrorMessage } from './errors.js';
 
 const router = Router();
 
@@ -44,7 +45,7 @@ router.post('/', async (request, env) => {
       }
     }
 
-    const appCommand = appCommands[interaction.data.type][interaction.data.name];
+    const appCommand = appCommands[interaction.data.type][interaction.data.name.toLowerCase()];
     if (!appCommand) {
       return respond({ error: 'Unknown command' });
     }
@@ -55,7 +56,20 @@ router.post('/', async (request, env) => {
     }
 
     const ctx = new InteractionContext(client, interaction, env.DISCORD_APPLICATION_ID);
-    return respond(await handler(ctx));
+    try {
+      const response = await (handler as AppCommandCallbackT<APIInteraction>)(ctx);
+      return respond(response);
+    } catch (e) {
+      if ("code" in (e as any) && "raw" in (e as any)) {
+        const errorResponse = getErrorMessage(ctx, (e as any).raw);
+        if (errorResponse) {
+          return respond(errorResponse);
+        }
+      } else {
+        console.error(e);
+      }
+      return respond({ error: "You've found a super unlucky error. Try again later!", status: 500 })
+    }
   }
 
   console.error('Unknown Type');
