@@ -25,7 +25,7 @@ export class InteractionContext<T extends APIInteraction> {
       );
     }
 
-    get permissons() {
+    get userPermissons() {
       return new PermissionsBitField(this.interaction.member
         ? BigInt(this.interaction.member.permissions)
         : PermissionFlags.ViewChannel
