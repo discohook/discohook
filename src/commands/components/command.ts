@@ -10,9 +10,7 @@ export const addComponent = async (ctx: InteractionContext<APIInteraction>, mess
 
 export const addComponentChatEntry: ChatInputAppCommandCallback = async (ctx) => {
   const messageLink = ctx.getStringOption("message-link").value;
-  console.log(ctx.interaction.data.options[0])
   const match = messageLink.match(MESSAGE_LINK_RE);
-  console.log(match, messageLink)
   if (!match) {
     return ctx.reply("Invalid message link. Right click or long-press a message, then use \"Copy Message Link\"");
   }
