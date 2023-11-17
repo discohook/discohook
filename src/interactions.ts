@@ -1,6 +1,6 @@
 import { DiscordApiClient } from "discord-api-methods";
 import { getDate, Snowflake } from "discord-snowflake";
-import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataIntegerOption, APIApplicationCommandInteractionDataNumberOption, APIApplicationCommandInteractionDataStringOption, APIAttachment, APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIInteractionResponseChannelMessageWithSource, APIInteractionResponseDeferredChannelMessageWithSource, APIInteractionResponseDeferredMessageUpdate, APIInteractionResponseUpdateMessage, APIMessage, APIMessageApplicationCommandInteraction, APIMessageComponentInteraction, APIModalInteractionResponse, APIModalInteractionResponseCallbackData, APIPremiumRequiredInteractionResponse, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, InteractionType, RESTGetAPIInteractionFollowupResult, RESTGetAPIInteractionOriginalResponseResult, RESTPatchAPIInteractionFollowupJSONBody, RESTPatchAPIInteractionFollowupResult, RESTPatchAPIInteractionOriginalResponseResult, RESTPostAPIInteractionFollowupJSONBody, RESTPostAPIInteractionFollowupResult, Routes } from "discord-api-types/v10";
+import { APIApplicationCommandInteractionDataBasicOption, APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataIntegerOption, APIApplicationCommandInteractionDataNumberOption, APIApplicationCommandInteractionDataOption, APIApplicationCommandInteractionDataStringOption, APIApplicationCommandInteractionDataSubcommandOption, APIAttachment, APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIInteractionResponseChannelMessageWithSource, APIInteractionResponseDeferredChannelMessageWithSource, APIInteractionResponseDeferredMessageUpdate, APIInteractionResponseUpdateMessage, APIMessage, APIMessageApplicationCommandInteraction, APIMessageComponentInteraction, APIModalInteractionResponse, APIModalInteractionResponseCallbackData, APIPremiumRequiredInteractionResponse, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, InteractionType, RESTGetAPIInteractionFollowupResult, RESTGetAPIInteractionOriginalResponseResult, RESTPatchAPIInteractionFollowupJSONBody, RESTPatchAPIInteractionFollowupResult, RESTPatchAPIInteractionOriginalResponseResult, RESTPostAPIInteractionFollowupJSONBody, RESTPostAPIInteractionFollowupResult, Routes } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 
 export class InteractionContext<T extends APIInteraction> {
@@ -54,6 +54,37 @@ export class InteractionContext<T extends APIInteraction> {
         return this.interaction.message;
       }
     }
+
+    _getSubcommand(): APIApplicationCommandInteractionDataSubcommandOption | null {
+      if (
+        ![
+          InteractionType.ApplicationCommand,
+          InteractionType.ApplicationCommandAutocomplete,
+        ].includes(this.interaction.type) ||
+        !this.interaction.data ||
+        !("options" in this.interaction.data) ||
+        !this.interaction.data.options
+      ) {
+        return null;
+      }
+
+      let subcommand: APIApplicationCommandInteractionDataSubcommandOption | null = null;
+      const loop = (option: APIApplicationCommandInteractionDataOption) => {
+        if (subcommand) return;
+        if (option.type === ApplicationCommandOptionType.SubcommandGroup) {
+          for (const opt of option.options) {
+            loop(opt)
+          }
+        } else if (option.type === ApplicationCommandOptionType.Subcommand) {
+          subcommand = option;
+        }
+      }
+      for (const option of this.interaction.data.options) {
+        loop(option)
+      }
+
+      return subcommand
+    }
   
     _getOption(name: string) {
       if (
@@ -62,11 +93,18 @@ export class InteractionContext<T extends APIInteraction> {
           InteractionType.ApplicationCommandAutocomplete,
         ].includes(this.interaction.type) ||
         !this.interaction.data ||
-        !("options" in this.interaction.data)
+        !("options" in this.interaction.data) ||
+        !this.interaction.data.options
       ) {
         return null;
       }
-      return this.interaction.data.options?.find((o) => o.name === name);
+      const subcommand = this._getSubcommand();
+      const options = subcommand ? subcommand.options : this.interaction.data.options;
+      if (!options) {
+        return null;
+      }
+
+      return options.find((o) => o.name === name);
     }
   
     getStringOption(
