@@ -1,6 +1,6 @@
 import { APIChatInputApplicationCommandInteraction, APIInteraction, APIInteractionResponse, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction, ApplicationCommandOptionType, ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { InteractionContext } from "./interactions.js";
-import { addButtonCallback } from "./commands/components/command.js";
+import { addComponentChatEntry, addComponentMessageEntry } from "./commands/components/command.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { PermissionFlags } from "discord-bitflag";
 
@@ -38,17 +38,18 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
         }
       ],
       handlers: {
-        add: addButtonCallback,
+        add: addComponentChatEntry,
       },
     },
   },
   [ApplicationCommandType.Message]: {
-    buttons: {
+    "buttons & components": {
       type: ApplicationCommandType.Message,
-      name: "Buttons",
+      name: "Buttons & Components",
       default_member_permissions: String(PermissionFlags.ManageMessages | PermissionFlags.ManageGuild),
       // description: "Add, remove, and manage buttons",
       handlers: {
+        BASE: addComponentMessageEntry,
       },
     },
     "quick edit": {
