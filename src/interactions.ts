@@ -212,7 +212,7 @@ class InteractionFollowup {
 
   send(data: string | RESTPostAPIInteractionFollowupJSONBody) {
     return this.client.post(
-      `/webhooks/${this.applicationId}/${this.interaction.token}`,
+      Routes.webhook(this.applicationId, this.interaction.token),
       {
         body: typeof data === "string"
           ? { content: data }
