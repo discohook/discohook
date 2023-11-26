@@ -5,14 +5,15 @@ import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { PermissionFlags } from "discord-bitflag";
 import { inviteCallback } from "./commands/invite.js";
 import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
+import { helpAutocomplete, helpEntry } from "./commands/help.js";
 
 export type AppCommandCallbackT<T extends APIInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse>
 export type ChatInputAppCommandCallback = AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
 export type MessageAppCommandCallback = AppCommandCallbackT<APIMessageApplicationCommandInteraction>;
 export type UserAppCommandCallback = AppCommandCallbackT<APIUserApplicationCommandInteraction>;
 
-type Choices = NonNullable<APIApplicationCommandAutocompleteResponse["data"]["choices"]>;
-export type AppCommandAutocompleteCallback = (ctx: InteractionContext<APIApplicationCommandAutocompleteInteraction>) => Promise<Choices>
+type AutocompleteChoices = NonNullable<APIApplicationCommandAutocompleteResponse["data"]["choices"]>;
+export type AppCommandAutocompleteCallback = (ctx: InteractionContext<APIApplicationCommandAutocompleteInteraction>) => Promise<AutocompleteChoices>
 
 export type AppCommandCallback =
   | ChatInputAppCommandCallback
@@ -126,6 +127,19 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
         create: webhookCreateEntry,
       },
     },
+    help: {
+      name: "help",
+      description: "Get help with various topics",
+      options: [{
+        type: ApplicationCommandOptionType.String,
+        name: "tag",
+        description: "The tag to get help for",
+        autocomplete: true,
+        required: true,
+      }],
+      handlers: { BASE: helpEntry },
+      autocompleteHandlers: { BASE: helpAutocomplete },
+    }
   },
   [ApplicationCommandType.Message]: {
     "buttons & components": {
