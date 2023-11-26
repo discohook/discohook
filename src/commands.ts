@@ -3,6 +3,7 @@ import { InteractionContext } from "./interactions.js";
 import { addComponentChatEntry, addComponentMessageEntry } from "./commands/components/command.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { PermissionFlags } from "discord-bitflag";
+import { inviteCallback } from "./commands/invite.js";
 
 export type AppCommandCallbackT<T extends APIInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse>
 export type ChatInputAppCommandCallback = AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
