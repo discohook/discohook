@@ -24,6 +24,7 @@
     "discord-api-types": "^0.37.63",
     "discord-bitflag": "^1.0.1",
     "discord-verify": "^1.2.0",
+    "drizzle-orm": "^0.29.0",
     "itty-router": "^4.0.13"
   },
   "devDependencies": {
@@ -31,6 +32,7 @@
     "c8": "^8.0.0",
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
+    "drizzle-kit": "^0.20.4",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",

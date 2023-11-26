@@ -38,7 +38,8 @@ for (const [type, commands] of Object.entries(appCommands)) {
       handlers: {},
     };
     // @ts-ignore
-    delete c.handlers
+    delete c.handlers;
+    delete c.autocompleteHandlers;
     payload.push(c);
   }
 }

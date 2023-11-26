@@ -1,4 +1,4 @@
-import { APIChatInputApplicationCommandInteraction, APIInteraction, APIInteractionResponse, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction, ApplicationCommandOptionType, ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
+import { APIApplicationCommandAutocompleteInteraction, APIApplicationCommandAutocompleteResponse, APIChatInputApplicationCommandInteraction, APIInteraction, APIInteractionResponse, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction, ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { InteractionContext } from "./interactions.js";
 import { addComponentChatEntry, addComponentMessageEntry } from "./commands/components/command.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
@@ -9,13 +9,17 @@ export type ChatInputAppCommandCallback = AppCommandCallbackT<APIChatInputApplic
 export type MessageAppCommandCallback = AppCommandCallbackT<APIMessageApplicationCommandInteraction>;
 export type UserAppCommandCallback = AppCommandCallbackT<APIUserApplicationCommandInteraction>;
 
-export type AppCommandCallback = 
+type Choices = NonNullable<APIApplicationCommandAutocompleteResponse["data"]["choices"]>;
+export type AppCommandAutocompleteCallback = (ctx: InteractionContext<APIApplicationCommandAutocompleteInteraction>) => Promise<Choices>
+
+export type AppCommandCallback =
   | ChatInputAppCommandCallback
   | MessageAppCommandCallback
   | UserAppCommandCallback
 
 export type AppCommand = RESTPostAPIApplicationCommandsJSONBody & {
-  handlers: Record<string, AppCommandCallback>
+  handlers: Record<string, AppCommandCallback>;
+  autocompleteHandlers?: Record<string, AppCommandAutocompleteCallback>;
 };
 
 export const appCommands: Record<ApplicationCommandType, Record<string, AppCommand>> = {
