@@ -41,6 +41,13 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
         add: addComponentChatEntry,
       },
     },
+    invite: {
+      name: "invite",
+      description: "Invite URL for this bot",
+      handlers: {
+        BASE: inviteCallback,
+      }
+    },
   },
   [ApplicationCommandType.Message]: {
     "buttons & components": {
