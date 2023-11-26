@@ -25,7 +25,7 @@ const tags: Record<string, string | APIEmbed> = {
   },
   emoji: {
     title: "How do I use an emoji?",
-    description: "To use a server emoji, invite the Discohook bot at https://discohook.app/bot and use the **/format emoji** command.\n\nDefault emojis that are included with Discord don't need any special formatting, for example :heart: will automatically turn into the heart emoji."
+    description: "To use a server emoji, invite the Discohook bot at https://discohook.app/bot and use the **/format emoji** command.\n\nDefault emojis that are included with Discord don't need any special formatting, for example :heart\\: will automatically turn into the heart emoji. :heart:"
   },
   emote: "emoji",
   link: {
