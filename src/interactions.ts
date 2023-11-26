@@ -110,61 +110,104 @@ export class InteractionContext<T extends APIInteraction> {
 
       return options.find((o) => o.name === name);
     }
-  
-    getStringOption(
-      name: string
-    ): APIApplicationCommandInteractionDataStringOption {
+
+    _getOptionWithDefault<T extends APIApplicationCommandInteractionDataOption>(
+      name: string,
+      type: ApplicationCommandOptionType,
+      def: Partial<T>
+    ): T {
       const option = this._getOption(name);
-      if (!option || option.type !== ApplicationCommandOptionType.String) {
+      if (!option || option.type !== type) {
         return {
           name,
-          type: ApplicationCommandOptionType.String,
-          value: "",
-        };
+          type,
+          ...def
+        } as T;
       }
-      return option;
+      return option as T;
+    }
+
+    _getResolvableOption<T>(
+      name: string,
+      type: (
+        | ApplicationCommandOptionType.User
+        | ApplicationCommandOptionType.Mentionable
+        | ApplicationCommandOptionType.Role
+        | ApplicationCommandOptionType.Channel
+        | ApplicationCommandOptionType.Attachment
+      ),
+      key: keyof APIInteractionDataResolved,
+    ) {
+      const option = this._getOption(name);
+      if (
+        !option ||
+        option.type !== type ||
+        !(
+          this.interaction.type === InteractionType.ApplicationCommand ||
+          this.interaction.type === InteractionType.ApplicationCommandAutocomplete
+        ) ||
+        !this.interaction.data.resolved
+      ) {
+        return null;
+      }
+
+      const id = option.value;
+      // @ts-ignore
+      const objects = this.interaction.data.resolved[key];
+      if (!objects) return null;
+
+      const object = objects[id];
+      if (!object) return null;
+
+      return object as T;
+    }
+
+    getStringOption(name: string) {
+      return this._getOptionWithDefault<APIApplicationCommandInteractionDataStringOption>(
+        name,
+        ApplicationCommandOptionType.String,
+        { value: "" },
+      );
     }
   
-    getIntegerOption(
-      name: string
-    ): APIApplicationCommandInteractionDataIntegerOption {
-      const option = this._getOption(name);
-      if (!option || option.type !== ApplicationCommandOptionType.Integer) {
-        return {
-          name,
-          type: ApplicationCommandOptionType.Integer,
-          value: -1,
-        };
-      }
-      return option;
+    getIntegerOption(name: string) {
+      return this._getOptionWithDefault<APIApplicationCommandInteractionDataIntegerOption>(
+        name,
+        ApplicationCommandOptionType.Integer,
+        { value: -1 },
+      );
     }
   
-    getNumberOption(
-      name: string
-    ): APIApplicationCommandInteractionDataNumberOption {
-      const option = this._getOption(name);
-      if (!option || option.type !== ApplicationCommandOptionType.Number) {
-        return {
-          name,
-          type: ApplicationCommandOptionType.Number,
-          value: -1,
-        };
-      }
-      return option;
+    getNumberOption(name: string) {
+      return this._getOptionWithDefault<APIApplicationCommandInteractionDataNumberOption>(
+        name,
+        ApplicationCommandOptionType.Integer,
+        { value: -1 },
+      );
     }
   
-    getBooleanOption(
-      name: string
-    ): APIApplicationCommandInteractionDataBooleanOption {
-      const option = this._getOption(name);
-      if (!option || option.type !== ApplicationCommandOptionType.Boolean) {
-        return {
-          name,
-          type: ApplicationCommandOptionType.Boolean,
-          value: false,
-        };
-      }
-      return option;
+    getBooleanOption(name: string) {
+      return this._getOptionWithDefault<APIApplicationCommandInteractionDataBooleanOption>(
+        name,
+        ApplicationCommandOptionType.Boolean,
+        { value: false },
+      );
+    }
+
+    getAttachmentOption(name: string) {
+      return this._getResolvableOption<APIAttachment>(
+        name,
+        ApplicationCommandOptionType.Attachment,
+        'attachments',
+      );
+    }
+
+    getChannelOption(name: string) {
+      return this._getResolvableOption<APIPartialResolvedChannel>(
+        name,
+        ApplicationCommandOptionType.Channel,
+        'channels',
+      );
     }
 
     defer(
