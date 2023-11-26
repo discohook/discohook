@@ -4,6 +4,7 @@ import { addComponentChatEntry, addComponentMessageEntry } from "./commands/comp
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { PermissionFlags } from "discord-bitflag";
 import { inviteCallback } from "./commands/invite.js";
+import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
 
 export type AppCommandCallbackT<T extends APIInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse>
 export type ChatInputAppCommandCallback = AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
@@ -22,6 +23,14 @@ export type AppCommand = RESTPostAPIApplicationCommandsJSONBody & {
   handlers: Record<string, AppCommandCallback>;
   autocompleteHandlers?: Record<string, AppCommandAutocompleteCallback>;
 };
+
+const webhookAutocompleteOption = {
+  type: ApplicationCommandOptionType.String,
+  name: "webhook",
+  description: "The target webhook",
+  autocomplete: true,
+  required: true,
+} as const;
 
 export const appCommands: Record<ApplicationCommandType, Record<string, AppCommand>> = {
   [ApplicationCommandType.ChatInput]: {
@@ -53,9 +62,74 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
         BASE: inviteCallback,
       }
     },
+    webhook: {
+      name: "webhook",
+      description: "Manage webhooks",
+      default_member_permissions: String(PermissionFlags.ManageWebhooks),
+      options: [
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "create",
+          description: "Create a webhook",
+          options: [
+            {
+              type: ApplicationCommandOptionType.String,
+              name: "name",
+              description: "The webhook's name",
+              required: true,
+            },
+            {
+              type: ApplicationCommandOptionType.Attachment,
+              name: "avatar",
+              description: "The webhook's avatar",
+              required: false,
+            },
+            {
+              type: ApplicationCommandOptionType.Channel,
+              name: "channel",
+              description: "The channel to create the webhook in",
+              required: false,
+              channel_types: [
+                ChannelType.GuildAnnouncement,
+                ChannelType.GuildText,
+                ChannelType.GuildVoice,
+                ChannelType.GuildForum,
+                ChannelType.PublicThread,
+                ChannelType.PrivateThread,
+                ChannelType.AnnouncementThread,
+              ],
+            }
+          ],
+        },
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "delete",
+          description: "Delete a webhook",
+          options: [webhookAutocompleteOption],
+        },
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "info",
+          description: "Get info on a webhook",
+          options: [
+            webhookAutocompleteOption,
+            {
+              type: ApplicationCommandOptionType.Boolean,
+              name: "show-url",
+              description: "Whether to skip the \"Get URL\" step. This makes the message hidden",
+              required: false,
+            },
+          ],
+        },
+      ],
+      handlers: {
+        create: webhookCreateEntry,
+      },
+    },
   },
   [ApplicationCommandType.Message]: {
     "buttons & components": {
+      // Add, remove, edit, relocate within msg, move all buttons to diff message
       type: ApplicationCommandType.Message,
       name: "Buttons & Components",
       default_member_permissions: String(PermissionFlags.ManageMessages | PermissionFlags.ManageGuild),

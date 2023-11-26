@@ -1,9 +1,8 @@
 import { EmbedBuilder, TimestampStyles, time } from "@discordjs/builders";
 import { APIWebhook } from "discord-api-types/v10";
 import { webhookAvatarUrl } from "../../util/cdn.js";
-import { getUserTag } from "../../util/user.js";
 import { color } from "../../util/meta.js";
-import {getDate, Snowflake} from "discord-snowflake";
+import { getDate, Snowflake } from "discord-snowflake";
 
 export const getWebhookEmbed = (webhook: APIWebhook) => {
   const createdAt = getDate(webhook.id as Snowflake);
@@ -32,7 +31,7 @@ export const getWebhookEmbed = (webhook: APIWebhook) => {
       },
       {
         name: "Created by",
-        value: webhook.user ? `<@${webhook.user.id}>\n${getUserTag(webhook.user)}` : "Unknown",
+        value: webhook.user ? `<@${webhook.user.id}>` : "Unknown",
         inline: true,
       },
       {
