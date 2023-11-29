@@ -6,6 +6,7 @@ import { client } from 'discord-api-methods';
 import { InteractionContext } from './interactions.js';
 import { getErrorMessage } from './errors.js';
 import { Env } from './types/env.js';
+import { isDiscordError } from './util/error.js';
 
 const router = Router();
 
@@ -65,8 +66,8 @@ router.post('/', async (request, env: Env) => {
         const response = await (handler as AppCommandCallbackT<APIInteraction>)(ctx);
         return respond(response);
       } catch (e) {
-        if ("code" in (e as any) && "raw" in (e as any)) {
-          const errorResponse = getErrorMessage(ctx, (e as any).raw);
+        if (isDiscordError(e)) {
+          const errorResponse = getErrorMessage(ctx, e.raw);
           if (errorResponse) {
             return respond(errorResponse);
           }
