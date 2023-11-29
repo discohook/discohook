@@ -6,6 +6,8 @@ import { PermissionFlags } from "discord-bitflag";
 import { inviteCallback } from "./commands/invite.js";
 import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
 import { helpAutocomplete, helpEntry } from "./commands/help.js";
+import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
+import { ApplicationCommandOptionChannelTypesMixin } from "@discordjs/builders";
 
 export type AppCommandCallbackT<T extends APIInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse>
 export type ChatInputAppCommandCallback = AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
@@ -25,12 +27,30 @@ export type AppCommand = RESTPostAPIApplicationCommandsJSONBody & {
   autocompleteHandlers?: Record<string, AppCommandAutocompleteCallback>;
 };
 
+const webhookChannelTypes = [
+  ChannelType.GuildAnnouncement,
+  ChannelType.GuildText,
+  ChannelType.GuildVoice,
+  ChannelType.GuildForum,
+  ChannelType.PublicThread,
+  ChannelType.PrivateThread,
+  ChannelType.AnnouncementThread,
+] as ApplicationCommandOptionChannelTypesMixin["channel_types"];
+
 const webhookAutocompleteOption = {
   type: ApplicationCommandOptionType.String,
   name: "webhook",
   description: "The target webhook",
   autocomplete: true,
   required: true,
+} as const;
+
+const webhookFilterAutocompleteOption = {
+  type: ApplicationCommandOptionType.Channel,
+  name: "filter-channel",
+  description: "The channel to filter autocomplete results with",
+  required: false,
+  channel_types: webhookChannelTypes,
 } as const;
 
 export const appCommands: Record<ApplicationCommandType, Record<string, AppCommand>> = {
@@ -90,15 +110,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
               name: "channel",
               description: "The channel to create the webhook in",
               required: false,
-              channel_types: [
-                ChannelType.GuildAnnouncement,
-                ChannelType.GuildText,
-                ChannelType.GuildVoice,
-                ChannelType.GuildForum,
-                ChannelType.PublicThread,
-                ChannelType.PrivateThread,
-                ChannelType.AnnouncementThread,
-              ],
+              channel_types: webhookChannelTypes,
             }
           ],
         },
@@ -106,7 +118,10 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
           type: ApplicationCommandOptionType.Subcommand,
           name: "delete",
           description: "Delete a webhook",
-          options: [webhookAutocompleteOption],
+          options: [
+            webhookAutocompleteOption,
+            webhookFilterAutocompleteOption,
+          ],
         },
         {
           type: ApplicationCommandOptionType.Subcommand,
@@ -114,6 +129,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
           description: "Get info on a webhook",
           options: [
             webhookAutocompleteOption,
+            webhookFilterAutocompleteOption,
             {
               type: ApplicationCommandOptionType.Boolean,
               name: "show-url",
@@ -125,6 +141,10 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
       ],
       handlers: {
         create: webhookCreateEntry,
+      },
+      autocompleteHandlers: {
+        delete: webhookAutocomplete,
+        info: webhookAutocomplete,
       },
     },
     help: {
