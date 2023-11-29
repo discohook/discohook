@@ -17,6 +17,20 @@ export const user = sqliteTable('User', {
   guildedId: text('guildedId').unique().references(() => guildedUser.id),
 });
 
+export const userRelations = relations(user, ({ one, many }) => ({
+  backups: many(backup),
+  shareLinks: many(shareLink),
+  messageLogEntries: many(messageLogEntry),
+  discordUser: one(discordUser, {
+    fields: [user.discordId],
+    references: [discordUser.id],
+  }),
+  guildedUser: one(guildedUser, {
+    fields: [user.guildedId],
+    references: [guildedUser.id],
+  }),
+}));
+
 export const discordUser = sqliteTable('DiscordUser', {
   id: bigint('id').primaryKey(),
   name: text('name').notNull(),
@@ -25,11 +39,26 @@ export const discordUser = sqliteTable('DiscordUser', {
   avatar: text('avatar'),
 });
 
+export const discordUserRelations = relations(discordUser, ({ one, many }) => ({
+  user: one(user, {
+    fields: [discordUser.id],
+    references: [user.discordId],
+  }),
+  members: many(discordMember),
+}));
+
 export const guildedUser = sqliteTable('GuildedUser', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   avatarUrl: text('avatarUrl'),
 });
+
+export const guildedUserRelations = relations(guildedUser, ({ one }) => ({
+  user: one(user, {
+    fields: [guildedUser.id],
+    references: [user.guildedId],
+  }),
+}));
 
 export const discordGuild = sqliteTable('DiscordGuild', {
   id: bigint('id').primaryKey(),
@@ -42,7 +71,7 @@ export const discordGuildRelations = relations(discordGuild, ({ many }) => ({
   roles: many(discordRole),
   backups: many(backup),
   webhooks: many(webhook),
-}))
+}));
 
 export const discordRole = sqliteTable('DiscordRoles', {
   id: bigint('id').notNull(),
@@ -61,6 +90,13 @@ export const discordRole = sqliteTable('DiscordRoles', {
   unq: unique().on(table.id, table.guildId),
 }));
 
+export const discordRoleRelations = relations(discordRole, ({ one }) => ({
+  guild: one(discordGuild, {
+    fields: [discordRole.guildId],
+    references: [discordGuild.id],
+  }),
+}));
+
 export const discordMember = sqliteTable('DiscordMember', {
   userId: bigint('userId').notNull(),
   guildId: bigint('guildId').notNull(),
@@ -68,11 +104,27 @@ export const discordMember = sqliteTable('DiscordMember', {
   unq: unique().on(table.userId, table.guildId),
 }));
 
+export const discordMemberRelations = relations(discordMember, ({ one }) => ({
+  user: one(user, {
+    fields: [discordMember.userId],
+    references: [user.id],
+  }),
+  guild: one(discordGuild, {
+    fields: [discordMember.guildId],
+    references: [discordGuild.id],
+  }),
+}));
+
 export const guildedServer = sqliteTable('GuildedServer', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   avatarUrl: text('avatarUrl'),
 });
+
+export const guildedServerRelations = relations(guildedServer, ({ many }) => ({
+  backups: many(backup),
+  webhooks: many(webhook),
+}));
 
 export const shareLink = sqliteTable('ShareLink', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -83,6 +135,13 @@ export const shareLink = sqliteTable('ShareLink', {
 
   userId: integer('userId').references(() => user.id),
 });
+
+export const shareLinkRelations = relations(shareLink, ({ one }) => ({
+  user: one(user, {
+    fields: [shareLink.userId],
+    references: [user.id],
+  }),
+}));
 
 export const backup = sqliteTable('Backup', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -95,7 +154,11 @@ export const backup = sqliteTable('Backup', {
   ownerId: integer('ownerId').notNull().references(() => user.id),
 });
 
-export const backupRelations = relations(backup, ({ many }) => ({
+export const backupRelations = relations(backup, ({ one, many }) => ({
+  owner: one(user, {
+    fields: [backup.ownerId],
+    references: [user.id],
+  }),
   guilds: many(discordGuild),
   servers: many(guildedServer),
 }));
@@ -112,7 +175,15 @@ export const webhook = sqliteTable('Webhook', {
   guildedServerId: text('guildedServerId').references(() => guildedServer.id),
 });
 
-export const webhookRelations = relations(webhook, ({ many }) => ({
+export const webhookRelations = relations(webhook, ({ one, many }) => ({
+  discordGuild: one(discordGuild, {
+    fields: [webhook.discordGuildId],
+    references: [discordGuild.id],
+  }),
+  guildedServer: one(guildedServer, {
+    fields: [webhook.guildedServerId],
+    references: [guildedServer.id],
+  }),
   messageLogEntries: many(messageLogEntry),
 }));
 
@@ -133,6 +204,13 @@ export const messageLogEntry = sqliteTable('MessageLogEntry', {
   embedCount: integer('embedCount').default(0),
 });
 
-// export const messageLogEntryRelations = relations(messageLogEntry, ({ one }) => ({
-//   webhook: one(webhook),
-// }));
+export const messageLogEntryRelations = relations(messageLogEntry, ({ one }) => ({
+  webhook: one(webhook, {
+    fields: [messageLogEntry.webhookId],
+    references: [webhook.id],
+  }),
+  user: one(user, {
+    fields: [messageLogEntry.userId],
+    references: [user.id],
+  }),
+}));
