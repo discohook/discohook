@@ -90,8 +90,12 @@ router.post('/', async (request, env: Env) => {
       try {
         const response = await handler(ctx);
         return respond({
+          // Normally I wouldn't truncate data at this level but this just
+          // makes it a lot easier if the limit is changed in the future,
+          // and there's hardly a reason I would *want* to go over the limit
+          // in a callback
           type: InteractionResponseType.ApplicationCommandAutocompleteResult,
-          data: { choices: response },
+          data: { choices: response.slice(0, 25) },
         });
       } catch (e) {
         console.error(e);
