@@ -1,6 +1,12 @@
 import { blob, integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core"
 import { relations } from "drizzle-orm";
 
+// @ts-ignore
+BigInt.prototype.toJSON = function () {
+  const int = Number.parseInt(this.toString());
+  return int ?? this.toString();
+};
+
 const date = (name: string) => integer(name, { mode: 'timestamp' }).$type<Date>();
 const bool = (name: string) => integer(name, { mode: 'boolean' });
 const bigint = (name: string) => blob(name, { mode: 'bigint' });
