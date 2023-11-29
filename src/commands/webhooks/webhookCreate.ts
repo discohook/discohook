@@ -1,9 +1,7 @@
 import { APIWebhook, ChannelType, MessageFlags, Routes } from "discord-api-types/v10";
 import { ChatInputAppCommandCallback } from "../../commands.js";
-import { readAttachment, webhookAvatarUrl } from "../../util/cdn.js";
-import { getWebhookEmbed } from "./webhookInfo.js";
-import { color } from "../../util/meta.js";
-import { EmbedBuilder, spoiler } from "@discordjs/builders";
+import { readAttachment } from "../../util/cdn.js";
+import { getWebhookUrlEmbed } from "./webhookInfo.js";
 
 export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
   const name = ctx.getStringOption('name').value,
@@ -11,7 +9,9 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     channel = ctx.getChannelOption('channel');
 
   let channelId: string | null | undefined = undefined;
+  let channelType: ChannelType = ctx.interaction.channel.type;
   if (channel) {
+    channelType = channel.type;
     if (
       [
         ChannelType.PublicThread,
@@ -101,12 +101,12 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     });
   }
 
-  const url = `https://discord.com/api/v10/${webhook.id}/${webhook.token}`;
-  const embed = new EmbedBuilder({
-    title: "Webhook Created",
-    description: spoiler(url),
-    color,
-  });
+  const embed = getWebhookUrlEmbed(
+    webhook,
+    "Webhook Created",
+    ctx.followup.applicationId,
+    channelType,
+  );
 
   return ctx.reply({
     embeds: [embed.toJSON()],

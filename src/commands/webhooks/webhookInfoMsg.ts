@@ -1,6 +1,6 @@
 import { APIWebhook, MessageFlags, Routes } from "discord-api-types/v10";
 import { MessageAppCommandCallback } from "../../commands.js";
-import { getWebhookEmbed } from "./webhookInfo.js";
+import { getWebhookInfoEmbed } from "./webhookInfo.js";
 
 export const webhookInfoMsgCallback: MessageAppCommandCallback = async (ctx) => {
   const msg = ctx.getMessage();
@@ -13,7 +13,7 @@ export const webhookInfoMsgCallback: MessageAppCommandCallback = async (ctx) => 
 
   const webhook = await ctx.client.get(Routes.webhook(msg.webhook_id)) as APIWebhook;
   return ctx.reply({
-    embeds: [ getWebhookEmbed(webhook).toJSON() ],
+    embeds: [ getWebhookInfoEmbed(webhook).toJSON() ],
     flags: MessageFlags.Ephemeral,
   });
 }

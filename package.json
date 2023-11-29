@@ -20,6 +20,7 @@
     "@discordjs/builders": "^1.7.0",
     "@discordjs/formatters": "^0.3.3",
     "@discordjs/rest": "^2.1.0",
+    "dedent-js": "^1.0.1",
     "discord-api-methods": "^0.0.5",
     "discord-api-types": "^0.37.63",
     "discord-bitflag": "^1.0.1",
