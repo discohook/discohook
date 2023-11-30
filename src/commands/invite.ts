@@ -22,7 +22,7 @@ export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
   // Flows
   permissions.set(PermissionFlags.ModerateMembers, true);
 
-  const url = new URL(`https://discord.com/api/oauth2/authorize?` + new URLSearchParams({
+  const url = new URL(`https://discord.com/oauth2/authorize?` + new URLSearchParams({
     client_id: ctx.followup.applicationId,
     permissions: String(permissions.value),
     scope: 'bot',
