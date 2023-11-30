@@ -134,10 +134,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     .onConflictDoNothing();
 
   return [
-    ctx.reply({
-      embeds: [embed.toJSON()],
-      flags: MessageFlags.Ephemeral,
-    }),
+    ctx.reply({ embeds: [embed.toJSON()], flags: MessageFlags.Ephemeral }),
     async () => {
       await sleep(2000);
       try {
