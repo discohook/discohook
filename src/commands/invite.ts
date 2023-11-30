@@ -28,8 +28,5 @@ export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
     scope: 'bot',
   }));
 
-  return ctx.reply({
-    content: url.href,
-    flags: MessageFlags.Ephemeral,
-  })
+  return ctx.reply({ content: url.href, flags: MessageFlags.Ephemeral });
 }

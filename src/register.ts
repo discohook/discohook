@@ -1,4 +1,3 @@
-import { RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types/v10';
 import { appCommands } from './commands.js';
 import dotenv from 'dotenv';
 import process from 'node:process';
