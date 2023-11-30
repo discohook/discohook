@@ -5,7 +5,7 @@ import { InteractionType, InteractionResponseType, APIInteraction, APIApplicatio
 import { client } from 'discord-api-methods';
 import { InteractionContext } from './interactions.js';
 import { getErrorMessage } from './errors.js';
-import { Env } from './types/env.js';
+import { Env, WorkerContext } from './types/env.js';
 import { isDiscordError } from './util/error.js';
 
 const router = Router();
@@ -14,7 +14,7 @@ router.get('/', (_, env) => {
   return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
 });
 
-router.post('/', async (request, env: Env) => {
+router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
   const { isValid, interaction } = await server.verifyDiscordRequest(
     request,
     env,
@@ -64,7 +64,12 @@ router.post('/', async (request, env: Env) => {
       const ctx = new InteractionContext(client, interaction, env);
       try {
         const response = await (handler as AppCommandCallbackT<APIInteraction>)(ctx);
-        return respond(response);
+        if (Array.isArray(response)) {
+          workerCtx.waitUntil(response[1]());
+          return respond(response[0]);
+        } else {
+          return respond(response);
+        }
       } catch (e) {
         if (isDiscordError(e)) {
           const errorResponse = getErrorMessage(ctx, e.raw);
@@ -107,6 +112,7 @@ router.post('/', async (request, env: Env) => {
   console.error('Unknown Type');
   return respond({ error: 'Unknown Type' });
 });
+
 router.all('*', () => new Response('Not Found.', { status: 404 }));
 
 async function verifyDiscordRequest(request: Request, env: Env) {
@@ -126,8 +132,8 @@ async function verifyDiscordRequest(request: Request, env: Env) {
 
 const server = {
   verifyDiscordRequest: verifyDiscordRequest,
-  fetch: async function (request: Request, env: Env) {
-    return router.handle(request, env);
+  fetch: async function (request: Request, env: Env, ctx: WorkerContext) {
+    return router.handle(request, env, ctx);
   },
 };
 

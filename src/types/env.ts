@@ -5,3 +5,8 @@ export interface Env {
   DEVELOPMENT_SERVER_ID: string;
   DB: D1Database;
 }
+
+export interface WorkerContext {
+  waitUntil: (promise: Promise<void>) => void;
+  passThroughOnException: () => void;
+}

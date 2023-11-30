@@ -9,7 +9,7 @@ import { helpAutocomplete, helpEntry } from "./commands/help.js";
 import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
 import { ApplicationCommandOptionChannelTypesMixin } from "@discordjs/builders";
 
-export type AppCommandCallbackT<T extends APIInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse>
+export type AppCommandCallbackT<T extends APIInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]>
 export type ChatInputAppCommandCallback = AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
 export type MessageAppCommandCallback = AppCommandCallbackT<APIMessageApplicationCommandInteraction>;
 export type UserAppCommandCallback = AppCommandCallbackT<APIUserApplicationCommandInteraction>;
