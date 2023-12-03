@@ -1,4 +1,4 @@
-import { APIGuild, APIInteraction, APIWebhook, ChannelType, MessageFlags, RESTJSONErrorCodes, Routes } from "discord-api-types/v10";
+import { APIGuild, APIInteraction, APIWebhook, ButtonStyle, ChannelType, MessageFlags, RESTJSONErrorCodes, Routes } from "discord-api-types/v10";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { readAttachment } from "../../util/cdn.js";
 import { getWebhookUrlEmbed } from "./webhookInfo.js";
@@ -11,6 +11,7 @@ import { sleep } from "../../util/sleep.js";
 import { eq } from "drizzle-orm";
 import { APIPartialResolvedChannel } from "../../types/api.js";
 import { getchGuild } from "../../util/kv.js";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 
 export const extractWebhookableChannel = (
   channel: APIPartialResolvedChannel | null,
@@ -125,9 +126,19 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     channelType ?? ctx.interaction.channel.type,
   );
 
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder({
+      style: ButtonStyle.Link,
+      url: `${ctx.env.BOOGIEHOOK_ORIGIN}/?data=${btoa(JSON.stringify({
+        messages: [{ data: {} }],
+        targets: [{ url: webhook.url }],
+      }))}`,
+      label: "Open in Boogiehook",
+    }),
+  );
 
-  const db = getDb(ctx.db);
-  const guild = await getchGuild(ctx.client, ctx.kv, ctx.interaction.guild_id!);
+  const db = getDb(ctx.env.DB);
+  const guild = await getchGuild(ctx.client, ctx.env.KV, ctx.interaction.guild_id!);
   await upsertGuild(db, guild);
   await db
     .insert(webhooks)
@@ -143,7 +154,11 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     .onConflictDoNothing();
 
   return [
-    ctx.reply({ embeds: [embed.toJSON()], flags: MessageFlags.Ephemeral }),
+    ctx.reply({
+      embeds: [embed.toJSON()],
+      components: [row.toJSON()],
+      flags: MessageFlags.Ephemeral,
+    }),
     async () => {
       await sleep(2000);
       try {
