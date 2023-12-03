@@ -16,6 +16,8 @@ const strings = new LocalizedStrings({
     xMessages: "{0} messages",
     xEmbed: "{0} embed",
     xEmbeds: "{0} embeds",
+    restore: "Restore to this point",
+    removeFromHistory: "Remove from history",
   },
 });
 
@@ -91,6 +93,7 @@ export const HistoryModal = (
                   <div className="space-y-1 ml-2 text-xl">
                     <button
                       className="block"
+                      title={strings.restore}
                       onClick={() => {
                         setData(item.data);
                         setLocalHistory(
@@ -106,6 +109,7 @@ export const HistoryModal = (
                     </button>
                     <button
                       className="block"
+                      title={strings.removeFromHistory}
                       onClick={() => {
                         setLocalHistory(
                           localHistory.filter((_, i) => i !== itemI)
