@@ -1,5 +1,7 @@
 import { blob, integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core"
 import { relations } from "drizzle-orm";
+import { APISelectMenuComponent, ButtonStyle, ComponentType } from "discord-api-types/v10";
+import { Flow } from "../types/components/flows.js";
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -195,7 +197,7 @@ export const webhooksRelations = relations(webhooks, ({ one, many }) => ({
   messageLogEntries: many(messageLogEntries),
 }));
 
-export const messageLogEntries = sqliteTable('MessageLogEntries', {
+export const messageLogEntries = sqliteTable('MessageLogEntry', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   type: text('type').$type<'send' | 'edit' | 'delete'>(),
   webhookId: text('webhookId').notNull().references(() => webhooks.id),
@@ -215,10 +217,44 @@ export const messageLogEntries = sqliteTable('MessageLogEntries', {
 export const messageLogEntriesRelations = relations(messageLogEntries, ({ one }) => ({
   webhook: one(webhooks, {
     fields: [messageLogEntries.webhookId],
-    references: [webhooks.id],
+    references: [webhooks.id], 
   }),
   user: one(users, {
     fields: [messageLogEntries.userId],
     references: [users.id],
+  }),
+}));
+
+export const discordMessageComponents = sqliteTable('DiscordMessageComponent', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  guildId: bigint('guildId').notNull().references(() => discordGuilds.id),
+  channelId: bigint('channelId').notNull(),
+  messageId: bigint('messageId').notNull(),
+  type: integer('type').notNull().$type<ComponentType>(),
+  flow: text('flow', { mode: 'json' }).$type<Flow>(),
+  customId: text('customId'),
+  buttonStyle: integer('style').$type<ButtonStyle>(),
+  buttonUrl: text('url'),
+});
+
+export const discordMessageComponentsRelations = relations(discordMessageComponents, ({ one, many }) => ({
+  guild: one(discordGuilds, {
+    fields: [discordMessageComponents.guildId],
+    references: [discordGuilds.id],
+  }),
+  selectOptions: many(discordSelectOptions),
+}));
+
+export const discordSelectOptions = sqliteTable('DiscordSelectOption', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  componentId: integer('componentId').notNull(),
+  type: integer('type').notNull().$type<APISelectMenuComponent['type']>(),
+  flow: text('flow', { mode: 'json' }).$type<Flow>(),
+});
+
+export const discordSelectOptionsRelations = relations(discordSelectOptions, ({ one }) => ({
+  component: one(discordMessageComponents, {
+    fields: [discordSelectOptions.componentId],
+    references: [discordMessageComponents.id],
   }),
 }));

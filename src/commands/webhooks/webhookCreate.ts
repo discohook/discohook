@@ -1,22 +1,22 @@
-import { APIGuild, APIWebhook, ChannelType, MessageFlags, RESTJSONErrorCodes, Routes } from "discord-api-types/v10";
+import { APIGuild, APIInteraction, APIWebhook, ChannelType, MessageFlags, RESTJSONErrorCodes, Routes } from "discord-api-types/v10";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { readAttachment } from "../../util/cdn.js";
 import { getWebhookUrlEmbed } from "./webhookInfo.js";
-import { getDb, upsertGuild } from "../../db.js";
-import { webhooks } from "../../db-schema.js";
+import { getDb, upsertGuild } from "../../db/index.js";
+import { webhooks } from "../../db/db-schema.js";
 import { isDiscordError } from "../../util/error.js";
 import dedent from "dedent-js";
 import { color } from "../../util/meta.js";
 import { sleep } from "../../util/sleep.js";
 import { eq } from "drizzle-orm";
+import { APIPartialResolvedChannel } from "../../types/api.js";
 
-export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
-  const name = ctx.getStringOption('name').value,
-    avatar = ctx.getAttachmentOption('avatar'),
-    channel = ctx.getChannelOption('channel');
-
-  let channelId: string | null | undefined = undefined;
-  let channelType: ChannelType = ctx.interaction.channel.type;
+export const extractWebhookableChannel = (
+  channel: APIPartialResolvedChannel | null,
+  ctxChannel: APIInteraction["channel"],
+): [string | undefined, ChannelType | undefined] => {
+  let channelId: string | undefined = undefined;
+  let channelType: ChannelType | undefined = ctxChannel?.type;
   if (channel) {
     channelType = channel.type;
     if (
@@ -28,30 +28,39 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
       'parent_id' in channel
     ) {
       // All threadable channels should also be webhook-compatible
-      channelId = channel.parent_id;
+      channelId = channel.parent_id ?? undefined;
     } else {
       channelId = channel.id;
     }
-  } else {
+  } else if (ctxChannel) {
     if ([
       ChannelType.GuildAnnouncement,
       ChannelType.GuildText,
       ChannelType.GuildVoice,
       ChannelType.GuildForum,
-    ].includes(ctx.interaction.channel.type)) {
-      channelId = ctx.interaction.channel.id
+    ].includes(ctxChannel.type)) {
+      channelId = ctxChannel.id
     } else if (
       [
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
         ChannelType.AnnouncementThread
-      ].includes(ctx.interaction.channel.type) &&
-      'parent_id' in ctx.interaction.channel
+      ].includes(ctxChannel.type) &&
+      'parent_id' in ctxChannel
     ) {
-      channelId = ctx.interaction.channel.parent_id
+      channelId = ctxChannel.parent_id ?? undefined;
     }
   }
 
+  return [channelId, channelType];
+}
+
+export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
+  const name = ctx.getStringOption('name').value,
+    avatar = ctx.getAttachmentOption('avatar'),
+    channel = ctx.getChannelOption('channel');
+
+  const [channelId, channelType] = extractWebhookableChannel(channel, ctx.interaction.channel);
   if (!channelId) {
     return ctx.reply({
       content: "Invalid channel type." + (!channel ? " To specify a channel, use the `channel` argument." : ""),
@@ -112,7 +121,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     webhook,
     "Webhook Created",
     ctx.followup.applicationId,
-    channelType,
+    channelType ?? ctx.interaction.channel.type,
   );
 
   const db = getDb(ctx.db);
