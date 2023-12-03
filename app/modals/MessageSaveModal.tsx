@@ -19,7 +19,7 @@ const strings = new LocalizedStrings({
     title: "Save Message",
     temporaryUrl: "Temporary Share URL",
     generate: "Generate",
-    clickGenerate: `Click "Generate" to generate a share link`,
+    clickGenerate: `Press "Generate" to generate a share link`,
     copy: "Copy",
     includeWebhookUrls: "Include webhook URLs",
     expiresAt: "This link expires at {0} ({1}).",
