@@ -26,8 +26,8 @@ import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
-import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
-import { cdn } from "~/util/discord";
+import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE, WEBHOOK_URL_RE } from "~/util/constants";
+import { cdn, getWebhook } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64Encode, randomString } from "~/util/text";
 import { loader as getShareLoader } from "../routes/api.share.$shareId";
@@ -131,6 +131,20 @@ export default function Index() {
           setBackupId(parsed.data.backup_id);
         }
         setData({ version: "d2", ...(parsed.data as QueryData) });
+        if (parsed.data?.targets && parsed.data.targets.length !== 0) {
+          // Load webhook URLs on initial parse of query data
+          (async () => {
+            for (const target of parsed.data!.targets!) {
+              const match = target.url.match(WEBHOOK_URL_RE);
+              if (!match) continue;
+
+              const webhook = await getWebhook(match[1], match[2]);
+              if (webhook.id) {
+                updateTargets({ [webhook.id]: webhook });
+              }
+            }
+          })();
+        }
       } else {
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
       }
