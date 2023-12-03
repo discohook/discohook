@@ -1,6 +1,6 @@
 import { APIApplicationCommandAutocompleteInteraction, APIApplicationCommandAutocompleteResponse, APIChatInputApplicationCommandInteraction, APIInteraction, APIInteractionResponse, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction, ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { InteractionContext } from "./interactions.js";
-import { addComponentChatEntry, addComponentMessageEntry } from "./commands/components/command.js";
+import { addComponentChatAutocomplete, addComponentChatEntry, addComponentMessageEntry } from "./commands/components/command.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { PermissionFlags } from "discord-bitflag";
 import { inviteCallback } from "./commands/invite.js";
@@ -64,16 +64,29 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
           type: ApplicationCommandOptionType.Subcommand,
           name: "add",
           description: "Add a button",
-          options: [{
-            type: ApplicationCommandOptionType.String,
-            name: "message-link",
-            description: "Add a button to this message",
-            required: true,
-          }]
+          options: [
+            {
+              type: ApplicationCommandOptionType.String,
+              name: "message",
+              description: "Add a button to this message. A message link is also accepted here",
+              required: true,
+              autocomplete: true,
+            },
+            {
+              type: ApplicationCommandOptionType.Channel,
+              name: "channel",
+              description: "The channel that the message is in, for autocomplete results",
+              required: false,
+              channel_types: webhookChannelTypes,
+            },
+          ]
         }
       ],
       handlers: {
         add: addComponentChatEntry,
+      },
+      autocompleteHandlers: {
+        add: addComponentChatAutocomplete,
       },
     },
     invite: {
