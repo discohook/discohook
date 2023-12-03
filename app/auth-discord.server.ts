@@ -47,7 +47,6 @@ const strategy = new DiscordStrategy(
     const user = await writeOauthUser({ discord: profile });
 
     const userGuilds = await getCurrentUserGuilds(accessToken);
-    console.log(userGuilds)
     //const guilds = userGuilds.filter(
     //  // Owner or manage webhooks
     //  (g) => g.owner || (BigInt(g.permissions) & BigInt(0x29)) == BigInt(0x29)
