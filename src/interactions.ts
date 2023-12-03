@@ -10,11 +10,13 @@ export class InteractionContext<T extends APIInteraction> {
     public interaction: T;
     public followup: InteractionFollowup;
     public db: Env['DB'];
+    public kv: Env['KV'];
 
     constructor(client: DiscordApiClient, interaction: T, env: Env) {
       this.client = client;
       this.interaction = interaction;
       this.db = env.DB;
+      this.kv = env.KV;
       this.followup = new InteractionFollowup(client, interaction, env.DISCORD_APPLICATION_ID);
     }
 

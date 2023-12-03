@@ -10,6 +10,7 @@ import { color } from "../../util/meta.js";
 import { sleep } from "../../util/sleep.js";
 import { eq } from "drizzle-orm";
 import { APIPartialResolvedChannel } from "../../types/api.js";
+import { getchGuild } from "../../util/kv.js";
 
 export const extractWebhookableChannel = (
   channel: APIPartialResolvedChannel | null,
@@ -124,10 +125,9 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     channelType ?? ctx.interaction.channel.type,
   );
 
-  const db = getDb(ctx.db);
 
-  // Use KV as a timed cache instead of fetching anew every time
-  const guild = await ctx.client.get(Routes.guild(ctx.interaction.guild_id!)) as APIGuild;
+  const db = getDb(ctx.db);
+  const guild = await getchGuild(ctx.client, ctx.kv, ctx.interaction.guild_id!);
   await upsertGuild(db, guild);
   await db
     .insert(webhooks)

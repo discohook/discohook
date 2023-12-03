@@ -4,6 +4,7 @@ export interface Env {
   DISCORD_TOKEN: string;
   DEVELOPMENT_SERVER_ID: string;
   DB: D1Database;
+  KV: KVNamespace;
 }
 
 export interface WorkerContext {
