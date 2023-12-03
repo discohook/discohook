@@ -26,7 +26,11 @@ import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
-import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE, WEBHOOK_URL_RE } from "~/util/constants";
+import {
+  INDEX_FAILURE_MESSAGE,
+  INDEX_MESSAGE,
+  WEBHOOK_URL_RE,
+} from "~/util/constants";
 import { cdn, getWebhook } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64Encode, randomString } from "~/util/text";
@@ -69,7 +73,8 @@ const strings = new LocalizedStrings({
     embedExample: "Embed Example",
     previewInfo: "Preview Info",
     history: "History",
-    editingBackup: "You're editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the \"Save Message\" button.",
+    editingBackup:
+      'You\'re editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the "Save Message" button.',
   },
   fr: {
     embedExample: "Exemple",
