@@ -37,9 +37,7 @@ export const addComponentChatAutocomplete: AppCommandAutocompleteCallback = asyn
 
   const channelMessages = await ctx.client.get(
     Routes.channelMessages(channelId),
-    {
-      query: new URLSearchParams({ limit: '20' }),
-    },
+    { query: new URLSearchParams({ limit: '20' }) },
   ) as APIMessage[];
   return channelMessages
     .filter(m => !!m.webhook_id && !m.interaction && m.application_id === ctx.followup.applicationId)
