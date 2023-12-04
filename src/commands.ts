@@ -124,7 +124,13 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
               description: "The channel to create the webhook in",
               required: false,
               channel_types: webhookChannelTypes,
-            }
+            },
+            {
+              type: ApplicationCommandOptionType.Boolean,
+              name: "show-url",
+              description: "Only enable this if you need the URL for an external application",
+              required: false,
+            },
           ],
         },
         {

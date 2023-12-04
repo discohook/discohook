@@ -44,7 +44,13 @@ export const getWebhookInfoEmbed = (webhook: APIWebhook) => {
   })
 };
 
-export const getWebhookUrlEmbed = (webhook: APIWebhook, header?: string, applicationId?: string, channelType?: ChannelType) => {
+export const getWebhookUrlEmbed = (
+  webhook: APIWebhook,
+  header?: string,
+  applicationId?: string,
+  channelType?: ChannelType,
+  showUrl?: boolean,
+) => {
   const title = header ?? "Webhook URL";
 
   if (!webhook.token) {
@@ -59,7 +65,17 @@ export const getWebhookUrlEmbed = (webhook: APIWebhook, header?: string, applica
   }
 
   const url = `https://discord.com/api/v10/${webhook.id}/${webhook.token}`;
-  const embed = new EmbedBuilder({ title, description: spoiler(inlineCode(url)), color });
+  const embed = new EmbedBuilder({
+    title,
+    description: showUrl
+      ? spoiler(inlineCode(url))
+      : `**${webhook.name}** in <#${webhook.channel_id}>`,
+    color,
+  });
+
+  if (!showUrl) {
+    embed.setThumbnail(webhookAvatarUrl(webhook, { size: 1024 }));
+  }
 
   if (webhook.application_id && applicationId === webhook.application_id) {
     embed.addFields({
@@ -87,14 +103,16 @@ export const getWebhookUrlEmbed = (webhook: APIWebhook, header?: string, applica
     });
   }
 
-  embed.addFields({
-    name: ":warning: Keep this secret!",
-    value: dedent`
+  if (showUrl) {
+    embed.addFields({
+      name: ":warning: Keep this secret!",
+      value: dedent`
       Someone with this URL can send any message they want to
       <#${webhook.channel_id}>, including \`@everyone\` mentions.
-    `,
-    inline: false,
-  });
+      `,
+      inline: false,
+    });
+  }
 
   return embed;
 }

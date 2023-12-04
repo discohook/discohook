@@ -60,7 +60,8 @@ export const extractWebhookableChannel = (
 export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
   const name = ctx.getStringOption('name').value,
     avatar = ctx.getAttachmentOption('avatar'),
-    channel = ctx.getChannelOption('channel');
+    channel = ctx.getChannelOption('channel'),
+    showUrl = ctx.getBooleanOption('show-url').value;
 
   const [channelId, channelType] = extractWebhookableChannel(channel, ctx.interaction.channel);
   if (!channelId) {
@@ -124,6 +125,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     "Webhook Created",
     ctx.followup.applicationId,
     channelType ?? ctx.interaction.channel.type,
+    showUrl,
   );
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
