@@ -1,4 +1,4 @@
-import * as schema from "./db-schema.js";
+import * as schema from "./schema.js";
 import { drizzle } from "drizzle-orm/d1";
 import { Env } from "../types/env.js";
 import { PartialKVGuild } from "../util/kv.js";

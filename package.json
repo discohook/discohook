@@ -13,7 +13,7 @@
     "lint": "eslint '**/*.ts'",
     "register": "ts-node src/register.ts",
     "publish": "wrangler deploy",
-    "migrate-dev": "drizzle-kit generate:sqlite --schema=src/db-schema.ts --out=./migrations && wrangler d1 migrations apply DB --local",
+    "migrate-dev": "drizzle-kit generate:sqlite --schema=src/db/schema.ts --out=./migrations && wrangler d1 migrations apply DB --local",
     "migrate": "yarn migrate-dev && wrangler d1 migrations apply DB"
   },
   "keywords": [],

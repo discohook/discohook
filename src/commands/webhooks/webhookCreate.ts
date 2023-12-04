@@ -3,7 +3,7 @@ import { ChatInputAppCommandCallback } from "../../commands.js";
 import { readAttachment } from "../../util/cdn.js";
 import { getWebhookUrlEmbed } from "./webhookInfo.js";
 import { getDb, upsertGuild } from "../../db/index.js";
-import { webhooks } from "../../db/db-schema.js";
+import { webhooks } from "../../db/schema.js";
 import { isDiscordError } from "../../util/error.js";
 import dedent from "dedent-js";
 import { color } from "../../util/meta.js";
