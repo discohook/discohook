@@ -1,6 +1,6 @@
 import { APIApplicationCommandAutocompleteInteraction, APIApplicationCommandAutocompleteResponse, APIChatInputApplicationCommandInteraction, APIInteraction, APIInteractionResponse, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction, ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { InteractionContext } from "./interactions.js";
-import { addComponentChatAutocomplete, addComponentChatEntry, addComponentMessageEntry } from "./commands/components/command.js";
+import { addComponentChatAutocomplete, addComponentChatEntry, addComponentMessageEntry } from "./commands/components/entry.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { PermissionFlags } from "discord-bitflag";
 import { inviteCallback } from "./commands/invite.js";
