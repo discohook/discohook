@@ -82,6 +82,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
           ]
         }
       ],
+      dm_permission: false,
       handlers: {
         add: addComponentChatEntry,
       },
@@ -158,6 +159,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
           ],
         },
       ],
+      dm_permission: false,
       handlers: {
         create: webhookCreateEntry,
       },
@@ -186,6 +188,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
       type: ApplicationCommandType.Message,
       name: "Buttons & Components",
       default_member_permissions: String(PermissionFlags.ManageMessages | PermissionFlags.ManageGuild),
+      dm_permission: false,
       // description: "Add, remove, and manage buttons",
       handlers: {
         BASE: addComponentMessageEntry,
@@ -195,6 +198,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
       type: ApplicationCommandType.Message,
       name: "Quick Edit",
       default_member_permissions: String(PermissionFlags.ManageMessages),
+      dm_permission: false,
       // description: "Quickly edit a webhook message",
       handlers: {
       },
@@ -203,12 +207,14 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
       type: ApplicationCommandType.Message,
       name: "Restore",
       default_member_permissions: String(PermissionFlags.ViewChannel),
+      dm_permission: false,
       // description: "Copy a message into Boogiehook or Discohook",
       handlers: {
       },
     },
     // repeat: {
     //   name: "Repeat",
+    //   dm_permission: false,
     //   description: "Send an identical copy of the message in the same channel or a different one",
     //   handlers: {
     //   },
@@ -217,6 +223,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
       type: ApplicationCommandType.Message,
       name: "Webhook Info",
       default_member_permissions: String(PermissionFlags.ViewChannel),
+      dm_permission: false,
       // description: "Show information about the webhook that sent a message",
       handlers: {
         BASE: webhookInfoMsgCallback,
