@@ -92,6 +92,9 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
     },
     invite: {
       name: "invite",
+      name_localizations: {
+        fr: "ajouter"
+      },
       description: "Invite URL for this bot",
       handlers: {
         BASE: inviteCallback,
@@ -105,12 +108,24 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
         {
           type: ApplicationCommandOptionType.Subcommand,
           name: "create",
+          name_localizations: {
+            fr: "créer",
+          },
           description: "Create a webhook",
+          description_localizations: {
+            fr: "Créer un webhook",
+          },
           options: [
             {
               type: ApplicationCommandOptionType.String,
               name: "name",
+              name_localizations: {
+                fr: "nom",
+              },
               description: "The webhook's name",
+              description_localizations: {
+                fr: "Le nom du webhook",
+              },
               required: true,
             },
             {
@@ -122,7 +137,13 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
             {
               type: ApplicationCommandOptionType.Channel,
               name: "channel",
+              name_localizations: {
+                fr: "salon",
+              },
               description: "The channel to create the webhook in",
+              description_localizations: {
+                fr: "Le canal dans lequel créer le webhook",
+              },
               required: false,
               channel_types: webhookChannelTypes,
             },
@@ -137,7 +158,13 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
         {
           type: ApplicationCommandOptionType.Subcommand,
           name: "delete",
+          name_localizations: {
+            fr: "supprimer",
+          },
           description: "Delete a webhook",
+          description_localizations: {
+            fr: "Supprimer un webhook"
+          },
           options: [
             webhookAutocompleteOption,
             webhookFilterAutocompleteOption,
