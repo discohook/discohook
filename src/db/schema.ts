@@ -2,6 +2,7 @@ import { blob, integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-cor
 import { relations } from "drizzle-orm";
 import { APISelectMenuComponent, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { Flow } from "../types/components/flows.js";
+import { StorableComponent } from "../commands/components/add.js";
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -230,31 +231,15 @@ export const discordMessageComponents = sqliteTable('DiscordMessageComponent', {
   guildId: bigint('guildId').notNull().references(() => discordGuilds.id),
   channelId: bigint('channelId').notNull(),
   messageId: bigint('messageId').notNull(),
-  type: integer('type').notNull().$type<ComponentType>(),
-  flow: text('flow', { mode: 'json' }).$type<Flow>(),
   customId: text('customId'),
-  buttonStyle: integer('style').$type<ButtonStyle>(),
-  buttonUrl: text('url'),
-});
+  data: text('data', { mode: 'json' }).notNull().$type<StorableComponent>(),
+}, (table) => ({
+  unq: unique().on(table.messageId, table.customId),
+}));
 
-export const discordMessageComponentsRelations = relations(discordMessageComponents, ({ one, many }) => ({
+export const discordMessageComponentsRelations = relations(discordMessageComponents, ({ one }) => ({
   guild: one(discordGuilds, {
     fields: [discordMessageComponents.guildId],
     references: [discordGuilds.id],
-  }),
-  selectOptions: many(discordSelectOptions),
-}));
-
-export const discordSelectOptions = sqliteTable('DiscordSelectOption', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  componentId: integer('componentId').notNull(),
-  type: integer('type').notNull().$type<APISelectMenuComponent['type']>(),
-  flow: text('flow', { mode: 'json' }).$type<Flow>(),
-});
-
-export const discordSelectOptionsRelations = relations(discordSelectOptions, ({ one }) => ({
-  component: one(discordMessageComponents, {
-    fields: [discordSelectOptions.componentId],
-    references: [discordMessageComponents.id],
   }),
 }));

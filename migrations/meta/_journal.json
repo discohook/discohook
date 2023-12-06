@@ -15,6 +15,20 @@
       "when": 1701663014153,
       "tag": "0001_uneven_korg",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1701897914945,
+      "tag": "0002_foamy_naoko",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1701897954904,
+      "tag": "0003_early_wendell_rand",
+      "breakpoints": true
     }
   ]
 }
