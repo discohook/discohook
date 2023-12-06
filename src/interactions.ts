@@ -117,23 +117,23 @@ export class InteractionContext<T extends APIInteraction, S extends MinimumKVCom
       return options.find((o) => o.name === name);
     }
 
-    _getOptionWithDefault<T extends APIApplicationCommandInteractionDataOption>(
+    _getOptionWithDefault<O extends APIApplicationCommandInteractionDataOption>(
       name: string,
       type: ApplicationCommandOptionType,
-      def: Partial<T>
-    ): T {
+      def: Partial<O>
+    ): O {
       const option = this._getOption(name);
       if (!option || option.type !== type) {
         return {
           name,
           type,
           ...def
-        } as T;
+        } as O;
       }
-      return option as T;
+      return option as O;
     }
 
-    _getResolvableOption<T>(
+    _getResolvableOption<O>(
       name: string,
       type: (
         | ApplicationCommandOptionType.User
@@ -165,7 +165,7 @@ export class InteractionContext<T extends APIInteraction, S extends MinimumKVCom
       const object = objects[id];
       if (!object) return null;
 
-      return object as T;
+      return object as O;
     }
 
     getStringOption(name: string) {
