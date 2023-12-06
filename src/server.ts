@@ -1,12 +1,14 @@
 import { Router } from 'itty-router';
 import { PlatformAlgorithm, isValidRequest } from 'discord-verify';
 import { AppCommandCallbackT, appCommands, respond } from './commands.js';
-import { InteractionType, InteractionResponseType, APIInteraction, APIApplicationCommandInteractionDataOption, ApplicationCommandOptionType, ApplicationCommandType, APIApplicationCommandInteraction, APIChatInputApplicationCommandInteraction, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction } from 'discord-api-types/v10'
+import { InteractionType, InteractionResponseType, APIInteraction, APIApplicationCommandInteractionDataOption, ApplicationCommandOptionType, ApplicationCommandType, APIMessageComponentInteraction } from 'discord-api-types/v10'
 import { client } from 'discord-api-methods';
 import { InteractionContext } from './interactions.js';
 import { getErrorMessage } from './errors.js';
 import { Env, WorkerContext } from './types/env.js';
 import { isDiscordError } from './util/error.js';
+import { kvGet } from './util/kv.js';
+import { ComponentCallbackT, MinimumKVComponentState, componentStore } from './components.js';
 
 const router = Router();
 
@@ -106,6 +108,40 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
         console.error(e);
       }
       return noChoices;
+    }
+  } else if (interaction.type === InteractionType.MessageComponent) {
+    const { custom_id: customId, component_type: type } = interaction.data;
+    if (customId.startsWith("t_")) {
+      const state = await kvGet<MinimumKVComponentState>(env.KV, `component-${type}-${customId}`);
+      if (!state) {
+        return respond({ error: "Unknown component" });
+      }
+
+      const stored = componentStore[state.componentRoutingId];
+      if (!stored) {
+        return respond({ error: 'Unknown routing ID' });
+      }
+
+      const ctx = new InteractionContext(client, interaction, env, state);
+      try {
+        const response = await (stored.handler as ComponentCallbackT<APIMessageComponentInteraction>)(ctx);
+        if (Array.isArray(response)) {
+          workerCtx.waitUntil(response[1]());
+          return respond(response[0]);
+        } else {
+          return respond(response);
+        }
+      } catch (e) {
+        if (isDiscordError(e)) {
+          const errorResponse = getErrorMessage(ctx, e.raw);
+          if (errorResponse) {
+            return respond(errorResponse);
+          }
+        } else {
+          console.error(e);
+        }
+        return respond({ error: "You've found a super unlucky error. Try again later!", status: 500 })
+      }
     }
   }
 

@@ -1,16 +1,12 @@
-import { APIInteraction, APIMessage, ApplicationCommandOptionType, MessageFlags, Routes } from "discord-api-types/v10";
+import { APIMessage, ApplicationCommandOptionType, MessageFlags, Routes } from "discord-api-types/v10";
 import { AppCommandAutocompleteCallback, ChatInputAppCommandCallback, MessageAppCommandCallback } from "../../commands.js";
-import { InteractionContext } from "../../interactions.js";
 import dedent from "dedent-js";
 import { messageLink } from "@discordjs/formatters";
 import { getDate, Snowflake } from "discord-snowflake";
 import { kvGet } from "../../util/kv.js";
+import { startComponentFlow } from "./add.js";
 
 const MESSAGE_LINK_RE = /^https:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/channels\/(\d+)\/(\d+)\/(\d+)$/
-
-const addComponentCallback = async (ctx: InteractionContext<APIInteraction>, message: APIMessage) => {
-  return ctx.reply(message.channel_id);
-}
 
 export const addComponentChatEntry: ChatInputAppCommandCallback = async (ctx) => {
   const messageLink = ctx.getStringOption("message").value;
@@ -26,7 +22,7 @@ export const addComponentChatEntry: ChatInputAppCommandCallback = async (ctx) =>
   }
 
   const message = await ctx.client.get(Routes.channelMessage(match[2], match[3])) as APIMessage;
-  return await addComponentCallback(ctx, message);
+  return await startComponentFlow(ctx, message);
 }
 
 export const addComponentChatAutocomplete: AppCommandAutocompleteCallback = async (ctx) => {
@@ -57,7 +53,11 @@ export const addComponentChatAutocomplete: AppCommandAutocompleteCallback = asyn
       .filter(m => (
         !!m.webhook_id &&
         !m.interaction &&
-        m.application_id === ctx.followup.applicationId
+        // dapi-types says application_id is only for interaction responses,
+        // but it appears for application-owned webhooks as well:
+        // https://discord.dev/resources/channel#message-object
+        m.application_id === ctx.followup.applicationId &&
+        m.application_id !== m.webhook_id
       ))
       .map(m => {
         const createdAt = getDate(m.id as Snowflake);
@@ -96,5 +96,5 @@ export const addComponentChatAutocomplete: AppCommandAutocompleteCallback = asyn
 
 export const addComponentMessageEntry: MessageAppCommandCallback = async (ctx) => {
   const message = ctx.getMessage();
-  return await addComponentCallback(ctx, message);
+  return await startComponentFlow(ctx, message);
 }

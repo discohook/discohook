@@ -4,18 +4,24 @@ import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationComman
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { Env } from "./types/env.js";
 import { APIPartialResolvedChannel } from "./types/api.js";
+import { MinimumKVComponentState } from "./components.js";
 
-export class InteractionContext<T extends APIInteraction> {
+export class InteractionContext<T extends APIInteraction, S extends MinimumKVComponentState | Record<string, any> = {}> {
     public client: DiscordApiClient;
     public interaction: T;
     public followup: InteractionFollowup;
     public env: Env;
+    public state: S | Record<string, any> = {};
 
-    constructor(client: DiscordApiClient, interaction: T, env: Env) {
+    constructor(client: DiscordApiClient, interaction: T, env: Env, state?: S) {
       this.client = client;
       this.interaction = interaction;
       this.env = env;
       this.followup = new InteractionFollowup(client, interaction, env.DISCORD_APPLICATION_ID);
+
+      if (state) {
+        this.state = state;
+      }
     }
 
     get createdAt(): Date {
