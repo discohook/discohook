@@ -1,6 +1,6 @@
 import { DiscordApiClient } from "discord-api-methods";
 import { getDate, Snowflake } from "discord-snowflake";
-import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataIntegerOption, APIApplicationCommandInteractionDataNumberOption, APIApplicationCommandInteractionDataOption, APIApplicationCommandInteractionDataStringOption, APIApplicationCommandInteractionDataSubcommandOption, APIAttachment, APIChatInputApplicationCommandInteraction, APIInteraction, APIInteractionDataResolved, APIInteractionResponseCallbackData, APIInteractionResponseChannelMessageWithSource, APIInteractionResponseDeferredChannelMessageWithSource, APIInteractionResponseDeferredMessageUpdate, APIInteractionResponseUpdateMessage, APIMessage, APIMessageApplicationCommandInteraction, APIMessageApplicationCommandInteractionDataResolved, APIMessageComponentInteraction, APIModalInteractionResponse, APIModalInteractionResponseCallbackData, APIPartialChannel, APIPremiumRequiredInteractionResponse, APIUserInteractionDataResolved, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, InteractionType, RESTGetAPIInteractionFollowupResult, RESTGetAPIInteractionOriginalResponseResult, RESTPatchAPIInteractionFollowupJSONBody, RESTPatchAPIInteractionFollowupResult, RESTPatchAPIInteractionOriginalResponseResult, RESTPostAPIInteractionFollowupJSONBody, RESTPostAPIInteractionFollowupResult, Routes } from "discord-api-types/v10";
+import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataIntegerOption, APIApplicationCommandInteractionDataNumberOption, APIApplicationCommandInteractionDataOption, APIApplicationCommandInteractionDataStringOption, APIApplicationCommandInteractionDataSubcommandOption, APIAttachment, APIInteraction, APIInteractionDataResolved, APIInteractionResponseCallbackData, APIInteractionResponseChannelMessageWithSource, APIInteractionResponseDeferredChannelMessageWithSource, APIInteractionResponseDeferredMessageUpdate, APIInteractionResponseUpdateMessage, APIMessage, APIMessageApplicationCommandInteraction, APIMessageComponentInteraction, APIModalInteractionResponse, APIModalInteractionResponseCallbackData, APIModalSubmitInteraction, APIPremiumRequiredInteractionResponse, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, InteractionType, ModalSubmitComponent, RESTGetAPIInteractionFollowupResult, RESTPatchAPIInteractionFollowupJSONBody, RESTPatchAPIInteractionFollowupResult, RESTPostAPIInteractionFollowupJSONBody, RESTPostAPIInteractionFollowupResult, Routes } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { Env } from "./types/env.js";
 import { APIPartialResolvedChannel } from "./types/api.js";
@@ -214,6 +214,19 @@ export class InteractionContext<T extends APIInteraction, S extends MinimumKVCom
         ApplicationCommandOptionType.Channel,
         'channels',
       );
+    }
+
+    getModalComponent(customId: string): T extends APIModalSubmitInteraction ? ModalSubmitComponent : undefined;
+    getModalComponent(customId: string): ModalSubmitComponent | undefined {
+      if (this.interaction.type !== InteractionType.ModalSubmit) return undefined;
+
+      const allComponents = [];
+      for (const row of this.interaction.data.components) {
+        allComponents.push(...row.components);
+      }
+
+      const component = allComponents.find(c => c.custom_id === customId);
+      return component;
     }
 
     defer(

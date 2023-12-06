@@ -46,6 +46,12 @@ export const storeComponents = async <T extends [Builder, MinimumKVComponentStat
         JSON.stringify(state),
         { expirationTtl: state.componentTimeout },
       );
+    } else if (component instanceof ModalBuilder) {
+      await kv.put(
+        `modal-${component.data.custom_id}`,
+        JSON.stringify(state),
+        { expirationTtl: state.componentTimeout },
+      );
     }
   }
   return components.map(c => c[0]);

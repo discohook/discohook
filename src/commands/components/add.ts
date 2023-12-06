@@ -1,14 +1,53 @@
-import { APIInteraction, APIMessage, APIModalInteractionResponseCallbackData, APISelectMenuDefaultValue, APISelectMenuOption, ButtonStyle, ComponentType, SelectMenuDefaultValueType, TextInputStyle } from "discord-api-types/v10";
+import { APIInteraction, APIMessage, APIMessageComponentEmoji, APIModalInteractionResponseCallbackData, APISelectMenuDefaultValue, APISelectMenuOption, ButtonStyle, ComponentType, SelectMenuDefaultValueType, TextInputStyle } from "discord-api-types/v10";
 import { InteractionContext } from "../../interactions.js";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, StringSelectMenuBuilder, TextInputBuilder, messageLink } from "@discordjs/builders";
 import { color } from "../../util/meta.js";
-import { getCustomId, storeComponents } from "../../util/components.js";
+import { storeComponents } from "../../util/components.js";
 import { getDb } from "../../db/index.js";
 import { discordUsers, users } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { Flow } from "../../types/components/flows.js";
-import { ButtonCallback, MinimumKVComponentState, SelectMenuCallback } from "../../components.js";
+import { ButtonCallback, MinimumKVComponentState, ModalCallback, SelectMenuCallback } from "../../components.js";
+
+export type StorableComponent =
+  | {
+    type: ComponentType.Button;
+    style:
+      | ButtonStyle.Primary
+      | ButtonStyle.Secondary
+      | ButtonStyle.Success
+      | ButtonStyle.Danger;
+    label?: string;
+    emoji?: APIMessageComponentEmoji;
+    flow: Flow;
+    disabled?: boolean;
+  } | {
+    type: ComponentType.Button;
+    style: ButtonStyle.Link;
+    label?: string;
+    emoji?: APIMessageComponentEmoji;
+    url: string;
+    disabled?: boolean;
+  } | {
+    type: ComponentType.StringSelect;
+    flows: Record<string, Flow>;
+    options: APISelectMenuOption[];
+    placeholder?: string;
+    minValues?: number;
+    maxValues?: number;
+    disabled?: boolean;
+  } | {
+    type:
+      | ComponentType.UserSelect
+      | ComponentType.RoleSelect
+      | ComponentType.MentionableSelect
+      | ComponentType.ChannelSelect;
+    flow: Flow;
+    placeholder?: string;
+    defaultValues: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
+    disabled?: boolean;
+  }
 
 interface ComponentFlow extends MinimumKVComponentState {
   step: number;
@@ -29,40 +68,7 @@ interface ComponentFlow extends MinimumKVComponentState {
     id?: number;
     subscribedSince: Date | null;
   };
-  component?:
-    | {
-      type: ComponentType.Button;
-      style:
-        | ButtonStyle.Primary
-        | ButtonStyle.Secondary
-        | ButtonStyle.Success
-        | ButtonStyle.Danger;
-      flow: Flow;
-      disabled?: boolean;
-    } | {
-      type: ComponentType.Button;
-      style: ButtonStyle.Link;
-      url: string;
-      disabled?: boolean;
-    } | {
-      type: ComponentType.StringSelect;
-      flows: Record<string, Flow>;
-      options: APISelectMenuOption[];
-      placeholder?: string;
-      minValues?: number;
-      maxValues?: number;
-      disabled?: boolean;
-    } | {
-      type:
-        | ComponentType.UserSelect
-        | ComponentType.RoleSelect
-        | ComponentType.MentionableSelect
-        | ComponentType.ChannelSelect;
-      flow: Flow;
-      placeholder?: string;
-      defaultValues: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
-      disabled?: boolean;
-    }
+  component?: StorableComponent;
 }
 
 const getComponentFlowEmbed = (flow: ComponentFlow) => {
@@ -241,19 +247,24 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     case "link-button": {
       state.stepTitle = "Customize the button's link & emoji";
       state.totalSteps = 3;
+      state.component = {
+        type: ComponentType.Button,
+        style: ButtonStyle.Link,
+        url: "",
+      }
 
       const modal = new ModalBuilder()
         .setTitle("Custom button values")
-        .setCustomId(getCustomId(true))
         .addComponents(
           new ActionRowBuilder<TextInputBuilder>()
             .addComponents(
               new TextInputBuilder()
-                .setCustomId("url")
-                .setLabel("Button URL")
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-                .setPlaceholder("The full URL this button will lead to when it is clicked.")
+                .setCustomId("label")
+                .setLabel("Label")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setMaxLength(80)
+                .setPlaceholder("The text displayed on this button.")
             ),
           new ActionRowBuilder<TextInputBuilder>()
             .addComponents(
@@ -263,12 +274,30 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false)
                 .setPlaceholder("Like :smile: or a custom emoji in the server.")
-            )
-        )
-        .toJSON();
+            ),
+          new ActionRowBuilder<TextInputBuilder>()
+            .addComponents(
+              new TextInputBuilder()
+                .setCustomId("url")
+                .setLabel("Button URL")
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true)
+                .setPlaceholder("The full URL this button will lead to when it is clicked.")
+            ),
+        );
+
+      await storeComponents(
+        ctx.env.KV,
+        [modal, {
+          ...state,
+          componentTimeout: 600,
+          componentRoutingId: "add-component-flow_customize-modal",
+          componentOnce: true,
+        }],
+      );
 
       return [
-        ctx.modal(modal),
+        ctx.modal(modal.toJSON()),
         async () => {
           await ctx.followup.editOriginalMessage({
             embeds: [getComponentFlowEmbed(state).toJSON()],
@@ -279,9 +308,9 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                   label: "Open modal",
                 }),
                 {
-                  componentRoutingId: "add-component-flow_customize-modal",
+                  componentRoutingId: "add-component-flow_customize-modal-resend",
                   componentTimeout: 600,
-                  modal,
+                  modal: modal.toJSON(),
                 }
               ]),
             ).toJSON()],
@@ -329,4 +358,9 @@ export const reopenCustomizeModal: ButtonCallback = async (ctx) => {
     modal: APIModalInteractionResponseCallbackData;
   };
   return ctx.modal(state.modal);
+}
+
+export const submitCustomizeModal: ModalCallback = async (ctx) => {
+  const label = ctx.getModalComponent('label').value;
+  return ctx.reply(label)
 }

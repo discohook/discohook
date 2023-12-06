@@ -8,7 +8,7 @@ import { getErrorMessage } from './errors.js';
 import { Env, WorkerContext } from './types/env.js';
 import { isDiscordError } from './util/error.js';
 import { kvGet } from './util/kv.js';
-import { ComponentCallbackT, MinimumKVComponentState, componentStore } from './components.js';
+import { ComponentCallbackT, ComponentRoutingId, MinimumKVComponentState, ModalRoutingId, componentStore, modalStore } from './components.js';
 
 const router = Router();
 
@@ -117,7 +117,7 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
         return respond({ error: "Unknown component" });
       }
 
-      const stored = componentStore[state.componentRoutingId];
+      const stored = componentStore[state.componentRoutingId as ComponentRoutingId];
       if (!stored) {
         return respond({ error: 'Unknown routing ID' });
       }
@@ -127,6 +127,44 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
         const response = await (stored.handler as ComponentCallbackT<APIMessageComponentInteraction>)(ctx);
         if (state.componentOnce) {
           try { await env.KV.delete(`component-${type}-${customId}`) }
+          catch {}
+        }
+        if (Array.isArray(response)) {
+          workerCtx.waitUntil(response[1]());
+          return respond(response[0]);
+        } else {
+          return respond(response);
+        }
+      } catch (e) {
+        if (isDiscordError(e)) {
+          const errorResponse = getErrorMessage(ctx, e.raw);
+          if (errorResponse) {
+            return respond(errorResponse);
+          }
+        } else {
+          console.error(e);
+        }
+        return respond({ error: "You've found a super unlucky error. Try again later!", status: 500 })
+      }
+    }
+  } else if (interaction.type === InteractionType.ModalSubmit) {
+    const { custom_id: customId } = interaction.data;
+    if (customId.startsWith("t_")) {
+      const state = await kvGet<MinimumKVComponentState>(env.KV, `modal-${customId}`);
+      if (!state) {
+        return respond({ error: "Unknown modal" });
+      }
+
+      const stored = modalStore[state.componentRoutingId as ModalRoutingId];
+      if (!stored) {
+        return respond({ error: 'Unknown routing ID' });
+      }
+
+      const ctx = new InteractionContext(client, interaction, env, state);
+      try {
+        const response = await stored.handler(ctx);
+        if (state.componentOnce) {
+          try { await env.KV.delete(`modal-${customId}`) }
           catch {}
         }
         if (Array.isArray(response)) {
