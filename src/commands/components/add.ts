@@ -207,7 +207,10 @@ export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>
               emoji: { name: "#️⃣" },
             },
           ],
-        }), componentFlow],
+        }), {
+          ...componentFlow,
+          componentOnce: true,
+        }],
       )
     ).toJSON()],
   });

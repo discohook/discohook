@@ -125,6 +125,10 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
       const ctx = new InteractionContext(client, interaction, env, state);
       try {
         const response = await (stored.handler as ComponentCallbackT<APIMessageComponentInteraction>)(ctx);
+        if (state.componentOnce) {
+          try { await env.KV.delete(`component-${type}-${customId}`) }
+          catch {}
+        }
         if (Array.isArray(response)) {
           workerCtx.waitUntil(response[1]());
           return respond(response[0]);
