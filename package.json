@@ -22,12 +22,15 @@
     "@discordjs/builders": "^1.7.0",
     "@discordjs/formatters": "^0.3.3",
     "@discordjs/rest": "^2.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
     "dedent-js": "^1.0.1",
     "discord-api-methods": "^0.0.5",
     "discord-api-types": "^0.37.63",
     "discord-bitflag": "^1.0.1",
     "discord-verify": "^1.2.0",
     "drizzle-orm": "^0.29.0",
+    "eslint-plugin-drizzle": "^0.2.2",
     "itty-router": "^4.0.13"
   },
   "devDependencies": {
