@@ -11,7 +11,7 @@ export const upsertGuild = async (db: DB, guild: PartialKVGuild) => {
   await db
     .insert(schema.discordGuilds)
     .values({
-      id: BigInt(guild.id),
+      id: schema.makeSnowflake(guild.id),
       name: guild.name,
       icon: guild.icon,
     })

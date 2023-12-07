@@ -1,9 +1,9 @@
-import { APIGuild, APIInteraction, APIWebhook, ButtonStyle, ChannelType, MessageFlags, RESTJSONErrorCodes, Routes } from "discord-api-types/v10";
+import { APIInteraction, APIWebhook, ButtonStyle, ChannelType, MessageFlags, RESTJSONErrorCodes, Routes } from "discord-api-types/v10";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { readAttachment } from "../../util/cdn.js";
 import { getWebhookUrlEmbed } from "./webhookInfo.js";
 import { getDb, upsertGuild } from "../../db/index.js";
-import { webhooks } from "../../db/schema.js";
+import { makeSnowflake, webhooks } from "../../db/schema.js";
 import { isDiscordError } from "../../util/error.js";
 import dedent from "dedent-js";
 import { color } from "../../util/meta.js";
@@ -149,7 +149,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
       id: webhook.id,
       token: webhook.token,
       name: webhook.name ?? name,
-      discordGuildId: BigInt(webhook.guild_id!),
+      discordGuildId: makeSnowflake(webhook.guild_id!),
       channelId: webhook.channel_id,
       avatar: webhook.avatar,
     })

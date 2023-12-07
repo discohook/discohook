@@ -1,8 +1,7 @@
-import { blob, integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core"
+import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core"
 import { relations } from "drizzle-orm";
-import { APISelectMenuComponent, ButtonStyle, ComponentType } from "discord-api-types/v10";
-import { Flow } from "../types/components/flows.js";
 import { StorableComponent } from "../commands/components/add.js";
+import { Snowflake, isSnowflake } from "discord-snowflake";
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -12,7 +11,14 @@ BigInt.prototype.toJSON = function () {
 
 const date = (name: string) => integer(name, { mode: 'timestamp' }).$type<Date>();
 const bool = (name: string) => integer(name, { mode: 'boolean' });
-const bigint = (name: string) => blob(name, { mode: 'bigint' });
+const snowflake = (name: string) => text(name).$type<Snowflake>();
+
+// We in the business call this a make-flake
+/** Assert that `id` is a snowflake and return the appropriately typed value */
+export const makeSnowflake = (id: string): Snowflake => {
+  if (isSnowflake(id)) return id;
+  throw new Error(`${id} is not a snowflake.`)
+}
 
 export const users = sqliteTable('User', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
@@ -22,7 +28,7 @@ export const users = sqliteTable('User', {
   subscribedSince: date('subscribedSince'),
   lifetime: bool('lifetime').default(false),
 
-  discordId: bigint('discordId').unique().references(() => discordUsers.id),
+  discordId: snowflake('discordId').unique().references(() => discordUsers.id),
   guildedId: text('guildedId').unique().references(() => guildedUsers.id),
 });
 
@@ -41,7 +47,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 }));
 
 export const discordUsers = sqliteTable('DiscordUser', {
-  id: bigint('id').primaryKey(),
+  id: snowflake('id').primaryKey(),
   name: text('name').notNull(),
   globalName: text('globalName'),
   discriminator: text('discriminator'),
@@ -70,7 +76,7 @@ export const guildedUsersRelations = relations(guildedUsers, ({ one }) => ({
 }));
 
 export const discordGuilds = sqliteTable('DiscordGuild', {
-  id: bigint('id').primaryKey(),
+  id: snowflake('id').primaryKey(),
   name: text('name').notNull(),
   icon: text('icon'),
 });
@@ -83,12 +89,12 @@ export const discordGuildsRelations = relations(discordGuilds, ({ many }) => ({
 }));
 
 export const discordRoles = sqliteTable('DiscordRoles', {
-  id: bigint('id').notNull(),
-  guildId: bigint('id').notNull().references(() => discordGuilds.id),
+  id: snowflake('id').notNull(),
+  guildId: snowflake('guildId').notNull().references(() => discordGuilds.id),
 
   name: text('name').notNull(),
   color: integer('color').default(0),
-  permissions: bigint('permissions').default(BigInt(0)),
+  permissions: text('permissions').default('0'),
   icon: text('icon'),
   unicodeEmoji: text('unicodeEmoji'),
   position: integer('position').notNull(),
@@ -107,8 +113,8 @@ export const discordRolesRelations = relations(discordRoles, ({ one }) => ({
 }));
 
 export const discordMembers = sqliteTable('DiscordMember', {
-  userId: bigint('userId').notNull(),
-  guildId: bigint('guildId').notNull(),
+  userId: snowflake('userId').notNull(),
+  guildId: snowflake('guildId').notNull(),
 }, (table) => ({
   unq: unique().on(table.userId, table.guildId),
 }));
@@ -180,7 +186,7 @@ export const webhooks = sqliteTable('Webhook', {
   avatar: text('avatar'),
   channelId: text('channelId').notNull(),
 
-  discordGuildId: bigint('discordGuildId').references(() => discordGuilds.id),
+  discordGuildId: snowflake('discordGuildId').references(() => discordGuilds.id),
   guildedServerId: text('guildedServerId').references(() => guildedServers.id),
 }, (table) => ({
   unq: unique().on(table.platform, table.id),
@@ -228,9 +234,13 @@ export const messageLogEntriesRelations = relations(messageLogEntries, ({ one })
 
 export const discordMessageComponents = sqliteTable('DiscordMessageComponent', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  guildId: bigint('guildId').notNull().references(() => discordGuilds.id),
-  channelId: bigint('channelId').notNull(),
-  messageId: bigint('messageId').notNull(),
+  guildId: snowflake('guildId').notNull().references(() => discordGuilds.id),
+  channelId: snowflake('channelId').notNull(),
+  messageId: snowflake('messageId').notNull(),
+  createdById: integer('createdById').references(() => users.id),
+  updatedById: integer('updatedById').references(() => users.id),
+  createdAt: date('createdAt').$defaultFn(() => new Date()),
+  updatedAt: date('updatedAt'),
   customId: text('customId'),
   data: text('data', { mode: 'json' }).notNull().$type<StorableComponent>(),
 }, (table) => ({
@@ -241,5 +251,13 @@ export const discordMessageComponentsRelations = relations(discordMessageCompone
   guild: one(discordGuilds, {
     fields: [discordMessageComponents.guildId],
     references: [discordGuilds.id],
+  }),
+  createdBy: one(users, {
+    fields: [discordMessageComponents.createdById],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [discordMessageComponents.updatedById],
+    references: [users.id],
   }),
 }));

@@ -1,14 +1,18 @@
-import { APIInteraction, APIMessage, APIMessageComponentEmoji, APIModalInteractionResponseCallbackData, APISelectMenuDefaultValue, APISelectMenuOption, ButtonStyle, ComponentType, SelectMenuDefaultValueType, TextInputStyle } from "discord-api-types/v10";
+import { APIButtonComponent, APIInteraction, APIMessage, APIMessageComponentEmoji, APIModalInteractionResponseCallbackData, APISelectMenuComponent, APISelectMenuDefaultValue, APISelectMenuOption, APIStringSelectComponent, APIWebhook, ButtonStyle, ComponentType, MessageFlags, Routes, SelectMenuDefaultValueType, TextInputStyle } from "discord-api-types/v10";
 import { InteractionContext } from "../../interactions.js";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, StringSelectMenuBuilder, TextInputBuilder, messageLink } from "@discordjs/builders";
 import { color } from "../../util/meta.js";
-import { storeComponents } from "../../util/components.js";
-import { getDb } from "../../db/index.js";
-import { discordUsers, users } from "../../db/schema.js";
+import { getComponentWidth, getCustomId, getRowWidth, storeComponents } from "../../util/components.js";
+import { getDb, upsertGuild } from "../../db/index.js";
+import { discordMessageComponents, discordUsers, makeSnowflake, users } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { Flow } from "../../types/components/flows.js";
 import { ButtonCallback, MinimumKVComponentState, ModalCallback, SelectMenuCallback } from "../../components.js";
+import { BUTTON_URL_RE } from "../../util/regex.js";
+import { isDiscordError } from "../../util/error.js";
+import dedent from "dedent-js";
+import { getchGuild } from "../../util/kv.js";
 
 export type StorableComponent =
   | {
@@ -45,9 +49,54 @@ export type StorableComponent =
       | ComponentType.ChannelSelect;
     flow: Flow;
     placeholder?: string;
-    defaultValues: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
+    minValues?: number;
+    maxValues?: number;
+    defaultValues?: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
     disabled?: boolean;
   }
+
+const buildStorableComponent = (component: StorableComponent, customId?: string):
+  | APIButtonComponent
+  | APISelectMenuComponent
+  | undefined => {
+  switch (component.type) {
+    case ComponentType.Button:
+      return {
+        type: component.type,
+        custom_id: component.style === ButtonStyle.Link ? undefined : customId,
+        url: component.style === ButtonStyle.Link ? component.url : undefined,
+        style: component.style,
+        label: component.label,
+        emoji: component.emoji,
+        disabled: component.disabled,
+      } as APIButtonComponent;
+    case ComponentType.StringSelect:
+      return {
+        type: component.type,
+        custom_id: customId,
+        placeholder: component.placeholder,
+        disabled: component.disabled,
+        min_values: component.minValues,
+        max_values: component.maxValues,
+        options: component.options,
+      } as APIStringSelectComponent;
+    case ComponentType.UserSelect:
+    case ComponentType.RoleSelect:
+    case ComponentType.MentionableSelect:
+    case ComponentType.ChannelSelect:
+      return {
+        type: component.type,
+        custom_id: customId,
+        placeholder: component.placeholder,
+        disabled: component.disabled,
+        min_values: component.minValues,
+        max_values: component.maxValues,
+        default_values: component.defaultValues,
+      } as APISelectMenuComponent;
+    default:
+      break;
+  }
+}
 
 interface ComponentFlow extends MinimumKVComponentState {
   step: number;
@@ -56,6 +105,7 @@ interface ComponentFlow extends MinimumKVComponentState {
   steps?: {
     label: string;
   }[];
+  webhookToken: string;
   message: {
     id: string;
     channelId: string;
@@ -104,10 +154,73 @@ const getComponentFlowEmbed = (flow: ComponentFlow) => {
   return embed;
 }
 
+const registerComponent = async (
+  ctx: InteractionContext<APIInteraction>,
+  flow: ComponentFlow,
+) => {
+  const data = flow.component!;
+
+  const customId = data.type === ComponentType.Button && data.style === ButtonStyle.Link
+    ? undefined
+    : getCustomId(false);
+  const built = buildStorableComponent(data, customId);
+  if (!built) {
+    throw new Error(`Failed to built the component (type ${data.type}).`);
+  }
+  const requiredWidth = getComponentWidth(built);
+
+  let message;
+  try {
+    message = await ctx.client.get(
+      Routes.webhookMessage(flow.message.webhookId, flow.webhookToken, flow.message.id),
+    ) as APIMessage;
+  } catch {
+    throw new Error(dedent`
+      Failed to fetch the message (${flow.message.id}).
+      Make sure the webhook (${flow.message.webhookId})
+      exists and is in the same channel.
+    `);
+  }
+  const components = message.components ?? [new ActionRowBuilder().toJSON()];
+  let nextAvailableRow = components.find(c => 5 - getRowWidth(c) >= requiredWidth);
+  if (!nextAvailableRow && components.length < 5) {
+    nextAvailableRow = new ActionRowBuilder().toJSON();
+    components.push(nextAvailableRow);
+  } else if (!nextAvailableRow) {
+    throw new Error(`No available slots for this component (need at least ${requiredWidth}).`);
+  }
+  nextAvailableRow.components.push(built);
+
+  const db = getDb(ctx.env.DB);
+  const returned = await db.insert(discordMessageComponents).values({
+    guildId: makeSnowflake(flow.message.guildId),
+    channelId: makeSnowflake(flow.message.channelId),
+    messageId: makeSnowflake(flow.message.id),
+    createdById: flow.user.id,
+    customId,
+    data,
+  }).returning();
+  const insertedId = returned[0].id;
+
+  try {
+    return await ctx.client.patch(
+      Routes.webhookMessage(flow.message.webhookId, flow.webhookToken, flow.message.id),
+      { body: { components }},
+    ) as APIMessage
+  } catch (e) {
+    if (isDiscordError(e)) {
+      await db
+        .delete(discordMessageComponents)
+        .where(eq(discordMessageComponents.id, insertedId));
+    }
+    throw e;
+  }
+}
+
 export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>, message: APIMessage) => {
   const db = getDb(ctx.env.DB);
   let user: ComponentFlow["user"] | undefined = await db.query.users.findFirst({
-    where: eq(users.discordId, BigInt(ctx.user.id)),
+    where: eq(users.discordId, makeSnowflake(ctx.user.id)),
     columns: {
       id: true,
       subscribedSince: true,
@@ -117,7 +230,7 @@ export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>
     await db
       .insert(discordUsers)
       .values({
-        id: BigInt(ctx.user.id),
+        id: makeSnowflake(ctx.user.id),
         name: ctx.user.username,
         globalName: ctx.user.global_name,
         avatar: ctx.user.avatar,
@@ -137,7 +250,7 @@ export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>
     await db
       .insert(users)
       .values({
-        discordId: BigInt(ctx.user.id),
+        discordId: makeSnowflake(ctx.user.id),
         name: ctx.user.global_name ?? ctx.user.username,
       })
       .onConflictDoNothing();
@@ -145,21 +258,48 @@ export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>
     user = { subscribedSince: null };
   }
 
+  if (!message.webhook_id) {
+    return ctx.reply({
+      content: "This is not a webhook message.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+  let webhookToken;
+  try {
+    const webhook = await ctx.client.get(Routes.webhook(message.webhook_id)) as APIWebhook;
+    webhookToken = webhook.token;
+  } catch {
+  }
+  if (!webhookToken) {
+    return ctx.reply({
+      content: `
+        Webhook token (ID ${message.webhook_id}) was not available.
+        It may be an incompatible type of webhook, or it may have been
+        created by a different bot user.
+      `,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   const componentFlow: ComponentFlow = {
     componentTimeout: 60,
     componentRoutingId: "add-component-flow",
     step: 0,
     stepTitle: "Add Component",
+    webhookToken,
     message: {
       id: message.id,
       channelId: message.channel_id,
       guildId: ctx.interaction.guild_id!,
-      webhookId: message.webhook_id ?? message.author.id,
+      webhookId: message.webhook_id,
       webhookName: message.author.username,
       webhookAvatar: message.author.avatar,
     },
     user,
   };
+
+  const guild = await getchGuild(ctx.client, ctx.env.KV, ctx.interaction.guild_id!);
+  await upsertGuild(db, guild);
 
   // Maybe switch to a quickie web form instead of a long flow like this
   // but some users prefer to stay within discord (for whatever reason!)
@@ -245,7 +385,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
       });
     }
     case "link-button": {
-      state.stepTitle = "Customize the button's link & emoji";
+      state.stepTitle = "Customize the button's link, label, & emoji";
       state.totalSteps = 3;
       state.component = {
         type: ComponentType.Button,
@@ -292,7 +432,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
           ...state,
           componentTimeout: 600,
           componentRoutingId: "add-component-flow_customize-modal",
-          componentOnce: true,
+          componentOnce: false,
         }],
       );
 
@@ -361,6 +501,52 @@ export const reopenCustomizeModal: ButtonCallback = async (ctx) => {
 }
 
 export const submitCustomizeModal: ModalCallback = async (ctx) => {
-  const label = ctx.getModalComponent('label').value;
-  return ctx.reply(label)
+  const state = ctx.state as ComponentFlow;
+
+  if (state.component?.type === ComponentType.Button) {
+    const label = ctx.getModalComponent('label').value,
+      emoji = ctx.getModalComponent('emoji').value;
+
+    if (!label && !emoji) {
+      return ctx.reply({
+        content: "Must provide either a label or emoji.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    state.component.label = label;
+    // state.component.emoji = emoji;
+    // state.step += 1;
+    // state.steps!.push({ label: `Set label (${escapeMarkdown(label)})` });
+    // state.step += 1;
+    // state.steps!.push({ label: `Set emoji (${escapeMarkdown(label)})` });
+
+    if (state.component.style === ButtonStyle.Link) {
+      const url = ctx.getModalComponent('url').value;
+      if (!BUTTON_URL_RE.test(url)) {
+        return ctx.reply({
+          content: "Invalid URL. Must be a `http://`, `https://`, or `discord://` address.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      state.component.url = url;
+      state.step += 1;
+      state.steps!.push({ label: "Set URL" });
+
+      try {
+        await registerComponent(ctx, state);
+      } catch (e) {
+        // return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
+        throw e;
+      }
+
+      return ctx.updateMessage({
+        embeds: [getComponentFlowEmbed(state).toJSON()],
+        components: [],
+      });
+    }
+  }
+
+  return ctx.reply('a')
 }

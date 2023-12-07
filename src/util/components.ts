@@ -1,5 +1,5 @@
 import { ButtonBuilder, ChannelSelectMenuBuilder, MentionableSelectMenuBuilder, ModalBuilder, RoleSelectMenuBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder } from "@discordjs/builders";
-import { ButtonStyle, ComponentType } from "discord-api-types/v10";
+import { APIActionRowComponent, APIButtonComponent, APIChannelSelectComponent, APIMentionableSelectComponent, APIMessageComponent, APIRoleSelectComponent, APIStringSelectComponent, APITextInputComponent, APIUserSelectComponent, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { Env } from "../types/env.js";
 import { MinimumKVComponentState } from "../components.js";
 
@@ -55,4 +55,33 @@ export const storeComponents = async <T extends [Builder, MinimumKVComponentStat
     }
   }
   return components.map(c => c[0]);
+}
+
+export const getComponentWidth = (component: { type: ComponentType }): number => {
+  switch (component.type) {
+    case ComponentType.Button:
+      return 1;
+    case ComponentType.StringSelect:
+    case ComponentType.UserSelect:
+    case ComponentType.RoleSelect:
+    case ComponentType.MentionableSelect:
+    case ComponentType.ChannelSelect:
+    case ComponentType.TextInput:
+      return 5;
+    default:
+      break;
+  }
+  return 0;
+}
+
+export const getRowWidth = (row: APIActionRowComponent<
+  | APIButtonComponent
+  | APIStringSelectComponent
+  | APIUserSelectComponent
+  | APIRoleSelectComponent
+  | APIMentionableSelectComponent
+  | APIChannelSelectComponent
+  | APITextInputComponent
+>): number => {
+  return row.components.reduce((last, component) => getComponentWidth(component) + last, 0);
 }
