@@ -10,6 +10,9 @@ export enum FlowActionType {
   Dud = 0,
   /** Sleeps for a predefined amount of time */
   Wait,
+  /** Ensures that a condition is true before
+   * proceeding with a block of actions */
+  Check,
   /** Adds a role to the invoking member */
   AddRole,
   /** Removes a role from the invoking member */
@@ -43,6 +46,10 @@ export interface FlowActionWait extends FlowActionBase {
   type: FlowActionType.Wait;
   mustFollow: true;
   seconds: number;
+}
+
+export interface FlowActionCheck extends FlowActionBase {
+  type: FlowActionType.Check;
 }
 
 export interface FlowActionAddRole extends FlowActionBase {
@@ -92,6 +99,7 @@ export interface FlowActionCreateThread extends FlowActionBase {
 export type FlowAction =
   | FlowActionDud
   | FlowActionWait
+  | FlowActionCheck
   | FlowActionAddRole
   | FlowActionRemoveRole
   | FlowActionToggleRole
