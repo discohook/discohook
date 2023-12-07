@@ -12,13 +12,16 @@ export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
   permissions.set(PermissionFlags.ManageRoles, true);
   // Create buttons?
   permissions.set(PermissionFlags.ManageMessages, true);
-  // Welcomer, flows (custom message)
+  // Welcomer, flows (custom message, create thread)
   permissions.set(PermissionFlags.ReadMessageHistory, true);
   permissions.set(PermissionFlags.ViewChannel, true);
   permissions.set(PermissionFlags.SendMessages, true);
   permissions.set(PermissionFlags.EmbedLinks, true);
   permissions.set(PermissionFlags.UseExternalEmojis, true);
   permissions.set(PermissionFlags.AttachFiles, true);
+  permissions.set(PermissionFlags.CreatePublicThreads, true);
+  permissions.set(PermissionFlags.CreatePrivateThreads, true);
+  permissions.set(PermissionFlags.SendMessagesInThreads, true);
   // Flows
   permissions.set(PermissionFlags.ModerateMembers, true);
 

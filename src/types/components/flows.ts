@@ -1,3 +1,5 @@
+import { ChannelType, RESTPostAPIGuildForumThreadsJSONBody } from "discord-api-types/v10";
+
 export interface Flow {
   name: string;
   actions: FlowAction[];
@@ -18,6 +20,8 @@ export enum FlowActionType {
   SendMessage,
   /** Sends a custom message as a webhook */
   SendWebhookMessage,
+  /** Creates a new thread */
+  CreateThread
   // /** Shows a custom modal to the user */
   // SendModal,
 }
@@ -68,6 +72,23 @@ export interface FlowActionSendWebhookMessage extends FlowActionBase {
   backupId: number;
 }
 
+export interface FlowActionCreateThread extends FlowActionBase {
+  type: FlowActionType.CreateThread;
+  /** Should be present only if it should be constant
+   * (e.g. a channel other than the one in context) */
+  channelId?: string;
+  name: string;
+  autoArchiveDuration?: 60 | 1440 | 4320 | 10080;
+  rateLimitPerUser?: number;
+  // Text/voice/... only
+  // messageId?: string;
+  threadType?: ChannelType.PublicThread | ChannelType.PrivateThread;
+  invitable?: boolean;
+  // Forum/media only
+  message?: RESTPostAPIGuildForumThreadsJSONBody["message"]
+  appliedTags?: string[];
+}
+
 export type FlowAction =
   | FlowActionDud
   | FlowActionWait
@@ -75,4 +96,5 @@ export type FlowAction =
   | FlowActionRemoveRole
   | FlowActionToggleRole
   | FlowActionSendMessage
-  | FlowActionSendWebhookMessage;
+  | FlowActionSendWebhookMessage
+  | FlowActionCreateThread;
