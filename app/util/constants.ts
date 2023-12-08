@@ -1,3 +1,4 @@
+import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { QueryData } from "~/types/QueryData";
 
 export const WEBHOOK_URL_RE =
@@ -16,6 +17,15 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
 This site is not maintained by the original creator of Discohook.`,
       },
     ],
+    components: [{
+      type: ComponentType.ActionRow,
+      components: [{
+        type: ComponentType.Button,
+        style: ButtonStyle.Link,
+        label: "Donate to Boogiehook",
+        url: "https://ko-fi.com/shayypy",
+      }]
+    }]
   },
 };
 
