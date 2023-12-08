@@ -473,7 +473,7 @@ export const EmbedEditor: React.FC<{
               </div>
             )}
             <Button
-              disabled={embed.fields && embed.fields.length >= 25}
+              disabled={!!embed.fields && embed.fields.length >= 25}
               onClick={() =>
                 updateEmbed({
                   fields: [...(embed.fields ?? []), { name: "", value: "" }],
