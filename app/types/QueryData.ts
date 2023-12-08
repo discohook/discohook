@@ -1,4 +1,4 @@
-import { APIAttachment, APIEmbed } from "discord-api-types/v10";
+import { APIActionRowComponent, APIAttachment, APIEmbed, APIMessageActionRowComponent } from "discord-api-types/v10";
 import { z } from "zod";
 
 /** The version of the query data, defaults to `d2`
@@ -22,6 +22,7 @@ export interface QueryData {
       content?: string | null;
       embeds?: APIEmbed[] | null;
       attachments?: APIAttachment[];
+      components?: APIActionRowComponent<APIMessageActionRowComponent>[];
       webhook_id?: string;
     };
     reference?: string;

@@ -5,6 +5,7 @@ import { QueryData } from "~/types/QueryData";
 import { PartialResource } from "~/types/resources";
 import { cdn } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
+import { MessageComponents } from "./Components";
 import { Embed } from "./Embed";
 import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
@@ -195,6 +196,11 @@ export const Message: React.FC<{
                   setImageModalData={setImageModalData}
                 />
               ))}
+            </div>
+          )}
+          {message.components && message.components.length > 0 && (
+            <div className="mt-1">
+              <MessageComponents components={message.components} />
             </div>
           )}
         </div>
