@@ -28,6 +28,7 @@
     "react-dom": "^18.2.0",
     "react-localization": "^1.0.19",
     "react-modal": "^3.16.1",
+    "react-select": "^5.8.0",
     "react-showdown": "^2.3.1",
     "redis": "^4.6.10",
     "remix-auth-discord": "^1.2.1",

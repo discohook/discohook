@@ -15,6 +15,7 @@ import { MessageEditor } from "~/components/editor/MessageEditor";
 import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
+import { ComponentAddModal, ComponentAddModalData } from "~/modals/ComponentAddModal";
 import { ExampleModal } from "~/modals/ExampleModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
@@ -234,6 +235,7 @@ export default function Index() {
   const [sharing, setSharing] = useState(dm === "share-create");
   const [editingWebhook, setEditingWebhook] = useState<string>();
   const [showHistory, setShowHistory] = useState(dm === "history");
+  const [addingComponentData, setAddingComponentData] = useState<ComponentAddModalData>();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -281,6 +283,13 @@ export default function Index() {
         setOpen={setShowHistory}
         localHistory={localHistory}
         setLocalHistory={setLocalHistory}
+        setData={setData}
+      />
+      <ComponentAddModal
+        open={!!addingComponentData}
+        setOpen={() => setAddingComponentData(undefined)}
+        {...addingComponentData}
+        data={data}
         setData={setData}
       />
       <TargetAddModal
@@ -400,6 +409,7 @@ export default function Index() {
                 data={data}
                 setData={setData}
                 setSettingMessageIndex={setSettingMessageIndex}
+                setAddingComponentData={setAddingComponentData}
               />
               {i < data.messages.length - 1 && (
                 <hr className="border border-gray-500/20 mt-4" />
