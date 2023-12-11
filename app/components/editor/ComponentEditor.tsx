@@ -152,7 +152,7 @@ export const ActionRowEditor: React.FC<{
               message.data.components!.length - 1 + 1 >= 5 ? "hidden" : ""
             }
             onClick={() => {
-              message.data.components!.splice(i + 1, 0, row);
+              message.data.components!.splice(i + 1, 0, structuredClone(row));
               setData({ ...data });
             }}
           >
@@ -505,7 +505,7 @@ export const IndividualComponentEditor: React.FC<
           <button
             className={getRowWidth(row) >= 5 ? "hidden" : ""}
             onClick={() => {
-              row.components.splice(index + 1, 0, component);
+              row.components.splice(index + 1, 0, structuredClone(component));
               updateRow();
             }}
           >

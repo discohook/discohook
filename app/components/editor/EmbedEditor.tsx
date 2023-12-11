@@ -183,7 +183,7 @@ export const EmbedEditor: React.FC<{
               <button
                 className={localIndexMax + 1 >= localMaxMembers ? "hidden" : ""}
                 onClick={() => {
-                  message.data.embeds!.splice(i + 1, 0, embed);
+                  message.data.embeds!.splice(i + 1, 0, structuredClone(embed));
                   setData({ ...data });
                 }}
               >
@@ -637,7 +637,7 @@ export const EmbedFieldEditorSection: React.FC<
           <button
             className={embed.fields!.length >= 25 ? "hidden" : ""}
             onClick={() => {
-              embed.fields!.splice(index + 1, 0, field);
+              embed.fields!.splice(index + 1, 0, structuredClone(field));
               updateEmbed({});
             }}
           >
