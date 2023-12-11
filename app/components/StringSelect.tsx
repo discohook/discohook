@@ -7,7 +7,7 @@ import Select, {
 } from "react-select";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
 
-interface TextSelectProps {
+export interface TextSelectProps {
   label?: string;
   name: string;
   options: OptionsOrGroups<unknown, GroupBase<unknown>>;
@@ -17,8 +17,14 @@ interface TextSelectProps {
   isSearchable?: boolean;
   isMulti?: boolean;
   isDisabled?: boolean;
+  backspaceRemovesValue?: boolean;
+  controlShouldRenderValue?: boolean;
+  hideSelectedOptions?: boolean;
+  tabSelectsValue?: boolean;
   defaultInputValue?: string;
-  defaultMenuIsOpen?: boolean;
+  defaultMenuIsOpen?: boolean
+  menuIsOpen?: boolean;
+  value?: unknown;
   defaultValue?: unknown;
   required?: boolean;
   placeholder?: string;

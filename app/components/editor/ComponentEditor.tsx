@@ -15,7 +15,10 @@ import {
 import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
+import { ButtonSelect } from "../ButtonSelect";
+import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
+import { selectStrings } from "../StringSelect";
 import { TextInput } from "../TextInput";
 import { CUSTOM_EMOJI_RE, EMOJI_NAME_RE } from "../preview/Markdown";
 
@@ -111,15 +114,7 @@ export const ActionRowEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   open?: boolean;
-}> = ({
-  message,
-  row,
-  rowIndex: i,
-  data,
-  setData,
-  open,
-}) => {
-  // const previewText = undefined; // getComponentText(row);
+}> = ({ message, row, rowIndex: i, data, setData, open }) => {
   const errors = getComponentErrors(row);
   return (
     <details className="group/action-row" open={open}>
@@ -194,16 +189,30 @@ export const ActionRowEditor: React.FC<{
           >
             {component.type === ComponentType.Button ? (
               <>
-                <TextInput
-                  label="Label"
-                  className="w-full"
-                  value={component.label}
-                  onInput={(e) => {
-                    component.label = e.currentTarget.value;
-                    setData({ ...data });
-                  }}
-                  maxLength={80}
-                />
+                <div className="flex">
+                  <div className="grow">
+                    <TextInput
+                      label="Label"
+                      className="w-full"
+                      value={component.label ?? ""}
+                      onInput={(e) => {
+                        component.label = e.currentTarget.value;
+                        setData({ ...data });
+                      }}
+                      maxLength={80}
+                    />
+                  </div>
+                  <div className="ml-2 my-auto">
+                    <Checkbox
+                      label="Disabled"
+                      checked={component.disabled ?? false}
+                      onChange={(e) => {
+                        component.disabled = e.currentTarget.checked;
+                        setData({ ...data });
+                      }}
+                    />
+                  </div>
+                </div>
                 <TextInput
                   label="Emoji"
                   className="w-full"
@@ -212,7 +221,7 @@ export const ActionRowEditor: React.FC<{
                       ? `<${component.emoji.animated ? "a" : ""}:${
                           component.emoji.name
                         }:${component.emoji.id}>`
-                      : component.emoji?.name
+                      : component.emoji?.name ?? ""
                   }
                   onInput={(e) => {
                     const { value } = e.currentTarget;
@@ -239,7 +248,16 @@ export const ActionRowEditor: React.FC<{
                   }}
                 />
                 {component.style === ButtonStyle.Link ? (
-                  <TextInput label="URL" type="url" className="w-full" />
+                  <TextInput
+                    label="URL"
+                    type="url"
+                    className="w-full"
+                    value={component.url}
+                    onInput={(e) => {
+                      component.url = e.currentTarget.value;
+                      setData({ ...data });
+                    }}
+                  />
                 ) : (
                   <div>
                     <p className="text-sm font-medium cursor-default">Style</p>
@@ -287,17 +305,142 @@ export const ActionRowEditor: React.FC<{
                 ComponentType.RoleSelect,
                 ComponentType.MentionableSelect,
                 ComponentType.ChannelSelect,
-              ].includes(component.type) && <></>
+              ].includes(component.type) && (
+                <>
+                  <div className="flex">
+                    <div className="grow">
+                      <TextInput
+                        label="Placeholder"
+                        value={component.placeholder ?? ""}
+                        placeholder={selectStrings.defaultPlaceholder}
+                        maxLength={150}
+                        className="w-full"
+                        onInput={(e) => {
+                          component.placeholder = e.currentTarget.value;
+                          setData({ ...data });
+                        }}
+                      />
+                    </div>
+                    <div className="ml-2 my-auto">
+                      <Checkbox
+                        label="Disabled"
+                        checked={component.disabled ?? false}
+                        onChange={(e) => {
+                          component.disabled = e.currentTarget.checked;
+                          setData({ ...data });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )
             )}
           </IndividualComponentEditor>
         ))}
       </div>
-      <Button
-        disabled={getRowWidth(row) >= 5}
-        onClick={() => {}}
+      <ButtonSelect
+        name="component-type"
+        options={[
+          {
+            label: "Button",
+            value: "button",
+            isDisabled: getRowWidth(row) >= 5,
+          },
+          {
+            label: "Link Button",
+            value: "link-button",
+            isDisabled: getRowWidth(row) >= 5,
+          },
+          {
+            label: "String Select Menu",
+            value: "string-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "User Select Menu",
+            value: "user-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "Role Select Menu",
+            value: "role-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "User & Role Select Menu",
+            value: "mentionable-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "Channel Select Menu",
+            value: "channel-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+        ]}
+        isDisabled={getRowWidth(row) >= 5}
+        onChange={(v) => {
+          const { value: type } = v as { value: string };
+          switch (type) {
+            case "button": {
+              row.components.push({
+                type: ComponentType.Button,
+                style: ButtonStyle.Primary,
+                custom_id: "",
+              });
+              break;
+            }
+            case "link-button": {
+              row.components.push({
+                type: ComponentType.Button,
+                style: ButtonStyle.Link,
+                url: "",
+              });
+              break;
+            }
+            case "string-select": {
+              row.components.push({
+                type: ComponentType.StringSelect,
+                options: [],
+                custom_id: "",
+              });
+              break;
+            }
+            case "user-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.UserSelect,
+              });
+              break;
+            }
+            case "role-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.RoleSelect,
+              });
+              break;
+            }
+            case "mentionable-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.MentionableSelect,
+              });
+              break;
+            }
+            case "channel-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.ChannelSelect,
+              });
+              break;
+            }
+            default:
+              break;
+          }
+          setData({ ...data });
+        }}
       >
         Add Component
-      </Button>
+      </ButtonSelect>
     </details>
   );
 };
