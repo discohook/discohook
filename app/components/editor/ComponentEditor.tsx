@@ -13,11 +13,11 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import LocalizedStrings from "react-localization";
-import { ComponentAddModalData } from "~/modals/ComponentAddModal";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
-import { PreviewSelect } from "../preview/Components";
+import { TextInput } from "../TextInput";
+import { CUSTOM_EMOJI_RE, EMOJI_NAME_RE } from "../preview/Markdown";
 
 export const getComponentText = (
   component: APIMessageComponent
@@ -106,24 +106,18 @@ export const getComponentErrors = (
 
 export const ActionRowEditor: React.FC<{
   message: QueryData["messages"][number];
-  messageIndex: number;
   row: APIActionRowComponent<APIMessageActionRowComponent>;
   rowIndex: number;
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   open?: boolean;
-  setAddingComponentData: React.Dispatch<
-    React.SetStateAction<ComponentAddModalData | undefined>
-  >;
 }> = ({
   message,
-  messageIndex: mi,
   row,
   rowIndex: i,
   data,
   setData,
   open,
-  setAddingComponentData,
 }) => {
   // const previewText = undefined; // getComponentText(row);
   const errors = getComponentErrors(row);
@@ -136,19 +130,6 @@ export const ActionRowEditor: React.FC<{
         />
         Row {i + 1}
         <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
-          <button
-            className={getRowWidth(row) === 5 ? "hidden" : ""}
-            onClick={() =>
-              setAddingComponentData({
-                row,
-                rowIndex: i,
-                message,
-                messageIndex: mi,
-              })
-            }
-          >
-            <CoolIcon icon="Add_Plus_Square" />
-          </button>
           <button
             className={i === 0 ? "hidden" : ""}
             onClick={() => {
@@ -201,40 +182,190 @@ export const ActionRowEditor: React.FC<{
           ))}
         </p>
       )}
-      <div className="flex flex-wrap gap-1">
-        {row.components.map((component, ci) => {
-          const onClick = () =>
-            setAddingComponentData({
-              component,
-              componentIndex: ci,
-              row,
-              rowIndex: i,
-              message,
-              messageIndex: mi,
-            });
-          switch (component.type) {
-            case ComponentType.Button:
-              return (
-                <Button
-                  discordstyle={component.style}
-                  className="!text-sm"
-                  onClick={onClick}
-                >
-                  {component.label}
-                </Button>
-              );
-            case ComponentType.StringSelect:
-            case ComponentType.UserSelect:
-            case ComponentType.RoleSelect:
-            case ComponentType.MentionableSelect:
-            case ComponentType.ChannelSelect:
-              return <PreviewSelect data={component} onClick={onClick} />;
-            default:
-              break;
-          }
-          return <></>;
-        })}
+      <div className="ml-2 md:ml-4">
+        {row.components.map((component, ci) => (
+          <IndividualComponentEditor
+            key={`edit-message-${i}-row-${i}-component-${component.type}-${ci}`}
+            component={component}
+            index={ci}
+            row={row}
+            updateRow={() => setData({ ...data })}
+            open={component.type !== ComponentType.Button}
+          >
+            {component.type === ComponentType.Button ? (
+              <>
+                <TextInput
+                  label="Label"
+                  className="w-full"
+                  value={component.label}
+                  onInput={(e) => {
+                    component.label = e.currentTarget.value;
+                    setData({ ...data });
+                  }}
+                  maxLength={80}
+                />
+                <TextInput
+                  label="Emoji"
+                  className="w-full"
+                  value={
+                    component.emoji?.id
+                      ? `<${component.emoji.animated ? "a" : ""}:${
+                          component.emoji.name
+                        }:${component.emoji.id}>`
+                      : component.emoji?.name
+                  }
+                  onInput={(e) => {
+                    const { value } = e.currentTarget;
+                    if (!value) {
+                      component.emoji = undefined;
+                      setData({ ...data });
+                      return;
+                    }
+                    const customMatch = value.match(CUSTOM_EMOJI_RE),
+                      stockMatch = value.match(EMOJI_NAME_RE);
+                    if (customMatch) {
+                      component.emoji = {
+                        id: customMatch[3],
+                        name: customMatch[2],
+                        animated: customMatch[1] === "a",
+                      };
+                      setData({ ...data });
+                    }
+                    // else if (stockMatch) {
+                    //   component.emoji = {
+                    //     name: stockMatch[1],
+                    //   }
+                    // }
+                  }}
+                />
+                {component.style === ButtonStyle.Link ? (
+                  <TextInput label="URL" type="url" className="w-full" />
+                ) : (
+                  <div>
+                    <p className="text-sm font-medium cursor-default">Style</p>
+                    <div className="grid gap-1 grid-cols-4">
+                      <Button
+                        className="block min-h-0 h-7 !p-0"
+                        discordstyle={ButtonStyle.Primary}
+                        onClick={() => {
+                          component.style = ButtonStyle.Primary;
+                          setData({ ...data });
+                        }}
+                      />
+                      <Button
+                        className="block min-h-0 h-7 !p-0"
+                        discordstyle={ButtonStyle.Secondary}
+                        onClick={() => {
+                          component.style = ButtonStyle.Secondary;
+                          setData({ ...data });
+                        }}
+                      />
+                      <Button
+                        className="block min-h-0 h-7 !p-0"
+                        discordstyle={ButtonStyle.Success}
+                        onClick={() => {
+                          component.style = ButtonStyle.Success;
+                          setData({ ...data });
+                        }}
+                      />
+                      <Button
+                        className="block min-h-0 h-7 !p-0"
+                        discordstyle={ButtonStyle.Danger}
+                        onClick={() => {
+                          component.style = ButtonStyle.Danger;
+                          setData({ ...data });
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              [
+                ComponentType.StringSelect,
+                ComponentType.UserSelect,
+                ComponentType.RoleSelect,
+                ComponentType.MentionableSelect,
+                ComponentType.ChannelSelect,
+              ].includes(component.type) && <></>
+            )}
+          </IndividualComponentEditor>
+        ))}
       </div>
+      <Button
+        disabled={getRowWidth(row) >= 5}
+        onClick={() => {}}
+      >
+        Add Component
+      </Button>
+    </details>
+  );
+};
+
+export const IndividualComponentEditor: React.FC<
+  React.PropsWithChildren<{
+    component: APIMessageActionRowComponent;
+    index: number;
+    row: APIActionRowComponent<APIMessageActionRowComponent>;
+    updateRow: () => void;
+    open?: boolean;
+  }>
+> = ({ component, index, row, updateRow, open, children }) => {
+  const previewText = getComponentText(component);
+  return (
+    <details className="group/component pb-2 -my-1" open={open}>
+      <summary className="group-open/component:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
+        <CoolIcon
+          icon="Chevron_Right"
+          className="group-open/component:rotate-90 mr-2 my-auto transition-transform"
+        />
+        <span className="shrink-0">
+          {component.type === ComponentType.Button
+            ? `Button ${index + 1}`
+            : "Select Menu"}
+        </span>
+        {previewText && <span className="truncate ml-1">- {previewText}</span>}
+        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+          <button
+            className={index === 0 ? "hidden" : ""}
+            onClick={() => {
+              row.components.splice(index, 1);
+              row.components.splice(index - 1, 0, component);
+              updateRow();
+            }}
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            className={index === row.components.length - 1 ? "hidden" : ""}
+            onClick={() => {
+              row.components.splice(index, 1);
+              row.components.splice(index + 1, 0, component);
+              updateRow();
+            }}
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            className={getRowWidth(row) >= 5 ? "hidden" : ""}
+            onClick={() => {
+              row.components.splice(index + 1, 0, component);
+              updateRow();
+            }}
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            onClick={() => {
+              row.components.splice(index, 1);
+              updateRow();
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
+      </summary>
+      <div className="space-y-2 mb-2">{children}</div>
     </details>
   );
 };

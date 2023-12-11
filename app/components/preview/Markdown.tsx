@@ -27,9 +27,9 @@ const TIMESTAMP_RE = /^(?:<|&lt;)t:(\d+)(?::(t|T|d|D|f|F|R))?>/;
 
 const PLAINTEXT_EMOJIS = new Set(["™", "™️", "©", "©️", "®", "®️"]);
 
-const EMOJI_NAME_RE = /^:([^\s:]+?(?:::skin-tone-\d)?):/;
+export const EMOJI_NAME_RE = /^:([^\s:]+?(?:::skin-tone-\d)?):/;
 
-const CUSTOM_EMOJI_RE = /^(?:<|&lt;)(a)?:(\w+):(\d+)>/;
+export const CUSTOM_EMOJI_RE = /^(?:<|&lt;)(a)?:(\w+):(\d+)>/;
 
 const MENTION_RE =
   /^(?:<|&lt;)(@!?|@&|#)(\d+)>|^(?:<|&lt;)(\/(?! )[\w -]*[\w-]):(\d+)>|^(@(?:everyone|here))/;

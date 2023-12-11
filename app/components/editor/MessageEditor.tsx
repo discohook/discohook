@@ -1,5 +1,4 @@
 import LocalizedStrings from "react-localization";
-import { ComponentAddModalData } from "~/modals/ComponentAddModal";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
@@ -29,15 +28,11 @@ export const MessageEditor: React.FC<{
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
-  setAddingComponentData: React.Dispatch<
-    React.SetStateAction<ComponentAddModalData | undefined>
-  >;
 }> = ({
   index: i,
   data,
   setData,
   setSettingMessageIndex,
-  setAddingComponentData,
 }) => {
   const message = data.messages[i];
   const embedsLength =
@@ -141,12 +136,10 @@ export const MessageEditor: React.FC<{
                 <div key={`edit-message-${i}-row-${ri}`}>
                   <ActionRowEditor
                     message={message}
-                    messageIndex={i}
                     row={row}
                     rowIndex={ri}
                     data={data}
                     setData={setData}
-                    setAddingComponentData={setAddingComponentData}
                     open
                   />
                   {ri < message.data.components!.length - 1 && (
