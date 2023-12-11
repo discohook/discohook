@@ -4,9 +4,15 @@ import React, { ReactNode, useState } from "react";
 
 import { Button } from "./Button";
 import { CoolIcon } from "./CoolIcon";
-import { StringSelect, TextSelectProps, selectClassNames } from "./StringSelect";
+import {
+  StringSelect,
+  TextSelectProps,
+  selectClassNames,
+} from "./StringSelect";
 
-export const ButtonSelect: React.FC<React.PropsWithChildren<TextSelectProps>> = (props) => {
+export const ButtonSelect: React.FC<
+  React.PropsWithChildren<TextSelectProps>
+> = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState<{ label: string; value: string } | null>();
 
@@ -15,21 +21,31 @@ export const ButtonSelect: React.FC<React.PropsWithChildren<TextSelectProps>> = 
       isOpen={isOpen}
       onClose={() => setIsOpen(false)}
       target={
-        <Button onClick={() => setIsOpen((prev) => !prev)} disabled={props.isDisabled}>
+        <Button
+          onClick={() => setIsOpen((prev) => !prev)}
+          disabled={props.isDisabled}
+        >
           {props.children}
-          <CoolIcon icon="Chevron_Down" className={`my-auto ml-1.5 transition-all ${isOpen ? "rotate-180" : "rotate-0"}`} />
+          <CoolIcon
+            icon="Chevron_Down"
+            className={`my-auto ml-1.5 transition-all ${
+              isOpen ? "rotate-180" : "rotate-0"
+            }`}
+          />
         </Button>
       }
     >
       <StringSelect
-        {...{...props, children: undefined}}
+        {...{ ...props, children: undefined }}
         backspaceRemovesValue={false}
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
         isSearchable={false}
         isClearable={false}
         classNames={{
-          control: (p) => selectClassNames.control!(p) + " !invisible !min-h-0 !max-h-0 !-mt-3"
+          control: (p) =>
+            selectClassNames.control!(p) +
+            " !invisible !min-h-0 !max-h-0 !-mt-3",
         }}
         menuIsOpen
         onChange={(newValue, a) => {
@@ -46,11 +62,9 @@ export const ButtonSelect: React.FC<React.PropsWithChildren<TextSelectProps>> = 
   );
 };
 
-const Menu = (props: JSX.IntrinsicElements["div"]) => {
-  return (
-    <div className="absolute mt-1 z-20" {...props} />
-  );
-};
+const Menu = (props: JSX.IntrinsicElements["div"]) => (
+  <div className="absolute mt-1 z-20" {...props} />
+);
 
 const Blanket = (props: JSX.IntrinsicElements["div"]) => (
   <div className="bottom-0 left-0 top-0 right-0 fixed z-10" {...props} />
