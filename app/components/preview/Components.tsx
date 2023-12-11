@@ -47,7 +47,8 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
     <button
       data-custom-id={data.custom_id}
       data-type={data.type}
-      className="rounded p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] w-[90%] max-w-[400px] mr-4 transition-[border] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center"
+      className="rounded p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] w-[90%] max-w-[400px] mr-4 transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center disabled:opacity-60 disabled:cursor-not-allowed"
+      disabled={data.disabled}
       onClick={onClick}
     >
       <span className="truncate text-[#5c5e66] dark:text-[#949ba4] leading-none">
