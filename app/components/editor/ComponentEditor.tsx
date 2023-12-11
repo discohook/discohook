@@ -6,6 +6,7 @@ import {
   APIMessageActionRowComponent,
   APIMessageComponent,
   APIRoleSelectComponent,
+  APISelectMenuOption,
   APIStringSelectComponent,
   APITextInputComponent,
   APIUserSelectComponent,
@@ -177,7 +178,7 @@ export const ActionRowEditor: React.FC<{
           ))}
         </p>
       )}
-      <div className="ml-2 md:ml-4">
+      <div className="ml-1 md:ml-2">
         {row.components.map((component, ci) => (
           <IndividualComponentEditor
             key={`edit-message-${i}-row-${i}-component-${component.type}-${ci}`}
@@ -316,7 +317,8 @@ export const ActionRowEditor: React.FC<{
                         maxLength={150}
                         className="w-full"
                         onInput={(e) => {
-                          component.placeholder = e.currentTarget.value;
+                          component.placeholder =
+                            e.currentTarget.value || undefined;
                           setData({ ...data });
                         }}
                       />
@@ -332,6 +334,115 @@ export const ActionRowEditor: React.FC<{
                       />
                     </div>
                   </div>
+                  {component.type === ComponentType.StringSelect && (
+                    <>
+                      <div className="pt-2 -mb-2">
+                        {component.options.map((option, oi) => (
+                          <SelectMenuOptionsSection
+                            option={option}
+                            index={oi}
+                            component={component}
+                            update={() => setData({ ...data })}
+                          >
+                            <div className="flex">
+                              <div className="grow">
+                                <TextInput
+                                  label="Label"
+                                  className="w-full"
+                                  value={option.label ?? ""}
+                                  maxLength={100}
+                                  onInput={(e) => {
+                                    option.label = e.currentTarget.value;
+                                    setData({ ...data });
+                                  }}
+                                  required
+                                />
+                              </div>
+                              <div className="ml-2 my-auto">
+                                <Checkbox
+                                  label="Default"
+                                  checked={option.default ?? false}
+                                  onChange={(e) => {
+                                    option.default = e.currentTarget.checked;
+                                    setData({ ...data });
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <TextInput
+                              label="Emoji"
+                              className="w-full"
+                              value={
+                                option.emoji?.id
+                                  ? `<${option.emoji.animated ? "a" : ""}:${
+                                      option.emoji.name
+                                    }:${option.emoji.id}>`
+                                  : option.emoji?.name ?? ""
+                              }
+                              onInput={(e) => {
+                                const { value } = e.currentTarget;
+                                if (!value) {
+                                  option.emoji = undefined;
+                                  setData({ ...data });
+                                  return;
+                                }
+                                const customMatch =
+                                    value.match(CUSTOM_EMOJI_RE),
+                                  stockMatch = value.match(EMOJI_NAME_RE);
+                                if (customMatch) {
+                                  option.emoji = {
+                                    id: customMatch[3],
+                                    name: customMatch[2],
+                                    animated: customMatch[1] === "a",
+                                  };
+                                  setData({ ...data });
+                                }
+                                // else if (stockMatch) {
+                                //   option.emoji = {
+                                //     name: stockMatch[1],
+                                //   }
+                                // }
+                              }}
+                            />
+                            <TextInput
+                              label="Description"
+                              className="w-full"
+                              value={option.description ?? ""}
+                              maxLength={100}
+                              onInput={(e) => {
+                                option.description = e.currentTarget.value;
+                                setData({ ...data });
+                              }}
+                            />
+                            <TextInput
+                              label="Value (hidden)"
+                              className="w-full"
+                              value={option.value ?? ""}
+                              maxLength={100}
+                              onInput={(e) => {
+                                option.value = e.currentTarget.value;
+                                setData({ ...data });
+                              }}
+                              required
+                            />
+                          </SelectMenuOptionsSection>
+                        ))}
+                      </div>
+                      <Button
+                        className=""
+                        disabled={component.options.length >= 25}
+                        onClick={() => {
+                          component.options.push({
+                            label: "",
+                            value: "",
+                          });
+                          setData({ ...data });
+                        }}
+                      >
+                        Add Option
+                      </Button>
+                    </>
+                  )}
                 </>
               )
             )}
@@ -515,6 +626,70 @@ export const IndividualComponentEditor: React.FC<
             onClick={() => {
               row.components.splice(index, 1);
               updateRow();
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
+      </summary>
+      <div className="space-y-2 mb-2">{children}</div>
+    </details>
+  );
+};
+
+export const SelectMenuOptionsSection: React.FC<
+  React.PropsWithChildren<{
+    option: APISelectMenuOption;
+    index: number;
+    component: APIStringSelectComponent;
+    update: () => void;
+    open?: boolean;
+  }>
+> = ({ option, index, component, update, open, children }) => {
+  const previewText = option.label || option.description || option.value;
+  return (
+    <details className="group/select-option pb-2 -my-1" open={open}>
+      <summary className="group-open/select-option:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
+        <CoolIcon
+          icon="Chevron_Right"
+          className="group-open/select-option:rotate-90 mr-2 my-auto transition-transform"
+        />
+        <span className="shrink-0">Option {index + 1}</span>
+        {previewText && <span className="truncate ml-1">- {previewText}</span>}
+        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+          <button
+            className={index === 0 ? "hidden" : ""}
+            onClick={() => {
+              component.options.splice(index, 1);
+              component.options.splice(index - 1, 0, option);
+              update();
+            }}
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            className={index === component.options.length - 1 ? "hidden" : ""}
+            onClick={() => {
+              component.options.splice(index, 1);
+              component.options.splice(index + 1, 0, option);
+              update();
+            }}
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            className={component.options.length >= 25 ? "hidden" : ""}
+            onClick={() => {
+              component.options.splice(index + 1, 0, structuredClone(option));
+              update();
+            }}
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            onClick={() => {
+              component.options.splice(index, 1);
+              update();
             }}
           >
             <CoolIcon icon="Trash_Full" />
