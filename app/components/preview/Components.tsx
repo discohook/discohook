@@ -20,7 +20,7 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
   onClick,
 }) => {
   const button = (
-    <Button discordstyle={data.style} className="!text-sm" onClick={onClick}>
+    <Button discordstyle={data.style} emoji={data.emoji} className="!text-sm" onClick={onClick}>
       {data.label}
     </Button>
   );
