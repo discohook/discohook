@@ -463,9 +463,22 @@ export const IndividualComponentEditor: React.FC<
           className="group-open/component:rotate-90 mr-2 my-auto transition-transform"
         />
         <span className="shrink-0">
-          {component.type === ComponentType.Button
-            ? `Button ${index + 1}`
-            : "Select Menu"}
+          {component.type === ComponentType.Button ? (
+            `Button ${index + 1}`
+          ) : (
+            <>
+              {(component.type === ComponentType.UserSelect
+                ? "User"
+                : component.type === ComponentType.RoleSelect
+                ? "Role"
+                : component.type === ComponentType.MentionableSelect
+                ? "User & Role"
+                : component.type === ComponentType.ChannelSelect
+                ? "Channel"
+                : "") + " "}
+              Select Menu
+            </>
+          )}
         </span>
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
         <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
