@@ -1,8 +1,10 @@
+import { APIWebhook } from "discord-api-types/v10";
 import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { TextArea } from "../TextArea";
+import { AuthorType, getAuthorType } from "../preview/Message";
 import { ActionRowEditor } from "./ComponentEditor";
 import { EmbedEditor, getEmbedLength, getEmbedText } from "./EmbedEditor";
 
@@ -28,18 +30,21 @@ export const MessageEditor: React.FC<{
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
-}> = ({
-  index: i,
-  data,
-  setData,
-  setSettingMessageIndex,
-}) => {
+  webhooks?: APIWebhook[];
+}> = ({ index: i, data, setData, setSettingMessageIndex, webhooks }) => {
   const message = data.messages[i];
   const embedsLength =
     message.data.embeds && message.data.embeds.length > 0
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
       : 0;
   const previewText = getMessageText(message.data);
+
+  const authorTypes = webhooks ? webhooks.map(getAuthorType) : [];
+  const possiblyActionable = authorTypes.includes(AuthorType.ActionableWebhook);
+  const possiblyApplication = authorTypes.includes(
+    AuthorType.ApplicationWebhook
+  );
+
   return (
     <details className="group/message mt-4 pb-2" open>
       <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none">
@@ -131,6 +136,33 @@ export const MessageEditor: React.FC<{
             <p className="mt-1 text-lg font-semibold cursor-default select-none">
               Components
             </p>
+            {!possiblyActionable && (
+              <p className="mb-4 text-sm font-regular p-2 rounded bg-blurple-100 border-2 border-blurple-200 dark:bg-blurple-300 dark:border-blurple-300 dark:text-black dark:font-medium select-none">
+                <CoolIcon icon="Info" />{" "}
+                {!webhooks || webhooks?.length === 0 ? (
+                  <>
+                    Component availability is dependent on the type of webhook
+                    that you send a message with. In order to send link buttons,
+                    the webhook must be created by an application (any bot), but
+                    to send other buttons and select menus, the webhook must be
+                    owned by the Boogiehook application (this website/its bot).
+                    Add a webhook for more information.
+                  </>
+                ) : possiblyApplication ? (
+                  <>
+                    One or more of your webhooks are owned by an application,
+                    but not Boogiehook, so you can only add link buttons. Add a
+                    webhook owned by the Boogiehook bot to be able to use more
+                    types of components.
+                  </>
+                ) : (
+                  <>
+                    None of your webhooks are compatibile with components. Add a
+                    webhook owned by the Boogiehook bot.
+                  </>
+                )}
+              </p>
+            )}
             <div className="mt-1 space-y-1 rounded p-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow">
               {message.data.components.map((row, ri) => (
                 <div key={`edit-message-${i}-row-${ri}`}>

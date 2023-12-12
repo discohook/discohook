@@ -11,6 +11,36 @@ import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 
+export enum AuthorType {
+  /** A user. */
+  User,
+  /** A webhook. */
+  Webhook,
+  /** A regular bot. */
+  Bot,
+  /** A regular bot that we control. We aren't sure if we will use this. */
+  ActionableBot,
+  /** A webhook owned by an application, but not necessarily our own
+   * application. */
+  ApplicationWebhook,
+  /** A webhook owned by our application. It is "actionable" in that we can
+   * add components with custom IDs and respond to their interactions. */
+  ActionableWebhook,
+}
+
+export const getAuthorType = (webhook?: APIWebhook): AuthorType => {
+  if (webhook) {
+    // We should instead pass this .env value to the client
+    if (webhook.application_id === "796132172414058497") {
+      return AuthorType.ActionableWebhook;
+    } else if (webhook.application_id) {
+      return AuthorType.ApplicationWebhook;
+    }
+  }
+  // Assume we are going to send the message with a webhook
+  return AuthorType.Webhook;
+};
+
 const strings = new LocalizedStrings({
   en: {
     todayAt: "Today at {0}",
@@ -30,7 +60,7 @@ export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
   index?: number;
   data?: QueryData;
-  webhook?: APIWebhook;
+  webhooks?: APIWebhook[];
   messageDisplay?: Settings["messageDisplay"];
   compactAvatars?: boolean;
   date?: Date;
@@ -40,13 +70,14 @@ export const Message: React.FC<{
   message,
   index,
   data,
-  webhook,
+  webhooks,
   messageDisplay,
   compactAvatars,
   date,
   resolved,
   setImageModalData,
 }) => {
+  const webhook = webhooks ? webhooks[0] : undefined;
   const username = message.author?.name ?? webhook?.name ?? "Boogiehook",
     avatarUrl =
       message.author?.icon_url ??
@@ -63,6 +94,7 @@ export const Message: React.FC<{
     ? lastMessage.data.author?.name !== message.author?.name ||
       lastMessage.data.author?.icon_url !== message.author?.icon_url
     : true;
+  const authorType = getAuthorType(webhook);
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
   for (const embed of message.embeds ?? []) {
@@ -91,7 +123,11 @@ export const Message: React.FC<{
   );
 
   return (
-    <div className={`flex dark:text-[#dbdee1] ${showProfile && lastMessage ? "mt-4" : ""}`}>
+    <div
+      className={`flex dark:text-[#dbdee1] ${
+        showProfile && lastMessage ? "mt-4" : ""
+      }`}
+    >
       {messageDisplay !== "compact" && (
         <div className="hidden sm:block w-fit shrink-0">
           {showProfile ? (
@@ -200,7 +236,7 @@ export const Message: React.FC<{
           )}
           {message.components && message.components.length > 0 && (
             <div className="mt-1">
-              <MessageComponents components={message.components} />
+              <MessageComponents components={message.components} authorType={authorType} />
             </div>
           )}
         </div>

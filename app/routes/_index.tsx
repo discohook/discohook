@@ -400,6 +400,7 @@ export default function Index() {
                 data={data}
                 setData={setData}
                 setSettingMessageIndex={setSettingMessageIndex}
+                webhooks={Object.values(targets)}
               />
               {i < data.messages.length - 1 && (
                 <hr className="border border-gray-500/20 mt-4" />
@@ -435,6 +436,7 @@ export default function Index() {
             <Message
               key={`preview-message-${i}`}
               message={message.data}
+              webhooks={Object.values(targets)}
               index={i}
               data={data}
               setImageModalData={setImageModalData}

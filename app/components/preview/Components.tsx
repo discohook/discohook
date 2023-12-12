@@ -10,22 +10,31 @@ import { cdn } from "~/util/discord";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { selectStrings } from "../StringSelect";
+import { AuthorType } from "./Message";
 
 type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
   data: T;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
+  authorType?: AuthorType;
 }>;
 
 export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
   data,
   onClick,
+  authorType,
 }) => {
+  const nonSendable =
+    authorType &&
+    ((data.style === ButtonStyle.Link &&
+      authorType < AuthorType.ApplicationWebhook) ||
+      authorType < AuthorType.ActionableWebhook);
+
   const button = (
     <Button
       discordstyle={data.style}
       emoji={data.emoji}
       disabled={data.disabled ?? false}
-      className="!text-sm"
+      className={`!text-sm ${nonSendable ? "hidden" : ""}`}
       onClick={onClick}
     >
       {data.label}
@@ -43,15 +52,21 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
 export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
   data,
   onClick,
+  authorType,
 }) => {
-  const shouldLeftPad = "options" in data && data.options.filter(o => o.emoji).length !== 0;
+  const shouldLeftPad =
+    "options" in data && data.options.filter((o) => o.emoji).length !== 0;
+  const nonSendable = authorType && authorType < AuthorType.ActionableWebhook;
+
   return (
     <div className="w-[90%] max-w-[400px] mr-4 relative">
       <button
         data-custom-id={data.custom_id}
         data-type={data.type}
         data-open={false}
-        className="peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full disabled:opacity-60 disabled:cursor-not-allowed"
+        className={`peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full disabled:opacity-60 disabled:cursor-not-allowed ${
+          nonSendable ? "hidden" : ""
+        }`}
         disabled={data.disabled}
         onClick={(e) => {
           e.currentTarget.dataset.open = String(
@@ -82,13 +97,15 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
                   src={cdn.emoji(option.emoji.id)}
                   className="w-[22px] h-[22px] mr-2 my-auto shrink-0"
                 />
-              ) : shouldLeftPad && (
-                <div className="w-[22px] mr-2 shrink-0" />
+              ) : (
+                shouldLeftPad && <div className="w-[22px] mr-2 shrink-0" />
               )}
               <div className="truncate text-sm font-medium my-auto">
                 <p className="truncate leading-[18px]">{option.label}</p>
                 {option.description && (
-                  <p className="truncate text-[#4e5058] dark:text-[#b5bac1] leading-[18px]">{option.description}</p>
+                  <p className="truncate text-[#4e5058] dark:text-[#b5bac1] leading-[18px]">
+                    {option.description}
+                  </p>
                 )}
               </div>
             </div>
@@ -110,7 +127,8 @@ const previewComponentMap = {
 
 export const MessageComponents: React.FC<{
   components: NonNullable<APIMessage["components"]>;
-}> = ({ components }) => {
+  authorType?: AuthorType;
+}> = ({ components, authorType }) => {
   return (
     <div className="grid gap-1 py-[0.125rem]">
       {components.map((row, i) => (
@@ -125,7 +143,7 @@ export const MessageComponents: React.FC<{
                 >
                   {
                     // @ts-ignore
-                    fc({ data: component })
+                    fc({ data: component, authorType })
                   }
                 </div>
               );
