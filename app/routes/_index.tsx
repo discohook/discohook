@@ -350,7 +350,13 @@ export default function Index() {
                 <div className="my-auto grow truncate">
                   <p className="font-semibold truncate">{webhook.name}</p>
                   <p className="text-sm leading-none truncate">
-                    {webhook.user?.username}
+                    {webhook.application_id === "796132172414058497" ? (
+                      <>
+                        <CoolIcon icon="Circle_Check" className="text-blurple-500" /> Owned by Boogiehook
+                      </>
+                    ) : (
+                      webhook.user?.username
+                    )}
                   </p>
                 </div>
                 <div className="ml-auto space-x-2 my-auto shrink-0 text-xl">
