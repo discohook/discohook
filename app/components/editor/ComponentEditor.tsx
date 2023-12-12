@@ -263,38 +263,21 @@ export const ActionRowEditor: React.FC<{
                   <div>
                     <p className="text-sm font-medium cursor-default">Style</p>
                     <div className="grid gap-1 grid-cols-4">
-                      <Button
-                        className="block min-h-0 h-7 !p-0"
-                        discordstyle={ButtonStyle.Primary}
-                        onClick={() => {
-                          component.style = ButtonStyle.Primary;
-                          setData({ ...data });
-                        }}
-                      />
-                      <Button
-                        className="block min-h-0 h-7 !p-0"
-                        discordstyle={ButtonStyle.Secondary}
-                        onClick={() => {
-                          component.style = ButtonStyle.Secondary;
-                          setData({ ...data });
-                        }}
-                      />
-                      <Button
-                        className="block min-h-0 h-7 !p-0"
-                        discordstyle={ButtonStyle.Success}
-                        onClick={() => {
-                          component.style = ButtonStyle.Success;
-                          setData({ ...data });
-                        }}
-                      />
-                      <Button
-                        className="block min-h-0 h-7 !p-0"
-                        discordstyle={ButtonStyle.Danger}
-                        onClick={() => {
-                          component.style = ButtonStyle.Danger;
-                          setData({ ...data });
-                        }}
-                      />
+                      {(
+                        [
+                          ButtonStyle.Primary,
+                          ButtonStyle.Secondary,
+                          ButtonStyle.Success,
+                          ButtonStyle.Danger,
+                        ] as const
+                      ).map((style) => (
+                        <ButtonStylePicker
+                          key={`edit-message-${i}-row-${i}-component-${component.type}-${ci}-style-${style}`}
+                          style={style}
+                          component={component}
+                          update={() => setData({ ...data })}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
@@ -555,6 +538,25 @@ export const ActionRowEditor: React.FC<{
     </details>
   );
 };
+
+export const ButtonStylePicker: React.FC<{
+  style: ButtonStyle;
+  component: APIButtonComponent;
+  update: () => void;
+}> = ({ style, component, update }) => (
+  <Button
+    className="block min-h-0 h-7 !p-0"
+    discordstyle={style}
+    onClick={() => {
+      component.style = style;
+      update();
+    }}
+  >
+    {component.style === style && (
+      <CoolIcon icon="Check" className="text-xl" />
+    )}
+  </Button>
+);
 
 export const IndividualComponentEditor: React.FC<
   React.PropsWithChildren<{
