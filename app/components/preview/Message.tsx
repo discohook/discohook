@@ -94,7 +94,8 @@ export const Message: React.FC<{
     ? lastMessage.data.author?.name !== message.author?.name ||
       lastMessage.data.author?.icon_url !== message.author?.icon_url
     : true;
-  const authorType = getAuthorType(webhook);
+  // To save time, display components if the user has no webhooks
+  const authorType = webhook ? getAuthorType(webhook) : AuthorType.ActionableWebhook;
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
   for (const embed of message.embeds ?? []) {
