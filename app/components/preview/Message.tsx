@@ -107,7 +107,7 @@ export const Message: React.FC<{
     embeds.push({
       embed,
       extraImages: galleryChildren
-        .filter((e) => !!e.image)
+        .filter((e) => e.image?.url)
         .map((e) => e.image!),
     });
   }
