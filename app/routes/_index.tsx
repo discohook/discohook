@@ -38,7 +38,10 @@ import { loader as getShareLoader } from "../routes/api.share.$shareId";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUser(request);
-  return { user };
+  return {
+    user,
+    discordApplicationId: process.env.DISCORD_CLIENT_ID!,
+  };
 };
 
 export const meta: MetaFunction = () => {
@@ -82,7 +85,7 @@ const strings = new LocalizedStrings({
 });
 
 export default function Index() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, discordApplicationId } = useLoaderData<typeof loader>();
   const [settings] = useLocalStorage();
 
   const [searchParams] = useSearchParams();
@@ -350,7 +353,7 @@ export default function Index() {
                 <div className="my-auto grow truncate">
                   <p className="font-semibold truncate">{webhook.name}</p>
                   <p className="text-sm leading-none truncate">
-                    {webhook.application_id === "796132172414058497" ? (
+                    {webhook.application_id === discordApplicationId ? (
                       <>
                         <CoolIcon icon="Circle_Check" className="text-blurple-500" /> Owned by Boogiehook
                       </>
@@ -442,6 +445,7 @@ export default function Index() {
             <Message
               key={`preview-message-${i}`}
               message={message.data}
+              discordApplicationId={discordApplicationId}
               webhooks={Object.values(targets)}
               index={i}
               data={data}

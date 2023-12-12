@@ -28,10 +28,9 @@ export enum AuthorType {
   ActionableWebhook,
 }
 
-export const getAuthorType = (webhook?: APIWebhook): AuthorType => {
+export const getAuthorType = (discordApplicationId: string, webhook?: APIWebhook): AuthorType => {
   if (webhook) {
-    // We should instead pass this .env value to the client
-    if (webhook.application_id === "796132172414058497") {
+    if (webhook.application_id === discordApplicationId) {
       return AuthorType.ActionableWebhook;
     } else if (webhook.application_id) {
       return AuthorType.ApplicationWebhook;
@@ -58,6 +57,7 @@ const strings = new LocalizedStrings({
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
+  discordApplicationId: string;
   index?: number;
   data?: QueryData;
   webhooks?: APIWebhook[];
@@ -68,6 +68,7 @@ export const Message: React.FC<{
   setImageModalData?: SetImageModalData;
 }> = ({
   message,
+  discordApplicationId,
   index,
   data,
   webhooks,
@@ -95,7 +96,7 @@ export const Message: React.FC<{
       lastMessage.data.author?.icon_url !== message.author?.icon_url
     : true;
   // To save time, display components if the user has no webhooks
-  const authorType = webhook ? getAuthorType(webhook) : AuthorType.ActionableWebhook;
+  const authorType = webhook ? getAuthorType(discordApplicationId, webhook) : AuthorType.ActionableWebhook;
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
   for (const embed of message.embeds ?? []) {
