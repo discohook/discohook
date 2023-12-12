@@ -71,7 +71,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
         </div>
       </button>
       {data.type === ComponentType.StringSelect && (
-        <div className="hidden peer-data-[open=true]/select:block absolute left-0 w-full bg-[#f2f3f5] dark:bg-[#2b2d31] rounded-b border border-[#e3e5e8] dark:border-[#1e1f22]">
+        <div className="hidden peer-data-[open=true]/select:block absolute left-0 w-full bg-[#f2f3f5] dark:bg-[#2b2d31] rounded-b border border-[#e3e5e8] dark:border-[#1e1f22] overflow-y-auto max-h-64">
           {data.options.map((option, oi) => (
             <div
               key={`preview-select-option-${oi}-${option.value}`}
