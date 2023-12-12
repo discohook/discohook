@@ -6,6 +6,7 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
+import { cdn } from "~/util/discord";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { selectStrings } from "../StringSelect";
@@ -43,21 +44,58 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
   data,
   onClick,
 }) => {
+  const shouldLeftPad = "options" in data && data.options.filter(o => o.emoji).length !== 0;
   return (
-    <button
-      data-custom-id={data.custom_id}
-      data-type={data.type}
-      className="rounded p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] w-[90%] max-w-[400px] mr-4 transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center disabled:opacity-60 disabled:cursor-not-allowed"
-      disabled={data.disabled}
-      onClick={onClick}
-    >
-      <span className="truncate text-[#5c5e66] dark:text-[#949ba4] leading-none">
-        {data.placeholder ?? selectStrings.defaultPlaceholder}
-      </span>
-      <div className="flex items-center gap-1">
-        <CoolIcon icon="Chevron_Down" className="" />
-      </div>
-    </button>
+    <div className="w-[90%] max-w-[400px] mr-4 relative">
+      <button
+        data-custom-id={data.custom_id}
+        data-type={data.type}
+        data-open={false}
+        className="peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={data.disabled}
+        onClick={(e) => {
+          e.currentTarget.dataset.open = String(
+            e.currentTarget.dataset.open === "false"
+          );
+          if (onClick) onClick(e);
+        }}
+      >
+        <span className="truncate text-[#5c5e66] dark:text-[#949ba4] leading-none">
+          {data.placeholder ?? selectStrings.defaultPlaceholder}
+        </span>
+        <div className="flex items-center gap-1">
+          <CoolIcon
+            icon="Chevron_Down"
+            className="group-data-[open=true]/select:rotate-180"
+          />
+        </div>
+      </button>
+      {data.type === ComponentType.StringSelect && (
+        <div className="hidden peer-data-[open=true]/select:block absolute left-0 w-full bg-[#f2f3f5] dark:bg-[#2b2d31] rounded-b border border-[#e3e5e8] dark:border-[#1e1f22]">
+          {data.options.map((option, oi) => (
+            <div
+              key={`preview-select-option-${oi}-${option.value}`}
+              className="flex last:rounded-b hover:bg-[#e0e1e5] hover:dark:bg-[#36373d] w-full p-2 cursor-pointer"
+            >
+              {option.emoji?.id ? (
+                <img
+                  src={cdn.emoji(option.emoji.id)}
+                  className="w-[22px] h-[22px] mr-2 my-auto shrink-0"
+                />
+              ) : shouldLeftPad && (
+                <div className="w-[22px] mr-2 shrink-0" />
+              )}
+              <div className="truncate text-sm font-medium my-auto">
+                <p className="truncate leading-[18px]">{option.label}</p>
+                {option.description && (
+                  <p className="truncate dark:text-[#b5bac1] leading-[18px]">{option.description}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
