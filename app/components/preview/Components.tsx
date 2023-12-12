@@ -88,7 +88,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
               <div className="truncate text-sm font-medium my-auto">
                 <p className="truncate leading-[18px]">{option.label}</p>
                 {option.description && (
-                  <p className="truncate dark:text-[#b5bac1] leading-[18px]">{option.description}</p>
+                  <p className="truncate text-[#4e5058] dark:text-[#b5bac1] leading-[18px]">{option.description}</p>
                 )}
               </div>
             </div>
