@@ -2,7 +2,7 @@ import { APIInteraction, APIWebhook, ButtonStyle, ChannelType, MessageFlags, RES
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { readAttachment } from "../../util/cdn.js";
 import { getWebhookUrlEmbed } from "./webhookInfo.js";
-import { getDb, upsertGuild } from "../../db/index.js";
+import { getDb, upsertGuild, upsertDiscordUser } from "../../db/index.js";
 import { makeSnowflake, webhooks } from "../../db/schema.js";
 import { isDiscordError } from "../../util/error.js";
 import dedent from "dedent-js";
@@ -142,6 +142,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
   const db = getDb(ctx.env.DB);
   const guild = await getchGuild(ctx.client, ctx.env.KV, ctx.interaction.guild_id!);
   await upsertGuild(db, guild);
+  const dbUser = await upsertDiscordUser(db, ctx.user);
   await db
     .insert(webhooks)
     .values({
@@ -152,6 +153,8 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
       discordGuildId: makeSnowflake(webhook.guild_id!),
       channelId: webhook.channel_id,
       avatar: webhook.avatar,
+      applicationId: webhook.application_id,
+      userId: dbUser.id,
     })
     .onConflictDoNothing();
 

@@ -3,7 +3,7 @@ import { InteractionContext } from "../../interactions.js";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, StringSelectMenuBuilder, TextInputBuilder, messageLink } from "@discordjs/builders";
 import { color } from "../../util/meta.js";
 import { getComponentWidth, getCustomId, getRowWidth, storeComponents } from "../../util/components.js";
-import { getDb, upsertGuild } from "../../db/index.js";
+import { getDb, upsertDiscordUser, upsertGuild } from "../../db/index.js";
 import { discordMessageComponents, discordUsers, makeSnowflake, users } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
 import { webhookAvatarUrl } from "../../util/cdn.js";
@@ -181,6 +181,10 @@ const registerComponent = async (
       exists and is in the same channel.
     `);
   }
+  // const components = message.components
+  //   ? message.components.map(c => new ActionRowBuilder(c))
+  //   : [new ActionRowBuilder()];
+
   const components = message.components ?? [new ActionRowBuilder().toJSON()];
   let nextAvailableRow = components.find(c => 5 - getRowWidth(c) >= requiredWidth);
   if (!nextAvailableRow && components.length < 5) {
@@ -219,44 +223,7 @@ const registerComponent = async (
 
 export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>, message: APIMessage) => {
   const db = getDb(ctx.env.DB);
-  let user: ComponentFlow["user"] | undefined = await db.query.users.findFirst({
-    where: eq(users.discordId, makeSnowflake(ctx.user.id)),
-    columns: {
-      id: true,
-      subscribedSince: true,
-    },
-  });
-  if (!user) {
-    await db
-      .insert(discordUsers)
-      .values({
-        id: makeSnowflake(ctx.user.id),
-        name: ctx.user.username,
-        globalName: ctx.user.global_name,
-        avatar: ctx.user.avatar,
-        discriminator: ctx.user.discriminator,
-      })
-      .onConflictDoUpdate({
-        target: discordUsers.id,
-        set: {
-          name: ctx.user.username,
-          globalName: ctx.user.global_name,
-          avatar: ctx.user.avatar,
-          discriminator: ctx.user.discriminator,
-        },
-      });
-
-    // Couldn't figure out how to get returning({ ... }) working properly
-    await db
-      .insert(users)
-      .values({
-        discordId: makeSnowflake(ctx.user.id),
-        name: ctx.user.global_name ?? ctx.user.username,
-      })
-      .onConflictDoNothing();
-
-    user = { subscribedSince: null };
-  }
+  const user = await upsertDiscordUser(db, ctx.user);
 
   if (!message.webhook_id) {
     return ctx.reply({

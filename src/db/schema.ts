@@ -185,6 +185,8 @@ export const webhooks = sqliteTable('Webhook', {
   name: text('name').notNull(),
   avatar: text('avatar'),
   channelId: text('channelId').notNull(),
+  applicationId: text('applicationId'),
+  userId: integer('userId').references(() => users.id),
 
   discordGuildId: snowflake('discordGuildId').references(() => discordGuilds.id),
   guildedServerId: text('guildedServerId').references(() => guildedServers.id),
@@ -193,6 +195,10 @@ export const webhooks = sqliteTable('Webhook', {
 }));
 
 export const webhooksRelations = relations(webhooks, ({ one, many }) => ({
+  user: one(users, {
+    fields: [webhooks.userId],
+    references: [users.id],
+  }),
   discordGuild: one(discordGuilds, {
     fields: [webhooks.discordGuildId],
     references: [discordGuilds.id],

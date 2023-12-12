@@ -43,6 +43,13 @@
       "when": 1701964633897,
       "tag": "0005_silly_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1702412515396,
+      "tag": "0006_naive_jimmy_woo",
+      "breakpoints": true
     }
   ]
 }
