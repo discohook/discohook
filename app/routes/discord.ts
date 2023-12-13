@@ -1,3 +1,3 @@
 import { redirect } from "@remix-run/node";
 
-export const loader = () => redirect("https://discord.gg/tY2DSWukS6")
+export const loader = () => redirect(`https://discord.gg/${process.env.DISCORD_SUPPORT_INVITE_CODE}`)
