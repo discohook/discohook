@@ -12,7 +12,7 @@ import { EmbedEditor, getEmbedLength, getEmbedText } from "./EmbedEditor";
 const strings = new LocalizedStrings({
   en: {
     embedsTooLarge:
-      "Embeds must contain at most 6000 characters total (currently {0} over)",
+      "Embeds must contain at most 6000 characters total (currently {0} too many)",
   },
 });
 
