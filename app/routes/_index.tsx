@@ -351,7 +351,11 @@ export default function Index() {
                   <p className="text-sm leading-none truncate">
                     {webhook.application_id === discordApplicationId ? (
                       <>
-                        <CoolIcon icon="Circle_Check" className="text-blurple-500" /> Owned by Boogiehook
+                        <CoolIcon
+                          icon="Circle_Check"
+                          className="text-blurple-500"
+                        />{" "}
+                        Owned by Boogiehook
                       </>
                     ) : (
                       webhook.user?.username
