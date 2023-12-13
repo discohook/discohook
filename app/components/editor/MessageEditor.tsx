@@ -26,13 +26,21 @@ export const getMessageText = (
 
 export const MessageEditor: React.FC<{
   data: QueryData;
+  discordApplicationId: string;
   index: number;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
   webhooks?: APIWebhook[];
-}> = ({ index: i, data, setData, setSettingMessageIndex, webhooks }) => {
+}> = ({
+  index: i,
+  data,
+  discordApplicationId,
+  setData,
+  setSettingMessageIndex,
+  webhooks,
+}) => {
   const message = data.messages[i];
   const embedsLength =
     message.data.embeds && message.data.embeds.length > 0
@@ -40,7 +48,9 @@ export const MessageEditor: React.FC<{
       : 0;
   const previewText = getMessageText(message.data);
 
-  const authorTypes = webhooks ? webhooks.map(getAuthorType) : [];
+  const authorTypes = webhooks
+    ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
+    : [];
   const possiblyActionable = authorTypes.includes(AuthorType.ActionableWebhook);
   const possiblyApplication = authorTypes.includes(
     AuthorType.ApplicationWebhook

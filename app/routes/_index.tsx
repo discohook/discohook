@@ -407,6 +407,7 @@ export default function Index() {
               <MessageEditor
                 index={i}
                 data={data}
+                discordApplicationId={discordApplicationId}
                 setData={setData}
                 setSettingMessageIndex={setSettingMessageIndex}
                 webhooks={Object.values(targets)}
