@@ -3,6 +3,7 @@ import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { AuthorType, getAuthorType } from "../preview/Message";
 import { ActionRowEditor } from "./ComponentEditor";
@@ -110,13 +111,14 @@ export const MessageEditor: React.FC<{
         {message.data.embeds && message.data.embeds.length > 0 && (
           <div className="mt-1 space-y-1">
             {embedsLength > 6000 && (
-              <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 dark:bg-rose-400 dark:border-rose-400 dark:text-black dark:font-medium select-none">
-                <CoolIcon icon="Circle_Warning" />{" "}
-                {strings.formatString(
-                  strings.embedsTooLarge,
-                  embedsLength - 6000
-                )}
-              </p>
+              <div className="-mb-2">
+                <InfoBox severity="red" icon="Circle_Warning">
+                  {strings.formatString(
+                    strings.embedsTooLarge,
+                    embedsLength - 6000
+                  )}
+                </InfoBox>
+              </div>
             )}
             {message.data.embeds.map((embed, ei) => (
               <EmbedEditor
@@ -137,8 +139,7 @@ export const MessageEditor: React.FC<{
               Components
             </p>
             {!possiblyActionable && (
-              <p className="mb-4 text-sm font-regular p-2 rounded bg-blurple-100 border-2 border-blurple-200 dark:bg-blurple-300 dark:border-blurple-300 dark:text-black dark:font-medium select-none">
-                <CoolIcon icon="Info" />{" "}
+              <InfoBox icon="Info" collapsible open>
                 {!webhooks || webhooks?.length === 0 ? (
                   <>
                     Component availability is dependent on the type of webhook
@@ -161,7 +162,7 @@ export const MessageEditor: React.FC<{
                     webhook owned by the Boogiehook bot.
                   </>
                 )}
-              </p>
+              </InfoBox>
             )}
             <div className="mt-1 space-y-1 rounded p-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow">
               {message.data.components.map((row, ri) => (

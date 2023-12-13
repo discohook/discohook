@@ -19,6 +19,7 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { selectStrings } from "../StringSelect";
 import { TextInput } from "../TextInput";
 import { CUSTOM_EMOJI_RE, EMOJI_NAME_RE } from "../preview/Markdown";
@@ -170,13 +171,11 @@ export const ActionRowEditor: React.FC<{
         </div>
       </summary>
       {errors.length > 0 && (
-        <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 dark:border-rose-300 dark:text-black select-none">
-          {errors.map((e) => (
-            <span className="block" key={`row-error-${e}`}>
-              <CoolIcon icon="Circle_Warning" /> {e}
-            </span>
-          ))}
-        </p>
+        <div className="-mt-1 mb-1">
+          <InfoBox severity="red" icon="Circle_Warning">
+            {errors.join("\n")}
+          </InfoBox>
+        </div>
       )}
       <div className="ml-1 md:ml-2">
         {row.components.map((component, ci) => (
@@ -552,9 +551,7 @@ export const ButtonStylePicker: React.FC<{
       update();
     }}
   >
-    {component.style === style && (
-      <CoolIcon icon="Check" className="text-xl" />
-    )}
+    {component.style === style && <CoolIcon icon="Check" className="text-xl" />}
   </Button>
 );
 

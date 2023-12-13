@@ -5,6 +5,7 @@ import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { ColorPicker } from "./ColorPicker";
@@ -202,13 +203,11 @@ export const EmbedEditor: React.FC<{
         </div>
       </summary>
       {errors.length > 0 && (
-        <p className="-mt-1 mb-1 text-sm font-regular p-2 rounded bg-rose-300 border-2 border-rose-400 dark:border-rose-300 dark:text-black select-none">
-          {errors.map((e) => (
-            <span className="block">
-              <CoolIcon icon="Circle_Warning" /> {e}
-            </span>
-          ))}
-        </p>
+        <div className="-mt-1 mb-1">
+          <InfoBox severity="red" icon="Circle_Warning">
+            {errors.join("\n")}
+          </InfoBox>
+        </div>
       )}
       {!isChild && (
         <>

@@ -11,6 +11,7 @@ import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
+import { InfoBox } from "~/components/InfoBox";
 import { MessageEditor } from "~/components/editor/MessageEditor";
 import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
@@ -310,17 +311,12 @@ export default function Index() {
           }`}
         >
           {urlTooLong && (
-            <p className="mb-4 text-sm font-regular p-2 rounded bg-yellow-100 border-2 border-yellow-200 dark:bg-yellow-300 dark:border-yellow-300 dark:text-black dark:font-medium select-none">
-              <CoolIcon icon="Triangle_Warning" /> Your message data is too
-              large to be shown in the page URL. If you need to share this page,
-              use the "Share Message" button.
-            </p>
+            <InfoBox icon="Triangle_Warning" severity="yellow">
+              Your message data is too large to be shown in the page URL. If you
+              need to share this page, use the "Share Message" button.
+            </InfoBox>
           )}
-          {backupId !== undefined && (
-            <p className="mb-4 text-sm font-regular p-2 rounded bg-blurple-100 border-2 border-blurple-200 dark:bg-blurple-300 dark:border-blurple-300 dark:text-black dark:font-medium select-none">
-              <CoolIcon icon="Save" /> {strings.editingBackup}
-            </p>
-          )}
+          {backupId !== undefined && <InfoBox icon="Save">{strings.editingBackup}</InfoBox>}
           <div className="flex mb-2">
             <Button
               onClick={() => setAddingTarget(true)}
