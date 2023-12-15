@@ -28,9 +28,9 @@ export enum AuthorType {
   ActionableWebhook,
 }
 
-export const getAuthorType = (discordApplicationId: string, webhook?: APIWebhook): AuthorType => {
+export const getAuthorType = (discordApplicationId?: string, webhook?: APIWebhook): AuthorType => {
   if (webhook) {
-    if (webhook.application_id === discordApplicationId) {
+    if (discordApplicationId && webhook.application_id === discordApplicationId) {
       return AuthorType.ActionableWebhook;
     } else if (webhook.application_id) {
       return AuthorType.ApplicationWebhook;
@@ -57,7 +57,7 @@ const strings = new LocalizedStrings({
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
-  discordApplicationId: string;
+  discordApplicationId?: string;
   index?: number;
   data?: QueryData;
   webhooks?: APIWebhook[];
