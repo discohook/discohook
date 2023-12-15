@@ -34,7 +34,7 @@ import {
 } from "~/util/constants";
 import { cdn, getWebhook } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
-import { base64Decode, base64Encode, randomString } from "~/util/text";
+import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
 import { loader as getShareLoader } from "../routes/api.share.$shareId";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -198,7 +198,7 @@ export default function Index() {
     }
 
     const pathUrl = location.origin + location.pathname;
-    const encoded = base64Encode(JSON.stringify(data));
+    const encoded = base64UrlEncode(JSON.stringify(data));
     if (backupId === undefined) {
       // URLs on Cloudflare are limited to 16KB
       const fullUrl = new URL(pathUrl + `?data=${encoded}`);
