@@ -28,6 +28,10 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const [helpOpen, setHelpOpen] = useState(dm === "help");
   const [settingsOpen, setSettingsOpen] = useState(dm === "settings");
 
+  const logo = (
+    <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
+  );
+
   return (
     <div className="sticky top-0 left-0 z-10 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
       <HelpModal open={helpOpen} setOpen={setHelpOpen} />
@@ -36,7 +40,13 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
         setOpen={setSettingsOpen}
         user={user}
       />
-      <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
+      {location.pathname === "/" ? (
+        logo
+      ) : (
+        <Link to="/" className="my-auto">
+          {logo}
+        </Link>
+      )}
       {user ? (
         <Link
           to="/me"
