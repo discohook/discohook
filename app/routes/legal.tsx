@@ -6,8 +6,7 @@ import { Prose } from "~/components/Prose";
 import { MessageComponents } from "~/components/preview/Components";
 import { getUser } from "~/session.server";
 
-export const loader = async ({ request }: LoaderFunctionArgs) =>
-  await getUser(request);
+export const loader = ({ request }: LoaderFunctionArgs) => getUser(request);
 
 export const meta: MetaFunction = () => [
   { title: "Privacy & Terms - Boogiehook" },
