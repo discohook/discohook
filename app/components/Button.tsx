@@ -1,6 +1,7 @@
 import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v10";
 import { cdn } from "~/util/discord";
 import { CoolIcon } from "./CoolIcon";
+import { Twemoji } from "./Twemoji";
 
 export const Button = (
   props: React.DetailedHTMLProps<
@@ -28,18 +29,25 @@ export const Button = (
           : ""
       } ${props.className ?? ""}`}
     >
-      {props.emoji && props.emoji.id && (
-        <div className="mr-1 aspect-square my-auto h-7">
-          <img
-            src={cdn.emoji(
-              props.emoji.id,
-              props.emoji.animated ? "gif" : "webp"
-            )}
-            alt={props.emoji.name}
-            className="h-full w-full"
-          />
-        </div>
-      )}
+      {props.emoji &&
+        (props.emoji.id ? (
+          <div className="mr-1 aspect-square my-auto h-7">
+            <img
+              src={cdn.emoji(
+                props.emoji.id,
+                props.emoji.animated ? "gif" : "webp"
+              )}
+              alt={props.emoji.name}
+              className="h-full w-full"
+            />
+          </div>
+        ) : (
+          <div className="mr-1 aspect-square my-auto h-7 flex">
+            <div className="m-auto">
+              <Twemoji emoji={props.emoji.name!} size={22} />
+            </div>
+          </div>
+        ))}
       <div className={props.emoji ? "my-auto" : "m-auto"}>{props.children}</div>
       {props.discordstyle === ButtonStyle.Link && (
         <CoolIcon icon="External_Link" className="ml-1.5 my-auto" />

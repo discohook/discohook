@@ -19,6 +19,7 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
+import { PopoutEmojiPicker } from "../EmojiPicker";
 import { InfoBox } from "../InfoBox";
 import { selectStrings } from "../StringSelect";
 import { TextInput } from "../TextInput";
@@ -190,6 +191,16 @@ export const ActionRowEditor: React.FC<{
             {component.type === ComponentType.Button ? (
               <>
                 <div className="flex">
+                  <div className="mr-2 mt-auto">
+                    <p className="text-sm cursor-default font-medium">Emoji</p>
+                    <PopoutEmojiPicker
+                      emoji={component.emoji}
+                      setEmoji={(emoji) => {
+                        component.emoji = emoji;
+                        setData({ ...data });
+                      }}
+                    />
+                  </div>
                   <div className="grow">
                     <TextInput
                       label="Label"
@@ -213,40 +224,6 @@ export const ActionRowEditor: React.FC<{
                     />
                   </div>
                 </div>
-                <TextInput
-                  label="Emoji"
-                  className="w-full"
-                  value={
-                    component.emoji?.id
-                      ? `<${component.emoji.animated ? "a" : ""}:${
-                          component.emoji.name
-                        }:${component.emoji.id}>`
-                      : component.emoji?.name ?? ""
-                  }
-                  onInput={(e) => {
-                    const { value } = e.currentTarget;
-                    if (!value) {
-                      component.emoji = undefined;
-                      setData({ ...data });
-                      return;
-                    }
-                    const customMatch = value.match(CUSTOM_EMOJI_RE),
-                      stockMatch = value.match(EMOJI_NAME_RE);
-                    if (customMatch) {
-                      component.emoji = {
-                        id: customMatch[3],
-                        name: customMatch[2],
-                        animated: customMatch[1] === "a",
-                      };
-                      setData({ ...data });
-                    }
-                    // else if (stockMatch) {
-                    //   component.emoji = {
-                    //     name: stockMatch[1],
-                    //   }
-                    // }
-                  }}
-                />
                 {component.style === ButtonStyle.Link ? (
                   <TextInput
                     label="URL"
