@@ -6,6 +6,7 @@ import {
 } from "@remix-run/node";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
+import { useState } from "react";
 import LocalizedStrings from "react-localization";
 import { z } from "zod";
 import { zx } from "zodix";
@@ -13,15 +14,21 @@ import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
+import { BackupImportModal } from "~/modals/BackupImportModal";
 import { prisma } from "~/prisma.server";
 import { redis } from "~/redis.server";
 import { getUser } from "~/session.server";
+import {
+  DiscohookBackup
+} from "~/types/discohook";
 import { getUserAvatar, getUserTag } from "~/util/users";
+import { jsonAsString } from "~/util/zod";
 
 const strings = new LocalizedStrings({
   en: {
     yourBackups: "Your Backups",
     noBackups: "You haven't created any backups.",
+    import: "Import",
     version: "Version: {0}",
     yourLinks: "Your Links",
     noLinks: "You haven't created any share links.",
@@ -79,6 +86,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         action: z.literal("DELETE_BACKUP"),
         backupId: zx.NumAsString,
       }),
+      z.object({
+        action: z.literal("IMPORT_BACKUPS"),
+        backups: jsonAsString<z.ZodType<DiscohookBackup[]>>(),
+      }),
     ])
   );
 
@@ -113,6 +124,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       });
       return new Response(null, { status: 204 });
     }
+    case "IMPORT_BACKUPS": {
+      await prisma.backup.createMany({
+        data: data.backups.map((backup) => ({
+          name: backup.name,
+          dataVersion: "d2",
+          data: {
+            version: "d2",
+            messages: backup.messages,
+            targets: backup.targets,
+          },
+          ownerId: user.id,
+        })),
+        skipDuplicates: true,
+      });
+      return new Response(null, { status: 201 });
+    }
     default:
       break;
   }
@@ -127,8 +154,11 @@ export default function Me() {
   const submit = useSubmit();
   const now = new Date();
 
+  const [importModalOpen, setImportModalOpen] = useState(false);
+
   return (
     <div>
+      <BackupImportModal open={importModalOpen} setOpen={setImportModalOpen} />
       <Header user={user} />
       <Prose>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
@@ -241,6 +271,9 @@ export default function Me() {
             ) : (
               <p className="text-gray-500">{strings.noBackups}</p>
             )}
+            <Button className="mt-1" onClick={() => setImportModalOpen(true)}>
+              {strings.import}
+            </Button>
           </div>
           <div className="w-full h-fit">
             <p className="text-xl font-semibold dark:text-gray-100">

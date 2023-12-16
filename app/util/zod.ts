@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const jsonAsString = <T extends z.AnyZodObject>(schema?: T) =>
+export const jsonAsString = <T extends z.ZodTypeAny>(schema?: T) =>
   z
     .string()
     .refine((val) => {

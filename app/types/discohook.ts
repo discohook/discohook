@@ -11,18 +11,7 @@ export interface DiscohookBackup {
 
 type MessageData = QueryData["messages"][number]["data"];
 
-export type DiscohookBackupExportData =
-  | {
-      version: 1;
-      name: string;
-      // camel case version of MessageData
-      message: Record<string, unknown>;
-    }
-  | {
-      version: 2;
-      name: string;
-      message: MessageData;
-    }
+export type DiscohookBackupExportDataWithBackups =
   | {
       version: 3;
       backups: {
@@ -64,3 +53,17 @@ export type DiscohookBackupExportData =
       version: 7;
       backups: Omit<DiscohookBackup, "id">[];
     };
+
+export type DiscohookBackupExportData =
+  | {
+      version: 1;
+      name: string;
+      // camel case version of MessageData
+      message: Record<string, unknown>;
+    }
+  | {
+      version: 2;
+      name: string;
+      message: MessageData;
+    }
+  | DiscohookBackupExportDataWithBackups;
