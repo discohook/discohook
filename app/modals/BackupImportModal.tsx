@@ -47,7 +47,9 @@ export const backupDataAsNewest = (
   return [];
 };
 
-export const BackupImportModal = (props: ModalProps) => {
+export const BackupImportModal = (
+  props: ModalProps & { backups: { name: string }[] }
+) => {
   const [fileErrors, setFileErrors] = useState<string[]>([]);
   const [data, setData] = useState<DiscohookBackupExportData>();
   const [selectedBackups, setSelectedBackups] = useState<string[]>([]);
@@ -122,7 +124,7 @@ export const BackupImportModal = (props: ModalProps) => {
                     key={`import-backup-${backup.name}-${i}`}
                   >
                     <button
-                      className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow h-10"
+                      className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
                       onClick={() => {
                         if (selectedBackups.includes(backup.name)) {
                           setSelectedBackups(
@@ -133,9 +135,17 @@ export const BackupImportModal = (props: ModalProps) => {
                         }
                       }}
                     >
-                      <p className="font-semibold my-auto truncate mr-2">
-                        {backup.name}
-                      </p>
+                      <div className="my-auto truncate mr-2 text-left py-2">
+                        <p className="font-semibold truncate">{backup.name}</p>
+                        {props.backups
+                          .map((b) => b.name)
+                          .includes(backup.name) && (
+                          <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                            <CoolIcon icon="Circle_Warning" /> You already
+                            have a backup with this name
+                          </p>
+                        )}
+                      </div>
                       <div className="my-auto ml-auto">
                         <CoolIcon
                           icon={
@@ -155,7 +165,7 @@ export const BackupImportModal = (props: ModalProps) => {
                           targets: backup.targets,
                         } as QueryData)
                       )}`}
-                      className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 h-10"
+                      className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
                       title={`View ${backup.name}`}
                       target="_blank"
                     >

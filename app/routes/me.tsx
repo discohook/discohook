@@ -18,9 +18,7 @@ import { BackupImportModal } from "~/modals/BackupImportModal";
 import { prisma } from "~/prisma.server";
 import { redis } from "~/redis.server";
 import { getUser } from "~/session.server";
-import {
-  DiscohookBackup
-} from "~/types/discohook";
+import { DiscohookBackup } from "~/types/discohook";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { jsonAsString } from "~/util/zod";
 
@@ -158,7 +156,11 @@ export default function Me() {
 
   return (
     <div>
-      <BackupImportModal open={importModalOpen} setOpen={setImportModalOpen} />
+      <BackupImportModal
+        open={importModalOpen}
+        setOpen={setImportModalOpen}
+        backups={backups}
+      />
       <Header user={user} />
       <Prose>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
