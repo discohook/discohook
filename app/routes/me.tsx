@@ -2,6 +2,7 @@ import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   MetaFunction,
+  SerializeFrom,
   json,
 } from "@remix-run/node";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
@@ -14,6 +15,7 @@ import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
+import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { prisma } from "~/prisma.server";
 import { redis } from "~/redis.server";
@@ -70,6 +72,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return { user, backups, links };
 };
+
+export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUser(request, true);
@@ -153,6 +157,7 @@ export default function Me() {
   const now = new Date();
 
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [editingBackup, setEditingBackup] = useState<LoadedBackup>();
 
   return (
     <div>
@@ -160,6 +165,11 @@ export default function Me() {
         open={importModalOpen}
         setOpen={setImportModalOpen}
         backups={backups}
+      />
+      <BackupEditModal
+        open={!!editingBackup}
+        setOpen={() => setEditingBackup(undefined)}
+        backup={editingBackup}
       />
       <Header user={user} />
       <Prose>
@@ -233,8 +243,18 @@ export default function Me() {
                       key={`backup-${backup.id}`}
                       className="w-full rounded p-2 bg-gray-100 dark:bg-gray-700 flex"
                     >
-                      <div className="truncate shrink-0">
-                        <p className="font-medium">{backup.name}</p>
+                      <div className="truncate">
+                        <div className="flex max-w-full">
+                          <p className="font-medium truncate">
+                            {backup.name}
+                          </p>
+                          <button
+                            className="ml-2 my-auto"
+                            onClick={() => setEditingBackup(backup)}
+                          >
+                            <CoolIcon icon="Edit_Pencil_01" />
+                          </button>
+                        </div>
                         <p className="text-gray-600 dark:text-gray-500 text-sm">
                           {strings.formatString(
                             strings.version,
