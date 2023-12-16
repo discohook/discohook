@@ -316,7 +316,11 @@ export default function Index() {
               need to share this page, use the "Share Message" button.
             </InfoBox>
           )}
-          {backupId !== undefined && <InfoBox icon="Save">{strings.editingBackup}</InfoBox>}
+          {backupId !== undefined && (
+            <InfoBox icon="Save" collapsible open>
+              {strings.editingBackup}
+            </InfoBox>
+          )}
           <div className="flex mb-2">
             <Button
               onClick={() => setAddingTarget(true)}
