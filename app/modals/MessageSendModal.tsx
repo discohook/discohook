@@ -4,7 +4,7 @@ import { APIMessage, APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
-// import { getMessageText } from "~/components/editor/MessageEditor";
+import { getMessageText } from "~/components/editor/MessageEditor";
 import { QueryData } from "~/types/QueryData";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
@@ -151,7 +151,7 @@ export const MessageSendModal = (
       <div className="space-y-1">
         {data.messages.length > 0 ? (
           data.messages.map((message, i) => {
-            const previewText = undefined; // getMessageText(message.data);
+            const previewText = getMessageText(message.data);
             return (
               <div key={`message-send-${i}`} className="flex">
                 <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer overflow-hidden">
