@@ -1,11 +1,12 @@
+import emojiData, { Emoji, EmojiMartData, Skin } from "@emoji-mart/data";
 import { APIMessageComponentEmoji } from "discord-api-types/v10";
+import { memo, useState } from "react";
 import { cdn } from "~/util/discord";
-import { randomString } from "~/util/text";
-import { Twemoji } from "./Twemoji";
 import { useLocalStorage } from "~/util/localstorage";
-import { TextInput } from "./TextInput";
-import emojiData, { Emoji, EmojiMartData } from "@emoji-mart/data";
+import { randomString } from "~/util/text";
 import { CoolIcon } from "./CoolIcon";
+import { TextInput } from "./TextInput";
+import { Twemoji } from "./Twemoji";
 
 // Dec x 2023
 // We were originally using emoji-mart since it seemed more fit for our
@@ -16,7 +17,11 @@ import { CoolIcon } from "./CoolIcon";
 // Dec 18 2023
 // emoji-picker-react
 
-export interface PickerProps {}
+type SelectedEmoji = Omit<Emoji, "skins"> & { skin: Skin };
+
+export interface PickerProps {
+  onEmojiClick: (emoji: SelectedEmoji) => void;
+}
 
 const categoryToEmoji: Record<string, string> = {
   people: "🙂",
@@ -38,23 +43,9 @@ export const CategoryIconButton: React.FC<{ id: string }> = ({ id }) => {
   );
 };
 
-export const EmojiPicker: React.FC<PickerProps> = (
-  {
-    // onEmojiClick,
-  }
-) => {
+const EmojiPicker_: React.FC<PickerProps> = ({ onEmojiClick }) => {
   const [settings, setSettings] = useLocalStorage();
-  // return (
-  //   <div className="h-80 w-[450px]">
-  //     <ReactEmojiPicker
-  //       set="twitter"
-  //       emojiVersion={15}
-  //       emojiSize={40}
-  //       emojiSpacing={0}
-  //       onEmojiClick={onEmojiClick}
-  //     />
-  //   </div>
-  // );
+  const [hoverEmoji, setHoverEmoji] = useState<SelectedEmoji>();
 
   const data = emojiData as EmojiMartData;
   const skinTone = settings.skinTone;
@@ -130,14 +121,22 @@ export const EmojiPicker: React.FC<PickerProps> = (
                 <div className="flex gap-px flex-wrap">
                   {category.emojis.map((name) => {
                     const emoji = data.emojis[name];
+                    const skin =
+                      emoji.skins[skinTone === undefined ? 0 : skinTone + 1] ??
+                      emoji.skins[0];
+                    const selected: SelectedEmoji = { ...emoji, skin };
+
                     return (
                       <button
                         key={`emoji-category-${category.id}-emoji-${name}`}
                         className="rounded p-1 h-11 w-11 hover:bg-white/10 transition"
+                        onClick={() => onEmojiClick(selected)}
+                        onMouseOver={() => setHoverEmoji(selected)}
                       >
                         <Twemoji
-                          emoji={emoji.skins[0].native}
+                          emoji={skin.native}
                           className="h-full w-full"
+                          title={emoji.name}
                         />
                       </button>
                     );
@@ -146,75 +145,29 @@ export const EmojiPicker: React.FC<PickerProps> = (
               </div>
             ))}
           </div>
-          <div className="sticky bottom-0 left-0 w-full bg-gray-400 dark:bg-gray-900 p-1">
-            Current emoji
-          </div>
+          {hoverEmoji && (
+            <div className="sticky bottom-0 left-0 w-full bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-1.5">
+              <Twemoji
+                emoji={hoverEmoji.skin.native}
+                className="h-7 my-auto shrink-0"
+                title={hoverEmoji.name}
+              />
+              <p className="ml-2 text-base font-semibold my-auto truncate">
+                :{hoverEmoji.id}:
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-// export const EmojiPicker: React.FC<PickerProps> = (props) => {
-//   return (
-//     <Picker
-//       emojiStyle={EmojiStyle.TWITTER}
-//       suggestedEmojisMode={SuggestionMode.FREQUENT}
-//       theme={Theme.AUTO}
-//       categories={[
-//         {
-//           category: Categories.CUSTOM,
-//           name: "Custom",
-//         },
-//         {
-//           category: Categories.SUGGESTED,
-//           name: "Frequently used",
-//         },
-//         {
-//           category: Categories.SMILEYS_PEOPLE,
-//           name: "People",
-//         },
-//         {
-//           category: Categories.ANIMALS_NATURE,
-//           name: "Nature",
-//         },
-//         {
-//           category: Categories.FOOD_DRINK,
-//           name: "Food",
-//         },
-//         {
-//           category: Categories.ACTIVITIES,
-//           name: "Activities",
-//         },
-//         {
-//           category: Categories.TRAVEL_PLACES,
-//           name: "Travel",
-//         },
-//         {
-//           category: Categories.OBJECTS,
-//           name: "Objects",
-//         },
-//         {
-//           category: Categories.SYMBOLS,
-//           name: "Symbols",
-//         },
-//         {
-//           category: Categories.FLAGS,
-//           name: "Flags",
-//         },
-//       ]}
-//       // emojiSize={30}
-//       // emojiButtonRadius="0.25rem"
-//       // emojiButtonSize={40}
-//       // perLine={8}
-//       {...props}
-//     />
-//   );
-// };
+export const EmojiPicker = memo(EmojiPicker_);
 
 export const PopoutEmojiPicker: React.FC<{
   emoji?: APIMessageComponentEmoji;
-  setEmoji?: (emoji: APIMessageComponentEmoji | undefined) => void;
+  setEmoji: (emoji: APIMessageComponentEmoji | undefined) => void;
   isClearable?: boolean;
 }> = ({ emoji, setEmoji }) => {
   const id = randomString(42);
@@ -248,28 +201,22 @@ export const PopoutEmojiPicker: React.FC<{
       </summary>
       <div className="absolute z-20 pb-8">
         <EmojiPicker
-        // theme={Theme.DARK}
-        // previewConfig={{
-        //   // defaultCaption: "",
-        //   // defaultEmoji: emoji && !emoji.id ? emoji.name : undefined,
-        //   showPreview: false,
-        // }}
-        // onEmojiClick={(selected) => {
-        //   // close();
-        //   if (setEmoji) {
-        //     const newEmoji: APIMessageComponentEmoji = { name: selected };
-        //     if (
-        //       emoji &&
-        //       emoji.id === newEmoji.id &&
-        //       emoji.name === newEmoji.name
-        //     ) {
-        //       // Clear on double click
-        //       setEmoji(undefined);
-        //     } else {
-        //       setEmoji(newEmoji);
-        //     }
-        //   }
-        // }}
+          onEmojiClick={(selectedEmoji) => {
+            // close();
+            const newEmoji: APIMessageComponentEmoji = {
+              name: selectedEmoji.skin.native,
+            };
+            if (
+              emoji &&
+              emoji.id === newEmoji.id &&
+              emoji.name === newEmoji.name
+            ) {
+              // Clear on double click
+              setEmoji(undefined);
+            } else {
+              setEmoji(newEmoji);
+            }
+          }}
         />
       </div>
     </details>
