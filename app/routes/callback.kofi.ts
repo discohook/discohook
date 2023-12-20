@@ -1,9 +1,10 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionArgs } from "~/util/loader";
 import { zx } from "zodix";
 import { ZodKofiDonationPayload } from "~/types/kofi";
+import { json } from "@remix-run/cloudflare";
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const verificationToken = process.env.KOFI_WEBHOOK_TOKEN;
+export const action = async ({ request, context }: ActionArgs) => {
+  const verificationToken = context.env.KOFI_WEBHOOK_TOKEN;
   if (!verificationToken) {
     // Technically optional on ko-fi's side,
     // but there's no reason not to do this.
@@ -14,4 +15,5 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (data.verification_token !== verificationToken) {
     throw json({ message: "Invalid verification token." }, 403);
   }
+  return null;
 };

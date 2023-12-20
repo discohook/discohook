@@ -1,5 +1,5 @@
 import { Button } from "~/components/Button";
-import { Message } from "~/components/preview/Message";
+// import { Message } from "~/components/preview/Message";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
@@ -13,7 +13,7 @@ export const ExampleModal = (props: ModalProps) => {
         showcases every text field.
       </p>
       <div className="mt-4">
-        <Message
+        {/* <Message
           messageDisplay={settings.messageDisplay}
           compactAvatars={settings.compactAvatars}
           message={{
@@ -59,7 +59,7 @@ export const ExampleModal = (props: ModalProps) => {
               },
             ],
           }}
-        />
+        /> */}
       </div>
       <div className="flex w-full mt-4">
         <Button onClick={() => props.setOpen(false)} className="mx-auto">

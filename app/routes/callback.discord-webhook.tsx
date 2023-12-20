@@ -1,18 +1,15 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
-import LocalizedStrings from "react-localization";
-import { discordWebhookAuth } from "~/auth-discord-webhook.server";
+import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
+import { LoaderArgs } from "~/util/loader";
 
-const strings = new LocalizedStrings({
-  en: {
-    created: "Webhook Created",
-    failed: "Failed to create webhook",
-    subtitle: "You should be returned to the editor shortly.",
-  },
-});
+const strings = {
+  created: "Webhook Created",
+  failed: "Failed to create webhook",
+  subtitle: "You should be returned to the editor shortly.",
+};
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, context }: LoaderArgs) => {
   const search = new URL(request.url).searchParams;
   if (search.get("error")) {
     return {
@@ -20,7 +17,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       webhook: null,
     };
   }
-  const webhook = await discordWebhookAuth.authenticate("discord", request);
+  const webhook = await getDiscordWebhookAuth(context).authenticate(
+    "discord",
+    request
+  );
   return { error: null, webhook };
 };
 

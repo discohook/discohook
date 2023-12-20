@@ -1,16 +1,26 @@
-import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { memo } from "react";
+import twemoji from "twemoji";
 
-export const Twemoji: React.FC<{
+// Thanks https://gist.github.com/chibicode/fe195d792270910226c928b69a468206
+const Twemoji_: React.FC<{
   emoji: string;
-  size?: number;
   className?: string;
-}> = ({ emoji, size, className }) => (
-  <div className={className ?? "contents"}>
-    <Emoji
-      unified={emoji}
-      size={size}
-      emojiStyle={EmojiStyle.TWITTER}
-      lazyLoad
-    />
-  </div>
+  title?: string;
+}> = ({ emoji, className, title }) => (
+  <span
+    title={title}
+    dangerouslySetInnerHTML={{
+      __html: twemoji.parse(emoji, {
+        folder: "svg",
+        ext: ".svg",
+        // https://github.com/twitter/twemoji/issues/580
+        base: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/",
+        className: `inline-block w-auto h-4 align-[-0.125em] ${
+          className ?? ""
+        }`,
+      }),
+    }}
+  />
 );
+
+export const Twemoji = memo(Twemoji_);

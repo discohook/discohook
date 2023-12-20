@@ -1,23 +1,20 @@
-import LocalizedStrings from "react-localization";
 import { CoolIcon } from "~/components/CoolIcon";
 import { getSnowflakeDate } from "~/util/discord";
 import { SubmitMessageResult } from "./MessageSendModal";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    title: "Submit Result",
-    success: "Success",
-    error: "Error",
-    fullError: "Full Error:",
-    messageDetails: "Message Details",
-    messageId: "Message ID:",
-    channelId: "Channel ID:",
-    createdAt: "Created at:",
-    successTroubleshoot:
-      "If you cannot see the message, make sure it wasn't deleted by another bot. Some moderation bots consider all webhook messages to be spam by default.",
-  },
-});
+const strings = {
+  title: "Submit Result",
+  success: "Success",
+  error: "Error",
+  fullError: "Full Error:",
+  messageDetails: "Message Details",
+  messageId: "Message ID:",
+  channelId: "Channel ID:",
+  createdAt: "Created at:",
+  successTroubleshoot:
+    "If you cannot see the message, make sure it wasn't deleted by another bot. Some moderation bots consider all webhook messages to be spam by default.",
+};
 
 export const MessageSendResultModal = (
   props: ModalProps & { result?: SubmitMessageResult }

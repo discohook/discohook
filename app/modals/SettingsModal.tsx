@@ -1,4 +1,3 @@
-import LocalizedStrings from "react-localization";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Radio } from "~/components/Radio";
@@ -6,13 +5,11 @@ import { User } from "~/session.server";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    title: "Settings",
-    theme: "Theme",
-    messageDisplay: "Message Display",
-  },
-});
+const strings = {
+  title: "Settings",
+  theme: "Theme",
+  messageDisplay: "Message Display",
+};
 
 export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
   // const { user } = props;
@@ -52,7 +49,9 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             onChange={(e) => {
               if (e.currentTarget.checked) {
                 updateSettings({ theme: undefined });
-                if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+                if (
+                  window.matchMedia("(prefers-color-scheme: light)").matches
+                ) {
                   document.documentElement.classList.remove("dark");
                 } else {
                   document.documentElement.classList.add("dark");

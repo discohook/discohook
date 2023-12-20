@@ -41,7 +41,7 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
     </Button>
   );
   return data.style === ButtonStyle.Link ? (
-    <a href={data.url} target="_blank">
+    <a href={data.url} target="_blank" rel="noreferrer">
       {button}
     </a>
   ) : (

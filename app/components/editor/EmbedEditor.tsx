@@ -1,5 +1,4 @@
 import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
-import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -8,7 +7,6 @@ import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
-import { ColorPicker } from "./ColorPicker";
 
 export const isEmbedEmpty = (embed: APIEmbed): boolean =>
   !embed.author &&
@@ -40,12 +38,12 @@ export const getEmbedLength = (embed: APIEmbed) => {
     totalCharacters += fieldLengths.reduce((a, b) => a + b);
   }
   return totalCharacters;
-}
+};
 
 export const getEmbedErrors = (embed: APIEmbed) => {
   const errors: string[] = [];
 
-  const totalCharacters = getEmbedLength(embed)
+  const totalCharacters = getEmbedLength(embed);
   if (totalCharacters === 0 && !embed.image?.url && !embed.thumbnail?.url) {
     errors.push(strings.embedEmpty);
   }
@@ -53,11 +51,9 @@ export const getEmbedErrors = (embed: APIEmbed) => {
   return errors;
 };
 
-const strings = new LocalizedStrings({
-  en: {
-    embedEmpty: "Must contain text or an image",
-  },
-});
+const strings = {
+  embedEmpty: "Must contain text or an image",
+};
 
 export const EmbedEditor: React.FC<{
   message: QueryData["messages"][number];
@@ -123,8 +119,8 @@ export const EmbedEditor: React.FC<{
       style={
         embed.color
           ? {
-              borderLeftColor: `#${embed.color.toString(16)}`,
-            }
+            borderLeftColor: `#${embed.color.toString(16)}`,
+          }
           : undefined
       }
     >
@@ -391,7 +387,7 @@ export const EmbedEditor: React.FC<{
                   }}
                 />
               </summary>
-              <ColorPicker
+              {/* <ColorPicker
                 color={embed.color ? `#${embed.color.toString(16)}` : undefined}
                 onChange={(color) => {
                   updateEmbed({
@@ -401,7 +397,7 @@ export const EmbedEditor: React.FC<{
                         : parseInt(color.hex.replace("#", "0x"), 16),
                   });
                 }}
-              />
+              /> */}
             </details>
           )}
         </div>
@@ -425,12 +421,13 @@ export const EmbedEditor: React.FC<{
           <EmbedEditorSection name="Fields" open={open}>
             {embed.fields && (
               <div className="ml-2 md:ml-4 transition-[margin-left]">
-                {embed.fields.map((field, fI) => (
+                {embed.fields.map((field, fi) => (
                   <EmbedFieldEditorSection
+                    key={`edit-message-${mi}-embed-${i}-field-${fi}`}
                     embed={embed}
                     updateEmbed={updateEmbed}
                     field={field}
-                    index={fI}
+                    index={fi}
                     open={open}
                   >
                     <div className="flex">

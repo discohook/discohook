@@ -1,7 +1,6 @@
 import { Link, useFetcher } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useCallback, useEffect, useState } from "react";
-import LocalizedStrings from "react-localization";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -9,28 +8,25 @@ import { TextInput } from "~/components/TextInput";
 import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { copyText } from "~/util/text";
-import { relativeTime } from "~/util/time";
 import { action as backupCreateAction } from "../routes/api.backups";
 import { action as shareCreateAction } from "../routes/api.share";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    title: "Save Message",
-    temporaryUrl: "Temporary Share URL",
-    generate: "Generate",
-    clickGenerate: `Press "Generate" to generate a share link`,
-    copy: "Copy",
-    includeWebhookUrls: "Include webhook URLs",
-    expiresAt: "This link expires at {0} ({1}).",
-    options: "Options",
-    manageBackups: "Visit your user page to manage backups.",
-    logInToSave: "Log in to save permanent backups.",
-    savedAutomatically: "Saved automatically",
-    manuallySave: "Save",
-    saveBackup: "Save Backup",
-  },
-});
+const strings = {
+  title: "Save Message",
+  temporaryUrl: "Temporary Share URL",
+  generate: "Generate",
+  clickGenerate: "Press \"Generate\" to generate a share link",
+  copy: "Copy",
+  includeWebhookUrls: "Include webhook URLs",
+  expiresAt: "This link expires at {0} ({1}).",
+  options: "Options",
+  manageBackups: "Visit your user page to manage backups.",
+  logInToSave: "Log in to save permanent backups.",
+  savedAutomatically: "Saved automatically",
+  manuallySave: "Save",
+  saveBackup: "Save Backup",
+};
 
 export const MessageSaveModal = (
   props: ModalProps & {
@@ -57,8 +53,8 @@ export const MessageSaveModal = (
             targets:
               includeTargets_ ?? includeTargets
                 ? Object.values(targets).map((t) => ({
-                    url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-                  }))
+                  url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
+                }))
                 : undefined,
           }),
         },
@@ -107,13 +103,13 @@ export const MessageSaveModal = (
       </div>
       {shareFetcher.data && (
         <p className="mt-1">
-          {strings.formatString(
+          {/*strings.formatString(
             strings.expiresAt,
             <span className="font-medium">
               {new Date(shareFetcher.data.expires).toLocaleString()}
             </span>,
             <>{relativeTime(new Date(shareFetcher.data.expires))}</>
-          )}
+          )*/}
         </p>
       )}
       <p className="text-sm font-medium mt-1">{strings.options}</p>

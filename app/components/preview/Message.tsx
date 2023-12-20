@@ -1,5 +1,4 @@
 import { APIEmbed, APIEmbedImage, APIWebhook } from "discord-api-types/v10";
-import LocalizedStrings from "react-localization";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { QueryData } from "~/types/QueryData";
 import { PartialResource } from "~/types/resources";
@@ -28,9 +27,15 @@ export enum AuthorType {
   ActionableWebhook,
 }
 
-export const getAuthorType = (discordApplicationId?: string, webhook?: APIWebhook): AuthorType => {
+export const getAuthorType = (
+  discordApplicationId?: string,
+  webhook?: APIWebhook
+): AuthorType => {
   if (webhook) {
-    if (discordApplicationId && webhook.application_id === discordApplicationId) {
+    if (
+      discordApplicationId &&
+      webhook.application_id === discordApplicationId
+    ) {
       return AuthorType.ActionableWebhook;
     } else if (webhook.application_id) {
       return AuthorType.ApplicationWebhook;
@@ -40,20 +45,19 @@ export const getAuthorType = (discordApplicationId?: string, webhook?: APIWebhoo
   return AuthorType.Webhook;
 };
 
-const strings = new LocalizedStrings({
-  en: {
-    todayAt: "Today at {0}",
-  },
-  fr: {
-    todayAt: "Aujourd’hui à {0}",
-  },
-  es: {
-    todayAt: "hoy a las {0}",
-  },
-  de: {
-    todayAt: "heute um {0} Uhr",
-  },
-});
+const strings = {
+  todayAt: "Today at {0}",
+};
+//   fr: {
+//     todayAt: "Aujourd’hui à {0}",
+//   },
+//   es: {
+//     todayAt: "hoy a las {0}",
+//   },
+//   de: {
+//     todayAt: "heute um {0} Uhr",
+//   },
+// });
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
@@ -96,7 +100,9 @@ export const Message: React.FC<{
       lastMessage.data.author?.icon_url !== message.author?.icon_url
     : true;
   // To save time, display components if the user has no webhooks
-  const authorType = webhook ? getAuthorType(discordApplicationId, webhook) : AuthorType.ActionableWebhook;
+  const authorType = webhook
+    ? getAuthorType(discordApplicationId, webhook)
+    : AuthorType.ActionableWebhook;
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
   for (const embed of message.embeds ?? []) {
@@ -155,13 +161,14 @@ export const Message: React.FC<{
               </span>
             )}
             <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-              {strings.formatString(
+              {/*strings.formatString(
                 strings.todayAt,
                 (date ?? new Date()).toLocaleTimeString(undefined, {
                   hour: "numeric",
                   minute: "2-digit",
                 })
-              )}
+              )*/}
+              {strings.todayAt}
             </span>
           </p>
         )}
@@ -238,7 +245,10 @@ export const Message: React.FC<{
           )}
           {message.components && message.components.length > 0 && (
             <div className="mt-1">
-              <MessageComponents components={message.components} authorType={authorType} />
+              <MessageComponents
+                components={message.components}
+                authorType={authorType}
+              />
             </div>
           )}
         </div>

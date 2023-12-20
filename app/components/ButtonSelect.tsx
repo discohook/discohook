@@ -6,12 +6,12 @@ import { Button } from "./Button";
 import { CoolIcon } from "./CoolIcon";
 import {
   StringSelect,
-  TextSelectProps,
+  StringSelectProps,
   selectClassNames,
 } from "./StringSelect";
 
 export const ButtonSelect: React.FC<
-  React.PropsWithChildren<TextSelectProps>
+  React.PropsWithChildren<StringSelectProps>
 > = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState<{ label: string; value: string } | null>();

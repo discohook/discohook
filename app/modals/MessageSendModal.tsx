@@ -2,10 +2,9 @@ import { DiscordErrorData } from "@discordjs/rest";
 import { useFetcher } from "@remix-run/react";
 import { APIMessage, APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
-import LocalizedStrings from "react-localization";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
-import { getMessageText } from "~/components/editor/MessageEditor";
+// import { getMessageText } from "~/components/editor/MessageEditor";
 import { QueryData } from "~/types/QueryData";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
@@ -13,16 +12,14 @@ import { action as ApiAuditLogAction } from "../routes/api.audit-log";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    send: "Send",
-    sendToAll: "Send to All",
-    sendAll: "Send All",
-    noMessages: "You have no messages to send.",
-    willBeEdited: "This message has a reference set, so it will be edited.",
-    skippedEdit: "Skipped edit due to mismatched webhook ID.",
-  },
-});
+const strings = {
+  send: "Send",
+  sendToAll: "Send to All",
+  sendAll: "Send All",
+  noMessages: "You have no messages to send.",
+  willBeEdited: "This message has a reference set, so it will be edited.",
+  skippedEdit: "Skipped edit due to mismatched webhook ID.",
+};
 
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
@@ -154,7 +151,7 @@ export const MessageSendModal = (
       <div className="space-y-1">
         {data.messages.length > 0 ? (
           data.messages.map((message, i) => {
-            const previewText = getMessageText(message.data);
+            const previewText = undefined; // getMessageText(message.data);
             return (
               <div key={`message-send-${i}`} className="flex">
                 <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer overflow-hidden">
@@ -322,16 +319,19 @@ export const MessageSendModal = (
 
                   const result = await submitMessage(webhook, message);
                   if (result.status === "success") {
-                    auditLogFetcher.submit({
-                      type: message.reference ? "edit" : "send",
-                      webhookId: webhook.id,
-                      webhookToken: webhook.token!,
-                      messageId: result.data.id,
-                      // threadId: ,
-                    }, {
-                      method: "POST",
-                      action: "/api/audit-log",
-                    });
+                    auditLogFetcher.submit(
+                      {
+                        type: message.reference ? "edit" : "send",
+                        webhookId: webhook.id,
+                        webhookToken: webhook.token!,
+                        messageId: result.data.id,
+                        // threadId: ,
+                      },
+                      {
+                        method: "POST",
+                        action: "/api/audit-log",
+                      }
+                    );
                   }
 
                   updateMessages({
@@ -344,8 +344,8 @@ export const MessageSendModal = (
             {countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
               ? strings.sendAll
               : countSelected(selectedWebhooks) > 1
-              ? strings.sendToAll
-              : strings.send}
+                ? strings.sendToAll
+                : strings.send}
           </Button>
         </div>
       </div>

@@ -1,4 +1,3 @@
-import LocalizedStrings from "react-localization";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Message } from "~/components/preview/Message";
 import { HistoryItem } from "~/routes/_index";
@@ -6,20 +5,18 @@ import { QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    title: "History",
-    noHistory: "This editor session has no history recorded.",
-    description:
-      'This is cleared whenever the editor is loaded. If you need to store messages persistently, use the "Save Message" button.',
-    xMessage: "{0} message",
-    xMessages: "{0} messages",
-    xEmbed: "{0} embed",
-    xEmbeds: "{0} embeds",
-    restore: "Restore to this point",
-    removeFromHistory: "Remove from history",
-  },
-});
+const strings = {
+  title: "History",
+  noHistory: "This editor session has no history recorded.",
+  description:
+    "This is cleared whenever the editor is loaded. If you need to store messages persistently, use the \"Save Message\" button.",
+  xMessage: "{0} message",
+  xMessages: "{0} messages",
+  xEmbed: "{0} embed",
+  xEmbeds: "{0} embeds",
+  restore: "Restore to this point",
+  removeFromHistory: "Remove from history",
+};
 
 export const HistoryModal = (
   props: ModalProps & {
@@ -63,7 +60,7 @@ export const HistoryModal = (
                       This library doesn't have pluralization support
                       We might switch libraries or just use a generic "message(s)"
                     */}
-                    {strings.formatString(
+                    {/* {strings.formatString(
                       item.data.messages.length === 1
                         ? strings.xMessage
                         : strings.xMessages,
@@ -73,7 +70,7 @@ export const HistoryModal = (
                     {strings.formatString(
                       embeds === 1 ? strings.xEmbed : strings.xEmbeds,
                       embeds
-                    )}
+                    )} */}
                   </span>
                 </summary>
                 <div className="flex w-full">

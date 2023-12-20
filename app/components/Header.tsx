@@ -1,7 +1,6 @@
 import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
-import LocalizedStrings from "react-localization";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
@@ -9,17 +8,16 @@ import { getUserAvatar, getUserTag } from "~/util/users";
 import { Button } from "./Button";
 import { CoolIcon } from "./CoolIcon";
 
-const strings = new LocalizedStrings({
-  en: {
-    settings: "Settings",
-    help: "Help",
-    logIn: "Log In",
-  },
-  fr: {
-    settings: "Paramètres",
-    help: "Aide",
-  },
-});
+const strings = {
+  settings: "Settings",
+  help: "Help",
+  logIn: "Log In",
+};
+//   fr: {
+//     settings: "Paramètres",
+//     help: "Aide",
+//   },
+// });
 
 export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const location = useLocation();
@@ -56,6 +54,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           <img
             className="rounded-full h-7 w-7"
             src={getUserAvatar(user, { size: 64 })}
+            alt={user.name}
           />
           <p className="ml-1.5 text-base font-medium hidden sm:block my-auto">
             {user.discordUser?.globalName ?? getUserTag(user)}

@@ -1,26 +1,23 @@
 import { Form, useFetcher } from "@remix-run/react";
-import LocalizedStrings from "react-localization";
 import { Button } from "~/components/Button";
-import { CoolIcon } from "~/components/CoolIcon";
 import { TextInput } from "~/components/TextInput";
 import { LoadedBackup } from "~/routes/me";
 import { action as ApiBackupsIdAction } from "../routes/api.backups.$id";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    title: "Edit Backup Details",
-    editMessage: "To edit the messages in a backup, click the {0} button.",
-    name: "Name",
-    save: "Save",
-  },
-  fr: {
-    title: "Modifier les détails de la sauvegarde",
-    editMessage: "Pour modifier les messages d'une sauvegarde, cliquez sur le bouton {0}.",
-    name: "Nom",
-    save: "Enregistrer",
-  },
-});
+const strings = {
+  title: "Edit Backup Details",
+  editMessage: "To edit the messages in a backup, click the {0} button.",
+  name: "Name",
+  save: "Save",
+};
+//   fr: {
+//     title: "Modifier les détails de la sauvegarde",
+//     editMessage: "Pour modifier les messages d'une sauvegarde, cliquez sur le bouton {0}.",
+//     name: "Nom",
+//     save: "Enregistrer",
+//   },
+// });
 
 export const BackupEditModal = (
   props: ModalProps & { backup?: LoadedBackup }
@@ -42,10 +39,11 @@ export const BackupEditModal = (
         {backup && (
           <div className="space-y-2">
             <p>
-              {strings.formatString(
+              {strings.editMessage}
+              {/*strings.formatString(
                 strings.editMessage,
                 <CoolIcon icon="External_Link" className="align-sub" />
-              )}
+              )*/}
             </p>
             <TextInput
               name="name"

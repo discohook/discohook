@@ -1,57 +1,77 @@
 import {
   SerializeFrom,
-  createCookieSessionStorage,
+  createCookie,
+  createWorkersKVSessionStorage,
   json,
-} from "@remix-run/node";
-import { Jsonify } from "@remix-run/server-runtime/node_modules/type-fest";
+} from "@remix-run/cloudflare";
 import { APIUser } from "discord-api-types/v10";
-import { DiscordProfile } from "remix-auth-discord";
-import { prisma } from "./prisma.server";
+import type { DiscordProfile } from "remix-auth-discord";
+import { Context } from "./util/loader";
+import { getDb } from "./db/index.server";
+import { makeSnowflake, users } from "./db/schema.server";
+import { eq } from "drizzle-orm";
 
-export const sessionStorage = createCookieSessionStorage({
-  cookie: {
-    name: "__boogiehook_session",
-    sameSite: "lax",
-    path: "/",
-    httpOnly: true,
-    secrets: [process.env.SESSION_SECRET!],
-    secure: process.env.NODE_ENV === "production",
-  },
-});
+export const getSessionStorage = (context: Context) => {
+  const sessionStorage = createWorkersKVSessionStorage({
+    kv: context.env.KV,
+    cookie: createCookie("__boogiehook_session", {
+      sameSite: "lax",
+      path: "/",
+      httpOnly: true,
+      secrets: [context.env.SESSION_SECRET],
+      // secure: process.env.NODE_ENV === "production",
+    })
+  })
 
-export const { getSession, commitSession, destroySession } = sessionStorage;
+  const { getSession, commitSession, destroySession } = sessionStorage;
+  return { getSession, commitSession, destroySession, sessionStorage };
+}
 
-// @ts-ignore
-BigInt.prototype.toJSON = function () {
-  return this.toString();
-};
+export type Jsonify<T> = SerializeFrom<() => Promise<T>>;
 
-export const doubleDecode = <T>(data: unknown) => {
+export const doubleDecode = <T>(data: T) => {
   return JSON.parse(JSON.stringify(data)) as Jsonify<T>;
 };
 
 export const writeOauthUser = async ({
+  db,
   discord,
 }: {
+  db: ReturnType<typeof getDb>,
   discord?: DiscordProfile;
 }) => {
   const j = (discord ? discord.__json : {}) as APIUser;
-  const user = await prisma.user.upsert({
-    where: discord ? { discordId: BigInt(discord.id) } : { id: 0 },
-    create: {
-      name: discord ? j.global_name ?? j.username : "no name",
-      discordId: discord ? BigInt(discord.id) : undefined,
-    },
-    update: {
-      name: discord ? j.global_name ?? j.username : "no name",
-    },
-    select: {
+  const { id } = (
+    await db
+      .insert(users)
+      .values({
+        discordId: discord ? makeSnowflake(discord.id) : undefined,
+        name: discord ? j.global_name ?? j.username : "no name",
+      })
+      .onConflictDoUpdate({
+        target: discord
+          ? users.discordId
+          : users.id,
+        set: {
+          name: discord ? j.global_name ?? j.username : "no name",
+        },
+      })
+      .returning({
+        id: users.id,
+      })
+  )[0];
+
+  const user = (await db.query.users.findFirst({
+    where: eq(users.id, id),
+    columns: {
       id: true,
       name: true,
       firstSubscribed: true,
       subscribedSince: true,
+    },
+    with: {
       discordUser: {
-        select: {
+        columns: {
           id: true,
           name: true,
           globalName: true,
@@ -60,14 +80,15 @@ export const writeOauthUser = async ({
         },
       },
     },
-  });
-  return doubleDecode<typeof user>(user);
+  }))!;
+
+  return doubleDecode(user);
 };
 
 export type User = SerializeFrom<typeof writeOauthUser>;
 
-export const getUserId = async (request: Request) => {
-  const session = await getSession(request.headers.get("Cookie"));
+export const getUserId = async (request: Request, context: Context) => {
+  const session = await getSessionStorage(context).getSession(request.headers.get("Cookie"));
   const userId = session.get("user")?.id;
   if (!userId || typeof userId !== "number") {
     return null;
@@ -77,17 +98,20 @@ export const getUserId = async (request: Request) => {
 
 export async function getUser(
   request: Request,
+  context: Context,
   throwIfNull?: false
 ): Promise<User | null>;
 export async function getUser(
   request: Request,
+  context: Context,
   throwIfNull?: true
 ): Promise<User>;
 export async function getUser(
   request: Request,
+  context: Context,
   throwIfNull?: boolean
 ): Promise<User | null> {
-  const userId = await getUserId(request);
+  const userId = await getUserId(request, context);
   if (!userId) {
     if (throwIfNull) {
       throw json({ message: "Must be logged in." }, 401);
@@ -96,15 +120,18 @@ export async function getUser(
     }
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
+  const db = getDb(context.env.D1);
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: {
       id: true,
       name: true,
       firstSubscribed: true,
       subscribedSince: true,
+    },
+    with: {
       discordUser: {
-        select: {
+        columns: {
           id: true,
           name: true,
           globalName: true,

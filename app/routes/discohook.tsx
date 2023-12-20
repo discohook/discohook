@@ -1,4 +1,3 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, MetaFunction, useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -8,9 +7,10 @@ import { Prose } from "~/components/Prose";
 import { Twemoji } from "~/components/Twemoji";
 import { MessageComponents } from "~/components/preview/Components";
 import { getUser } from "~/session.server";
+import { LoaderArgs } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
 
-export const loader = ({ request }: LoaderFunctionArgs) => getUser(request);
+export const loader = ({ request, context }: LoaderArgs) => getUser(request, context);
 
 export const meta: MetaFunction = () => [
   { title: "About Discohook & Discohook Utils - Boogiehook" },
@@ -25,8 +25,7 @@ export default function Legal() {
       <Prose>
         <InfoBox>
           <Twemoji
-            emoji="1f44b"
-            size={16}
+            emoji="👋"
             className="inline-block align-sub mr-1"
           />{" "}
           Hello there. If you were redirected from dutils.shay.cat, please read

@@ -13,7 +13,6 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
-import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -23,7 +22,7 @@ import { PopoutEmojiPicker } from "../EmojiPicker";
 import { InfoBox } from "../InfoBox";
 import { selectStrings } from "../StringSelect";
 import { TextInput } from "../TextInput";
-import { CUSTOM_EMOJI_RE, EMOJI_NAME_RE } from "../preview/Markdown";
+import { CUSTOM_EMOJI_RE } from "../preview/Markdown";
 
 export const getComponentText = (
   component: APIMessageComponent
@@ -31,8 +30,8 @@ export const getComponentText = (
   component.type === ComponentType.Button
     ? component.label ?? component.emoji?.name
     : component.type === ComponentType.StringSelect
-    ? component.placeholder
-    : undefined;
+      ? component.placeholder
+      : undefined;
 
 export const getComponentWidth = (component: {
   type: ComponentType;
@@ -70,19 +69,17 @@ export const getRowWidth = (
   );
 };
 
-const strings = new LocalizedStrings({
-  en: {
-    rowEmpty: "Must contain at least one component (button/select)",
-    labelEmpty: "Must have a label or emoji, or both",
-    urlEmpty: "Link button must have a URL",
-    optionsEmpty: "Must contain at least one select option",
-  },
-});
+const strings = {
+  rowEmpty: "Must contain at least one component (button/select)",
+  labelEmpty: "Must have a label or emoji, or both",
+  urlEmpty: "Link button must have a URL",
+  optionsEmpty: "Must contain at least one select option",
+};
 
 export const getComponentErrors = (
   component: APIMessageComponent
 ): string[] => {
-  let errors: string[] = [];
+  const errors: string[] = [];
   switch (component.type) {
     case ComponentType.ActionRow:
       if (component.components.length === 0) {
@@ -104,6 +101,7 @@ export const getComponentErrors = (
       if (component.options.length === 0) {
         errors.push(strings.optionsEmpty);
       }
+      break;
     default:
       break;
   }
@@ -118,6 +116,7 @@ export const ActionRowEditor: React.FC<{
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   open?: boolean;
 }> = ({ message, row, rowIndex: i, data, setData, open }) => {
+  const mi = data.messages.indexOf(message);
   const errors = getComponentErrors(row);
   return (
     <details className="group/action-row" open={open}>
@@ -181,7 +180,7 @@ export const ActionRowEditor: React.FC<{
       <div className="ml-1 md:ml-2">
         {row.components.map((component, ci) => (
           <IndividualComponentEditor
-            key={`edit-message-${i}-row-${i}-component-${component.type}-${ci}`}
+            key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}`}
             component={component}
             index={ci}
             row={row}
@@ -298,6 +297,7 @@ export const ActionRowEditor: React.FC<{
                       <div className="pt-2 -mb-2">
                         {component.options.map((option, oi) => (
                           <SelectMenuOptionsSection
+                            key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}-option-${oi}`}
                             option={option}
                             index={oi}
                             component={component}
@@ -334,8 +334,8 @@ export const ActionRowEditor: React.FC<{
                               value={
                                 option.emoji?.id
                                   ? `<${option.emoji.animated ? "a" : ""}:${
-                                      option.emoji.name
-                                    }:${option.emoji.id}>`
+                                    option.emoji.name
+                                  }:${option.emoji.id}>`
                                   : option.emoji?.name ?? ""
                               }
                               onInput={(e) => {
@@ -346,8 +346,8 @@ export const ActionRowEditor: React.FC<{
                                   return;
                                 }
                                 const customMatch =
-                                    value.match(CUSTOM_EMOJI_RE),
-                                  stockMatch = value.match(EMOJI_NAME_RE);
+                                  value.match(CUSTOM_EMOJI_RE);
+                                // stockMatch = value.match(EMOJI_NAME_RE);
                                 if (customMatch) {
                                   option.emoji = {
                                     id: customMatch[3],
@@ -557,12 +557,12 @@ export const IndividualComponentEditor: React.FC<
               {(component.type === ComponentType.UserSelect
                 ? "User"
                 : component.type === ComponentType.RoleSelect
-                ? "Role"
-                : component.type === ComponentType.MentionableSelect
-                ? "User & Role"
-                : component.type === ComponentType.ChannelSelect
-                ? "Channel"
-                : "") + " "}
+                  ? "Role"
+                  : component.type === ComponentType.MentionableSelect
+                    ? "User & Role"
+                    : component.type === ComponentType.ChannelSelect
+                      ? "Channel"
+                      : "") + " "}
               Select Menu
             </>
           )}

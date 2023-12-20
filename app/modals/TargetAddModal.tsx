@@ -1,26 +1,23 @@
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { ReactNode, useEffect, useState } from "react";
-import LocalizedStrings from "react-localization";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
 import { WEBHOOK_URL_RE } from "~/util/constants";
-import { cdn, getSnowflakeDate, getWebhook } from "~/util/discord";
+import { cdn, getWebhook } from "~/util/discord";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    title: "Add Target",
-    webhookUrl: "Webhook URL",
-    invalidWebhookUrl:
-      "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
-    createdAtBy: "Created {0} by {1}",
-    someone: "someone",
-    channelId: "Channel ID: {0}",
-    guildId: "Server ID: {0}",
-    addWebhook: "Add Webhook",
-    createWebhook: "Create Webhook",
-  },
-});
+const strings = {
+  title: "Add Target",
+  webhookUrl: "Webhook URL",
+  invalidWebhookUrl:
+    "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
+  createdAtBy: "Created {0} by {1}",
+  someone: "someone",
+  channelId: "Channel ID: {0}",
+  guildId: "Server ID: {0}",
+  addWebhook: "Add Webhook",
+  createWebhook: "Create Webhook",
+};
 
 export const TargetAddModal = (
   props: ModalProps & {
@@ -98,36 +95,38 @@ export const TargetAddModal = (
             <>
               <p className="font-bold text-xl">{webhook.name}</p>
               <p>
-                {strings.formatString(
+                {/*strings.formatString(
                   strings.createdAtBy,
                   getSnowflakeDate(webhook.id).toLocaleDateString(),
                   webhook?.user ? webhook.user.username : strings.someone
-                )}
+                )*/}
               </p>
               <hr className="border border-gray-400 dark:border-gray-600 my-2" />
               <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
-                {strings.formatString(
+                {/*strings.formatString(
                   strings.channelId,
                   <a
                     className="hover:underline"
                     href={`https://discord.com/channels/${webhook.guild_id}/${webhook.channel_id}`}
                     target="_blank"
+                    rel="noreferrer"
                   >
                     {webhook.channel_id}
                   </a>
-                )}
+                )*/}
               </p>
               <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
-                {strings.formatString(
+                {/*strings.formatString(
                   strings.guildId,
                   <a
                     className="hover:underline"
                     href={`https://discord.com/channels/${webhook.guild_id}`}
                     target="_blank"
+                    rel="noreferrer"
                   >
                     {webhook.guild_id}
                   </a>
-                )}
+                )*/}
               </p>
             </>
           ) : (

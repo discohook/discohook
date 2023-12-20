@@ -142,12 +142,12 @@ export const MessageSetModal = (
             {Object.keys(targets).length > 0 &&
               messageLink &&
               messageLink[0] && (
-                <p>
+              <p>
                   You haven't added any webhooks that match the message link you
                   provided. To overwrite or edit, you will need to add the
                   correct webhook.
-                </p>
-              )}
+              </p>
+            )}
             <Button onClick={() => setAddingTarget(true)}>Add Webhook</Button>
           </div>
         )}

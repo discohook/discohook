@@ -1,5 +1,4 @@
 import { APIWebhook } from "discord-api-types/v10";
-import LocalizedStrings from "react-localization";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
@@ -9,12 +8,10 @@ import { AuthorType, getAuthorType } from "../preview/Message";
 import { ActionRowEditor } from "./ComponentEditor";
 import { EmbedEditor, getEmbedLength, getEmbedText } from "./EmbedEditor";
 
-const strings = new LocalizedStrings({
-  en: {
-    embedsTooLarge:
-      "Embeds must contain at most 6000 characters total (currently {0} too many)",
-  },
-});
+const strings = {
+  embedsTooLarge:
+    "Embeds must contain at most 6000 characters total (currently {0} too many)",
+};
 
 export const getMessageText = (
   message: QueryData["messages"][number]["data"]
@@ -123,10 +120,11 @@ export const MessageEditor: React.FC<{
             {embedsLength > 6000 && (
               <div className="-mb-2">
                 <InfoBox severity="red" icon="Circle_Warning">
-                  {strings.formatString(
+                  {strings.embedsTooLarge}
+                  {/*strings.formatString(
                     strings.embedsTooLarge,
                     embedsLength - 6000
-                  )}
+                  )*/}
                 </InfoBox>
               </div>
             )}

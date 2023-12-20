@@ -1,35 +1,6 @@
-import LocalizedStrings from "react-localization";
-import Select, {
-  ActionMeta,
-  ClassNamesConfig,
-  GroupBase,
-  OptionsOrGroups,
-} from "react-select";
-import { SelectComponents } from "react-select/dist/declarations/src/components";
+import Select, { ClassNamesConfig, GroupBase, Props } from "react-select";
 
-export interface TextSelectProps {
-  label?: string;
-  name: string;
-  options: OptionsOrGroups<unknown, GroupBase<unknown>>;
-  components?: Partial<SelectComponents<unknown, boolean, GroupBase<unknown>>>;
-  classNames?: ClassNamesConfig<unknown, boolean, GroupBase<unknown>>;
-  isClearable?: boolean;
-  isSearchable?: boolean;
-  isMulti?: boolean;
-  isDisabled?: boolean;
-  backspaceRemovesValue?: boolean;
-  controlShouldRenderValue?: boolean;
-  hideSelectedOptions?: boolean;
-  tabSelectsValue?: boolean;
-  defaultInputValue?: string;
-  defaultMenuIsOpen?: boolean
-  menuIsOpen?: boolean;
-  value?: unknown;
-  defaultValue?: unknown;
-  required?: boolean;
-  placeholder?: string;
-  onChange?: (newValue: unknown, actionMeta: ActionMeta<unknown>) => void;
-}
+export type StringSelectProps = Props & { label?: string };
 
 export const selectClassNames: ClassNamesConfig<
   unknown,
@@ -46,42 +17,39 @@ export const selectClassNames: ClassNamesConfig<
     "!rounded dark:!bg-[#2b2d31] dark:hover:!bg-[#36373d] !font-semibold !text-sm",
 };
 
-export const selectStrings = new LocalizedStrings({
-  en: {
-    defaultPlaceholder: "Make a selection",
-  },
-  de: {
-    defaultPlaceholder: "Triff eine Auswahl",
-  },
-  fr: {
-    defaultPlaceholder: "Fais un choix",
-  },
-  it: {
-    defaultPlaceholder: "Seleziona",
-  },
-  es: {
-    defaultPlaceholder: "Haz una selección",
-  },
-  se: {
-    defaultPlaceholder: "Gör ett val",
-  },
-  ne: {
-    defaultPlaceholder: "Maak een selectie",
-  },
-});
-
-export const StringSelect: React.FC<TextSelectProps> = (props) => {
-  return (
-    <label className="block">
-      {props.label && <p className="text-sm">{props.label}</p>}
-      <Select
-        {...props}
-        placeholder={props.placeholder ?? selectStrings.defaultPlaceholder}
-        classNames={{
-          ...selectClassNames,
-          ...(props.classNames ?? {}),
-        }}
-      />
-    </label>
-  );
+export const selectStrings = {
+  defaultPlaceholder: "Make a selection",
 };
+//   de: {
+//     defaultPlaceholder: "Triff eine Auswahl",
+//   },
+//   fr: {
+//     defaultPlaceholder: "Fais un choix",
+//   },
+//   it: {
+//     defaultPlaceholder: "Seleziona",
+//   },
+//   es: {
+//     defaultPlaceholder: "Haz una selección",
+//   },
+//   se: {
+//     defaultPlaceholder: "Gör ett val",
+//   },
+//   ne: {
+//     defaultPlaceholder: "Maak een selectie",
+//   },
+// });
+
+export const StringSelect: React.FC<StringSelectProps> = (props) => (
+  <label className="block">
+    {props.label && <p className="text-sm">{props.label}</p>}
+    <Select
+      {...props}
+      placeholder={props.placeholder ?? selectStrings.defaultPlaceholder}
+      classNames={{
+        ...selectClassNames,
+        ...(props.classNames ?? {}),
+      }}
+    />
+  </label>
+);

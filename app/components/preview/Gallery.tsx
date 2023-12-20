@@ -195,12 +195,12 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
           i === 0
             ? "rounded-tl-lg"
             : i === 2
-            ? "rounded-tr-lg"
-            : i === 3
-            ? "rounded-bl-lg"
-            : i === 5
-            ? "rounded-br-lg"
-            : "";
+              ? "rounded-tr-lg"
+              : i === 3
+                ? "rounded-bl-lg"
+                : i === 5
+                  ? "rounded-br-lg"
+                  : "";
         return (
           <GalleryItem
             key={`gallery-attachment-${i}`}
@@ -278,12 +278,12 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
           i === 0
             ? "rounded-tl-lg"
             : i === 2
-            ? "rounded-tr-lg"
-            : i === 6
-            ? "rounded-bl-lg"
-            : i === 8
-            ? "rounded-br-lg"
-            : "";
+              ? "rounded-tr-lg"
+              : i === 6
+                ? "rounded-bl-lg"
+                : i === 8
+                  ? "rounded-br-lg"
+                  : "";
         return (
           <GalleryItem
             key={`gallery-attachment-${i}`}

@@ -1,5 +1,7 @@
+import type { LinksFunction, MetaFunction } from "@remix-run/cloudflare";
 import { cssBundleHref } from "@remix-run/css-bundle";
-import type { LinksFunction } from "@remix-run/node";
+import styles from "../styles/app.css";
+import icons from "./styles/coolicons.css";
 import {
   Links,
   LiveReload,
@@ -8,20 +10,28 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import styles from "./styles/app.css";
-import icons from "./styles/coolicons.css";
 
-export const links: LinksFunction = () => {
-  const bundleStyles = cssBundleHref
-    ? [{ rel: "stylesheet", href: cssBundleHref }]
-    : [];
+export const meta: MetaFunction = () => {
   return [
-    ...bundleStyles,
-    { rel: "stylesheet", href: styles },
-    { rel: "stylesheet", href: icons },
-    { rel: "manifest", href: "manifest.json" },
+    { title: "Boogiehook" },
+    {
+      name: "description",
+      content:
+        "Free, intuitive interface for creating webhook messages in your Discord server.",
+    },
+    {
+      property: "og:image",
+      content: "logos/boogiehook_512w.png",
+    },
   ];
 };
+
+export const links: LinksFunction = () => [
+  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
+  { rel: "stylesheet", href: styles },
+  { rel: "stylesheet", href: icons },
+  { rel: "manifest", href: "manifest.json" },
+];
 
 export default function App() {
   return (

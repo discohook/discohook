@@ -1,7 +1,8 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { discordWebhookAuth } from "~/auth-discord-webhook.server";
+import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
+import { LoaderArgs } from "~/util/loader";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, context }: LoaderArgs) => {
+  const discordWebhookAuth = getDiscordWebhookAuth(context);
   const webhook = await discordWebhookAuth.authenticate("discord", request);
   if (webhook) {
     discordWebhookAuth.logout(request, { redirectTo: "/auth/discord-webhook" });

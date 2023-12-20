@@ -1,21 +1,25 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
+import { json } from "@remix-run/cloudflare";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
-import { prisma } from "~/prisma.server";
+import { getDb } from "~/db/index.server";
+import { backups } from "~/db/schema.server";
 import { doubleDecode, getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
+import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { jsonAsString } from "~/util/zod";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const user = await getUser(request, true);
+export const loader = async ({ request, params, context }: LoaderArgs) => {
+  const user = await getUser(request, context, true);
   const { id } = zx.parseParams(params, { id: zx.NumAsString });
   const { data: returnData } = zx.parseQuery(request, {
     data: z.optional(zx.BoolAsString),
   });
 
-  const backup = await prisma.backup.findUnique({
-    where: { id },
-    select: {
+  const db = getDb(context.env.D1);
+  const backup = await db.query.backups.findFirst({
+    where: eq(backups.id, id),
+    columns: {
       id: true,
       name: true,
       data: returnData,
@@ -32,12 +36,12 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
   return {
     ...backup,
-    data: returnData ? doubleDecode<QueryData>(backup.data) : null,
+    data: "data" in backup ? doubleDecode<QueryData>(backup.data) : null,
   };
 };
 
-export const action = async ({ request, params }: ActionFunctionArgs) => {
-  const user = await getUser(request, true);
+export const action = async ({ request, params, context }: ActionArgs) => {
+  const user = await getUser(request, context, true);
   const { id } = zx.parseParams(params, { id: zx.NumAsString });
   const { name, data } = await zx.parseForm(request, {
     name: z
@@ -46,9 +50,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     data: z.optional(jsonAsString(ZodQueryData)),
   });
 
-  const backup = await prisma.backup.findUnique({
-    where: { id },
-    select: {
+  const db = getDb(context.env.D1);
+  const backup = await db.query.backups.findFirst({
+    where: eq(backups.id, id),
+    columns: {
       ownerId: true,
     },
   });
@@ -59,14 +64,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     );
   }
 
-  return await prisma.backup.update({
-    where: { id },
-    data: { name, data },
-    select: {
-      id: true,
-      name: true,
-      ownerId: true,
-      updatedAt: true,
-    },
-  });
+  return (await db
+    .update(backups)
+    .set({ name, data })
+    .where(eq(backups.id, id))
+    .returning({
+      id: backups.id,
+      name: backups.name,
+      ownerId: backups.ownerId,
+      updatedAt: backups.updatedAt,
+    }))[0];
 };

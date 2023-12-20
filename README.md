@@ -1,25 +1,37 @@
-# Boogiehook
+# Welcome to Remix!
 
-The spiritual successor to [Discohook](https://github.com/discohook).
+- [Remix Docs](https://remix.run/docs)
 
-## Feature comparison
+## Development
 
-| Feature                   | Boogiehook                                       | Discohook                                               |
-| ------------------------- | ------------------------------------------------ | ------------------------------------------------------- |
-| MD: headers               | ✅                                               | ❌                                                      |
-| MD: lists                 | ✅                                               | ❌                                                      |
-| MD: timestamps            | ✅                                               | ❌                                                      |
-| MD: mention infill        | ⌛                                               | ✅ [with extension](https://dutils.shay.cat/extension)  |
-| MD: message links         | ✅                                               | ❌                                                      |
-| Mobile-specific preview   | ⌛                                               | ❌                                                      |
-| Load messages             | ✅                                               | ✅                                                      |
-| Multiple targets          | ✅                                               | ✅                                                      |
-| Guilded webhooks          | ✅ [with utils bot](https://dutils.shay.cat/bot) | ✅ [with utils bot](https://dutils.shay.cat/bot)        |
-| Backups                   | ✅ stored in the cloud                           | ✅ stored in-browser                                    |
-| Scheduled messages        | ⌛                                               | ✅ [with utils site](https://dutils.shay.cat/scheduler) |
-| Message logs              | ✅                                               | ❌                                                      |
-| Editor history            | ✅                                               | ❌                                                      |
-| Edit & preview components | ✅                                               | ❌                                                      |
-| Custom bot commands       | ❌                                               | ❌                                                      |
-| Languages supported       | English (full), others (partial)                 | English (full)                                          |
-| Reorder messages          | ✅                                               | ❌                                                      |
+You will be running two processes during development:
+
+- The Miniflare server (miniflare is a local environment for Cloudflare Workers)
+- The Remix development server
+
+Both are started with one command:
+
+```sh
+npm run dev
+```
+
+Open up [http://127.0.0.1:8787](http://127.0.0.1:8787) and you should be ready to go!
+
+If you want to check the production build, you can stop the dev server and run following commands:
+
+```sh
+npm run build
+npm start
+```
+
+Then refresh the same URL in your browser (no live reload for production builds).
+
+## Deployment
+
+If you don't already have an account, then [create a cloudflare account here](https://dash.cloudflare.com/sign-up) and after verifying your email address with Cloudflare, go to your dashboard and set up your free custom Cloudflare Workers subdomain.
+
+Once that's done, you should be able to deploy your app:
+
+```sh
+npm run deploy
+```

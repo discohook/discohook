@@ -1,6 +1,5 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer } from "react";
-import LocalizedStrings from "react-localization";
 import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
@@ -11,20 +10,19 @@ import { cdn, modifyWebhook } from "~/util/discord";
 import { getUserTag } from "~/util/users";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = new LocalizedStrings({
-  en: {
-    title: "Edit Webhook",
-    name: "Name",
-    channel: "Channel",
-    cannotChangeChannel: "Webhook channel must be set inside Discord.",
-    requestedBy: "Requested on Boogiehook by {0}",
-    resetAvatar: "Remove",
-    save: "Save",
-  },
-  // fr: {
-  //   resetAvatar: "Supprimer",
-  // },
-});
+const strings = {
+  title: "Edit Webhook",
+  name: "Name",
+  channel: "Channel",
+  cannotChangeChannel: "Webhook channel must be set inside Discord.",
+  requestedBy: "Requested on Boogiehook by {0}",
+  resetAvatar: "Remove",
+  save: "Save",
+};
+// fr: {
+//   resetAvatar: "Supprimer",
+// },
+// });
 
 export const WebhookEditModal = (
   props: ModalProps & {
@@ -78,15 +76,16 @@ export const WebhookEditModal = (
                 payload.avatarUrl === null
                   ? null
                   : !parsed.data.avatar
-                  ? undefined
-                  : parsed.data.avatar,
+                    ? undefined
+                    : parsed.data.avatar,
             },
-            strings
-              .formatString(
-                strings.requestedBy,
-                user ? getUserTag(user) : "anonymous"
-              )
-              .toString()
+            user ? getUserTag(user) : "anonymous"
+            // strings
+            //   .formatString(
+            //     strings.requestedBy,
+            //     user ? getUserTag(user) : "anonymous"
+            //   )
+            //   .toString()
           );
           updateTargets({ [webhook.id]: result });
         }}
@@ -115,7 +114,7 @@ export const WebhookEditModal = (
                   reader.onload = (e) => {
                     const result = e.target!.result as string;
                     document.querySelector<HTMLInputElement>(
-                      'input[name="avatar"]'
+                      "input[name=\"avatar\"]"
                     )!.value = result;
                     updatePayload({ avatarUrl: result });
                   };
@@ -142,7 +141,7 @@ export const WebhookEditModal = (
                   onClick={() => {
                     updatePayload({ avatarUrl: null });
                     const input = document.querySelector<HTMLInputElement>(
-                      'input[name="avatar"]'
+                      "input[name=\"avatar\"]"
                     );
                     if (input) input.value = "";
                   }}

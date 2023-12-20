@@ -1,30 +1,8 @@
-import type {
-  LoaderFunctionArgs,
-  MetaFunction,
-  SerializeFrom,
-} from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
-import LocalizedStrings from "react-localization";
 import { zx } from "zodix";
-import { Button } from "~/components/Button";
-import { CoolIcon } from "~/components/CoolIcon";
-import { Header } from "~/components/Header";
-import { InfoBox } from "~/components/InfoBox";
-import { MessageEditor } from "~/components/editor/MessageEditor";
-import { Message } from "~/components/preview/Message";
-import { AuthFailureModal } from "~/modals/AuthFaillureModal";
-import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
-import { ExampleModal } from "~/modals/ExampleModal";
-import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
-import { MessageSaveModal } from "~/modals/MessageSaveModal";
-import { MessageSendModal } from "~/modals/MessageSendModal";
-import { MessageSetModal } from "~/modals/MessageSetModal";
-import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
-import { TargetAddModal } from "~/modals/TargetAddModal";
-import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import {
@@ -33,31 +11,32 @@ import {
   WEBHOOK_URL_RE,
 } from "~/util/constants";
 import { cdn, getWebhook } from "~/util/discord";
+import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
-import { loader as getShareLoader } from "../routes/api.share.$shareId";
+import { CoolIcon } from "~/components/CoolIcon";
+import { Button } from "~/components/Button";
+import { Message } from "~/components/preview/Message";
+import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
+import { ExampleModal } from "~/modals/ExampleModal";
+import { MessageSetModal } from "~/modals/MessageSetModal";
+import { MessageSendModal } from "~/modals/MessageSendModal";
+import { WebhookEditModal } from "~/modals/WebhookEditModal";
+import { MessageSaveModal } from "~/modals/MessageSaveModal";
+import { Header } from "~/components/Header";
+import { InfoBox } from "~/components/InfoBox";
+import { MessageEditor } from "~/components/editor/MessageEditor";
+import { AuthFailureModal } from "~/modals/AuthFaillureModal";
+import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
+import { HistoryModal } from "~/modals/HistoryModal";
+import { TargetAddModal } from "~/modals/TargetAddModal";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await getUser(request);
+export const loader = async ({ request, context }: LoaderArgs) => {
+  const user = await getUser(request, context);
   return {
     user,
-    discordApplicationId: process.env.DISCORD_CLIENT_ID!,
+    discordApplicationId: context.env.DISCORD_CLIENT_ID,
   };
-};
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Boogiehook" },
-    {
-      name: "description",
-      content:
-        "Free, intuitive interface for creating webhook messages in your Discord server.",
-    },
-    {
-      property: "og:image",
-      content: "logos/boogiehook_512w.png",
-    },
-  ];
 };
 
 export interface HistoryItem {
@@ -66,24 +45,23 @@ export interface HistoryItem {
   data: QueryData;
 }
 
-const strings = new LocalizedStrings({
-  en: {
-    editor: "Editor",
-    preview: "Preview",
-    send: "Send",
-    saveMessage: "Save Message",
-    addWebhook: "Add Webhook",
-    addMessage: "Add Message",
-    embedExample: "Embed Example",
-    previewInfo: "Preview Info",
-    history: "History",
-    editingBackup:
-      'You\'re editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the "Save Message" button.',
-  },
-  fr: {
-    embedExample: "Exemple",
-  },
-});
+const strings = {
+  editor: "Editor",
+  preview: "Preview",
+  send: "Send",
+  saveMessage: "Save Message",
+  addWebhook: "Add Webhook",
+  addMessage: "Add Message",
+  embedExample: "Embed Example",
+  previewInfo: "Preview Info",
+  history: "History",
+  editingBackup:
+    'You\'re editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the "Save Message" button.',
+};
+//   fr: {
+//     embedExample: "Exemple",
+//   },
+// });
 
 export default function Index() {
   const { user, discordApplicationId } = useLoaderData<typeof loader>();
@@ -105,9 +83,7 @@ export default function Index() {
     if (shareId) {
       fetch(`/api/share/${shareId}`, { method: "GET" }).then((r) => {
         if (r.status === 200) {
-          r.json().then((d: SerializeFrom<typeof getShareLoader>) =>
-            setData(d.data)
-          );
+          r.json().then((d: any) => setData(d.data));
         }
       });
     } else if (backupIdParsed.success) {
@@ -116,7 +92,7 @@ export default function Index() {
       }).then((r) => {
         if (r.status === 200) {
           setBackupId(backupIdParsed.data);
-          r.json().then((d) =>
+          r.json().then((d: any) =>
             setData({ ...d.data, backup_id: backupIdParsed.data })
           );
         }

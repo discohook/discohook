@@ -9,3 +9,4 @@ build/
 .cache/
 app/styles/app.css
 yarn-error.log
+wrangler.toml

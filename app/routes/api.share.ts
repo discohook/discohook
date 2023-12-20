@@ -1,10 +1,10 @@
-import { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { zx } from "zodix";
-import { prisma } from "~/prisma.server";
-import { redis } from "~/redis.server";
+import { getDb } from "~/db/index.server";
+import { shareLinks } from "~/db/schema.server";
 import { getUser } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
+import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { jsonAsString } from "~/util/zod";
 
@@ -17,20 +17,22 @@ export interface ShortenedData {
 }
 
 export const generateUniqueShortenKey = async (
+  kv: KVNamespace,
   defaultLength: number,
   tries = 10
 ): Promise<{ id: string; key: string }> => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const _ of Array(tries)) {
     const id = randomString(defaultLength);
     const key = `boogiehook-shorten-${id}`;
-    if (!(await redis.exists(key))) {
+    if (!(await kv.get(key))) {
       return { id, key };
     }
   }
-  return await generateUniqueShortenKey(defaultLength + 1);
+  return await generateUniqueShortenKey(kv, defaultLength + 1);
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, context }: ActionArgs) => {
   const {
     data,
     ttl: ttl_,
@@ -44,7 +46,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     origin: z.optional(z.enum(ALLOWED_EXTERNAL_ORIGINS)),
   });
 
-  const user = await getUser(request);
+  const user = await getUser(request, context);
 
   const ttl = ttl_ ?? 604800000;
   const expires = new Date(new Date().getTime() + ttl);
@@ -58,18 +60,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     userId: user?.id,
   };
 
-  const { id, key } = await generateUniqueShortenKey(8);
-  await redis.set(key, JSON.stringify(shortened), {
-    EX: ttl / 1000,
-  });
+  const db = getDb(context.env.D1),
+    kv = context.env.KV;
+  const { id, key } = await generateUniqueShortenKey(kv, 8);
+  await kv.put(key, JSON.stringify(shortened), { expirationTtl: ttl / 1000 });
   if (user) {
-    await prisma.shareLink.create({
-      data: {
-        userId: user.id,
-        shareId: id,
-        expiresAt: expires,
-        origin: origin_,
-      },
+    await db.insert(shareLinks).values({
+      userId: user.id,
+      shareId: id,
+      expiresAt: expires,
+      origin: origin_,
     });
   }
 

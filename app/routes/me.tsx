@@ -1,82 +1,72 @@
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  MetaFunction,
-  SerializeFrom,
-  json,
-} from "@remix-run/node";
+import { MetaFunction, SerializeFrom, json } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
+import { desc, eq } from "drizzle-orm";
 import { useState } from "react";
-import LocalizedStrings from "react-localization";
 import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
+import { getDb } from "~/db/index.server";
+import { backups as dBackups, shareLinks, users } from "~/db/schema.server";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
-import { prisma } from "~/prisma.server";
-import { redis } from "~/redis.server";
 import { getUser } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
+import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { jsonAsString } from "~/util/zod";
 
-const strings = new LocalizedStrings({
-  en: {
-    yourBackups: "Your Backups",
-    noBackups: "You haven't created any backups.",
-    import: "Import",
-    version: "Version: {0}",
-    yourLinks: "Your Links",
-    noLinks: "You haven't created any share links.",
-    id: "ID: {0}",
-    contentUnavailable:
-      "Share link data is not kept after expiration. If you need to permanently store a message, use the backups feature instead.",
-    logOut: "Log Out",
-    subscribedSince: "Subscribed Since",
-    notSubscribed: "Not subscribed",
-    firstSubscribed: "First Subscribed",
-    never: "Never",
-  },
-});
+const strings = {
+  yourBackups: "Your Backups",
+  noBackups: "You haven't created any backups.",
+  import: "Import",
+  version: "Version: {0}",
+  yourLinks: "Your Links",
+  noLinks: "You haven't created any share links.",
+  id: "ID: {0}",
+  contentUnavailable:
+    "Share link data is not kept after expiration. If you need to permanently store a message, use the backups feature instead.",
+  logOut: "Log Out",
+  subscribedSince: "Subscribed Since",
+  notSubscribed: "Not subscribed",
+  firstSubscribed: "First Subscribed",
+  never: "Never",
+};
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await getUser(request, true);
+export const loader = async ({ request, context }: LoaderArgs) => {
+  const user = await getUser(request, context, true);
 
-  const { backups, shareLinks: links } = (await prisma.user.findUnique({
-    where: { id: user.id },
-    select: {
+  const db = getDb(context.env.D1);
+  const result = (await db.query.users.findFirst({
+    where: eq(users.id, user.id),
+    with: {
       backups: {
-        select: {
+        columns: {
           id: true,
           name: true,
           dataVersion: true,
           createdAt: true,
         },
-        orderBy: {
-          name: "desc",
-        },
-        take: 50,
+        orderBy: desc(dBackups.name),
+        limit: 50,
       },
       shareLinks: {
-        orderBy: {
-          expiresAt: "desc",
-        },
-        take: 50,
+        orderBy: desc(shareLinks.expiresAt),
+        limit: 50,
       },
     },
   }))!;
 
-  return { user, backups, links };
+  return { user, backups: result.backups, links: result.shareLinks };
 };
 
 export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const user = await getUser(request, true);
+export const action = async ({ request, context }: ActionArgs) => {
+  const user = await getUser(request, context, true);
   const data = await zx.parseForm(
     request,
     z.discriminatedUnion("action", [
@@ -95,10 +85,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     ])
   );
 
+  const db = getDb(context.env.D1);
   switch (data.action) {
     case "DELETE_SHARE_LINK": {
-      const link = await prisma.shareLink.findUnique({
-        where: { id: data.linkId },
+      const link = await db.query.shareLinks.findFirst({
+        where: eq(shareLinks.id, data.linkId),
       });
       if (!link) {
         throw json({ message: "No link with that ID." }, 404);
@@ -106,29 +97,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         throw json({ message: "You do not own this share link." }, 403);
       }
       const key = `boogiehook-shorten-${link.shareId}`;
-      await redis.del(key);
-      await prisma.shareLink.delete({
-        where: { id: data.linkId },
-      });
+      await context.env.KV.delete(key);
+      await db.delete(shareLinks).where(eq(shareLinks.id, data.linkId));
       return new Response(null, { status: 204 });
     }
     case "DELETE_BACKUP": {
-      const backup = await prisma.backup.findUnique({
-        where: { id: data.backupId },
+      const backup = await db.query.backups.findFirst({
+        where: eq(dBackups.id, data.backupId),
       });
       if (!backup) {
         throw json({ message: "No backup with that ID." }, 404);
       } else if (backup.ownerId !== user.id) {
         throw json({ message: "You do not own this backup." }, 403);
       }
-      await prisma.backup.delete({
-        where: { id: data.backupId },
-      });
+      await db.delete(dBackups).where(eq(dBackups.id, data.backupId));
       return new Response(null, { status: 204 });
     }
     case "IMPORT_BACKUPS": {
-      await prisma.backup.createMany({
-        data: data.backups.map((backup) => ({
+      await db.insert(dBackups).values(
+        data.backups.map((backup) => ({
           name: backup.name,
           dataVersion: "d2",
           data: {
@@ -137,9 +124,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             targets: backup.targets,
           },
           ownerId: user.id,
-        })),
-        skipDuplicates: true,
-      });
+        }))
+      );
       return new Response(null, { status: 201 });
     }
     default:
@@ -179,6 +165,7 @@ export default function Me() {
               <img
                 className="rounded-full mr-4 h-16 w-16"
                 src={getUserAvatar(user)}
+                alt={user.name}
               />
               <div className="grow my-auto">
                 <p className="text-2xl font-semibold dark:text-gray-100">
@@ -195,13 +182,13 @@ export default function Me() {
                 <p className="text-sm font-normal">
                   {user.subscribedSince
                     ? new Date(user.subscribedSince).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )
+                      undefined,
+                      {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }
+                    )
                     : strings.notSubscribed}
                 </p>
               </div>
@@ -212,13 +199,13 @@ export default function Me() {
                 <p className="text-sm font-normal">
                   {user.firstSubscribed
                     ? new Date(user.firstSubscribed).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )
+                      undefined,
+                      {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }
+                    )
                     : strings.never}
                 </p>
               </div>
@@ -245,9 +232,7 @@ export default function Me() {
                     >
                       <div className="truncate">
                         <div className="flex max-w-full">
-                          <p className="font-medium truncate">
-                            {backup.name}
-                          </p>
+                          <p className="font-medium truncate">{backup.name}</p>
                           <button
                             className="ml-2 my-auto"
                             onClick={() => setEditingBackup(backup)}
@@ -256,10 +241,10 @@ export default function Me() {
                           </button>
                         </div>
                         <p className="text-gray-600 dark:text-gray-500 text-sm">
-                          {strings.formatString(
+                          {/*strings.formatString(
                             strings.version,
                             backup.dataVersion
-                          )}
+                          )*/}
                         </p>
                       </div>
                       <div className="ml-auto pl-2 my-auto flex flex-col">
@@ -327,8 +312,8 @@ export default function Me() {
                               expires < now
                                 ? "text-rose-400"
                                 : expires.getTime() - now.getTime() <= 86400000
-                                ? "text-yellow-500 dark:text-yellow-400"
-                                : "text-gray-600 dark:text-gray-500"
+                                  ? "text-yellow-500 dark:text-yellow-400"
+                                  : "text-gray-600 dark:text-gray-500"
                             }`}
                           >
                             -{" "}
@@ -343,7 +328,7 @@ export default function Me() {
                           </span>
                         </p>
                         <p className="text-gray-600 dark:text-gray-500 text-sm">
-                          {strings.formatString(strings.id, link.shareId)}
+                          {/*strings.formatString(strings.id, link.shareId)*/}
                         </p>
                       </div>
                       <div className="ml-auto pl-2 my-auto flex flex-col">
