@@ -1,7 +1,6 @@
 // Heavily modified from https://react-select.com/advanced#experimental (Popout)
 
-import React, { ReactNode, useState } from "react";
-
+import { ReactNode, useState } from "react";
 import { Button } from "./Button";
 import { CoolIcon } from "./CoolIcon";
 import {
