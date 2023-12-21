@@ -1,10 +1,14 @@
-import emojiData, { Emoji, EmojiMartData, Skin } from "@emoji-mart/data";
+import emojiData, {
+  Category,
+  Emoji,
+  EmojiMartData,
+  Skin,
+} from "@emoji-mart/data";
 import { APIMessageComponentEmoji } from "discord-api-types/v10";
 import { memo, useState } from "react";
 import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
-import { CoolIcon } from "./CoolIcon";
 import { TextInput } from "./TextInput";
 import { Twemoji } from "./Twemoji";
 
@@ -25,6 +29,8 @@ export interface PickerProps {
 }
 
 const categoryToEmoji: Record<string, string> = {
+  favorites: "⭐",
+  recents: "🔁",
   people: "🙂",
   nature: "🍂",
   foods: "🍞",
@@ -81,6 +87,18 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
   const data = emojiData as EmojiMartData;
   const skinTone = settings.skinTone;
 
+  const categories: Category[] = [
+    {
+      id: "favorites",
+      emojis: [],
+    },
+    // {
+    //   id: "recents",
+    //   emojis: [],
+    // },
+    ...data.categories,
+  ];
+
   return (
     <div className="rounded bg-gray-300 dark:bg-gray-800 w-[385px] h-80 border border-black/5 shadow-md flex flex-col">
       <div className="p-2 shadow border-b border-b-black/5 flex">
@@ -127,22 +145,16 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
         </div>
       </div>
       <div className="flex grow h-full overflow-hidden">
-        <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full scrollbar-none space-y-1 p-1 flex flex-col">
-          <button className="block mx-auto">
-            <CoolIcon icon="Star" className="text-2xl" />
-          </button>
-          <button className="block mx-auto">
-            <CoolIcon icon="Clock" className="text-2xl" />
-          </button>
-          <div className=" contents">
-            {data.categories.map((category) => (
+        <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full scrollbar-none space-y-1 p-1 py-2 flex flex-col">
+          {categories
+            .filter((c) => c.emojis.length > 0)
+            .map((category) => (
               <CategoryIconButton
                 key={`emoji-category-${category.id}-icon`}
                 categoryId={category.id}
                 id={id}
               />
             ))}
-          </div>
         </div>
         <div className="overflow-y-auto flex flex-col grow select-none">
           <div className="grow px-1.5 pb-1">
@@ -168,42 +180,44 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
                       />
                     );
                   })
-              : data.categories.map((category) => (
-                  <div
-                    key={`emoji-category-${category.id}-body`}
-                    className="pt-3 first:pt-1"
-                  >
+              : categories
+                  .filter((c) => c.emojis.length > 0)
+                  .map((category) => (
                     <div
-                      id={`${id}-${category.id}`}
-                      className="uppercase text-xs font-semibold pt-1 mb-1 flex"
+                      key={`emoji-category-${category.id}-body`}
+                      className="pt-3 first:pt-1"
                     >
-                      <Twemoji
-                        emoji={categoryToEmoji[category.id]}
-                        className="my-auto mr-1.5 grayscale"
-                      />
-                      <p className="my-auto">{category.id}</p>
-                    </div>
-                    <div className="flex gap-px flex-wrap">
-                      {category.emojis.map((name) => {
-                        const emoji = data.emojis[name];
-                        const skin =
-                          emoji.skins[
-                            skinTone === undefined ? 0 : skinTone + 1
-                          ] ?? emoji.skins[0];
-                        const selected: SelectedEmoji = { ...emoji, skin };
+                      <div
+                        id={`${id}-${category.id}`}
+                        className="uppercase text-xs font-semibold pt-1 mb-1 ml-1 flex"
+                      >
+                        <Twemoji
+                          emoji={categoryToEmoji[category.id]}
+                          className="my-auto mr-1.5 grayscale"
+                        />
+                        <p className="my-auto">{category.id}</p>
+                      </div>
+                      <div className="flex gap-px flex-wrap">
+                        {category.emojis.map((name) => {
+                          const emoji = data.emojis[name];
+                          const skin =
+                            emoji.skins[
+                              skinTone === undefined ? 0 : skinTone + 1
+                            ] ?? emoji.skins[0];
+                          const selected: SelectedEmoji = { ...emoji, skin };
 
-                        return (
-                          <GridEmoji
-                            key={`emoji-category-${category.id}-emoji-${emoji.id}`}
-                            emoji={selected}
-                            onEmojiClick={onEmojiClick}
-                            setHoverEmoji={setHoverEmoji}
-                          />
-                        );
-                      })}
+                          return (
+                            <GridEmoji
+                              key={`emoji-category-${category.id}-emoji-${emoji.id}`}
+                              emoji={selected}
+                              onEmojiClick={onEmojiClick}
+                              setHoverEmoji={setHoverEmoji}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
           </div>
           {hoverEmoji && (
             <div className="sticky bottom-0 left-0 w-full bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
