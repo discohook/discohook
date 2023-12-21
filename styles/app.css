@@ -42,6 +42,18 @@
   font-display: swap;
 }
 
+.scrollbar-none {
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE */
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  /* Chrome */
+  @apply w-0 h-0 bg-transparent;
+}
+
 /* react-modal opening & closing animations */
 .ReactModal__Overlay {
   opacity: 0;
