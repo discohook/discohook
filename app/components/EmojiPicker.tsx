@@ -171,14 +171,18 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
               : data.categories.map((category) => (
                   <div
                     key={`emoji-category-${category.id}-body`}
-                    id={`${id}-${category.id}`}
-                    className="pt-1"
+                    className="pt-3 first:pt-1"
                   >
-                    <p
-                      className="uppercase text-sm font-semibold"
+                    <div
+                      id={`${id}-${category.id}`}
+                      className="uppercase text-xs font-semibold pt-1 mb-1 flex"
                     >
-                      {category.id}
-                    </p>
+                      <Twemoji
+                        emoji={categoryToEmoji[category.id]}
+                        className="my-auto mr-1.5 grayscale"
+                      />
+                      <p className="my-auto">{category.id}</p>
+                    </div>
                     <div className="flex gap-px flex-wrap">
                       {category.emojis.map((name) => {
                         const emoji = data.emojis[name];
