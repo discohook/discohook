@@ -4,10 +4,10 @@
   "description": "Monorepo for boogiehook",
   "type": "module",
   "private": true,
-  "main": "src/server.ts",
   "scripts": {
     "ngrok": "ngrok http 8787",
     "dev-bot": "cd packages/bot && npm run dev",
     "dev-site": "cd packages/site && npm run dev"
-  }
+  },
+  "workspaces": ["packages/*"]
 }

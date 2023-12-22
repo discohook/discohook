@@ -1,10 +1,9 @@
 import { APIUser } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
-import { getSessionStorage, writeOauthUser } from "~/session.server";
 import { getDb } from "./db/index.server";
 import { discordUsers, makeSnowflake } from "./db/schema.server";
+import { getSessionStorage, writeOauthUser } from "./session.server";
 import { Context } from "./util/loader";
 
 export type UserAuth = {
