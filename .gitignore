@@ -4,3 +4,5 @@ coverage
 .dev.vars
 wrangler.toml
 yarn-error.log
+/.cache
+/build
