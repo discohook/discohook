@@ -3,7 +3,6 @@ import { drizzle } from "drizzle-orm/d1";
 import { Env } from "../types/env.js";
 import { PartialKVGuild } from "../util/kv.js";
 import { APIUser } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
 
 export const getDb = (db: Env['DB']) => drizzle(db, { schema });
 
