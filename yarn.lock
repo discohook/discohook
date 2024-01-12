@@ -2939,21 +2939,12 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-discord-api-methods@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/discord-api-methods/-/discord-api-methods-0.0.5.tgz#7c368e71e9d54f8e7c84da70fd9a5acf245f8323"
-  integrity sha512-qdN7I7cmEp8OXDuHJbUwCvOlpJIknAG67tJvcbua20KYYGcCgXzPIUtechGHbZHAxLayk83D3epNC2hyH6/0SQ==
-  dependencies:
-    discord-api-types "^0.37.37"
-    discord-request "1.0.0"
-    discord-snowflake "2.0.0"
-
 discord-api-types@0.37.61:
   version "0.37.61"
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.61.tgz#9dd8e58c624237e6f1b23be2d29579af268b8c5b"
   integrity sha512-o/dXNFfhBpYHpQFdT6FWzeO7pKc838QeeZ9d91CfVAtpr5XLK4B/zYxQbYgPdoMiTDvJfzcsLW5naXgmHGDNXw==
 
-discord-api-types@^0.37.37, discord-api-types@^0.37.63, discord-api-types@^0.37.66:
+discord-api-types@^0.37.63, discord-api-types@^0.37.66:
   version "0.37.66"
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.66.tgz#047d24036507aa4bd25737e2d5d0bdaa63fa83a7"
   integrity sha512-3Q+6uBODmVaPAmZZ1jYQiQBbp0hqArgSU9Y6DuYY6KW5Sdij91bwbmFnnVI5XvATRkY+Wk9KMBWFzAEwSDs+1w==
@@ -2965,20 +2956,7 @@ discord-bitflag@^1.0.1:
   dependencies:
     bitflag-js "^1.0.0"
 
-discord-error@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/discord-error/-/discord-error-3.0.1.tgz#7422306c8a9f1cd79f8bdd4a27b66b366e7f282c"
-  integrity sha512-br6wRBs8UtnPJV/hz2hv0UPw8XsOnw5GmlaYYbTsrPssM78mgEUSvCu7q2tWEGrk+MAPwBf9zxZq9U50YMKa2Q==
-
-discord-request@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/discord-request/-/discord-request-1.0.0.tgz#ea35e7708ae2164278d97c2d65c5a41559c93950"
-  integrity sha512-7i0C5w+EErYkdsI39thLMhTTvEpclRZtZWaZPDjM6yS5FRc6fc4P2u7DW94p6xD7YZ5emFWTm2+orJ7awJwRYg==
-  dependencies:
-    discord-error "3.0.1"
-    discord-snowflake "2.0.0"
-
-discord-snowflake@2.0.0, discord-snowflake@^2.0.0:
+discord-snowflake@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/discord-snowflake/-/discord-snowflake-2.0.0.tgz#49ce17d62b53e951ec33d4e4c1ec837f832bb383"
   integrity sha512-MFWier0d78ajvk1lAXUCm7wbNnY2bD7/rqvtemuhoebkBBS9AnA0OwQI7SpYqiy/01GR1raLPTsIOwWCj8Pb+w==

@@ -1,23 +1,23 @@
-import { DiscordApiClient } from "discord-api-methods";
-import { getDate, Snowflake } from "discord-snowflake";
+import { REST } from "@discordjs/rest";
 import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataIntegerOption, APIApplicationCommandInteractionDataNumberOption, APIApplicationCommandInteractionDataOption, APIApplicationCommandInteractionDataStringOption, APIApplicationCommandInteractionDataSubcommandOption, APIAttachment, APIInteraction, APIInteractionDataResolved, APIInteractionResponseCallbackData, APIInteractionResponseChannelMessageWithSource, APIInteractionResponseDeferredChannelMessageWithSource, APIInteractionResponseDeferredMessageUpdate, APIInteractionResponseUpdateMessage, APIMessage, APIMessageApplicationCommandInteraction, APIMessageComponentInteraction, APIModalInteractionResponse, APIModalInteractionResponseCallbackData, APIModalSubmitInteraction, APIPremiumRequiredInteractionResponse, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, InteractionType, ModalSubmitComponent, RESTGetAPIInteractionFollowupResult, RESTPatchAPIInteractionFollowupJSONBody, RESTPatchAPIInteractionFollowupResult, RESTPostAPIInteractionFollowupJSONBody, RESTPostAPIInteractionFollowupResult, Routes } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { Env } from "./types/env.js";
-import { APIPartialResolvedChannel } from "./types/api.js";
+import { Snowflake, getDate } from "discord-snowflake";
 import { MinimumKVComponentState } from "./components.js";
+import { APIPartialResolvedChannel } from "./types/api.js";
+import { Env } from "./types/env.js";
 
 export class InteractionContext<T extends APIInteraction, S extends MinimumKVComponentState | Record<string, any> = {}> {
-    public client: DiscordApiClient;
+    public rest: REST;
     public interaction: T;
     public followup: InteractionFollowup;
     public env: Env;
     public state: S | Record<string, any> = {};
 
-    constructor(client: DiscordApiClient, interaction: T, env: Env, state?: S) {
-      this.client = client;
+    constructor(rest: REST, interaction: T, env: Env, state?: S) {
+      this.rest = rest;
       this.interaction = interaction;
       this.env = env;
-      this.followup = new InteractionFollowup(client, interaction, env.DISCORD_APPLICATION_ID);
+      this.followup = new InteractionFollowup(rest, interaction, env.DISCORD_APPLICATION_ID);
 
       if (state) {
         this.state = state;
@@ -47,6 +47,7 @@ export class InteractionContext<T extends APIInteraction, S extends MinimumKVCom
     }
 
     get user() {
+      // biome-ignore lint/style/noNonNullAssertion: There will always be one of these
       return this.interaction.member ? this.interaction.member.user : this.interaction.user!
     }
 
@@ -266,18 +267,18 @@ export class InteractionContext<T extends APIInteraction, S extends MinimumKVCom
   }
 
 class InteractionFollowup {
-  public client: DiscordApiClient;
+  public rest: REST;
   public applicationId: string;
   public interaction: APIInteraction;
 
-  constructor(client: DiscordApiClient, interaction: APIInteraction, applicationId: string) {
-    this.client = client;
+  constructor(rest: REST, interaction: APIInteraction, applicationId: string) {
+    this.rest = rest;
     this.applicationId = applicationId;
     this.interaction = interaction;
   }
 
   send(data: string | RESTPostAPIInteractionFollowupJSONBody) {
-    return this.client.post(
+    return this.rest.post(
       Routes.webhook(this.applicationId, this.interaction.token),
       {
         body: typeof data === "string"
@@ -288,20 +289,20 @@ class InteractionFollowup {
   }
 
   getMessage(messageId: string) {
-    return this.client.get(
+    return this.rest.get(
       Routes.webhookMessage(this.applicationId, this.interaction.token, messageId),
     ) as Promise<RESTGetAPIInteractionFollowupResult>
   }
 
   editMessage(messageId: string, data: RESTPatchAPIInteractionFollowupJSONBody) {
-    return this.client.patch(
+    return this.rest.patch(
       Routes.webhookMessage(this.applicationId, this.interaction.token, messageId),
       { body: data },
     ) as Promise<RESTPatchAPIInteractionFollowupResult>
   }
 
   deleteMessage(messageId: string) {
-    return this.client.delete(
+    return this.rest.delete(
       Routes.webhookMessage(this.applicationId, this.interaction.token, messageId),
     ) as Promise<null>
   }

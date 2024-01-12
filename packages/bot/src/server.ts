@@ -1,14 +1,14 @@
-import { Router } from 'itty-router';
+import { REST } from '@discordjs/rest';
+import { APIApplicationCommandInteractionDataOption, APIInteraction, APIMessageComponentInteraction, ApplicationCommandOptionType, ApplicationCommandType, InteractionResponseType, InteractionType } from 'discord-api-types/v10';
 import { PlatformAlgorithm, isValidRequest } from 'discord-verify';
+import { Router } from 'itty-router';
 import { AppCommandCallbackT, appCommands, respond } from './commands.js';
-import { InteractionType, InteractionResponseType, APIInteraction, APIApplicationCommandInteractionDataOption, ApplicationCommandOptionType, ApplicationCommandType, APIMessageComponentInteraction } from 'discord-api-types/v10'
-import { client } from 'discord-api-methods';
-import { InteractionContext } from './interactions.js';
+import { ComponentCallbackT, ComponentRoutingId, MinimumKVComponentState, ModalRoutingId, componentStore, modalStore } from './components.js';
 import { getErrorMessage } from './errors.js';
+import { InteractionContext } from './interactions.js';
 import { Env, WorkerContext } from './types/env.js';
 import { isDiscordError } from './util/error.js';
 import { kvGet } from './util/kv.js';
-import { ComponentCallbackT, ComponentRoutingId, MinimumKVComponentState, ModalRoutingId, componentStore, modalStore } from './components.js';
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
     return new Response('Bad request signature.', { status: 401 });
   }
 
-  client.setToken(env.DISCORD_TOKEN);
+  const rest = new REST().setToken(env.DISCORD_TOKEN);
 
   if (interaction.type === InteractionType.Ping) {
     return respond({ type: InteractionResponseType.Pong });
@@ -63,7 +63,7 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
         return respond({ error: 'Cannot handle this command' });
       }
 
-      const ctx = new InteractionContext(client, interaction, env);
+      const ctx = new InteractionContext(rest, interaction, env);
       try {
         const response = await (handler as AppCommandCallbackT<APIInteraction>)(ctx);
         if (Array.isArray(response)) {
@@ -93,7 +93,7 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
       const handler = appCommand.autocompleteHandlers[qualifiedOptions.trim() || "BASE"];
       if (!handler) return noChoices;
 
-      const ctx = new InteractionContext(client, interaction, env);
+      const ctx = new InteractionContext(rest, interaction, env);
       try {
         const response = await handler(ctx);
         return respond({
@@ -122,7 +122,7 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
         return respond({ error: 'Unknown routing ID' });
       }
 
-      const ctx = new InteractionContext(client, interaction, env, state);
+      const ctx = new InteractionContext(rest, interaction, env, state);
       try {
         const response = await (stored.handler as ComponentCallbackT<APIMessageComponentInteraction>)(ctx);
         if (state.componentOnce) {
@@ -160,7 +160,7 @@ router.post('/', async (request, env: Env, workerCtx: WorkerContext) => {
         return respond({ error: 'Unknown routing ID' });
       }
 
-      const ctx = new InteractionContext(client, interaction, env, state);
+      const ctx = new InteractionContext(rest, interaction, env, state);
       try {
         const response = await stored.handler(ctx);
         if (state.componentOnce) {

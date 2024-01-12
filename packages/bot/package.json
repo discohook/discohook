@@ -25,7 +25,6 @@
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "dedent-js": "^1.0.1",
-    "discord-api-methods": "^0.0.5",
     "discord-api-types": "^0.37.63",
     "discord-bitflag": "^1.0.1",
     "discord-verify": "^1.2.0",
