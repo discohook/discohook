@@ -1,4 +1,7 @@
-import { ChannelType, RESTPostAPIGuildForumThreadsJSONBody } from "discord-api-types/v10";
+import {
+  ChannelType,
+  RESTPostAPIGuildForumThreadsJSONBody,
+} from "discord-api-types/v10";
 
 export interface Flow {
   name: string;
@@ -9,22 +12,22 @@ export enum FlowActionType {
   /** Does nothing */
   Dud = 0,
   /** Sleeps for a predefined amount of time */
-  Wait,
+  Wait = 1,
   /** Ensures that a condition is true before
    * proceeding with a block of actions */
-  Check,
+  Check = 2,
   /** Adds a role to the invoking member */
-  AddRole,
+  AddRole = 3,
   /** Removes a role from the invoking member */
-  RemoveRole,
+  RemoveRole = 4,
   /** Toggles a role for the invoking member */
-  ToggleRole,
+  ToggleRole = 5,
   /** Sends a custom message as the bot */
-  SendMessage,
+  SendMessage = 6,
   /** Sends a custom message as a webhook */
-  SendWebhookMessage,
+  SendWebhookMessage = 7,
   /** Creates a new thread */
-  CreateThread
+  CreateThread = 8,
   // /** Shows a custom modal to the user */
   // SendModal,
 }
@@ -92,7 +95,7 @@ export interface FlowActionCreateThread extends FlowActionBase {
   threadType?: ChannelType.PublicThread | ChannelType.PrivateThread;
   invitable?: boolean;
   // Forum/media only
-  message?: RESTPostAPIGuildForumThreadsJSONBody["message"]
+  message?: RESTPostAPIGuildForumThreadsJSONBody["message"];
   appliedTags?: string[];
 }
 

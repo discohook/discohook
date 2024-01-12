@@ -1,64 +1,102 @@
-import { APIButtonComponent, APIInteraction, APIMessage, APIMessageComponentEmoji, APIModalInteractionResponseCallbackData, APISelectMenuComponent, APISelectMenuDefaultValue, APISelectMenuOption, APIStringSelectComponent, APIWebhook, ButtonStyle, ComponentType, MessageFlags, Routes, SelectMenuDefaultValueType, TextInputStyle } from "discord-api-types/v10";
-import { InteractionContext } from "../../interactions.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, StringSelectMenuBuilder, TextInputBuilder, messageLink } from "@discordjs/builders";
-import { color } from "../../util/meta.js";
-import { getComponentWidth, getCustomId, getRowWidth, storeComponents } from "../../util/components.js";
-import { getDb, upsertDiscordUser, upsertGuild } from "../../db/index.js";
-import { discordMessageComponents, discordUsers, makeSnowflake, users } from "../../db/schema.js";
-import { eq } from "drizzle-orm";
-import { webhookAvatarUrl } from "../../util/cdn.js";
-import { Flow } from "../../types/components/flows.js";
-import { ButtonCallback, MinimumKVComponentState, ModalCallback, SelectMenuCallback } from "../../components.js";
-import { BUTTON_URL_RE } from "../../util/regex.js";
-import { isDiscordError } from "../../util/error.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+  ModalBuilder,
+  StringSelectMenuBuilder,
+  TextInputBuilder,
+  messageLink,
+} from "@discordjs/builders";
 import dedent from "dedent-js";
+import {
+  APIButtonComponent,
+  APIInteraction,
+  APIMessage,
+  APIMessageComponentEmoji,
+  APIModalInteractionResponseCallbackData,
+  APISelectMenuComponent,
+  APISelectMenuDefaultValue,
+  APISelectMenuOption,
+  APIStringSelectComponent,
+  APIWebhook,
+  ButtonStyle,
+  ComponentType,
+  MessageFlags,
+  Routes,
+  SelectMenuDefaultValueType,
+  TextInputStyle,
+} from "discord-api-types/v10";
+import { eq } from "drizzle-orm";
+import {
+  ButtonCallback,
+  MinimumKVComponentState,
+  ModalCallback,
+  SelectMenuCallback,
+} from "../../components.js";
+import { getDb, upsertDiscordUser, upsertGuild } from "../../db/index.js";
+import { discordMessageComponents, makeSnowflake } from "../../db/schema.js";
+import { InteractionContext } from "../../interactions.js";
+import { Flow } from "../../types/components/flows.js";
+import { webhookAvatarUrl } from "../../util/cdn.js";
+import {
+  getComponentWidth,
+  getCustomId,
+  getRowWidth,
+  storeComponents,
+} from "../../util/components.js";
+import { isDiscordError } from "../../util/error.js";
 import { getchGuild } from "../../util/kv.js";
+import { color } from "../../util/meta.js";
+import { BUTTON_URL_RE } from "../../util/regex.js";
 
 export type StorableComponent =
   | {
-    type: ComponentType.Button;
-    style:
-      | ButtonStyle.Primary
-      | ButtonStyle.Secondary
-      | ButtonStyle.Success
-      | ButtonStyle.Danger;
-    label?: string;
-    emoji?: APIMessageComponentEmoji;
-    flow: Flow;
-    disabled?: boolean;
-  } | {
-    type: ComponentType.Button;
-    style: ButtonStyle.Link;
-    label?: string;
-    emoji?: APIMessageComponentEmoji;
-    url: string;
-    disabled?: boolean;
-  } | {
-    type: ComponentType.StringSelect;
-    flows: Record<string, Flow>;
-    options: APISelectMenuOption[];
-    placeholder?: string;
-    minValues?: number;
-    maxValues?: number;
-    disabled?: boolean;
-  } | {
-    type:
-      | ComponentType.UserSelect
-      | ComponentType.RoleSelect
-      | ComponentType.MentionableSelect
-      | ComponentType.ChannelSelect;
-    flow: Flow;
-    placeholder?: string;
-    minValues?: number;
-    maxValues?: number;
-    defaultValues?: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
-    disabled?: boolean;
-  }
+      type: ComponentType.Button;
+      style:
+        | ButtonStyle.Primary
+        | ButtonStyle.Secondary
+        | ButtonStyle.Success
+        | ButtonStyle.Danger;
+      label?: string;
+      emoji?: APIMessageComponentEmoji;
+      flow: Flow;
+      disabled?: boolean;
+    }
+  | {
+      type: ComponentType.Button;
+      style: ButtonStyle.Link;
+      label?: string;
+      emoji?: APIMessageComponentEmoji;
+      url: string;
+      disabled?: boolean;
+    }
+  | {
+      type: ComponentType.StringSelect;
+      flows: Record<string, Flow>;
+      options: APISelectMenuOption[];
+      placeholder?: string;
+      minValues?: number;
+      maxValues?: number;
+      disabled?: boolean;
+    }
+  | {
+      type:
+        | ComponentType.UserSelect
+        | ComponentType.RoleSelect
+        | ComponentType.MentionableSelect
+        | ComponentType.ChannelSelect;
+      flow: Flow;
+      placeholder?: string;
+      minValues?: number;
+      maxValues?: number;
+      defaultValues?: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
+      disabled?: boolean;
+    };
 
-const buildStorableComponent = (component: StorableComponent, customId?: string):
-  | APIButtonComponent
-  | APISelectMenuComponent
-  | undefined => {
+const buildStorableComponent = (
+  component: StorableComponent,
+  customId?: string,
+): APIButtonComponent | APISelectMenuComponent | undefined => {
   switch (component.type) {
     case ComponentType.Button:
       return {
@@ -96,7 +134,7 @@ const buildStorableComponent = (component: StorableComponent, customId?: string)
     default:
       break;
   }
-}
+};
 
 interface ComponentFlow extends MinimumKVComponentState {
   step: number;
@@ -123,24 +161,33 @@ interface ComponentFlow extends MinimumKVComponentState {
 
 const getComponentFlowEmbed = (flow: ComponentFlow) => {
   const embed = new EmbedBuilder({
-    title: flow.stepTitle + (flow.totalSteps
-      ? ` - Step ${flow.step}/${flow.totalSteps} (${Math.floor((flow.step / flow.totalSteps) * 100)}%)`
-      : ""),
+    title:
+      flow.stepTitle +
+      (flow.totalSteps
+        ? ` - Step ${flow.step}/${flow.totalSteps} (${Math.floor(
+            (flow.step / flow.totalSteps) * 100,
+          )}%)`
+        : ""),
     description: flow.steps
       ? flow.steps.map((step, i) => `${i + 1}. ${step.label}`).join("\n")
       : undefined,
     color,
-  })
-    .addFields({
-      name: "Message",
-      value: messageLink(flow.message.channelId, flow.message.id, flow.message.guildId),
-    });
+  }).addFields({
+    name: "Message",
+    value: messageLink(
+      flow.message.channelId,
+      flow.message.id,
+      flow.message.guildId,
+    ),
+  });
 
   if (flow.step === 0) {
-    embed.setThumbnail(webhookAvatarUrl({
-      id: flow.message.webhookId,
-      avatar: flow.message.webhookAvatar,
-    }));
+    embed.setThumbnail(
+      webhookAvatarUrl({
+        id: flow.message.webhookId,
+        avatar: flow.message.webhookAvatar,
+      }),
+    );
   } else {
     embed.setAuthor({
       name: flow.message.webhookName.slice(0, 256) || "Webhook",
@@ -148,32 +195,38 @@ const getComponentFlowEmbed = (flow: ComponentFlow) => {
         id: flow.message.webhookId,
         avatar: flow.message.webhookAvatar,
       }),
-    })
+    });
   }
 
   return embed;
-}
+};
 
 const registerComponent = async (
   ctx: InteractionContext<APIInteraction>,
   flow: ComponentFlow,
 ) => {
+  // biome-ignore lint/style/noNonNullAssertion: It's not null
   const data = flow.component!;
 
-  const customId = data.type === ComponentType.Button && data.style === ButtonStyle.Link
-    ? undefined
-    : getCustomId(false);
+  const customId =
+    data.type === ComponentType.Button && data.style === ButtonStyle.Link
+      ? undefined
+      : getCustomId(false);
   const built = buildStorableComponent(data, customId);
   if (!built) {
     throw new Error(`Failed to built the component (type ${data.type}).`);
   }
   const requiredWidth = getComponentWidth(built);
 
-  let message;
+  let message: APIMessage | undefined = undefined;
   try {
-    message = await ctx.client.get(
-      Routes.webhookMessage(flow.message.webhookId, flow.webhookToken, flow.message.id),
-    ) as APIMessage;
+    message = (await ctx.rest.get(
+      Routes.webhookMessage(
+        flow.message.webhookId,
+        flow.webhookToken,
+        flow.message.id,
+      ),
+    )) as APIMessage;
   } catch {
     throw new Error(dedent`
       Failed to fetch the message (${flow.message.id}).
@@ -186,31 +239,42 @@ const registerComponent = async (
   //   : [new ActionRowBuilder()];
 
   const components = message.components ?? [new ActionRowBuilder().toJSON()];
-  let nextAvailableRow = components.find(c => 5 - getRowWidth(c) >= requiredWidth);
+  let nextAvailableRow = components.find(
+    (c) => 5 - getRowWidth(c) >= requiredWidth,
+  );
   if (!nextAvailableRow && components.length < 5) {
     nextAvailableRow = new ActionRowBuilder().toJSON();
     components.push(nextAvailableRow);
   } else if (!nextAvailableRow) {
-    throw new Error(`No available slots for this component (need at least ${requiredWidth}).`);
+    throw new Error(
+      `No available slots for this component (need at least ${requiredWidth}).`,
+    );
   }
   nextAvailableRow.components.push(built);
 
   const db = getDb(ctx.env.DB);
-  const returned = await db.insert(discordMessageComponents).values({
-    guildId: makeSnowflake(flow.message.guildId),
-    channelId: makeSnowflake(flow.message.channelId),
-    messageId: makeSnowflake(flow.message.id),
-    createdById: flow.user.id,
-    customId,
-    data,
-  }).returning();
+  const returned = await db
+    .insert(discordMessageComponents)
+    .values({
+      guildId: makeSnowflake(flow.message.guildId),
+      channelId: makeSnowflake(flow.message.channelId),
+      messageId: makeSnowflake(flow.message.id),
+      createdById: flow.user.id,
+      customId,
+      data,
+    })
+    .returning();
   const insertedId = returned[0].id;
 
   try {
-    return await ctx.client.patch(
-      Routes.webhookMessage(flow.message.webhookId, flow.webhookToken, flow.message.id),
-      { body: { components }},
-    ) as APIMessage
+    return (await ctx.rest.patch(
+      Routes.webhookMessage(
+        flow.message.webhookId,
+        flow.webhookToken,
+        flow.message.id,
+      ),
+      { body: { components } },
+    )) as APIMessage;
   } catch (e) {
     if (isDiscordError(e)) {
       await db
@@ -219,9 +283,12 @@ const registerComponent = async (
     }
     throw e;
   }
-}
+};
 
-export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>, message: APIMessage) => {
+export const startComponentFlow = async (
+  ctx: InteractionContext<APIInteraction>,
+  message: APIMessage,
+) => {
   const db = getDb(ctx.env.DB);
   const user = await upsertDiscordUser(db, ctx.user);
 
@@ -231,12 +298,13 @@ export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>
       flags: MessageFlags.Ephemeral,
     });
   }
-  let webhookToken;
+  let webhookToken: string | undefined;
   try {
-    const webhook = await ctx.client.get(Routes.webhook(message.webhook_id)) as APIWebhook;
+    const webhook = (await ctx.rest.get(
+      Routes.webhook(message.webhook_id),
+    )) as APIWebhook;
     webhookToken = webhook.token;
-  } catch {
-  }
+  } catch {}
   if (!webhookToken) {
     return ctx.reply({
       content: `
@@ -257,6 +325,7 @@ export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>
     message: {
       id: message.id,
       channelId: message.channel_id,
+      // biome-ignore lint/style/noNonNullAssertion:
       guildId: ctx.interaction.guild_id!,
       webhookId: message.webhook_id,
       webhookName: message.author.username,
@@ -265,76 +334,91 @@ export const startComponentFlow = async (ctx: InteractionContext<APIInteraction>
     user,
   };
 
-  const guild = await getchGuild(ctx.client, ctx.env.KV, ctx.interaction.guild_id!);
+  const guild = await getchGuild(
+    ctx.rest,
+    ctx.env.KV,
+    // biome-ignore lint/style/noNonNullAssertion:
+    ctx.interaction.guild_id!,
+  );
   await upsertGuild(db, guild);
 
   // Maybe switch to a quickie web form instead of a long flow like this
   // but some users prefer to stay within discord (for whatever reason!)
   return ctx.reply({
     embeds: [getComponentFlowEmbed(componentFlow).toJSON()],
-    components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      await storeComponents(ctx.env.KV,
-        [new StringSelectMenuBuilder({
-          placeholder: "Select a component type",
-          options: [
+    components: [
+      new ActionRowBuilder<StringSelectMenuBuilder>()
+        .addComponents(
+          await storeComponents(ctx.env.KV, [
+            new StringSelectMenuBuilder({
+              placeholder: "Select a component type",
+              options: [
+                {
+                  label: "Button",
+                  description: "One press to execute one or several actions",
+                  value: "button",
+                  emoji: { name: "🟦" },
+                },
+                {
+                  label: "Link Button",
+                  description: "Direct a user to a specified URL",
+                  value: "link-button",
+                  emoji: { name: "🌐" },
+                },
+                {
+                  label: "String Select",
+                  description:
+                    "Select from a custom list of options to execute actions",
+                  value: "string-select",
+                  emoji: { name: "🔽" },
+                },
+                {
+                  label: "User Select",
+                  description: "Select from a list of users to execute actions",
+                  value: "user-select",
+                  emoji: { name: "👤" },
+                },
+                {
+                  label: "Role Select",
+                  description: "Select from a list of roles to execute actions",
+                  value: "role-select",
+                  emoji: { name: "🏷️" },
+                },
+                {
+                  label: "User/Role Select",
+                  description:
+                    "Select from a list of users and roles to execute actions",
+                  value: "mentionable-select",
+                  emoji: { name: "*️⃣" },
+                },
+                {
+                  label: "Channel Select",
+                  description:
+                    "Select from a list of channels to execute actions",
+                  value: "channel-select",
+                  emoji: { name: "#️⃣" },
+                },
+              ],
+            }),
             {
-              label: "Button",
-              description: "One press to execute one or several actions",
-              value: "button",
-              emoji: { name: "🟦" },
+              ...componentFlow,
+              componentOnce: true,
             },
-            {
-              label: "Link Button",
-              description: "Direct a user to a specified URL",
-              value: "link-button",
-              emoji: { name: "🌐" },
-            },
-            {
-              label: "String Select",
-              description: "Select from a custom list of options to execute actions",
-              value: "string-select",
-              emoji: { name: "🔽" },
-            },
-            {
-              label: "User Select",
-              description: "Select from a list of users to execute actions",
-              value: "user-select",
-              emoji: { name: "👤" },
-            },
-            {
-              label: "Role Select",
-              description: "Select from a list of roles to execute actions",
-              value: "role-select",
-              emoji: { name: "🏷️" },
-            },
-            {
-              label: "User/Role Select",
-              description: "Select from a list of users and roles to execute actions",
-              value: "mentionable-select",
-              emoji: { name: "*️⃣" },
-            },
-            {
-              label: "Channel Select",
-              description: "Select from a list of channels to execute actions",
-              value: "channel-select",
-              emoji: { name: "#️⃣" },
-            },
-          ],
-        }), {
-          ...componentFlow,
-          componentOnce: true,
-        }],
-      )
-    ).toJSON()],
+          ]),
+        )
+        .toJSON(),
+    ],
   });
-}
+};
 
 export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   const value = ctx.interaction.data.values[0];
 
   const state = ctx.state as ComponentFlow;
   state.steps = [];
-  state.steps.push({ label: `Select component type (${value.replace('-', ' ')})` });
+  state.steps.push({
+    label: `Select component type (${value.replace("-", " ")})`,
+  });
 
   state.step += 1;
   switch (value) {
@@ -343,12 +427,16 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
       state.totalSteps = 3;
       return ctx.updateMessage({
         embeds: [getComponentFlowEmbed(state).toJSON()],
-        components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Link)
-            .setLabel("Customize")
-            .setURL(`${ctx.env.BOOGIEHOOK_ORIGIN}/`)
-        ).toJSON()],
+        components: [
+          new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Link)
+                .setLabel("Customize")
+                .setURL(`${ctx.env.BOOGIEHOOK_ORIGIN}/`),
+            )
+            .toJSON(),
+        ],
       });
     }
     case "link-button": {
@@ -358,71 +446,75 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         type: ComponentType.Button,
         style: ButtonStyle.Link,
         url: "",
-      }
+      };
 
       const modal = new ModalBuilder()
         .setTitle("Custom button values")
         .addComponents(
-          new ActionRowBuilder<TextInputBuilder>()
-            .addComponents(
-              new TextInputBuilder()
-                .setCustomId("label")
-                .setLabel("Label")
-                .setStyle(TextInputStyle.Short)
-                .setRequired(false)
-                .setMaxLength(80)
-                .setPlaceholder("The text displayed on this button.")
-            ),
-          new ActionRowBuilder<TextInputBuilder>()
-            .addComponents(
-              new TextInputBuilder()
-                .setCustomId("emoji")
-                .setLabel("Emoji")
-                .setStyle(TextInputStyle.Short)
-                .setRequired(false)
-                .setPlaceholder("Like :smile: or a custom emoji in the server.")
-            ),
-          new ActionRowBuilder<TextInputBuilder>()
-            .addComponents(
-              new TextInputBuilder()
-                .setCustomId("url")
-                .setLabel("Button URL")
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-                .setPlaceholder("The full URL this button will lead to when it is clicked.")
-            ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("label")
+              .setLabel("Label")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false)
+              .setMaxLength(80)
+              .setPlaceholder("The text displayed on this button."),
+          ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("emoji")
+              .setLabel("Emoji")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false)
+              .setPlaceholder("Like :smile: or a custom emoji in the server."),
+          ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("url")
+              .setLabel("Button URL")
+              .setStyle(TextInputStyle.Paragraph)
+              .setRequired(true)
+              .setPlaceholder(
+                "The full URL this button will lead to when it is clicked.",
+              ),
+          ),
         );
 
-      await storeComponents(
-        ctx.env.KV,
-        [modal, {
+      await storeComponents(ctx.env.KV, [
+        modal,
+        {
           ...state,
           componentTimeout: 600,
           componentRoutingId: "add-component-flow_customize-modal",
           componentOnce: false,
-        }],
-      );
+        },
+      ]);
 
       return [
         ctx.modal(modal.toJSON()),
         async () => {
           await ctx.followup.editOriginalMessage({
             embeds: [getComponentFlowEmbed(state).toJSON()],
-            components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
-              await storeComponents(ctx.env.KV, [
-                new ButtonBuilder({
-                  style: ButtonStyle.Primary,
-                  label: "Open modal",
-                }),
-                {
-                  componentRoutingId: "add-component-flow_customize-modal-resend",
-                  componentTimeout: 600,
-                  modal: modal.toJSON(),
-                }
-              ]),
-            ).toJSON()],
+            components: [
+              new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                  await storeComponents(ctx.env.KV, [
+                    new ButtonBuilder({
+                      style: ButtonStyle.Primary,
+                      label: "Open modal",
+                    }),
+                    {
+                      componentRoutingId:
+                        "add-component-flow_customize-modal-resend",
+                      componentTimeout: 600,
+                      modal: modal.toJSON(),
+                    },
+                  ]),
+                )
+                .toJSON(),
+            ],
           });
-        }
+        },
       ];
     }
     case "string-select": {
@@ -458,21 +550,21 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     embeds: [getComponentFlowEmbed(state).toJSON()],
     components: [],
   });
-}
+};
 
 export const reopenCustomizeModal: ButtonCallback = async (ctx) => {
   const state = ctx.state as MinimumKVComponentState & {
     modal: APIModalInteractionResponseCallbackData;
   };
   return ctx.modal(state.modal);
-}
+};
 
 export const submitCustomizeModal: ModalCallback = async (ctx) => {
   const state = ctx.state as ComponentFlow;
 
   if (state.component?.type === ComponentType.Button) {
-    const label = ctx.getModalComponent('label').value,
-      emoji = ctx.getModalComponent('emoji').value;
+    const label = ctx.getModalComponent("label").value;
+    const emoji = ctx.getModalComponent("emoji").value;
 
     if (!label && !emoji) {
       return ctx.reply({
@@ -484,29 +576,29 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
     state.component.label = label;
     // state.component.emoji = emoji;
     // state.step += 1;
-    // state.steps!.push({ label: `Set label (${escapeMarkdown(label)})` });
+    // state.steps?.push({ label: `Set label (${escapeMarkdown(label)})` });
     // state.step += 1;
-    // state.steps!.push({ label: `Set emoji (${escapeMarkdown(label)})` });
+    // state.steps?.push({ label: `Set emoji (${escapeMarkdown(label)})` });
 
     if (state.component.style === ButtonStyle.Link) {
-      const url = ctx.getModalComponent('url').value;
+      const url = ctx.getModalComponent("url").value;
       if (!BUTTON_URL_RE.test(url)) {
         return ctx.reply({
-          content: "Invalid URL. Must be a `http://`, `https://`, or `discord://` address.",
+          content:
+            "Invalid URL. Must be a `http://`, `https://`, or `discord://` address.",
           flags: MessageFlags.Ephemeral,
         });
       }
 
       state.component.url = url;
       state.step += 1;
-      state.steps!.push({ label: "Set URL" });
+      state.steps?.push({ label: "Set URL" });
 
-      try {
-        await registerComponent(ctx, state);
-      } catch (e) {
-        // return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
-        throw e;
-      }
+      // try {
+      await registerComponent(ctx, state);
+      // } catch (e) {
+      //   return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
+      // }
 
       return ctx.updateMessage({
         embeds: [getComponentFlowEmbed(state).toJSON()],
@@ -515,5 +607,5 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
     }
   }
 
-  return ctx.reply('a')
-}
+  return ctx.reply("a");
+};

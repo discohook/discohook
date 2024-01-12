@@ -1,6 +1,16 @@
-import { APIInteractionResponse, APIMessageComponentButtonInteraction, APIMessageComponentInteraction, APIMessageComponentSelectMenuInteraction, APIModalSubmitInteraction } from "discord-api-types/v10";
+import {
+  APIInteractionResponse,
+  APIMessageComponentButtonInteraction,
+  APIMessageComponentInteraction,
+  APIMessageComponentSelectMenuInteraction,
+  APIModalSubmitInteraction,
+} from "discord-api-types/v10";
+import {
+  continueComponentFlow,
+  reopenCustomizeModal,
+  submitCustomizeModal,
+} from "./commands/components/add.js";
 import { InteractionContext } from "./interactions.js";
-import { continueComponentFlow, reopenCustomizeModal, submitCustomizeModal } from "./commands/components/add.js";
 
 export interface MinimumKVComponentState {
   /** The total number of seconds that the component/modal should be stored. */
@@ -14,20 +24,27 @@ export interface MinimumKVComponentState {
   componentOnce?: boolean;
 }
 
-export type ComponentCallbackT<T extends APIMessageComponentInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]>
-export type ButtonCallback = ComponentCallbackT<APIMessageComponentButtonInteraction>;
-export type SelectMenuCallback = ComponentCallbackT<APIMessageComponentSelectMenuInteraction>;
-export type ModalCallback = (ctx: InteractionContext<APIModalSubmitInteraction>) => Promise<APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]>
+export type ComponentCallbackT<T extends APIMessageComponentInteraction> = (
+  ctx: InteractionContext<T>,
+) => Promise<
+  APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]
+>;
+export type ButtonCallback =
+  ComponentCallbackT<APIMessageComponentButtonInteraction>;
+export type SelectMenuCallback =
+  ComponentCallbackT<APIMessageComponentSelectMenuInteraction>;
+export type ModalCallback = (
+  ctx: InteractionContext<APIModalSubmitInteraction>,
+) => Promise<
+  APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]
+>;
 
-export type ComponentCallback =
-  | ButtonCallback
-  | SelectMenuCallback;
+export type ComponentCallback = ButtonCallback | SelectMenuCallback;
 
 export type StoredComponentData = { handler: ComponentCallback };
 export type StoredModalData = { handler: ModalCallback };
 
-export type ModalRoutingId =
-  | "add-component-flow_customize-modal";
+export type ModalRoutingId = "add-component-flow_customize-modal";
 
 export type ComponentRoutingId =
   | "add-component-flow"

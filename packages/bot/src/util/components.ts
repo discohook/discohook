@@ -1,7 +1,26 @@
-import { ButtonBuilder, ChannelSelectMenuBuilder, MentionableSelectMenuBuilder, ModalBuilder, RoleSelectMenuBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder } from "@discordjs/builders";
-import { APIActionRowComponent, APIButtonComponent, APIChannelSelectComponent, APIMentionableSelectComponent, APIMessageComponent, APIRoleSelectComponent, APIStringSelectComponent, APITextInputComponent, APIUserSelectComponent, ButtonStyle, ComponentType } from "discord-api-types/v10";
-import { Env } from "../types/env.js";
+import {
+  ButtonBuilder,
+  ChannelSelectMenuBuilder,
+  MentionableSelectMenuBuilder,
+  ModalBuilder,
+  RoleSelectMenuBuilder,
+  StringSelectMenuBuilder,
+  UserSelectMenuBuilder,
+} from "@discordjs/builders";
+import {
+  APIActionRowComponent,
+  APIButtonComponent,
+  APIChannelSelectComponent,
+  APIMentionableSelectComponent,
+  APIRoleSelectComponent,
+  APIStringSelectComponent,
+  APITextInputComponent,
+  APIUserSelectComponent,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
 import { MinimumKVComponentState } from "../components.js";
+import { Env } from "../types/env.js";
 
 export const getCustomId = (temporary = false) => {
   const chars =
@@ -12,7 +31,7 @@ export const getCustomId = (temporary = false) => {
   }
 
   return result;
-}
+};
 
 type Builder =
   | ButtonBuilder
@@ -23,7 +42,12 @@ type Builder =
   | MentionableSelectMenuBuilder
   | ModalBuilder;
 
-export const storeComponents = async <T extends [Builder, MinimumKVComponentState][]>(kv: Env["KV"], ...components: T): Promise<T[number][0][]> => {
+export const storeComponents = async <
+  T extends [Builder, MinimumKVComponentState][],
+>(
+  kv: Env["KV"],
+  ...components: T
+): Promise<T[number][0][]> => {
   for (const [component, state] of components) {
     // These shouldn't necessarily be passed to this function in the first place
     // but it might happen and we don't want to assign a custom_id
@@ -47,17 +71,17 @@ export const storeComponents = async <T extends [Builder, MinimumKVComponentStat
         { expirationTtl: state.componentTimeout },
       );
     } else if (component instanceof ModalBuilder) {
-      await kv.put(
-        `modal-${component.data.custom_id}`,
-        JSON.stringify(state),
-        { expirationTtl: state.componentTimeout },
-      );
+      await kv.put(`modal-${component.data.custom_id}`, JSON.stringify(state), {
+        expirationTtl: state.componentTimeout,
+      });
     }
   }
-  return components.map(c => c[0]);
-}
+  return components.map((c) => c[0]);
+};
 
-export const getComponentWidth = (component: { type: ComponentType }): number => {
+export const getComponentWidth = (component: {
+  type: ComponentType;
+}): number => {
   switch (component.type) {
     case ComponentType.Button:
       return 1;
@@ -72,16 +96,21 @@ export const getComponentWidth = (component: { type: ComponentType }): number =>
       break;
   }
   return 0;
-}
+};
 
-export const getRowWidth = (row: APIActionRowComponent<
-  | APIButtonComponent
-  | APIStringSelectComponent
-  | APIUserSelectComponent
-  | APIRoleSelectComponent
-  | APIMentionableSelectComponent
-  | APIChannelSelectComponent
-  | APITextInputComponent
->): number => {
-  return row.components.reduce((last, component) => getComponentWidth(component) + last, 0);
-}
+export const getRowWidth = (
+  row: APIActionRowComponent<
+    | APIButtonComponent
+    | APIStringSelectComponent
+    | APIUserSelectComponent
+    | APIRoleSelectComponent
+    | APIMentionableSelectComponent
+    | APIChannelSelectComponent
+    | APITextInputComponent
+  >,
+): number => {
+  return row.components.reduce(
+    (last, component) => getComponentWidth(component) + last,
+    0,
+  );
+};

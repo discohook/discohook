@@ -1,9 +1,15 @@
-import { EmbedBuilder, TimestampStyles, inlineCode, spoiler, time } from "@discordjs/builders";
+import {
+  EmbedBuilder,
+  TimestampStyles,
+  inlineCode,
+  spoiler,
+  time,
+} from "@discordjs/builders";
+import dedent from "dedent-js";
 import { APIWebhook, ChannelType } from "discord-api-types/v10";
+import { Snowflake, getDate } from "discord-snowflake";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { color } from "../../util/meta.js";
-import { getDate, Snowflake } from "discord-snowflake";
-import dedent from "dedent-js";
 
 export const getWebhookInfoEmbed = (webhook: APIWebhook) => {
   const createdAt = getDate(webhook.id as Snowflake);
@@ -37,11 +43,14 @@ export const getWebhookInfoEmbed = (webhook: APIWebhook) => {
       },
       {
         name: "Created at",
-        value: `${time(createdAt, TimestampStyles.ShortDate)} (${time(createdAt, TimestampStyles.RelativeTime)})`,
+        value: `${time(createdAt, TimestampStyles.ShortDate)} (${time(
+          createdAt,
+          TimestampStyles.RelativeTime,
+        )})`,
         inline: true,
-      }
-    ]
-  })
+      },
+    ],
+  });
 };
 
 export const getWebhookUrlEmbed = (
@@ -87,19 +96,19 @@ export const getWebhookUrlEmbed = (
       `,
       inline: false,
     });
-  };
+  }
 
   if (channelType === ChannelType.GuildForum) {
     embed.addFields({
-        name: "<:forum:1074458133407211562> Forum channels",
-        value: dedent`
+      name: "<:forum:1074458133407211562> Forum channels",
+      value: dedent`
           <#${webhook.channel_id}> is a forum channel. In order to create a new forum
           post using Discohook, click "Thread" and fill in the "Forum Thread Name" box.
           If you want to send to an existing thread, add \`?thread_id=xxx\` to the end of
           the above webhook URL, where \`xxx\` is the ID of the thread.
           [Read how to get a thread ID](https://support.discord.com/hc/en-us/articles/206346498)
         `,
-        inline: false,
+      inline: false,
     });
   }
 
@@ -115,4 +124,4 @@ export const getWebhookUrlEmbed = (
   }
 
   return embed;
-}
+};

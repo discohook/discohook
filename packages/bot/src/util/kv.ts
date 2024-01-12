@@ -1,5 +1,4 @@
-import { DiscordApiClient } from "discord-api-methods";
-import { Env } from "../types/env.js";
+import { REST } from "@discordjs/rest";
 import { APIGuild, Routes } from "discord-api-types/v10";
 
 export interface PartialKVGuild {
@@ -8,9 +7,15 @@ export interface PartialKVGuild {
   icon: string | null;
 }
 
-export async function kvGet(kv: Env['KV'], key: string): Promise<string | null>;
-export async function kvGet<T>(kv: Env['KV'], key: string): Promise<T | null>;
-export async function kvGet<T>(kv: Env['KV'], key: string): Promise<T | string | null> {
+export async function kvGet(
+  kv: KVNamespace,
+  key: string,
+): Promise<string | null>;
+export async function kvGet<T>(kv: KVNamespace, key: string): Promise<T | null>;
+export async function kvGet<T>(
+  kv: KVNamespace,
+  key: string,
+): Promise<T | string | null> {
   const cached: string | null = await kv.get(key);
   if (cached === null) return null;
 
@@ -21,10 +26,14 @@ export async function kvGet<T>(kv: Env['KV'], key: string): Promise<T | string |
   }
 }
 
-export const getchGuild = async (client: DiscordApiClient, kv: Env['KV'], guildId: string): Promise<PartialKVGuild> => {
+export const getchGuild = async (
+  rest: REST,
+  kv: KVNamespace,
+  guildId: string,
+): Promise<PartialKVGuild> => {
   const cached = await kvGet<PartialKVGuild>(kv, `cache-guild-${guildId}`);
   if (!cached) {
-    const guild = await client.get(Routes.guild(guildId)) as APIGuild;
+    const guild = (await rest.get(Routes.guild(guildId))) as APIGuild;
     const reduced: PartialKVGuild = {
       id: guild.id,
       name: guild.name,
@@ -38,4 +47,4 @@ export const getchGuild = async (client: DiscordApiClient, kv: Env['KV'], guildI
     return reduced;
   }
   return cached;
-}
+};

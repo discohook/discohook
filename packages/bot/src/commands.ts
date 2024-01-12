@@ -1,26 +1,53 @@
-import { APIApplicationCommandAutocompleteInteraction, APIApplicationCommandAutocompleteResponse, APIChatInputApplicationCommandInteraction, APIInteraction, APIInteractionResponse, APIMessageApplicationCommandInteraction, APIUserApplicationCommandInteraction, ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import { InteractionContext } from "./interactions.js";
-import { addComponentChatAutocomplete, addComponentChatEntry, addComponentMessageEntry } from "./commands/components/entry.js";
-import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
-import { PermissionFlags } from "discord-bitflag";
-import { inviteCallback } from "./commands/invite.js";
-import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
-import { helpAutocomplete, helpEntry } from "./commands/help.js";
-import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
 import { ApplicationCommandOptionChannelTypesMixin } from "@discordjs/builders";
+import {
+  APIApplicationCommandAutocompleteInteraction,
+  APIApplicationCommandAutocompleteResponse,
+  APIChatInputApplicationCommandInteraction,
+  APIInteraction,
+  APIInteractionResponse,
+  APIMessageApplicationCommandInteraction,
+  APIUserApplicationCommandInteraction,
+  ApplicationCommandOptionType,
+  ApplicationCommandType,
+  ChannelType,
+  RESTPostAPIApplicationCommandsJSONBody,
+} from "discord-api-types/v10";
+import { PermissionFlags } from "discord-bitflag";
+import {
+  addComponentChatAutocomplete,
+  addComponentChatEntry,
+  addComponentMessageEntry,
+} from "./commands/components/entry.js";
+import { helpAutocomplete, helpEntry } from "./commands/help.js";
+import { inviteCallback } from "./commands/invite.js";
+import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
+import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
+import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
+import { InteractionContext } from "./interactions.js";
 
-export type AppCommandCallbackT<T extends APIInteraction> = (ctx: InteractionContext<T>) => Promise<APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]>
-export type ChatInputAppCommandCallback = AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
-export type MessageAppCommandCallback = AppCommandCallbackT<APIMessageApplicationCommandInteraction>;
-export type UserAppCommandCallback = AppCommandCallbackT<APIUserApplicationCommandInteraction>;
+export type AppCommandCallbackT<T extends APIInteraction> = (
+  ctx: InteractionContext<T>,
+) => Promise<
+  APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]
+>;
+export type ChatInputAppCommandCallback =
+  AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
+export type MessageAppCommandCallback =
+  AppCommandCallbackT<APIMessageApplicationCommandInteraction>;
+export type UserAppCommandCallback =
+  AppCommandCallbackT<APIUserApplicationCommandInteraction>;
 
-type AutocompleteChoices = NonNullable<APIApplicationCommandAutocompleteResponse["data"]["choices"]>;
-export type AppCommandAutocompleteCallback = (ctx: InteractionContext<APIApplicationCommandAutocompleteInteraction>) => Promise<AutocompleteChoices>
+type AutocompleteChoices = NonNullable<
+  APIApplicationCommandAutocompleteResponse["data"]["choices"]
+>;
+export type AppCommandAutocompleteCallback = (
+  ctx: InteractionContext<APIApplicationCommandAutocompleteInteraction>,
+) => Promise<AutocompleteChoices>;
 
 export type AppCommandCallback =
   | ChatInputAppCommandCallback
   | MessageAppCommandCallback
-  | UserAppCommandCallback
+  | UserAppCommandCallback;
 
 export type AppCommand = RESTPostAPIApplicationCommandsJSONBody & {
   handlers: Record<string, AppCommandCallback>;
@@ -53,12 +80,17 @@ const webhookFilterAutocompleteOption = {
   channel_types: webhookChannelTypes,
 } as const;
 
-export const appCommands: Record<ApplicationCommandType, Record<string, AppCommand>> = {
+export const appCommands: Record<
+  ApplicationCommandType,
+  Record<string, AppCommand>
+> = {
   [ApplicationCommandType.ChatInput]: {
     buttons: {
       name: "buttons",
       description: "Add, remove, and manage buttons",
-      default_member_permissions: String(PermissionFlags.ManageMessages | PermissionFlags.ManageGuild),
+      default_member_permissions: String(
+        PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
+      ),
       options: [
         {
           type: ApplicationCommandOptionType.Subcommand,
@@ -68,19 +100,21 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
             {
               type: ApplicationCommandOptionType.String,
               name: "message",
-              description: "Add a button to this message. A message link is also accepted here",
+              description:
+                "Add a button to this message. A message link is also accepted here",
               required: true,
               autocomplete: true,
             },
             {
               type: ApplicationCommandOptionType.Channel,
               name: "channel",
-              description: "The channel that the message is in, for autocomplete results",
+              description:
+                "The channel that the message is in, for autocomplete results",
               required: false,
               channel_types: webhookChannelTypes,
             },
-          ]
-        }
+          ],
+        },
       ],
       dm_permission: false,
       handlers: {
@@ -93,12 +127,12 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
     invite: {
       name: "invite",
       name_localizations: {
-        fr: "ajouter"
+        fr: "ajouter",
       },
       description: "Invite URL for this bot",
       handlers: {
         BASE: inviteCallback,
-      }
+      },
     },
     webhook: {
       name: "webhook",
@@ -150,7 +184,8 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
             {
               type: ApplicationCommandOptionType.Boolean,
               name: "show-url",
-              description: "Only enable this if you need the URL for an external application",
+              description:
+                "Only enable this if you need the URL for an external application",
               required: false,
             },
           ],
@@ -163,12 +198,9 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
           },
           description: "Delete a webhook",
           description_localizations: {
-            fr: "Supprimer un webhook"
+            fr: "Supprimer un webhook",
           },
-          options: [
-            webhookAutocompleteOption,
-            webhookFilterAutocompleteOption,
-          ],
+          options: [webhookAutocompleteOption, webhookFilterAutocompleteOption],
         },
         {
           type: ApplicationCommandOptionType.Subcommand,
@@ -180,7 +212,8 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
             {
               type: ApplicationCommandOptionType.Boolean,
               name: "show-url",
-              description: "Whether to skip the \"Get URL\" step. This makes the message hidden",
+              description:
+                'Whether to skip the "Get URL" step. This makes the message hidden',
               required: false,
             },
           ],
@@ -198,23 +231,27 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
     help: {
       name: "help",
       description: "Get help with various topics",
-      options: [{
-        type: ApplicationCommandOptionType.String,
-        name: "tag",
-        description: "The tag to get help for",
-        autocomplete: true,
-        required: true,
-      }],
+      options: [
+        {
+          type: ApplicationCommandOptionType.String,
+          name: "tag",
+          description: "The tag to get help for",
+          autocomplete: true,
+          required: true,
+        },
+      ],
       handlers: { BASE: helpEntry },
       autocompleteHandlers: { BASE: helpAutocomplete },
-    }
+    },
   },
   [ApplicationCommandType.Message]: {
     "buttons & components": {
       // Add, remove, edit, relocate within msg, move all buttons to diff message
       type: ApplicationCommandType.Message,
       name: "Buttons & Components",
-      default_member_permissions: String(PermissionFlags.ManageMessages | PermissionFlags.ManageGuild),
+      default_member_permissions: String(
+        PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
+      ),
       dm_permission: false,
       // description: "Add, remove, and manage buttons",
       handlers: {
@@ -227,8 +264,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
       default_member_permissions: String(PermissionFlags.ManageMessages),
       dm_permission: false,
       // description: "Quickly edit a webhook message",
-      handlers: {
-      },
+      handlers: {},
     },
     restore: {
       type: ApplicationCommandType.Message,
@@ -236,8 +272,7 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
       default_member_permissions: String(PermissionFlags.ViewChannel),
       dm_permission: false,
       // description: "Copy a message into Boogiehook or Discohook",
-      handlers: {
-      },
+      handlers: {},
     },
     // repeat: {
     //   name: "Repeat",
@@ -258,22 +293,27 @@ export const appCommands: Record<ApplicationCommandType, Record<string, AppComma
     },
   },
   [ApplicationCommandType.User]: {},
-}
+};
 
-export type DiscordInteractionResponse = APIInteractionResponse | { error: string; status?: number };
+export type DiscordInteractionResponse =
+  | APIInteractionResponse
+  | { error: string; status?: number };
 
 class JsonResponse extends Response {
   constructor(body: DiscordInteractionResponse, init?: ResponseInit | null) {
     const jsonBody = JSON.stringify(body);
-    init = init || {
+    const responseInit = init || {
       headers: {
-        'content-type': 'application/json;charset=UTF-8',
+        "content-type": "application/json;charset=UTF-8",
       },
     };
-    super(jsonBody, init);
+    super(jsonBody, responseInit);
   }
 }
 
 export const respond = (body: DiscordInteractionResponse) => {
-  return new JsonResponse(body, 'error' in body ? { status: body.status ?? 400 } : null);
-}
+  return new JsonResponse(
+    body,
+    "error" in body ? { status: body.status ?? 400 } : null,
+  );
+};

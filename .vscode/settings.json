@@ -8,14 +8,11 @@
   },
   "files.autoSave": "off",
   "[typescript]": {
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "eslint.onIgnoredFiles": "off",
   "eslint.run": "onType",
-  "[prisma]": {
-    "editor.defaultFormatter": "Prisma.prisma"
-  } // optional but recommended
 }

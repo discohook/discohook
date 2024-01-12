@@ -1,12 +1,12 @@
-import * as schema from "./schema.js";
+import { APIUser } from "discord-api-types/v10";
 import { drizzle } from "drizzle-orm/d1";
 import { Env } from "../types/env.js";
 import { PartialKVGuild } from "../util/kv.js";
-import { APIUser } from "discord-api-types/v10";
+import * as schema from "./schema.js";
 
-export const getDb = (db: Env['DB']) => drizzle(db, { schema });
+export const getDb = (db: Env["DB"]) => drizzle(db, { schema });
 
-type DB = ReturnType<typeof getDb>
+type DB = ReturnType<typeof getDb>;
 
 export const upsertGuild = async (db: DB, guild: PartialKVGuild) => {
   await db
@@ -23,7 +23,7 @@ export const upsertGuild = async (db: DB, guild: PartialKVGuild) => {
         icon: guild.icon,
       },
     });
-}
+};
 
 export const upsertDiscordUser = async (db: DB, user: APIUser) => {
   await db
@@ -58,4 +58,4 @@ export const upsertDiscordUser = async (db: DB, user: APIUser) => {
     .returning();
 
   return dbUser[0];
-}
+};

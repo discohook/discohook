@@ -1,6 +1,6 @@
+import { MessageFlags } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { ChatInputAppCommandCallback } from "../commands.js";
-import { MessageFlags } from "discord-api-types/v10";
 
 export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
   const permissions = new PermissionsBitField(0);
@@ -25,11 +25,13 @@ export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
   // Flows
   permissions.set(PermissionFlags.ModerateMembers, true);
 
-  const url = new URL(`https://discord.com/oauth2/authorize?` + new URLSearchParams({
-    client_id: ctx.followup.applicationId,
-    permissions: String(permissions.value),
-    scope: 'bot',
-  }));
+  const url = new URL(
+    `https://discord.com/oauth2/authorize?${new URLSearchParams({
+      client_id: ctx.followup.applicationId,
+      permissions: String(permissions.value),
+      scope: "bot",
+    })}`,
+  );
 
   return ctx.reply({ content: url.href, flags: MessageFlags.Ephemeral });
-}
+};

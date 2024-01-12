@@ -9,5 +9,10 @@
     "dev-bot": "cd packages/bot && npm run dev",
     "dev-site": "cd packages/site && npm run dev"
   },
-  "workspaces": ["packages/*"]
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.1"
+  }
 }
