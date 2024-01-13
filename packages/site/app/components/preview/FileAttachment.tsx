@@ -6,7 +6,10 @@ export const FileAttachment: React.FC<{ attachment: APIAttachment }> = ({
 }) => {
   return (
     <div className="rounded-lg p-2 bg-gray-300 flex">
-      <CoolIcon icon="File_Blank" className="shrink-0 mr-1 my-auto text-5xl text-gray-500" />
+      <CoolIcon
+        icon="File_Blank"
+        className="shrink-0 mr-1 my-auto text-5xl text-gray-500"
+      />
       <div className="my-auto">
         <a
           className="block hover:underline text-base underline-offset-1 font-normal text-blurple-400 leading-none"

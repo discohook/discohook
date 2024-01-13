@@ -93,7 +93,7 @@ export default function Index() {
         if (r.status === 200) {
           setBackupId(backupIdParsed.data);
           r.json().then((d: any) =>
-            setData({ ...d.data, backup_id: backupIdParsed.data })
+            setData({ ...d.data, backup_id: backupIdParsed.data }),
           );
         }
       });
@@ -104,8 +104,8 @@ export default function Index() {
           JSON.parse(
             searchParams.get("data")
               ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
-              : JSON.stringify({ messages: [INDEX_MESSAGE] })
-          )
+              : JSON.stringify({ messages: [INDEX_MESSAGE] }),
+          ),
         );
       } catch {
         parsed = {};
@@ -156,7 +156,7 @@ export default function Index() {
                 createdAt: new Date(),
                 data: structuredClone(data),
               },
-            ].slice(-20)
+            ].slice(-20),
           );
         }
         setUpdateCount(updateCount + 1);
@@ -198,13 +198,13 @@ export default function Index() {
   type Targets = Record<string, APIWebhook>;
   const [targets, updateTargets] = useReducer(
     (d: Targets, partialD: Partial<Targets>) =>
-      ({ ...d, ...partialD } as Targets),
-    {}
+      ({ ...d, ...partialD }) as Targets,
+    {},
   );
   const [showDisclaimer, setShowDisclaimer] = useState(dm === "preview");
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
   const [settingMessageIndex, setSettingMessageIndex] = useState(
-    dm && dm.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined
+    dm && dm.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
   );
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
   const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");

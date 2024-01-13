@@ -6,7 +6,7 @@ export type ModalProps = React.PropsWithChildren<{
   setOpen: (open: boolean) => void;
 }>;
 
-export const Modal: React.FC<ModalProps & { title?: React.ReactNode; }> = ({
+export const Modal: React.FC<ModalProps & { title?: React.ReactNode }> = ({
   open,
   setOpen,
   title,

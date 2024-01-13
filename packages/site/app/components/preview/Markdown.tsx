@@ -135,7 +135,8 @@ export const Markdown: React.FC<{
           <a
             className="rounded px-0.5 font-medium cursor-pointer bg-blurple/[0.15] dark:bg-blurple/30 text-blurple dark:text-gray-100 hover:bg-blurple hover:text-white transition inline-flex"
             href={`https://discord.com/channels/${guildId}/${channelId}/${messageId}`}
-            target="_blank" rel="noreferrer"
+            target="_blank"
+            rel="noreferrer"
             // data-mention-type="message"
             // data-mention-id={messageId}
           >
@@ -321,14 +322,14 @@ export const Markdown: React.FC<{
         {
           type: "lang",
           regex: new RegExp(CUSTOM_EMOJI_RE.source.replace(/^\^/, ""), "g"),
-          replace: replaceIf("emojis", "<Emoji id=\"$3\" name=\"$2\" flag=\"$1\" />"),
+          replace: replaceIf("emojis", '<Emoji id="$3" name="$2" flag="$1" />'),
         },
         {
           type: "lang",
           regex: new RegExp(MENTION_RE.source.replace(CARET_RE, "$1"), "g"),
           replace: replaceIf(
             "mentions",
-            "<Mention token=\"$1\" id=\"$2\" commandName=\"$3\" commandId=\"$4\" everyoneHere=\"$5\" />"
+            '<Mention token="$1" id="$2" commandName="$3" commandId="$4" everyoneHere="$5" />',
           ),
         },
         {
@@ -347,7 +348,7 @@ export const Markdown: React.FC<{
           regex: /\|\|([^||]+)\|\|/g,
           replace: replaceIf(
             "basic",
-            "<span class=\"bg-black/10 rounded\">$1</span>"
+            '<span class="bg-black/10 rounded">$1</span>',
           ),
         },
         // I'm aware of the `underline` option, but it disables underscore italics,
@@ -355,14 +356,14 @@ export const Markdown: React.FC<{
         {
           type: "lang",
           regex: /__([^__]+)__/g,
-          replace: replaceIf("basic", "<span class=\"underline\">$1</span>"),
+          replace: replaceIf("basic", '<span class="underline">$1</span>'),
         },
         {
           type: "lang",
           regex: new RegExp(MESSAGE_LINK_RE.source.replace(/^\^/, ""), "g"),
           replace: replaceIf(
             "basic",
-            "<MessageLink guildId=\"$1\" channelId=\"$2\" messageId=\"$3\" />"
+            '<MessageLink guildId="$1" channelId="$2" messageId="$3" />',
           ),
         },
         {

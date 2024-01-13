@@ -82,7 +82,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         action: z.literal("IMPORT_BACKUPS"),
         backups: jsonAsString<z.ZodType<DiscohookBackup[]>>(),
       }),
-    ])
+    ]),
   );
 
   const db = getDb(context.env.D1);
@@ -124,7 +124,7 @@ export const action = async ({ request, context }: ActionArgs) => {
             targets: backup.targets,
           },
           ownerId: user.id,
-        }))
+        })),
       );
       return new Response(null, { status: 201 });
     }
@@ -182,13 +182,13 @@ export default function Me() {
                 <p className="text-sm font-normal">
                   {user.subscribedSince
                     ? new Date(user.subscribedSince).toLocaleDateString(
-                      undefined,
-                      {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        },
+                      )
                     : strings.notSubscribed}
                 </p>
               </div>
@@ -199,13 +199,13 @@ export default function Me() {
                 <p className="text-sm font-normal">
                   {user.firstSubscribed
                     ? new Date(user.firstSubscribed).toLocaleDateString(
-                      undefined,
-                      {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        },
+                      )
                     : strings.never}
                 </p>
               </div>
@@ -261,7 +261,7 @@ export default function Me() {
                               {
                                 method: "POST",
                                 replace: true,
-                              }
+                              },
                             );
                           }}
                         >
@@ -347,7 +347,7 @@ export default function Me() {
                               {
                                 method: "POST",
                                 replace: true,
-                              }
+                              },
                             );
                           }}
                         >

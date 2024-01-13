@@ -30,7 +30,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   if (!backup || backup.ownerId !== user.id) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
-      404
+      404,
     );
   }
 
@@ -60,18 +60,20 @@ export const action = async ({ request, params, context }: ActionArgs) => {
   if (!backup || backup.ownerId !== user.id) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
-      404
+      404,
     );
   }
 
-  return (await db
-    .update(backups)
-    .set({ name, data })
-    .where(eq(backups.id, id))
-    .returning({
-      id: backups.id,
-      name: backups.name,
-      ownerId: backups.ownerId,
-      updatedAt: backups.updatedAt,
-    }))[0];
+  return (
+    await db
+      .update(backups)
+      .set({ name, data })
+      .where(eq(backups.id, id))
+      .returning({
+        id: backups.id,
+        name: backups.name,
+        ownerId: backups.ownerId,
+        updatedAt: backups.updatedAt,
+      })
+  )[0];
 };

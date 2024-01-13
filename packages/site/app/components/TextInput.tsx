@@ -10,7 +10,7 @@ export const TextInput = (
     description?: ReactNode;
     delayOnInput?: number;
     errors?: ReactNode[];
-  }
+  },
 ) => {
   const { label, onInput, delayOnInput } = props;
 
@@ -28,9 +28,7 @@ export const TextInput = (
           <span className="ml-auto">max. {props.maxLength}</span>
         )}
       </p>
-      {props.description && (
-        <p className="text-sm">{props.description}</p>
-      )}
+      {props.description && <p className="text-sm">{props.description}</p>}
       <input
         type="text"
         {...newProps}
@@ -51,7 +49,7 @@ export const TextInput = (
               setTimeout(() => {
                 onInput(event);
                 setTimeoutId(undefined);
-              }, delayOnInput)
+              }, delayOnInput),
             );
           } else if (onInput) {
             return onInput(event);
@@ -62,12 +60,17 @@ export const TextInput = (
         }`}
       />
       {props.errors &&
-        props.errors.filter(e => e !== undefined).map((error, i) => (
-          <p key={`${props.id ?? label}-error-${i}`} className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm">
-            <CoolIcon icon="Circle_Warning" className="mr-1.5" />
-            {error}
-          </p>
-        ))}
+        props.errors
+          .filter((e) => e !== undefined)
+          .map((error, i) => (
+            <p
+              key={`${props.id ?? label}-error-${i}`}
+              className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
+            >
+              <CoolIcon icon="Circle_Warning" className="mr-1.5" />
+              {error}
+            </p>
+          ))}
     </label>
   );
 };

@@ -10,7 +10,7 @@ export const Button = (
   > & {
     discordstyle?: ButtonStyle;
     emoji?: APIMessageComponentEmoji;
-  }
+  },
 ) => {
   return (
     <button
@@ -19,14 +19,14 @@ export const Button = (
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
           ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
           : [ButtonStyle.Link, ButtonStyle.Secondary].includes(
-              props.discordstyle
-            )
-          ? "bg-[#6d6f78] hover:bg-[#4e5058] dark:bg-[#4e5058] hover:dark:bg-[#6d6f78]"
-          : props.discordstyle === ButtonStyle.Danger
-          ? "bg-[#da373c] hover:bg-[#a12828]"
-          : props.discordstyle === ButtonStyle.Success
-          ? "bg-[#248046] hover:bg-[#15562b] dark:bg-[#248046] dark:hover:bg-[#1a6334]"
-          : ""
+                props.discordstyle,
+              )
+            ? "bg-[#6d6f78] hover:bg-[#4e5058] dark:bg-[#4e5058] hover:dark:bg-[#6d6f78]"
+            : props.discordstyle === ButtonStyle.Danger
+              ? "bg-[#da373c] hover:bg-[#a12828]"
+              : props.discordstyle === ButtonStyle.Success
+                ? "bg-[#248046] hover:bg-[#15562b] dark:bg-[#248046] dark:hover:bg-[#1a6334]"
+                : ""
       } ${props.className ?? ""}`}
     >
       {props.emoji &&
@@ -35,7 +35,7 @@ export const Button = (
             <img
               src={cdn.emoji(
                 props.emoji.id,
-                props.emoji.animated ? "gif" : "webp"
+                props.emoji.animated ? "gif" : "webp",
               )}
               alt={props.emoji.name}
               className="h-full w-full"
@@ -44,7 +44,10 @@ export const Button = (
         ) : (
           <div className="mr-1 aspect-square my-auto h-7 flex">
             <div className="m-auto">
-              <Twemoji emoji={props.emoji.name!} className="h-[22px] !align-bottom" />
+              <Twemoji
+                emoji={props.emoji.name!}
+                className="h-[22px] !align-bottom"
+              />
             </div>
           </div>
         ))}

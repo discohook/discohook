@@ -1,4 +1,7 @@
-import { createCookie, createWorkersKVSessionStorage } from "@remix-run/cloudflare";
+import {
+  createCookie,
+  createWorkersKVSessionStorage,
+} from "@remix-run/cloudflare";
 import {
   APIWebhook,
   RESTPostOAuth2AccessTokenWithBotAndGuildsAndWebhookIncomingScopeResult,
@@ -16,7 +19,7 @@ export const getDiscordWebhookAuth = (context: Context) => {
       httpOnly: true,
       secrets: [context.env.SESSION_SECRET],
       // secure: process.env.NODE_ENV === "production",
-    })
+    }),
   });
 
   const discordWebhookAuth = new Authenticator<APIWebhook>(dudSessionStorage);
@@ -32,9 +35,9 @@ export const getDiscordWebhookAuth = (context: Context) => {
       return (
         extraParams as unknown as RESTPostOAuth2AccessTokenWithBotAndGuildsAndWebhookIncomingScopeResult
       ).webhook;
-    }
+    },
   );
 
   discordWebhookAuth.use(strategy);
   return discordWebhookAuth;
-}
+};

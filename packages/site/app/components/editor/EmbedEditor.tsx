@@ -32,7 +32,7 @@ export const getEmbedLength = (embed: APIEmbed) => {
     (embed.footer?.text ?? "").length;
 
   const fieldLengths = (embed.fields ?? []).map(
-    (f) => f.name.length + f.value.length
+    (f) => f.name.length + f.value.length,
   );
   if (fieldLengths.length > 0) {
     totalCharacters += fieldLengths.reduce((a, b) => a + b);
@@ -99,7 +99,7 @@ export const EmbedEditor: React.FC<{
 
   // The first embed in the gallery is the parent that the children will be merged into
   const galleryEmbeds = message.data.embeds!.filter(
-    (e) => embed.url && e.url === embed.url
+    (e) => embed.url && e.url === embed.url,
   );
   const galleryChildren = galleryEmbeds.slice(1);
   const isChild = galleryChildren.includes(embed);
@@ -119,8 +119,8 @@ export const EmbedEditor: React.FC<{
       style={
         embed.color
           ? {
-            borderLeftColor: `#${embed.color.toString(16)}`,
-          }
+              borderLeftColor: `#${embed.color.toString(16)}`,
+            }
           : undefined
       }
     >
@@ -355,7 +355,7 @@ export const EmbedEditor: React.FC<{
                 onClick={() => {
                   embed.url = undefined;
                   message.data.embeds = message.data.embeds!.filter(
-                    (e) => !galleryChildren.includes(e)
+                    (e) => !galleryChildren.includes(e),
                   );
                   setData({ ...data });
                 }}

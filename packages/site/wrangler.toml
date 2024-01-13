@@ -1,0 +1,21 @@
+name = "boogiehook-site"
+
+workers_dev = true
+main = "./build/index.js"
+# https://developers.cloudflare.com/workers/platform/compatibility-dates
+compatibility_date = "2023-04-20"
+
+kv_namespaces = [
+  { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }
+]
+
+[site]
+  bucket = "./public"
+
+[build]
+  command = "npm run build"
+
+[[d1_databases]]
+binding = "D1"
+database_name = "boogiebot-dev"
+database_id = "5b85b456-c5b6-449a-9e97-ccc10245f673"

@@ -19,7 +19,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   }
   const webhook = await getDiscordWebhookAuth(context).authenticate(
     "discord",
-    request
+    request,
   );
   return { error: null, webhook };
 };

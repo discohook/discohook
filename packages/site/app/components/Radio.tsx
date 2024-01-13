@@ -7,7 +7,7 @@ export const Radio = (
   > & {
     label: React.ReactNode;
     description?: React.ReactNode;
-  }
+  },
 ) => {
   const { label, description } = props;
 

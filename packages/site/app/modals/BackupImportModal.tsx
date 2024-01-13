@@ -9,7 +9,7 @@ import { base64UrlEncode } from "~/util/text";
 import { Modal, ModalProps } from "./Modal";
 
 export const backupDataAsNewest = (
-  data: DiscohookBackupExportData
+  data: DiscohookBackupExportData,
 ): DiscohookBackup[] => {
   switch (data.version) {
     case 3:
@@ -48,7 +48,7 @@ export const backupDataAsNewest = (
 };
 
 export const BackupImportModal = (
-  props: ModalProps & { backups: { name: string }[] }
+  props: ModalProps & { backups: { name: string }[] },
 ) => {
   const [fileErrors, setFileErrors] = useState<string[]>([]);
   const [data, setData] = useState<DiscohookBackupExportData>();
@@ -95,7 +95,7 @@ export const BackupImportModal = (
                 setData(result);
                 if ("backups" in result) {
                   setSelectedBackups(
-                    result.backups.map((b: { name: string }) => b.name)
+                    result.backups.map((b: { name: string }) => b.name),
                   );
                 }
               } catch {
@@ -128,7 +128,7 @@ export const BackupImportModal = (
                       onClick={() => {
                         if (selectedBackups.includes(backup.name)) {
                           setSelectedBackups(
-                            selectedBackups.filter((b) => b !== backup.name)
+                            selectedBackups.filter((b) => b !== backup.name),
                           );
                         } else {
                           setSelectedBackups([...selectedBackups, backup.name]);
@@ -141,8 +141,8 @@ export const BackupImportModal = (
                           .map((b) => b.name)
                           .includes(backup.name) && (
                           <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                            <CoolIcon icon="Circle_Warning" /> You already
-                            have a backup with this name
+                            <CoolIcon icon="Circle_Warning" /> You already have
+                            a backup with this name
                           </p>
                         )}
                       </div>
@@ -163,7 +163,7 @@ export const BackupImportModal = (
                           version: "d2",
                           messages: backup.messages,
                           targets: backup.targets,
-                        } as QueryData)
+                        } as QueryData),
                       )}`}
                       className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
                       title={`View ${backup.name}`}
@@ -187,13 +187,13 @@ export const BackupImportModal = (
               {
                 action: "IMPORT_BACKUPS",
                 backups: JSON.stringify(
-                  backups!.filter((b) => selectedBackups.includes(b.name))
+                  backups!.filter((b) => selectedBackups.includes(b.name)),
                 ),
               },
               {
                 method: "POST",
                 replace: true,
-              }
+              },
             );
             props.setOpen(false);
           }}

@@ -19,7 +19,7 @@ export interface ShortenedData {
 export const generateUniqueShortenKey = async (
   kv: KVNamespace,
   defaultLength: number,
-  tries = 10
+  tries = 10,
 ): Promise<{ id: string; key: string }> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const _ of Array(tries)) {
@@ -41,7 +41,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     data: jsonAsString(ZodQueryData),
     // Max 4 weeks, min 5 minutes
     ttl: z.optional(
-      zx.IntAsString.refine((val) => val >= 300000 && val <= 2419200000)
+      zx.IntAsString.refine((val) => val >= 300000 && val <= 2419200000),
     ),
     origin: z.optional(z.enum(ALLOWED_EXTERNAL_ORIGINS)),
   });

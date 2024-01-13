@@ -1,4 +1,9 @@
-import { APIActionRowComponent, APIAttachment, APIEmbed, APIMessageActionRowComponent } from "discord-api-types/v10";
+import {
+  APIActionRowComponent,
+  APIAttachment,
+  APIEmbed,
+  APIMessageActionRowComponent,
+} from "discord-api-types/v10";
 import { z } from "zod";
 
 /** The version of the query data, defaults to `d2`

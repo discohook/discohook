@@ -6,7 +6,8 @@ import { MessageComponents } from "~/components/preview/Components";
 import { getUser } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 
-export const loader = ({ request, context }: LoaderArgs) => getUser(request, context);
+export const loader = ({ request, context }: LoaderArgs) =>
+  getUser(request, context);
 
 export const meta: MetaFunction = () => [
   { title: "Privacy & Terms - Boogiehook" },

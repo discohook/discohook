@@ -24,7 +24,7 @@ const Twemoji_: React.FC<
           className: `inline-block w-auto h-4 align-[-0.125em] ${
             className ?? ""
           }`,
-        }
+        },
       ),
     }}
   />

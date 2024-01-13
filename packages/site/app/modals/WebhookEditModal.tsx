@@ -30,7 +30,7 @@ export const WebhookEditModal = (
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
     webhookId: string | undefined;
     user?: User | null;
-  }
+  },
 ) => {
   const { webhookId, targets, updateTargets, user } = props;
   const webhook = webhookId ? targets[webhookId] : undefined;
@@ -38,7 +38,7 @@ export const WebhookEditModal = (
   type Payload = { name?: string; avatarUrl?: string | null };
   const [payload, updatePayload] = useReducer(
     (d: Payload, partialD: Partial<Payload>) => ({ ...d, ...partialD }),
-    {}
+    {},
   );
   useEffect(() => {
     if (webhook) {
@@ -79,7 +79,7 @@ export const WebhookEditModal = (
                     ? undefined
                     : parsed.data.avatar,
             },
-            user ? getUserTag(user) : "anonymous"
+            user ? getUserTag(user) : "anonymous",
             // strings
             //   .formatString(
             //     strings.requestedBy,
@@ -114,7 +114,7 @@ export const WebhookEditModal = (
                   reader.onload = (e) => {
                     const result = e.target!.result as string;
                     document.querySelector<HTMLInputElement>(
-                      "input[name=\"avatar\"]"
+                      'input[name="avatar"]',
                     )!.value = result;
                     updatePayload({ avatarUrl: result });
                   };
@@ -141,7 +141,7 @@ export const WebhookEditModal = (
                   onClick={() => {
                     updatePayload({ avatarUrl: null });
                     const input = document.querySelector<HTMLInputElement>(
-                      "input[name=\"avatar\"]"
+                      'input[name="avatar"]',
                     );
                     if (input) input.value = "";
                   }}

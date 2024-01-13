@@ -13,7 +13,7 @@ export const loader = async ({ params, context }: LoaderArgs) => {
   if (!shortenedRaw) {
     throw json(
       { message: "No shortened data with that ID. It may have expired." },
-      404
+      404,
     );
   }
   const shortened: ShortenedData = JSON.parse(shortenedRaw);

@@ -20,7 +20,7 @@ const strings = {
 // });
 
 export const BackupEditModal = (
-  props: ModalProps & { backup?: LoadedBackup }
+  props: ModalProps & { backup?: LoadedBackup },
 ) => {
   const { backup } = props;
   const fetcher = useFetcher<typeof ApiBackupsIdAction>();

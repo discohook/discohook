@@ -36,7 +36,7 @@ export type SubmitMessageResult =
 
 export const submitMessage = async (
   target: APIWebhook,
-  message: QueryData["messages"][number]
+  message: QueryData["messages"][number],
 ): Promise<SubmitMessageResult> => {
   let data;
   if (message.reference) {
@@ -47,7 +47,7 @@ export const submitMessage = async (
       {
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
-      }
+      },
     );
   } else {
     data = await executeWebhook(target.id, target.token!, {
@@ -68,7 +68,7 @@ export const MessageSendModal = (
     targets: Record<string, APIWebhook>;
     setAddingTarget: (open: boolean) => void;
     data: QueryData;
-  }
+  },
 ) => {
   const { targets, setAddingTarget, data } = props;
 
@@ -79,7 +79,7 @@ export const MessageSendModal = (
       ...d,
       ...partialD,
     }),
-    {}
+    {},
   );
   useEffect(() => {
     // Set new targets to be enabled by default,
@@ -87,7 +87,7 @@ export const MessageSendModal = (
     updateSelectedWebhooks(
       Object.keys(targets)
         .filter((targetId) => !Object.keys(selectedWebhooks).includes(targetId))
-        .reduce((o, targetId) => ({ ...o, [targetId]: true }), {})
+        .reduce((o, targetId) => ({ ...o, [targetId]: true }), {}),
     );
   }, [targets]);
 
@@ -101,10 +101,10 @@ export const MessageSendModal = (
       ...d,
       ...partialD,
     }),
-    {}
+    {},
   );
   const enabledMessagesCount = Object.values(messages).filter(
-    (d) => d.enabled
+    (d) => d.enabled,
   ).length;
   useEffect(() => {
     // Reset all messages to be enabled by default
@@ -112,7 +112,7 @@ export const MessageSendModal = (
     updateMessages(
       data.messages
         .map((_, i) => i)
-        .reduce((o, index) => ({ ...o, [index]: { enabled: true } }), {})
+        .reduce((o, index) => ({ ...o, [index]: { enabled: true } }), {}),
     );
   }, [data.messages]);
 
@@ -128,8 +128,8 @@ export const MessageSendModal = (
               ...o,
               [index]: { result: undefined, enabled: true },
             }),
-            {}
-          )
+            {},
+          ),
       );
     }
   };
@@ -290,11 +290,11 @@ export const MessageSendModal = (
             }
             onClick={async () => {
               for (const [targetId] of Object.entries(selectedWebhooks).filter(
-                ([_, v]) => v
+                ([_, v]) => v,
               )) {
                 const webhook = targets[targetId];
                 for (const [index] of Object.entries(messages).filter(
-                  ([_, v]) => v.enabled
+                  ([_, v]) => v.enabled,
                 )) {
                   const message = data.messages[Number(index)];
                   if (!message) continue;
@@ -330,7 +330,7 @@ export const MessageSendModal = (
                       {
                         method: "POST",
                         action: "/api/audit-log",
-                      }
+                      },
                     );
                   }
 

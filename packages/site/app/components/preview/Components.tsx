@@ -70,7 +70,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
         disabled={data.disabled}
         onClick={(e) => {
           e.currentTarget.dataset.open = String(
-            e.currentTarget.dataset.open === "false"
+            e.currentTarget.dataset.open === "false",
           );
           if (onClick) onClick(e);
         }}

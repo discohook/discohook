@@ -65,11 +65,7 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
         </div>
         {image && (
           <div className="m-auto max-h-[calc(100vh_-_4rem)] overflow-hidden">
-            <img
-              src={image.url}
-              alt={image.alt}
-              className="rounded"
-            />
+            <img src={image.url} alt={image.alt} className="rounded" />
           </div>
         )}
         <div className="w-6 mx-auto md:my-auto md:mr-0 md:ml-8">

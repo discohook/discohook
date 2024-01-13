@@ -10,7 +10,7 @@ export const FileInput = (
     description?: ReactNode;
     errors?: ReactNode[];
     clearable?: boolean;
-  }
+  },
 ) => (
   <label className="block group/input">
     <p className="text-sm font-medium flex">{props.label}</p>
@@ -31,7 +31,7 @@ export const FileInput = (
           }
           const textBox =
             e.currentTarget.parentElement!.querySelector<HTMLParagraphElement>(
-              "p.filenames"
+              "p.filenames",
             );
           if (textBox) {
             if (fileNames.length === 0) {
@@ -58,7 +58,7 @@ export const FileInput = (
             const p = e.currentTarget.parentElement!,
               input = p.querySelector<HTMLInputElement>(
                 // input.peer/input is invalid
-                `input[class="peer/input"]`
+                `input[class="peer/input"]`,
               ),
               textBox = p.querySelector<HTMLParagraphElement>("p.filenames");
             if (input) {

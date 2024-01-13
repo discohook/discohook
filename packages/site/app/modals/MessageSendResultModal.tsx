@@ -17,7 +17,7 @@ const strings = {
 };
 
 export const MessageSendResultModal = (
-  props: ModalProps & { result?: SubmitMessageResult }
+  props: ModalProps & { result?: SubmitMessageResult },
 ) => {
   const { result } = props;
   const success = result?.status === "success";

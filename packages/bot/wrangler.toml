@@ -1,0 +1,12 @@
+name = "boogiehook-bot"
+main = "./src/server.ts"
+compatibility_date = "2023-05-18"
+node_compat = true
+kv_namespaces = [
+  { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "boogiebot-dev"
+database_id = "5b85b456-c5b6-449a-9e97-ccc10245f673"

@@ -9,7 +9,7 @@ const strings = {
   title: "History",
   noHistory: "This editor session has no history recorded.",
   description:
-    "This is cleared whenever the editor is loaded. If you need to store messages persistently, use the \"Save Message\" button.",
+    'This is cleared whenever the editor is loaded. If you need to store messages persistently, use the "Save Message" button.',
   xMessage: "{0} message",
   xMessages: "{0} messages",
   xEmbed: "{0} embed",
@@ -23,7 +23,7 @@ export const HistoryModal = (
     localHistory: HistoryItem[];
     setLocalHistory: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
     setData: React.Dispatch<React.SetStateAction<QueryData>>;
-  }
+  },
 ) => {
   const { localHistory, setLocalHistory, setData } = props;
   const [settings] = useLocalStorage();
@@ -94,7 +94,7 @@ export const HistoryModal = (
                       onClick={() => {
                         setData(item.data);
                         setLocalHistory(
-                          localHistory.filter((_, i) => i < itemI)
+                          localHistory.filter((_, i) => i < itemI),
                         );
                         props.setOpen(false);
                       }}
@@ -109,7 +109,7 @@ export const HistoryModal = (
                       title={strings.removeFromHistory}
                       onClick={() => {
                         setLocalHistory(
-                          localHistory.filter((_, i) => i !== itemI)
+                          localHistory.filter((_, i) => i !== itemI),
                         );
                       }}
                     >

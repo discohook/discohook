@@ -22,8 +22,8 @@ export const ZodKofiDonationPayload = z.object({
           direct_link_code: z.string(),
           variation_name: z.string(),
           quantity: z.number(),
-        })
-      )
+        }),
+      ),
     ),
     tier_name: z.nullable(z.string()),
     shipping: z.nullable(
@@ -36,7 +36,7 @@ export const ZodKofiDonationPayload = z.object({
         country: z.string(),
         country_code: z.string(),
         telephone: z.string(),
-      })
+      }),
     ),
   }),
 });

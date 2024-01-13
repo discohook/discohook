@@ -129,14 +129,14 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
                 skinTone === 0
                   ? "👏🏻"
                   : skinTone === 1
-                  ? "👏🏼"
-                  : skinTone === 2
-                  ? "👏🏽"
-                  : skinTone === 3
-                  ? "👏🏾"
-                  : skinTone === 4
-                  ? "👏🏿"
-                  : "👏"
+                    ? "👏🏼"
+                    : skinTone === 2
+                      ? "👏🏽"
+                      : skinTone === 3
+                        ? "👏🏾"
+                        : skinTone === 4
+                          ? "👏🏿"
+                          : "👏"
               }
               className="h-6 align-[-0.3em] w-6"
               title="Set skin tone"
@@ -163,7 +163,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
                   .filter(
                     (e) =>
                       e.id.includes(query) ||
-                      e.keywords.map((k) => k.includes(query)).includes(true)
+                      e.keywords.map((k) => k.includes(query)).includes(true),
                   )
                   .map((emoji) => {
                     const skin =

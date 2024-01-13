@@ -178,7 +178,7 @@ export const Embed: React.FC<{
                       ? "image/gif"
                       : "image/png",
                     url: image.url,
-                  } as APIAttachment)
+                  }) as APIAttachment,
               )}
               setImageModalData={setImageModalData}
             />

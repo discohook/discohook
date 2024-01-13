@@ -10,7 +10,7 @@ export const TextArea = (
     description?: ReactNode;
     delayOnInput?: number;
     errors?: ReactNode[];
-  }
+  },
 ) => {
   const { label, onInput, delayOnInput } = props;
 
@@ -28,9 +28,7 @@ export const TextArea = (
           <span className="ml-auto">max. {props.maxLength}</span>
         )}
       </p>
-      {props.description && (
-        <p className="text-sm">{props.description}</p>
-      )}
+      {props.description && <p className="text-sm">{props.description}</p>}
       <textarea
         {...newProps}
         onInput={(e) => {
@@ -50,7 +48,7 @@ export const TextArea = (
               setTimeout(() => {
                 onInput(event);
                 setTimeoutId(undefined);
-              }, delayOnInput)
+              }, delayOnInput),
             );
           } else if (onInput) {
             return onInput(event);
@@ -61,13 +59,17 @@ export const TextArea = (
         }`}
       />
       {props.errors &&
-        props.errors.filter(e => e !== undefined).map((error, i) => (
-          <p key={`${props.id ?? label}-error-${i}`} className="text-rose-500 font-medium mt-1 text-sm">
-            <CoolIcon icon="Circle_Warning" className="mr-1.5" />
-            {error}
-          </p>
-        ))}
+        props.errors
+          .filter((e) => e !== undefined)
+          .map((error, i) => (
+            <p
+              key={`${props.id ?? label}-error-${i}`}
+              className="text-rose-500 font-medium mt-1 text-sm"
+            >
+              <CoolIcon icon="Circle_Warning" className="mr-1.5" />
+              {error}
+            </p>
+          ))}
     </label>
   );
 };
-

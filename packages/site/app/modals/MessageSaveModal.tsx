@@ -16,7 +16,7 @@ const strings = {
   title: "Save Message",
   temporaryUrl: "Temporary Share URL",
   generate: "Generate",
-  clickGenerate: "Press \"Generate\" to generate a share link",
+  clickGenerate: 'Press "Generate" to generate a share link',
   copy: "Copy",
   includeWebhookUrls: "Include webhook URLs",
   expiresAt: "This link expires at {0} ({1}).",
@@ -34,7 +34,7 @@ export const MessageSaveModal = (
     data: QueryData;
     setData: React.Dispatch<React.SetStateAction<QueryData>>;
     user?: User | null;
-  }
+  },
 ) => {
   const { targets, data, setData, user } = props;
 
@@ -53,15 +53,15 @@ export const MessageSaveModal = (
             targets:
               includeTargets_ ?? includeTargets
                 ? Object.values(targets).map((t) => ({
-                  url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-                }))
+                    url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
+                  }))
                 : undefined,
           }),
         },
-        { method: "POST", action: "/api/share" }
+        { method: "POST", action: "/api/share" },
       );
     },
-    [includeTargets, data, targets]
+    [includeTargets, data, targets],
   );
 
   const [backup, setBackup] = useState<typeof backupFetcher.data>();
@@ -160,7 +160,7 @@ export const MessageSaveModal = (
                     {
                       action: `/api/backups/${backup!.id}`,
                       method: "PATCH",
-                    }
+                    },
                   );
                 }}
               >
@@ -179,7 +179,7 @@ export const MessageSaveModal = (
                     {
                       action: "/api/backups",
                       method: "POST",
-                    }
+                    },
                   )
                 }
               >

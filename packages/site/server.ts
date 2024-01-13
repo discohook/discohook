@@ -2,7 +2,6 @@ import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
 import type { AppLoadContext } from "@remix-run/cloudflare";
 import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
-// eslint-disable-next-line import/no-unresolved
 import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
 
 const MANIFEST = JSON.parse(__STATIC_CONTENT_MANIFEST);
@@ -18,7 +17,7 @@ export default {
     env: {
       __STATIC_CONTENT: Fetcher;
     },
-    ctx: ExecutionContext
+    ctx: ExecutionContext,
   ): Promise<Response> {
     try {
       const url = new URL(request.url);
@@ -37,7 +36,7 @@ export default {
             browserTTL: ttl,
             edgeTTL: ttl,
           },
-        }
+        },
       );
     } catch (error) {
       // No-op

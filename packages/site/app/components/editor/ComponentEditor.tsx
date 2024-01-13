@@ -25,7 +25,7 @@ import { TextInput } from "../TextInput";
 import { CUSTOM_EMOJI_RE } from "../preview/Markdown";
 
 export const getComponentText = (
-  component: APIMessageComponent
+  component: APIMessageComponent,
 ): string | undefined =>
   component.type === ComponentType.Button
     ? component.label ?? component.emoji?.name
@@ -61,11 +61,11 @@ export const getRowWidth = (
     | APIMentionableSelectComponent
     | APIChannelSelectComponent
     | APITextInputComponent
-  >
+  >,
 ): number => {
   return row.components.reduce(
     (last, component) => getComponentWidth(component) + last,
-    0
+    0,
   );
 };
 
@@ -77,7 +77,7 @@ const strings = {
 };
 
 export const getComponentErrors = (
-  component: APIMessageComponent
+  component: APIMessageComponent,
 ): string[] => {
   const errors: string[] = [];
   switch (component.type) {
@@ -334,8 +334,8 @@ export const ActionRowEditor: React.FC<{
                               value={
                                 option.emoji?.id
                                   ? `<${option.emoji.animated ? "a" : ""}:${
-                                    option.emoji.name
-                                  }:${option.emoji.id}>`
+                                      option.emoji.name
+                                    }:${option.emoji.id}>`
                                   : option.emoji?.name ?? ""
                               }
                               onInput={(e) => {

@@ -28,7 +28,7 @@ const unitValues: {
 export const timeDiff = (
   earlier: Date,
   later: Date,
-  short: boolean = false
+  short: boolean = false,
 ) => {
   let diff = Math.abs(later.getTime() - earlier.getTime()); // ms
   let interval: IntervalUnit | ShortIntervalUnit = short ? "ms" : "millisecond";

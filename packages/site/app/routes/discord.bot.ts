@@ -10,6 +10,6 @@ export const loader = ({ request, context }: LoaderArgs) =>
           scope: "bot applications.commands",
           permissions: "0",
           guild_id: new URL(request.url).searchParams.get("guildId") ?? "",
-        })
-    ).href
+        }),
+    ).href,
   );

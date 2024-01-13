@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../app/entry.client.tsx"],
-  "sourcesContent": ["// REMIX HMR BEGIN\nimport * as __hmr__ from \"remix:hmr\";\nif (import.meta) {\nimport.meta.hot = __hmr__.createHotContext(\n//@ts-expect-error\n\"app\\\\entry.client.tsx\"\n);\nimport.meta.hot.lastModified = \"1702920535000\";\n}\n// REMIX HMR END\n\n/**\n * By default, Remix will handle hydrating your app on the client for you.\n * You are free to delete this file if you'd like to, but if you ever want it revealed again, you can run `npx remix reveal` \u2728\n * For more information, see https://remix.run/file-conventions/entry.client\n */\n\nimport { RemixBrowser } from \"@remix-run/react\";\nimport { startTransition, StrictMode } from \"react\";\nimport { hydrateRoot } from \"react-dom/client\";\n\nstartTransition(() => {\n  hydrateRoot(\n    document,\n    <StrictMode>\n      <RemixBrowser />\n    </StrictMode>\n  );\n});\n"],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;AAkBA,IAAAA,gBAA4C;AAC5C,oBAA4B;AAMtB;AAvBN,IAAI,aAAa;AACjB,cAAY,MAAc;AAAA;AAAA,IAE1B;AAAA,EACA;AACA,cAAY,IAAI,eAAe;AAC/B;AAAA,IAaA,+BAAgB,MAAM;AACpB;AAAA,IACE;AAAA,IACA,mDAAC,4BACC,6DAAC,kBAAD;AAAA;AAAA;AAAA;AAAA,WAAc,KADhB;AAAA;AAAA;AAAA;AAAA,WAEA;AAAA,EACF;AACF,CAAC;",
-  "names": ["import_react"]
-}

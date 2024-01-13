@@ -14,7 +14,9 @@ export type UserAuth = {
 };
 
 export const getDiscordAuth = (context: Context) => {
-  const discordAuth = new Authenticator<UserAuth>(getSessionStorage(context).sessionStorage);
+  const discordAuth = new Authenticator<UserAuth>(
+    getSessionStorage(context).sessionStorage,
+  );
   const strategy = new DiscordStrategy(
     {
       clientID: context.env.DISCORD_CLIENT_ID,
@@ -63,7 +65,7 @@ export const getDiscordAuth = (context: Context) => {
         accessToken,
         refreshToken,
       };
-    }
+    },
   );
 
   discordAuth.use(strategy);

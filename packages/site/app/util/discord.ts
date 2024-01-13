@@ -28,7 +28,7 @@ export const discordRequest = async (
   options?: {
     query?: URLSearchParams;
     init?: Omit<RequestInit, "method">;
-  }
+  },
 ) => {
   const search = options?.query ? "?" + options.query.toString() : "";
   const init = options?.init ?? {};
@@ -48,7 +48,7 @@ export const getWebhookMessage = async (
   webhookId: string,
   webhookToken: string,
   messageId: string,
-  threadId?: string
+  threadId?: string,
 ) => {
   const query = threadId
     ? new URLSearchParams({ thread_id: threadId })
@@ -56,7 +56,7 @@ export const getWebhookMessage = async (
   const data = await discordRequest(
     "GET",
     `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
-    { query }
+    { query },
   );
   return (await data.json()) as RESTGetAPIWebhookWithTokenMessageResult;
 };
@@ -66,7 +66,7 @@ export const executeWebhook = async (
   webhookToken: string,
   payload: RESTPostAPIWebhookWithTokenJSONBody,
   files?: RawFile[],
-  threadId?: string
+  threadId?: string,
 ) => {
   const query = new URLSearchParams({ wait: "true" });
   if (threadId) {
@@ -88,7 +88,7 @@ export const executeWebhook = async (
         },
         // files,
       },
-    }
+    },
   );
 
   return (await data.json()) as RESTPostAPIWebhookWithTokenWaitResult;
@@ -100,7 +100,7 @@ export const updateWebhookMessage = async (
   messageId: string,
   payload: RESTPatchAPIWebhookWithTokenMessageJSONBody,
   files?: RawFile[],
-  threadId?: string
+  threadId?: string,
 ) => {
   const query = new URLSearchParams();
   if (threadId) {
@@ -122,7 +122,7 @@ export const updateWebhookMessage = async (
               : "application/json",
         },
       },
-    }
+    },
   );
 
   return (await data.json()) as RESTPatchAPIWebhookWithTokenMessageResult;
@@ -132,7 +132,7 @@ export const modifyWebhook = async (
   webhookId: string,
   webhookToken: string,
   payload: RESTPatchAPIWebhookWithTokenJSONBody,
-  reason?: string
+  reason?: string,
 ) => {
   const data = await discordRequest(
     "PATCH",
@@ -149,7 +149,7 @@ export const modifyWebhook = async (
             : {}),
         },
       },
-    }
+    },
   );
 
   return (await data.json()) as RESTPatchAPIWebhookWithTokenResult;
@@ -174,7 +174,7 @@ class CDN {
 
   _withOpts(
     options: BaseImageURLOptions | undefined,
-    defaultSize?: BaseImageURLOptions["size"]
+    defaultSize?: BaseImageURLOptions["size"],
   ): string {
     return `.${options?.extension ?? "webp"}?size=${
       options?.size ?? defaultSize ?? 1024
@@ -184,7 +184,7 @@ class CDN {
   avatar(
     id: string,
     avatarHash: string,
-    options?: BaseImageURLOptions
+    options?: BaseImageURLOptions,
   ): string {
     return this.BASE + `/avatars/${id}/${avatarHash}` + this._withOpts(options);
   }

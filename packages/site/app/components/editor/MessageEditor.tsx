@@ -14,7 +14,7 @@ const strings = {
 };
 
 export const getMessageText = (
-  message: QueryData["messages"][number]["data"]
+  message: QueryData["messages"][number]["data"],
 ): string | undefined =>
   message.content ??
   (message.embeds
@@ -50,7 +50,7 @@ export const MessageEditor: React.FC<{
     : [];
   const possiblyActionable = authorTypes.includes(AuthorType.ActionableWebhook);
   const possiblyApplication = authorTypes.includes(
-    AuthorType.ApplicationWebhook
+    AuthorType.ApplicationWebhook,
   );
 
   return (

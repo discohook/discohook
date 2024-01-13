@@ -20,12 +20,12 @@ export const getSessionStorage = (context: Context) => {
       httpOnly: true,
       secrets: [context.env.SESSION_SECRET],
       // secure: process.env.NODE_ENV === "production",
-    })
-  })
+    }),
+  });
 
   const { getSession, commitSession, destroySession } = sessionStorage;
   return { getSession, commitSession, destroySession, sessionStorage };
-}
+};
 
 export type Jsonify<T> = SerializeFrom<() => Promise<T>>;
 
@@ -37,7 +37,7 @@ export const writeOauthUser = async ({
   db,
   discord,
 }: {
-  db: ReturnType<typeof getDb>,
+  db: ReturnType<typeof getDb>;
   discord?: DiscordProfile;
 }) => {
   const j = (discord ? discord.__json : {}) as APIUser;
@@ -49,9 +49,7 @@ export const writeOauthUser = async ({
         name: discord ? j.global_name ?? j.username : "no name",
       })
       .onConflictDoUpdate({
-        target: discord
-          ? users.discordId
-          : users.id,
+        target: discord ? users.discordId : users.id,
         set: {
           name: discord ? j.global_name ?? j.username : "no name",
         },
@@ -88,7 +86,9 @@ export const writeOauthUser = async ({
 export type User = SerializeFrom<typeof writeOauthUser>;
 
 export const getUserId = async (request: Request, context: Context) => {
-  const session = await getSessionStorage(context).getSession(request.headers.get("Cookie"));
+  const session = await getSessionStorage(context).getSession(
+    request.headers.get("Cookie"),
+  );
   const userId = session.get("user")?.id;
   if (!userId || typeof userId !== "number") {
     return null;
@@ -99,17 +99,17 @@ export const getUserId = async (request: Request, context: Context) => {
 export async function getUser(
   request: Request,
   context: Context,
-  throwIfNull?: false
+  throwIfNull?: false,
 ): Promise<User | null>;
 export async function getUser(
   request: Request,
   context: Context,
-  throwIfNull?: true
+  throwIfNull?: true,
 ): Promise<User>;
 export async function getUser(
   request: Request,
   context: Context,
-  throwIfNull?: boolean
+  throwIfNull?: boolean,
 ): Promise<User | null> {
   const userId = await getUserId(request, context);
   if (!userId) {

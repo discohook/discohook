@@ -55,7 +55,7 @@ export default function App() {
               } else {
                 document.documentElement.classList.add("dark");
               }
-            `
+            `,
           }}
         />
       </head>

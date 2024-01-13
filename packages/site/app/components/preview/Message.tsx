@@ -29,7 +29,7 @@ export enum AuthorType {
 
 export const getAuthorType = (
   discordApplicationId?: string,
-  webhook?: APIWebhook
+  webhook?: APIWebhook,
 ): AuthorType => {
   if (webhook) {
     if (
@@ -122,12 +122,12 @@ export const Message: React.FC<{
   const fileAttachments = (message.attachments ?? []).filter(
     (a) =>
       a.content_type &&
-      !["video", "image"].includes(a.content_type.split("/")[0])
+      !["video", "image"].includes(a.content_type.split("/")[0]),
   );
   const mediaAttachments = (message.attachments ?? []).filter(
     (a) =>
       a.content_type &&
-      ["video", "image"].includes(a.content_type.split("/")[0])
+      ["video", "image"].includes(a.content_type.split("/")[0]),
   );
 
   return (

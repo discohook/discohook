@@ -17,15 +17,19 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
 This site is not maintained by the original creator of Discohook.`,
       },
     ],
-    components: [{
-      type: ComponentType.ActionRow,
-      components: [{
-        type: ComponentType.Button,
-        style: ButtonStyle.Link,
-        label: "Donate to Boogiehook",
-        url: "https://ko-fi.com/shayypy",
-      }]
-    }]
+    components: [
+      {
+        type: ComponentType.ActionRow,
+        components: [
+          {
+            type: ComponentType.Button,
+            style: ButtonStyle.Link,
+            label: "Donate to Boogiehook",
+            url: "https://ko-fi.com/shayypy",
+          },
+        ],
+      },
+    ],
   },
 };
 

@@ -12,18 +12,18 @@ export const InfoBox: React.FC<
     !severity || severity === "blue"
       ? "bg-blurple-100 border-blurple-200 dark:bg-blurple-300 dark:border-blurple-300 dark:text-black"
       : severity === "yellow"
-      ? "bg-yellow-100 border-yellow-200 dark:bg-yellow-300 dark:border-yellow-300 dark:text-black"
-      : severity === "red"
-      ? "bg-rose-300 border-rose-400 dark:border-rose-300 dark:text-black"
-      : "";
+        ? "bg-yellow-100 border-yellow-200 dark:bg-yellow-300 dark:border-yellow-300 dark:text-black"
+        : severity === "red"
+          ? "bg-rose-300 border-rose-400 dark:border-rose-300 dark:text-black"
+          : "";
   const overlayColors =
     !severity || severity === "blue"
       ? "from-blurple-100 dark:from-blurple-300"
       : severity === "yellow"
-      ? "from-yellow-100 dark:from-yellow-300"
-      : severity === "red"
-      ? "from-rose-300"
-      : "";
+        ? "from-yellow-100 dark:from-yellow-300"
+        : severity === "red"
+          ? "from-rose-300"
+          : "";
 
   return (
     <div
@@ -45,8 +45,7 @@ export const InfoBox: React.FC<
         </details>
       ) : (
         <p>
-          {icon && <CoolIcon icon={icon} />}{" "}
-          {children}
+          {icon && <CoolIcon icon={icon} />} {children}
         </p>
       )}
     </div>

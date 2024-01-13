@@ -7,7 +7,7 @@ export const Checkbox = (
   > & {
     label: React.ReactNode;
     description?: React.ReactNode;
-  }
+  },
 ) => {
   const { label, description } = props;
 
@@ -35,8 +35,6 @@ const ConditionalBox: React.FC<{ check?: boolean; className?: string }> = ({
         : "inline-flex peer-checked:hidden"
     } ${className ?? ""}`}
   >
-    {check && (
-      <CoolIcon icon="Check" className="m-auto mr-[2px] transition" />
-    )}
+    {check && <CoolIcon icon="Check" className="m-auto mr-[2px] transition" />}
   </div>
 );

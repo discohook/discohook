@@ -9,7 +9,7 @@ export interface Settings {
 
 export const useLocalStorage = (): [
   Settings,
-  (data: Partial<Settings>) => void
+  (data: Partial<Settings>) => void,
 ] => {
   try {
     localStorage;
@@ -18,7 +18,7 @@ export const useLocalStorage = (): [
   }
 
   const settings = JSON.parse(
-    localStorage.getItem("boogiehook_settings") ?? "{}"
+    localStorage.getItem("boogiehook_settings") ?? "{}",
   );
   const [state, setState] = useState(settings as Settings);
   useEffect(() => {

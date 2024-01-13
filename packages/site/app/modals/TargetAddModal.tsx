@@ -22,7 +22,7 @@ const strings = {
 export const TargetAddModal = (
   props: ModalProps & {
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
-  }
+  },
 ) => {
   const [webhook, setWebhook] = useState<APIWebhook>();
   const [error, setError] = useState<ReactNode>();
@@ -159,7 +159,7 @@ export const TargetAddModal = (
               window.open(
                 "/auth/discord-webhook",
                 "_blank",
-                "popup width=530 height=750"
+                "popup width=530 height=750",
               )
             }
           >

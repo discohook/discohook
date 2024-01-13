@@ -15,7 +15,7 @@ export const MessageSetModal = (
     data: QueryData;
     setData: React.Dispatch<React.SetStateAction<QueryData>>;
     messageIndex?: number;
-  }
+  },
 ) => {
   const { targets, setAddingTarget, data, setData, messageIndex } = props;
   const message =
@@ -39,7 +39,7 @@ export const MessageSetModal = (
   const possibleWebhooks = Object.values(targets).filter((w) =>
     messageLink && w.guild_id && messageLink[0]
       ? w.guild_id === messageLink[0]
-      : true
+      : true,
   );
   if (message?.data?.webhook_id) {
     const extantWebhookMatch = targets[message.data.webhook_id];
@@ -82,7 +82,7 @@ export const MessageSetModal = (
                   Invalid message link. They start with{" "}
                   https://discord.com/channels/... and have three sets of
                   numbers.
-                </>
+                </>,
               );
               return;
             }
@@ -142,12 +142,12 @@ export const MessageSetModal = (
             {Object.keys(targets).length > 0 &&
               messageLink &&
               messageLink[0] && (
-              <p>
+                <p>
                   You haven't added any webhooks that match the message link you
                   provided. To overwrite or edit, you will need to add the
                   correct webhook.
-              </p>
-            )}
+                </p>
+              )}
             <Button onClick={() => setAddingTarget(true)}>Add Webhook</Button>
           </div>
         )}
@@ -182,17 +182,17 @@ export const MessageSetModal = (
                 let msg = await getWebhookMessage(
                   webhook.id,
                   webhook.token!,
-                  messageLink[2]
+                  messageLink[2],
                 );
                 if ("code" in msg && msg.code === 10008 && messageLink[1]) {
                   console.log(
-                    `Message ID ${messageLink[2]} not found in webhook channel, trying again with ${messageLink[1]} as thread ID`
+                    `Message ID ${messageLink[2]} not found in webhook channel, trying again with ${messageLink[1]} as thread ID`,
                   );
                   msg = await getWebhookMessage(
                     webhook.id,
                     webhook.token!,
                     messageLink[2],
-                    messageLink[1]
+                    messageLink[1],
                   );
                 }
                 if ("message" in msg) {
