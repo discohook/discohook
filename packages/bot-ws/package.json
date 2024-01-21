@@ -1,0 +1,23 @@
+{
+  "name": "boogiehook-bot-ws",
+  "version": "1.0.0",
+  "description": "Extra proxy application for features that require a gateway connection",
+  "repository": "https://github.com/shayypy/boogiehook",
+  "author": "shayypy",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "bot": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@discordjs/rest": "^2.2.0",
+    "@discordjs/ws": "^1.0.2",
+    "discord-api-types": "^0.37.67",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.54.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}

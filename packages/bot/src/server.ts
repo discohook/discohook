@@ -5,6 +5,7 @@ import {
   APIMessageComponentInteraction,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  GatewayDispatchEvents,
   InteractionResponseType,
   InteractionType,
 } from "discord-api-types/v10";
@@ -20,6 +21,7 @@ import {
   modalStore,
 } from "./components.js";
 import { getErrorMessage } from "./errors.js";
+import { eventNameToCallback } from "./events.js";
 import { InteractionContext } from "./interactions.js";
 import { Env, WorkerContext } from "./types/env.js";
 import { isDiscordError } from "./util/error.js";
@@ -230,6 +232,29 @@ router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
 
   console.error("Unknown Type");
   return respond({ error: "Unknown Type" });
+});
+
+router.post("/ws", async (request, env: Env, workerCtx: WorkerContext) => {
+  const auth = request.headers.get("Authorization");
+  if (!auth || !env.DISCORD_TOKEN) {
+    return new Response(null, { status: 401 });
+  }
+  const [scope, token] = auth.split(" ");
+  if (scope !== "Bot" || token !== env.DISCORD_TOKEN) {
+    return new Response(null, { status: 403 });
+  }
+
+  const eventName = request.headers.get("X-Boogiehook-Event");
+  if (!eventName) {
+    return new Response(null, { status: 400 });
+  }
+
+  const callback = eventNameToCallback[eventName as GatewayDispatchEvents];
+  if (callback) {
+    workerCtx.waitUntil(callback(await request.json()));
+    return new Response(null, { status: 204 });
+  }
+  return respond({ error: "No event callback found.", status: 404 });
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));

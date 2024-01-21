@@ -6,8 +6,9 @@
   "private": true,
   "scripts": {
     "ngrok": "ngrok http 8787",
-    "dev-bot": "cd packages/bot && npm run dev",
-    "dev-site": "cd packages/site && npm run dev",
+    "dev:bot": "cd packages/bot && npm run dev",
+    "bot-ws": "cd packages/bot-ws && npm run bot",
+    "dev:site": "cd packages/site && npm run dev",
     "fix": "biome format . --write"
   },
   "workspaces": [
