@@ -2,6 +2,14 @@
 
 The spiritual successor to [Discohook](https://github.com/discohook).
 
+## Meta
+
+This monorepo comes in three main parts:
+
+- [site](/packages/site) - The Boogiehook website
+- [bot](/packages/bot) - Handles Discord interactions & proxied gateway events
+- [bot-ws](/packages/bot-ws) - Proxies gateway events to `bot`
+
 ## Feature comparison
 
 | Feature                   | Boogiehook                                       | Discohook                                               |
