@@ -7,8 +7,3 @@ export interface Env {
   DB: D1Database;
   KV: KVNamespace;
 }
-
-export interface WorkerContext {
-  waitUntil: (promise: Promise<void>) => void;
-  passThroughOnException: () => void;
-}

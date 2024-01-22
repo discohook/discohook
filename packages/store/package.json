@@ -1,0 +1,13 @@
+{
+  "name": "store",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "repository": "https://github.com/shayypy/boogiehook",
+  "author": "shayypy",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "discord-api-types": "^0.37.67",
+    "drizzle-orm": "^0.29.3"
+  }
+}

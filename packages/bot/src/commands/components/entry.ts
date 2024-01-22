@@ -12,7 +12,6 @@ import {
   ChatInputAppCommandCallback,
   MessageAppCommandCallback,
 } from "../../commands.js";
-import { kvGet } from "../../util/kv.js";
 import { startComponentFlow } from "./add.js";
 
 const MESSAGE_LINK_RE =
@@ -57,7 +56,7 @@ export const addComponentChatAutocomplete: AppCommandAutocompleteCallback =
     }
 
     const kvKey = `cache-autocompleteChannelWebhookMessages-${channelId}`;
-    const cached = await kvGet<CompactCompatibleMessage[]>(ctx.env.KV, kvKey);
+    const cached = await ctx.env.KV.get<CompactCompatibleMessage[]>(kvKey);
     let messages = cached;
     if (!messages) {
       const channelMessages = (await ctx.rest.get(

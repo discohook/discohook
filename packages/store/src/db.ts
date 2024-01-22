@@ -1,0 +1,60 @@
+import { APIUser } from "discord-api-types/v10.js";
+import { drizzle } from "drizzle-orm/d1/index.js";
+import * as schema from "./schema.js";
+import { PartialKVGuild } from "./types/guild.js";
+
+export const getDb = (db: D1Database) => drizzle(db, { schema });
+
+type DB = ReturnType<typeof getDb>;
+
+export const upsertGuild = async (db: DB, guild: PartialKVGuild) => {
+  await db
+    .insert(schema.discordGuilds)
+    .values({
+      id: schema.makeSnowflake(guild.id),
+      name: guild.name,
+      icon: guild.icon,
+    })
+    .onConflictDoUpdate({
+      target: schema.discordGuilds.id,
+      set: {
+        name: guild.name,
+        icon: guild.icon,
+      },
+    });
+};
+
+export const upsertDiscordUser = async (db: DB, user: APIUser) => {
+  await db
+    .insert(schema.discordUsers)
+    .values({
+      id: schema.makeSnowflake(user.id),
+      name: user.username,
+      globalName: user.global_name,
+      avatar: user.avatar,
+      discriminator: user.discriminator,
+    })
+    .onConflictDoUpdate({
+      target: schema.discordUsers.id,
+      set: {
+        name: user.username,
+        globalName: user.global_name,
+        avatar: user.avatar,
+        discriminator: user.discriminator,
+      },
+    });
+
+  const dbUser = await db
+    .insert(schema.users)
+    .values({
+      discordId: schema.makeSnowflake(user.id),
+      name: user.global_name ?? user.username,
+    })
+    .onConflictDoUpdate({
+      target: schema.users.discordId,
+      set: { name: user.global_name ?? user.username },
+    })
+    .returning();
+
+  return dbUser[0];
+};

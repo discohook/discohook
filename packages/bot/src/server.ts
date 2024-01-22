@@ -23,9 +23,8 @@ import {
 import { getErrorMessage } from "./errors.js";
 import { eventNameToCallback } from "./events.js";
 import { InteractionContext } from "./interactions.js";
-import { Env, WorkerContext } from "./types/env.js";
+import { Env } from "./types/env.js";
 import { isDiscordError } from "./util/error.js";
-import { kvGet } from "./util/kv.js";
 
 const router = Router();
 
@@ -33,7 +32,7 @@ router.get("/", (_, env) => {
   return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
 });
 
-router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
+router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
   const { isValid, interaction } = await server.verifyDiscordRequest(
     request,
     env,
@@ -89,7 +88,7 @@ router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
           ctx,
         );
         if (Array.isArray(response)) {
-          workerCtx.waitUntil(response[1]());
+          eCtx.waitUntil(response[1]());
           return respond(response[0]);
         } else {
           return respond(response);
@@ -138,8 +137,7 @@ router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
   } else if (interaction.type === InteractionType.MessageComponent) {
     const { custom_id: customId, component_type: type } = interaction.data;
     if (customId.startsWith("t_")) {
-      const state = await kvGet<MinimumKVComponentState>(
-        env.KV,
+      const state = await env.KV.get<MinimumKVComponentState>(
         `component-${type}-${customId}`,
       );
       if (!state) {
@@ -163,7 +161,7 @@ router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
           } catch {}
         }
         if (Array.isArray(response)) {
-          workerCtx.waitUntil(response[1]());
+          eCtx.waitUntil(response[1]());
           return respond(response[0]);
         } else {
           return respond(response);
@@ -186,8 +184,7 @@ router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
   } else if (interaction.type === InteractionType.ModalSubmit) {
     const { custom_id: customId } = interaction.data;
     if (customId.startsWith("t_")) {
-      const state = await kvGet<MinimumKVComponentState>(
-        env.KV,
+      const state = await env.KV.get<MinimumKVComponentState>(
         `modal-${customId}`,
       );
       if (!state) {
@@ -208,7 +205,7 @@ router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
           } catch {}
         }
         if (Array.isArray(response)) {
-          workerCtx.waitUntil(response[1]());
+          eCtx.waitUntil(response[1]());
           return respond(response[0]);
         } else {
           return respond(response);
@@ -234,7 +231,7 @@ router.post("/", async (request, env: Env, workerCtx: WorkerContext) => {
   return respond({ error: "Unknown Type" });
 });
 
-router.post("/ws", async (request, env: Env, workerCtx: WorkerContext) => {
+router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
   const auth = request.headers.get("Authorization");
   if (!auth || !env.DISCORD_TOKEN) {
     return new Response(null, { status: 401 });
@@ -251,7 +248,7 @@ router.post("/ws", async (request, env: Env, workerCtx: WorkerContext) => {
 
   const callback = eventNameToCallback[eventName as GatewayDispatchEvents];
   if (callback) {
-    workerCtx.waitUntil(callback(await request.json()));
+    eCtx.waitUntil(callback(await request.json()));
     return new Response(null, { status: 204 });
   }
   return respond({ error: "No event callback found.", status: 404 });
@@ -280,7 +277,7 @@ async function verifyDiscordRequest(request: Request, env: Env) {
 
 const server = {
   verifyDiscordRequest: verifyDiscordRequest,
-  fetch: async (request: Request, env: Env, ctx: WorkerContext) => {
+  fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
     return router.handle(request, env, ctx);
   },
 };

@@ -1,0 +1,11 @@
+{
+  "references": [
+      { "path": "./packages/site" },
+      { "path": "./packages/bot" },
+      { "path": "./packages/bot-ws" },
+      { "path": "./packages/store" },
+  ],
+  "files": [],
+  "include": [],
+  "exclude": ["**/node_modules"]
+}

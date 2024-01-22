@@ -12,21 +12,18 @@ import {
   APIButtonComponent,
   APIInteraction,
   APIMessage,
-  APIMessageComponentEmoji,
   APIModalInteractionResponseCallbackData,
   APISelectMenuComponent,
-  APISelectMenuDefaultValue,
-  APISelectMenuOption,
   APIStringSelectComponent,
   APIWebhook,
   ButtonStyle,
   ComponentType,
   MessageFlags,
   Routes,
-  SelectMenuDefaultValueType,
   TextInputStyle,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
+import { StorableComponent, getchGuild } from "store";
 import {
   ButtonCallback,
   MinimumKVComponentState,
@@ -36,7 +33,6 @@ import {
 import { getDb, upsertDiscordUser, upsertGuild } from "../../db/index.js";
 import { discordMessageComponents, makeSnowflake } from "../../db/schema.js";
 import { InteractionContext } from "../../interactions.js";
-import { Flow } from "../../types/components/flows.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentWidth,
@@ -45,53 +41,8 @@ import {
   storeComponents,
 } from "../../util/components.js";
 import { isDiscordError } from "../../util/error.js";
-import { getchGuild } from "../../util/kv.js";
 import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
-
-export type StorableComponent =
-  | {
-      type: ComponentType.Button;
-      style:
-        | ButtonStyle.Primary
-        | ButtonStyle.Secondary
-        | ButtonStyle.Success
-        | ButtonStyle.Danger;
-      label?: string;
-      emoji?: APIMessageComponentEmoji;
-      flow: Flow;
-      disabled?: boolean;
-    }
-  | {
-      type: ComponentType.Button;
-      style: ButtonStyle.Link;
-      label?: string;
-      emoji?: APIMessageComponentEmoji;
-      url: string;
-      disabled?: boolean;
-    }
-  | {
-      type: ComponentType.StringSelect;
-      flows: Record<string, Flow>;
-      options: APISelectMenuOption[];
-      placeholder?: string;
-      minValues?: number;
-      maxValues?: number;
-      disabled?: boolean;
-    }
-  | {
-      type:
-        | ComponentType.UserSelect
-        | ComponentType.RoleSelect
-        | ComponentType.MentionableSelect
-        | ComponentType.ChannelSelect;
-      flow: Flow;
-      placeholder?: string;
-      minValues?: number;
-      maxValues?: number;
-      defaultValues?: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
-      disabled?: boolean;
-    };
 
 const buildStorableComponent = (
   component: StorableComponent,
