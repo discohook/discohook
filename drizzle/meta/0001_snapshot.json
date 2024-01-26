@@ -1,0 +1,1258 @@
+{
+  "id": "1323dea1-9a0b-410e-9362-0cb5eb113596",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "Backup": {
+      "name": "Backup",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dataVersion": {
+          "name": "dataVersion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ownerId": {
+          "name": "ownerId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Backup_ownerId_User_id_fk": {
+          "name": "Backup_ownerId_User_id_fk",
+          "tableFrom": "Backup",
+          "tableTo": "User",
+          "columnsFrom": [
+            "ownerId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "DiscordGuild": {
+      "name": "DiscordGuild",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "DiscordMember": {
+      "name": "DiscordMember",
+      "schema": "",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "DiscordMember_userId_guildId_unique": {
+          "name": "DiscordMember_userId_guildId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userId",
+            "guildId"
+          ]
+        }
+      }
+    },
+    "DiscordMessageComponent": {
+      "name": "DiscordMessageComponent",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channelId": {
+          "name": "channelId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "messageId": {
+          "name": "messageId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdById": {
+          "name": "createdById",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedById": {
+          "name": "updatedById",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customId": {
+          "name": "customId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data": {
+          "name": "data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "DiscordMessageComponent_guildId_DiscordGuild_id_fk": {
+          "name": "DiscordMessageComponent_guildId_DiscordGuild_id_fk",
+          "tableFrom": "DiscordMessageComponent",
+          "tableTo": "DiscordGuild",
+          "columnsFrom": [
+            "guildId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "DiscordMessageComponent_createdById_User_id_fk": {
+          "name": "DiscordMessageComponent_createdById_User_id_fk",
+          "tableFrom": "DiscordMessageComponent",
+          "tableTo": "User",
+          "columnsFrom": [
+            "createdById"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "DiscordMessageComponent_updatedById_User_id_fk": {
+          "name": "DiscordMessageComponent_updatedById_User_id_fk",
+          "tableFrom": "DiscordMessageComponent",
+          "tableTo": "User",
+          "columnsFrom": [
+            "updatedById"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "DiscordMessageComponent_messageId_customId_unique": {
+          "name": "DiscordMessageComponent_messageId_customId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "messageId",
+            "customId"
+          ]
+        }
+      }
+    },
+    "DiscordRoles": {
+      "name": "DiscordRoles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "color": {
+          "name": "color",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'0'"
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unicodeEmoji": {
+          "name": "unicodeEmoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hoist": {
+          "name": "hoist",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "managed": {
+          "name": "managed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "mentionable": {
+          "name": "mentionable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "DiscordRoles_guildId_DiscordGuild_id_fk": {
+          "name": "DiscordRoles_guildId_DiscordGuild_id_fk",
+          "tableFrom": "DiscordRoles",
+          "tableTo": "DiscordGuild",
+          "columnsFrom": [
+            "guildId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "DiscordRoles_id_guildId_unique": {
+          "name": "DiscordRoles_id_guildId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "guildId"
+          ]
+        }
+      }
+    },
+    "DiscordUser": {
+      "name": "DiscordUser",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "globalName": {
+          "name": "globalName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discriminator": {
+          "name": "discriminator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "GuildedServer": {
+      "name": "GuildedServer",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatarUrl": {
+          "name": "avatarUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "GuildedUser": {
+      "name": "GuildedUser",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatarUrl": {
+          "name": "avatarUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "MessageLogEntry": {
+      "name": "MessageLogEntry",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "webhookId": {
+          "name": "webhookId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channelId": {
+          "name": "channelId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "messageId": {
+          "name": "messageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "threadId": {
+          "name": "threadId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notifiedEveryoneHere": {
+          "name": "notifiedEveryoneHere",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "notifiedRoles": {
+          "name": "notifiedRoles",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notifiedUsers": {
+          "name": "notifiedUsers",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hasContent": {
+          "name": "hasContent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "embedCount": {
+          "name": "embedCount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "MessageLogEntry_userId_User_id_fk": {
+          "name": "MessageLogEntry_userId_User_id_fk",
+          "tableFrom": "MessageLogEntry",
+          "tableTo": "User",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "ShareLink": {
+      "name": "ShareLink",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "shareId": {
+          "name": "shareId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ShareLink_userId_User_id_fk": {
+          "name": "ShareLink_userId_User_id_fk",
+          "tableFrom": "ShareLink",
+          "tableTo": "User",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "Triggers": {
+      "name": "Triggers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "platform": {
+          "name": "platform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event": {
+          "name": "event",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discordGuildId": {
+          "name": "discordGuildId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guildedServerId": {
+          "name": "guildedServerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "flow": {
+          "name": "flow",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedById": {
+          "name": "updatedById",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "disabled": {
+          "name": "disabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "ignoreBots": {
+          "name": "ignoreBots",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Triggers_discordGuildId_DiscordGuild_id_fk": {
+          "name": "Triggers_discordGuildId_DiscordGuild_id_fk",
+          "tableFrom": "Triggers",
+          "tableTo": "DiscordGuild",
+          "columnsFrom": [
+            "discordGuildId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Triggers_guildedServerId_GuildedServer_id_fk": {
+          "name": "Triggers_guildedServerId_GuildedServer_id_fk",
+          "tableFrom": "Triggers",
+          "tableTo": "GuildedServer",
+          "columnsFrom": [
+            "guildedServerId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Triggers_updatedById_User_id_fk": {
+          "name": "Triggers_updatedById_User_id_fk",
+          "tableFrom": "Triggers",
+          "tableTo": "User",
+          "columnsFrom": [
+            "updatedById"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "User": {
+      "name": "User",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "firstSubscribed": {
+          "name": "firstSubscribed",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscribedSince": {
+          "name": "subscribedSince",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lifetime": {
+          "name": "lifetime",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "discordId": {
+          "name": "discordId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guildedId": {
+          "name": "guildedId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "User_discordId_DiscordUser_id_fk": {
+          "name": "User_discordId_DiscordUser_id_fk",
+          "tableFrom": "User",
+          "tableTo": "DiscordUser",
+          "columnsFrom": [
+            "discordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "User_guildedId_GuildedUser_id_fk": {
+          "name": "User_guildedId_GuildedUser_id_fk",
+          "tableFrom": "User",
+          "tableTo": "GuildedUser",
+          "columnsFrom": [
+            "guildedId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "User_discordId_unique": {
+          "name": "User_discordId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "discordId"
+          ]
+        },
+        "User_guildedId_unique": {
+          "name": "User_guildedId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "guildedId"
+          ]
+        }
+      }
+    },
+    "Webhook": {
+      "name": "Webhook",
+      "schema": "",
+      "columns": {
+        "platform": {
+          "name": "platform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "channelId": {
+          "name": "channelId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "applicationId": {
+          "name": "applicationId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discordGuildId": {
+          "name": "discordGuildId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guildedServerId": {
+          "name": "guildedServerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Webhook_userId_User_id_fk": {
+          "name": "Webhook_userId_User_id_fk",
+          "tableFrom": "Webhook",
+          "tableTo": "User",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Webhook_discordGuildId_DiscordGuild_id_fk": {
+          "name": "Webhook_discordGuildId_DiscordGuild_id_fk",
+          "tableFrom": "Webhook",
+          "tableTo": "DiscordGuild",
+          "columnsFrom": [
+            "discordGuildId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Webhook_guildedServerId_GuildedServer_id_fk": {
+          "name": "Webhook_guildedServerId_GuildedServer_id_fk",
+          "tableFrom": "Webhook",
+          "tableTo": "GuildedServer",
+          "columnsFrom": [
+            "guildedServerId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "Webhook_platform_id_unique": {
+          "name": "Webhook_platform_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "platform",
+            "id"
+          ]
+        }
+      }
+    },
+    "autopublish": {
+      "name": "autopublish",
+      "schema": "",
+      "columns": {
+        "channel_id": {
+          "name": "channel_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "added_by_id": {
+          "name": "added_by_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ignore": {
+          "name": "ignore",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "buttons": {
+      "name": "buttons",
+      "schema": "",
+      "columns": {
+        "guild_id": {
+          "name": "guild_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "style": {
+          "name": "style",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_label": {
+          "name": "custom_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_ephemeral_message_data": {
+          "name": "custom_ephemeral_message_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_dm_message_data": {
+          "name": "custom_dm_message_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_id": {
+          "name": "custom_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role_ids": {
+          "name": "role_ids",
+          "type": "bigint[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_public_message_data": {
+          "name": "custom_public_message_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "message_settings": {
+      "name": "message_settings",
+      "schema": "",
+      "columns": {
+        "guild_id": {
+          "name": "guild_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_roles": {
+          "name": "max_roles",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "welcomer_goodbye": {
+      "name": "welcomer_goodbye",
+      "schema": "",
+      "columns": {
+        "guild_id": {
+          "name": "guild_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "webhook_id": {
+          "name": "webhook_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "webhook_token": {
+          "name": "webhook_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_data": {
+          "name": "message_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_modified_at": {
+          "name": "last_modified_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_modified_by_id": {
+          "name": "last_modified_by_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "override_disabled": {
+          "name": "override_disabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ignore_bots": {
+          "name": "ignore_bots",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delete_messages_after": {
+          "name": "delete_messages_after",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "welcomer_hello": {
+      "name": "welcomer_hello",
+      "schema": "",
+      "columns": {
+        "guild_id": {
+          "name": "guild_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "webhook_id": {
+          "name": "webhook_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "webhook_token": {
+          "name": "webhook_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_data": {
+          "name": "message_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_modified_at": {
+          "name": "last_modified_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_modified_by_id": {
+          "name": "last_modified_by_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "override_disabled": {
+          "name": "override_disabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ignore_bots": {
+          "name": "ignore_bots",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delete_messages_after": {
+          "name": "delete_messages_after",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
