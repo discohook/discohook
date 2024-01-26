@@ -1,4 +1,4 @@
-import { REST } from "@discordjs/rest";
+import type { REST } from "@discordjs/rest";
 import {
   APIApplicationCommandInteractionDataBooleanOption,
   APIApplicationCommandInteractionDataIntegerOption,

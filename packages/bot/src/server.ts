@@ -28,7 +28,7 @@ import { isDiscordError } from "./util/error.js";
 
 const router = Router();
 
-router.get("/", (_, env) => {
+router.get("/", (_, env: Env) => {
   return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
 });
 
@@ -248,7 +248,7 @@ router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
 
   const callback = eventNameToCallback[eventName as GatewayDispatchEvents];
   if (callback) {
-    eCtx.waitUntil(callback(await request.json()));
+    eCtx.waitUntil(callback(env, await request.json()));
     return new Response(null, { status: 204 });
   }
   return respond({ error: "No event callback found.", status: 404 });

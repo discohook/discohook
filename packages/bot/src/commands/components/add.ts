@@ -218,8 +218,9 @@ const registerComponent = async (
     .returning();
   const insertedId = returned[0].id;
 
+  let editedMsg: APIMessage;
   try {
-    return (await ctx.rest.patch(
+    editedMsg = (await ctx.rest.patch(
       Routes.webhookMessage(
         flow.message.webhookId,
         flow.webhookToken,
@@ -235,6 +236,7 @@ const registerComponent = async (
     }
     throw e;
   }
+  return editedMsg;
 };
 
 export const startComponentFlow = async (
