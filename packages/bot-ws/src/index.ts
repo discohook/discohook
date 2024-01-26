@@ -1,10 +1,10 @@
 import { REST } from "@discordjs/rest";
 import { WebSocketManager, WebSocketShardEvents } from "@discordjs/ws";
 import {
-  PresenceUpdateStatus,
   ActivityType,
-  GatewayIntentBits,
   GatewayDispatchEvents,
+  GatewayIntentBits,
+  PresenceUpdateStatus,
 } from "discord-api-types/v10";
 import { configDotenv } from "dotenv";
 
@@ -52,15 +52,19 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       // GatewayDispatchEvents.GuildCreate,
     ].includes(event.data.t)
   ) {
-    const response = await fetch(`${env.WORKER_ORIGIN}/ws`, {
-      method: "POST",
-      body: JSON.stringify(event.data.d),
-      headers: {
-        Authorization: `Bot ${env.DISCORD_TOKEN}`,
-        "X-Boogiehook-Event": event.data.t,
-      },
-    });
-    console.log(`${event.data.t} returned ${response.status}`);
+    try {
+      const response = await fetch(`${env.WORKER_ORIGIN}/ws`, {
+        method: "POST",
+        body: JSON.stringify(event.data.d),
+        headers: {
+          Authorization: `Bot ${env.DISCORD_TOKEN}`,
+          "X-Boogiehook-Event": event.data.t,
+        },
+      });
+      console.log(`${event.data.t} returned ${response.status}`);
+    } catch (e) {
+      console.error(e);
+    }
   }
 });
 
