@@ -210,7 +210,8 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
           await db
             .delete(webhooks)
             .where(
-              eq(webhooks.id, webhook.id).append(
+              and(
+                eq(webhooks.id, webhook.id),
                 eq(webhooks.platform, "discord"),
               ),
             );
