@@ -59,6 +59,9 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
         headers: {
           Authorization: `Bot ${env.DISCORD_TOKEN}`,
           "X-Boogiehook-Event": event.data.t,
+          "Content-Type": "application/json",
+          "User-Agent":
+            "boogiehook-bot-ws/1.0.0 (+https://github.com/shayypy/boogiehook)",
         },
       });
       console.log(`${event.data.t} returned ${response.status}`);
