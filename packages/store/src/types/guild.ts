@@ -10,4 +10,6 @@ export type TriggerKVGuild = PartialKVGuild & {
   boosts: number;
   boost_level: GuildPremiumTier;
   vanity_code: string | null;
+  emoji_limit?: number;
+  sticker_limit?: number;
 };

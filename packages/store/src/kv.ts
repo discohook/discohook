@@ -1,5 +1,5 @@
 import type { REST } from "@discordjs/rest";
-import { APIGuild, Routes } from "discord-api-types/v10";
+import { APIGuild, GuildPremiumTier, Routes } from "discord-api-types/v10";
 import { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
 
 export const getchGuild = async (
@@ -30,7 +30,10 @@ export const getchTriggerGuild = async (
   kv: KVNamespace,
   guildId: string,
 ): Promise<TriggerKVGuild> => {
-  const cached = await kv.get<TriggerKVGuild>(`cache-triggerGuild-${guildId}`, "json");
+  const cached = await kv.get<TriggerKVGuild>(
+    `cache-triggerGuild-${guildId}`,
+    "json",
+  );
   if (!cached) {
     const guild = (await rest.get(Routes.guild(guildId))) as APIGuild;
     const reduced: TriggerKVGuild = {
@@ -44,6 +47,23 @@ export const getchTriggerGuild = async (
       boosts: guild.premium_subscription_count ?? 0,
       boost_level: guild.premium_tier,
       vanity_code: guild.vanity_url_code,
+      // emojis: guild.emojis.length,
+      emoji_limit:
+        guild.premium_tier === GuildPremiumTier.Tier3
+          ? 250
+          : guild.premium_tier === GuildPremiumTier.Tier2
+            ? 150
+            : guild.premium_tier === GuildPremiumTier.Tier1
+              ? 100
+              : 50,
+      sticker_limit:
+        guild.premium_tier === GuildPremiumTier.Tier3
+          ? 60
+          : guild.premium_tier === GuildPremiumTier.Tier2
+            ? 30
+            : guild.premium_tier === GuildPremiumTier.Tier1
+              ? 15
+              : 5,
     };
     await kv.put(
       `cache-triggerGuild-${guildId}`,
