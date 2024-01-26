@@ -11,6 +11,7 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
+import { QueryData } from "../types/backups.js";
 import { Flow, StorableComponent } from "../types/components.js";
 import { TriggerEvent } from "../types/triggers.js";
 
@@ -214,7 +215,7 @@ export const backups = pgTable("Backup", {
     .$defaultFn(() => new Date()),
   updatedAt: date("updatedAt"),
   dataVersion: text("dataVersion").notNull(),
-  data: json("data").notNull(),
+  data: json("data").notNull().$type<QueryData>(),
 
   ownerId: integer("ownerId")
     .notNull()
