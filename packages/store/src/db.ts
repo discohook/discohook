@@ -1,30 +1,47 @@
-import { APIUser } from "discord-api-types/v10.js";
-import { drizzle } from "drizzle-orm/d1/index.js";
-import * as schema from "./schema.js";
+import { APIUser } from "discord-api-types/v10";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Client, Pool } from "pg";
+import * as schemaV1 from "./schema/schema-v1.js";
+import * as schema from "./schema/schema.js";
 import { PartialKVGuild } from "./types/guild.js";
 
-export const getDb = (db: D1Database) => drizzle(db, { schema });
+const getDbWithClient = (client: Client | Pool) =>
+  drizzle(client, { schema: { ...schema, ...schemaV1 } });
 
-type DB = ReturnType<typeof getDb>;
-
-export const upsertGuild = async (db: DB, guild: PartialKVGuild) => {
-  await db
-    .insert(schema.discordGuilds)
-    .values({
-      id: schema.makeSnowflake(guild.id),
-      name: guild.name,
-      icon: guild.icon,
-    })
-    .onConflictDoUpdate({
-      target: schema.discordGuilds.id,
-      set: {
-        name: guild.name,
-        icon: guild.icon,
-      },
-    });
+export const getDb = (connectionString: string) => {
+  // const client = new Client({ connectionString });
+  // await client.connect();
+  const pool = new Pool({ connectionString });
+  return getDbWithClient(pool);
+  // return [
+  //   getDbWithClient(client),
+  //   (ctx: ExecutionContext) => ctx.waitUntil(client.end()),
+  // ] as [DBWithSchema, (ctx: ExecutionContext) => void];
 };
 
-export const upsertDiscordUser = async (db: DB, user: APIUser) => {
+export type DBWithSchema = ReturnType<typeof getDbWithClient>;
+
+export const upsertGuild = async (db: DBWithSchema, guild: PartialKVGuild) => {
+  return (
+    await db
+      .insert(schema.discordGuilds)
+      .values({
+        id: schema.makeSnowflake(guild.id),
+        name: guild.name,
+        icon: guild.icon,
+      })
+      .onConflictDoUpdate({
+        target: schema.discordGuilds.id,
+        set: {
+          name: guild.name,
+          icon: guild.icon,
+        },
+      })
+      .returning()
+  )[0];
+};
+
+export const upsertDiscordUser = async (db: DBWithSchema, user: APIUser) => {
   await db
     .insert(schema.discordUsers)
     .values({

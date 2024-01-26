@@ -6,8 +6,17 @@
   "author": "shayypy",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "dependencies": {
     "discord-api-types": "^0.37.67",
-    "drizzle-orm": "^0.29.3"
+    "discord-snowflake": "^2.0.0",
+    "drizzle-orm": "^0.29.3",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@discordjs/rest": "^2.2.0",
+    "@types/pg": "^8.11.0",
+    "drizzle-kit": "^0.20.13",
+    "typescript": "^5.3.3"
   }
 }

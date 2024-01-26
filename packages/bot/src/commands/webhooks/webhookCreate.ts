@@ -9,14 +9,14 @@ import {
   RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { getDb, upsertDiscordUser, upsertGuild } from "store/src/db.js";
+import { getchGuild } from "store/src/kv.js";
+import { makeSnowflake, webhooks } from "store/src/schema";
 import { ChatInputAppCommandCallback } from "../../commands.js";
-import { getDb, upsertDiscordUser, upsertGuild } from "../../db/index.js";
-import { makeSnowflake, webhooks } from "../../db/schema.js";
 import { APIPartialResolvedChannel } from "../../types/api.js";
 import { readAttachment } from "../../util/cdn.js";
 import { isDiscordError } from "../../util/error.js";
-import { getchGuild } from "../../util/kv.js";
 import { color } from "../../util/meta.js";
 import { sleep } from "../../util/sleep.js";
 import { getWebhookUrlEmbed } from "./webhookInfo.js";
@@ -156,7 +156,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     }),
   );
 
-  const db = getDb(ctx.env.DB);
+  const db = getDb(ctx.env.DATABASE_URL);
   const guild = await getchGuild(
     ctx.rest,
     ctx.env.KV,

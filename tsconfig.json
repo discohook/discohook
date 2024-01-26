@@ -7,5 +7,8 @@
   ],
   "files": [],
   "include": [],
-  "exclude": ["**/node_modules"]
+  "exclude": ["**/node_modules"],
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types/2023-03-01"],
+  },
 }

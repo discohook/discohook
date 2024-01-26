@@ -23,15 +23,16 @@ import {
   TextInputStyle,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { StorableComponent, getchGuild } from "store";
+import { getDb, upsertDiscordUser, upsertGuild } from "store/src/db.js";
+import { getchGuild } from "store/src/kv.js";
+import { discordMessageComponents, makeSnowflake } from "store/src/schema";
+import { StorableComponent } from "store/src/types/components.js";
 import {
   ButtonCallback,
   MinimumKVComponentState,
   ModalCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import { getDb, upsertDiscordUser, upsertGuild } from "../../db/index.js";
-import { discordMessageComponents, makeSnowflake } from "../../db/schema.js";
 import { InteractionContext } from "../../interactions.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
@@ -203,7 +204,7 @@ const registerComponent = async (
   }
   nextAvailableRow.components.push(built);
 
-  const db = getDb(ctx.env.DB);
+  const db = getDb(ctx.env.DATABASE_URL);
   const returned = await db
     .insert(discordMessageComponents)
     .values({
@@ -240,7 +241,7 @@ export const startComponentFlow = async (
   ctx: InteractionContext<APIInteraction>,
   message: APIMessage,
 ) => {
-  const db = getDb(ctx.env.DB);
+  const db = getDb(ctx.env.DATABASE_URL);
   const user = await upsertDiscordUser(db, ctx.user);
 
   if (!message.webhook_id) {

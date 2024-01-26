@@ -5,15 +5,17 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "ngrok": "ngrok http 8787",
     "dev:bot": "cd packages/bot && npm run dev",
+    "ngrok:bot": "ngrok http 8787",
     "bot-ws": "cd packages/bot-ws && npm run bot",
     "dev:site": "cd packages/site && npm run dev",
-    "fix": "biome format . --write"
+    "ngrok:site": "ngrok http 8788",
+    "fix": "biome format . --write",
+    "db-migrate": "drizzle-kit generate:pg",
+    "db-push": "drizzle-kit push:pg",
+    "db-studio": "drizzle-kit studio"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "^1.5.1"
   }
