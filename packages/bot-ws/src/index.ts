@@ -46,6 +46,18 @@ manager.on(WebSocketShardEvents.Ready, (event) => {
   );
 });
 
+manager.on(WebSocketShardEvents.Hello, (event) => {
+  console.log(`[hello] Shard ID ${event.shardId}`);
+});
+
+manager.on(WebSocketShardEvents.Resumed, (event) => {
+  console.log(`[resumed] Shard ID ${event.shardId}`);
+});
+
+manager.on(WebSocketShardEvents.Closed, (event) => {
+  console.log(`[closed] Shard ID ${event.shardId}`);
+});
+
 manager.on(WebSocketShardEvents.Dispatch, async (event) => {
   if (
     [
