@@ -17,6 +17,7 @@ import {
 } from "store/src/types/components.js";
 import { TriggerKVGuild } from "store/src/types/guild.js";
 import { sleep } from "../util/sleep.js";
+import { processQueryData } from "./backup.js";
 
 export interface LiveVariables {
   member?: APIGuildMember;
@@ -127,16 +128,23 @@ export const executeSendMessage = async (
 ): Promise<APIMessage> => {
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, action.backupId),
+    columns: {
+      data: true,
+    },
   });
   if (!backup) {
     throw new FlowFailure(
       "No backup was found with the stored ID, so there was no data to send the message.",
     );
   }
+  if (backup.data.messages.length === 0) {
+    throw new FlowFailure("The backup contains no messages.");
+  }
+
   try {
     const message = (await rest.post(
       Routes.channelMessages(setVars.channelId),
-      {},
+      { body: (await processQueryData(backup.data, liveVars, setVars))[0] },
     )) as APIMessage;
     return message;
   } catch (e) {
@@ -172,11 +180,17 @@ export const executeSendWebhookMessage = async (
   }
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, action.backupId),
+    columns: {
+      data: true,
+    },
   });
   if (!backup) {
     throw new FlowFailure(
       "No backup was found with the stored ID, so there was no data to send the message.",
     );
+  }
+  if (backup.data.messages.length === 0) {
+    throw new FlowFailure("The backup contains no messages.");
   }
 
   const query = new URLSearchParams({
@@ -191,7 +205,7 @@ export const executeSendWebhookMessage = async (
   try {
     const message = (await rest.post(
       Routes.webhook(webhook.id, webhook.token),
-      { query },
+      { query, body: (await processQueryData(backup.data, liveVars, vars))[0] },
     )) as APIMessage;
     return message;
   } catch (e) {

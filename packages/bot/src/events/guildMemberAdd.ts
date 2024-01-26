@@ -21,17 +21,16 @@ import {
   welcomer_goodbye,
   welcomer_hello,
 } from "store/src/schema";
-import { TriggerEvent, TriggerKVGuild } from "store/src/types";
 import {
   FlowActionSetVariableType,
   FlowActionType,
-} from "store/src/types/components.js";
+  TriggerEvent,
+  TriggerKVGuild,
+} from "store/src/types";
 import { GatewayEventCallback } from "../events.js";
 import { executeFlow } from "../flows/flows.js";
-import { Env } from "../types/env.js";
 
 export const getWelcomerConfigurations = async (
-  env: Env,
   db: DBWithSchema,
   type: "add" | "remove",
   rest: REST,
@@ -208,7 +207,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   const rest = new REST().setToken(env.DISCORD_TOKEN);
   const db = getDb(env.DATABASE_URL);
   const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
-  const triggers = await getWelcomerConfigurations(env, db, "add", rest, guild);
+  const triggers = await getWelcomerConfigurations(db, "add", rest, guild);
   const applicable = triggers.filter(
     (t) =>
       !!t.flow && !t.disabled && (payload.user?.bot ? !t.ignoreBots : true),

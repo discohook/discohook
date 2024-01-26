@@ -12,25 +12,17 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   const rest = new REST().setToken(env.DISCORD_TOKEN);
   const db = getDb(env.DATABASE_URL);
   const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
-  const triggers = await getWelcomerConfigurations(
-    env,
-    db,
-    "remove",
-    rest,
-    guild,
-  );
+  const triggers = await getWelcomerConfigurations(db, "remove", rest, guild);
   const applicable = triggers.filter(
     (t) =>
       !!t.flow && !t.disabled && (payload.user?.bot ? !t.ignoreBots : true),
   );
 
   for (const trigger of applicable) {
-    console.log(
-      // biome-ignore lint/style/noNonNullAssertion: Filtered above
-      await executeFlow(trigger.flow!, rest, db, {
-        user: payload.user,
-        guild,
-      }),
-    );
+    // biome-ignore lint/style/noNonNullAssertion: Filtered above
+    await executeFlow(trigger.flow!, rest, db, {
+      user: payload.user,
+      guild,
+    });
   }
 };
