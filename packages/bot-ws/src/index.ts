@@ -40,7 +40,9 @@ const manager = new WebSocketManager({
 
 manager.on(WebSocketShardEvents.Ready, (event) => {
   console.log(
-    `${event.data.user.username}#${event.data.user.discriminator} ready with ${event.data.shard?.length} shards on ${event.data.guilds.length} guilds`,
+    `${event.data.user.username}#${event.data.user.discriminator} ready with ${
+      event.data.shard ? event.data.shard[1] : 0
+    } shards on ${event.data.guilds.length} guilds`,
   );
 });
 
