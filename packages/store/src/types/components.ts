@@ -139,12 +139,14 @@ export interface FlowActionToggleRole extends FlowActionBase {
 export interface FlowActionSendMessage extends FlowActionBase {
   type: FlowActionType.SendMessage;
   backupId: number;
+  backupMessageIndex?: number;
 }
 
 export interface FlowActionSendWebhookMessage extends FlowActionBase {
   type: FlowActionType.SendWebhookMessage;
   webhookId: string;
   backupId: number;
+  backupMessageIndex?: number;
 }
 
 export interface FlowActionCreateThread extends FlowActionBase {

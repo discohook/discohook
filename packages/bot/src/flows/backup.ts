@@ -3,7 +3,7 @@ import { getDate } from "discord-snowflake";
 import { makeSnowflake } from "store/src/schema";
 import type { QueryData } from "store/src/types";
 import { cdn } from "../util/cdn.js";
-import { LiveVariables } from "./flows.js";
+import { FlowFailure, LiveVariables } from "./flows.js";
 
 export const getReplacements = (
   vars: LiveVariables,
@@ -89,36 +89,35 @@ export const getReplacements = (
 };
 
 export const processQueryData = async (
-  data: QueryData,
+  queryData: QueryData,
   vars: LiveVariables,
   setVars: Record<string, string>,
+  messageIndex?: number,
 ) => {
-  return data.messages.map((message) => {
-    const data = {
-      content: message.data.content,
-      embeds: message.data.embeds,
-      components: message.data.components,
-      username: message.data.author?.name,
-      avatar_url: message.data.author?.icon_url,
-    };
-    let stringified = JSON.stringify(data);
-    const replacements = getReplacements(vars, setVars);
-    for (const [key, value] of Object.entries(replacements)) {
-      if (
-        value == null ||
-        key.includes(" ") ||
-        Object.keys(data).includes(key)
-      ) {
-        continue;
-      }
-      // Remains to be seen if this is a good solution. Even more otherwise.
-      // I think it's sensible and reasonably sandboxed, but I haven't yet
-      // explored the possibilities of people purposely trying to break out
-      // of it. If you are one of those people, please report to me privately!
-      // Visit /discord on the main site.
-      stringified = stringified.replaceAll(`{${key}}`, String(value));
+  const message = queryData.messages[messageIndex ?? 0];
+  if (!message) {
+    throw new FlowFailure("No message at the specified position.");
+  }
+  const data = {
+    content: message.data.content,
+    embeds: message.data.embeds,
+    components: message.data.components,
+    username: message.data.author?.name,
+    avatar_url: message.data.author?.icon_url,
+  };
+  let stringified = JSON.stringify(data);
+  const replacements = getReplacements(vars, setVars);
+  for (const [key, value] of Object.entries(replacements)) {
+    if (value == null || key.includes(" ") || Object.keys(data).includes(key)) {
+      continue;
     }
-    const parsed = JSON.parse(stringified) as typeof data;
-    return parsed;
-  });
+    // Remains to be seen if this is a good solution. Even more otherwise.
+    // I think it's sensible and reasonably "sandboxed," but I haven't yet
+    // explored the possibilities of people purposely trying to break out
+    // of it. If you are one of those people, please report to me privately!
+    // Visit /discord on the main site.
+    stringified = stringified.replaceAll(`{${key}}`, String(value));
+  }
+  const parsed = JSON.parse(stringified) as typeof data;
+  return parsed;
 };

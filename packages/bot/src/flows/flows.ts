@@ -144,7 +144,14 @@ export const executeSendMessage = async (
   try {
     const message = (await rest.post(
       Routes.channelMessages(setVars.channelId),
-      { body: (await processQueryData(backup.data, liveVars, setVars))[0] },
+      {
+        body: await processQueryData(
+          backup.data,
+          liveVars,
+          setVars,
+          action.backupMessageIndex,
+        ),
+      },
     )) as APIMessage;
     return message;
   } catch (e) {
@@ -205,7 +212,15 @@ export const executeSendWebhookMessage = async (
   try {
     const message = (await rest.post(
       Routes.webhook(webhook.id, webhook.token),
-      { query, body: (await processQueryData(backup.data, liveVars, vars))[0] },
+      {
+        query,
+        body: await processQueryData(
+          backup.data,
+          liveVars,
+          vars,
+          action.backupMessageIndex,
+        ),
+      },
     )) as APIMessage;
     return message;
   } catch (e) {
