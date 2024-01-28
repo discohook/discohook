@@ -158,16 +158,25 @@ export const getWelcomerConfigurations = async (
             ? {
                 name: `Welcomer (${type})`,
                 actions: [
-                  oldConfiguration[0].webhookId
-                    ? {
-                        type: FlowActionType.SendWebhookMessage,
-                        webhookId: String(oldConfiguration[0].webhookId),
-                        backupId,
-                      }
-                    : {
-                        type: FlowActionType.SendMessage,
-                        backupId,
-                      },
+                  ...(oldConfiguration[0].webhookId && !webhookInvalid
+                    ? [
+                        {
+                          type: FlowActionType.SendWebhookMessage,
+                          webhookId: String(oldConfiguration[0].webhookId),
+                          backupId,
+                        },
+                      ]
+                    : [
+                        {
+                          type: FlowActionType.SetVariable,
+                          name: "channelId",
+                          value: String(oldConfiguration[0].channelId),
+                        },
+                        {
+                          type: FlowActionType.SendMessage,
+                          backupId,
+                        },
+                      ]),
                   ...(oldConfiguration[0].deleteMessagesAfter
                     ? [
                         {
