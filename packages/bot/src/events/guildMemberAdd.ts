@@ -5,7 +5,7 @@ import {
   GatewayGuildMemberAddDispatchData,
   Routes,
 } from "discord-api-types/v10";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   DBWithSchema,
   getDb,
@@ -38,6 +38,7 @@ export const getWelcomerConfigurations = async (
 ) => {
   let configs = await db.query.triggers.findMany({
     columns: {
+      id: true,
       flow: true,
       ignoreBots: true,
       disabled: true,
@@ -45,9 +46,9 @@ export const getWelcomerConfigurations = async (
     where: and(
       eq(triggers.platform, "discord"),
       eq(triggers.discordGuildId, makeSnowflake(guild.id)),
-      or(
-        eq(triggers.event, TriggerEvent.MemberAdd),
-        eq(triggers.event, TriggerEvent.MemberRemove),
+      eq(
+        triggers.event,
+        type === "add" ? TriggerEvent.MemberAdd : TriggerEvent.MemberRemove,
       ),
     ),
   });
