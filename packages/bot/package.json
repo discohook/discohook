@@ -6,12 +6,12 @@
   "private": true,
   "main": "src/server.ts",
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "tsx src/server.ts",
     "dev": "wrangler dev src/server.ts",
     "ngrok": "ngrok http 8787",
     "fix": "eslint --fix '**/*.ts'",
     "lint": "eslint '**/*.ts'",
-    "register": "ts-node src/register.ts",
+    "register": "tsx src/register.ts",
     "publish": "wrangler deploy"
   },
   "keywords": [],
@@ -45,7 +45,7 @@
     "ngrok": "^5.0.0-beta.2",
     "prettier": "^3.0.1",
     "sinon": "^17.0.0",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "wrangler": "^3.0.1"
   }

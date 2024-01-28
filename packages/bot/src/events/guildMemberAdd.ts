@@ -200,6 +200,7 @@ export const getWelcomerConfigurations = async (
         })
         .onConflictDoNothing()
         .returning({
+          id: triggers.id,
           flow: triggers.flow,
           ignoreBots: triggers.ignoreBots,
           disabled: triggers.disabled,

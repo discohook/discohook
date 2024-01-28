@@ -70,14 +70,14 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
       }
     }
 
-    const appCommand =
+    const commandData =
       appCommands[interaction.data.type][interaction.data.name.toLowerCase()];
-    if (!appCommand) {
+    if (!commandData) {
       return respond({ error: "Unknown command" });
     }
 
     if (interaction.type === InteractionType.ApplicationCommand) {
-      const handler = appCommand.handlers[qualifiedOptions.trim() || "BASE"];
+      const handler = commandData.handlers[qualifiedOptions.trim() || "BASE"];
       if (!handler) {
         return respond({ error: "Cannot handle this command" });
       }
@@ -113,9 +113,9 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
         data: { choices: [] },
       });
 
-      if (!appCommand.autocompleteHandlers) return noChoices;
+      if (!commandData.autocompleteHandlers) return noChoices;
       const handler =
-        appCommand.autocompleteHandlers[qualifiedOptions.trim() || "BASE"];
+        commandData.autocompleteHandlers[qualifiedOptions.trim() || "BASE"];
       if (!handler) return noChoices;
 
       const ctx = new InteractionContext(rest, interaction, env);
