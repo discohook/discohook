@@ -78,6 +78,7 @@ export default function Legal() {
                 <img
                   src={getUserAvatar(user)}
                   className="rounded-full h-4 inline-block align-sub"
+                  alt={user.name}
                 />{" "}
                 at the top left
               </>

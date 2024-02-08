@@ -52,7 +52,7 @@ export const Embed: React.FC<{
             : undefined
         }
       >
-        {embed.author && embed.author.name && (
+        {embed.author?.name && (
           <div className="min-w-0 flex mt-2">
             {embed.author.icon_url && (
               <img
@@ -186,6 +186,7 @@ export const Embed: React.FC<{
         )}
         {embed.thumbnail?.url && (
           <button
+            type="button"
             className="flex mt-2 ml-4 justify-self-end h-fit"
             style={{ gridArea: "1 / 2 / 8 / 3" }}
             onClick={() => {
@@ -193,6 +194,7 @@ export const Embed: React.FC<{
                 setImageModalData({
                   images: [
                     {
+                      // biome-ignore lint/style/noNonNullAssertion: Checked above
                       url: embed.thumbnail!.url,
                     },
                   ],
@@ -208,7 +210,7 @@ export const Embed: React.FC<{
             />
           </button>
         )}
-        {embed.footer && embed.footer.text && (
+        {embed.footer?.text && (
           <div className="min-w-0 flex mt-2">
             {embed.footer.icon_url && (
               <img

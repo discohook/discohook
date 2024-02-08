@@ -12,19 +12,19 @@ import { Markdown } from "./Markdown";
 
 export enum AuthorType {
   /** A user. */
-  User,
+  User = 0,
   /** A webhook. */
-  Webhook,
+  Webhook = 1,
   /** A regular bot. */
-  Bot,
+  Bot = 2,
   /** A regular bot that we control. We aren't sure if we will use this. */
-  ActionableBot,
+  ActionableBot = 3,
   /** A webhook owned by an application, but not necessarily our own
    * application. */
-  ApplicationWebhook,
+  ApplicationWebhook = 4,
   /** A webhook owned by our application. It is "actionable" in that we can
    * add components with custom IDs and respond to their interactions. */
-  ActionableWebhook,
+  ActionableWebhook = 5,
 }
 
 export const getAuthorType = (
@@ -83,15 +83,15 @@ export const Message: React.FC<{
   setImageModalData,
 }) => {
   const webhook = webhooks ? webhooks[0] : undefined;
-  const username = message.author?.name ?? webhook?.name ?? "Boogiehook",
-    avatarUrl =
-      message.author?.icon_url ??
-      (webhook
-        ? webhook.avatar
-          ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
-          : cdn.defaultAvatar(5)
-        : "/logos/boogiehook.svg"),
-    badge: string | undefined = "BOT";
+  const username = message.author?.name ?? webhook?.name ?? "Boogiehook";
+  const avatarUrl =
+    message.author?.icon_url ??
+    (webhook
+      ? webhook.avatar
+        ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
+        : cdn.defaultAvatar(5)
+      : "/logos/boogiehook.svg");
+  const badge: string | undefined = "BOT";
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;
@@ -106,15 +106,16 @@ export const Message: React.FC<{
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
   for (const embed of message.embeds ?? []) {
-    const galleryChildren = message
-      .embeds!.filter((e) => embed.url && e.url === embed.url)
+    const galleryChildren = (message.embeds ?? [])
+      .filter((e) => embed.url && e.url === embed.url)
       .slice(1);
     if (galleryChildren.includes(embed)) continue;
 
     embeds.push({
       embed,
       extraImages: galleryChildren
-        .filter((e) => e.image?.url)
+        .filter((e) => !!e.image && !!e.image.url)
+        // biome-ignore lint/style/noNonNullAssertion: Above
         .map((e) => e.image!),
     });
   }

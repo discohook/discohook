@@ -7,7 +7,7 @@ import {
   APIMessageApplicationCommandInteraction,
   APIUserApplicationCommandInteraction,
   ApplicationCommandType,
-  MessageFlags
+  MessageFlags,
 } from "discord-api-types/v10";
 import {
   addComponentChatAutocomplete,
@@ -16,7 +16,11 @@ import {
 } from "./commands/components/entry.js";
 import { helpAutocomplete, helpEntry } from "./commands/help.js";
 import { inviteCallback } from "./commands/invite.js";
-import { addTriggerCallback, triggerAutocompleteCallback, viewTriggerCallback } from "./commands/triggers.js";
+import {
+  addTriggerCallback,
+  triggerAutocompleteCallback,
+  viewTriggerCallback,
+} from "./commands/triggers.js";
 import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
 import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";

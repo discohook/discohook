@@ -61,6 +61,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
   return (
     <div className="w-[90%] max-w-[400px] mr-4 relative">
       <button
+        type="button"
         data-custom-id={data.custom_id}
         data-type={data.type}
         data-open={false}
@@ -96,6 +97,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
                 <img
                   src={cdn.emoji(option.emoji.id)}
                   className="w-[22px] h-[22px] mr-2 my-auto shrink-0"
+                  alt={option.emoji.name}
                 />
               ) : (
                 shouldLeftPad && <div className="w-[22px] mr-2 shrink-0" />

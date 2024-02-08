@@ -38,13 +38,14 @@ export const TargetAddModal = (
     if (!s) setWebhook(undefined);
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We need to depend on the stateful webhook value
   useEffect(() => {
-    // @ts-ignore
+    // @ts-expect-error
     window.handlePopupClose = (result: APIWebhook) => {
       props.updateTargets({ [result.id]: result });
       setOpen(false);
     };
-  }, [webhook]);
+  }, [webhook, setOpen, props.updateTargets]);
 
   return (
     <Modal title={strings.title} {...props} setOpen={setOpen}>
@@ -54,8 +55,12 @@ export const TargetAddModal = (
           type="password"
           className="w-full"
           errors={[error]}
-          onFocus={(e) => (e.currentTarget.type = "text")}
-          onBlur={(e) => (e.currentTarget.type = "password")}
+          onFocus={(e) => {
+            e.currentTarget.type = "text";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.type = "password";
+          }}
           delayOnInput={200}
           onInput={async (e) => {
             setError(undefined);
@@ -84,7 +89,7 @@ export const TargetAddModal = (
             <img
               className="rounded-full h-24 w-24 m-auto"
               src={avatarUrl}
-              alt={webhook!.name ?? "Webhook"}
+              alt={webhook?.name ?? "Webhook"}
             />
           ) : (
             <div className="rounded-full h-24 w-24 bg-gray-400 dark:bg-gray-600 m-auto" />

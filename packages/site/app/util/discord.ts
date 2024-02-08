@@ -30,7 +30,7 @@ export const discordRequest = async (
     init?: Omit<RequestInit, "method">;
   },
 ) => {
-  const search = options?.query ? "?" + options.query.toString() : "";
+  const search = options?.query ? `?${options.query.toString()}` : "";
   const init = options?.init ?? {};
 
   return await fetch(`${DISCORD_API}/v${DISCORD_API_V}${route}${search}`, {
@@ -156,7 +156,7 @@ export const modifyWebhook = async (
 };
 
 export const getCurrentUserGuilds = async (accessToken: string) => {
-  const data = await discordRequest("GET", `/users/@me/guilds`, {
+  const data = await discordRequest("GET", "/users/@me/guilds", {
     init: {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -169,8 +169,6 @@ export const getCurrentUserGuilds = async (accessToken: string) => {
 
 class CDN {
   readonly BASE = "https://cdn.discordapp.com";
-
-  constructor() {}
 
   _withOpts(
     options: BaseImageURLOptions | undefined,
@@ -186,15 +184,15 @@ class CDN {
     avatarHash: string,
     options?: BaseImageURLOptions,
   ): string {
-    return this.BASE + `/avatars/${id}/${avatarHash}` + this._withOpts(options);
+    return `${this.BASE}/avatars/${id}/${avatarHash}${this._withOpts(options)}`;
   }
 
   defaultAvatar(index: number): string {
-    return this.BASE + `/embed/avatars/${index}.png`;
+    return `${this.BASE}/embed/avatars/${index}.png`;
   }
 
   emoji(id: string, extension?: ImageExtension): string {
-    return this.BASE + `/emojis/${id}${extension ? `.${extension}` : ""}`;
+    return `${this.BASE}/emojis/${id}${extension ? `.${extension}` : ""}`;
   }
 }
 

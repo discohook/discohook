@@ -40,6 +40,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
 
   const db = getDb(context.env.D1);
+  // biome-ignore lint/style/noNonNullAssertion: `getUser` just confirmed that this exists
   const result = (await db.query.users.findFirst({
     where: eq(users.id, user.id),
     with: {
@@ -234,6 +235,7 @@ export default function Me() {
                         <div className="flex max-w-full">
                           <p className="font-medium truncate">{backup.name}</p>
                           <button
+                            type="button"
                             className="ml-2 my-auto"
                             onClick={() => setEditingBackup(backup)}
                           >
@@ -252,6 +254,7 @@ export default function Me() {
                           <CoolIcon icon="External_Link" />
                         </Link>
                         <button
+                          type="button"
                           onClick={() => {
                             submit(
                               {
@@ -290,8 +293,8 @@ export default function Me() {
             {links.length > 0 ? (
               <div className="space-y-1 mt-1 overflow-y-auto max-h-96">
                 {links.map((link) => {
-                  const created = new Date(link.createdAt),
-                    expires = new Date(link.expiresAt);
+                  const created = new Date(link.createdAt);
+                  const expires = new Date(link.expiresAt);
                   return (
                     <div
                       key={`link-${link.id}`}
@@ -338,6 +341,7 @@ export default function Me() {
                           </Link>
                         )}
                         <button
+                          type="button"
                           onClick={() => {
                             submit(
                               {

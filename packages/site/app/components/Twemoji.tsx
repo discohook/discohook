@@ -13,11 +13,13 @@ const Twemoji_: React.FC<
 > = ({ emoji, unified, className, title }) => (
   <span
     title={title}
+    // biome-ignore lint/security/noDangerouslySetInnerHtml:
     dangerouslySetInnerHTML={{
       __html: twemoji.parse(
         unified
           ? unified.split("-").map(twemoji.convert.fromCodePoint).join("")
-          : emoji!,
+          : // biome-ignore lint/style/noNonNullAssertion: Has to be one or the other
+            emoji!,
         {
           folder: "svg",
           ext: ".svg",

@@ -1,5 +1,10 @@
 import { ApplicationCommandOptionChannelTypesMixin } from "@discordjs/builders";
-import { ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
+import {
+  ApplicationCommandOptionType,
+  ApplicationCommandType,
+  ChannelType,
+  RESTPostAPIApplicationCommandsJSONBody,
+} from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
 import process from "node:process";
