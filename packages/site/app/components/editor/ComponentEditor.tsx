@@ -22,7 +22,6 @@ import { PopoutEmojiPicker } from "../EmojiPicker";
 import { InfoBox } from "../InfoBox";
 import { selectStrings } from "../StringSelect";
 import { TextInput } from "../TextInput";
-import { CUSTOM_EMOJI_RE } from "../preview/Markdown";
 
 export const getComponentText = (
   component: APIMessageComponent,
@@ -128,41 +127,51 @@ export const ActionRowEditor: React.FC<{
         Row {i + 1}
         <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
           <button
+            type="button"
             className={i === 0 ? "hidden" : ""}
             onClick={() => {
-              message.data.components!.splice(i, 1);
-              message.data.components!.splice(i - 1, 0, row);
+              message.data.components?.splice(i, 1);
+              message.data.components?.splice(i - 1, 0, row);
               setData({ ...data });
             }}
           >
             <CoolIcon icon="Chevron_Up" />
           </button>
           <button
+            type="button"
             className={
-              i === message.data.components!.length - 1 ? "hidden" : ""
+              !!message.data.components &&
+              i === message.data.components.length - 1
+                ? "hidden"
+                : ""
             }
             onClick={() => {
-              message.data.components!.splice(i, 1);
-              message.data.components!.splice(i + 1, 0, row);
+              message.data.components?.splice(i, 1);
+              message.data.components?.splice(i + 1, 0, row);
               setData({ ...data });
             }}
           >
             <CoolIcon icon="Chevron_Down" />
           </button>
           <button
+            type="button"
             className={
-              message.data.components!.length - 1 + 1 >= 5 ? "hidden" : ""
+              !!message.data.components &&
+              message.data.components.length - 1 + 1 >= 5
+                ? "hidden"
+                : ""
             }
             onClick={() => {
-              message.data.components!.splice(i + 1, 0, structuredClone(row));
+              message.data.components?.splice(i + 1, 0, structuredClone(row));
               setData({ ...data });
             }}
           >
             <CoolIcon icon="Copy" />
           </button>
           <button
+            type="button"
             onClick={() => {
-              message.data.components!.splice(i, 1);
+              message.data.components?.splice(i, 1);
               setData({ ...data });
             }}
           >
@@ -328,39 +337,11 @@ export const ActionRowEditor: React.FC<{
                                 />
                               </div>
                             </div>
-                            <TextInput
-                              label="Emoji"
-                              className="w-full"
-                              value={
-                                option.emoji?.id
-                                  ? `<${option.emoji.animated ? "a" : ""}:${
-                                      option.emoji.name
-                                    }:${option.emoji.id}>`
-                                  : option.emoji?.name ?? ""
-                              }
-                              onInput={(e) => {
-                                const { value } = e.currentTarget;
-                                if (!value) {
-                                  option.emoji = undefined;
-                                  setData({ ...data });
-                                  return;
-                                }
-                                const customMatch =
-                                  value.match(CUSTOM_EMOJI_RE);
-                                // stockMatch = value.match(EMOJI_NAME_RE);
-                                if (customMatch) {
-                                  option.emoji = {
-                                    id: customMatch[3],
-                                    name: customMatch[2],
-                                    animated: customMatch[1] === "a",
-                                  };
-                                  setData({ ...data });
-                                }
-                                // else if (stockMatch) {
-                                //   option.emoji = {
-                                //     name: stockMatch[1],
-                                //   }
-                                // }
+                            <PopoutEmojiPicker
+                              emoji={option.emoji}
+                              setEmoji={(emoji) => {
+                                option.emoji = emoji;
+                                setData({ ...data });
                               }}
                             />
                             <TextInput
@@ -554,15 +535,17 @@ export const IndividualComponentEditor: React.FC<
             `Button ${index + 1}`
           ) : (
             <>
-              {(component.type === ComponentType.UserSelect
-                ? "User"
-                : component.type === ComponentType.RoleSelect
-                  ? "Role"
-                  : component.type === ComponentType.MentionableSelect
-                    ? "User & Role"
-                    : component.type === ComponentType.ChannelSelect
-                      ? "Channel"
-                      : "") + " "}
+              {`${
+                component.type === ComponentType.UserSelect
+                  ? "User"
+                  : component.type === ComponentType.RoleSelect
+                    ? "Role"
+                    : component.type === ComponentType.MentionableSelect
+                      ? "User & Role"
+                      : component.type === ComponentType.ChannelSelect
+                        ? "Channel"
+                        : ""
+              } `}
               Select Menu
             </>
           )}
@@ -570,6 +553,7 @@ export const IndividualComponentEditor: React.FC<
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
         <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
           <button
+            type="button"
             className={index === 0 ? "hidden" : ""}
             onClick={() => {
               row.components.splice(index, 1);
@@ -580,6 +564,7 @@ export const IndividualComponentEditor: React.FC<
             <CoolIcon icon="Chevron_Up" />
           </button>
           <button
+            type="button"
             className={index === row.components.length - 1 ? "hidden" : ""}
             onClick={() => {
               row.components.splice(index, 1);
@@ -590,6 +575,7 @@ export const IndividualComponentEditor: React.FC<
             <CoolIcon icon="Chevron_Down" />
           </button>
           <button
+            type="button"
             className={getRowWidth(row) >= 5 ? "hidden" : ""}
             onClick={() => {
               row.components.splice(index + 1, 0, structuredClone(component));
@@ -599,6 +585,7 @@ export const IndividualComponentEditor: React.FC<
             <CoolIcon icon="Copy" />
           </button>
           <button
+            type="button"
             onClick={() => {
               row.components.splice(index, 1);
               updateRow();
@@ -634,6 +621,7 @@ export const SelectMenuOptionsSection: React.FC<
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
         <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
           <button
+            type="button"
             className={index === 0 ? "hidden" : ""}
             onClick={() => {
               component.options.splice(index, 1);
@@ -644,6 +632,7 @@ export const SelectMenuOptionsSection: React.FC<
             <CoolIcon icon="Chevron_Up" />
           </button>
           <button
+            type="button"
             className={index === component.options.length - 1 ? "hidden" : ""}
             onClick={() => {
               component.options.splice(index, 1);
@@ -654,6 +643,7 @@ export const SelectMenuOptionsSection: React.FC<
             <CoolIcon icon="Chevron_Down" />
           </button>
           <button
+            type="button"
             className={component.options.length >= 25 ? "hidden" : ""}
             onClick={() => {
               component.options.splice(index + 1, 0, structuredClone(option));
@@ -663,6 +653,7 @@ export const SelectMenuOptionsSection: React.FC<
             <CoolIcon icon="Copy" />
           </button>
           <button
+            type="button"
             onClick={() => {
               component.options.splice(index, 1);
               update();

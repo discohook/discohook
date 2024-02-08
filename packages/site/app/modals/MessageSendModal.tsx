@@ -38,19 +38,28 @@ export const submitMessage = async (
   target: APIWebhook,
   message: QueryData["messages"][number],
 ): Promise<SubmitMessageResult> => {
-  let data;
-  if (message.reference) {
-    data = await updateWebhookMessage(
-      target.id,
-      target.token!,
-      message.reference.match(MESSAGE_REF_RE)![3],
-      {
-        content: message.data.content?.trim() || undefined,
-        embeds: message.data.embeds || undefined,
+  const token = target.token;
+  if (!token) {
+    return {
+      status: "error",
+      data: {
+        code: -1,
+        message: "No webhook token was provided.",
       },
-    );
+    };
+  }
+  let data: APIMessage | DiscordErrorData;
+  if (message.reference) {
+    const match = message.reference.match(MESSAGE_REF_RE);
+    if (!match) {
+      throw Error(`Invalid message reference: ${message.reference}`);
+    }
+    data = await updateWebhookMessage(target.id, token, match[3], {
+      content: message.data.content?.trim() || undefined,
+      embeds: message.data.embeds || undefined,
+    });
   } else {
-    data = await executeWebhook(target.id, target.token!, {
+    data = await executeWebhook(target.id, token, {
       username: message.data.author?.name,
       avatar_url: message.data.author?.icon_url,
       content: message.data.content?.trim() || undefined,
@@ -81,13 +90,24 @@ export const MessageSendModal = (
     }),
     {},
   );
+
+  // We don't want to execute this hook every time selectedWebhooks updates
+  // (which is also every time this hook runs)
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     // Set new targets to be enabled by default,
     // but don't affect manually updated ones
     updateSelectedWebhooks(
       Object.keys(targets)
         .filter((targetId) => !Object.keys(selectedWebhooks).includes(targetId))
-        .reduce((o, targetId) => ({ ...o, [targetId]: true }), {}),
+        .reduce(
+          (o, targetId) => ({
+            // biome-ignore lint/performance/noAccumulatingSpread:
+            ...o,
+            [targetId]: true,
+          }),
+          {},
+        ),
     );
   }, [targets]);
 
@@ -112,7 +132,14 @@ export const MessageSendModal = (
     updateMessages(
       data.messages
         .map((_, i) => i)
-        .reduce((o, index) => ({ ...o, [index]: { enabled: true } }), {}),
+        .reduce(
+          (o, index) => ({
+            // biome-ignore lint/performance/noAccumulatingSpread:
+            ...o,
+            [index]: { enabled: true },
+          }),
+          {},
+        ),
     );
   }, [data.messages]);
 
@@ -125,6 +152,7 @@ export const MessageSendModal = (
           .map((_, i) => i)
           .reduce(
             (o, index) => ({
+              // biome-ignore lint/performance/noAccumulatingSpread:
               ...o,
               [index]: { result: undefined, enabled: true },
             }),
@@ -158,12 +186,12 @@ export const MessageSendModal = (
                   {!!messages[i]?.result && (
                     <CoolIcon
                       icon={
-                        messages[i]?.result!.status === "success"
+                        messages[i]?.result?.status === "success"
                           ? "Check"
                           : "Close_MD"
                       }
                       className={`text-2xl my-auto mr-1 ${
-                        messages[i]?.result!.status === "success"
+                        messages[i]?.result?.status === "success"
                           ? "text-green-600"
                           : "text-rose-600"
                       }`}
@@ -212,6 +240,7 @@ export const MessageSendModal = (
                 </label>
                 {messages[i]?.result && (
                   <button
+                    type="button"
                     className="flex ml-2 p-2 text-2xl rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-gray-600 text-blurple dark:text-blurple-400 hover:text-blurple-400 hover:dark:text-blurple-300 transition"
                     onClick={() => setShowingResult(messages[i].result)}
                   >
@@ -323,6 +352,7 @@ export const MessageSendModal = (
                       {
                         type: message.reference ? "edit" : "send",
                         webhookId: webhook.id,
+                        // biome-ignore lint/style/noNonNullAssertion: We needed the token in order to arrive at a success state
                         webhookToken: webhook.token!,
                         messageId: result.data.id,
                         // threadId: ,
