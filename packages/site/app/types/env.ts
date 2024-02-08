@@ -1,5 +1,4 @@
 export interface Env {
-  D1: D1Database;
   KV: KVNamespace;
   __STATIC_CONTENT: Fetcher;
   // __STATIC_CONTENT_MANIFEST: Object;
@@ -9,4 +8,5 @@ export interface Env {
   DISCORD_BOT_TOKEN: string;
   DISCORD_SUPPORT_INVITE_CODE: string;
   KOFI_WEBHOOK_TOKEN: string;
+  DATABASE_URL: string;
 }

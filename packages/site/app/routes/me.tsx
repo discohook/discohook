@@ -9,8 +9,6 @@ import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
-import { getDb } from "~/db/index.server";
-import { backups as dBackups, shareLinks, users } from "~/db/schema.server";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { getUser } from "~/session.server";
@@ -18,6 +16,7 @@ import { DiscohookBackup } from "~/types/discohook";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { jsonAsString } from "~/util/zod";
+import { backups as dBackups, getDb, shareLinks, users } from "../store.server";
 
 const strings = {
   yourBackups: "Your Backups",
@@ -39,7 +38,7 @@ const strings = {
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
 
-  const db = getDb(context.env.D1);
+  const db = getDb(context.env.DATABASE_URL);
   // biome-ignore lint/style/noNonNullAssertion: `getUser` just confirmed that this exists
   const result = (await db.query.users.findFirst({
     where: eq(users.id, user.id),
@@ -86,7 +85,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     ]),
   );
 
-  const db = getDb(context.env.D1);
+  const db = getDb(context.env.DATABASE_URL);
   switch (data.action) {
     case "DELETE_SHARE_LINK": {
       const link = await db.query.shareLinks.findFirst({

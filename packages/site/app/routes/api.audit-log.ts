@@ -1,12 +1,11 @@
 import { json } from "@remix-run/cloudflare";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
-import { getDb } from "~/db/index.server";
-import { messageLogEntries, webhooks } from "~/db/schema.server";
 import { getUser } from "~/session.server";
 import { getWebhook, getWebhookMessage } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
+import { getDb, messageLogEntries, webhooks } from "../store.server";
 
 export const action = async ({ request, context }: ActionArgs) => {
   const { type, webhookId, webhookToken, messageId, threadId } =
@@ -40,7 +39,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   const webhook = await getWebhook(webhookId, webhookToken);
 
-  const db = getDb(context.env.D1);
+  const db = getDb(context.env.DATABASE_URL);
 
   await db
     .insert(webhooks)
@@ -63,7 +62,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       //   : undefined,
     })
     .onConflictDoUpdate({
-      target: webhooks.id,
+      target: [webhooks.platform, webhooks.id],
       set: {
         name: webhook.name ?? undefined,
         avatar: webhook.avatar,
@@ -72,7 +71,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       },
     });
 
-  const { id } = (
+  const entry = (
     await db
       .insert(messageLogEntries)
       .values({
@@ -90,23 +89,24 @@ export const action = async ({ request, context }: ActionArgs) => {
         embedCount: message.embeds.length,
         hasContent: !!message.content,
       })
-      .returning({ id: messageLogEntries.id })
+      .returning({
+        id: messageLogEntries.id,
+        webhookId: messageLogEntries.webhookId,
+        channelId: messageLogEntries.channelId,
+        messageId: messageLogEntries.messageId,
+      })
   )[0];
 
-  const entry = await db.query.messageLogEntries.findFirst({
-    where: eq(messageLogEntries.id, id),
-    with: {
-      webhook: {
-        columns: {
-          discordGuildId: true,
-        },
-      },
-    },
+  const entryWebhook = await db.query.webhooks.findFirst({
+    where: and(
+      eq(webhooks.platform, "discord"),
+      eq(webhooks.id, entry.webhookId),
+    ),
     columns: {
-      channelId: true,
-      messageId: true,
+      id: true,
+      discordGuildId: true,
     },
   });
 
-  return entry!;
+  return { ...entry, webhook: entryWebhook };
 };

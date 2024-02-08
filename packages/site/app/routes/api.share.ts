@@ -1,8 +1,7 @@
 import { z } from "zod";
 import { zx } from "zodix";
-import { getDb } from "~/db/index.server";
-import { shareLinks } from "~/db/schema.server";
 import { getUser } from "~/session.server";
+import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
@@ -53,6 +52,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   const origin = origin_ ?? new URL(request.url).origin;
 
+  // biome-ignore lint/performance/noDelete: We don't want to store this property at all
   delete data.backup_id;
   const shortened: ShortenedData = {
     data: JSON.stringify(data),
@@ -60,8 +60,8 @@ export const action = async ({ request, context }: ActionArgs) => {
     userId: user?.id,
   };
 
-  const db = getDb(context.env.D1),
-    kv = context.env.KV;
+  const db = getDb(context.env.DATABASE_URL);
+  const kv = context.env.KV;
   const { id, key } = await generateUniqueShortenKey(kv, 8);
   await kv.put(key, JSON.stringify(shortened), { expirationTtl: ttl / 1000 });
   if (user) {

@@ -46,7 +46,6 @@
     "@types/react-color": "^3.0.10",
     "@types/react-dom": "^18.2.7",
     "@types/react-modal": "^3.16.3",
-    "drizzle-kit": "^0.20.7",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.1.6",
     "wrangler": "^3.21.0"

@@ -5,11 +5,10 @@ import {
   json,
 } from "@remix-run/cloudflare";
 import { APIUser } from "discord-api-types/v10";
-import type { DiscordProfile } from "remix-auth-discord";
-import { Context } from "./util/loader";
-import { getDb } from "./db/index.server";
-import { makeSnowflake, users } from "./db/schema.server";
 import { eq } from "drizzle-orm";
+import type { DiscordProfile } from "remix-auth-discord";
+import { DBWithSchema, getDb, makeSnowflake, users } from "./store.server";
+import { Context } from "./util/loader";
 
 export const getSessionStorage = (context: Context) => {
   const sessionStorage = createWorkersKVSessionStorage({
@@ -37,7 +36,7 @@ export const writeOauthUser = async ({
   db,
   discord,
 }: {
-  db: ReturnType<typeof getDb>;
+  db: DBWithSchema;
   discord?: DiscordProfile;
 }) => {
   const j = (discord ? discord.__json : {}) as APIUser;
@@ -59,6 +58,7 @@ export const writeOauthUser = async ({
       })
   )[0];
 
+  // biome-ignore lint/style/noNonNullAssertion: We just created or updated it. There could be a race condition, but it's unlikely
   const user = (await db.query.users.findFirst({
     where: eq(users.id, id),
     columns: {
@@ -120,7 +120,7 @@ export async function getUser(
     }
   }
 
-  const db = getDb(context.env.D1);
+  const db = getDb(context.env.DATABASE_URL);
   const user = await db.query.users.findFirst({
     where: eq(users.id, userId),
     columns: {

@@ -2,9 +2,8 @@ import { json } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
-import { getDb } from "~/db/index.server";
-import { backups } from "~/db/schema.server";
 import { doubleDecode, getUser } from "~/session.server";
+import { backups, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { jsonAsString } from "~/util/zod";
@@ -16,7 +15,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     data: z.optional(zx.BoolAsString),
   });
 
-  const db = getDb(context.env.D1);
+  const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, id),
     columns: {
@@ -50,7 +49,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     data: z.optional(jsonAsString(ZodQueryData)),
   });
 
-  const db = getDb(context.env.D1);
+  const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, id),
     columns: {

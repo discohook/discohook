@@ -1,9 +1,8 @@
 import { APIUser } from "discord-api-types/v10";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
-import { getDb } from "./db/index.server";
-import { discordUsers, makeSnowflake } from "./db/schema.server";
 import { getSessionStorage, writeOauthUser } from "./session.server";
+import { discordUsers, getDb, makeSnowflake } from "./store.server";
 import { Context } from "./util/loader";
 
 export type UserAuth = {
@@ -31,7 +30,7 @@ export const getDiscordAuth = (context: Context) => {
       profile,
     }): Promise<UserAuth> => {
       const j = profile.__json as APIUser;
-      const db = getDb(context.env.D1);
+      const db = getDb(context.env.DATABASE_URL);
       await db
         .insert(discordUsers)
         .values({

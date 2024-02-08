@@ -1,22 +1,16 @@
 import { APIUser } from "discord-api-types/v10";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Client, Pool } from "pg";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schemaV1 from "./schema/schema-v1.js";
 import * as schema from "./schema/schema.js";
 import { PartialKVGuild } from "./types/guild.js";
 
-const getDbWithClient = (client: Client | Pool) =>
+const getDbWithClient = (client: postgres.Sql) =>
   drizzle(client, { schema: { ...schema, ...schemaV1 } });
 
 export const getDb = (connectionString: string) => {
-  // const client = new Client({ connectionString });
-  // await client.connect();
-  const pool = new Pool({ connectionString });
-  return getDbWithClient(pool);
-  // return [
-  //   getDbWithClient(client),
-  //   (ctx: ExecutionContext) => ctx.waitUntil(client.end()),
-  // ] as [DBWithSchema, (ctx: ExecutionContext) => void];
+  const client = postgres(connectionString, { fetch_types: false });
+  return getDbWithClient(client);
 };
 
 export type DBWithSchema = ReturnType<typeof getDbWithClient>;
