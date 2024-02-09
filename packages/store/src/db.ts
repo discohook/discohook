@@ -1,15 +1,31 @@
 import { APIUser } from "discord-api-types/v10";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
+import JSONbig_ from "json-bigint";
 import postgres from "postgres";
 import * as schemaV1 from "./schema/schema-v1.js";
 import * as schema from "./schema/schema.js";
 import { PartialKVGuild } from "./types/guild.js";
 
+const JSONbig = JSONbig_({ useNativeBigInt: true, alwaysParseAsBig: true });
+
 const getDbWithClient = (client: postgres.Sql) =>
   drizzle(client, { schema: { ...schema, ...schemaV1 } });
 
 export const getDb = (connectionString: string) => {
-  const client = postgres(connectionString, { fetch_types: false });
+  const client = postgres(connectionString, {
+    // Thanks https://github.com/drizzle-team/drizzle-orm/issues/989#issuecomment-1936564267
+    types: {
+      bigint: postgres.BigInt,
+      json: {
+        // "json" in pg_catalog.pg_type
+        from: [114],
+        to: 114,
+        parse: JSONbig.parse,
+        serialize: JSONbig.stringify,
+      },
+    },
+  });
   return getDbWithClient(client);
 };
 
@@ -55,17 +71,38 @@ export const upsertDiscordUser = async (db: DBWithSchema, user: APIUser) => {
       },
     });
 
-  const dbUser = await db
-    .insert(schema.users)
-    .values({
-      discordId: schema.makeSnowflake(user.id),
-      name: user.global_name ?? user.username,
-    })
-    .onConflictDoUpdate({
-      target: schema.users.discordId,
-      set: { name: user.global_name ?? user.username },
-    })
-    .returning();
+  const { id } = (
+    await db
+      .insert(schema.users)
+      .values({
+        discordId: schema.makeSnowflake(user.id),
+        name: user.global_name ?? user.username,
+      })
+      .onConflictDoUpdate({
+        target: schema.users.discordId,
+        set: { name: user.global_name ?? user.username },
+      })
+      .returning({ id: schema.users.id })
+  )[0];
 
-  return dbUser[0];
+  const dbUser = await db.query.users.findFirst({
+    where: eq(schema.users.id, id),
+    columns: {
+      id: true,
+      name: true,
+      firstSubscribed: true,
+      subscribedSince: true,
+      lifetime: true,
+      discordId: true,
+    },
+    with: {
+      discordUser: true,
+      // guildedUser: true,
+    },
+  });
+  if (!dbUser) {
+    throw Error(`Upserted user with ID ${user.id} was mysteriously not found.`);
+  }
+
+  return dbUser;
 };

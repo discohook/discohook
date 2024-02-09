@@ -1,4 +1,4 @@
-import { Snowflake, isSnowflake } from "discord-snowflake";
+import { isSnowflake } from "discord-snowflake";
 import { relations } from "drizzle-orm";
 import {
   bigint,
@@ -9,7 +9,7 @@ import {
   serial,
   text,
   timestamp,
-  unique,
+  unique
 } from "drizzle-orm/pg-core";
 import { QueryData } from "../types/backups.js";
 import { Flow, StorableComponent } from "../types/components.js";
@@ -17,18 +17,16 @@ import { TriggerEvent } from "../types/triggers.js";
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
-  const int = Number.parseInt(this.toString());
-  return int ?? this.toString();
+  return this.toString();
 };
 
 const date = (name: string) => timestamp(name, { mode: "date" }).$type<Date>();
-const snowflake = (name: string) =>
-  bigint(name, { mode: "bigint" }).$type<Snowflake>();
+const snowflake = (name: string) => bigint(name, { mode: "bigint" });
 
 // We in the business call this a make-flake
 /** Assert that `id` is a snowflake and return the appropriately typed value */
-export const makeSnowflake = (id: string): Snowflake => {
-  if (isSnowflake(id)) return id;
+export const makeSnowflake = (id: string) => {
+  if (isSnowflake(id)) return BigInt(id);
   throw new Error(`${id} is not a snowflake.`);
 };
 
@@ -40,12 +38,8 @@ export const users = pgTable("User", {
   subscribedSince: date("subscribedSince"),
   lifetime: boolean("lifetime").default(false),
 
-  discordId: snowflake("discordId")
-    .unique()
-    .references(() => discordUsers.id),
-  guildedId: text("guildedId")
-    .unique()
-    .references(() => guildedUsers.id),
+  discordId: snowflake("discordId").unique(),
+  guildedId: text("guildedId").unique(),
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -121,9 +115,7 @@ export const discordRoles = pgTable(
   "DiscordRoles",
   {
     id: snowflake("id").notNull(),
-    guildId: snowflake("guildId")
-      .notNull()
-      .references(() => discordGuilds.id),
+    guildId: snowflake("guildId").notNull(),
 
     name: text("name").notNull(),
     color: integer("color").default(0),
@@ -196,7 +188,7 @@ export const shareLinks = pgTable("ShareLink", {
   expiresAt: date("expiresAt").notNull(),
   origin: text("origin"),
 
-  userId: integer("userId").references(() => users.id),
+  userId: integer("userId"),
 });
 
 export const shareLinksRelations = relations(shareLinks, ({ one }) => ({
@@ -217,9 +209,7 @@ export const backups = pgTable("Backup", {
   dataVersion: text("dataVersion").notNull(),
   data: json("data").notNull().$type<QueryData>(),
 
-  ownerId: integer("ownerId")
-    .notNull()
-    .references(() => users.id),
+  ownerId: integer("ownerId").notNull(),
 });
 
 export const backupsRelations = relations(backups, ({ one, many }) => ({
@@ -242,14 +232,10 @@ export const webhooks = pgTable(
     avatar: text("avatar"),
     channelId: text("channelId").notNull(),
     applicationId: text("applicationId"),
-    userId: integer("userId").references(() => users.id),
 
-    discordGuildId: snowflake("discordGuildId").references(
-      () => discordGuilds.id,
-    ),
-    guildedServerId: text("guildedServerId").references(
-      () => guildedServers.id,
-    ),
+    userId: integer("userId"),
+    discordGuildId: snowflake("discordGuildId"),
+    guildedServerId: text("guildedServerId"),
   },
   (table) => ({
     unq: unique().on(table.platform, table.id),
@@ -283,7 +269,7 @@ export const messageLogEntries = pgTable("MessageLogEntry", {
   messageId: text("messageId").notNull(),
   threadId: text("threadId"),
 
-  userId: integer("userId").references(() => users.id),
+  userId: integer("userId"),
 
   notifiedEveryoneHere: boolean("notifiedEveryoneHere").default(false),
   notifiedRoles: json("notifiedRoles").$type<string[]>(),
@@ -311,13 +297,11 @@ export const discordMessageComponents = pgTable(
   "DiscordMessageComponent",
   {
     id: serial("id").primaryKey(),
-    guildId: snowflake("guildId")
-      .notNull()
-      .references(() => discordGuilds.id),
+    guildId: snowflake("guildId").notNull(),
     channelId: snowflake("channelId").notNull(),
     messageId: snowflake("messageId").notNull(),
-    createdById: integer("createdById").references(() => users.id),
-    updatedById: integer("updatedById").references(() => users.id),
+    createdById: integer("createdById"),
+    updatedById: integer("updatedById"),
     createdAt: date("createdAt").$defaultFn(() => new Date()),
     updatedAt: date("updatedAt"),
     customId: text("customId"),
@@ -353,12 +337,10 @@ export const triggers = pgTable("Triggers", {
   id: serial("id").primaryKey(),
   platform: text("platform").$type<"discord" | "guilded">().notNull(),
   event: integer("event").$type<TriggerEvent>().notNull(),
-  discordGuildId: snowflake("discordGuildId").references(
-    () => discordGuilds.id,
-  ),
-  guildedServerId: text("guildedServerId").references(() => guildedServers.id),
+  discordGuildId: snowflake("discordGuildId"),
+  guildedServerId: text("guildedServerId"),
   flow: json("flow").$type<Flow>(),
-  updatedById: integer("updatedById").references(() => users.id),
+  updatedById: integer("updatedById"),
   updatedAt: date("updatedAt"),
   disabled: boolean("disabled").notNull().default(false),
   ignoreBots: boolean("ignoreBots").default(false),
