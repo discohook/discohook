@@ -1,8 +1,8 @@
 import { APIUser } from "discord-api-types/v10";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
-import { getSessionStorage, writeOauthUser } from "./session.server";
-import { discordUsers, getDb, makeSnowflake } from "./store.server";
+import { getSessionStorage } from "./session.server";
+import { getDb, upsertDiscordUser } from "./store.server";
 import { Context } from "./util/loader";
 
 export type UserAuth = {
@@ -31,32 +31,13 @@ export const getDiscordAuth = (context: Context) => {
     }): Promise<UserAuth> => {
       const j = profile.__json as APIUser;
       const db = getDb(context.env.DATABASE_URL);
-      await db
-        .insert(discordUsers)
-        .values({
-          id: makeSnowflake(j.id),
-          name: j.username,
-          globalName: j.global_name,
-          discriminator: j.discriminator,
-          avatar: j.avatar,
-        })
-        .onConflictDoUpdate({
-          target: discordUsers.id,
-          set: {
-            name: j.username,
-            globalName: j.global_name,
-            discriminator: j.discriminator,
-            avatar: j.avatar,
-          },
-        });
-
-      const user = await writeOauthUser({ db, discord: profile });
+      const user = await upsertDiscordUser(db, j);
 
       // const userGuilds = await getCurrentUserGuilds(accessToken);
-      //const guilds = userGuilds.filter(
+      // const guilds = userGuilds.filter(
       //  // Owner or manage webhooks
       //  (g) => g.owner || (BigInt(g.permissions) & BigInt(0x29)) == BigInt(0x29)
-      //);
+      // );
 
       return {
         id: user.id,

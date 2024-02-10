@@ -4,10 +4,8 @@ import {
   createWorkersKVSessionStorage,
   json,
 } from "@remix-run/cloudflare";
-import { APIUser } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import type { DiscordProfile } from "remix-auth-discord";
-import { DBWithSchema, getDb, makeSnowflake, users } from "./store.server";
+import { getDb, upsertDiscordUser, users } from "./store.server";
 import { Context } from "./util/loader";
 
 export const getSessionStorage = (context: Context) => {
@@ -32,58 +30,7 @@ export const doubleDecode = <T>(data: T) => {
   return JSON.parse(JSON.stringify(data)) as Jsonify<T>;
 };
 
-export const writeOauthUser = async ({
-  db,
-  discord,
-}: {
-  db: DBWithSchema;
-  discord?: DiscordProfile;
-}) => {
-  const j = (discord ? discord.__json : {}) as APIUser;
-  const { id } = (
-    await db
-      .insert(users)
-      .values({
-        discordId: discord ? makeSnowflake(discord.id) : undefined,
-        name: discord ? j.global_name ?? j.username : "no name",
-      })
-      .onConflictDoUpdate({
-        target: discord ? users.discordId : users.id,
-        set: {
-          name: discord ? j.global_name ?? j.username : "no name",
-        },
-      })
-      .returning({
-        id: users.id,
-      })
-  )[0];
-
-  // biome-ignore lint/style/noNonNullAssertion: We just created or updated it. There could be a race condition, but it's unlikely
-  const user = (await db.query.users.findFirst({
-    where: eq(users.id, id),
-    columns: {
-      id: true,
-      name: true,
-      firstSubscribed: true,
-      subscribedSince: true,
-    },
-    with: {
-      discordUser: {
-        columns: {
-          id: true,
-          name: true,
-          globalName: true,
-          discriminator: true,
-          avatar: true,
-        },
-      },
-    },
-  }))!;
-
-  return doubleDecode(user);
-};
-
-export type User = SerializeFrom<typeof writeOauthUser>;
+export type User = SerializeFrom<typeof upsertDiscordUser>;
 
 export const getUserId = async (request: Request, context: Context) => {
   const session = await getSessionStorage(context).getSession(
