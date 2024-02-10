@@ -7,6 +7,7 @@ import { Env } from "~/types/env";
 export interface Context {
   origin: string;
   env: Env;
+  waitUntil: ExecutionContext["waitUntil"];
 }
 
 // We are specifically using these imports from @remix-run/router because the

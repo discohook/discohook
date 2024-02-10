@@ -46,6 +46,8 @@ export default {
       const loadContext: AppLoadContext = {
         origin: new URL(request.url).origin,
         env,
+        waitUntil: ctx.waitUntil,
+        // passThroughOnException: ctx.passThroughOnException,
       };
       return await handleRemixRequest(request, loadContext);
     } catch (error) {
