@@ -355,9 +355,9 @@ export default function Index() {
                       <>
                         <CoolIcon
                           icon="Circle_Check"
-                          className="text-blurple-500"
+                          className="text-blurple-500 dark:text-blurple-400 align-bottom"
                         />{" "}
-                        Owned by Boogiehook
+                        <span>Owned by Boogiehook</span>
                       </>
                     ) : (
                       webhook.user?.username
