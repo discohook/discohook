@@ -63,7 +63,11 @@ export const action = async ({ request, context }: ActionArgs) => {
   const db = getDb(context.env.DATABASE_URL);
   const kv = context.env.KV;
   const { id, key } = await generateUniqueShortenKey(kv, 8);
-  await kv.put(key, JSON.stringify(shortened), { expirationTtl: ttl / 1000 });
+  await kv.put(key, JSON.stringify(shortened), {
+    expirationTtl: ttl / 1000,
+    // KV doesn't seem to provide a way to read `expirationTtl`
+    metadata: { expiresAt: new Date(new Date().valueOf() + ttl).toISOString() },
+  });
   if (user) {
     await db.insert(shareLinks).values({
       userId: user.id,

@@ -9,19 +9,23 @@ export const loader = async ({ params, context }: LoaderArgs) => {
   const { shareId: id } = zx.parseParams(params, { shareId: z.string() });
 
   const key = `boogiehook-shorten-${id}`;
-  const shortenedRaw = await context.env.KV.get(key);
-  if (!shortenedRaw) {
+  const { value: shortened, metadata } =
+    await context.env.KV.getWithMetadata<ShortenedData>(key, {
+      type: "json",
+      // 15 minutes
+      cacheTtl: 900,
+    });
+  if (!shortened) {
     throw json(
       { message: "No shortened data with that ID. It may have expired." },
       404,
     );
   }
-  const shortened: ShortenedData = JSON.parse(shortenedRaw);
 
+  const { expiresAt } = metadata as { expiresAt?: string };
   return {
     data: JSON.parse(shortened.data) as QueryData,
     origin: shortened.origin,
-    // expires: new Date(new Date().getTime() + ),
-    expires: new Date(),
+    expires: expiresAt ? new Date(expiresAt) : new Date(),
   };
 };

@@ -139,6 +139,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
     if (customId.startsWith("t_")) {
       const state = await env.KV.get<MinimumKVComponentState>(
         `component-${type}-${customId}`,
+        "json",
       );
       if (!state) {
         return respond({ error: "Unknown component" });
@@ -186,6 +187,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
     if (customId.startsWith("t_")) {
       const state = await env.KV.get<MinimumKVComponentState>(
         `modal-${customId}`,
+        "json",
       );
       if (!state) {
         return respond({ error: "Unknown modal" });

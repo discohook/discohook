@@ -56,7 +56,10 @@ export const addComponentChatAutocomplete: AppCommandAutocompleteCallback =
     }
 
     const kvKey = `cache-autocompleteChannelWebhookMessages-${channelId}`;
-    const cached = await ctx.env.KV.get<CompactCompatibleMessage[]>(kvKey);
+    const cached = await ctx.env.KV.get<CompactCompatibleMessage[]>(
+      kvKey,
+      "json",
+    );
     let messages = cached;
     if (!messages) {
       const channelMessages = (await ctx.rest.get(
