@@ -322,6 +322,8 @@ export const MessageSendModal = (
                 ([_, v]) => v,
               )) {
                 const webhook = targets[targetId];
+                if (!webhook) continue;
+
                 for (const [index] of Object.entries(messages).filter(
                   ([_, v]) => v.enabled,
                 )) {

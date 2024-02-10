@@ -1,8 +1,25 @@
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
+import { SafeParseReturnType } from "zod";
 import { zx } from "zodix";
+import { Button } from "~/components/Button";
+import { CoolIcon } from "~/components/CoolIcon";
+import { Header } from "~/components/Header";
+import { InfoBox } from "~/components/InfoBox";
+import { MessageEditor } from "~/components/editor/MessageEditor";
+import { Message } from "~/components/preview/Message";
+import { AuthFailureModal } from "~/modals/AuthFaillureModal";
+import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
+import { ExampleModal } from "~/modals/ExampleModal";
+import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
+import { MessageSaveModal } from "~/modals/MessageSaveModal";
+import { MessageSendModal } from "~/modals/MessageSendModal";
+import { MessageSetModal } from "~/modals/MessageSetModal";
+import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
+import { TargetAddModal } from "~/modals/TargetAddModal";
+import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import {
@@ -14,22 +31,6 @@ import { cdn, getWebhook } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
-import { CoolIcon } from "~/components/CoolIcon";
-import { Button } from "~/components/Button";
-import { Message } from "~/components/preview/Message";
-import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
-import { ExampleModal } from "~/modals/ExampleModal";
-import { MessageSetModal } from "~/modals/MessageSetModal";
-import { MessageSendModal } from "~/modals/MessageSendModal";
-import { WebhookEditModal } from "~/modals/WebhookEditModal";
-import { MessageSaveModal } from "~/modals/MessageSaveModal";
-import { Header } from "~/components/Header";
-import { InfoBox } from "~/components/InfoBox";
-import { MessageEditor } from "~/components/editor/MessageEditor";
-import { AuthFailureModal } from "~/modals/AuthFaillureModal";
-import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
-import { HistoryModal } from "~/modals/HistoryModal";
-import { TargetAddModal } from "~/modals/TargetAddModal";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
@@ -79,11 +80,19 @@ export default function Index() {
   });
   const [urlTooLong, setUrlTooLong] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
     if (shareId) {
       fetch(`/api/share/${shareId}`, { method: "GET" }).then((r) => {
         if (r.status === 200) {
-          r.json().then((d: any) => setData(d.data));
+          r.json().then((d: any) => {
+            const qd: QueryData = d.data;
+            if (!qd.messages) {
+              // This shouldn't happen but it could if something was saved wrong
+              qd.messages = [];
+            }
+            setData(qd);
+          });
         }
       });
     } else if (backupIdParsed.success) {
@@ -92,13 +101,20 @@ export default function Index() {
       }).then((r) => {
         if (r.status === 200) {
           setBackupId(backupIdParsed.data);
-          r.json().then((d: any) =>
-            setData({ ...d.data, backup_id: backupIdParsed.data }),
-          );
+          r.json().then((d: any) => {
+            const qd: QueryData = d.data;
+            if (!qd.messages) {
+              // This shouldn't happen but it could if something was saved wrong
+              qd.messages = [];
+            }
+            setData({ ...qd, backup_id: backupIdParsed.data });
+          });
         }
       });
     } else {
-      let parsed;
+      let parsed:
+        | SafeParseReturnType<QueryData, QueryData>
+        | { success: false };
       try {
         parsed = ZodQueryData.safeParse(
           JSON.parse(
@@ -108,7 +124,9 @@ export default function Index() {
           ),
         );
       } catch {
-        parsed = {};
+        parsed = {
+          success: false,
+        };
       }
 
       if (parsed.success) {
@@ -118,8 +136,9 @@ export default function Index() {
         setData({ version: "d2", ...(parsed.data as QueryData) });
         if (parsed.data?.targets && parsed.data.targets.length !== 0) {
           // Load webhook URLs on initial parse of query data
+          const targets = parsed.data.targets;
           (async () => {
-            for (const target of parsed.data!.targets!) {
+            for (const target of targets) {
               const match = target.url.match(WEBHOOK_URL_RE);
               if (!match) continue;
 
@@ -138,8 +157,10 @@ export default function Index() {
 
   const [localHistory, setLocalHistory] = useState<HistoryItem[]>([]);
   const [updateCount, setUpdateCount] = useState(-1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to run this when `data` changes
   useEffect(() => setUpdateCount(updateCount + 1), [data]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (updateCount % 20 === 0) {
       const lastHistoryItem = localHistory.slice(-1)[0];
@@ -177,7 +198,7 @@ export default function Index() {
     const encoded = base64UrlEncode(JSON.stringify(data));
     if (backupId === undefined) {
       // URLs on Cloudflare are limited to 16KB
-      const fullUrl = new URL(pathUrl + `?data=${encoded}`);
+      const fullUrl = new URL(`${pathUrl}?data=${encoded}`);
       if (fullUrl.toString().length >= 16000) {
         setUrlTooLong(true);
         if (searchParams.get("data")) {
@@ -190,7 +211,7 @@ export default function Index() {
     } else {
       // Make sure it stays there, we also want to wipe any other params
       setUrlTooLong(false);
-      const fullUrl = pathUrl + `?backup=${backupId}`;
+      const fullUrl = `${pathUrl}?backup=${backupId}`;
       history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
     }
   }, [backupId, data, updateCount]);
@@ -204,7 +225,7 @@ export default function Index() {
   const [showDisclaimer, setShowDisclaimer] = useState(dm === "preview");
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
   const [settingMessageIndex, setSettingMessageIndex] = useState(
-    dm && dm.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
+    dm?.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
   );
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
   const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");
@@ -325,6 +346,7 @@ export default function Index() {
                 <img
                   className="rounded-full mr-4 h-12 my-auto"
                   src={avatarUrl}
+                  alt=""
                 />
                 <div className="my-auto grow truncate">
                   <p className="font-semibold truncate">{webhook.name}</p>
@@ -343,10 +365,14 @@ export default function Index() {
                   </p>
                 </div>
                 <div className="ml-auto space-x-2 my-auto shrink-0 text-xl">
-                  <button onClick={() => setEditingWebhook(webhook.id)}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingWebhook(webhook.id)}
+                  >
                     <CoolIcon icon="Edit_Pencil_01" />
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       delete targets[webhook.id];
                       updateTargets({ ...targets });
