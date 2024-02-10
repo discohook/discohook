@@ -82,7 +82,10 @@ export const Message: React.FC<{
   resolved,
   setImageModalData,
 }) => {
-  const webhook = webhooks ? webhooks[0] : undefined;
+  const webhook = webhooks
+    ? webhooks.find((w) => w.application_id === discordApplicationId) ??
+      webhooks[0]
+    : undefined;
   const username = message.author?.name ?? webhook?.name ?? "Boogiehook";
   const avatarUrl =
     message.author?.icon_url ??
