@@ -7,8 +7,8 @@ export const PreviewDisclaimerModal = (props: ModalProps) => {
       <p>
         The Boogiehook preview is only an estimation of what your message will
         look like when sent to Discord. The only 100% accurate view is when you
-        actually send your message into Discord (and even then there are bunches
-        of inconsistencies).
+        actually send your message into Discord (and even then, Discord is often
+        inconsistent).
       </p>
       <p className="mt-2">
         If something doesn't seem right, just send the message in a private
