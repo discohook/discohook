@@ -1,7 +1,5 @@
 import type { LinksFunction, MetaFunction } from "@remix-run/cloudflare";
 import { cssBundleHref } from "@remix-run/css-bundle";
-import styles from "../styles/app.css";
-import icons from "./styles/coolicons.css";
 import {
   Links,
   LiveReload,
@@ -9,7 +7,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
 } from "@remix-run/react";
+import { ButtonStyle, ComponentType } from "discord-api-types/v10";
+import styles from "../styles/app.css";
+import { Message } from "./components/preview/Message";
+import icons from "./styles/coolicons.css";
 
 export const meta: MetaFunction = () => {
   return [
@@ -33,6 +37,28 @@ export const links: LinksFunction = () => [
   { rel: "manifest", href: "manifest.json" },
 ];
 
+
+const TailwindThemeScript = () => (
+  <script
+    // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted HTML
+    dangerouslySetInnerHTML={{
+      __html: `
+    const settings = JSON.parse(localStorage.getItem("boogiehook_settings") ?? "{}");
+
+    if (
+      settings.theme === "light" ||
+      (!settings.theme &&
+        window.matchMedia("(prefers-color-scheme: light)").matches)
+    ) {
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  `,
+    }}
+  />
+);
+
 export default function App() {
   return (
     <html lang="en" className="dark">
@@ -41,29 +67,61 @@ export default function App() {
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <Meta />
         <Links />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              const settings = JSON.parse(localStorage.getItem("boogiehook_settings") ?? "{}");
-
-              if (
-                settings.theme === "light" ||
-                (!settings.theme &&
-                  window.matchMedia("(prefers-color-scheme: light)").matches)
-              ) {
-                document.documentElement.classList.remove("dark");
-              } else {
-                document.documentElement.classList.add("dark");
-              }
-            `,
-          }}
-        />
+        <TailwindThemeScript />
       </head>
       <body className="bg-white text-black dark:bg-[#313338] dark:text-[#dbdee1]">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
+      </body>
+    </html>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.error(error);
+  return (
+    <html lang="en" className="dark">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Error - Boogiehook</title>
+        <Meta />
+        <Links />
+        <TailwindThemeScript />
+      </head>
+      <body className="bg-white text-black dark:bg-[#313338] dark:text-[#dbdee1] h-screen flex">
+        <div className="p-8 max-w-3xl mx-auto">
+          <Message
+            message={{
+              content: [
+                "You just encountered an error, here's all we know:",
+                "```",
+                isRouteErrorResponse(error)
+                  ? String(error.data)
+                  : String(error),
+                "```",
+                "If you think this shouldn't have happened, visit the support server.",
+              ].join("\n"),
+              components: [
+                {
+                  type: ComponentType.ActionRow,
+                  components: [
+                    {
+                      type: ComponentType.Button,
+                      style: ButtonStyle.Link,
+                      label: "Support Server",
+                      url: "/discord",
+                    },
+                  ],
+                },
+              ],
+            }}
+          />
+        </div>
+        <Scripts />
       </body>
     </html>
   );
