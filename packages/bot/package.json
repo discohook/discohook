@@ -29,7 +29,7 @@
     "drizzle-orm": "^0.29.3",
     "eslint-plugin-drizzle": "^0.2.2",
     "itty-router": "^4.0.13",
-    "store": "./packages/store"
+    "store": "../store"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230518.0",

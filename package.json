@@ -15,8 +15,11 @@
     "db-push": "drizzle-kit push:pg",
     "db-studio": "drizzle-kit studio"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@biomejs/biome": "^1.5.1"
-  }
+  },
+  "packageManager": "yarn@4.1.0"
 }
