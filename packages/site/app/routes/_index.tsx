@@ -341,7 +341,13 @@ export default function Index() {
                           icon="Circle_Check"
                           className="text-blurple-500 dark:text-blurple-400 align-bottom"
                         />{" "}
-                        <span>Owned by Boogiehook</span>
+                        <span>
+                          Boogiehook
+                          {webhook.user &&
+                          webhook.user.id !== discordApplicationId
+                            ? ` (by ${webhook.user.username})`
+                            : ""}
+                        </span>
                       </>
                     ) : (
                       webhook.user?.username
