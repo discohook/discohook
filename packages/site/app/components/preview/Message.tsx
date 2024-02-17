@@ -209,11 +209,17 @@ export const Message: React.FC<{
             </h3>
           )}
           {message.content && (
-            <div className="contents font-medium text-[#313338] dark:text-[#dbdee1] dark:font-normal text-base leading-[1.375]">
+            <div
+              className="contents font-medium text-[#313338] dark:text-[#dbdee1] dark:font-normal text-base leading-[1.375]"
+              style={{
+                // @ts-expect-error
+                "--font-size": "1rem",
+              }}
+            >
               <Markdown
-                text={message.content}
-                features="all"
-                resolved={resolved}
+                content={message.content}
+                features="full"
+                // resolved={resolved}
               />
             </div>
           )}

@@ -8,6 +8,13 @@ export default {
     },
     extend: {
       colors: {
+        primary: {
+          130: "#EFF0F3",
+          200: "#313338",
+          // 600: "#313338",
+          630: "#202225",
+          700: "#17181A",
+        },
         blurple: {
           50: "#eef3ff",
           100: "#e0e9ff",

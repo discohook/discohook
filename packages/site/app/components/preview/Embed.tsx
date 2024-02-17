@@ -87,16 +87,16 @@ export const Embed: React.FC<{
                 rel="noreferrer nofollow ugc"
               >
                 <Markdown
-                  text={embed.title}
-                  features={["basic", "inline-code", "emojis"]}
-                  resolved={resolved}
+                  content={embed.title}
+                  features="title"
+                  // resolved={resolved}
                 />
               </a>
             ) : (
               <Markdown
-                text={embed.title}
-                features={["basic", "inline-code", "emojis"]}
-                resolved={resolved}
+                content={embed.title}
+                features="title"
+                // resolved={resolved}
               />
             )}
           </div>
@@ -104,9 +104,9 @@ export const Embed: React.FC<{
         {embed.description && (
           <div className="text-sm font-medium dark:font-normal mt-2 inline-block whitespace-pre-line">
             <Markdown
-              text={embed.description}
-              features="all"
-              resolved={resolved}
+              content={embed.description}
+              features="full"
+              // resolved={resolved}
             />
           </div>
         )}
@@ -148,16 +148,16 @@ export const Embed: React.FC<{
                     >
                       <div className="font-semibold mb-px">
                         <Markdown
-                          text={field.name}
-                          features={["basic", "emojis"]}
-                          resolved={resolved}
+                          content={field.name}
+                          features="full"
+                          // resolved={resolved}
                         />
                       </div>
                       <div>
                         <Markdown
-                          text={field.value}
-                          features="all"
-                          resolved={resolved}
+                          content={field.value}
+                          features="full"
+                          // resolved={resolved}
                         />
                       </div>
                     </div>

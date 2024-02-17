@@ -1,7 +1,14 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.4.1/schema.json",
   "files": {
-    "ignore": ["node_modules/", "build/", "./packages/site/functions/"]
+    "ignore": [
+      "node_modules/",
+      "build/",
+      "./packages/site/functions/",
+      "./packages/site/public/emoji.json",
+      "./packages/site/public/help.json",
+      "./packages/site/app/util/highlights.json"
+    ]
   },
   "organizeImports": {
     "enabled": true

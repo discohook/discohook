@@ -66,3 +66,14 @@ export const base64UrlEncode = (utf8: string) => {
     .replace(/\//g, "_")
     .replace(/=/g, "");
 };
+
+export const hexToRgb = (hex: string) => {
+  const arrBuff = new ArrayBuffer(4);
+  const vw = new DataView(arrBuff);
+  vw.setUint32(0, parseInt(hex, 16), false);
+  const arrByte = new Uint8Array(arrBuff);
+
+  return [arrByte[1], arrByte[2], arrByte[3]];
+};
+
+export const getRgbComponents = (color: number) => hexToRgb(color.toString(16));
