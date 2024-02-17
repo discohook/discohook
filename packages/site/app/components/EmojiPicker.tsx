@@ -26,11 +26,13 @@ type SelectedEmoji = Omit<Emoji, "skins"> & { skin: Skin };
 export interface PickerProps {
   id: string;
   onEmojiClick: (emoji: SelectedEmoji) => void;
+  customEmojis?: APIMessageComponentEmoji[];
 }
 
 const categoryToEmoji: Record<string, string> = {
   favorites: "⭐",
   recents: "🔁",
+  custom: "📝",
   people: "🙂",
   nature: "🍂",
   foods: "🍞",
@@ -48,6 +50,7 @@ export const CategoryIconButton: React.FC<{
   const emoji = categoryToEmoji[categoryId];
   return (
     <button
+      type="button"
       className="block mx-auto"
       onClick={() => {
         const sectionHeader = document.getElementById(`${id}-${categoryId}`);
@@ -67,24 +70,63 @@ const GridEmoji: React.FC<{
   setHoverEmoji: (e: SelectedEmoji) => void;
 }> = ({ emoji, onEmojiClick, setHoverEmoji }) => (
   <button
+    type="button"
     className="rounded p-1 h-11 w-11 hover:bg-white/10 transition"
     onClick={() => onEmojiClick(emoji)}
     onMouseOver={() => setHoverEmoji(emoji)}
+    onFocus={() => setHoverEmoji(emoji)}
   >
-    <Twemoji
-      emoji={emoji.skin.native}
-      className="h-full w-full"
-      title={emoji.id}
-    />
+    {emoji.keywords.includes("discord") ? (
+      <img
+        src={cdn.emoji(
+          emoji.skin.native,
+          emoji.keywords.includes("animated") ? "gif" : "webp",
+        )}
+        alt={emoji.name}
+        className="h-full max-w-full"
+      />
+    ) : (
+      <Twemoji
+        emoji={emoji.skin.native}
+        className="h-full w-full"
+        title={emoji.id}
+      />
+    )}
   </button>
 );
 
-const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
+const EmojiPicker_: React.FC<PickerProps> = ({
+  id,
+  onEmojiClick,
+  customEmojis,
+}) => {
   const [settings, setSettings] = useLocalStorage();
   const [hoverEmoji, setHoverEmoji] = useState<SelectedEmoji>();
   const [query, setQuery] = useState("");
 
-  const data = emojiData as EmojiMartData;
+  const data = structuredClone(emojiData as EmojiMartData);
+  const validCustomEmojis = (customEmojis ?? []).filter(
+    (e) => !!e.id && !!e.name,
+  ) as { id: string; name: string; animated?: boolean }[];
+
+  for (const emoji of validCustomEmojis) {
+    const id = `discord_${emoji.id}`;
+    data.emojis[id] = {
+      id,
+      name: emoji.name,
+      // We were originally using the `custom` keyword to filter custom emojis,
+      // but beware: passport_control also includes this keyword.
+      keywords: ["discord", emoji.animated ? "animated" : "static"],
+      skins: [
+        {
+          native: emoji.id,
+          unified: "",
+        },
+      ],
+      version: 1,
+    };
+  }
+
   const skinTone = settings.skinTone;
 
   const categories: Category[] = [
@@ -92,6 +134,14 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
       id: "favorites",
       emojis: [],
     },
+    ...(validCustomEmojis.length !== 0
+      ? [
+          {
+            id: "custom",
+            emojis: validCustomEmojis.map((e) => `discord_${e.id}`),
+          },
+        ]
+      : []),
     // {
     //   id: "recents",
     //   emojis: [],
@@ -114,6 +164,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
         </div>
         <div className="shrink-0 ml-3 mr-1 my-auto">
           <button
+            type="button"
             onClick={() => {
               if (skinTone === undefined) {
                 setSettings({ skinTone: 0 });
@@ -221,13 +272,28 @@ const EmojiPicker_: React.FC<PickerProps> = ({ id, onEmojiClick }) => {
           </div>
           {hoverEmoji && (
             <div className="sticky bottom-0 left-0 w-full bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
-              <Twemoji
-                emoji={hoverEmoji.skin.native}
-                className="h-7 my-auto shrink-0 !align-bottom"
-                title={hoverEmoji.id}
-              />
+              {hoverEmoji.keywords.includes("discord") ? (
+                <img
+                  src={cdn.emoji(
+                    hoverEmoji.skin.native,
+                    hoverEmoji.keywords.includes("animated") ? "gif" : "webp",
+                  )}
+                  alt={hoverEmoji.name}
+                  className="h-7 my-auto shrink-0 !align-bottom"
+                />
+              ) : (
+                <Twemoji
+                  emoji={hoverEmoji.skin.native}
+                  className="h-7 my-auto shrink-0 !align-bottom"
+                  title={hoverEmoji.id}
+                />
+              )}
               <p className="ml-2 text-base font-semibold my-auto truncate">
-                :{hoverEmoji.id}:
+                :
+                {hoverEmoji.keywords.includes("discord")
+                  ? hoverEmoji.name
+                  : hoverEmoji.id}
+                :
               </p>
             </div>
           )}
@@ -242,8 +308,9 @@ export const EmojiPicker = memo(EmojiPicker_);
 export const PopoutEmojiPicker: React.FC<{
   emoji?: APIMessageComponentEmoji;
   setEmoji: (emoji: APIMessageComponentEmoji | undefined) => void;
+  emojis?: APIMessageComponentEmoji[];
   isClearable?: boolean;
-}> = ({ emoji, setEmoji }) => {
+}> = ({ emoji, setEmoji, emojis }) => {
   const id = randomString(10);
   // const close = () => {
   //   const parent = document.querySelector<HTMLDetailsElement>(`#${id}`);
@@ -260,12 +327,12 @@ export const PopoutEmojiPicker: React.FC<{
             {emoji ? (
               emoji.id ? (
                 <img
-                  className="w-[22px]"
+                  className="h-[22px] max-w-full"
                   src={cdn.emoji(emoji.id, emoji.animated ? "gif" : "webp")}
                   alt={emoji.name}
                 />
               ) : (
-                <Twemoji emoji={emoji.name!} className="h-[22px]" />
+                <Twemoji emoji={emoji.name ?? ""} className="h-[22px]" />
               )
             ) : (
               <Twemoji
@@ -279,11 +346,19 @@ export const PopoutEmojiPicker: React.FC<{
       <div className="absolute z-20 pb-8">
         <EmojiPicker
           id={id}
+          customEmojis={emojis}
           onEmojiClick={(selectedEmoji) => {
             // close();
-            const newEmoji: APIMessageComponentEmoji = {
-              name: selectedEmoji.skin.native,
-            };
+            const newEmoji: APIMessageComponentEmoji =
+              selectedEmoji.keywords.includes("discord")
+                ? {
+                    id: selectedEmoji.id.replace(/^discord_/, ""),
+                    name: selectedEmoji.name,
+                    animated: selectedEmoji.keywords.includes("animated"),
+                  }
+                : {
+                    name: selectedEmoji.skin.native,
+                  };
             if (
               emoji &&
               emoji.id === newEmoji.id &&

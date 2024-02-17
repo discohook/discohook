@@ -14,6 +14,7 @@ export const Button = (
 ) => {
   return (
     <button
+      type="button"
       {...props}
       className={`rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex ${
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
@@ -31,20 +32,25 @@ export const Button = (
     >
       {props.emoji &&
         (props.emoji.id ? (
-          <div className="mr-1 aspect-square my-auto h-7">
+          <div
+            className={`aspect-square h-[22px] my-auto ${
+              props.children ? "mr-1" : "mx-auto"
+            }`}
+          >
             <img
               src={cdn.emoji(
                 props.emoji.id,
                 props.emoji.animated ? "gif" : "webp",
               )}
               alt={props.emoji.name}
-              className="h-full w-full"
+              className="max-h-full max-w-full"
             />
           </div>
         ) : (
           <div className="mr-1 aspect-square my-auto h-7 flex">
             <div className="m-auto">
               <Twemoji
+                // biome-ignore lint/style/noNonNullAssertion: Must have name if not an ID
                 emoji={props.emoji.name!}
                 className="h-[22px] !align-bottom"
               />
