@@ -2,6 +2,7 @@ import { DiscordErrorData } from "@discordjs/rest";
 import { useFetcher } from "@remix-run/react";
 import { APIMessage, APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { getMessageText } from "~/components/editor/MessageEditor";
@@ -11,15 +12,6 @@ import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
 import { action as ApiAuditLogAction } from "../routes/api.audit-log";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { Modal, ModalProps } from "./Modal";
-
-const strings = {
-  send: "Send",
-  sendToAll: "Send to All",
-  sendAll: "Send All",
-  noMessages: "You have no messages to send.",
-  willBeEdited: "This message has a reference set, so it will be edited.",
-  skippedEdit: "Skipped edit due to mismatched webhook ID.",
-};
 
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
@@ -79,6 +71,7 @@ export const MessageSendModal = (
     data: QueryData;
   },
 ) => {
+  const { t } = useTranslation();
   const { targets, setAddingTarget, data } = props;
 
   const auditLogFetcher = useFetcher<typeof ApiAuditLogAction>();
@@ -225,7 +218,7 @@ export const MessageSendModal = (
                   <div className="ml-auto my-auto space-x-2 text-2xl text-blurple dark:text-blurple-400">
                     {message.reference && (
                       <CoolIcon
-                        title={strings.willBeEdited}
+                        title={t("willBeEdited")}
                         icon="Edit_Pencil_01"
                       />
                     )}
@@ -251,7 +244,7 @@ export const MessageSendModal = (
             );
           })
         ) : (
-          <p>{strings.noMessages}</p>
+          <p>{t("noMessages")}</p>
         )}
       </div>
       <hr className="border border-gray-400 dark:border-gray-600 my-4" />
@@ -339,7 +332,7 @@ export const MessageSendModal = (
                           status: "error",
                           data: {
                             code: 0,
-                            message: strings.skippedEdit,
+                            message: t("skippedEdit"),
                           },
                         },
                         enabled: true,
@@ -373,11 +366,13 @@ export const MessageSendModal = (
               }
             }}
           >
-            {countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
-              ? strings.sendAll
-              : countSelected(selectedWebhooks) > 1
-                ? strings.sendToAll
-                : strings.send}
+            {t(
+              countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
+                ? "sendAll"
+                : countSelected(selectedWebhooks) > 1
+                  ? "sendToAll"
+                  : "send",
+            )}
           </Button>
         </div>
       </div>

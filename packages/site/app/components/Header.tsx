@@ -1,6 +1,7 @@
 import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
@@ -8,18 +9,8 @@ import { getUserAvatar, getUserTag } from "~/util/users";
 import { Button } from "./Button";
 import { CoolIcon } from "./CoolIcon";
 
-const strings = {
-  settings: "Settings",
-  help: "Help",
-  logIn: "Log In",
-};
-//   fr: {
-//     settings: "Paramètres",
-//     help: "Aide",
-//   },
-// });
-
 export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
@@ -69,10 +60,10 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           <CoolIcon
             icon="Log_Out"
             className="text-[28px] text-blurple dark:text-blurple-400 rotate-180"
-            title={strings.logIn}
+            title={t("logIn")}
           />
           <p className="ml-1.5 text-base font-medium hidden sm:block my-auto">
-            {strings.logIn}
+            {t("logIn")}
           </p>
         </Link>
       )}
@@ -82,14 +73,14 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setSettingsOpen(true)}
         >
-          {strings.settings}
+          {t("settings")}
         </Button>
         <Button
           className="my-auto ml-auto shrink-0"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setHelpOpen(true)}
         >
-          {strings.help}
+          {t("help")}
         </Button>
       </div>
     </div>

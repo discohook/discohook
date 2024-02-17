@@ -1,32 +1,21 @@
 import { Form, useFetcher } from "@remix-run/react";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
+import { CoolIcon } from "~/components/CoolIcon";
 import { TextInput } from "~/components/TextInput";
 import { LoadedBackup } from "~/routes/me";
 import { action as ApiBackupsIdAction } from "../routes/api.backups.$id";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = {
-  title: "Edit Backup Details",
-  editMessage: "To edit the messages in a backup, click the {0} button.",
-  name: "Name",
-  save: "Save",
-};
-//   fr: {
-//     title: "Modifier les détails de la sauvegarde",
-//     editMessage: "Pour modifier les messages d'une sauvegarde, cliquez sur le bouton {0}.",
-//     name: "Nom",
-//     save: "Enregistrer",
-//   },
-// });
-
 export const BackupEditModal = (
   props: ModalProps & { backup?: LoadedBackup },
 ) => {
+  const { t } = useTranslation();
   const { backup } = props;
   const fetcher = useFetcher<typeof ApiBackupsIdAction>();
 
   return (
-    <Modal title={strings.title} {...props}>
+    <Modal title={t("editBackupTitle")} {...props}>
       <Form
         onSubmit={(e) => {
           e.preventDefault();
@@ -39,15 +28,17 @@ export const BackupEditModal = (
         {backup && (
           <div className="space-y-2">
             <p>
-              {strings.editMessage}
-              {/*strings.formatString(
-                strings.editMessage,
-                <CoolIcon icon="External_Link" className="align-sub" />
-              )*/}
+              <Trans
+                t={t}
+                i18nKey="editBackupMessages"
+                components={[
+                  <CoolIcon icon="External_Link" className="align-sub" />,
+                ]}
+              />
             </p>
             <TextInput
               name="name"
-              label={strings.name}
+              label={t("name")}
               defaultValue={backup.name}
               className="w-full"
               maxLength={100}
@@ -57,7 +48,7 @@ export const BackupEditModal = (
         )}
         <div className="flex w-full mt-4">
           <Button className="mx-auto" disabled={fetcher.state !== "idle"}>
-            {strings.save}
+            {t("save")}
           </Button>
         </div>
       </Form>

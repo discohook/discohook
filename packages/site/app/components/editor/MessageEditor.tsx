@@ -1,4 +1,5 @@
 import { APIWebhook } from "discord-api-types/v10";
+import { Trans } from "react-i18next";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
@@ -7,11 +8,6 @@ import { TextArea } from "../TextArea";
 import { AuthorType, getAuthorType } from "../preview/Message";
 import { ActionRowEditor } from "./ComponentEditor";
 import { EmbedEditor, getEmbedLength, getEmbedText } from "./EmbedEditor";
-
-const strings = {
-  embedsTooLarge:
-    "Embeds must contain at most 6000 characters total (currently {0} too many)",
-};
 
 export const getMessageText = (
   message: QueryData["messages"][number]["data"],
@@ -64,6 +60,7 @@ export const MessageEditor: React.FC<{
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
         <div className="ml-auto space-x-2 my-auto shrink-0">
           <button
+            type="button"
             className={i === 0 ? "hidden" : ""}
             onClick={() => {
               data.messages.splice(i, 1);
@@ -74,6 +71,7 @@ export const MessageEditor: React.FC<{
             <CoolIcon icon="Chevron_Up" />
           </button>
           <button
+            type="button"
             className={i === data.messages.length - 1 ? "hidden" : ""}
             onClick={() => {
               data.messages.splice(i, 1);
@@ -84,6 +82,7 @@ export const MessageEditor: React.FC<{
             <CoolIcon icon="Chevron_Down" />
           </button>
           <button
+            type="button"
             className={data.messages.length >= 10 ? "hidden" : ""}
             onClick={() => {
               data.messages.splice(i + 1, 0, structuredClone(message));
@@ -94,6 +93,7 @@ export const MessageEditor: React.FC<{
           </button>
           {data.messages.length > 1 && (
             <button
+              type="button"
               onClick={() => {
                 data.messages.splice(i, 1);
                 setData({ ...data });
@@ -120,11 +120,7 @@ export const MessageEditor: React.FC<{
             {embedsLength > 6000 && (
               <div className="-mb-2">
                 <InfoBox severity="red" icon="Circle_Warning">
-                  {strings.embedsTooLarge}
-                  {/*strings.formatString(
-                    strings.embedsTooLarge,
-                    embedsLength - 6000
-                  )*/}
+                  <Trans i18nKey="embedsTooLarge" count={embedsLength - 6000} />
                 </InfoBox>
               </div>
             )}
@@ -183,9 +179,10 @@ export const MessageEditor: React.FC<{
                     setData={setData}
                     open
                   />
-                  {ri < message.data.components!.length - 1 && (
-                    <hr className="border border-gray-500/20 my-2" />
-                  )}
+                  {message.data.components &&
+                    ri < message.data.components.length - 1 && (
+                      <hr className="border border-gray-500/20 my-2" />
+                    )}
                 </div>
               ))}
             </div>

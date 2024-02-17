@@ -11,9 +11,12 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
 import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message";
 import icons from "./styles/coolicons.css";
+import { resources } from "./util/i18n";
 
 export const meta: MetaFunction = () => {
   return [
@@ -37,6 +40,14 @@ export const links: LinksFunction = () => [
   { rel: "manifest", href: "manifest.json" },
 ];
 
+i18n.use(initReactI18next).init({
+  resources,
+  lng: "en",
+  fallbackLng: "en",
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
 const TailwindThemeScript = () => (
   <script

@@ -1,6 +1,7 @@
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { SafeParseReturnType } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
@@ -46,25 +47,8 @@ export interface HistoryItem {
   data: QueryData;
 }
 
-const strings = {
-  editor: "Editor",
-  preview: "Preview",
-  send: "Send",
-  saveMessage: "Save Message",
-  addWebhook: "Add Webhook",
-  addMessage: "Add Message",
-  embedExample: "Embed Example",
-  previewInfo: "Preview Info",
-  history: "History",
-  editingBackup:
-    'You\'re editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the "Save Message" button.',
-};
-//   fr: {
-//     embedExample: "Exemple",
-//   },
-// });
-
 export default function Index() {
+  const { t } = useTranslation();
   const { user, discordApplicationId } = useLoaderData<typeof loader>();
   const [settings] = useLocalStorage();
 
@@ -315,7 +299,7 @@ export default function Index() {
           )}
           {backupId !== undefined && (
             <InfoBox icon="Save" collapsible open>
-              {strings.editingBackup}
+              {t("editingBackupNote")}
             </InfoBox>
           )}
           <div className="flex mb-2">
@@ -323,14 +307,14 @@ export default function Index() {
               onClick={() => setAddingTarget(true)}
               disabled={Object.keys(targets).length >= 10}
             >
-              {strings.addWebhook}
+              {t("addWebhook")}
             </Button>
             <Button
               className="ml-auto md:hidden"
               onClick={() => setTab("preview")}
               discordstyle={ButtonStyle.Secondary}
             >
-              {strings.preview} <CoolIcon icon="Chevron_Right" />
+              {t("preview")} <CoolIcon icon="Chevron_Right" />
             </Button>
           </div>
           {Object.values(targets).map((webhook) => {
@@ -389,7 +373,7 @@ export default function Index() {
               onClick={() => setSendingMessages(true)}
               disabled={data.messages.length === 0}
             >
-              {strings.send}
+              {t("send")}
             </Button>
             <Button
               className="ml-2"
@@ -397,7 +381,7 @@ export default function Index() {
               discordstyle={ButtonStyle.Secondary}
               disabled={data.messages.length === 0}
             >
-              {strings.saveMessage}
+              {t("saveMessage")}
             </Button>
             <Button
               className="ml-2"
@@ -405,7 +389,7 @@ export default function Index() {
               discordstyle={ButtonStyle.Secondary}
               disabled={localHistory.length === 0}
             >
-              {strings.history}
+              {t("history")}
             </Button>
           </div>
           {data.messages.map((_, i) => (
@@ -431,7 +415,7 @@ export default function Index() {
               setData({ ...data });
             }}
           >
-            {strings.addMessage}
+            {t("addMessage")}
           </Button>
         </div>
         <div
@@ -444,7 +428,7 @@ export default function Index() {
               onClick={() => setTab("editor")}
               discordstyle={ButtonStyle.Secondary}
             >
-              <CoolIcon icon="Chevron_Left" /> {strings.editor}
+              <CoolIcon icon="Chevron_Left" /> {t("editor")}
             </Button>
             <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           </div>
@@ -466,14 +450,14 @@ export default function Index() {
               discordstyle={ButtonStyle.Secondary}
               onClick={() => setExampleOpen(true)}
             >
-              {strings.embedExample}
+              {t("embedExample")}
             </Button>
             <Button
               discordstyle={ButtonStyle.Secondary}
               onClick={() => setShowDisclaimer(true)}
             >
               <CoolIcon icon="Info" className="mr-1.5" />
-              {strings.previewInfo}
+              {t("previewInfo")}
             </Button>
           </div>
         </div>

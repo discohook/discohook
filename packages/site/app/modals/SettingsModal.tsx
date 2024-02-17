@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Radio } from "~/components/Radio";
@@ -5,21 +6,16 @@ import { User } from "~/session.server";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = {
-  title: "Settings",
-  theme: "Theme",
-  messageDisplay: "Message Display",
-};
-
 export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
+  const { t } = useTranslation();
   // const { user } = props;
   const [settings, updateSettings] = useLocalStorage();
 
   return (
-    <Modal title={strings.title} {...props}>
+    <Modal title={t("settings")} {...props}>
       <div>
         <p className="text-sm font-black uppercase dark:text-gray-400">
-          {strings.theme}
+          {t("theme")}
         </p>
         <div className="flex space-x-6 mt-2 overflow-x-auto">
           <ThemeRadio
@@ -65,7 +61,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
       </div>
       <div className="mt-8">
         <p className="text-sm font-black uppercase dark:text-gray-400">
-          {strings.messageDisplay}
+          {t("messageDisplay")}
         </p>
         <div className="space-y-2 mt-2">
           <Radio

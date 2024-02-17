@@ -1,6 +1,7 @@
 import { Link, useFetcher } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useCallback, useEffect, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -8,25 +9,10 @@ import { TextInput } from "~/components/TextInput";
 import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { copyText } from "~/util/text";
+import { relativeTime } from "~/util/time";
 import { action as backupCreateAction } from "../routes/api.backups";
 import { action as shareCreateAction } from "../routes/api.share";
 import { Modal, ModalProps } from "./Modal";
-
-const strings = {
-  title: "Save Message",
-  temporaryUrl: "Temporary Share URL",
-  generate: "Generate",
-  clickGenerate: 'Press "Generate" to generate a share link',
-  copy: "Copy",
-  includeWebhookUrls: "Include webhook URLs",
-  expiresAt: "This link expires at {0} ({1}).",
-  options: "Options",
-  manageBackups: "Visit your user page to manage backups.",
-  logInToSave: "Log in to save permanent backups.",
-  savedAutomatically: "Saved automatically",
-  manuallySave: "Save",
-  saveBackup: "Save Backup",
-};
 
 export const MessageSaveModal = (
   props: ModalProps & {
@@ -36,12 +22,13 @@ export const MessageSaveModal = (
     user?: User | null;
   },
 ) => {
+  const { t } = useTranslation();
   const { targets, data, setData, user } = props;
 
   const [includeTargets, setIncludeTargets] = useState(false);
 
-  const shareFetcher = useFetcher<typeof shareCreateAction>(),
-    backupFetcher = useFetcher<typeof backupCreateAction>();
+  const shareFetcher = useFetcher<typeof shareCreateAction>();
+  const backupFetcher = useFetcher<typeof backupCreateAction>();
 
   const generateShareData = useCallback(
     (options?: { includeTargets_?: boolean }) => {
@@ -61,11 +48,12 @@ export const MessageSaveModal = (
         { method: "POST", action: "/api/share" },
       );
     },
-    [includeTargets, data, targets],
+    [includeTargets, data, targets, shareFetcher.submit],
   );
 
   const [backup, setBackup] = useState<typeof backupFetcher.data>();
   useEffect(() => setBackup(backupFetcher.data), [backupFetcher.data]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (props.open && user && data.backup_id !== undefined && !backup) {
       backupFetcher.load(`/api/backups/${data.backup_id}`);
@@ -76,14 +64,14 @@ export const MessageSaveModal = (
   }, [props.open, data.backup_id, backup]);
 
   return (
-    <Modal title={strings.title} {...props}>
+    <Modal title={t("saveMessageTitle")} {...props}>
       <div className="flex">
         <div className="grow">
           <TextInput
-            label={strings.temporaryUrl}
+            label={t("temporaryShareUrl")}
             className="w-full"
             value={shareFetcher.data ? shareFetcher.data.url : ""}
-            placeholder={strings.clickGenerate}
+            placeholder={t("clickGenerate")}
             readOnly
           />
         </div>
@@ -98,23 +86,24 @@ export const MessageSaveModal = (
           }}
           className="ml-2 mt-auto"
         >
-          {shareFetcher.data ? strings.copy : strings.generate}
+          {t(shareFetcher.data ? "copy" : "generate")}
         </Button>
       </div>
       {shareFetcher.data && (
         <p className="mt-1">
-          {/*strings.formatString(
-            strings.expiresAt,
-            <span className="font-medium">
-              {new Date(shareFetcher.data.expires).toLocaleString()}
-            </span>,
-            <>{relativeTime(new Date(shareFetcher.data.expires))}</>
-          )*/}
+          <Trans
+            t={t}
+            i18nKey="linkExpiresAt"
+            values={{
+              time: new Date(shareFetcher.data.expires).toLocaleString(),
+              relativeTime: relativeTime(new Date(shareFetcher.data.expires)),
+            }}
+          />
         </p>
       )}
-      <p className="text-sm font-medium mt-1">{strings.options}</p>
+      <p className="text-sm font-medium mt-1">{t("options")}</p>
       <Checkbox
-        label={strings.includeWebhookUrls}
+        label={t("includeWebhookUrls")}
         checked={includeTargets}
         onChange={(e) => {
           setIncludeTargets(e.currentTarget.checked);
@@ -132,7 +121,7 @@ export const MessageSaveModal = (
             target="_blank"
             className="text-[#006ce7] dark:text-[#00a8fc] hover:underline"
           >
-            {strings.manageBackups}
+            {t("manageBackups")}
           </Link>
           {backupFetcher.state !== "idle" || backup ? (
             <div className="rounded bg-gray-200 dark:bg-gray-700 p-2 flex">
@@ -146,25 +135,27 @@ export const MessageSaveModal = (
                 ) : (
                   <div className="h-5 rounded-full bg-gray-400 dark:bg-gray-600 w-1/5 mt-px" />
                 )}
-                <p className="text-sm">{strings.savedAutomatically}</p>
+                <p className="text-sm">{t("savedAutomatically")}</p>
               </div>
               <Button
                 disabled={!backup}
                 className="my-auto ml-auto"
                 discordstyle={ButtonStyle.Success}
                 onClick={() => {
-                  backupFetcher.submit(
-                    {
-                      data: JSON.stringify(data),
-                    },
-                    {
-                      action: `/api/backups/${backup!.id}`,
-                      method: "PATCH",
-                    },
-                  );
+                  if (backup) {
+                    backupFetcher.submit(
+                      {
+                        data: JSON.stringify(data),
+                      },
+                      {
+                        action: `/api/backups/${backup.id}`,
+                        method: "PATCH",
+                      },
+                    );
+                  }
                 }}
               >
-                {strings.manuallySave}
+                {t("save")}
               </Button>
             </div>
           ) : (
@@ -183,7 +174,7 @@ export const MessageSaveModal = (
                   )
                 }
               >
-                {strings.saveBackup}
+                {t("saveBackup")}
               </Button>
             </div>
           )}
@@ -194,7 +185,7 @@ export const MessageSaveModal = (
           target="_blank"
           className="text-[#006ce7] dark:text-[#00a8fc] hover:underline"
         >
-          {strings.logInToSave}
+          {t("logInToSaveBackups")}
         </Link>
       )}
     </Modal>

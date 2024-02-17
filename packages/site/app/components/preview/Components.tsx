@@ -6,10 +6,10 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
+import { useTranslation } from "react-i18next";
 import { cdn } from "~/util/discord";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
-import { selectStrings } from "../StringSelect";
 import { AuthorType } from "./Message";
 
 type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
@@ -54,6 +54,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
   onClick,
   authorType,
 }) => {
+  const { t } = useTranslation();
   const shouldLeftPad =
     "options" in data && data.options.filter((o) => o.emoji).length !== 0;
   const nonSendable = authorType && authorType < AuthorType.ActionableWebhook;
@@ -77,7 +78,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
         }}
       >
         <span className="truncate text-[#5c5e66] dark:text-[#949ba4] leading-none">
-          {data.placeholder ?? selectStrings.defaultPlaceholder}
+          {data.placeholder ?? t("defaultPlaceholder")}
         </span>
         <div className="flex items-center gap-1">
           <CoolIcon

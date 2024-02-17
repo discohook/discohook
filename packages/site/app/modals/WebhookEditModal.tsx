@@ -1,5 +1,6 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
@@ -10,20 +11,6 @@ import { cdn, modifyWebhook } from "~/util/discord";
 import { getUserTag } from "~/util/users";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = {
-  title: "Edit Webhook",
-  name: "Name",
-  channel: "Channel",
-  cannotChangeChannel: "Webhook channel must be set inside Discord.",
-  requestedBy: "Requested on Boogiehook by {0}",
-  resetAvatar: "Remove",
-  save: "Save",
-};
-// fr: {
-//   resetAvatar: "Supprimer",
-// },
-// });
-
 export const WebhookEditModal = (
   props: ModalProps & {
     targets: Record<string, APIWebhook>;
@@ -32,6 +19,7 @@ export const WebhookEditModal = (
     user?: User | null;
   },
 ) => {
+  const { t } = useTranslation();
   const { webhookId, targets, updateTargets, user } = props;
   const webhook = webhookId ? targets[webhookId] : undefined;
 
@@ -52,7 +40,7 @@ export const WebhookEditModal = (
   }, [webhook]);
 
   return (
-    <Modal title={strings.title} {...props}>
+    <Modal title={t("editWebhook")} {...props}>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -112,10 +100,11 @@ export const WebhookEditModal = (
 
                   const reader = new FileReader();
                   reader.onload = (e) => {
-                    const result = e.target!.result as string;
-                    document.querySelector<HTMLInputElement>(
+                    const result = e.target?.result as string;
+                    const input = document.querySelector<HTMLInputElement>(
                       'input[name="avatar"]',
-                    )!.value = result;
+                    );
+                    if (input) input.value = result;
                     updatePayload({ avatarUrl: result });
                   };
                   reader.readAsDataURL(file);
@@ -125,6 +114,7 @@ export const WebhookEditModal = (
               <img
                 src={payload.avatarUrl ?? cdn.defaultAvatar(5)}
                 className="rounded-full h-24 w-24"
+                alt=""
               />
               <div className="absolute top-0 left-0 rounded-full h-24 w-24 bg-black/50 opacity-0 group-hover:opacity-100 transition" />
               <div className="absolute top-0 right-0 rounded-full p-1 px-2 flex dark:bg-white">
@@ -137,6 +127,7 @@ export const WebhookEditModal = (
             {payload.avatarUrl && (
               <div className="w-full flex mt-2">
                 <button
+                  type="button"
                   className="font-medium text-sm text-[#006ce7] dark:text-[#00a8fc] hover:underline mx-auto"
                   onClick={() => {
                     updatePayload({ avatarUrl: null });
@@ -146,14 +137,14 @@ export const WebhookEditModal = (
                     if (input) input.value = "";
                   }}
                 >
-                  {strings.resetAvatar}
+                  {t("resetAvatar")}
                 </button>
               </div>
             )}
           </div>
           <div className="grow space-y-2">
             <TextInput
-              label={strings.name}
+              label={t("name")}
               name="name"
               maxLength={80}
               value={payload.name ?? ""}
@@ -161,8 +152,8 @@ export const WebhookEditModal = (
               className="w-full"
             />
             <TextInput
-              label={strings.channel}
-              description={strings.cannotChangeChannel}
+              label={t("channel")}
+              description={t("cannotChangeChannel")}
               value={webhook?.channel_id ?? ""}
               className="w-full"
               readOnly
@@ -170,7 +161,7 @@ export const WebhookEditModal = (
           </div>
         </div>
         <div className="flex w-full mt-4">
-          <Button className="mx-auto">{strings.save}</Button>
+          <Button className="mx-auto">{t("save")}</Button>
         </div>
       </form>
     </Modal>

@@ -1,13 +1,8 @@
 import { useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
 import { LoaderArgs } from "~/util/loader";
-
-const strings = {
-  created: "Webhook Created",
-  failed: "Failed to create webhook",
-  subtitle: "You should be returned to the editor shortly.",
-};
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const search = new URL(request.url).searchParams;
@@ -25,6 +20,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 };
 
 export default function CreateWebhookPopup() {
+  const { t } = useTranslation();
   const { error, webhook } = useLoaderData<typeof loader>();
 
   useEffect(() => {
@@ -40,10 +36,10 @@ export default function CreateWebhookPopup() {
     <div className="h-full flex">
       <div className="m-auto p-2 bg-gray-300 max-w-4xl">
         <p className="font-medium text-lg">
-          {error ? strings.failed : strings.created}
+          {t(error ? "webhookCreateFailed" : "webhookCreated")}
         </p>
         {error && <p className="italic">{error}</p>}
-        <p>{strings.subtitle}</p>
+        <p>{t("webhookCreateSubtitle")}</p>
       </div>
     </div>
   );

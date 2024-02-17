@@ -1,29 +1,18 @@
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { ReactNode, useEffect, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
 import { WEBHOOK_URL_RE } from "~/util/constants";
-import { cdn, getWebhook } from "~/util/discord";
+import { cdn, getSnowflakeDate, getWebhook } from "~/util/discord";
 import { Modal, ModalProps } from "./Modal";
-
-const strings = {
-  title: "Add Target",
-  webhookUrl: "Webhook URL",
-  invalidWebhookUrl:
-    "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
-  createdAtBy: "Created {0} by {1}",
-  someone: "someone",
-  channelId: "Channel ID: {0}",
-  guildId: "Server ID: {0}",
-  addWebhook: "Add Webhook",
-  createWebhook: "Create Webhook",
-};
 
 export const TargetAddModal = (
   props: ModalProps & {
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
   },
 ) => {
+  const { t } = useTranslation();
   const [webhook, setWebhook] = useState<APIWebhook>();
   const [error, setError] = useState<ReactNode>();
 
@@ -48,10 +37,10 @@ export const TargetAddModal = (
   }, [webhook, setOpen, props.updateTargets]);
 
   return (
-    <Modal title={strings.title} {...props} setOpen={setOpen}>
+    <Modal title={t("addTargetModalTitle")} {...props} setOpen={setOpen}>
       <div>
         <TextInput
-          label={strings.webhookUrl}
+          label={t("webhookUrl")}
           type="password"
           className="w-full"
           errors={[error]}
@@ -69,7 +58,7 @@ export const TargetAddModal = (
 
             const match = e.currentTarget.value.match(WEBHOOK_URL_RE);
             if (!match) {
-              setError(strings.invalidWebhookUrl);
+              setError(t("invalidWebhookUrl"));
               return;
             }
 
@@ -100,38 +89,49 @@ export const TargetAddModal = (
             <>
               <p className="font-bold text-xl">{webhook.name}</p>
               <p>
-                {/*strings.formatString(
-                  strings.createdAtBy,
-                  getSnowflakeDate(webhook.id).toLocaleDateString(),
-                  webhook?.user ? webhook.user.username : strings.someone
-                )*/}
+                {t("createdAtBy", {
+                  replace: {
+                    createdAt: getSnowflakeDate(
+                      webhook.id,
+                    ).toLocaleDateString(),
+                    username: webhook?.user
+                      ? webhook.user.username
+                      : t("someone"),
+                  },
+                })}
               </p>
               <hr className="border border-gray-400 dark:border-gray-600 my-2" />
               <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
-                {/*strings.formatString(
-                  strings.channelId,
-                  <a
-                    className="hover:underline"
-                    href={`https://discord.com/channels/${webhook.guild_id}/${webhook.channel_id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {webhook.channel_id}
-                  </a>
-                )*/}
+                <Trans
+                  t={t}
+                  i18nKey="channelId"
+                  components={[
+                    <a
+                      className="hover:underline"
+                      href={`https://discord.com/channels/${webhook.guild_id}/${webhook.channel_id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {webhook.channel_id}
+                    </a>,
+                  ]}
+                />
               </p>
               <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
-                {/*strings.formatString(
-                  strings.guildId,
-                  <a
-                    className="hover:underline"
-                    href={`https://discord.com/channels/${webhook.guild_id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {webhook.guild_id}
-                  </a>
-                )*/}
+                <Trans
+                  t={t}
+                  i18nKey="guildId"
+                  components={[
+                    <a
+                      className="hover:underline"
+                      href={`https://discord.com/channels/${webhook.guild_id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {webhook.guild_id}
+                    </a>,
+                  ]}
+                />
               </p>
             </>
           ) : (
@@ -156,7 +156,7 @@ export const TargetAddModal = (
               }
             }}
           >
-            {strings.addWebhook}
+            {t("addWebhook")}
           </Button>
           <Button
             discordstyle={ButtonStyle.Link}
@@ -168,7 +168,7 @@ export const TargetAddModal = (
               )
             }
           >
-            {strings.createWebhook}
+            {t("createWebhook")}
           </Button>
         </div>
       </div>

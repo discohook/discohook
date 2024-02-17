@@ -1,22 +1,10 @@
+import { Trans, useTranslation } from "react-i18next";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Message } from "~/components/preview/Message";
 import { HistoryItem } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
-
-const strings = {
-  title: "History",
-  noHistory: "This editor session has no history recorded.",
-  description:
-    'This is cleared whenever the editor is loaded. If you need to store messages persistently, use the "Save Message" button.',
-  xMessage: "{0} message",
-  xMessages: "{0} messages",
-  xEmbed: "{0} embed",
-  xEmbeds: "{0} embeds",
-  restore: "Restore to this point",
-  removeFromHistory: "Remove from history",
-};
 
 export const HistoryModal = (
   props: ModalProps & {
@@ -25,13 +13,14 @@ export const HistoryModal = (
     setData: React.Dispatch<React.SetStateAction<QueryData>>;
   },
 ) => {
+  const { t } = useTranslation();
   const { localHistory, setLocalHistory, setData } = props;
   const [settings] = useLocalStorage();
 
   return (
-    <Modal title={strings.title} {...props}>
+    <Modal title={t("history")} {...props}>
       {localHistory.length === 0 ? (
-        <p>{strings.noHistory}</p>
+        <p>{t("noHistory")}</p>
       ) : (
         <div className="space-y-1">
           {localHistory.map((item, itemI) => {
@@ -55,22 +44,12 @@ export const HistoryModal = (
                   </span>
                   <span className="truncate ml-1">
                     -{" "}
-                    {/*
-                      I'm aware this is not how plurals work in all languages
-                      This library doesn't have pluralization support
-                      We might switch libraries or just use a generic "message(s)"
-                    */}
-                    {/* {strings.formatString(
-                      item.data.messages.length === 1
-                        ? strings.xMessage
-                        : strings.xMessages,
-                      item.data.messages.length
-                    )}
-                    ,{" "}
-                    {strings.formatString(
-                      embeds === 1 ? strings.xEmbed : strings.xEmbeds,
-                      embeds
-                    )} */}
+                    <Trans
+                      t={t}
+                      i18nKey={"nMessage"}
+                      count={item.data.messages.length}
+                    />
+                    , <Trans t={t} i18nKey={"nEmbed"} count={embeds} />
                   </span>
                 </summary>
                 <div className="flex w-full">
@@ -89,8 +68,9 @@ export const HistoryModal = (
                   </div>
                   <div className="space-y-1 ml-2 text-xl">
                     <button
+                      type="button"
                       className="block"
-                      title={strings.restore}
+                      title={t("historyRestore")}
                       onClick={() => {
                         setData(item.data);
                         setLocalHistory(
@@ -105,8 +85,9 @@ export const HistoryModal = (
                       />
                     </button>
                     <button
+                      type="button"
                       className="block"
-                      title={strings.removeFromHistory}
+                      title={t("historyRemove")}
                       onClick={() => {
                         setLocalHistory(
                           localHistory.filter((_, i) => i !== itemI),

@@ -35,6 +35,7 @@
     "react-color": "^2.19.3",
     "react-dom": "^18.2.0",
     "react-emoji-search": "^2.2.26",
+    "react-i18next": "^14.0.5",
     "react-modal": "^3.16.1",
     "react-select": "^5.8.0",
     "remix-auth-discord": "^1.3.2",

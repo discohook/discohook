@@ -1,4 +1,5 @@
 import { APIEmbed, APIEmbedImage, APIWebhook } from "discord-api-types/v10";
+import { Trans } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { QueryData } from "~/types/QueryData";
 import { PartialResource } from "~/types/resources";
@@ -44,20 +45,6 @@ export const getAuthorType = (
   // Assume we are going to send the message with a webhook
   return AuthorType.Webhook;
 };
-
-const strings = {
-  todayAt: "Today at {0}",
-};
-//   fr: {
-//     todayAt: "Aujourd’hui à {0}",
-//   },
-//   es: {
-//     todayAt: "hoy a las {0}",
-//   },
-//   de: {
-//     todayAt: "heute um {0} Uhr",
-//   },
-// });
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
@@ -165,14 +152,15 @@ export const Message: React.FC<{
               </span>
             )}
             <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-              {/*strings.formatString(
-                strings.todayAt,
-                (date ?? new Date()).toLocaleTimeString(undefined, {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })
-              )*/}
-              {strings.todayAt}
+              <Trans
+                i18nKey="todayAt"
+                values={{
+                  time: (date ?? new Date()).toLocaleTimeString(undefined, {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }),
+                }}
+              />
             </span>
           </p>
         )}

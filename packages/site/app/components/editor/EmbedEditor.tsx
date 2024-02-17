@@ -1,4 +1,5 @@
 import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
+import { useTranslation } from "react-i18next";
 import { QueryData } from "~/types/QueryData";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -45,14 +46,10 @@ export const getEmbedErrors = (embed: APIEmbed) => {
 
   const totalCharacters = getEmbedLength(embed);
   if (totalCharacters === 0 && !embed.image?.url && !embed.thumbnail?.url) {
-    errors.push(strings.embedEmpty);
+    errors.push("embedEmpty");
   }
 
   return errors;
-};
-
-const strings = {
-  embedEmpty: "Must contain text or an image",
 };
 
 export const EmbedEditor: React.FC<{
@@ -72,6 +69,9 @@ export const EmbedEditor: React.FC<{
   setData,
   open,
 }) => {
+  const { t } = useTranslation();
+  const messageEmbeds = message.data.embeds ?? [];
+
   const updateEmbed = (partialEmbed: Partial<APIEmbed>) => {
     if (
       partialEmbed.author &&
@@ -89,7 +89,7 @@ export const EmbedEditor: React.FC<{
       partialEmbed.footer = undefined;
     }
 
-    message.data.embeds!.splice(i, 1, {
+    messageEmbeds.splice(i, 1, {
       ...embed,
       ...partialEmbed,
     });
@@ -98,7 +98,7 @@ export const EmbedEditor: React.FC<{
   };
 
   // The first embed in the gallery is the parent that the children will be merged into
-  const galleryEmbeds = message.data.embeds!.filter(
+  const galleryEmbeds = messageEmbeds.filter(
     (e) => embed.url && e.url === embed.url,
   );
   const galleryChildren = galleryEmbeds.slice(1);
@@ -107,7 +107,8 @@ export const EmbedEditor: React.FC<{
   const localIndex = isChild ? galleryChildren.indexOf(embed) : i;
   const localIndexMax = isChild
     ? galleryChildren.length - 1
-    : message.data.embeds!.length - 1;
+    : messageEmbeds.length - 1;
+
   const localMaxMembers = isChild ? 3 : 10;
 
   const previewText = getEmbedText(embed);
@@ -158,29 +159,32 @@ export const EmbedEditor: React.FC<{
             // For now users just have to manually move gallery items
             <>
               <button
+                type="button"
                 className={localIndex === 0 ? "hidden" : ""}
                 onClick={() => {
-                  message.data.embeds!.splice(i, 1);
-                  message.data.embeds!.splice(i - 1, 0, embed);
+                  messageEmbeds.splice(i, 1);
+                  messageEmbeds.splice(i - 1, 0, embed);
                   setData({ ...data });
                 }}
               >
                 <CoolIcon icon="Chevron_Up" />
               </button>
               <button
+                type="button"
                 className={localIndex === localIndexMax ? "hidden" : ""}
                 onClick={() => {
-                  message.data.embeds!.splice(i, 1);
-                  message.data.embeds!.splice(i + 1, 0, embed);
+                  messageEmbeds.splice(i, 1);
+                  messageEmbeds.splice(i + 1, 0, embed);
                   setData({ ...data });
                 }}
               >
                 <CoolIcon icon="Chevron_Down" />
               </button>
               <button
+                type="button"
                 className={localIndexMax + 1 >= localMaxMembers ? "hidden" : ""}
                 onClick={() => {
-                  message.data.embeds!.splice(i + 1, 0, structuredClone(embed));
+                  messageEmbeds.splice(i + 1, 0, structuredClone(embed));
                   setData({ ...data });
                 }}
               >
@@ -189,8 +193,9 @@ export const EmbedEditor: React.FC<{
             </>
           )}
           <button
+            type="button"
             onClick={() => {
-              message.data.embeds!.splice(i, 1);
+              messageEmbeds.splice(i, 1);
               setData({ ...data });
             }}
           >
@@ -201,7 +206,7 @@ export const EmbedEditor: React.FC<{
       {errors.length > 0 && (
         <div className="-mt-1 mb-1">
           <InfoBox severity="red" icon="Circle_Warning">
-            {errors.join("\n")}
+            {errors.map((k) => t(k)).join("\n")}
           </InfoBox>
         </div>
       )}
@@ -317,7 +322,7 @@ export const EmbedEditor: React.FC<{
                   className="ml-2 mt-auto shrink-0"
                   onClick={() =>
                     updateEmbed({
-                      url: location.origin + `#default-${randomString(8)}`,
+                      url: `${location.origin}#default-${randomString(8)}`,
                     })
                   }
                 >
@@ -354,7 +359,7 @@ export const EmbedEditor: React.FC<{
                 className="ml-2 mt-auto shrink-0"
                 onClick={() => {
                   embed.url = undefined;
-                  message.data.embeds = message.data.embeds!.filter(
+                  message.data.embeds = messageEmbeds.filter(
                     (e) => !galleryChildren.includes(e),
                   );
                   setData({ ...data });
@@ -500,12 +505,12 @@ export const EmbedEditor: React.FC<{
               className="ml-2 mt-auto shrink-0"
               disabled={
                 !embed.image?.url ||
-                message.data.embeds!.length >= 10 ||
+                messageEmbeds.length >= 10 ||
                 galleryEmbeds.length >= 4
               }
               onClick={() => {
                 const url =
-                  embed.url || location.origin + `#gallery-${randomString(8)}`;
+                  embed.url || `${location.origin}#gallery-${randomString(8)}`;
                 embed.url = url;
                 message.data.embeds = message.data.embeds ?? [];
                 message.data.embeds.splice(i + 1, 0, { url });
@@ -600,6 +605,7 @@ export const EmbedFieldEditorSection: React.FC<
   }>
 > = ({ embed, updateEmbed, field, index, open, children }) => {
   const previewText = field.name.trim() || field.value.trim();
+  const embedFields = embed.fields ?? [];
   return (
     <details className="group/field pb-2 -my-1" open={open}>
       <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
@@ -611,37 +617,41 @@ export const EmbedFieldEditorSection: React.FC<
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
         <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
           <button
+            type="button"
             className={index === 0 ? "hidden" : ""}
             onClick={() => {
-              embed.fields!.splice(index, 1);
-              embed.fields!.splice(index - 1, 0, field);
+              embedFields.splice(index, 1);
+              embedFields.splice(index - 1, 0, field);
               updateEmbed({});
             }}
           >
             <CoolIcon icon="Chevron_Up" />
           </button>
           <button
-            className={index === embed.fields!.length - 1 ? "hidden" : ""}
+            type="button"
+            className={index === embedFields.length - 1 ? "hidden" : ""}
             onClick={() => {
-              embed.fields!.splice(index, 1);
-              embed.fields!.splice(index + 1, 0, field);
+              embedFields.splice(index, 1);
+              embedFields.splice(index + 1, 0, field);
               updateEmbed({});
             }}
           >
             <CoolIcon icon="Chevron_Down" />
           </button>
           <button
-            className={embed.fields!.length >= 25 ? "hidden" : ""}
+            type="button"
+            className={embedFields.length >= 25 ? "hidden" : ""}
             onClick={() => {
-              embed.fields!.splice(index + 1, 0, structuredClone(field));
+              embedFields.splice(index + 1, 0, structuredClone(field));
               updateEmbed({});
             }}
           >
             <CoolIcon icon="Copy" />
           </button>
           <button
+            type="button"
             onClick={() => {
-              embed.fields!.splice(index, 1);
+              embedFields.splice(index, 1);
               updateEmbed({});
             }}
           >

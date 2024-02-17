@@ -1,29 +1,18 @@
+import { Trans, useTranslation } from "react-i18next";
 import { CoolIcon } from "~/components/CoolIcon";
 import { getSnowflakeDate } from "~/util/discord";
 import { SubmitMessageResult } from "./MessageSendModal";
 import { Modal, ModalProps } from "./Modal";
 
-const strings = {
-  title: "Submit Result",
-  success: "Success",
-  error: "Error",
-  fullError: "Full Error:",
-  messageDetails: "Message Details",
-  messageId: "Message ID:",
-  channelId: "Channel ID:",
-  createdAt: "Created at:",
-  successTroubleshoot:
-    "If you cannot see the message, make sure it wasn't deleted by another bot. Some moderation bots consider all webhook messages to be spam by default.",
-};
-
 export const MessageSendResultModal = (
   props: ModalProps & { result?: SubmitMessageResult },
 ) => {
+  const { t } = useTranslation();
   const { result } = props;
   const success = result?.status === "success";
 
   return (
-    <Modal title={strings.title} {...props}>
+    <Modal title={t("submitResultTitle")} {...props}>
       {result && (
         <div>
           <p className="text-xl font-medium flex">
@@ -33,29 +22,42 @@ export const MessageSendResultModal = (
                 success ? "text-green-600" : "text-rose-600"
               }`}
             />
-            <span className="my-auto">{strings[result.status]}</span>
+            <span className="my-auto">{t(result.status)}</span>
           </p>
-          {success && <p>{strings.successTroubleshoot}</p>}
+          {success && <p>{t("successResultTroubleshoot")}</p>}
           <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           {success ? (
             <div>
               <details className="p-2 bg-gray-200 dark:bg-gray-700 rounded">
-                <summary className="font-medium">
-                  {strings.messageDetails}
-                </summary>
+                <summary className="font-medium">{t("messageDetails")}</summary>
                 <p>
-                  {strings.messageId} {result.data.id}
+                  <Trans
+                    t={t}
+                    i18nKey={"messageId"}
+                    components={[<span>{result.data.id}</span>]}
+                  />
                   <br />
-                  {strings.channelId} {result.data.channel_id}
+                  <Trans
+                    t={t}
+                    i18nKey={"channelId"}
+                    components={[<span>{result.data.channel_id}</span>]}
+                  />
                   <br />
-                  {strings.createdAt}{" "}
-                  {getSnowflakeDate(result.data.id).toLocaleString()}
+                  <Trans
+                    t={t}
+                    i18nKey={"createdAt"}
+                    value={{
+                      createdAt: getSnowflakeDate(
+                        result.data.id,
+                      ).toLocaleString(),
+                    }}
+                  />
                 </p>
               </details>
             </div>
           ) : (
             <div>
-              <p>{strings.fullError}</p>
+              <p>{t("fullError")}</p>
               <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-gray-200 dark:bg-gray-700 p-2">
                 {JSON.stringify(result.data, null, 2)}
               </pre>

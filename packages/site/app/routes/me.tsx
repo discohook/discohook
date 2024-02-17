@@ -3,6 +3,7 @@ import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { desc, eq } from "drizzle-orm";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
@@ -16,51 +17,37 @@ import { DiscohookBackup } from "~/types/discohook";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { jsonAsString } from "~/util/zod";
-import { backups as dBackups, getDb, shareLinks, users } from "../store.server";
-
-const strings = {
-  yourBackups: "Your Backups",
-  noBackups: "You haven't created any backups.",
-  import: "Import",
-  version: "Version: {0}",
-  yourLinks: "Your Links",
-  noLinks: "You haven't created any share links.",
-  id: "ID: {0}",
-  contentUnavailable:
-    "Share link data is not kept after expiration. If you need to permanently store a message, use the backups feature instead.",
-  logOut: "Log Out",
-  subscribedSince: "Subscribed Since",
-  notSubscribed: "Not subscribed",
-  firstSubscribed: "First Subscribed",
-  never: "Never",
-};
+import {
+  QueryDataVersion,
+  backups as dBackups,
+  shareLinks as dShareLinks,
+  getDb,
+} from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
 
   const db = getDb(context.env.DATABASE_URL);
-  // biome-ignore lint/style/noNonNullAssertion: `getUser` just confirmed that this exists
-  const result = (await db.query.users.findFirst({
-    where: eq(users.id, user.id),
-    with: {
-      backups: {
-        columns: {
-          id: true,
-          name: true,
-          dataVersion: true,
-          createdAt: true,
-        },
-        orderBy: desc(dBackups.name),
-        limit: 50,
-      },
-      shareLinks: {
-        orderBy: desc(shareLinks.expiresAt),
-        limit: 50,
-      },
-    },
-  }))!;
 
-  return { user, backups: result.backups, links: result.shareLinks };
+  const backups = await db.query.backups.findMany({
+    where: eq(dBackups.ownerId, user.id),
+    columns: {
+      id: true,
+      name: true,
+      dataVersion: true,
+      createdAt: true,
+    },
+    orderBy: desc(dBackups.name),
+    limit: 50,
+  });
+
+  const links = await db.query.shareLinks.findMany({
+    where: eq(dShareLinks.userId, user.id),
+    orderBy: desc(dShareLinks.expiresAt),
+    limit: 50,
+  });
+
+  return { user, backups, links };
 };
 
 export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
@@ -89,7 +76,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   switch (data.action) {
     case "DELETE_SHARE_LINK": {
       const link = await db.query.shareLinks.findFirst({
-        where: eq(shareLinks.id, data.linkId),
+        where: eq(dShareLinks.id, data.linkId),
       });
       if (!link) {
         throw json({ message: "No link with that ID." }, 404);
@@ -98,7 +85,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       }
       const key = `boogiehook-shorten-${link.shareId}`;
       await context.env.KV.delete(key);
-      await db.delete(shareLinks).where(eq(shareLinks.id, data.linkId));
+      await db.delete(dShareLinks).where(eq(dShareLinks.id, data.linkId));
       return new Response(null, { status: 204 });
     }
     case "DELETE_BACKUP": {
@@ -117,9 +104,9 @@ export const action = async ({ request, context }: ActionArgs) => {
       await db.insert(dBackups).values(
         data.backups.map((backup) => ({
           name: backup.name,
-          dataVersion: "d2",
+          dataVersion: "d2" as QueryDataVersion,
           data: {
-            version: "d2",
+            version: "d2" as QueryDataVersion,
             messages: backup.messages,
             targets: backup.targets,
           },
@@ -138,6 +125,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 export const meta: MetaFunction = () => [{ title: "Your Data - Boogiehook" }];
 
 export default function Me() {
+  const { t } = useTranslation();
   const { user, backups, links } = useLoaderData<typeof loader>();
   const submit = useSubmit();
   const now = new Date();
@@ -177,7 +165,7 @@ export default function Me() {
             <div className="grid gap-2 grid-cols-2 mt-4">
               <div>
                 <p className="uppercase font-bold text-xs leading-4 dark:text-gray-100">
-                  {strings.subscribedSince}
+                  {t("subscribedSince")}
                 </p>
                 <p className="text-sm font-normal">
                   {user.subscribedSince
@@ -189,12 +177,12 @@ export default function Me() {
                           year: "numeric",
                         },
                       )
-                    : strings.notSubscribed}
+                    : t("notSubscribed")}
                 </p>
               </div>
               <div>
                 <p className="uppercase font-bold text-xs leading-4 dark:text-gray-100">
-                  {strings.firstSubscribed}
+                  {t("firstSubscribed")}
                 </p>
                 <p className="text-sm font-normal">
                   {user.firstSubscribed
@@ -206,21 +194,21 @@ export default function Me() {
                           year: "numeric",
                         },
                       )
-                    : strings.never}
+                    : t("never")}
                 </p>
               </div>
             </div>
             <div className="w-full flex mt-4">
               <Link to="/auth/logout" className="ml-auto">
                 <Button discordstyle={ButtonStyle.Secondary}>
-                  {strings.logOut}
+                  {t("logOut")}
                 </Button>
               </Link>
             </div>
           </div>
           <div className="w-full h-fit">
             <p className="text-xl font-semibold dark:text-gray-100">
-              {strings.yourBackups}
+              {t("yourBackups")}
             </p>
             {backups.length > 0 ? (
               <div className="space-y-1 mt-1 overflow-y-auto max-h-96">
@@ -242,10 +230,9 @@ export default function Me() {
                           </button>
                         </div>
                         <p className="text-gray-600 dark:text-gray-500 text-sm">
-                          {/*strings.formatString(
-                            strings.version,
-                            backup.dataVersion
-                          )*/}
+                          {t("version", {
+                            replace: { version: backup.dataVersion },
+                          })}
                         </p>
                       </div>
                       <div className="ml-auto pl-2 my-auto flex flex-col">
@@ -278,17 +265,17 @@ export default function Me() {
                 })}
               </div>
             ) : (
-              <p className="text-gray-500">{strings.noBackups}</p>
+              <p className="text-gray-500">{t("noBackups")}</p>
             )}
             <Button className="mt-1" onClick={() => setImportModalOpen(true)}>
-              {strings.import}
+              {t("import")}
             </Button>
           </div>
           <div className="w-full h-fit">
             <p className="text-xl font-semibold dark:text-gray-100">
-              {strings.yourLinks}
+              {t("yourLinks")}
             </p>
-            <p>{strings.contentUnavailable}</p>
+            <p>{t("noShareLinkData")}</p>
             {links.length > 0 ? (
               <div className="space-y-1 mt-1 overflow-y-auto max-h-96">
                 {links.map((link) => {
@@ -330,7 +317,7 @@ export default function Me() {
                           </span>
                         </p>
                         <p className="text-gray-600 dark:text-gray-500 text-sm">
-                          {/*strings.formatString(strings.id, link.shareId)*/}
+                          {t("id", { replace: { id: link.shareId } })}
                         </p>
                       </div>
                       <div className="ml-auto pl-2 my-auto flex flex-col">
@@ -365,7 +352,7 @@ export default function Me() {
                 })}
               </div>
             ) : (
-              <p className="text-gray-500">{strings.noLinks}</p>
+              <p className="text-gray-500">{t("noLinks")}</p>
             )}
           </div>
         </div>

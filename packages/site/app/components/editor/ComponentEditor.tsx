@@ -13,6 +13,7 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
+import { useTranslation } from "react-i18next";
 import { QueryData } from "~/types/QueryData";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -20,7 +21,6 @@ import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
 import { PopoutEmojiPicker } from "../EmojiPicker";
 import { InfoBox } from "../InfoBox";
-import { selectStrings } from "../StringSelect";
 import { TextInput } from "../TextInput";
 
 export const getComponentText = (
@@ -68,13 +68,6 @@ export const getRowWidth = (
   );
 };
 
-const strings = {
-  rowEmpty: "Must contain at least one component (button/select)",
-  labelEmpty: "Must have a label or emoji, or both",
-  urlEmpty: "Link button must have a URL",
-  optionsEmpty: "Must contain at least one select option",
-};
-
 export const getComponentErrors = (
   component: APIMessageComponent,
 ): string[] => {
@@ -82,7 +75,7 @@ export const getComponentErrors = (
   switch (component.type) {
     case ComponentType.ActionRow:
       if (component.components.length === 0) {
-        errors.push(strings.rowEmpty);
+        errors.push("rowEmpty");
       }
       // if (component.components.length > 5) {
       //   errors.push("Cannot contain more than five components")
@@ -90,15 +83,15 @@ export const getComponentErrors = (
       break;
     case ComponentType.Button:
       if (!component.emoji && !component.label) {
-        errors.push(strings.labelEmpty);
+        errors.push("labelEmpty");
       }
       if (component.style === ButtonStyle.Link && !component.url) {
-        errors.push(strings.urlEmpty);
+        errors.push("urlEmpty");
       }
       break;
     case ComponentType.StringSelect:
       if (component.options.length === 0) {
-        errors.push(strings.optionsEmpty);
+        errors.push("optionsEmpty");
       }
       break;
     default:
@@ -115,6 +108,7 @@ export const ActionRowEditor: React.FC<{
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   open?: boolean;
 }> = ({ message, row, rowIndex: i, data, setData, open }) => {
+  const { t } = useTranslation();
   const mi = data.messages.indexOf(message);
   const errors = getComponentErrors(row);
   return (
@@ -182,7 +176,7 @@ export const ActionRowEditor: React.FC<{
       {errors.length > 0 && (
         <div className="-mt-1 mb-1">
           <InfoBox severity="red" icon="Circle_Warning">
-            {errors.join("\n")}
+            {errors.map((k) => t(k)).join("\n")}
           </InfoBox>
         </div>
       )}
@@ -280,7 +274,7 @@ export const ActionRowEditor: React.FC<{
                       <TextInput
                         label="Placeholder"
                         value={component.placeholder ?? ""}
-                        placeholder={selectStrings.defaultPlaceholder}
+                        placeholder={t("defaultPlaceholder")}
                         maxLength={150}
                         className="w-full"
                         onInput={(e) => {
