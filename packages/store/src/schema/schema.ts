@@ -9,7 +9,7 @@ import {
   serial,
   text,
   timestamp,
-  unique
+  unique,
 } from "drizzle-orm/pg-core";
 import { QueryData } from "../types/backups.js";
 import { Flow, StorableComponent } from "../types/components.js";
@@ -94,6 +94,30 @@ export const guildedUsersRelations = relations(guildedUsers, ({ one }) => ({
     fields: [guildedUsers.id],
     references: [users.guildedId],
     relationName: "User_GuildedUser",
+  }),
+}));
+
+export const oauthInfo = pgTable("OAuthInfo", {
+  id: serial("id").primaryKey(),
+  discordId: snowflake("discordId").unique(),
+  guildedId: text("guildedId").unique(),
+
+  accessToken: text("accessToken").notNull(),
+  refreshToken: text("refreshToken"),
+  scope: json("scope").$type<string[]>().notNull(),
+  expiresAt: date("expiresAt").notNull(),
+});
+
+export const oauthInfoRelations = relations(oauthInfo, ({ one }) => ({
+  discordUser: one(discordUsers, {
+    fields: [oauthInfo.discordId],
+    references: [discordUsers.id],
+    relationName: "DiscordUser_OAuthInfo",
+  }),
+  guildedUser: one(guildedUsers, {
+    fields: [oauthInfo.guildedId],
+    references: [guildedUsers.id],
+    relationName: "GuildedUser_OAuthInfo",
   }),
 }));
 

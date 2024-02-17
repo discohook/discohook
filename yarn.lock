@@ -3284,7 +3284,6 @@ __metadata:
     react-modal: "npm:^3.16.1"
     react-select: "npm:^5.8.0"
     remix-auth-discord: "npm:^1.3.2"
-    store: ../store
     tailwind-merge: "npm:^2.2.0"
     tailwindcss: "npm:^3.3.6"
     typescript: "npm:^5.1.6"
@@ -3299,6 +3298,7 @@ __metadata:
   resolution: "boogiehook@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^1.5.1"
+    drizzle-kit: "npm:^0.20.14"
   languageName: unknown
   linkType: soft
 
@@ -4300,6 +4300,30 @@ __metadata:
   bin:
     drizzle-kit: bin.cjs
   checksum: 10c0/33cf597cf1817fe26452e330b0acc3d1210f28b95aacd21b602ff2ca93ca4576f4601d5c73d5e0b6008cef133cf5a185158691a898b3c932f6afeeb3fcc67723
+  languageName: node
+  linkType: hard
+
+"drizzle-kit@npm:^0.20.14":
+  version: 0.20.14
+  resolution: "drizzle-kit@npm:0.20.14"
+  dependencies:
+    "@drizzle-team/studio": "npm:^0.0.39"
+    "@esbuild-kit/esm-loader": "npm:^2.5.5"
+    camelcase: "npm:^7.0.1"
+    chalk: "npm:^5.2.0"
+    commander: "npm:^9.4.1"
+    env-paths: "npm:^3.0.0"
+    esbuild: "npm:^0.19.7"
+    esbuild-register: "npm:^3.5.0"
+    glob: "npm:^8.1.0"
+    hanji: "npm:^0.0.5"
+    json-diff: "npm:0.9.0"
+    minimatch: "npm:^7.4.3"
+    semver: "npm:^7.5.4"
+    zod: "npm:^3.20.2"
+  bin:
+    drizzle-kit: bin.cjs
+  checksum: 10c0/fee5b2ff61eaf648a6fb3edacd2b3091bd40fd75dcad6b3e43a88104ed48f1264c1860ceb2ef13ab5e55207f6a22c772b992bcd6d9680d0bf86d456399c8dd75
   languageName: node
   linkType: hard
 
@@ -9787,27 +9811,14 @@ __metadata:
 
 "store@file:../store::locator=boogiehook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=63828a&locator=boogiehook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=e36781&locator=boogiehook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/21eb318c3eacb1d97aef7bd04388221807f21a0f34dab81bc5625415be286fa29746724454c0f1adb6f10a2e4579e77066877dbd591bd4f2ffb10043b78d37b7
-  languageName: node
-  linkType: hard
-
-"store@file:../store::locator=boogiehook-site%40workspace%3Apackages%2Fsite":
-  version: 0.0.0
-  resolution: "store@file:../store#../store::hash=63828a&locator=boogiehook-site%40workspace%3Apackages%2Fsite"
-  dependencies:
-    discord-api-types: "npm:^0.37.67"
-    discord-snowflake: "npm:^2.0.0"
-    drizzle-orm: "npm:^0.29.3"
-    json-bigint: "npm:^1.0.0"
-    postgres: "npm:^3.4.3"
-  checksum: 10c0/21eb318c3eacb1d97aef7bd04388221807f21a0f34dab81bc5625415be286fa29746724454c0f1adb6f10a2e4579e77066877dbd591bd4f2ffb10043b78d37b7
+  checksum: 10c0/3d6b772b7df0932732881c97e65d82b7e9d993108b0326b8c461779fa1ec4c70ad6ce13c68e39737ca7eda35795e05dd4e170a0eff747edb185e65f5fa6d2835
   languageName: node
   linkType: hard
 

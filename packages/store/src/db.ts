@@ -51,7 +51,16 @@ export const upsertGuild = async (db: DBWithSchema, guild: PartialKVGuild) => {
   )[0];
 };
 
-export const upsertDiscordUser = async (db: DBWithSchema, user: APIUser) => {
+export const upsertDiscordUser = async (
+  db: DBWithSchema,
+  user: APIUser,
+  oauth?: {
+    accessToken: string;
+    refreshToken?: string;
+    scope: string[];
+    expiresAt: Date;
+  },
+) => {
   await db
     .insert(schema.discordUsers)
     .values({
@@ -102,6 +111,34 @@ export const upsertDiscordUser = async (db: DBWithSchema, user: APIUser) => {
   });
   if (!dbUser) {
     throw Error(`Upserted user with ID ${user.id} was mysteriously not found.`);
+  }
+
+  if (oauth) {
+    await db
+      .insert(schema.oauthInfo)
+      .values({
+        discordId: dbUser.discordId,
+        accessToken: oauth.accessToken,
+        refreshToken: oauth.refreshToken,
+        expiresAt: oauth.expiresAt,
+        scope: oauth.scope,
+      })
+      .onConflictDoUpdate({
+        target: schema.oauthInfo.discordId,
+        set: {
+          accessToken: oauth.accessToken,
+          refreshToken: oauth.refreshToken,
+          expiresAt: oauth.expiresAt,
+          /*
+            This could technically be not accurate.
+            When you authorize an application, all scopes are added to those
+            that you have already granted, but this implementation resets the
+            array with only the new scopes. This shouldn't actually be an
+            issue in most normal cases.
+          */
+          scope: oauth.scope,
+        },
+      });
   }
 
   return dbUser;

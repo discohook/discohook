@@ -19,7 +19,8 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^1.5.1"
+    "@biomejs/biome": "^1.5.1",
+    "drizzle-kit": "^0.20.14"
   },
   "packageManager": "yarn@4.1.0"
 }
