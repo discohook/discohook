@@ -111,7 +111,9 @@ export function ErrorBoundary() {
                 "You just encountered an error, here's all we know:",
                 "```",
                 isRouteErrorResponse(error)
-                  ? String(error.data)
+                  ? typeof error.data === "object" && "message" in error.data
+                    ? error.data.message // JSON.stringify(error.data)
+                    : String(error.data)
                   : String(error),
                 "```",
                 "If you think this shouldn't have happened, visit the support server.",
