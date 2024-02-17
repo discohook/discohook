@@ -34,7 +34,7 @@ export const getDiscordAuth = (context: Context) => {
       clientID: context.env.DISCORD_CLIENT_ID,
       clientSecret: context.env.DISCORD_CLIENT_SECRET,
       callbackURL: `${context.origin}/callback/discord`,
-      scope: ["identify", "guilds"],
+      scope: ["identify", "guilds", "guilds.members.read"],
     },
     async ({
       accessToken,

@@ -5,6 +5,7 @@ import {
   APIMentionableSelectComponent,
   APIMessageActionRowComponent,
   APIMessageComponent,
+  APIMessageComponentEmoji,
   APIRoleSelectComponent,
   APISelectMenuOption,
   APIStringSelectComponent,
@@ -106,8 +107,10 @@ export const ActionRowEditor: React.FC<{
   rowIndex: number;
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
+  emojis?: APIMessageComponentEmoji[];
   open?: boolean;
-}> = ({ message, row, rowIndex: i, data, setData, open }) => {
+  notManageable?: boolean;
+}> = ({ message, row, rowIndex: i, data, setData, emojis, open, notManageable }) => {
   const { t } = useTranslation();
   const mi = data.messages.indexOf(message);
   const errors = getComponentErrors(row);
@@ -119,59 +122,61 @@ export const ActionRowEditor: React.FC<{
           className="group-open/action-row:rotate-90 mr-2 my-auto transition-transform"
         />
         Row {i + 1}
-        <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
-          <button
-            type="button"
-            className={i === 0 ? "hidden" : ""}
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              message.data.components?.splice(i - 1, 0, row);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={
-              !!message.data.components &&
-              i === message.data.components.length - 1
-                ? "hidden"
-                : ""
-            }
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              message.data.components?.splice(i + 1, 0, row);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            type="button"
-            className={
-              !!message.data.components &&
-              message.data.components.length - 1 + 1 >= 5
-                ? "hidden"
-                : ""
-            }
-            onClick={() => {
-              message.data.components?.splice(i + 1, 0, structuredClone(row));
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
+        {!notManageable && (
+          <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
+            <button
+              type="button"
+              className={i === 0 ? "hidden" : ""}
+              onClick={() => {
+                message.data.components?.splice(i, 1);
+                message.data.components?.splice(i - 1, 0, row);
+                setData({ ...data });
+              }}
+            >
+              <CoolIcon icon="Chevron_Up" />
+            </button>
+            <button
+              type="button"
+              className={
+                !!message.data.components &&
+                i === message.data.components.length - 1
+                  ? "hidden"
+                  : ""
+              }
+              onClick={() => {
+                message.data.components?.splice(i, 1);
+                message.data.components?.splice(i + 1, 0, row);
+                setData({ ...data });
+              }}
+            >
+              <CoolIcon icon="Chevron_Down" />
+            </button>
+            <button
+              type="button"
+              className={
+                !!message.data.components &&
+                message.data.components.length - 1 + 1 >= 5
+                  ? "hidden"
+                  : ""
+              }
+              onClick={() => {
+                message.data.components?.splice(i + 1, 0, structuredClone(row));
+                setData({ ...data });
+              }}
+            >
+              <CoolIcon icon="Copy" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                message.data.components?.splice(i, 1);
+                setData({ ...data });
+              }}
+            >
+              <CoolIcon icon="Trash_Full" />
+            </button>
+          </div>
+        )}
       </summary>
       {errors.length > 0 && (
         <div className="-mt-1 mb-1">
@@ -188,7 +193,8 @@ export const ActionRowEditor: React.FC<{
             index={ci}
             row={row}
             updateRow={() => setData({ ...data })}
-            open={component.type !== ComponentType.Button}
+            open={component.type !== ComponentType.Button || open}
+            notManageable={notManageable}
           >
             {component.type === ComponentType.Button ? (
               <>
@@ -197,6 +203,7 @@ export const ActionRowEditor: React.FC<{
                     <p className="text-sm cursor-default font-medium">Emoji</p>
                     <PopoutEmojiPicker
                       emoji={component.emoji}
+                      emojis={emojis}
                       setEmoji={(emoji) => {
                         component.emoji = emoji;
                         setData({ ...data });
@@ -209,7 +216,7 @@ export const ActionRowEditor: React.FC<{
                       className="w-full"
                       value={component.label ?? ""}
                       onInput={(e) => {
-                        component.label = e.currentTarget.value;
+                        component.label = e.currentTarget.value || undefined;
                         setData({ ...data });
                       }}
                       maxLength={80}
@@ -383,109 +390,111 @@ export const ActionRowEditor: React.FC<{
           </IndividualComponentEditor>
         ))}
       </div>
-      <ButtonSelect
-        name="component-type"
-        options={[
-          {
-            label: "Button",
-            value: "button",
-            isDisabled: getRowWidth(row) >= 5,
-          },
-          {
-            label: "Link Button",
-            value: "link-button",
-            isDisabled: getRowWidth(row) >= 5,
-          },
-          {
-            label: "String Select Menu",
-            value: "string-select",
-            isDisabled: getRowWidth(row) > 0,
-          },
-          {
-            label: "User Select Menu",
-            value: "user-select",
-            isDisabled: getRowWidth(row) > 0,
-          },
-          {
-            label: "Role Select Menu",
-            value: "role-select",
-            isDisabled: getRowWidth(row) > 0,
-          },
-          {
-            label: "User & Role Select Menu",
-            value: "mentionable-select",
-            isDisabled: getRowWidth(row) > 0,
-          },
-          {
-            label: "Channel Select Menu",
-            value: "channel-select",
-            isDisabled: getRowWidth(row) > 0,
-          },
-        ]}
-        isDisabled={getRowWidth(row) >= 5}
-        onChange={(v) => {
-          const { value: type } = v as { value: string };
-          switch (type) {
-            case "button": {
-              row.components.push({
-                type: ComponentType.Button,
-                style: ButtonStyle.Primary,
-                custom_id: "",
-              });
-              break;
+      {!notManageable && (
+        <ButtonSelect
+          name="component-type"
+          options={[
+            {
+              label: "Button",
+              value: "button",
+              isDisabled: getRowWidth(row) >= 5,
+            },
+            {
+              label: "Link Button",
+              value: "link-button",
+              isDisabled: getRowWidth(row) >= 5,
+            },
+            {
+              label: "String Select Menu",
+              value: "string-select",
+              isDisabled: getRowWidth(row) > 0,
+            },
+            {
+              label: "User Select Menu",
+              value: "user-select",
+              isDisabled: getRowWidth(row) > 0,
+            },
+            {
+              label: "Role Select Menu",
+              value: "role-select",
+              isDisabled: getRowWidth(row) > 0,
+            },
+            {
+              label: "User & Role Select Menu",
+              value: "mentionable-select",
+              isDisabled: getRowWidth(row) > 0,
+            },
+            {
+              label: "Channel Select Menu",
+              value: "channel-select",
+              isDisabled: getRowWidth(row) > 0,
+            },
+          ]}
+          isDisabled={getRowWidth(row) >= 5}
+          onChange={(v) => {
+            const { value: type } = v as { value: string };
+            switch (type) {
+              case "button": {
+                row.components.push({
+                  type: ComponentType.Button,
+                  style: ButtonStyle.Primary,
+                  custom_id: "",
+                });
+                break;
+              }
+              case "link-button": {
+                row.components.push({
+                  type: ComponentType.Button,
+                  style: ButtonStyle.Link,
+                  url: "",
+                });
+                break;
+              }
+              case "string-select": {
+                row.components.push({
+                  type: ComponentType.StringSelect,
+                  options: [],
+                  custom_id: "",
+                });
+                break;
+              }
+              case "user-select": {
+                row.components.push({
+                  custom_id: "",
+                  type: ComponentType.UserSelect,
+                });
+                break;
+              }
+              case "role-select": {
+                row.components.push({
+                  custom_id: "",
+                  type: ComponentType.RoleSelect,
+                });
+                break;
+              }
+              case "mentionable-select": {
+                row.components.push({
+                  custom_id: "",
+                  type: ComponentType.MentionableSelect,
+                });
+                break;
+              }
+              case "channel-select": {
+                row.components.push({
+                  custom_id: "",
+                  type: ComponentType.ChannelSelect,
+                });
+                break;
+              }
+              default:
+                break;
             }
-            case "link-button": {
-              row.components.push({
-                type: ComponentType.Button,
-                style: ButtonStyle.Link,
-                url: "",
-              });
-              break;
-            }
-            case "string-select": {
-              row.components.push({
-                type: ComponentType.StringSelect,
-                options: [],
-                custom_id: "",
-              });
-              break;
-            }
-            case "user-select": {
-              row.components.push({
-                custom_id: "",
-                type: ComponentType.UserSelect,
-              });
-              break;
-            }
-            case "role-select": {
-              row.components.push({
-                custom_id: "",
-                type: ComponentType.RoleSelect,
-              });
-              break;
-            }
-            case "mentionable-select": {
-              row.components.push({
-                custom_id: "",
-                type: ComponentType.MentionableSelect,
-              });
-              break;
-            }
-            case "channel-select": {
-              row.components.push({
-                custom_id: "",
-                type: ComponentType.ChannelSelect,
-              });
-              break;
-            }
-            default:
-              break;
-          }
-          setData({ ...data });
-        }}
-      >
-        Add Component
-      </ButtonSelect>
+            setData({ ...data });
+          }}
+        >
+          Add Component
+        </ButtonSelect>
+      )}
     </details>
   );
 };
@@ -514,8 +523,9 @@ export const IndividualComponentEditor: React.FC<
     row: APIActionRowComponent<APIMessageActionRowComponent>;
     updateRow: () => void;
     open?: boolean;
+    notManageable?: boolean;
   }>
-> = ({ component, index, row, updateRow, open, children }) => {
+> = ({ component, index, row, updateRow, open, children, notManageable }) => {
   const previewText = getComponentText(component);
   return (
     <details className="group/component pb-2 -my-1" open={open}>
@@ -545,49 +555,51 @@ export const IndividualComponentEditor: React.FC<
           )}
         </span>
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
-        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
-          <button
-            type="button"
-            className={index === 0 ? "hidden" : ""}
-            onClick={() => {
-              row.components.splice(index, 1);
-              row.components.splice(index - 1, 0, component);
-              updateRow();
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={index === row.components.length - 1 ? "hidden" : ""}
-            onClick={() => {
-              row.components.splice(index, 1);
-              row.components.splice(index + 1, 0, component);
-              updateRow();
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            type="button"
-            className={getRowWidth(row) >= 5 ? "hidden" : ""}
-            onClick={() => {
-              row.components.splice(index + 1, 0, structuredClone(component));
-              updateRow();
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              row.components.splice(index, 1);
-              updateRow();
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
+        {!notManageable && (
+          <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+            <button
+              type="button"
+              className={index === 0 ? "hidden" : ""}
+              onClick={() => {
+                row.components.splice(index, 1);
+                row.components.splice(index - 1, 0, component);
+                updateRow();
+              }}
+            >
+              <CoolIcon icon="Chevron_Up" />
+            </button>
+            <button
+              type="button"
+              className={index === row.components.length - 1 ? "hidden" : ""}
+              onClick={() => {
+                row.components.splice(index, 1);
+                row.components.splice(index + 1, 0, component);
+                updateRow();
+              }}
+            >
+              <CoolIcon icon="Chevron_Down" />
+            </button>
+            <button
+              type="button"
+              className={getRowWidth(row) >= 5 ? "hidden" : ""}
+              onClick={() => {
+                row.components.splice(index + 1, 0, structuredClone(component));
+                updateRow();
+              }}
+            >
+              <CoolIcon icon="Copy" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                row.components.splice(index, 1);
+                updateRow();
+              }}
+            >
+              <CoolIcon icon="Trash_Full" />
+            </button>
+          </div>
+        )}
       </summary>
       <div className="space-y-2 mb-2">{children}</div>
     </details>

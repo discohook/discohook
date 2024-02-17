@@ -21,6 +21,9 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
     <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
   );
 
+  const editorPaths = ["/", "/component"];
+  const isEditorPage = editorPaths.includes(location.pathname);
+
   return (
     <div className="sticky top-0 left-0 z-10 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
       <HelpModal open={helpOpen} setOpen={setHelpOpen} />
@@ -29,7 +32,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
         setOpen={setSettingsOpen}
         user={user}
       />
-      {location.pathname === "/" ? (
+      {isEditorPage ? (
         logo
       ) : (
         <Link to="/" className="my-auto">
@@ -40,7 +43,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
         <Link
           to="/me"
           className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
-          target={location.pathname === "/" ? "_blank" : undefined}
+          target={isEditorPage ? "_blank" : undefined}
         >
           <img
             className="rounded-full h-7 w-7"
@@ -55,7 +58,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
         <Link
           to="/auth/discord"
           className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
-          target={location.pathname === "/" ? "_blank" : undefined}
+          target={isEditorPage ? "_blank" : undefined}
         >
           <CoolIcon
             icon="Log_Out"

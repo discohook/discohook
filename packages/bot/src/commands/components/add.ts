@@ -44,6 +44,7 @@ import {
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
+import { base64UrlEncode } from "../../util/text.js";
 
 const buildStorableComponent = (
   component: StorableComponent,
@@ -387,7 +388,27 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
               new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
-                .setURL(`${ctx.env.BOOGIEHOOK_ORIGIN}/`),
+                .setURL(
+                  `${ctx.env.BOOGIEHOOK_ORIGIN}/component?${new URLSearchParams(
+                    {
+                      data: base64UrlEncode(
+                        JSON.stringify({
+                          type: 2,
+                        }),
+                      ),
+                      resolved: base64UrlEncode(
+                        JSON.stringify({
+                          guildId: state.message.guildId,
+                          webhook: {
+                            id: state.message.webhookId,
+                            name: state.message.webhookName,
+                            avatar: state.message.webhookAvatar,
+                          },
+                        }),
+                      ),
+                    },
+                  )}`,
+                ),
             )
             .toJSON(),
         ],
@@ -471,30 +492,62 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         },
       ];
     }
-    case "string-select": {
-      // state.stepTitle = "";
-      // state.totalSteps = 0;
-      break;
-    }
-    case "user-select": {
-      // state.stepTitle = "";
-      // state.totalSteps = 0;
-      break;
-    }
-    case "role-select": {
-      // state.stepTitle = "";
-      // state.totalSteps = 0;
-      break;
-    }
-    case "mentionable-select": {
-      // state.stepTitle = "";
-      // state.totalSteps = 0;
-      break;
-    }
+    case "string-select":
+    case "user-select":
+    case "role-select":
+    case "mentionable-select":
     case "channel-select": {
-      // state.stepTitle = "";
-      // state.totalSteps = 0;
-      break;
+      state.stepTitle = "Finish on the web";
+      state.totalSteps = 3;
+      return ctx.updateMessage({
+        embeds: [getComponentFlowEmbed(state).toJSON()],
+        components: [
+          new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Link)
+                .setLabel("Customize")
+                .setURL(
+                  `${ctx.env.BOOGIEHOOK_ORIGIN}/component?${new URLSearchParams(
+                    {
+                      data: base64UrlEncode(
+                        JSON.stringify({
+                          type:
+                            value === "string-select"
+                              ? 3
+                              : value === "user-select"
+                                ? 4
+                                : value === "role-select"
+                                  ? 5
+                                  : value === "mentionable-select"
+                                    ? 6
+                                    : value === "channel-select"
+                                      ? 7
+                                      : undefined,
+                          // ...(value === "string-select"
+                          //   ? {
+                          //       options: [],
+                          //     }
+                          //   : {}),
+                        }),
+                      ),
+                      resolved: base64UrlEncode(
+                        JSON.stringify({
+                          guildId: state.message.guildId,
+                          webhook: {
+                            id: state.message.webhookId,
+                            name: state.message.webhookName,
+                            avatar: state.message.webhookAvatar,
+                          },
+                        }),
+                      ),
+                    },
+                  )}`,
+                ),
+            )
+            .toJSON(),
+        ],
+      });
     }
     default:
       break;
@@ -543,16 +596,25 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
           flags: MessageFlags.Ephemeral,
         });
       }
+      try {
+        new URL(url);
+      } catch {
+        return ctx.reply({
+          content: "Invalid URL.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
 
       state.component.url = url;
       state.step += 1;
-      state.steps?.push({ label: "Set URL" });
+      state.steps?.push({ label: "Set label, emoji, and URL" });
 
-      // try {
-      await registerComponent(ctx, state);
-      // } catch (e) {
-      //   return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
-      // }
+      try {
+        await registerComponent(ctx, state);
+      } catch (e) {
+        console.error(e);
+        return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
+      }
 
       return ctx.updateMessage({
         embeds: [getComponentFlowEmbed(state).toJSON()],
