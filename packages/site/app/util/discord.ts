@@ -5,6 +5,7 @@ import type {
 } from "@discordjs/rest";
 import { DiscordSnowflake } from "@sapphire/snowflake";
 import {
+  RESTError,
   RESTGetAPICurrentUserGuildsResult,
   RESTGetAPIWebhookWithTokenMessageResult,
   RESTGetAPIWebhookWithTokenResult,
@@ -194,6 +195,19 @@ class CDN {
   emoji(id: string, extension?: ImageExtension): string {
     return `${this.BASE}/emojis/${id}${extension ? `.${extension}` : ""}`;
   }
+
+  icon(id: string, iconHash: string, options?: BaseImageURLOptions): string {
+    return `${this.BASE}/icons/${id}/${iconHash}${this._withOpts(options)}`;
+  }
 }
 
 export const cdn = new CDN();
+
+interface DiscordError {
+  code: number;
+  raw: RESTError;
+}
+
+export const isDiscordError = (error: any): error is DiscordError => {
+  return "code" in error && "raw" in error;
+};
