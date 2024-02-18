@@ -32,16 +32,33 @@ export const doubleDecode = <T>(data: T) => {
 
 export type User = SerializeFrom<typeof upsertDiscordUser>;
 
-export const getUserId = async (request: Request, context: Context) => {
+export async function getUserId(
+  request: Request,
+  context: Context,
+  throwIfNull?: false,
+): Promise<number | null>;
+export async function getUserId(
+  request: Request,
+  context: Context,
+  throwIfNull?: true,
+): Promise<number>;
+export async function getUserId(
+  request: Request,
+  context: Context,
+  throwIfNull?: boolean,
+): Promise<number | null> {
   const session = await getSessionStorage(context).getSession(
     request.headers.get("Cookie"),
   );
   const userId = session.get("user")?.id;
   if (!userId || typeof userId !== "number") {
+    if (throwIfNull) {
+      throw json({ message: "Must be logged in." }, 401);
+    }
     return null;
   }
   return userId;
-};
+}
 
 export async function getUser(
   request: Request,
@@ -58,13 +75,11 @@ export async function getUser(
   context: Context,
   throwIfNull?: boolean,
 ): Promise<User | null> {
-  const userId = await getUserId(request, context);
-  if (!userId) {
-    if (throwIfNull) {
-      throw json({ message: "Must be logged in." }, 401);
-    } else {
-      return null;
-    }
+  const userId = await getUserId(request, context, false);
+  if (!userId && throwIfNull) {
+    throw json({ message: "Must be logged in." }, 401);
+  } else if (!userId) {
+    return null;
   }
 
   const db = getDb(context.env.DATABASE_URL);
