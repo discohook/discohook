@@ -1,4 +1,4 @@
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -465,6 +465,14 @@ export default function Index() {
               <CoolIcon icon="Info" className="mr-1.5" />
               {t("previewInfo")}
             </Button>
+            <Link to="/donate" target="_blank" className="contents">
+              <Button
+                // Green link buttons are sinful, but eye-catching
+                discordstyle={ButtonStyle.Success}
+              >
+                {t("donate")}
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

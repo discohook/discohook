@@ -81,6 +81,7 @@ export const resources = {
       notSubscribed: "Not subscribed",
       firstSubscribed: "First Subscribed",
       never: "Never",
+      donate: "Donate",
       // Editor
       rowEmpty: "Must contain at least one component (button/select)",
       labelEmpty: "Must have a label or emoji, or both",
@@ -107,6 +108,7 @@ export const resources = {
   de: {
     translation: {
       defaultPlaceholder: "Triff eine Auswahl",
+      donate: "Spenden",
       todayAt: "heute um {{time}} Uhr",
     },
   },
@@ -142,6 +144,7 @@ export const resources = {
       editBackupMessages:
         "Pour modifier les messages d'une sauvegarde, cliquez sur le bouton <0/>.",
       resetAvatar: "Supprimer",
+      donate: "Faire un don",
       defaultPlaceholder: "Fais un choix",
       todayAt: "Aujourd’hui à {{time}}",
     },

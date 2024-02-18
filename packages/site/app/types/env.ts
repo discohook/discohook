@@ -7,6 +7,8 @@ export interface Env {
   DISCORD_CLIENT_SECRET: string;
   DISCORD_BOT_TOKEN: string;
   DISCORD_SUPPORT_INVITE_CODE: string;
-  KOFI_WEBHOOK_TOKEN: string;
   DATABASE_URL: string;
+  KOFI_WEBHOOK_TOKEN?: string;
+  CRYPTO_ALERTS_TOKEN?: string;
+  BITCOIN_ADDRESS?: string;
 }
