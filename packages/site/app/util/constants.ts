@@ -1,5 +1,5 @@
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import { QueryData } from "~/types/QueryData";
+import { LinkQueryData, QueryData } from "~/types/QueryData";
 
 export const WEBHOOK_URL_RE =
   /^https?:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/api(?:\/v\d+)?\/webhooks\/(\d+)\/([\w-]+)$/;
@@ -37,5 +37,17 @@ export const INDEX_FAILURE_MESSAGE: QueryData["messages"][number] = {
   data: {
     content:
       "The data you loaded this page with was invalid. If you're a developer, [check out the schema](https://github.com/shayypy/boogiehook/blob/master/app/types/QueryData.ts). If you need help, [join the support server](/discord).",
+  },
+};
+
+export const LINK_INDEX_EMBED: LinkQueryData["embed"] = {
+  data: {
+    title: "Welcome to Boogiehook!",
+  },
+};
+
+export const LINK_INDEX_FAILURE_EMBED: LinkQueryData["embed"] = {
+  data: {
+    description: INDEX_FAILURE_MESSAGE.data.content ?? undefined,
   },
 };

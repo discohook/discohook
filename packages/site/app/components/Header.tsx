@@ -21,7 +21,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
     <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
   );
 
-  const editorPaths = ["/", "/component"];
+  const editorPaths = ["/", "/component", "/link"];
   const isEditorPage = editorPaths.includes(location.pathname);
 
   return (
