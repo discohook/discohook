@@ -18,6 +18,7 @@ export const TextInput = (
 
   // React yells when providing props like this, so we remove it
   const newProps = { ...props };
+  // biome-ignore lint/performance/noDelete: We don't want the prop to exist at all
   delete newProps.delayOnInput;
 
   return (
@@ -59,18 +60,17 @@ export const TextInput = (
           props.className ?? ""
         }`}
       />
-      {props.errors &&
-        props.errors
-          .filter((e) => e !== undefined)
-          .map((error, i) => (
-            <p
-              key={`${props.id ?? label}-error-${i}`}
-              className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
-            >
-              <CoolIcon icon="Circle_Warning" className="mr-1.5" />
-              {error}
-            </p>
-          ))}
+      {props.errors
+        ?.filter((e) => e !== undefined)
+        .map((error, i) => (
+          <p
+            key={`${props.id ?? label}-error-${i}`}
+            className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
+          >
+            <CoolIcon icon="Circle_Warning" className="mr-1.5" />
+            {error}
+          </p>
+        ))}
     </label>
   );
 };
