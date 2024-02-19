@@ -29,7 +29,7 @@
     "emoji-mart": "^5.5.2",
     "highlight.js": "^11.9.0",
     "i18next": "^23.8.2",
-    "isbot": "^3.6.8",
+    "isbot": "^5.1.0",
     "react": "^18.2.0",
     "react-color": "^2.19.3",
     "react-dom": "^18.2.0",

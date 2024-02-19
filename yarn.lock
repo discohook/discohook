@@ -3275,7 +3275,7 @@ __metadata:
     emoji-mart: "npm:^5.5.2"
     highlight.js: "npm:^11.9.0"
     i18next: "npm:^23.8.2"
-    isbot: "npm:^3.6.8"
+    isbot: "npm:^5.1.0"
     react: "npm:^18.2.0"
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.2.0"
@@ -6538,10 +6538,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isbot@npm:^3.6.8":
-  version: 3.7.1
-  resolution: "isbot@npm:3.7.1"
-  checksum: 10c0/7c4733f6bf0cd98d6801ee24d4664edde0f0fabc329ff9858d41744dc0d6143701e8e7dfc7962bcdc46b7670911d716392cdd0a4a4bc9f5c98e03125d675f6c5
+"isbot@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "isbot@npm:5.1.0"
+  checksum: 10c0/24f871f85dc0eb3fc490ac45cf040f6c8b6074322166a5c111bf7e028fcacb73908cadb8a783f810d543f76a3829b6d54821d92b0211189d5efd6a1ba859e675
   languageName: node
   linkType: hard
 
@@ -9812,14 +9812,14 @@ __metadata:
 
 "store@file:../store::locator=boogiehook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=ccc4e5&locator=boogiehook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=e36781&locator=boogiehook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/dfb33e2c02d08607e8d4206ab83cbc8fe788310bd7b04cbb39aea84216e7a158bf796ec60c26f83b5f3fb623f6f050dcbd68e3c7b34e707e5f8fa4a0f4230ae1
+  checksum: 10c0/3d6b772b7df0932732881c97e65d82b7e9d993108b0326b8c461779fa1ec4c70ad6ce13c68e39737ca7eda35795e05dd4e170a0eff747edb185e65f5fa6d2835
   languageName: node
   linkType: hard
 
