@@ -54,6 +54,13 @@ export const LinkEmbedEditor: React.FC<{
     ) {
       partialEmbed.provider = undefined;
     }
+    if (
+      partialEmbed.author &&
+      !partialEmbed.author.name &&
+      !partialEmbed.author.url
+    ) {
+      partialEmbed.author = undefined;
+    }
 
     embedContainer.data = { ...embed, ...partialEmbed };
     setData({ ...data });
@@ -157,6 +164,78 @@ export const LinkEmbedEditor: React.FC<{
                   updateEmbed({
                     provider: {
                       ...(embed.provider ?? { name: "" }),
+                      url: undefined,
+                    },
+                  })
+                }
+              >
+                Remove
+                <span className="hidden sm:inline"> URL</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      </EmbedEditorSection>
+      <hr className="border border-gray-500/20" />
+      <EmbedEditorSection name="Author" open={open}>
+        <div className="flex">
+          <div className="grow">
+            <TextInput
+              label="Name"
+              className="w-full"
+              maxLength={256}
+              value={embed.author?.name ?? ""}
+              onInput={(e) =>
+                updateEmbed({
+                  author: {
+                    ...(embed.author ?? {}),
+                    name: e.currentTarget.value,
+                  },
+                })
+              }
+            />
+          </div>
+          {embed.author?.url === undefined && (
+            <Button
+              className="ml-2 mt-auto shrink-0"
+              onClick={() =>
+                updateEmbed({
+                  author: {
+                    ...(embed.author ?? { name: "" }),
+                    url: location.origin,
+                  },
+                })
+              }
+            >
+              Add URL
+            </Button>
+          )}
+        </div>
+        <div className="grid gap-2 mt-2">
+          {embed.author?.url !== undefined && (
+            <div className="flex">
+              <div className="grow">
+                <TextInput
+                  label="Author URL"
+                  className="w-full"
+                  type="url"
+                  value={embed.author?.url ?? ""}
+                  onInput={(e) =>
+                    updateEmbed({
+                      author: {
+                        ...(embed.author ?? { name: "" }),
+                        url: e.currentTarget.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <Button
+                className="ml-2 mt-auto shrink-0"
+                onClick={() =>
+                  updateEmbed({
+                    author: {
+                      ...(embed.author ?? { name: "" }),
                       url: undefined,
                     },
                   })

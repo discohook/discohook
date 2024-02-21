@@ -52,6 +52,22 @@ export const Embed: React.FC<{
             : undefined
         }
       >
+        {embed.provider?.name && (
+          <div className="min-w-0 mt-2 font-normal text-xs whitespace-break-spaces break-words text-primary-230">
+            {embed.provider.url ? (
+              <a
+                className="hover:underline decoration-primary-230"
+                href={embed.provider.url}
+                target="_blank"
+                rel="noreferrer nofollow ugc"
+              >
+                {embed.provider.name}
+              </a>
+            ) : (
+              <span>{embed.provider.name}</span>
+            )}
+          </div>
+        )}
         {embed.author?.name && (
           <div className="min-w-0 flex mt-2">
             {embed.author.icon_url && (

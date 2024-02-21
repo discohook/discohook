@@ -58,6 +58,12 @@ export const ZodLinkEmbed = z.object({
       url: z.ostring(),
     })
     .optional(),
+  author: z
+    .object({
+      name: z.string(),
+      url: z.ostring(),
+    })
+    .optional(),
   images: z
     .object({
       url: z.string(),

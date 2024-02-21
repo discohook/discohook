@@ -36,6 +36,7 @@ export const linkEmbedToAPIEmbed = (
   const embed: APIEmbed = {
     title: data.title,
     provider: data.provider,
+    author: data.author,
     description: data.description,
     color: data.color,
   };
