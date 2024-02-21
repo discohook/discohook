@@ -123,7 +123,7 @@ export const Message: React.FC<{
 
   return (
     <div
-      className={`flex dark:text-[#dbdee1] ${
+      className={`flex dark:text-primary-230 ${
         showProfile && lastMessage ? "mt-4" : ""
       }`}
     >
@@ -198,7 +198,7 @@ export const Message: React.FC<{
           )}
           {message.content && (
             <div
-              className="contents font-medium text-[#313338] dark:text-[#dbdee1] dark:font-normal text-base leading-[1.375]"
+              className="contents font-medium text-[#313338] dark:text-primary-230 dark:font-normal text-base leading-[1.375]"
               style={{
                 // @ts-expect-error
                 "--font-size": "1rem",

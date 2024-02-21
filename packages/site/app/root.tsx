@@ -80,7 +80,7 @@ export default function App() {
         <Links />
         <TailwindThemeScript />
       </head>
-      <body className="bg-white text-black dark:bg-[#313338] dark:text-[#dbdee1]">
+      <body className="bg-white text-black dark:bg-[#313338] dark:text-primary-230">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
@@ -103,7 +103,7 @@ export function ErrorBoundary() {
         <Links />
         <TailwindThemeScript />
       </head>
-      <body className="bg-white text-black dark:bg-[#313338] dark:text-[#dbdee1] h-screen flex">
+      <body className="bg-white text-black dark:bg-[#313338] dark:text-primary-230 h-screen flex">
         <div className="p-8 max-w-3xl mx-auto">
           <Message
             message={{

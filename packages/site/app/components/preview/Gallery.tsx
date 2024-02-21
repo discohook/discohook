@@ -23,6 +23,7 @@ export const GalleryItem: React.FC<{
 
   return contentType?.startsWith("video/") ? (
     <div className={`relative cursor-pointer ${className}`}>
+      {/* biome-ignore lint/a11y/useMediaCaption: User-generated content */}
       <video src={url} className={itemClassName} />
       <div className="absolute top-auto bottom-auto left-auto right-auto p-1 rounded-full bg-black/10 object-cover">
         <CoolIcon icon="Play" />
@@ -30,6 +31,7 @@ export const GalleryItem: React.FC<{
     </div>
   ) : contentType === "image/gif" ? (
     <button
+      type="button"
       className={`relative group/gallery-item ${className}`}
       onClick={() => {
         if (setImageModalData) {
@@ -46,6 +48,7 @@ export const GalleryItem: React.FC<{
       <img
         src={url}
         className={`w-full h-full object-cover ${itemClassName ?? ""}`}
+        alt=""
       />
       <p className="absolute top-1 left-1 rounded px-1 py-0.5 text-sm text-white bg-black/60 font-semibold group-hover/gallery-item:hidden">
         GIF
@@ -53,6 +56,7 @@ export const GalleryItem: React.FC<{
     </button>
   ) : (
     <button
+      type="button"
       className={`block ${className}`}
       onClick={() => {
         if (setImageModalData) {
@@ -66,7 +70,11 @@ export const GalleryItem: React.FC<{
         }
       }}
     >
-      <img src={url} className={`block object-cover ${itemClassName ?? ""}`} />
+      <img
+        src={url}
+        className={`block object-cover ${itemClassName ?? ""}`}
+        alt=""
+      />
     </button>
   );
 };

@@ -235,7 +235,7 @@ export const Embed: React.FC<{
                 alt="Footer"
               />
             )}
-            <p className="font-medium text-xs text-[#313338] dark:text-[#dbdee1] whitespace-pre-wrap inline-block my-auto">
+            <p className="font-medium text-xs text-[#313338] dark:text-primary-230 whitespace-pre-wrap inline-block my-auto">
               {embed.footer.text}
             </p>
           </div>

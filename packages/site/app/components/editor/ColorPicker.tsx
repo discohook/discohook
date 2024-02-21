@@ -2,7 +2,7 @@ import { CustomPicker, InjectedColorProps, SketchPicker } from "react-color";
 import { Button } from "../Button";
 
 const ColorPickerFunction: React.FC<InjectedColorProps> = (props) => (
-  <div className="absolute right-0 top-16 w-fit rounded border border-gray-50 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:text-[#dbdee1] shadow-md">
+  <div className="absolute right-0 top-16 w-fit rounded border border-gray-50 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:text-primary-230 shadow-md">
     <SketchPicker
       {...props}
       styles={{
