@@ -47,7 +47,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
 export const meta: MetaFunction = ({ data }) => {
   if (data) {
-    const { data: embed, redirect_url } = (data as SerializeFrom<typeof loader>)
+    const { data: embed } = (data as SerializeFrom<typeof loader>)
       .data;
     const tags: MetaDescriptor[] = [];
 
@@ -62,12 +62,6 @@ export const meta: MetaFunction = ({ data }) => {
       tags.push({
         property: "og:description",
         content: embed.description,
-      });
-    }
-    if (redirect_url) {
-      tags.push({
-        property: "og:url",
-        content: redirect_url,
       });
     }
     if (embed.color != null) {
