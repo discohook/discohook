@@ -81,7 +81,8 @@ export const Message: React.FC<{
         ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
         : cdn.defaultAvatar(5)
       : "/logos/boogiehook.svg");
-  const badge: string | undefined = "BOT";
+  const badge =
+    message.author?.badge === null ? null : message.author?.badge ?? "BOT";
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;

@@ -12,6 +12,7 @@ import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { Embed } from "~/components/preview/Embed";
+import { Message } from "~/components/preview/Message";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
@@ -23,12 +24,14 @@ import {
 } from "~/types/QueryData";
 import { LINK_INDEX_EMBED, LINK_INDEX_FAILURE_EMBED } from "~/util/constants";
 import { LoaderArgs } from "~/util/loader";
+import { useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
   base64UrlEncode,
   copyText,
   randomString,
 } from "~/util/text";
+import { getUserAvatar } from "~/util/users";
 import { loader as apiLinkBackupsId } from "./api.link-backups.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -40,9 +43,11 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
 export const linkEmbedToAPIEmbed = (
   data: z.infer<typeof ZodLinkEmbed>,
+  code?: string,
 ): { embed: APIEmbed; extraImages: APIEmbedImage[] } => {
   const embed: APIEmbed = {
     title: data.title,
+    url: code ? `/link/${code}` : "#",
     provider: data.provider,
     author: data.author,
     description: data.description,
@@ -72,6 +77,10 @@ export interface LinkHistoryItem {
 export default function Index() {
   const { t } = useTranslation();
   const { user } = useLoaderData<typeof loader>();
+
+  const [settings] = useLocalStorage();
+  const [loc, setLoc] = useState<Location>();
+  useEffect(() => setLoc(location), []);
 
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
@@ -332,10 +341,42 @@ export default function Index() {
             </Button>
             <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           </div>
-          <Embed
-            {...linkEmbedToAPIEmbed(data.embed.data)}
-            setImageModalData={setImageModalData}
-          />
+          {user ? (
+            <Message
+              message={{
+                author: {
+                  name:
+                    user.discordUser?.globalName ??
+                    user.discordUser?.name ??
+                    user.name,
+                  icon_url: getUserAvatar(user),
+                  badge: null,
+                },
+                content:
+                  loc && backupInfo
+                    ? `${loc.origin}/link/${backupInfo.code}`
+                    : undefined,
+                embeds: [
+                  linkEmbedToAPIEmbed(data.embed.data, backupInfo?.code).embed,
+                  ...linkEmbedToAPIEmbed(
+                    data.embed.data,
+                    backupInfo?.code,
+                  ).extraImages.map((image) => ({
+                    url: backupInfo ? `/link/${backupInfo.code}` : "#",
+                    image,
+                  })),
+                ],
+              }}
+              messageDisplay={settings.messageDisplay}
+              compactAvatars={settings.compactAvatars}
+              setImageModalData={setImageModalData}
+            />
+          ) : (
+            <Embed
+              {...linkEmbedToAPIEmbed(data.embed.data, backupInfo?.code)}
+              setImageModalData={setImageModalData}
+            />
+          )}
           <div className="fixed bottom-4 right-4 grid gap-2 grid-cols-1">
             {/* <Button
               discordstyle={ButtonStyle.Secondary}

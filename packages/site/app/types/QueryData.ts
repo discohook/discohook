@@ -23,6 +23,7 @@ export interface QueryData {
       author?: {
         name?: string;
         icon_url?: string;
+        badge?: string | null;
       };
       content?: string | null;
       embeds?: APIEmbed[] | null;
