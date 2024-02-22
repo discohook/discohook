@@ -11,7 +11,7 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
-import { QueryData } from "../types/backups.js";
+import { LinkQueryData, QueryData } from "../types/backups.js";
 import { Flow, StorableComponent } from "../types/components.js";
 import { TriggerEvent } from "../types/triggers.js";
 
@@ -44,6 +44,7 @@ export const users = pgTable("User", {
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   backups: many(backups, { relationName: "User_Backup" }),
+  linkBackups: many(linkBackups, { relationName: "User_LinkBackup" }),
   shareLinks: many(shareLinks, { relationName: "User_ShareLink" }),
   messageLogEntries: many(messageLogEntries, {
     relationName: "User_MessageLogEntry",
@@ -244,6 +245,28 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
   }),
   guilds: many(discordGuilds, { relationName: "DiscordGuild_Backup" }),
   servers: many(guildedServers, { relationName: "GuildedServer_Backup" }),
+}));
+
+export const linkBackups = pgTable("LinkBackup", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull(),
+  name: text("name").notNull(),
+  createdAt: date("createdAt")
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: date("updatedAt"),
+  dataVersion: text("dataVersion").notNull(),
+  data: json("data").notNull().$type<LinkQueryData>(),
+
+  ownerId: integer("ownerId").notNull(),
+});
+
+export const linkBackupsRelations = relations(backups, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [backups.ownerId],
+    references: [users.id],
+    relationName: "User_LinkBackup",
+  }),
 }));
 
 export const webhooks = pgTable(

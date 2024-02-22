@@ -1,6 +1,43 @@
 import { APIAttachment } from "discord-api-types/v10";
+import { twJoin } from "tailwind-merge";
 import { SetImageModalData } from "~/modals/ImageModal";
-import { CoolIcon } from "../CoolIcon";
+
+export const YOUTUBE_REGEX =
+  /^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)\/((?:shorts\/|embed\/|v\/|live\/)?([\w\-]{5,}))/i;
+
+export const getYoutubeVideoParameters = (
+  url: string,
+): {
+  id: string;
+  seconds?: number;
+} | null => {
+  const match = url.match(YOUTUBE_REGEX);
+  if (!match) return null;
+
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+
+  const v = u.searchParams.get("v");
+  const t = u.searchParams.get("t");
+
+  if (v) {
+    return {
+      id: v,
+      seconds: t ? Number(t) : undefined,
+    };
+  } else if (match[2] === "watch") {
+    // "https://youtube.com/watch" with no parameters
+    return null;
+  }
+  return {
+    id: match[2],
+    seconds: t ? Number(t) : undefined,
+  };
+};
 
 export const Gallery: React.FC<{
   attachments: APIAttachment[];
@@ -20,14 +57,46 @@ export const GalleryItem: React.FC<{
   setImageModalData?: SetImageModalData;
 }> = ({ attachments, index, className, itemClassName, setImageModalData }) => {
   const { content_type: contentType, url } = attachments[index];
+  const youtube = getYoutubeVideoParameters(url);
 
   return contentType?.startsWith("video/") ? (
-    <div className={`relative cursor-pointer ${className}`}>
-      {/* biome-ignore lint/a11y/useMediaCaption: User-generated content */}
-      <video src={url} className={itemClassName} />
-      <div className="absolute top-auto bottom-auto left-auto right-auto p-1 rounded-full bg-black/10 object-cover">
-        <CoolIcon icon="Play" />
-      </div>
+    <div className={className}>
+      {youtube ? (
+        <a
+          href={`https://www.youtube.com/watch?${new URLSearchParams({
+            v: youtube.id,
+            t: youtube.seconds ? String(youtube.seconds) : "",
+          })}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            // 0.jpg is more reliable but it seems to always be 4:3 which is
+            // undesirable for videos of any other aspect ratio
+            src={`https://img.youtube.com/vi/${youtube.id}/maxresdefault.jpg`}
+            className={twJoin("w-full h-full object-cover", itemClassName)}
+            alt="YouTube video thumbnail"
+          />
+        </a>
+        // We were originally embedding the video but there is no real reason
+        // to do this in a preview. If enough users are confused by Youtube's
+        // default fallback thumbnail then we might add an option to enable this
+        // <div className={itemClassName}>
+        //   <iframe
+        //     src={`https://www.youtube-nocookie.com/embed/${youtube.id}${
+        //       youtube.seconds != null ? `?start=${youtube.seconds}` : ""
+        //     }`}
+        //     className="w-full h-full aspect-video"
+        //     title="YouTube video player"
+        //     frameBorder="0"
+        //     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        //     allowFullScreen
+        //   />
+        // </div>
+      ) : (
+        // biome-ignore lint/a11y/useMediaCaption: User-generated content
+        <video src={url} className={itemClassName} controls />
+      )}
     </div>
   ) : contentType === "image/gif" ? (
     <button
@@ -47,7 +116,7 @@ export const GalleryItem: React.FC<{
     >
       <img
         src={url}
-        className={`w-full h-full object-cover ${itemClassName ?? ""}`}
+        className={twJoin("w-full h-full object-cover", itemClassName)}
         alt=""
       />
       <p className="absolute top-1 left-1 rounded px-1 py-0.5 text-sm text-white bg-black/60 font-semibold group-hover/gallery-item:hidden">

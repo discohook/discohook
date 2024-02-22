@@ -200,6 +200,19 @@ export const Embed: React.FC<{
             />
           </div>
         )}
+        {embed.video?.url && (
+          <div className="mt-2">
+            <Gallery
+              attachments={[
+                {
+                  content_type: "video/mp4",
+                  url: embed.video.url,
+                } as APIAttachment,
+              ]}
+              setImageModalData={setImageModalData}
+            />
+          </div>
+        )}
         {embed.thumbnail?.url && (
           <button
             type="button"

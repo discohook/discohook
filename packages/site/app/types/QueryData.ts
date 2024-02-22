@@ -71,6 +71,14 @@ export const ZodLinkEmbed = z.object({
     .array()
     .optional(),
   large_images: z.oboolean(),
+  video: z
+    .object({
+      /** Direct video file or YouTube video */
+      url: z.string(),
+      height: z.onumber(),
+      width: z.onumber(),
+    })
+    .optional(),
   color: z.onumber(),
 });
 

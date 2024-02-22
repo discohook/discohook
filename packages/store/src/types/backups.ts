@@ -4,6 +4,7 @@ import {
   APIEmbed,
   APIMessageActionRowComponent,
 } from "discord-api-types/v10";
+import { z } from "zod";
 
 /** The version of the query data, defaults to `d2`
  *
@@ -33,3 +34,60 @@ export interface QueryData {
   }[];
   targets?: { url: string }[];
 }
+
+export const ZodQueryData: z.ZodType<QueryData> = z.any();
+
+export const ZodLinkQueryDataVersion = z.literal(1);
+
+export const ZodLinkEmbed = z.object({
+  // type: z
+  //   .union([
+  //     z.literal(EmbedType.Article),
+  //     z.literal(EmbedType.Link),
+  //     z.literal(EmbedType.Video),
+  //     // I think GIFV and Image don't render as unfurl embeds?
+  //     z.literal(EmbedType.Image),
+  //     z.literal(EmbedType.GIFV),
+  //   ])
+  //   .optional(),
+  title: z.ostring(),
+  description: z.ostring(),
+  provider: z
+    .object({
+      name: z.ostring(),
+      url: z.ostring(),
+    })
+    .optional(),
+  author: z
+    .object({
+      name: z.string(),
+      url: z.ostring(),
+    })
+    .optional(),
+  images: z
+    .object({
+      url: z.string(),
+    })
+    .array()
+    .optional(),
+  large_images: z.oboolean(),
+  video: z
+    .object({
+      /** Direct video file or YouTube video */
+      url: z.string(),
+      height: z.onumber(),
+      width: z.onumber(),
+    })
+    .optional(),
+  color: z.onumber(),
+});
+
+export const ZodLinkQueryData = z.object({
+  version: ZodLinkQueryDataVersion.optional(),
+  backup_id: z.onumber(),
+  embed: z.object({ data: ZodLinkEmbed, redirect_url: z.ostring() }),
+});
+
+export type LinkQueryData = z.infer<typeof ZodLinkQueryData>;
+export type LinkEmbed = z.infer<typeof ZodLinkEmbed>;
+export type LinkEmbedContainer = LinkQueryData["embed"];

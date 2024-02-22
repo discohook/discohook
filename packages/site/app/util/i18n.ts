@@ -17,6 +17,7 @@ export const resources = {
       temporaryShareUrl: "Temporary Share URL",
       generate: "Generate",
       copy: "Copy",
+      copyLink: "Copy Link",
       clickGenerate: 'Press "Generate" to generate a share link',
       includeWebhookUrls: "Include webhook URLs",
       linkExpiresAt: "This link expires at {{time}} ({{relativeTime}}).",
@@ -61,6 +62,8 @@ export const resources = {
       previewInfo: "Preview Info",
       editingBackupNote:
         'You\'re editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the "Save Message" button.',
+      editingLinkBackupNote:
+        "You're editing a backup, so your work is saved periodically while you edit.",
       channel: "Channel",
       cannotChangeChannel: "Webhook channel must be set inside Discord.",
       requestedBy: "Requested on Boogiehook by {{username}}",

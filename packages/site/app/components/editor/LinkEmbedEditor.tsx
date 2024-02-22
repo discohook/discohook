@@ -15,12 +15,16 @@ import { TextInput } from "../TextInput";
 import { EmbedEditorSection } from "./EmbedEditor";
 
 export const getEmbedText = (embed: LinkEmbed): string | undefined =>
-  embed.provider?.name || embed.title || embed.description;
+  embed.provider?.name ||
+  embed.author?.name ||
+  embed.title ||
+  embed.description;
 
 export const getEmbedLength = (embed: LinkEmbed) => {
   const totalCharacters =
     (embed.title ?? "").length +
     (embed.description ?? "").length +
+    (embed.author?.name ?? "").length +
     (embed.provider?.name ?? "").length;
 
   return totalCharacters;
@@ -30,7 +34,7 @@ export const getEmbedErrors = (embed: LinkEmbed) => {
   const errors: string[] = [];
 
   const totalCharacters = getEmbedLength(embed);
-  if (totalCharacters === 0 && !embed.images?.[0]?.url) {
+  if (totalCharacters === 0 && !embed.images?.[0]?.url && !embed.video?.url) {
     errors.push("embedEmpty");
   }
 
@@ -339,6 +343,13 @@ export const LinkEmbedEditor: React.FC<{
               /> */}
           </details>
         </div>
+        {!!embed.video?.url && (
+          <InfoBox severity="yellow">
+            <CoolIcon icon="Info" /> On desktop clients, the description is not
+            visible for link embeds with a video. Users on Android can still
+            view the description.
+          </InfoBox>
+        )}
         <TextArea
           label="Description"
           className="w-full h-40"
@@ -357,9 +368,16 @@ export const LinkEmbedEditor: React.FC<{
           <CoolIcon icon="Info" /> Link embeds can have one thumbnail or up to 4
           large images, but not both.
         </InfoBox>
+        {embed.video?.url && (
+          <InfoBox severity="yellow">
+            <CoolIcon icon="Triangle_Warning" /> Link embeds cannot have a video
+            paired with an image. Remove your video in order to add images.
+          </InfoBox>
+        )}
         <Checkbox
           label="Use large images"
           checked={embed.large_images ?? false}
+          disabled={!embed.images?.length && !!embed.video?.url}
           onChange={(e) =>
             updateEmbed({ large_images: e.currentTarget.checked })
           }
@@ -376,6 +394,7 @@ export const LinkEmbedEditor: React.FC<{
                       type="url"
                       className="w-full"
                       value={img.url ?? ""}
+                      disabled={!img.url && !!embed.video?.url}
                       onInput={(e) => {
                         embed.images?.splice(i, 1, {
                           url: e.currentTarget.value,
@@ -408,11 +427,13 @@ export const LinkEmbedEditor: React.FC<{
               // the Desktop client, and just 1 on mobile
 
               // Allow one thumbnail or four large images
-              embed.images
+              (embed.images
                 ? embed.large_images
                   ? embed.images.length >= 4
                   : embed.images.length >= 1
-                : false
+                : false) ||
+              // Do not allow any images when there is a video
+              !!embed.video?.url
             }
             onClick={() =>
               updateEmbed({
@@ -422,6 +443,35 @@ export const LinkEmbedEditor: React.FC<{
           >
             Add Image
           </Button>
+        </div>
+      </EmbedEditorSection>
+      <hr className="border border-gray-500/20" />
+      <EmbedEditorSection name="Video" open={open}>
+        {!!embed.images?.length && (
+          <InfoBox severity="yellow">
+            <CoolIcon icon="Triangle_Warning" /> Link embeds cannot have a video
+            paired with an image. Remove all images in order to add a video.
+          </InfoBox>
+        )}
+        <div>
+          <TextInput
+            label="URL (direct link or YouTube)"
+            type="url"
+            className="w-full"
+            value={embed.video?.url ?? ""}
+            disabled={!!embed.images?.length}
+            onInput={(e) => {
+              updateEmbed({
+                large_images: false,
+                images: undefined,
+                video: e.currentTarget.value
+                  ? {
+                      url: e.currentTarget.value,
+                    }
+                  : undefined,
+              });
+            }}
+          />
         </div>
       </EmbedEditorSection>
     </details>
