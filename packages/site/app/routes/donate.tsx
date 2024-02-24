@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import React, { useState } from "react";
 import { twJoin } from "tailwind-merge";
@@ -38,9 +38,9 @@ const Cell: React.FC<
     )}
   >
     {href ? (
-      <Link to={href} className="text-blurple-400 hover:underline">
+      <a href={href} className="text-blurple-400 hover:underline">
         {children}
-      </Link>
+      </a>
     ) : (
       children
     )}
