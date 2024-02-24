@@ -5,14 +5,21 @@ import {
   json,
   redirect,
 } from "@remix-run/cloudflare";
+import { useLoaderData } from "@remix-run/react";
+import { ButtonStyle } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
+import { Button } from "~/components/Button";
+import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
+import { Embed } from "~/components/preview/Embed";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
 import { getDb, linkBackups } from "~/store.server";
 import { LinkQueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
+import { copyText } from "~/util/text";
 import { ZodOEmbedData } from "./api.oembed";
+import { linkEmbedToAPIEmbed } from "./link";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const { code } = zx.parseParams(params, {
@@ -36,10 +43,10 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   const origin = new URL(request.url).origin;
 
   const data: LinkQueryData = linkBackup.data;
-  if (request.headers.get("User-Agent")?.includes("Discord")) {
-    return { data: data.embed, origin };
-  }
-  if (data.embed.redirect_url) {
+  if (
+    data.embed.redirect_url &&
+    !request.headers.get("User-Agent")?.includes("Discord")
+  ) {
     return redirect(data.embed.redirect_url);
   }
   return { data: data.embed, origin };
@@ -47,9 +54,12 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
 export const meta: MetaFunction = ({ data }) => {
   if (data) {
-    const { data: embed } = (data as SerializeFrom<typeof loader>)
-      .data;
-    const tags: MetaDescriptor[] = [];
+    const { data: embed } = (data as SerializeFrom<typeof loader>).data;
+    const tags: MetaDescriptor[] = [
+      {
+        title: `${getEmbedText(embed) || "Custom link embed"} - Boogiehook`,
+      },
+    ];
 
     // Open Graph/Twitter tags
     if (embed.title) {
@@ -159,5 +169,21 @@ export const meta: MetaFunction = ({ data }) => {
 };
 
 export default function LinkCodePage() {
-  return <div />;
+  const { data } = useLoaderData<typeof loader>();
+  return (
+    <div className="flex h-screen">
+      <div className="max-w-4xl m-auto p-4 text-lg">
+        <Embed {...linkEmbedToAPIEmbed(data.data)} />
+        <Button
+          className="mt-1"
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => {
+            copyText(location.href);
+          }}
+        >
+          Copy Link
+        </Button>
+      </div>
+    </div>
+  );
 }
