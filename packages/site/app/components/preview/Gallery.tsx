@@ -160,23 +160,23 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   2: (d) => (
-    <div className="w-full grid grid-cols-2 gap-1 max-w-full max-h-[350px]">
+    <div className="w-full grid grid-cols-2 gap-1 max-w-full max-h-[350px] overflow-hidden rounded-lg">
       <GalleryItem
-        className="rounded-l-lg rounded-r w-full object-center"
-        itemClassName="rounded-l-lg rounded-r"
+        className="rounded-l-lg rounded-r h-full object-center"
+        itemClassName="rounded-l-lg rounded-r h-full"
         {...d}
         index={0}
       />
       <GalleryItem
-        className="rounded-r-lg rounded-l w-full object-center"
-        itemClassName="rounded-r-lg rounded-l"
+        className="rounded-r-lg rounded-l h-full object-center"
+        itemClassName="rounded-r-lg rounded-l h-full"
         {...d}
         index={1}
       />
     </div>
   ),
   3: (d) => (
-    <div className="w-full flex gap-1 max-w-full max-h-[350px]">
+    <div className="w-full flex gap-1 max-w-full max-h-[350px] overflow-hidden rounded-lg">
       <GalleryItem
         className="rounded-l-lg rounded-r h-[350px] w-2/3"
         itemClassName="rounded-l-lg rounded-r"
@@ -200,7 +200,7 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   4: (d) => (
-    <div className="w-full grid grid-cols-2 grid-rows-2 gap-1 max-w-full max-h-[350px]">
+    <div className="w-full grid grid-cols-2 grid-rows-2 gap-1 max-w-full max-h-[350px] overflow-hidden rounded-lg">
       <GalleryItem
         className="rounded rounded-tl-lg"
         itemClassName="rounded rounded-tl-lg w-full h-full"
