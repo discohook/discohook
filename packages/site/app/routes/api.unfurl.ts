@@ -17,7 +17,8 @@ import { ZodOEmbedData } from "./api.oembed";
 
 // Sorry this solution is pretty bad
 export const META_HTML_REGEX =
-  /<meta (?:(name|property|content|value) ?= ?["']([^"']+)["']) ?(?:(name|property|content|value) ?= ?["']([^"']+)["']) ?\/?>/gim;
+  /<meta\s+((?:(\w+) ?= ?["']([^"']+)["']\s?){1,})\s*\/?>/gim;
+export const HTML_ATTRIBUTE_REGEX = /(\w+) ?= ?["']([^"']+)["']/gim;
 
 const userAgent =
   "Boogiehook-Bot/1.0.0 (+https://github.com/shayypy/boogiehook)";
@@ -53,6 +54,55 @@ interface MetaTags {
 }
 
 type ImageScope = "og" | "twitter";
+
+// const scrapeMetaTag = async (scraper: Scraper, property: string) => {
+//   let prop = await scraper
+//     .querySelector(`meta[property="${property}"]`)
+//     .getAttribute("content");
+//   if (prop) return prop;
+
+//   prop = await scraper
+//     .querySelector(`meta[name="${property}"]`)
+//     .getAttribute("content");
+//   if (prop) return prop;
+
+//   prop = await scraper
+//     .querySelector(`meta[property="${property}"]`)
+//     .getAttribute("value");
+//   if (prop) return prop;
+
+//   prop = await scraper
+//     .querySelector(`meta[name="${property}"]`)
+//     .getAttribute("value");
+//   if (prop) return prop;
+// };
+
+const getMetaTags = (html: string) => {
+  const matches = html.matchAll(META_HTML_REGEX);
+  const tags: {
+    property: string;
+    content: string;
+    extra: Record<string, string>;
+  }[] = [];
+  for (const wholeMatch of matches) {
+    // Space-separated key-value pairs
+    const body = wholeMatch[1];
+    const bodyMatches = body.matchAll(HTML_ATTRIBUTE_REGEX);
+
+    const pairs: Record<string, string> = {};
+    for (const match of bodyMatches) {
+      pairs[match[1]] = decode(match[2]);
+    }
+    if ((pairs.property || pairs.name) && (pairs.content || pairs.value)) {
+      tags.push({
+        property: pairs.property || pairs.name,
+        content: pairs.content || pairs.value,
+        extra: pairs,
+      });
+    }
+  }
+  return tags;
+};
 
 export const loader = async ({ request }: LoaderArgs) => {
   const { url } = zx.parseQuery(request, { url: z.string().url() });
@@ -111,12 +161,10 @@ export const loader = async ({ request }: LoaderArgs) => {
   }
 
   const scraperResponse = response.clone();
-  // I don't think Discord supports the `Link` header
-  // discovery method, so we don't either
   const scraper = new Scraper().fromResponse(scraperResponse);
 
   const text = await response.text();
-  const matches = text.matchAll(META_HTML_REGEX);
+  const tags = getMetaTags(text);
 
   const meta: MetaTags = {
     og: {},
@@ -124,14 +172,8 @@ export const loader = async ({ request }: LoaderArgs) => {
     vanilla: {},
   };
 
-  for (const match of matches) {
-    const key1 = match[1];
-    const value1 = match[2];
-    // const key2 = match[3];
-    const value2 = match[4];
-
-    const property = ["name", "property"].includes(key1) ? value1 : value2;
-    const content = ["content", "value"].includes(key1) ? value1 : value2;
+  for (const match of tags) {
+    const { property, content } = match;
 
     const [scope_] = property.split(":");
     let scope: keyof MetaTags;
@@ -302,6 +344,8 @@ export const loader = async ({ request }: LoaderArgs) => {
       break;
   }
 
+  // I don't think Discord supports the `Link` header
+  // discovery method, so we don't either
   const oembedUrl = await scraper
     // Unsure if Discord supports XML-formatted oEmbed, but we aren't going to for now
     .querySelector('link[type="application/json+oembed"]')
