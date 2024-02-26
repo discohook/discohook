@@ -105,9 +105,9 @@ const getMetaTags = (html: string) => {
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const { url } = zx.parseQuery(request, { url: z.string().url() });
+  const { url: url_ } = zx.parseQuery(request, { url: z.string().url() });
 
-  const robotsUrl = `${new URL(url).origin}/robots.txt`;
+  const robotsUrl = `${new URL(url_).origin}/robots.txt`;
   const robotsResponse = await fetch(robotsUrl, {
     method: "GET",
     headers: {
@@ -122,7 +122,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   // We might need to do this again after the "real" fetch in case of a redirect
   if (robotsResponse.ok) {
     const robots = robotsParser(robotsUrl, await robotsResponse.text());
-    if (robots.isDisallowed(url, userAgent)) {
+    if (robots.isDisallowed(url_, userAgent)) {
       throw json(
         { message: "Boogiehook is forbidden by this site's robots.txt" },
         400,
@@ -143,11 +143,15 @@ export const loader = async ({ request }: LoaderArgs) => {
     // }
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(url_, {
     method: "GET",
     headers: { "User-Agent": userAgent },
+    redirect: "follow",
     cf: { cacheTtl: 7200, cacheEverything: true },
   });
+  // This may be different because of a redirect. We want to keep the
+  // canonical URL for the special cases below.
+  const url = response.url;
 
   if (!response.ok) {
     throw json({ message: "Received a bad response from the URL" }, 400);
@@ -283,17 +287,17 @@ export const loader = async ({ request }: LoaderArgs) => {
   switch (u.host) {
     case "www.xkcd.com":
     case "xkcd.com": {
-      // Homepage or comic page
-      if (/^https?:\/\/(www\.)?xkcd\.com(\/\d+)?/.test(url)) {
-        const caption = await scraper
-          .querySelector("#comic>img")
-          .getAttribute("title");
-        if (caption) {
-          edgeData.footer = { text: decode(caption).slice(0, 2048) };
-        }
-        edgeData.title = `xkcd: ${meta.og.title}`;
-        edgeData.provider = undefined;
+      // Only the homepage or a comic page
+      if (!/^https?:\/\/(www\.)?xkcd\.com(\/\d+)?/.test(url)) break;
+
+      const caption = await scraper
+        .querySelector("#comic>img")
+        .getAttribute("title");
+      if (caption) {
+        edgeData.footer = { text: decode(caption).slice(0, 2048) };
       }
+      edgeData.title = `xkcd: ${meta.og.title}`;
+      edgeData.provider = undefined;
       break;
     }
     case "www.youtube.com":
@@ -371,7 +375,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   const embeds: APIEmbed[] = [
     {
       type: EmbedType.Rich,
-      url,
+      url: url_,
       provider: oembed?.provider_name
         ? { name: oembed.provider_name, url: oembed.provider_url }
         : meta.og.siteName
@@ -404,7 +408,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
   if (meta.twitter.card === "summary_large_image") {
     for (const image of images.slice(1, 4)) {
-      embeds.push({ type: EmbedType.Image, url, image });
+      embeds.push({ type: EmbedType.Image, url: url_, image });
     }
   }
 
