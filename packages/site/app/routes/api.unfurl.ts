@@ -6,7 +6,6 @@ import {
   EmbedType,
 } from "discord-api-types/v10";
 import he from "he";
-import robotsParser from "robots-parser";
 import { z } from "zod";
 import { zx } from "zodix";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
@@ -107,41 +106,48 @@ const getMetaTags = (html: string) => {
 export const loader = async ({ request }: LoaderArgs) => {
   const { url: url_ } = zx.parseQuery(request, { url: z.string().url() });
 
-  const robotsUrl = `${new URL(url_).origin}/robots.txt`;
-  const robotsResponse = await fetch(robotsUrl, {
-    method: "GET",
-    headers: {
-      "User-Agent": userAgent,
-    },
-    cf: {
-      cacheTtl: 7200,
-      cacheEverything: true,
-    },
-  });
+  /*
+    Discord doesn't respect robots.txt at all, and is actually explicitly
+    disallowed by Twitter. For the purpose of parity, we are temporarily
+    disabling this functionality, but in the spirit of internet ethics, I
+    think we may later choose to selectively re-enable it for less
+    "prominent" sites.
+  */
+  // const robotsUrl = `${new URL(url_).origin}/robots.txt`;
+  // const robotsResponse = await fetch(robotsUrl, {
+  //   method: "GET",
+  //   headers: {
+  //     "User-Agent": userAgent,
+  //   },
+  //   cf: {
+  //     cacheTtl: 7200,
+  //     cacheEverything: true,
+  //   },
+  // });
 
-  // We might need to do this again after the "real" fetch in case of a redirect
-  if (robotsResponse.ok) {
-    const robots = robotsParser(robotsUrl, await robotsResponse.text());
-    if (robots.isDisallowed(url_, userAgent)) {
-      throw json(
-        { message: "Boogiehook is forbidden by this site's robots.txt" },
-        400,
-      );
-    }
-    // Discord doesn't actually seem to respect crawl delay
-    // const delay = robots.getCrawlDelay(userAgent);
-    // if (delay && delay <= 15) {
-    //   await sleep(delay * 1000);
-    // } else if (delay) {
-    //   throw json(
-    //     {
-    //       message:
-    //         "The delay requested by this site's robots.txt was too large.",
-    //     },
-    //     400,
-    //   );
-    // }
-  }
+  // // We might need to do this again after the "real" fetch in case of a redirect
+  // if (robotsResponse.ok) {
+  //   const robots = robotsParser(robotsUrl, await robotsResponse.text());
+  //   if (robots.isDisallowed(url_, userAgent)) {
+  //     throw json(
+  //       { message: "Boogiehook is forbidden by this site's robots.txt" },
+  //       400,
+  //     );
+  //   }
+  //   // Discord doesn't actually seem to respect crawl delay
+  //   // const delay = robots.getCrawlDelay(userAgent);
+  //   // if (delay && delay <= 15) {
+  //   //   await sleep(delay * 1000);
+  //   // } else if (delay) {
+  //   //   throw json(
+  //   //     {
+  //   //       message:
+  //   //         "The delay requested by this site's robots.txt was too large.",
+  //   //     },
+  //   //     400,
+  //   //   );
+  //   // }
+  // }
 
   const response = await fetch(url_, {
     method: "GET",
@@ -350,6 +356,12 @@ export const loader = async ({ request }: LoaderArgs) => {
 
       break;
     }
+    case "www.twitter.com":
+    case "twitter.com":
+    case "www.x.com":
+    case "x.com":
+      edgeData.color = 4957685;
+      break;
     default:
       break;
   }
