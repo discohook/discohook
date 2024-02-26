@@ -54,7 +54,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         name,
         code,
         data,
-        dataVersion: data.version ?? 1,
+        dataVersion: String(data.version ?? 1),
         ownerId: user.id,
       })
       .returning({
