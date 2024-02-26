@@ -2426,6 +2426,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/he@npm:^1":
+  version: 1.2.3
+  resolution: "@types/he@npm:1.2.3"
+  checksum: 10c0/562e4ec00e31e3d464e79e6da4b8a5c21999d38ceca6a8facaa96e89c2d646f410bb58bb81f48a7472aeb4655ce40d27b7d77e5a4fa5a2d9caa0f3037caab5b7
+  languageName: node
+  linkType: hard
+
 "@types/http-cache-semantics@npm:*":
   version: 4.0.4
   resolution: "@types/http-cache-semantics@npm:4.0.4"
@@ -3265,6 +3272,7 @@ __metadata:
     "@remix-run/dev": "npm:^2.4.0"
     "@remix-run/react": "npm:^2.4.0"
     "@twemoji/api": "npm:^15.0.3"
+    "@types/he": "npm:^1"
     "@types/react": "npm:^18.2.20"
     "@types/react-color": "npm:^3.0.10"
     "@types/react-dom": "npm:^18.2.7"
@@ -3273,6 +3281,7 @@ __metadata:
     discord-api-types: "npm:^0.37.66"
     discord-snowflake: "npm:^2.0.0"
     emoji-mart: "npm:^5.5.2"
+    he: "npm:^1.2.0"
     highlight.js: "npm:^11.9.0"
     i18next: "npm:^23.8.2"
     isbot: "npm:^3.6.8"
@@ -3284,6 +3293,7 @@ __metadata:
     react-modal: "npm:^3.16.1"
     react-select: "npm:^5.8.0"
     remix-auth-discord: "npm:^1.3.2"
+    robots-parser: "npm:^3.0.1"
     tailwind-merge: "npm:^2.2.0"
     tailwindcss: "npm:^3.3.6"
     typescript: "npm:^5.1.6"
@@ -6015,7 +6025,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"he@npm:1.2.0":
+"he@npm:1.2.0, he@npm:^1.2.0":
   version: 1.2.0
   resolution: "he@npm:1.2.0"
   bin:
@@ -9380,6 +9390,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"robots-parser@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "robots-parser@npm:3.0.1"
+  checksum: 10c0/91443b15ab1b39f69ac998a2dae8859ad35c981504e5facbb34d494fd6163877e821ce7ed830d14e9efdd6ed28c347491c3d699738943501dec2b6bedfdd6a81
+  languageName: node
+  linkType: hard
+
 "rollup-plugin-inject@npm:^3.0.0":
   version: 3.0.2
   resolution: "rollup-plugin-inject@npm:3.0.2"
@@ -9812,14 +9829,14 @@ __metadata:
 
 "store@file:../store::locator=boogiehook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=ccc4e5&locator=boogiehook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=6888b8&locator=boogiehook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/dfb33e2c02d08607e8d4206ab83cbc8fe788310bd7b04cbb39aea84216e7a158bf796ec60c26f83b5f3fb623f6f050dcbd68e3c7b34e707e5f8fa4a0f4230ae1
+  checksum: 10c0/bfbc29a9babc4e1011e4cea3a59c1e1cb318d7c636c36e6ebe5a4102f026f2e7f84a9e932a3a2b65e426274e49681ae0bcbb6dac0515840e034b4bbbd3622966
   languageName: node
   linkType: hard
 

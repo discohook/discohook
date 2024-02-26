@@ -27,6 +27,7 @@
     "discord-api-types": "^0.37.66",
     "discord-snowflake": "^2.0.0",
     "emoji-mart": "^5.5.2",
+    "he": "^1.2.0",
     "highlight.js": "^11.9.0",
     "i18next": "^23.8.2",
     "isbot": "^3.6.8",
@@ -38,6 +39,7 @@
     "react-modal": "^3.16.1",
     "react-select": "^5.8.0",
     "remix-auth-discord": "^1.3.2",
+    "robots-parser": "^3.0.1",
     "tailwind-merge": "^2.2.0",
     "zod": "^3.22.4",
     "zodix": "^0.4.4"
@@ -45,6 +47,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230518.0",
     "@remix-run/dev": "^2.4.0",
+    "@types/he": "^1",
     "@types/react": "^18.2.20",
     "@types/react-color": "^3.0.10",
     "@types/react-dom": "^18.2.7",
