@@ -340,7 +340,13 @@ export const loader = async ({ request }: LoaderArgs) => {
     case "tenor.com": {
       if (!u.pathname.startsWith("/view")) break;
 
-      edgeData.type = EmbedType.Image;
+      edgeData.type = EmbedType.GIFV;
+      edgeData.title = undefined;
+      edgeData.description = undefined;
+      edgeData.provider = {
+        name: "Tenor",
+        url: "https://tenor.co",
+      };
 
       break;
     }
