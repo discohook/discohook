@@ -405,6 +405,7 @@ export const loader = async ({ request }: LoaderArgs) => {
         images.length !== 0 && meta.twitter.card === "summary_large_image"
           ? images[0]
           : undefined,
+      video: meta.twitter.video ?? meta.og.video,
       ...edgeData,
     },
   ];
