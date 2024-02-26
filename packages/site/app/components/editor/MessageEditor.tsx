@@ -189,11 +189,17 @@ export const MessageEditor: React.FC<{
           </>
         )}
         <div className="flex">
-          <Button onClick={() => setSettingMessageIndex(i)}>
-            {message.reference ? "Change Reference" : "Set Reference"}
+          <Button
+            className="mr-2 shrink"
+            onClick={() => setSettingMessageIndex(i)}
+          >
+            <span className="hidden sm:inline">
+              {message.reference ? "Change Reference" : "Set Reference"}
+            </span>
+            <span className="sm:hidden">Reference</span>
           </Button>
           <Button
-            className="ml-auto"
+            className="ml-auto shrink"
             onClick={() => {
               message.data.embeds = message.data.embeds
                 ? [...message.data.embeds, {}]
@@ -202,10 +208,11 @@ export const MessageEditor: React.FC<{
             }}
             disabled={!!message.data.embeds && message.data.embeds.length >= 10}
           >
-            Add Embed
+            <span className="hidden sm:inline">Add Embed</span>
+            <span className="sm:hidden">Embed</span>
           </Button>
           <Button
-            className="ml-2"
+            className="ml-2 shrink"
             onClick={() => {
               const emptyRow = { type: 1, components: [] };
               message.data.components = message.data.components
@@ -217,9 +224,16 @@ export const MessageEditor: React.FC<{
               !!message.data.components && message.data.components.length >= 5
             }
           >
-            {message.data.components && message.data.components.length >= 1
-              ? "Add Row"
-              : "Add Components"}
+            <span className="hidden sm:inline">
+              {message.data.components && message.data.components.length >= 1
+                ? "Add Row"
+                : "Add Components"}
+            </span>
+            <span className="sm:hidden">
+              {message.data.components && message.data.components.length >= 1
+                ? "Row"
+                : "Components"}
+            </span>
           </Button>
         </div>
       </div>
