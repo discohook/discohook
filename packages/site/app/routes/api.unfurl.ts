@@ -391,8 +391,15 @@ export const loader = async ({ request }: LoaderArgs) => {
         meta.og.description ??
         meta.vanilla.description,
       thumbnail:
-        images.length !== 0 && meta.twitter.card !== "summary_large_image"
-          ? images[0]
+        (images.length !== 0 || oembed?.thumbnail_url) &&
+        meta.twitter.card !== "summary_large_image"
+          ? oembed?.thumbnail_url
+            ? {
+                url: oembed.thumbnail_url,
+                height: oembed.thumbnail_height,
+                width: oembed.thumbnail_width,
+              }
+            : images[0]
           : undefined,
       image:
         images.length !== 0 && meta.twitter.card === "summary_large_image"
