@@ -9,7 +9,7 @@ import { getMessageText } from "~/components/editor/MessageEditor";
 import { QueryData } from "~/types/QueryData";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
-import { action as ApiAuditLogAction } from "../routes/api.audit-log";
+import { action as ApiAuditLogAction } from "../api/v1/audit-log";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { Modal, ModalProps } from "./Modal";
 

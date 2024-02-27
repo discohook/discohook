@@ -4,7 +4,7 @@ import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { TextInput } from "~/components/TextInput";
 import { LoadedBackup } from "~/routes/me";
-import { action as ApiBackupsIdAction } from "../routes/api.backups.$id";
+import { action as ApiBackupsIdAction } from "../api/v1/backups.$id";
 import { Modal, ModalProps } from "./Modal";
 
 export const BackupEditModal = (

@@ -32,7 +32,7 @@ import {
   randomString,
 } from "~/util/text";
 import { getUserAvatar } from "~/util/users";
-import { loader as apiLinkBackupsId } from "./api.link-backups.$id";
+import { loader as apiLinkBackupsId } from "../api/v1/link-backups.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);

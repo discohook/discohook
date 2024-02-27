@@ -10,8 +10,8 @@ import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { copyText } from "~/util/text";
 import { relativeTime } from "~/util/time";
-import { action as backupCreateAction } from "../routes/api.backups";
-import { action as shareCreateAction } from "../routes/api.share";
+import { action as backupCreateAction } from "../api/v1/backups";
+import { action as shareCreateAction } from "../api/v1/share";
 import { Modal, ModalProps } from "./Modal";
 
 export const MessageSaveModal = (

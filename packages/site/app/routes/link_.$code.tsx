@@ -1,9 +1,9 @@
 import {
-  MetaDescriptor,
-  MetaFunction,
-  SerializeFrom,
-  json,
-  redirect,
+    MetaDescriptor,
+    MetaFunction,
+    SerializeFrom,
+    json,
+    redirect,
 } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
@@ -18,7 +18,7 @@ import { getDb, linkBackups } from "~/store.server";
 import { LinkQueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { copyText } from "~/util/text";
-import { ZodOEmbedData } from "./api.oembed";
+import { ZodOEmbedData } from "../api/v1/oembed";
 import { linkEmbedToAPIEmbed } from "./link";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {

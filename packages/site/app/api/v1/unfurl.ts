@@ -1,9 +1,9 @@
 import { json } from "@remix-run/cloudflare";
 import {
-  APIEmbed,
-  APIEmbedImage,
-  APIEmbedVideo,
-  EmbedType,
+    APIEmbed,
+    APIEmbedImage,
+    APIEmbedVideo,
+    EmbedType,
 } from "discord-api-types/v10";
 import he from "he";
 import { z } from "zod";
@@ -12,7 +12,7 @@ import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
 import { LoaderArgs } from "~/util/loader";
 import Scraper from "~/util/scraper";
 import { jsonAsString } from "~/util/zod";
-import { ZodOEmbedData } from "./api.oembed";
+import { ZodOEmbedData } from "./oembed";
 
 // Sorry this solution is pretty bad
 export const META_HTML_REGEX =
