@@ -20,21 +20,19 @@ export default {
         0,
     );
     return defineRoutes((route) => {
-      route("/api/:v", "api/v.ts", () => {
-        for (const file of filesV1) {
-          const path = file
-            // Remove file extension
-            .replace(/\.(?:t|j)sx?$/, "")
-            // Path separators
-            .replace(/([^[])\.([^\]])/g, "$1/$2")
-            // Config routes require colons instead of dollar signs, for some reason
-            // Doesn't support splat routes but we don't currently have any of those
-            .replace(/([^[])\$([^\]])/g, "$1:$2")
-            // Literal placeholders
-            .replace(/\[(.+)\]/, "$1");
-          route(path, `api/v1/${file}`);
-        }
-      });
+      for (const file of filesV1) {
+        const path = file
+          // Remove file extension
+          .replace(/\.(?:t|j)sx?$/, "")
+          // Path separators
+          .replace(/([^[])\.([^\]])/g, "$1/$2")
+          // Config routes require colons instead of dollar signs, for some reason
+          // Doesn't support splat routes but we don't currently have any of those
+          .replace(/([^[])\$([^\]])/g, "$1:$2")
+          // Literal placeholders
+          .replace(/\[(.+)\]/, "$1");
+        route(`/api/v1/${path}`, `api/v1/${file}`);
+      }
     });
   },
   // appDirectory: "app",
