@@ -53,7 +53,10 @@ export const timeDiff = (
   return { text: diffText, future: later.getTime() < earlier.getTime() };
 };
 
-export const relativeTime = (date: Date, short: boolean = false): string => {
+export const relativeTime = (date: Date, short = false): string => {
   const { text, future } = timeDiff(date, new Date(), short);
   return future ? `in ${text}` : `${text} ago`;
 };
+
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
