@@ -2,6 +2,7 @@ import { Link, useFetcher } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -45,7 +46,7 @@ export const MessageSaveModal = (
                 : undefined,
           }),
         },
-        { method: "POST", action: "/api/share" },
+        { method: "POST", action: apiUrl(BRoutes.auditLog()) },
       );
     },
     [includeTargets, data, targets, shareFetcher.submit],
@@ -56,7 +57,7 @@ export const MessageSaveModal = (
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (props.open && user && data.backup_id !== undefined && !backup) {
-      backupFetcher.load(`/api/backups/${data.backup_id}`);
+      backupFetcher.load(apiUrl(BRoutes.backups(data.backup_id)));
     }
     if (props.open && backup && typeof data.backup_id !== "number") {
       setData({ ...data, backup_id: backup.id });
@@ -148,7 +149,7 @@ export const MessageSaveModal = (
                         data: JSON.stringify(data),
                       },
                       {
-                        action: `/api/backups/${backup.id}`,
+                        action: apiUrl(BRoutes.backups(backup.id)),
                         method: "PATCH",
                       },
                     );
@@ -168,7 +169,7 @@ export const MessageSaveModal = (
                       data: JSON.stringify(data),
                     },
                     {
-                      action: "/api/backups",
+                      action: apiUrl(BRoutes.backups()),
                       method: "POST",
                     },
                   )

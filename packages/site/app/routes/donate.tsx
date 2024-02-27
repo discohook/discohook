@@ -2,6 +2,7 @@ import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import React, { useState } from "react";
 import { twJoin } from "tailwind-merge";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
@@ -189,7 +190,9 @@ export default function DonatePage() {
             // }}
             onClick={async () => {
               if (!cryptoInfo) {
-                const r = await fetch("/api/donate/btc", { method: "POST" });
+                const r = await fetch(apiUrl(BRoutes.donate("btc")), {
+                  method: "POST",
+                });
                 const d = (await r.json()) as { key: string };
                 setCryptoInfo({
                   type: "btc",

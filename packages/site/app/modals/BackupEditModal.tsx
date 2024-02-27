@@ -1,5 +1,6 @@
 import { Form, useFetcher } from "@remix-run/react";
 import { Trans, useTranslation } from "react-i18next";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { TextInput } from "~/components/TextInput";
@@ -20,7 +21,7 @@ export const BackupEditModal = (
         onSubmit={(e) => {
           e.preventDefault();
           fetcher.submit(new FormData(e.currentTarget), {
-            action: `/api/backups/${backup?.id}`,
+            action: apiUrl(BRoutes.backups(backup?.id)),
             method: "PATCH",
           });
         }}

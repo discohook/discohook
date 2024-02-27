@@ -4,9 +4,11 @@ import { getUserId } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 
+export const ZodDonateKeyType = z.literal("btc");
+
 export const action = async ({ request, params, context }: LoaderArgs) => {
   const { type } = zx.parseParams(params, {
-    type: z.literal("btc"),
+    type: ZodDonateKeyType,
   });
   const userId = await getUserId(request, context, true);
 

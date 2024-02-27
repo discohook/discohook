@@ -4,6 +4,7 @@ import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SafeParseReturnType } from "zod";
 import { zx } from "zodix";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
@@ -67,7 +68,7 @@ export default function Index() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
     if (shareId) {
-      fetch(`/api/share/${shareId}`, { method: "GET" }).then((r) => {
+      fetch(apiUrl(BRoutes.share(shareId)), { method: "GET" }).then((r) => {
         if (r.status === 200) {
           r.json().then((d: any) => {
             const qd: QueryData = d.data;
@@ -80,7 +81,7 @@ export default function Index() {
         }
       });
     } else if (backupIdParsed.success) {
-      fetch(`/api/backups/${backupIdParsed.data}?data=true`, {
+      fetch(`${apiUrl(BRoutes.backups(backupIdParsed.data))}?data=true`, {
         method: "GET",
       }).then((r) => {
         if (r.status === 200) {
@@ -167,7 +168,7 @@ export default function Index() {
         setUpdateCount(updateCount + 1);
         if (backupId !== undefined) {
           console.log("Saving backup", backupId);
-          fetch(`/api/backups/${backupId}`, {
+          fetch(apiUrl(BRoutes.backups(backupId)), {
             method: "PATCH",
             body: new URLSearchParams({
               data: JSON.stringify(data),

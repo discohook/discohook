@@ -3,6 +3,7 @@ import { useFetcher } from "@remix-run/react";
 import { APIMessage, APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { getMessageText } from "~/components/editor/MessageEditor";
@@ -354,7 +355,7 @@ export const MessageSendModal = (
                       },
                       {
                         method: "POST",
-                        action: "/api/audit-log",
+                        action: apiUrl(BRoutes.auditLog()),
                       },
                     );
                   }

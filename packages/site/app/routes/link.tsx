@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SafeParseReturnType, z } from "zod";
 import { zx } from "zodix";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
@@ -104,7 +105,7 @@ export default function Index() {
   const getBackupInfo = async (
     backupId: number,
   ): Promise<BackupInfo | null> => {
-    const r = await fetch(`/api/link-backups/${backupId}`, {
+    const r = await fetch(apiUrl(BRoutes.linkBackups(backupId)), {
       method: "GET",
     });
     if (!r.ok) {
@@ -193,7 +194,7 @@ export default function Index() {
         setUpdateCount(updateCount + 1);
         if (backupInfo !== undefined) {
           console.log("Saving backup", backupInfo.id);
-          fetch(`/api/link-backups/${backupInfo.id}`, {
+          fetch(apiUrl(BRoutes.linkBackups(backupInfo.id)), {
             method: "PATCH",
             body: new URLSearchParams({
               data: JSON.stringify(data),
@@ -302,9 +303,7 @@ export default function Index() {
               className="ml-2 mt-5"
               onClick={async () => {
                 const r = await fetch(
-                  backupInfo
-                    ? `/api/link-backups/${backupInfo.id}`
-                    : "/api/link-backups",
+                  apiUrl(BRoutes.linkBackups(backupInfo?.id)),
                   {
                     method: backupInfo ? "PATCH" : "POST",
                     body: new URLSearchParams({

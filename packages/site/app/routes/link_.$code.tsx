@@ -1,15 +1,16 @@
 import {
-    MetaDescriptor,
-    MetaFunction,
-    SerializeFrom,
-    json,
-    redirect,
+  MetaDescriptor,
+  MetaFunction,
+  SerializeFrom,
+  json,
+  redirect,
 } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
 import { Embed } from "~/components/preview/Embed";
@@ -154,9 +155,9 @@ export const meta: MetaFunction = ({ data }) => {
       tags.push({
         tagName: "link",
         rel: "alternate",
-        href: `${
-          (data as SerializeFrom<typeof loader>).origin
-        }/api/oembed?${new URLSearchParams({
+        href: `${(data as SerializeFrom<typeof loader>).origin}${apiUrl(
+          BRoutes.oembed(),
+        )}?${new URLSearchParams({
           data: JSON.stringify(oembed),
         })}`,
         type: "application/json+oembed",
