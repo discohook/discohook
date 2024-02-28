@@ -170,40 +170,75 @@ export default function DonatePage() {
           <Twemoji emoji="💰" className="h-5" /> How to donate
         </h1>
         <p>
-          Most people prefer donating on Ko-fi, since you can use standard
-          payment providers (like PayPal) and set up monthly donations.
+          There are multiple ways to donate. You get the same thing in the end,
+          but you can decide which method is right for you.
         </p>
-        <div className="flex flex-wrap gap-1">
-          <PreviewButton
-            data={{
-              type: ComponentType.Button,
-              style: ButtonStyle.Link,
-              url: "https://ko-fi.com/shayypy",
-              label: "Ko-fi",
-            }}
-          />
-          <Button
-            disabled={!user || !wallets.btc}
-            // emoji={{
-            //   id: "",
-            //   name: "bitcoin",
-            // }}
-            onClick={async () => {
-              if (!cryptoInfo) {
-                const r = await fetch(apiUrl(BRoutes.donate("btc")), {
-                  method: "POST",
-                });
-                const d = (await r.json()) as { key: string };
-                setCryptoInfo({
-                  type: "btc",
-                  donationKey: d.key,
-                });
-              }
-              setCryptoOpen(true);
-            }}
-          >
-            Bitcoin
-          </Button>
+        <div className="mt-4 rounded bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table table-auto w-full">
+          <div className="table-header-group">
+            <div className="table-row">
+              <Cell className="font-semibold rounded-tl sm:px-6">Method</Cell>
+              <Cell className="font-semibold sm:px-6">Price</Cell>
+              <Cell className="font-semibold rounded-tr">Summary</Cell>
+            </div>
+          </div>
+          <div className="table-row-group">
+            <div className="table-row">
+              <Cell href="https://support.discord.com/hc/en-us/articles/9359445233303#h_01GFK3CW8A5C3M2MYZEN5XRFS3">
+                Discord
+              </Cell>
+              <Cell>$5.99</Cell>
+              <Cell>
+                Discord takes a 30% cut plus fees. If you use iOS, it will cost
+                ~$7.78 due to Apple's additional cut.
+              </Cell>
+            </div>
+            <div className="table-row">
+              <Cell>
+                <PreviewButton
+                  data={{
+                    type: ComponentType.Button,
+                    style: ButtonStyle.Link,
+                    url: "https://ko-fi.com/shayypy",
+                    label: "Ko-fi",
+                  }}
+                />
+              </Cell>
+              <Cell>$4</Cell>
+              <Cell>
+                Most people will prefer this method. Accepts PayPal, cards, etc.
+              </Cell>
+            </div>
+            <div className="table-row">
+              <Cell className="rounded-bl">
+                <Button
+                  disabled={!user || !wallets.btc}
+                  // emoji={{
+                  //   id: "",
+                  //   name: "bitcoin",
+                  // }}
+                  onClick={async () => {
+                    if (!cryptoInfo) {
+                      const r = await fetch(apiUrl(BRoutes.donate("btc")), {
+                        method: "POST",
+                      });
+                      const d = (await r.json()) as { key: string };
+                      setCryptoInfo({
+                        type: "btc",
+                        donationKey: d.key,
+                      });
+                    }
+                    setCryptoOpen(true);
+                  }}
+                >
+                  Bitcoin
+                </Button>
+              </Cell>
+              <Cell>$4</Cell>
+              <Cell className="rounded-br">
+                Available for users who prefer cryptocurrency.
+              </Cell>
+            </div>
+          </div>
         </div>
         {!user && (
           <div className="mt-2">
