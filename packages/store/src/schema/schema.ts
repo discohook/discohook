@@ -139,8 +139,10 @@ export const discordGuildsRelations = relations(discordGuilds, ({ many }) => ({
 export const discordRoles = pgTable(
   "DiscordRoles",
   {
-    id: snowflake("id").notNull(),
-    guildId: snowflake("guildId").notNull(),
+    id: snowflake("id").notNull().unique(),
+    guildId: snowflake("guildId")
+      .references(() => discordGuilds.id, { onDelete: "cascade" })
+      .notNull(),
 
     name: text("name").notNull(),
     color: integer("color").default(0),
@@ -168,8 +170,12 @@ export const discordRolesRelations = relations(discordRoles, ({ one }) => ({
 export const discordMembers = pgTable(
   "DiscordMember",
   {
-    userId: snowflake("userId").notNull(),
-    guildId: snowflake("guildId").notNull(),
+    userId: snowflake("userId")
+      .references(() => discordUsers.id, { onDelete: "cascade" })
+      .notNull(),
+    guildId: snowflake("guildId")
+      .references(() => discordGuilds.id, { onDelete: "cascade" })
+      .notNull(),
   },
   (table) => ({
     unq: unique().on(table.userId, table.guildId),

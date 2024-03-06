@@ -19,10 +19,11 @@ if (!env.DISCORD_TOKEN || !env.WORKER_ORIGIN) {
   throw Error("Missing required environment variables. Refer to README.");
 }
 
+let guildIds: string[] = [];
 const rest = new REST().setToken(env.DISCORD_TOKEN);
 const manager = new WebSocketManager({
   token: env.DISCORD_TOKEN,
-  intents: GatewayIntentBits.GuildMembers,
+  intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMembers,
   rest,
   initialPresence: {
     status: PresenceUpdateStatus.Online,
@@ -39,6 +40,7 @@ const manager = new WebSocketManager({
 });
 
 manager.on(WebSocketShardEvents.Ready, (event) => {
+  guildIds = event.data.guilds.map((g) => g.id);
   console.log(
     `${event.data.user.username}#${event.data.user.discriminator} ready with ${
       event.data.shard ? event.data.shard[1] : 0
@@ -59,11 +61,34 @@ manager.on(WebSocketShardEvents.Closed, (event) => {
 });
 
 manager.on(WebSocketShardEvents.Dispatch, async (event) => {
+  // We have to have just a little bit of local state to prevent sending 1000+
+  // requests every time a shard is ready. Fortunately, even 500,000 guild IDs
+  // should only take up about 9MB of memory. I'm mostly concerned about race
+  // conditions and maybe CPU.
+  switch (event.data.t) {
+    case GatewayDispatchEvents.GuildCreate: {
+      const alreadyMember = guildIds.includes(event.data.d.id);
+      guildIds.push(event.data.d.id);
+      if (alreadyMember) return;
+      break;
+    }
+    case GatewayDispatchEvents.GuildDelete: {
+      // It's just unavailable, ignore but let the bot worker deal with it
+      if (event.data.d.unavailable) break;
+      const index = guildIds.indexOf(event.data.d.id);
+      if (index !== -1) guildIds.splice(index, 1);
+      break;
+    }
+    default:
+      break;
+  }
+
   if (
     [
       GatewayDispatchEvents.GuildMemberAdd,
       GatewayDispatchEvents.GuildMemberRemove,
-      // GatewayDispatchEvents.GuildCreate,
+      GatewayDispatchEvents.GuildCreate,
+      GatewayDispatchEvents.GuildDelete,
     ].includes(event.data.t)
   ) {
     try {
@@ -73,6 +98,7 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
         headers: {
           Authorization: `Bot ${env.DISCORD_TOKEN}`,
           "X-Boogiehook-Event": event.data.t,
+          "X-Boogiehook-Shard": String(event.shardId),
           "Content-Type": "application/json",
           "User-Agent":
             "boogiehook-bot-ws/1.0.0 (+https://github.com/shayypy/boogiehook)",
