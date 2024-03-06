@@ -359,6 +359,7 @@ export const discordMessageComponents = pgTable(
     updatedAt: date("updatedAt"),
     customId: text("customId"),
     data: json("data").notNull().$type<StorableComponent>(),
+    draft: boolean("draft").notNull().default(false),
   },
   (table) => ({
     unq: unique().on(table.messageId, table.customId),

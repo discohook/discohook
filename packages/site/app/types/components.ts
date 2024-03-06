@@ -87,3 +87,33 @@ export const ZodAPIMessageActionRowComponent = z.union([
   ZodAPIButtonComponent,
   ZodAPISelectMenuComponent,
 ]);
+
+export const ZodComponentQueryData = z.object({
+  version: z.literal(1),
+  components: z.object({
+    rows: z
+      .object({
+        type: z.literal(ComponentType.ActionRow),
+        components: z
+          .union([
+            ZodAPIButtonComponent.partial(),
+            ZodAPISelectMenuComponent.partial(),
+          ])
+          .array()
+          .max(5)
+          .min(1),
+      })
+      .array(),
+    target: z.array(z.number().max(4).min(0)).length(2),
+  }),
+  guildId: z.string(),
+  webhook: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      avatar: z.ostring().nullable(),
+    })
+    .optional(),
+});
+
+export type ComponentQueryData = z.infer<typeof ZodComponentQueryData>;

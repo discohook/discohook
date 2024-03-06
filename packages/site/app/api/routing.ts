@@ -16,6 +16,11 @@ export const BRoutes = {
     return id ? (`/backups/${id}` as const) : ("/backups" as const);
   },
 
+  /** - GET /components/:id */
+  components(id: number) {
+    return `/components/${id}` as const;
+  },
+
   /** - POST /donate/:type */
   donate(type: z.infer<typeof ZodDonateKeyType>) {
     return `/donate/${type}` as const;

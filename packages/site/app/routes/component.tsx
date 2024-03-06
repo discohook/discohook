@@ -1,21 +1,15 @@
-import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { SerializeFrom } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import {
-  APIEmoji,
   APIMessageActionRowComponent,
-  APIWebhook,
+  APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
-  RESTGetAPIGuildEmojisResult,
-  RESTGetAPIGuildRolesResult,
-  Routes,
 } from "discord-api-types/v10";
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 import { zx } from "zodix";
-import { getDiscordUserOAuth } from "~/auth-discord.server";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
@@ -24,141 +18,25 @@ import { ActionRowEditor } from "~/components/editor/ComponentEditor";
 import { FlowEditor } from "~/components/editor/FlowEditor";
 import { Message } from "~/components/preview/Message";
 import { getUser } from "~/session.server";
-import { Flow, getDb, getchGuild, upsertGuild } from "~/store.server";
+import { Flow } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
-import {
-  ZodAPIButtonComponent,
-  ZodAPISelectMenuComponent,
-} from "~/types/components";
-import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
-import { base64Decode } from "~/util/text";
-import { jsonAsString } from "~/util/zod";
+import { loader as apiComponentIdLoader } from "../api/v1/components.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
 
-  const zDataRef = jsonAsString(
-    z.union([
-      ZodAPIButtonComponent.partial(),
-      ZodAPISelectMenuComponent.partial(),
-    ]),
-  );
-  const zResolvedRef = jsonAsString(
-    z.object({
-      // guild: z
-      //   .object({
-      //     id: z.string(),
-      //     name: z.string(),
-      //     avatar: z.ostring().nullable(),
-      //   })
-      //   .optional(),
-      guildId: z.string(),
-      webhook: z
-        .object({
-          id: z.string(),
-          name: z.string(),
-          avatar: z.ostring().nullable(),
-        })
-        .optional(),
-    }),
-  );
-  const { data, resolved } = zx.parseQuery(request, {
-    data: z
-      .string()
-      .refine((v) => zDataRef.safeParse(base64Decode(v)).success)
-      .transform((v) => zDataRef.parse(base64Decode(v))),
-    resolved: z
-      .string()
-      .refine((v) => zResolvedRef.safeParse(base64Decode(v)).success)
-      .transform((v) => zResolvedRef.parse(base64Decode(v))),
+  const { id } = zx.parseQuery(request, {
+    id: zx.IntAsString,
   });
 
-  const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-  const db = getDb(context.env.DATABASE_URL);
-
-  let isMember = false;
-  if (user.discordUser) {
-    const oauth = await getDiscordUserOAuth(
-      db,
-      context.env,
-      user.discordUser.id,
-    );
-
-    try {
-      if (oauth?.scope.includes("guilds.members.read")) {
-        const r = new REST().setToken(oauth.accessToken);
-        await r.get(Routes.userGuildMember(resolved.guildId), {
-          authPrefix: "Bearer",
-        });
-      } else {
-        await rest.get(
-          Routes.guildMember(resolved.guildId, String(user.discordUser.id)),
-        );
-      }
-      isMember = true;
-    } catch (e) {
-      if (isDiscordError(e)) {
-        console.log(e);
-        throw json(e.raw, 400);
-      }
-      console.error(e);
-    }
-  }
-
-  if (!isMember) {
-    throw json(
-      {
-        message: "You are not a member of this server.",
-      },
-      403,
-    );
-  }
-
-  const guild = await getchGuild(rest, context.env.KV, resolved.guildId);
-  await upsertGuild(db, guild);
-
-  const emojis = (await rest.get(
-    Routes.guildEmojis(guild.id),
-  )) as RESTGetAPIGuildEmojisResult;
-
-  const roles = (await rest.get(
-    Routes.guildRoles(guild.id),
-  )) as RESTGetAPIGuildRolesResult;
-
-  return {
-    user,
-    guild,
-    emojis: emojis
-      .filter((e) => !!e.available)
-      .map(
-        (e) =>
-          ({
-            ...e,
-            roles: undefined,
-            require_colons: undefined,
-            available: undefined,
-            managed: undefined,
-            user: undefined,
-          }) satisfies APIEmoji,
-      ),
-    roles,
-    data,
-    resolved,
-  };
+  return { componentId: id, user };
 };
 
 export default function ComponentEditorPage() {
   const { t } = useTranslation();
-  const {
-    user,
-    guild,
-    emojis,
-    roles,
-    data: rawData,
-    resolved,
-  } = useLoaderData<typeof loader>();
+  const { componentId, user } = useLoaderData<typeof loader>();
 
   const [data, setData] = useState<QueryData>({
     messages: [
@@ -168,14 +46,22 @@ export default function ComponentEditorPage() {
             "On this page, you can customize your component and the flow actions it can activate. Your real message data is not shown here because of technical limitations.",
           components: [
             {
-              type: 1,
-              components: [rawData as APIMessageActionRowComponent],
+              type: ComponentType.ActionRow,
+              components: [
+                {
+                  type: ComponentType.Button,
+                  style: ButtonStyle.Primary,
+                  custom_id: "",
+                },
+              ],
             },
           ],
         },
       },
     ],
   });
+  const [guild, setGuild] =
+    useState<SerializeFrom<typeof apiComponentIdLoader>["guild"]>();
 
   const [flow, setFlow] = useState<Flow>({
     name: "Flow",
@@ -194,6 +80,35 @@ export default function ComponentEditorPage() {
     data.messages[0].data.components?.[0].components.splice(0, 1, c);
     setData(structuredClone(data));
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    fetch(apiUrl(BRoutes.components(componentId)), { method: "GET" }).then(
+      (r) => {
+        if (r.status === 200) {
+          r.json().then((d: any) => {
+            const qd: SerializeFrom<typeof apiComponentIdLoader> = d;
+            setGuild(qd.guild);
+            if ("flow" in qd.component.data) {
+              setFlow(qd.component.data.flow);
+            } else if ("flows" in qd.component.data) {
+              updateSelectFlows(qd.component.data.flows);
+            }
+            setComponent({
+              ...qd.component.data,
+              flow: undefined,
+              // @ts-expect-error
+              custom_id:
+                qd.component.data.type === ComponentType.Button &&
+                qd.component.data.style === ButtonStyle.Link
+                  ? undefined
+                  : qd.component.customId ?? "",
+            });
+          });
+        }
+      },
+    );
+  }, []);
 
   // function isNonPartial(
   //   c: typeof component,
@@ -238,7 +153,7 @@ export default function ComponentEditorPage() {
                   message={data.messages[0]}
                   data={data}
                   setData={setData}
-                  emojis={emojis
+                  emojis={guild?.emojis
                     .map((e) => ({
                       id: e.id ?? undefined,
                       // biome-ignore lint/style/noNonNullAssertion: This is not a reaction emoji
@@ -314,7 +229,9 @@ export default function ComponentEditorPage() {
                     } else {
                       setComponent({
                         type: Number(value),
-                      } as APIMessageActionRowComponent);
+                        custom_id: "",
+                        options: [],
+                      } as APISelectMenuComponent);
                     }
                   }}
                 />
@@ -342,11 +259,11 @@ export default function ComponentEditorPage() {
             discordApplicationId="0"
             compactAvatars={settings.compactAvatars}
             messageDisplay={settings.messageDisplay}
-            webhooks={
-              resolved?.webhook
-                ? [{ ...resolved.webhook, application_id: "0" } as APIWebhook]
-                : []
-            }
+            // webhooks={
+            //   resolved?.webhook
+            //     ? [{ ...resolved.webhook, application_id: "0" } as APIWebhook]
+            //     : []
+            // }
           />
         </div>
       </div>

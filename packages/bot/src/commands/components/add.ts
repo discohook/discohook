@@ -216,8 +216,21 @@ const registerComponent = async (
       customId,
       data,
     })
-    .returning();
-  const insertedId = returned[0].id;
+    .onConflictDoUpdate({
+      target: [
+        discordMessageComponents.messageId,
+        discordMessageComponents.customId,
+      ],
+      set: {
+        data,
+        draft: false,
+        updatedAt: new Date(),
+        updatedById: flow.user.id,
+      },
+    })
+    .returning({
+      id: discordMessageComponents.id,
+    });
 
   let editedMsg: APIMessage;
   try {
@@ -231,9 +244,15 @@ const registerComponent = async (
     )) as APIMessage;
   } catch (e) {
     if (isDiscordError(e)) {
+      // await db
+      //   .delete(discordMessageComponents)
+      //   .where(eq(discordMessageComponents.id, returned[0].id));
       await db
-        .delete(discordMessageComponents)
-        .where(eq(discordMessageComponents.id, insertedId));
+        .update(discordMessageComponents)
+        .set({
+          draft: true,
+        })
+        .where(eq(discordMessageComponents.id, returned[0].id));
     }
     throw e;
   }
@@ -378,6 +397,36 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   state.step += 1;
   switch (value) {
     case "button": {
+      const db = getDb(ctx.env.DATABASE_URL);
+      const customId = getCustomId(false);
+      state.component = state.component ?? {
+        type: ComponentType.Button,
+        style: ButtonStyle.Primary,
+        flow: {
+          name: "Unnamed Flow",
+          actions: [],
+        },
+        label: "New Component",
+      };
+
+      const component = (
+        await db
+          .insert(discordMessageComponents)
+          .values({
+            guildId: makeSnowflake(state.message.guildId),
+            channelId: makeSnowflake(state.message.channelId),
+            messageId: makeSnowflake(state.message.id),
+            customId,
+            data: state.component,
+            createdById: state.user.id,
+            updatedById: state.user.id,
+            draft: true,
+          })
+          .returning({
+            id: discordMessageComponents.id,
+          })
+      )[0];
+
       state.stepTitle = "Finish on the web";
       state.totalSteps = 3;
       return ctx.updateMessage({
@@ -390,23 +439,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setLabel("Customize")
                 .setURL(
                   `${ctx.env.BOOGIEHOOK_ORIGIN}/component?${new URLSearchParams(
-                    {
-                      data: base64UrlEncode(
-                        JSON.stringify({
-                          type: 2,
-                        }),
-                      ),
-                      resolved: base64UrlEncode(
-                        JSON.stringify({
-                          guildId: state.message.guildId,
-                          webhook: {
-                            id: state.message.webhookId,
-                            name: state.message.webhookName,
-                            avatar: state.message.webhookAvatar,
-                          },
-                        }),
-                      ),
-                    },
+                    { id: String(component.id) },
                   )}`,
                 ),
             )
