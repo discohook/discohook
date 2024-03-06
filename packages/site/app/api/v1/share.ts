@@ -1,3 +1,4 @@
+import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { zx } from "zodix";
 import { getUser } from "~/session.server";
@@ -32,24 +33,30 @@ export const generateUniqueShortenKey = async (
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
+  const contentLength = Number(request.headers.get("Content-Length"));
+  if (!contentLength || Number.isNaN(contentLength)) {
+    throw json({ message: "Must provide Content-Length header." }, 400);
+  }
+  if (contentLength > 25690112) {
+    // Just under 24.5 MiB. KV limit for values is 25 MiB
+    throw json({ message: "Data is too large (max. ~24 MiB)." });
+  }
+
   const {
     data,
-    ttl: ttl_,
+    ttl,
     origin: origin_,
   } = await zx.parseForm(request, {
     data: jsonAsString(ZodQueryData),
     // Max 4 weeks, min 5 minutes
-    ttl: z.optional(
-      zx.IntAsString.refine((val) => val >= 300000 && val <= 2419200000),
-    ),
-    origin: z.optional(z.enum(ALLOWED_EXTERNAL_ORIGINS)),
+    ttl: zx.IntAsString.optional()
+      .default("604800000")
+      .refine((val) => val >= 300000 && val <= 2419200000),
+    origin: z.enum(ALLOWED_EXTERNAL_ORIGINS).optional(),
   });
 
   const user = await getUser(request, context);
-
-  const ttl = ttl_ ?? 604800000;
   const expires = new Date(new Date().getTime() + ttl);
-
   const origin = origin_ ?? new URL(request.url).origin;
 
   // biome-ignore lint/performance/noDelete: We don't want to store this property at all

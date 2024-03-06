@@ -18,10 +18,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     btc: context.env.BITCOIN_ADDRESS,
   };
 
-  return {
-    user,
-    wallets,
-  };
+  return { user, wallets };
 };
 
 const Cell: React.FC<
