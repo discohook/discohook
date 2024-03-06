@@ -24,7 +24,7 @@ export const generateUniqueShortenKey = async (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const _ of Array(tries)) {
     const id = randomString(defaultLength);
-    const key = `boogiehook-shorten-${id}`;
+    const key = `share-${id}`;
     if (!(await kv.get(key))) {
       return { id, key };
     }

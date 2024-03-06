@@ -10,7 +10,7 @@ import { ShortenedData } from "./share";
 export const loader = async ({ params, context }: LoaderArgs) => {
   const { shareId: id } = zx.parseParams(params, { shareId: z.string() });
 
-  const key = `boogiehook-shorten-${id}`;
+  const key = `share-${id}`;
   const { value: shortened, metadata } =
     await context.env.KV.getWithMetadata<ShortenedData>(key, {
       type: "json",

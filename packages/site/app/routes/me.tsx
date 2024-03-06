@@ -83,7 +83,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       } else if (link.userId !== user.id) {
         throw json({ message: "You do not own this share link." }, 403);
       }
-      const key = `boogiehook-shorten-${link.shareId}`;
+      const key = `share-${link.shareId}`;
       await context.env.KV.delete(key);
       await db.delete(dShareLinks).where(eq(dShareLinks.id, data.linkId));
       return new Response(null, { status: 204 });
