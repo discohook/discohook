@@ -4166,7 +4166,7 @@ __metadata:
     he: "npm:^1.2.0"
     highlight.js: "npm:^11.9.0"
     i18next: "npm:^23.8.2"
-    isbot: "npm:^3.6.8"
+    isbot: "npm:^5.1.1"
     react: "npm:^18.2.0"
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.2.0"
@@ -6548,10 +6548,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isbot@npm:^3.6.8":
-  version: 3.7.1
-  resolution: "isbot@npm:3.7.1"
-  checksum: 10c0/7c4733f6bf0cd98d6801ee24d4664edde0f0fabc329ff9858d41744dc0d6143701e8e7dfc7962bcdc46b7670911d716392cdd0a4a4bc9f5c98e03125d675f6c5
+"isbot@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "isbot@npm:5.1.1"
+  checksum: 10c0/53afb11818d7d82b2514960660bf2a1818fe744d4c80f4365e649bcdec7bcb2a3787978a862619796abc3694b5f3d64c2073da291e0ae3093055f0af89fd2798
   languageName: node
   linkType: hard
 
@@ -9829,14 +9829,14 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=565774&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=908212&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/b285e8b8352fa633e23d7fd978b804f8e2aace9f72d2d22ce5f174e38456682eaf9a69ba9de112eb0da99e1d281a268208577647b254930c332b28ffbf965a18
+  checksum: 10c0/e97e4fda5687618e59bcd3c58b4f5bc8d8b150e8d9d8047f617d14afc0aad4e5a4bd8523d152760d5c9393a2a77b306e727c88357ac9d7cdfe2664c6c6e8ad85
   languageName: node
   linkType: hard
 
