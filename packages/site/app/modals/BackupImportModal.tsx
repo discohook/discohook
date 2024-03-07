@@ -111,8 +111,7 @@ export const BackupImportModal = (
       {data &&
         (data.version === 1 || data.version === 2 ? (
           <p>
-            Sorry, Boogiehook doesn't support backups that are this old. Try
-            importing the file into Discohook and then exporting it again.
+            Sorry, Discohook has dropped support for backups that are this old.
           </p>
         ) : (
           backups && (
@@ -124,6 +123,7 @@ export const BackupImportModal = (
                     key={`import-backup-${backup.name}-${i}`}
                   >
                     <button
+                      type="button"
                       className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
                       onClick={() => {
                         if (selectedBackups.includes(backup.name)) {
@@ -187,7 +187,8 @@ export const BackupImportModal = (
               {
                 action: "IMPORT_BACKUPS",
                 backups: JSON.stringify(
-                  backups!.filter((b) => selectedBackups.includes(b.name)),
+                  backups?.filter((b) => selectedBackups.includes(b.name)) ??
+                    [],
                 ),
               },
               {

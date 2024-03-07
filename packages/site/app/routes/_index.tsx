@@ -343,7 +343,7 @@ export default function Index() {
                           className="text-blurple-500 dark:text-blurple-400 align-bottom"
                         />{" "}
                         <span>
-                          Boogiehook
+                          Discohook
                           {webhook.user &&
                           webhook.user.id !== discordApplicationId
                             ? ` (by ${webhook.user.username})`

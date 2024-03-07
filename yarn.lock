@@ -3209,110 +3209,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"boogiehook-bot-ws@workspace:packages/bot-ws":
-  version: 0.0.0-use.local
-  resolution: "boogiehook-bot-ws@workspace:packages/bot-ws"
-  dependencies:
-    "@discordjs/rest": "npm:^2.2.0"
-    "@discordjs/ws": "npm:^1.0.2"
-    discord-api-types: "npm:^0.37.67"
-    dotenv: "npm:^16.3.1"
-    eslint: "npm:^8.54.0"
-    ts-node: "npm:^10.9.1"
-    typescript: "npm:^5.2.2"
-  languageName: unknown
-  linkType: soft
-
-"boogiehook-bot@workspace:packages/bot":
-  version: 0.0.0-use.local
-  resolution: "boogiehook-bot@workspace:packages/bot"
-  dependencies:
-    "@cloudflare/workers-types": "npm:^4.20230518.0"
-    "@discordjs/builders": "npm:^1.7.0"
-    "@discordjs/formatters": "npm:^0.3.3"
-    "@discordjs/rest": "npm:^2.1.0"
-    "@tsconfig/node18": "npm:^18.2.2"
-    "@typescript-eslint/eslint-plugin": "npm:^6.13.2"
-    "@typescript-eslint/parser": "npm:^6.13.2"
-    c8: "npm:^8.0.0"
-    chai: "npm:^4.3.7"
-    dedent-js: "npm:^1.0.1"
-    discord-api-types: "npm:^0.37.63"
-    discord-bitflag: "npm:^1.0.1"
-    discord-verify: "npm:^1.2.0"
-    dotenv: "npm:^16.0.3"
-    drizzle-kit: "npm:^0.20.13"
-    drizzle-orm: "npm:^0.29.3"
-    eslint: "npm:^8.41.0"
-    eslint-config-prettier: "npm:^9.0.0"
-    eslint-plugin-drizzle: "npm:^0.2.2"
-    eslint-plugin-prettier: "npm:^5.0.0"
-    itty-router: "npm:^4.0.13"
-    mocha: "npm:^10.2.0"
-    ngrok: "npm:^5.0.0-beta.2"
-    prettier: "npm:^3.0.1"
-    sinon: "npm:^17.0.0"
-    store: ../store
-    tsx: "npm:^4.7.0"
-    typescript: "npm:^5.3.3"
-    wrangler: "npm:^3.0.1"
-  languageName: unknown
-  linkType: soft
-
-"boogiehook-site@workspace:packages/site":
-  version: 0.0.0-use.local
-  resolution: "boogiehook-site@workspace:packages/site"
-  dependencies:
-    "@cloudflare/kv-asset-handler": "npm:^0.1.3"
-    "@cloudflare/workers-types": "npm:^4.20230518.0"
-    "@discordjs/rest": "npm:^2.2.0"
-    "@emoji-mart/data": "npm:^1.1.2"
-    "@remix-run/cloudflare": "npm:^2.4.0"
-    "@remix-run/css-bundle": "npm:^2.4.0"
-    "@remix-run/dev": "npm:^2.4.0"
-    "@remix-run/react": "npm:^2.4.0"
-    "@twemoji/api": "npm:^15.0.3"
-    "@types/he": "npm:^1"
-    "@types/react": "npm:^18.2.20"
-    "@types/react-color": "npm:^3.0.10"
-    "@types/react-dom": "npm:^18.2.7"
-    "@types/react-modal": "npm:^3.16.3"
-    "@types/showdown": "npm:^2.0.6"
-    discord-api-types: "npm:^0.37.66"
-    discord-snowflake: "npm:^2.0.0"
-    emoji-mart: "npm:^5.5.2"
-    he: "npm:^1.2.0"
-    highlight.js: "npm:^11.9.0"
-    i18next: "npm:^23.8.2"
-    isbot: "npm:^3.6.8"
-    react: "npm:^18.2.0"
-    react-color: "npm:^2.19.3"
-    react-dom: "npm:^18.2.0"
-    react-emoji-search: "npm:^2.2.26"
-    react-i18next: "npm:^14.0.5"
-    react-modal: "npm:^3.16.1"
-    react-select: "npm:^5.8.0"
-    remix-auth-discord: "npm:^1.3.2"
-    robots-parser: "npm:^3.0.1"
-    tailwind-merge: "npm:^2.2.0"
-    tailwindcss: "npm:^3.3.6"
-    typescript: "npm:^5.1.6"
-    wrangler: "npm:^3.21.0"
-    zod: "npm:^3.22.4"
-    zodix: "npm:^0.4.4"
-  languageName: unknown
-  linkType: soft
-
-"boogiehook@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "boogiehook@workspace:."
-  dependencies:
-    "@biomejs/biome": "npm:^1.5.1"
-    drizzle-kit: "npm:^0.20.14"
-    ngrok: "npm:^5.0.0-beta.2"
-  languageName: unknown
-  linkType: soft
-
 "bplist-parser@npm:^0.2.0":
   version: 0.2.0
   resolution: "bplist-parser@npm:0.2.0"
@@ -4194,6 +4090,110 @@ __metadata:
   checksum: 10c0/dcac00920a4d503e38bb64001acb19df4efc14536ada475725e12f52c16777afdee4db827f55f13a908ee7efc0cb282e2e3dbaeeb98c0993dd93d1802d3bf00c
   languageName: node
   linkType: hard
+
+"discohook-bot-ws@workspace:packages/bot-ws":
+  version: 0.0.0-use.local
+  resolution: "discohook-bot-ws@workspace:packages/bot-ws"
+  dependencies:
+    "@discordjs/rest": "npm:^2.2.0"
+    "@discordjs/ws": "npm:^1.0.2"
+    discord-api-types: "npm:^0.37.67"
+    dotenv: "npm:^16.3.1"
+    eslint: "npm:^8.54.0"
+    ts-node: "npm:^10.9.1"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"discohook-bot@workspace:packages/bot":
+  version: 0.0.0-use.local
+  resolution: "discohook-bot@workspace:packages/bot"
+  dependencies:
+    "@cloudflare/workers-types": "npm:^4.20230518.0"
+    "@discordjs/builders": "npm:^1.7.0"
+    "@discordjs/formatters": "npm:^0.3.3"
+    "@discordjs/rest": "npm:^2.1.0"
+    "@tsconfig/node18": "npm:^18.2.2"
+    "@typescript-eslint/eslint-plugin": "npm:^6.13.2"
+    "@typescript-eslint/parser": "npm:^6.13.2"
+    c8: "npm:^8.0.0"
+    chai: "npm:^4.3.7"
+    dedent-js: "npm:^1.0.1"
+    discord-api-types: "npm:^0.37.63"
+    discord-bitflag: "npm:^1.0.1"
+    discord-verify: "npm:^1.2.0"
+    dotenv: "npm:^16.0.3"
+    drizzle-kit: "npm:^0.20.13"
+    drizzle-orm: "npm:^0.29.3"
+    eslint: "npm:^8.41.0"
+    eslint-config-prettier: "npm:^9.0.0"
+    eslint-plugin-drizzle: "npm:^0.2.2"
+    eslint-plugin-prettier: "npm:^5.0.0"
+    itty-router: "npm:^4.0.13"
+    mocha: "npm:^10.2.0"
+    ngrok: "npm:^5.0.0-beta.2"
+    prettier: "npm:^3.0.1"
+    sinon: "npm:^17.0.0"
+    store: ../store
+    tsx: "npm:^4.7.0"
+    typescript: "npm:^5.3.3"
+    wrangler: "npm:^3.0.1"
+  languageName: unknown
+  linkType: soft
+
+"discohook-site@workspace:packages/site":
+  version: 0.0.0-use.local
+  resolution: "discohook-site@workspace:packages/site"
+  dependencies:
+    "@cloudflare/kv-asset-handler": "npm:^0.1.3"
+    "@cloudflare/workers-types": "npm:^4.20230518.0"
+    "@discordjs/rest": "npm:^2.2.0"
+    "@emoji-mart/data": "npm:^1.1.2"
+    "@remix-run/cloudflare": "npm:^2.4.0"
+    "@remix-run/css-bundle": "npm:^2.4.0"
+    "@remix-run/dev": "npm:^2.4.0"
+    "@remix-run/react": "npm:^2.4.0"
+    "@twemoji/api": "npm:^15.0.3"
+    "@types/he": "npm:^1"
+    "@types/react": "npm:^18.2.20"
+    "@types/react-color": "npm:^3.0.10"
+    "@types/react-dom": "npm:^18.2.7"
+    "@types/react-modal": "npm:^3.16.3"
+    "@types/showdown": "npm:^2.0.6"
+    discord-api-types: "npm:^0.37.66"
+    discord-snowflake: "npm:^2.0.0"
+    emoji-mart: "npm:^5.5.2"
+    he: "npm:^1.2.0"
+    highlight.js: "npm:^11.9.0"
+    i18next: "npm:^23.8.2"
+    isbot: "npm:^3.6.8"
+    react: "npm:^18.2.0"
+    react-color: "npm:^2.19.3"
+    react-dom: "npm:^18.2.0"
+    react-emoji-search: "npm:^2.2.26"
+    react-i18next: "npm:^14.0.5"
+    react-modal: "npm:^3.16.1"
+    react-select: "npm:^5.8.0"
+    remix-auth-discord: "npm:^1.3.2"
+    robots-parser: "npm:^3.0.1"
+    tailwind-merge: "npm:^2.2.0"
+    tailwindcss: "npm:^3.3.6"
+    typescript: "npm:^5.1.6"
+    wrangler: "npm:^3.21.0"
+    zod: "npm:^3.22.4"
+    zodix: "npm:^0.4.4"
+  languageName: unknown
+  linkType: soft
+
+"discohook@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "discohook@workspace:."
+  dependencies:
+    "@biomejs/biome": "npm:^1.5.1"
+    drizzle-kit: "npm:^0.20.14"
+    ngrok: "npm:^5.0.0-beta.2"
+  languageName: unknown
+  linkType: soft
 
 "discord-api-types@npm:0.37.61":
   version: 0.37.61
@@ -9827,16 +9827,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"store@file:../store::locator=boogiehook-bot%40workspace%3Apackages%2Fbot":
+"store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=6888b8&locator=boogiehook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=565774&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/bfbc29a9babc4e1011e4cea3a59c1e1cb318d7c636c36e6ebe5a4102f026f2e7f84a9e932a3a2b65e426274e49681ae0bcbb6dac0515840e034b4bbbd3622966
+  checksum: 10c0/b285e8b8352fa633e23d7fd978b804f8e2aace9f72d2d22ce5f174e38456682eaf9a69ba9de112eb0da99e1d281a268208577647b254930c332b28ffbf965a18
   languageName: node
   linkType: hard
 

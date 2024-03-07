@@ -2,7 +2,7 @@
   "name": "store",
   "version": "0.0.0",
   "main": "index.ts",
-  "repository": "https://github.com/shayypy/boogiehook",
+  "repository": "https://github.com/shayypy/discohook",
   "author": "shayypy",
   "license": "MIT",
   "private": true,

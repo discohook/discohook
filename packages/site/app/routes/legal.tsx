@@ -10,7 +10,7 @@ export const loader = ({ request, context }: LoaderArgs) =>
   getUser(request, context);
 
 export const meta: MetaFunction = () => [
-  { title: "Privacy & Terms - Boogiehook" },
+  { title: "Privacy & Terms - Discohook" },
 ];
 
 export default function Legal() {
@@ -24,9 +24,9 @@ export default function Legal() {
           Terms of Service
         </h1>
         <p>
-          By using Boogiehook or any of its subsequent services, including but
-          not limited to Boogiehook's Discord application (Discohook
-          Utils#4333), you agree to follow this document.
+          By using Discohook or any of its subsequent services, including but
+          not limited to Discohook's Discord application (Discohook Utils#4333),
+          you agree to follow this document.
         </p>
         <ul className="list-disc list-inside my-1 space-y-1">
           <li>
@@ -63,21 +63,21 @@ export default function Legal() {
           Privacy
         </h1>
         <p>
-          In short: Boogiehook stores user-provided data as necessary for
+          In short: Discohook stores user-provided data as necessary for
           operations performed by the service(s). This data is not sold.
         </p>
         <h2 className="font-bold text-lg mt-2">Definitions</h2>
         <ul className="list-disc list-inside my-1 space-y-1">
           <li>
             Database ID: This is a unique integer that represents a resource in
-            Boogiehook's persistent database. It is not strictly bound to a
+            Discohook's persistent database. It is not strictly bound to a
             Discord ID (snowflake), but it could correlate directly to one or
             multiple, depending on the resource.
           </li>
           <li>
             Moderation: Some actions may be logged by the server and linked to a
             Discord guild ID. Guild moderators may choose to view logs for their
-            guild in order to uncover suspicious activity.
+            guild in order to investigate suspicious activity.
           </li>
         </ul>
         <h2 className="font-bold text-lg mt-2">Policy</h2>
@@ -99,10 +99,10 @@ export default function Legal() {
                 of authorization */}
                 .
               </li>
-              {/* <li>
+              <li>
                 When the user sends a message, details about that event are
                 stored for Moderation.
-              </li> */}
+              </li>
               <li>
                 When the user modifies a Discord webhook, a value is attached to
                 the payload that identifies the user who made the change in the
@@ -115,14 +115,14 @@ export default function Legal() {
             Cloudflare R2, depending on the data.
           </li>
           <li>
-            Data is not sold to third parties for any reason. Boogiehook is
-            funded entirely through donations and premium subscriptions.
+            Data is not sold to third parties for any reason. Discohook is
+            funded entirely through donations and Plus subscriptions.
           </li>
           <li>
             If the user has questions about data management and privacy, they
             may join the Discord guild linked at the bottom of this document by
             clicking on the button labeled "Support server" and inquire in the
-            "boogiehook-support" channel.
+            "support" or "general" channel.
           </li>
         </ul>
         <hr className="border border-gray-500/20 my-4" />
@@ -134,7 +134,7 @@ export default function Legal() {
                 {
                   type: ComponentType.Button,
                   style: ButtonStyle.Link,
-                  url: "https://github.com/shayypy/boogiehook/commits/master/app/routes/legal.tsx",
+                  url: "https://github.com/shayypy/discohook/commits/master/app/routes/legal.tsx",
                   label: "Page update history",
                 },
                 {

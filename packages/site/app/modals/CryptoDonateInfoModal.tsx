@@ -46,7 +46,7 @@ export const CryptoDonateInfoModal = (
           <div className="mt-2" />
           <InfoBox>
             <CoolIcon icon="Info" /> Include the donation key in your message so
-            Boogiehook can verify who the donation came from.
+            Discohook can verify who the donation came from.
           </InfoBox>
           <div className="-mb-4" />
         </div>

@@ -5,7 +5,7 @@ export const PreviewDisclaimerModal = (props: ModalProps) => {
   return (
     <Modal title="Preview Disclaimer" {...props}>
       <p>
-        The Boogiehook preview is only an estimation of what your message will
+        The Discohook preview is only an estimation of what your message will
         look like when sent to Discord. The only 100% accurate view is when you
         actually send your message into Discord (and even then, Discord is often
         inconsistent).

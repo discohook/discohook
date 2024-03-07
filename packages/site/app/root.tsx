@@ -20,7 +20,7 @@ import { resources } from "./util/i18n";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Boogiehook" },
+    { title: "Discohook" },
     {
       name: "description",
       content:
@@ -28,7 +28,7 @@ export const meta: MetaFunction = () => {
     },
     {
       property: "og:image",
-      content: "logos/boogiehook_512w.png",
+      content: "logos/discohook_512w.png",
     },
   ];
 };
@@ -54,7 +54,7 @@ const TailwindThemeScript = () => (
     // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted HTML
     dangerouslySetInnerHTML={{
       __html: `
-    const settings = JSON.parse(localStorage.getItem("boogiehook_settings") ?? "{}");
+    const settings = JSON.parse(localStorage.getItem("discohook_settings") ?? "{}");
 
     if (
       settings.theme === "light" ||
@@ -98,7 +98,7 @@ export function ErrorBoundary() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Error - Boogiehook</title>
+        <title>Error - Discohook</title>
         <Meta />
         <Links />
         <TailwindThemeScript />

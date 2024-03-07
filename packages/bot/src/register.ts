@@ -271,7 +271,7 @@ export const allAppCommands: Record<
       name: "Restore",
       default_member_permissions: String(PermissionFlags.ViewChannel),
       dm_permission: false,
-      // description: "Copy a message into Boogiehook or Discohook",
+      // description: "Copy a message into Discohook",
     },
     // repeat: {
     //   name: "Repeat",

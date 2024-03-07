@@ -1,6 +1,6 @@
 {
-  "name": "Boogiehook",
-  "short_name": "Boogiehook",
+  "name": "Discohook",
+  "short_name": "Discohook",
   "start_url": ".",
   "description": "Free, intuitive interface for creating webhook messages in your Discord server",
   "icons": [
@@ -10,27 +10,27 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logos/boogiehook_32w.png",
+      "src": "logos/discohook_32w.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "logos/boogiehook_64w.png",
+      "src": "logos/discohook_64w.png",
       "sizes": "64x64",
       "type": "image/png"
     },
     {
-      "src": "logos/boogiehook_72w.png",
+      "src": "logos/discohook_72w.png",
       "sizes": "72x72",
       "type": "image/png"
     },
     {
-      "src": "logos/boogiehook_144w.png",
+      "src": "logos/discohook_144w.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "logos/boogiehook_512w.png",
+      "src": "logos/discohook_512w.png",
       "sizes": "512x512",
       "type": "image/png"
     }

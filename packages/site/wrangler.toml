@@ -1,4 +1,4 @@
-name = "boogiehook-site"
+name = "discohook-site"
 
 workers_dev = true
 main = "./build/index.js"

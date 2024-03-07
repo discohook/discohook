@@ -11,7 +11,7 @@ import { Context } from "./util/loader";
 export const getSessionStorage = (context: Context) => {
   const sessionStorage = createWorkersKVSessionStorage({
     kv: context.env.KV,
-    cookie: createCookie("__boogiehook_session", {
+    cookie: createCookie("__discohook_session", {
       sameSite: "lax",
       path: "/",
       httpOnly: true,

@@ -1,5 +1,7 @@
 // This file was borrowed from shayypy/gxcomics
 
+import { userAgent } from "~/api/v1/unfurl";
+
 // Fork of https://github.com/adamschwartz/web.scraper.workers.dev/blob/master/scraper.js
 // + TypeScript
 // + Reusable: provide `last: true` to your final getText/getAttribute call to
@@ -30,8 +32,7 @@ class Scraper {
     this.response = await fetch(url, {
       method: "GET",
       headers: {
-        "User-Agent":
-          "Boogiehook-Bot/1.0.0 (+https://github.com/shayypy/boogiehook)",
+        "User-Agent": userAgent,
       },
       redirect: "manual",
       cf: {

@@ -146,13 +146,13 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder({
       style: ButtonStyle.Link,
-      url: `${ctx.env.BOOGIEHOOK_ORIGIN}/?data=${btoa(
+      url: `${ctx.env.DISCOHOOK_ORIGIN}/?data=${btoa(
         JSON.stringify({
           messages: [{ data: {} }],
           targets: [{ url: webhook.url }],
         }),
       )}`,
-      label: "Open in Boogiehook",
+      label: "Open in Discohook",
     }),
   );
 

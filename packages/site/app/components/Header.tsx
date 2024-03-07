@@ -18,7 +18,10 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const [settingsOpen, setSettingsOpen] = useState(dm === "settings");
 
   const logo = (
-    <div className="h-9 w-9 my-auto mr-4 bg-[url('/logos/boogiehook.svg')] hover:bg-[url('/logos/boogiehook_star.svg')] bg-cover bg-center" />
+    <div
+      style={{ backgroundImage: `url('/logos/icon${user?.subscribedSince ? "-pink" : ""}.svg')` }}
+      className="h-9 w-9 my-auto mr-4 bg-cover bg-center"
+    />
   );
 
   const editorPaths = ["/", "/component", "/link"];

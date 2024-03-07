@@ -1,7 +1,7 @@
 {
-  "name": "boogiehook",
+  "name": "discohook",
   "version": "1.0.0",
-  "description": "Monorepo for boogiehook",
+  "description": "Monorepo for Discohook",
   "type": "module",
   "private": true,
   "scripts": {

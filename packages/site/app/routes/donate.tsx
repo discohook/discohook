@@ -79,11 +79,11 @@ export default function DonatePage() {
       />
       <div className="max-w-4xl mx-auto p-4 text-lg">
         <h1 className="text-2xl font-bold">
-          <Twemoji emoji="🪩" className="h-6" /> Boogiehook Premium
+          <Twemoji emoji="🪩" className="h-6" /> Discohook Plus
         </h1>
         <p>
           Thanks for your interest in donating! Your contribution will help keep
-          Boogiehook up and running for everyone, and it can earn you some sweet
+          Discohook up and running for everyone, and it can earn you some sweet
           perks. Donate at least{" "}
           <span className="font-bold">$4 USD per month</span> to maintain your
           subscription.
@@ -96,7 +96,7 @@ export default function DonatePage() {
               <Cell className="font-semibold rounded-tl">Feature</Cell>
               <Cell className="font-semibold">Free</Cell>
               <Cell className="font-semibold rounded-tr" premium>
-                Premium
+                Plus
               </Cell>
             </div>
           </div>
@@ -249,11 +249,11 @@ export default function DonatePage() {
         </h1>
         <div className="space-y-1">
           <Feature id="editor" title="Full-featured message editor">
-            Everyone gets access to the delightful Boogiehook message editor for
+            Everyone gets access to the delightful Discohook message editor for
             free, including all markdown features and sending functionality.
           </Feature>
           <Feature id="components" title="All component types">
-            The Boogiehook bot can be used to add every currently available type
+            The Discohook bot can be used to add every currently available type
             of component, free of charge - buttons, link buttons, and all select
             menus. But what if you crave more action?
           </Feature>
@@ -261,12 +261,12 @@ export default function DonatePage() {
             Free users can have 5 actions per flow - plenty for simple designs,
             but something more advanced could require the massive{" "}
             <Twemoji emoji="💪" /> 20 <Twemoji emoji="💪" /> actions afforded to
-            premium users.
+            Plus Subscribers.
           </Feature>
           <Feature id="max-messages" title="Max. message actions per flow">
             Sending messages is a common but limited action, so free users are
             allowed to send 2 messages per flow (as a response or as a webhook),
-            and premium users can send up to 5.
+            and Plus Subscribers can send up to 5.
           </Feature>
           <Feature id="custom-bot" title="Custom bot profile">
             Use completely custom branding in your server by creating your own
@@ -276,10 +276,10 @@ export default function DonatePage() {
             id="link-embeds"
             title="Use-anywhere embeds (+ embedded videos)"
           >
-            Why limit yourself to the functionality of webhook embeds? Premium
-            users can create custom embeds usable anywhere on Discord, even
-            without access to a webhook. These embeds can even contain videos
-            and up to 4 images. Learn more about link embeds here.
+            Why limit yourself to the functionality of webhook embeds? Plus
+            Subscribers can create custom embeds usable anywhere on Discord,
+            even without access to a webhook. These embeds can even contain
+            videos and up to 4 images. Learn more about link embeds here.
           </Feature>
           <Feature id="hosted-files" title="Hosted image links & files">
             Many users experience difficulty finding a good place to upload

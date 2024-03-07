@@ -97,11 +97,11 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
         body: JSON.stringify(event.data.d),
         headers: {
           Authorization: `Bot ${env.DISCORD_TOKEN}`,
-          "X-Boogiehook-Event": event.data.t,
-          "X-Boogiehook-Shard": String(event.shardId),
+          "X-Discohook-Event": event.data.t,
+          "X-Discohook-Shard": String(event.shardId),
           "Content-Type": "application/json",
           "User-Agent":
-            "boogiehook-bot-ws/1.0.0 (+https://github.com/shayypy/boogiehook)",
+            "discohook-bot-ws/1.0.0 (+https://github.com/shayypy/discohook)",
         },
       });
       console.log(`${event.data.t} returned ${response.status}`);

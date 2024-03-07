@@ -18,12 +18,12 @@ export const useLocalStorage = (): [
   }
 
   const settings = JSON.parse(
-    localStorage.getItem("boogiehook_settings") ?? "{}",
+    localStorage.getItem("discohook_settings") ?? "{}",
   );
   const [state, setState] = useState(settings as Settings);
   useEffect(() => {
     const listenStorageChange = () => {
-      setState(JSON.parse(localStorage.getItem("boogiehook_settings") ?? "{}"));
+      setState(JSON.parse(localStorage.getItem("discohook_settings") ?? "{}"));
     };
     window.addEventListener("storage", listenStorageChange);
     return () => window.removeEventListener("storage", listenStorageChange);
@@ -31,7 +31,7 @@ export const useLocalStorage = (): [
 
   const update = (data: Partial<Settings>) => {
     const newData = { ...settings, ...data };
-    localStorage.setItem("boogiehook_settings", JSON.stringify(newData));
+    localStorage.setItem("discohook_settings", JSON.stringify(newData));
     window.dispatchEvent(new Event("storage"));
   };
 

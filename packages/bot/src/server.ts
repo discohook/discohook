@@ -243,7 +243,7 @@ router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
     return new Response(null, { status: 403 });
   }
 
-  const eventName = request.headers.get("X-Boogiehook-Event");
+  const eventName = request.headers.get("X-Discohook-Event");
   if (!eventName) {
     return new Response(null, { status: 400 });
   }

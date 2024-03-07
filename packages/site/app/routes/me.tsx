@@ -122,7 +122,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   return null;
 };
 
-export const meta: MetaFunction = () => [{ title: "Your Data - Boogiehook" }];
+export const meta: MetaFunction = () => [{ title: "Your Data - Discohook" }];
 
 export default function Me() {
   const { t } = useTranslation();

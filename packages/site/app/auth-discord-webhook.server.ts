@@ -22,7 +22,7 @@ import { Context } from "./util/loader";
 export const getDiscordWebhookAuth = (context: Context) => {
   const dudSessionStorage = createWorkersKVSessionStorage({
     kv: context.env.KV,
-    cookie: createCookie("__boogiehook_webhook", {
+    cookie: createCookie("__discohook_webhook", {
       sameSite: "lax",
       path: "/",
       httpOnly: true,

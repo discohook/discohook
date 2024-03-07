@@ -66,7 +66,7 @@ export const resources = {
         "You're editing a backup, so your work is saved periodically while you edit.",
       channel: "Channel",
       cannotChangeChannel: "Webhook channel must be set inside Discord.",
-      requestedBy: "Requested on Boogiehook by {{username}}",
+      requestedBy: "Requested on Discohook by {{username}}",
       resetAvatar: "Remove",
       webhookCreated: "Webhook Created",
       webhookCreateFailed: "Failed to create webhook",

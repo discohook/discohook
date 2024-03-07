@@ -57,7 +57,7 @@ const data = {
   gray: {
     title: "I gave the website my Webhook URL, but I can't click send.",
     description:
-      'If the send button is gray, it means your browser wasn\'t able to connect to Discord. Try restarting your browser, using private ("incognito") mode, or disabling extensions like Privacy Badger or DuckDuckGo that may be blocking Boogiehook from connecting to Discord.',
+      'If the send button is gray, it means your browser wasn\'t able to connect to Discord. Try restarting your browser, using private ("incognito") mode, or disabling extensions like Privacy Badger or DuckDuckGo that may be blocking Discohook from connecting to Discord.',
   },
   grey: "gray",
   "gray send": "gray",
@@ -65,7 +65,7 @@ const data = {
   image: {
     title: "My images don't load properly.",
     description:
-      "Make sure the URL you used for the image is a direct image URL. It may have happened that you copied a link to a webpage that contains the image, instead of the image itself.\n\nTo make sure images load reliably, upload the images to a private Discord channel. Then copy the image link from Discord and paste it in Boogiehook. If done properly the image should appear in the preview and send to Discord without issues.",
+      "Make sure the URL you used for the image is a direct image URL. It may have happened that you copied a link to a webpage that contains the image, instead of the image itself.\n\nTo make sure images load reliably, upload the images to a private Discord channel. Then copy the image link from Discord and paste it in Discohook. If done properly the image should appear in the preview and send to Discord without issues.",
   },
   buttons: {
     title: "How do I add buttons to my messages/embeds?",

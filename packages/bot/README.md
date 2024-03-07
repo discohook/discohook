@@ -1,4 +1,4 @@
-# Boogiehook Bot (formerly Discohook Utils)
+# Discohook Bot (formerly Discohook Utils)
 
 Prose here
 
@@ -26,17 +26,17 @@ Next, you'll need to create a Cloudflare Worker.
 First clone the project:
 
 ```
-git clone https://github.com/shayypy/boogiehook-bot.git
+git clone https://github.com/shayypy/discohook.git
 ```
 
-Then navigate to its directory and install dependencies:
+Then navigate to the bot directory and install all dependencies:
 
 ```
-cd boogiehook-bot
-npm install
+cd discohook/packages/bot
+yarn install
 ```
 
-> ⚙️ The dependencies in this project require at least v18 of [Node.js](https://nodejs.org/en/)
+> ⚙️ The dependencies in this project require at least v18 of [Node.js](https://nodejs.org/en/).
 
 #### Local configuration
 
@@ -44,14 +44,12 @@ npm install
 
 Rename `example.dev.vars` to `.dev.vars`, and make sure to set each variable.
 
-**`.dev.vars` contains sensitive data so make sure it does not get checked into git**.
-
 #### Register commands
 
 The following command only needs to be run once:
 
 ```
-$ npm run register
+$ yarn register
 ```
 
 #### Run app
@@ -59,7 +57,7 @@ $ npm run register
 Now you should be ready to start your server:
 
 ```
-$ npm run dev
+$ yarn dev
 ```
 
 #### Setting up ngrok
@@ -67,7 +65,7 @@ $ npm run dev
 When a user types a slash command, Discord will send an HTTP request to a given endpoint. During local development this can be a little challenging, so we're going to use a tool called `ngrok` to create an HTTP tunnel.
 
 ```
-$ npm run ngrok
+$ yarn ngrok
 ```
 
 ![forwarding](https://user-images.githubusercontent.com/534619/157511497-19c8cef7-c349-40ec-a9d3-4bc0147909b0.png)

@@ -438,7 +438,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
                 .setURL(
-                  `${ctx.env.BOOGIEHOOK_ORIGIN}/component?${new URLSearchParams(
+                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams(
                     { id: String(component.id) },
                   )}`,
                 ),
@@ -541,7 +541,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
                 .setURL(
-                  `${ctx.env.BOOGIEHOOK_ORIGIN}/component?${new URLSearchParams(
+                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams(
                     {
                       data: base64UrlEncode(
                         JSON.stringify({

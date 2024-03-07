@@ -9,14 +9,8 @@ export const MESSAGE_REF_RE =
 
 export const INDEX_MESSAGE: QueryData["messages"][number] = {
   data: {
-    content: "Hello, welcome to Boogiehook!",
-    embeds: [
-      {
-        title: "Discohook",
-        description: `You may be familiar with this interface from [Discohook](https://discohook.app)! \
-This site is not maintained by the original creator of Discohook.`,
-      },
-    ],
+    content: "Hello, welcome to Discohook!",
+    embeds: [{}],
     components: [
       {
         type: ComponentType.ActionRow,
@@ -24,8 +18,8 @@ This site is not maintained by the original creator of Discohook.`,
           {
             type: ComponentType.Button,
             style: ButtonStyle.Link,
-            label: "Donate to Boogiehook",
-            url: "https://ko-fi.com/shayypy",
+            label: "Donate to Discohook",
+            url: "http://localhost:8788/donate",
           },
         ],
       },
@@ -36,13 +30,13 @@ This site is not maintained by the original creator of Discohook.`,
 export const INDEX_FAILURE_MESSAGE: QueryData["messages"][number] = {
   data: {
     content:
-      "The data you loaded this page with was invalid. If you're a developer, [check out the schema](https://github.com/shayypy/boogiehook/blob/master/app/types/QueryData.ts). If you need help, [join the support server](/discord).",
+      "The data you loaded this page with was invalid. If you're a developer, [check out the schema](https://github.com/shayypy/discohook/blob/master/app/types/QueryData.ts). If you need help, [join the support server](/discord).",
   },
 };
 
 export const LINK_INDEX_EMBED: LinkQueryData["embed"] = {
   data: {
-    title: "Welcome to Boogiehook!",
+    title: "Welcome to Discohook!",
   },
 };
 

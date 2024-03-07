@@ -75,7 +75,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
                 type: ComponentType.Button,
                 style: ButtonStyle.Link,
                 label: "Add Actions",
-                url: `${ctx.env.BOOGIEHOOK_ORIGIN}/g/${trigger.discordGuildId}/triggers`,
+                url: `${ctx.env.DISCOHOOK_ORIGIN}/g/${trigger.discordGuildId}/triggers`,
               },
             ],
           },
@@ -145,7 +145,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
             .setStyle(ButtonStyle.Link)
             .setLabel("Manage Actions")
             .setURL(
-              `${ctx.env.BOOGIEHOOK_ORIGIN}/g/${ctx.interaction.guild_id}/triggers`,
+              `${ctx.env.DISCOHOOK_ORIGIN}/g/${ctx.interaction.guild_id}/triggers`,
             ),
         )
         // .addComponents(

@@ -58,7 +58,7 @@ export const meta: MetaFunction = ({ data }) => {
     const { data: embed } = (data as SerializeFrom<typeof loader>).data;
     const tags: MetaDescriptor[] = [
       {
-        title: `${getEmbedText(embed) || "Custom link embed"} - Boogiehook`,
+        title: `${getEmbedText(embed) || "Custom link embed"} - Discohook`,
       },
     ];
 

@@ -1,6 +1,6 @@
-# boogiehook-bot-ws
+# discohook-bot-ws
 
-A minimal application designed to fulfill the gaps left by the Boogiehook bot after the move to HTTP-only commands, encapsulating the majority of the featureset in conjunction with the main site.
+A minimal application designed to fulfill the gaps left by the Discohook bot after the move to HTTP-only commands, encapsulating the majority of the featureset in conjunction with the main site.
 
 ## Manifesto
 

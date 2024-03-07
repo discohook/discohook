@@ -73,14 +73,14 @@ export const Message: React.FC<{
     ? webhooks.find((w) => w.application_id === discordApplicationId) ??
       webhooks[0]
     : undefined;
-  const username = message.author?.name ?? webhook?.name ?? "Boogiehook";
+  const username = message.author?.name ?? webhook?.name ?? "Discohook";
   const avatarUrl =
     message.author?.icon_url ??
     (webhook
       ? webhook.avatar
         ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
         : cdn.defaultAvatar(5)
-      : "/logos/boogiehook.svg");
+      : "/logos/discohook.svg");
   const badge =
     message.author?.badge === null ? null : message.author?.badge ?? "BOT";
 

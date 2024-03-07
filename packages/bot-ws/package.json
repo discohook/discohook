@@ -1,8 +1,8 @@
 {
-  "name": "boogiehook-bot-ws",
+  "name": "discohook-bot-ws",
   "version": "1.0.0",
   "description": "Extra proxy application for features that require a gateway connection",
-  "repository": "https://github.com/shayypy/boogiehook",
+  "repository": "https://github.com/shayypy/discohook",
   "author": "shayypy",
   "license": "MIT",
   "private": true,

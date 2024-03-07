@@ -150,20 +150,20 @@ export const MessageEditor: React.FC<{
                     that you send a message with. In order to send link buttons,
                     the webhook must be created by an application (any bot), but
                     to send other buttons and select menus, the webhook must be
-                    owned by the Boogiehook application (this website/its bot).
+                    owned by the Discohook application (this website/its bot).
                     Add a webhook for more information.
                   </>
                 ) : possiblyApplication ? (
                   <>
                     One or more of your webhooks are owned by an application,
-                    but not Boogiehook, so you can only add link buttons. Add a
-                    webhook owned by the Boogiehook bot to be able to use more
+                    but not Discohook, so you can only add link buttons. Add a
+                    webhook owned by the Discohook bot to be able to use more
                     types of components.
                   </>
                 ) : (
                   <>
                     None of your webhooks are compatibile with components. Add a
-                    webhook owned by the Boogiehook bot.
+                    webhook owned by the Discohook bot.
                   </>
                 )}
               </InfoBox>

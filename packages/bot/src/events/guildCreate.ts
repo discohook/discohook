@@ -1,5 +1,4 @@
-import { REST } from "@discordjs/rest";
-import { GatewayGuildCreateDispatchData, Routes } from "discord-api-types/v10";
+import { GatewayGuildCreateDispatchData } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "store";
 import { discordGuilds, discordRoles, makeSnowflake } from "store/src/schema";
@@ -10,22 +9,6 @@ export const guildCreateCallback: GatewayEventCallback = async (
   guild: GatewayGuildCreateDispatchData,
 ) => {
   if (guild.unavailable) return;
-
-  // This shouldn't happen every time a websocket bot instance starts, only
-  // when joining a new guild. We are assuming that the instance has correctly
-  // determined whether we are already a member of this guild. If not, that's
-  // not such a huge deal, but it will probably be annoying and this feature
-  // will be removed.
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
-  try {
-    await rest.patch(Routes.guildMember(guild.id, "@me"), {
-      body: {
-        nick: "Boogiehook",
-      },
-      reason:
-        "Discohook Utils is now Boogiehook! Read more: /help tag:boogiehook",
-    });
-  } catch {}
 
   const db = getDb(env.DATABASE_URL);
   await db

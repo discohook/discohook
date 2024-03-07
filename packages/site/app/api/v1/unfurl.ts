@@ -1,9 +1,9 @@
 import { json } from "@remix-run/cloudflare";
 import {
-    APIEmbed,
-    APIEmbedImage,
-    APIEmbedVideo,
-    EmbedType,
+  APIEmbed,
+  APIEmbedImage,
+  APIEmbedVideo,
+  EmbedType,
 } from "discord-api-types/v10";
 import he from "he";
 import { z } from "zod";
@@ -19,8 +19,8 @@ export const META_HTML_REGEX =
   /<meta\s+((?:(\w+) ?= ?["']([^"']+)["']\s?){1,})\s*\/?>/gim;
 export const HTML_ATTRIBUTE_REGEX = /(\w+) ?= ?["']([^"']+)["']/gim;
 
-const userAgent =
-  "Boogiehook-Bot/1.0.0 (+https://github.com/shayypy/boogiehook)";
+export const userAgent =
+  "Discohook-Crawler/1.0.0 (+https://github.com/shayypy/discohook)";
 
 const decode = (text: string) => {
   return he.decode(text).replace(/<br\/?>/gi, "\n");
@@ -130,7 +130,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   //   const robots = robotsParser(robotsUrl, await robotsResponse.text());
   //   if (robots.isDisallowed(url_, userAgent)) {
   //     throw json(
-  //       { message: "Boogiehook is forbidden by this site's robots.txt" },
+  //       { message: "Discohook is forbidden by this site's robots.txt" },
   //       400,
   //     );
   //   }
