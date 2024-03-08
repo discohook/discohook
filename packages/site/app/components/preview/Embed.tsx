@@ -118,7 +118,7 @@ export const Embed: React.FC<{
           </div>
         )}
         {embed.description && (
-          <div className="text-sm font-medium dark:font-normal mt-2 inline-block whitespace-pre-line">
+          <div className="text-sm font-normal mt-2 inline-block whitespace-pre-line">
             <Markdown
               content={embed.description}
               features="full"
@@ -169,7 +169,7 @@ export const Embed: React.FC<{
                           // resolved={resolved}
                         />
                       </div>
-                      <div>
+                      <div className="font-normal">
                         <Markdown
                           content={field.value}
                           features="full"
