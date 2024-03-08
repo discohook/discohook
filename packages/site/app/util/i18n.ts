@@ -58,7 +58,7 @@ export const resources = {
       preview: "Preview",
       saveMessage: "Save Message",
       addMessage: "Add Message",
-      embedExample: "Embed Example",
+      embedExample: "Example",
       previewInfo: "Preview Info",
       editingBackupNote:
         'You\'re editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the "Save Message" button.',

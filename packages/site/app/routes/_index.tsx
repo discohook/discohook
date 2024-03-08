@@ -426,33 +426,35 @@ export default function Index() {
           </Button>
         </div>
         <div
-          className={`md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] p-4 md:w-1/2 h-full overflow-y-scroll relative ${
-            tab === "preview" ? "" : "hidden md:block"
+          className={`md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] md:w-1/2 h-full flex-col ${
+            tab === "preview" ? "flex" : "hidden md:flex"
           }`}
         >
-          <div className="md:hidden">
-            <Button
-              onClick={() => setTab("editor")}
-              discordstyle={ButtonStyle.Secondary}
-            >
-              <CoolIcon icon="Chevron_Left" /> {t("editor")}
-            </Button>
-            <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+          <div className="overflow-y-scroll grow p-4 pb-8">
+            <div className="md:hidden">
+              <Button
+                onClick={() => setTab("editor")}
+                discordstyle={ButtonStyle.Secondary}
+              >
+                <CoolIcon icon="Chevron_Left" /> {t("editor")}
+              </Button>
+              <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+            </div>
+            {data.messages.map((message, i) => (
+              <Message
+                key={`preview-message-${i}`}
+                message={message.data}
+                discordApplicationId={discordApplicationId}
+                webhooks={Object.values(targets)}
+                index={i}
+                data={data}
+                setImageModalData={setImageModalData}
+                messageDisplay={settings.messageDisplay}
+                compactAvatars={settings.compactAvatars}
+              />
+            ))}
           </div>
-          {data.messages.map((message, i) => (
-            <Message
-              key={`preview-message-${i}`}
-              message={message.data}
-              discordApplicationId={discordApplicationId}
-              webhooks={Object.values(targets)}
-              index={i}
-              data={data}
-              setImageModalData={setImageModalData}
-              messageDisplay={settings.messageDisplay}
-              compactAvatars={settings.compactAvatars}
-            />
-          ))}
-          <div className="fixed bottom-4 right-4 grid gap-2 grid-cols-1">
+          <div className="grid gap-2 grid-cols-3 mt-auto px-4 py-2 bg-slate-50 dark:bg-[#1E1F22]">
             <Button
               discordstyle={ButtonStyle.Secondary}
               onClick={() => setExampleOpen(true)}
@@ -463,7 +465,6 @@ export default function Index() {
               discordstyle={ButtonStyle.Secondary}
               onClick={() => setShowDisclaimer(true)}
             >
-              <CoolIcon icon="Info" className="mr-1.5" />
               {t("previewInfo")}
             </Button>
             <Link to="/donate" target="_blank" className="contents">
