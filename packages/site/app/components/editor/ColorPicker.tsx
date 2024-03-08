@@ -38,20 +38,41 @@ const ColorPickerFunction: React.FC<InjectedColorProps> = (props) => (
         // "#979C9F",
         "#607D8B",
         // "#546E7A",
+        // Dark mode embed body
+        "#2F3136",
+        // Light mode embed body
+        "#F2F3F5",
       ]}
       disableAlpha
     />
     <div className="flex p-2 pt-0">
-      <Button
-        className="ml-auto"
-        onClick={() => {
-          if (props.onChange) {
-            props.onChange({ a: 0, r: 0, g: 0, b: 0 });
-          }
-        }}
-      >
-        Reset
-      </Button>
+      <div className="flex gap-2 ml-auto">
+        {/*props.embed && (
+          <Button
+            onClick={() => {
+              if (props.onChange) {
+                props.onChange({
+                  a: 1,
+                  ...(props.theme === "light"
+                    ? { r: 242, g: 243, b: 245 }
+                    : { r: 47, g: 49, b: 54 }),
+                });
+              }
+            }}
+          >
+            Match
+          </Button>
+          )*/}
+        <Button
+          onClick={() => {
+            if (props.onChange) {
+              props.onChange({ a: 0, r: 0, g: 0, b: 0 });
+            }
+          }}
+        >
+          Reset
+        </Button>
+      </div>
     </div>
   </div>
 );

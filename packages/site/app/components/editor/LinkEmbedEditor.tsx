@@ -12,6 +12,7 @@ import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
+import { ColorPicker } from "./ColorPicker";
 import { EmbedEditorSection } from "./EmbedEditor";
 
 export const getEmbedText = (embed: LinkEmbed): string | undefined =>
@@ -330,17 +331,17 @@ export const LinkEmbedEditor: React.FC<{
                 }}
               />
             </summary>
-            {/* <ColorPicker
-                color={embed.color ? `#${embed.color.toString(16)}` : undefined}
-                onChange={(color) => {
-                  updateEmbed({
-                    color:
-                      color.rgb.a === 0
-                        ? undefined
-                        : parseInt(color.hex.replace("#", "0x"), 16),
-                  });
-                }}
-              /> */}
+            <ColorPicker
+              color={embed.color ? `#${embed.color.toString(16)}` : undefined}
+              onChange={(color) => {
+                updateEmbed({
+                  color:
+                    color.rgb.a === 0
+                      ? undefined
+                      : parseInt(color.hex.replace("#", "0x"), 16),
+                });
+              }}
+            />
           </details>
         </div>
         {!!embed.video?.url && (

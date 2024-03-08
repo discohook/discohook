@@ -8,6 +8,7 @@ import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
+import { ColorPicker } from "./ColorPicker";
 
 export const isEmbedEmpty = (embed: APIEmbed): boolean =>
   !embed.author &&
@@ -392,7 +393,7 @@ export const EmbedEditor: React.FC<{
                   }}
                 />
               </summary>
-              {/* <ColorPicker
+              <ColorPicker
                 color={embed.color ? `#${embed.color.toString(16)}` : undefined}
                 onChange={(color) => {
                   updateEmbed({
@@ -402,7 +403,7 @@ export const EmbedEditor: React.FC<{
                         : parseInt(color.hex.replace("#", "0x"), 16),
                   });
                 }}
-              /> */}
+              />
             </details>
           )}
         </div>

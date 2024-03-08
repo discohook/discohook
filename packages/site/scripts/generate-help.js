@@ -75,11 +75,7 @@ const data = {
   sidebar: {
     title: "How do I remove the sidebar color on an embed?",
     description:
-      'Set the "Sidebar Color" option to #2f3136 in the body area of the embed. For light mode, use #f2f3f5.',
-    color: 3092790,
-    // image: {
-    //   url: "https://dutils.shay.cat/static/help/sidebar.png",
-    // },
+      'In the "Sidebar Color" option, select one of the last two preset options depending on the theme you\'re using.',
   },
 };
 
