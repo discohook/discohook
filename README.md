@@ -4,7 +4,7 @@ Simple, free, and highly versatile message designer for Discord webhooks.
 
 ## Feature comparison
 
-This is a complete rewrite of the original [Discohook](https://github.com/discohook) project, under new ownership. Here's what's new.
+This is a complete rewrite of the original [Discohook](https://github.com/discohook/site) project by @maddysrc, now under new ownership. Here's what's new.
 
 - Extended Markdown support: headers, lists, timestamps, ~~mentions~~, message links
 - Cloud backups
