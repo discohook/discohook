@@ -93,7 +93,7 @@ export default function Legal() {
                 {
                   type: ComponentType.Button,
                   style: ButtonStyle.Link,
-                  url: "/discord/bot",
+                  url: "/bot",
                   label: "Invite the Discohook bot",
                 },
               ],
