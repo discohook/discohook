@@ -134,7 +134,7 @@ export default function Legal() {
                 {
                   type: ComponentType.Button,
                   style: ButtonStyle.Link,
-                  url: "https://github.com/shayypy/discohook/commits/master/app/routes/legal.tsx",
+                  url: "https://github.com/shayypy/discohook/commits/main/packages/site/app/routes/legal.tsx",
                   label: "Page update history",
                 },
                 {
