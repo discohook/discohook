@@ -38,7 +38,8 @@ export default function Legal() {
         <p>
           In 2024, Discohook and Discohook Utils merged into one service.
           "Discohook" may refer to this website or its Discord bot. For
-          technical reasons, the preferred bot account is Discohook Utils#4333.
+          technical reasons, we stuck with Discohook Utils#4333 for the bot
+          account.
         </p>
         <h1 className="font-bold text-3xl mt-4">
           Do I need to do anything if I already use Discohook Utils?
