@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import React, { useState } from "react";
 import { twJoin } from "tailwind-merge";
@@ -238,11 +238,11 @@ export default function DonatePage() {
           </div>
         </div>
         {!user && (
-          <div className="mt-2">
+          <Link to="/auth/discord?redirect=/donate" className="mt-2 block">
             <InfoBox severity="blue">
               Please sign in to donate with cryptocurrencies.
             </InfoBox>
-          </div>
+          </Link>
         )}
         <h1 className="text-xl font-bold mt-4">
           <Twemoji className="h-5" emoji="✨" /> Features

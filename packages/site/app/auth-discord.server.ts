@@ -1,4 +1,5 @@
 import { REST } from "@discordjs/rest";
+import { SessionStorage } from "@remix-run/cloudflare";
 import {
   APIUser,
   RESTPostOAuth2AccessTokenResult,
@@ -25,9 +26,12 @@ export type UserAuth = {
   refreshToken?: string;
 };
 
-export const getDiscordAuth = (context: Context) => {
+export const getDiscordAuth = (
+  context: Context,
+  sessionStorage?: SessionStorage,
+) => {
   const discordAuth = new Authenticator<UserAuth>(
-    getSessionStorage(context).sessionStorage,
+    sessionStorage ?? getSessionStorage(context).sessionStorage,
   );
   const strategy = new DiscordStrategy(
     {

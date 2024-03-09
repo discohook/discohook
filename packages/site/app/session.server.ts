@@ -3,6 +3,7 @@ import {
   createCookie,
   createWorkersKVSessionStorage,
   json,
+  redirect,
 } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { getDb, upsertDiscordUser, users } from "./store.server";
@@ -77,7 +78,13 @@ export async function getUser(
 ): Promise<User | null> {
   const userId = await getUserId(request, context, false);
   if (!userId && throwIfNull) {
-    throw json({ message: "Must be logged in." }, 401);
+    // throw json({ message: "Must be logged in." }, 401);
+    throw redirect(
+      `/auth/discord?redirect=${encodeURIComponent(
+        // Return to the same page
+        request.url.replace(context.origin, ""),
+      )}`,
+    );
   } else if (!userId) {
     return null;
   }
