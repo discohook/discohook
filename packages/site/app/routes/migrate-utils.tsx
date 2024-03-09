@@ -25,9 +25,8 @@ export default function Legal() {
       <Prose>
         <InfoBox>
           <Twemoji emoji="👋" className="inline-block align-sub mr-1" /> Hello
-          there. If you were redirected from dutils.shay.cat, please read below!
-          In short, Discohook & Discohook Utils are now one in the same. Also,
-          read the{" "}
+          there. If you use Discohook Utils, please read below! In short,
+          Discohook & Discohook Utils are now one in the same. Also, read the{" "}
           <Link to="/legal" className="underline hover:no-underline">
             updated legal documents
           </Link>
@@ -49,6 +48,14 @@ export default function Legal() {
           suite of functionality at your disposal.
         </p>
         <h1 className="font-bold text-3xl mt-4">
+          I still have reaction roles with Discobot, not Discohook Utils
+        </h1>
+        <p>
+          Simply invite Discohook Utils to your server and remove Discobot. Your
+          reaction roles will continue working, but Discohook Utils will be used
+          to manage them instead.
+        </p>
+        <h1 className="font-bold text-3xl mt-4">
           Can I still use the old Discohook?
         </h1>
         <p>
@@ -68,7 +75,7 @@ export default function Legal() {
           If you have backups on Discohook.org, click this button to link them
           to your account:
         </p>
-        <Link to={"/me/import-org-backups"}>
+        <Link to="/me/import-org-backups">
           <Button>Import</Button>
         </Link>
         <hr className="border border-gray-500/20 my-4" />
