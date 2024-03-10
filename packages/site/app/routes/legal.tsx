@@ -116,7 +116,7 @@ export default function Legal() {
           </li>
           <li>
             Data is not sold to third parties for any reason. Discohook is
-            funded entirely through donations and Plus subscriptions.
+            funded entirely through donations and Deluxe subscriptions.
           </li>
           <li>
             If the user has questions about data management and privacy, they
