@@ -6,6 +6,7 @@ import {
   integer,
   json,
   pgTable,
+  primaryKey,
   serial,
   text,
   timestamp,
@@ -124,7 +125,7 @@ export const oauthInfoRelations = relations(oauthInfo, ({ one }) => ({
 
 export const discordGuilds = pgTable("DiscordGuild", {
   id: snowflake("id").primaryKey(),
-  name: text("name").notNull(),
+  name: text("name").default("Unknown Server").notNull(),
   icon: text("icon"),
 });
 
@@ -134,6 +135,9 @@ export const discordGuildsRelations = relations(discordGuilds, ({ many }) => ({
   backups: many(backups, { relationName: "DiscordGuild_Backup" }),
   webhooks: many(webhooks, { relationName: "DiscordGuild_Webhook" }),
   triggers: many(triggers, { relationName: "DiscordGuild_Trigger" }),
+  reactionRoles: many(discordReactionRoles, {
+    relationName: "DiscordGuild_ReactionRole",
+  }),
 }));
 
 export const discordRoles = pgTable(
@@ -417,3 +421,31 @@ export const triggersRelations = relations(triggers, ({ one }) => ({
     relationName: "User_Trigger-updated",
   }),
 }));
+
+// Discobot-imported data
+export const discordReactionRoles = pgTable(
+  "reaction_roles",
+  {
+    messageId: snowflake("message_id").notNull(),
+    channelId: snowflake("channel_id").notNull(),
+    guildId: snowflake("guild_id")
+      .references(() => discordGuilds.id, { onDelete: "cascade" })
+      .notNull(),
+    roleId: snowflake("role_id").notNull(),
+    reaction: text("reaction").notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.messageId, table.reaction] }),
+  }),
+);
+
+export const reactionRoleRelations = relations(
+  discordReactionRoles,
+  ({ one }) => ({
+    guild: one(discordGuilds, {
+      relationName: "DiscordGuild_ReactionRole",
+      fields: [discordReactionRoles.guildId],
+      references: [discordGuilds.id],
+    }),
+  }),
+);

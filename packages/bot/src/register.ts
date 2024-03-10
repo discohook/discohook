@@ -28,6 +28,15 @@ const webhookChannelTypes = [
   ChannelType.AnnouncementThread,
 ] as ApplicationCommandOptionChannelTypesMixin["channel_types"];
 
+const messageChannelTypes = [
+  ChannelType.GuildAnnouncement,
+  ChannelType.GuildText,
+  ChannelType.GuildVoice,
+  ChannelType.PublicThread,
+  ChannelType.PrivateThread,
+  ChannelType.AnnouncementThread,
+] as ApplicationCommandOptionChannelTypesMixin["channel_types"];
+
 const webhookAutocompleteOption = {
   type: ApplicationCommandOptionType.String,
   name: "webhook",
@@ -244,6 +253,85 @@ export const allAppCommands: Record<
           description: "The tag to get help for",
           autocomplete: true,
           required: true,
+        },
+      ],
+    },
+    "reaction-role": {
+      name: "reaction-role",
+      description: "...",
+      dm_permission: false,
+      default_member_permissions: String(
+        PermissionFlags.ManageRoles | PermissionFlags.AddReactions,
+      ),
+      options: [
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "create",
+          description: "Create a new reaction role",
+          options: [
+            {
+              type: ApplicationCommandOptionType.String,
+              name: "message",
+              description:
+                "The message to create the reaction on. A message link is also accepted here",
+              required: true,
+              autocomplete: true,
+            },
+            {
+              type: ApplicationCommandOptionType.String,
+              name: "emoji",
+              description:
+                "The emoji that the reaction should show. For external emojis, react before the bot",
+              required: true,
+              autocomplete: true,
+            },
+            {
+              type: ApplicationCommandOptionType.Role,
+              name: "role",
+              description:
+                "The role that should be assigned/removed when the reaction is clicked",
+              required: true,
+            },
+            {
+              type: ApplicationCommandOptionType.Channel,
+              name: "channel",
+              description:
+                "The channel that the message is in, for autocomplete results",
+              required: false,
+              channel_types: messageChannelTypes,
+            },
+          ],
+        },
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "delete",
+          description: "Delete a reaction role from a message",
+          options: [
+            {
+              type: ApplicationCommandOptionType.String,
+              name: "message",
+              description:
+                "The message to delete the reaction role from. A message link is also accepted here",
+              required: true,
+              autocomplete: true,
+            },
+            {
+              type: ApplicationCommandOptionType.String,
+              name: "emoji",
+              description:
+                "The emoji that the reaction shows. Omit this parameter to view a deletion menu",
+              required: false,
+              autocomplete: true,
+            },
+            {
+              type: ApplicationCommandOptionType.Channel,
+              name: "channel",
+              description:
+                "The channel that the message is in, for autocomplete results",
+              required: false,
+              channel_types: messageChannelTypes,
+            },
+          ],
         },
       ],
     },

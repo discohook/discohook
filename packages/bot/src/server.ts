@@ -24,6 +24,7 @@ import { getErrorMessage } from "./errors.js";
 import { eventNameToCallback } from "./events.js";
 import { InteractionContext } from "./interactions.js";
 import { Env } from "./types/env.js";
+import { parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 
 const router = Router();
@@ -181,7 +182,46 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
           status: 500,
         });
       }
+    } else if (customId.startsWith("a_")) {
+      // "Auto" components require only the state defined in their custom ID,
+      // allowing them to have an unlimited timeout.
+      // Example: `a_delete-reaction-role_123456789012345679:✨`
+      //           auto  routing id       message id         reaction
+      const { routingId } = parseAutoComponentId(customId);
+      const stored = componentStore[routingId as ComponentRoutingId];
+      if (!stored) {
+        return respond({ error: "Unknown routing ID" });
+      }
+
+      const ctx = new InteractionContext(rest, interaction, env);
+      try {
+        const response = await (
+          stored.handler as ComponentCallbackT<APIMessageComponentInteraction>
+        )(ctx);
+        if (Array.isArray(response)) {
+          eCtx.waitUntil(response[1]());
+          return respond(response[0]);
+        } else {
+          return respond(response);
+        }
+      } catch (e) {
+        if (isDiscordError(e)) {
+          const errorResponse = getErrorMessage(ctx, e.raw);
+          if (errorResponse) {
+            return respond(errorResponse);
+          }
+        } else {
+          console.error(e);
+        }
+        return respond({
+          error: "You've found a super unlucky error. Try again later!",
+          status: 500,
+        });
+      }
     }
+    return respond({
+      error: "Component custom ID does not contain a valid prefix",
+    });
   } else if (interaction.type === InteractionType.ModalSubmit) {
     const { custom_id: customId } = interaction.data;
     if (customId.startsWith("t_")) {
@@ -229,8 +269,8 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
     }
   }
 
-  console.error("Unknown Type");
-  return respond({ error: "Unknown Type" });
+  console.error("Unknown interaction type");
+  return respond({ error: "Unknown interaction type" });
 });
 
 router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {

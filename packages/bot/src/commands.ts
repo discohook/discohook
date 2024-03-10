@@ -10,12 +10,17 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import {
-  addComponentChatAutocomplete,
   addComponentChatEntry,
-  addComponentMessageEntry,
+  addComponentMessageAutocomplete,
+  addComponentMessageEntry
 } from "./commands/components/entry.js";
 import { helpAutocomplete, helpEntry } from "./commands/help.js";
 import { inviteCallback } from "./commands/invite.js";
+import {
+  createReactionRoleHandler,
+  deleteReactionRoleHandler,
+  messageAndEmojiAutocomplete,
+} from "./commands/reactionRoles.js";
 import {
   addTriggerCallback,
   triggerAutocompleteCallback,
@@ -65,7 +70,7 @@ export const appCommands: Record<
         add: addComponentChatEntry,
       },
       autocompleteHandlers: {
-        add: addComponentChatAutocomplete,
+        add: addComponentMessageAutocomplete,
       },
     },
     invite: {
@@ -104,6 +109,19 @@ export const appCommands: Record<
     help: {
       handlers: { BASE: helpEntry },
       autocompleteHandlers: { BASE: helpAutocomplete },
+    },
+    "reaction-role": {
+      handlers: {
+        create: createReactionRoleHandler,
+        delete: deleteReactionRoleHandler,
+      },
+      autocompleteHandlers: {
+        create: messageAndEmojiAutocomplete,
+        // I think it would be cool to have the delete `message` results
+        // filtered by messages that have registered reaction roles, but I
+        // can't think of a particularly efficient way to do that right now
+        delete: messageAndEmojiAutocomplete,
+      },
     },
   },
   [ApplicationCommandType.Message]: {

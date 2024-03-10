@@ -114,3 +114,17 @@ export const getRowWidth = (
     0,
   );
 };
+
+export const parseAutoComponentId = <P extends string>(
+  customId: string,
+  ...parameters: P[]
+) => {
+  const [_, routingId, rest] = customId.split("_");
+
+  return {
+    routingId,
+    ...(Object.fromEntries(
+      rest.split(":").map((value, i) => [parameters[i], value]),
+    ) as Record<P, string>),
+  };
+};

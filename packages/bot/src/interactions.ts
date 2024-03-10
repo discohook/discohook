@@ -21,6 +21,7 @@ import {
   APIModalInteractionResponseCallbackData,
   APIModalSubmitInteraction,
   APIPremiumRequiredInteractionResponse,
+  APIRole,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   InteractionResponseType,
@@ -264,6 +265,14 @@ export class InteractionContext<
       name,
       ApplicationCommandOptionType.Channel,
       "channels",
+    );
+  }
+
+  getRoleOption(name: string) {
+    return this._getResolvableOption<APIRole>(
+      name,
+      ApplicationCommandOptionType.Role,
+      "roles",
     );
   }
 

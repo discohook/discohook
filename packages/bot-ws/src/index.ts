@@ -23,7 +23,10 @@ let guildIds: string[] = [];
 const rest = new REST().setToken(env.DISCORD_TOKEN);
 const manager = new WebSocketManager({
   token: env.DISCORD_TOKEN,
-  intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMembers,
+  intents:
+    GatewayIntentBits.Guilds |
+    GatewayIntentBits.GuildMembers |
+    GatewayIntentBits.GuildMessageReactions,
   rest,
   initialPresence: {
     status: PresenceUpdateStatus.Online,
@@ -89,6 +92,9 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       GatewayDispatchEvents.GuildMemberRemove,
       GatewayDispatchEvents.GuildCreate,
       GatewayDispatchEvents.GuildDelete,
+      // Discobot: reaction roles
+      GatewayDispatchEvents.MessageReactionAdd,
+      GatewayDispatchEvents.MessageReactionRemove,
     ].includes(event.data.t)
   ) {
     try {

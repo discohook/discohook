@@ -15,6 +15,20 @@
       "when": 1706306125092,
       "tag": "0001_uneven_husk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1708146706027,
+      "tag": "0002_bouncy_weapon_omega",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1710096298563,
+      "tag": "0003_gifted_puppet_master",
+      "breakpoints": true
     }
   ]
 }

@@ -10,6 +10,7 @@ import {
   reopenCustomizeModal,
   submitCustomizeModal,
 } from "./commands/components/add.js";
+import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { InteractionContext } from "./interactions.js";
 
 export interface MinimumKVComponentState {
@@ -48,9 +49,12 @@ export type ModalRoutingId = "add-component-flow_customize-modal";
 
 export type ComponentRoutingId =
   | "add-component-flow"
-  | "add-component-flow_customize-modal-resend";
+  | "add-component-flow_customize-modal-resend"
+  | "delete-reaction-role";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
+
+export type AutoComponentCustomId = `a_${ComponentRoutingId}_${string}`
 
 export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "add-component-flow": {
@@ -58,6 +62,9 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   },
   "add-component-flow_customize-modal-resend": {
     handler: reopenCustomizeModal,
+  },
+  "delete-reaction-role": {
+    handler: deleteReactionRoleButtonCallback,
   },
 };
 
