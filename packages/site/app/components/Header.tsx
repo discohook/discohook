@@ -19,13 +19,19 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
 
   const logo = (
     <div
-      style={{ backgroundImage: `url('/logos/icon${user?.subscribedSince ? "-pink" : ""}.svg')` }}
+      style={{
+        backgroundImage: `url('/logos/icon${
+          user?.subscribedSince ? "-pink" : ""
+        }.svg')`,
+      }}
       className="h-9 w-9 my-auto mr-4 bg-cover bg-center"
     />
   );
 
   const editorPaths = ["/", "/component", "/link"];
-  const isEditorPage = editorPaths.includes(location.pathname);
+  const isEditorPage = editorPaths.includes(
+    location.pathname.replace(/\/$/, ""),
+  );
 
   return (
     <div className="sticky top-0 left-0 z-10 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
