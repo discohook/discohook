@@ -444,6 +444,9 @@ export const deleteReactionRoleButtonCallback: ButtonCallback = async (ctx) => {
         channelId: discordReactionRoles.channelId,
       })
   )[0];
+  try {
+    await ctx.env.KV.delete(`discord-reaction-role-${messageId}-${reaction}`);
+  } catch {}
 
   if (deleted) {
     try {
