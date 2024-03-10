@@ -37,6 +37,7 @@ export const users = pgTable("User", {
 
   firstSubscribed: date("firstSubscribed"),
   subscribedSince: date("subscribedSince"),
+  subscriptionExpiresAt: date("subscriptionExpiresAt"),
   lifetime: boolean("lifetime").default(false),
 
   discordId: snowflake("discordId").unique(),
