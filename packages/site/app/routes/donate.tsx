@@ -79,7 +79,7 @@ export default function DonatePage() {
       />
       <div className="max-w-4xl mx-auto p-4 text-lg">
         <h1 className="text-2xl font-bold">
-          <Twemoji emoji="🪩" className="h-6" /> Discohook Plus
+          <Twemoji emoji="✨" className="h-6" /> Discohook Plus
         </h1>
         <p>
           Thanks for your interest in donating! Your contribution will help keep
