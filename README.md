@@ -17,6 +17,10 @@ This is a complete rewrite of the [original Discohook project](https://github.co
 <!-- - Scheduled messages -->
 <!-- - Custom bots -->
 
+## Free?
+
+Discohook is free, but you are encouraged to [donate and get extra perks](https://discohook.app/donate)! And if that $4 didn't wipe out your wallet, consider also donating to [the original maintainer](https://patreon.com/vivifund).
+
 ## Meta
 
 This monorepo comes in three main parts:
