@@ -1,6 +1,6 @@
 # Discohook API
 
-Here is some information detailing public API endpoints that you can utilize if you are developing for Discohook.
+Here is some information detailing public API endpoints that you can utilize if you are developing for Discohook. I also have plans for an authenticated, token-based API, but that isn't available yet.
 
 Base URL for all requests: `https://discohook.app/api/v1`
 
