@@ -2,19 +2,33 @@ import { ImageURLOptions } from "@discordjs/rest";
 import { User } from "~/session.server";
 import { cdn } from "./discord";
 
-export const userIsPremium = (user: User): boolean => {
-  if (user.lifetime) return true;
-  if (!user.subscribedSince) return false;
+export const getUserPremiumDetails = (
+  user: User,
+): { active: boolean; grace?: boolean; graceDaysRemaining?: number } => {
+  // Development mode
+  // if (String(user.discordUser?.id) === "115238234778370049") {
+  //   return {
+  //     active: true,
+  //     grace: true,
+  //     graceDaysRemaining: 3,
+  //   };
+  // }
+  if (user.lifetime) return { active: true, grace: false };
+  if (!user.subscribedSince) return { active: false };
   if (user.subscriptionExpiresAt) {
     const now = new Date();
     const ttl = new Date(user.subscriptionExpiresAt).getTime() - now.getTime();
     // 3 day grace period
-    if (ttl >= -259_200_000) {
-      return true;
-    }
+    return {
+      active: ttl >= -259_200_000,
+      grace: ttl <= 0,
+      graceDaysRemaining: Math.floor((259_200_000 - ttl) / 86400000),
+    };
   }
-  return false;
+  return { active: false };
 };
+
+export const userIsPremium = (user: User) => getUserPremiumDetails(user).active;
 
 export const getUserTag = (user: User): string =>
   user.discordUser

@@ -2,10 +2,11 @@ import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
-import { getUserAvatar, getUserTag } from "~/util/users";
+import { getUserAvatar, getUserPremiumDetails, getUserTag } from "~/util/users";
 import { Button } from "./Button";
 import { CoolIcon } from "./CoolIcon";
 
@@ -17,11 +18,12 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const [helpOpen, setHelpOpen] = useState(dm === "help");
   const [settingsOpen, setSettingsOpen] = useState(dm === "settings");
 
+  const premiumDetails = user ? getUserPremiumDetails(user) : undefined;
   const logo = (
     <div
       style={{
         backgroundImage: `url('/logos/icon${
-          user?.subscribedSince ? "-pink" : ""
+          user && premiumDetails?.active ? "-pink" : ""
         }.svg')`,
       }}
       className="h-9 w-9 my-auto mr-4 bg-cover bg-center"
@@ -62,6 +64,20 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           <p className="ml-1.5 text-base font-medium hidden sm:block my-auto">
             {user.discordUser?.globalName ?? getUserTag(user)}
           </p>
+          {premiumDetails?.active && (
+            <p
+              className={twJoin(
+                "ml-2 text-xs font-semibold hidden sm:block my-auto rounded py-px px-2 text-black uppercase",
+                premiumDetails.grace ? "bg-yellow-400" : "bg-brand-pink",
+              )}
+            >
+              {premiumDetails.grace
+                ? t("graceRemaining", {
+                    count: premiumDetails.graceDaysRemaining ?? -1,
+                  })
+                : t(user.lifetime ? "lifetime" : "deluxe")}
+            </p>
+          )}
         </Link>
       ) : (
         <Link

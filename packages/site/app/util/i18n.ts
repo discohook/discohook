@@ -85,6 +85,10 @@ export const resources = {
       firstSubscribed: "First Subscribed",
       never: "Never",
       donate: "Donate",
+      deluxe: "Deluxe",
+      lifetime: "Lifetime",
+      graceRemaining_one: "{{count}} day remaining",
+      graceRemaining_other: "{{count}} days remaining",
       // Editor
       rowEmpty: "Must contain at least one component (button/select)",
       labelEmpty: "Must have a label or emoji, or both",

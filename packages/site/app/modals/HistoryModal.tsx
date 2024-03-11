@@ -1,5 +1,5 @@
 import React from "react";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message";
@@ -50,13 +50,8 @@ export const HistoryModal = <
                       {item.createdAt.toLocaleTimeString()}
                     </span>
                     <span className="truncate ml-1">
-                      -{" "}
-                      <Trans
-                        t={t}
-                        i18nKey={"nMessage"}
-                        count={item.data.messages.length}
-                      />
-                      , <Trans t={t} i18nKey={"nEmbed"} count={embeds} />
+                      - {t("nMessage", { count: item.data.messages.length })},{" "}
+                      {t("nEmbed", { count: embeds })}
                     </span>
                   </summary>
                   <div className="flex w-full">

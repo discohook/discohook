@@ -177,7 +177,7 @@ export default function Me() {
                           year: "numeric",
                         },
                       )
-                    : t("notSubscribed")}
+                    : t("notSubscribed")}{user.lifetime ? ` (${t("lifetime")}!)` : ""}
                 </p>
               </div>
               <div>

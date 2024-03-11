@@ -8,6 +8,10 @@ export default {
     },
     extend: {
       colors: {
+        brand: {
+          blue: "#58B9FF",
+          pink: "#FF81FF",
+        },
         primary: {
           130: "#EFF0F3",
           200: "#313338",
