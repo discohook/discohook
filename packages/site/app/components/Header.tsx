@@ -30,10 +30,10 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
     />
   );
 
-  const editorPaths = ["/", "/component", "/link"];
-  const isEditorPage = editorPaths.includes(
-    location.pathname.replace(/\/$/, ""),
-  );
+  const editorPaths = ["/component", "/link"];
+  const isEditorPage =
+    location.pathname === "/" ||
+    editorPaths.includes(location.pathname.replace(/\/$/, ""));
 
   return (
     <div className="sticky top-0 left-0 z-10 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
