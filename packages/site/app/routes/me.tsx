@@ -228,7 +228,7 @@ export default function Me() {
                 <div className="flex">
                   <img
                     className="rounded-full mr-4 h-[4.5rem] w-[4.5rem]"
-                    src={getUserAvatar(user)}
+                    src={getUserAvatar(user, { size: 128 })}
                     alt={user.name}
                   />
                   <div className="grow my-auto">
