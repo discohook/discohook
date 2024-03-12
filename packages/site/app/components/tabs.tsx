@@ -14,7 +14,7 @@ export const TabsWindow: React.FC<
 > = ({ children, data, tab, setTab }) => {
   return (
     <div className="sm:flex mt-4">
-      <div className="flex mb-2 sm:mb-0 overflow-x-auto sm:overflow-hidden sm:block sticky top-4 sm:w-1/5 shrink-0 mr-4 p-0.5 space-x-0.5 sm:space-x-0 sm:space-y-0.5 bg-slate-100 dark:bg-[#1E1F22] rounded z-10 shadow-md">
+      <div className="flex mb-2 sm:mb-0 overflow-x-auto sm:overflow-hidden sm:block sticky top-4 sm:w-1/5 shrink-0 sm:mr-4 p-0.5 space-x-0.5 sm:space-x-0 sm:space-y-0.5 bg-slate-100 dark:bg-[#1E1F22] rounded z-10 shadow-md">
         {data.map((t) => (
           <Tab
             key={`tab-${t.value}`}
