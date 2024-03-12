@@ -26,6 +26,7 @@ import { jsonAsString } from "~/util/zod";
 import {
   QueryDataVersion,
   backups as dBackups,
+  linkBackups as dLinkBackups,
   shareLinks as dShareLinks,
   getDb,
 } from "../store.server";
@@ -47,13 +48,25 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     limit: 50,
   });
 
+  const linkBackups = await db.query.linkBackups.findMany({
+    where: eq(dBackups.ownerId, user.id),
+    columns: {
+      id: true,
+      name: true,
+      code: true,
+      createdAt: true,
+    },
+    orderBy: desc(dBackups.name),
+    limit: 50,
+  });
+
   const links = await db.query.shareLinks.findMany({
     where: eq(dShareLinks.userId, user.id),
     orderBy: desc(dShareLinks.expiresAt),
     limit: 50,
   });
 
-  return { user, backups, links };
+  return { user, backups, linkBackups, links };
 };
 
 export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
@@ -65,11 +78,15 @@ export const action = async ({ request, context }: ActionArgs) => {
     z.discriminatedUnion("action", [
       z.object({
         action: z.literal("DELETE_SHARE_LINK"),
-        linkId: zx.NumAsString,
+        linkId: zx.IntAsString,
       }),
       z.object({
         action: z.literal("DELETE_BACKUP"),
-        backupId: zx.NumAsString,
+        backupId: zx.IntAsString,
+      }),
+      z.object({
+        action: z.literal("DELETE_LINK_BACKUP"),
+        backupId: zx.IntAsString,
       }),
       z.object({
         action: z.literal("IMPORT_BACKUPS"),
@@ -106,6 +123,18 @@ export const action = async ({ request, context }: ActionArgs) => {
       await db.delete(dBackups).where(eq(dBackups.id, data.backupId));
       return new Response(null, { status: 204 });
     }
+    case "DELETE_LINK_BACKUP": {
+      const backup = await db.query.linkBackups.findFirst({
+        where: eq(dBackups.id, data.backupId),
+      });
+      if (!backup) {
+        throw json({ message: "No backup with that ID." }, 404);
+      } else if (backup.ownerId !== user.id) {
+        throw json({ message: "You do not own this backup." }, 403);
+      }
+      await db.delete(dLinkBackups).where(eq(dBackups.id, data.backupId));
+      return new Response(null, { status: 204 });
+    }
     case "IMPORT_BACKUPS": {
       await db.insert(dBackups).values(
         data.backups.map((backup) => ({
@@ -134,7 +163,7 @@ const tabValues = ["profile", "backups", "linkEmbeds", "shareLinks"] as const;
 
 export default function Me() {
   const { t } = useTranslation();
-  const { user, backups, links } = useLoaderData<typeof loader>();
+  const { user, backups, linkBackups, links } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const now = new Date();
@@ -311,6 +340,75 @@ export default function Me() {
                               submit(
                                 {
                                   action: "DELETE_BACKUP",
+                                  backupId: backup.id,
+                                },
+                                {
+                                  method: "POST",
+                                  replace: true,
+                                },
+                              );
+                            }}
+                          >
+                            <CoolIcon icon="Trash_Full" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-500">{t("noBackups")}</p>
+              )}
+            </div>
+          ) : tab === "linkEmbeds" ? (
+            <div>
+              <div className="mb-4 flex">
+                <p className="text-xl font-semibold dark:text-gray-100 my-auto">
+                  {t(tab)}
+                </p>
+                {/* <Button
+                  className="ml-auto my-auto"
+                  onClick={() => setImportModalOpen(true)}
+                >
+                  {t("import")}
+                </Button> */}
+              </div>
+              {linkBackups.length > 0 ? (
+                <div className="space-y-1">
+                  {linkBackups.map((backup) => {
+                    return (
+                      <div
+                        key={`link-backup-${backup.id}`}
+                        className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
+                      >
+                        <div className="truncate">
+                          <div className="flex max-w-full">
+                            <p className="font-medium truncate">
+                              {backup.name}
+                            </p>
+                            <Link
+                              to={`/link?backup=${backup.id}`}
+                              className="ml-2 my-auto"
+                            >
+                              <CoolIcon icon="Edit_Pencil_01" />
+                            </Link>
+                          </div>
+                          <p className="text-gray-600 dark:text-gray-500 text-sm">
+                            {t("id", { replace: { id: backup.code } })}
+                          </p>
+                        </div>
+                        <div className="ml-auto pl-2 my-auto flex gap-2">
+                          <Link to={`/link/${backup.code}`} target="_blank">
+                            <Button discordstyle={ButtonStyle.Secondary}>
+                              <CoolIcon icon="External_Link" />
+                            </Button>
+                          </Link>
+                          <Button
+                            discordstyle={ButtonStyle.Danger}
+                            onClick={() => {
+                              submit(
+                                {
+                                  action: "DELETE_LINK_BACKUP",
                                   backupId: backup.id,
                                 },
                                 {
