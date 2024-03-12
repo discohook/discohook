@@ -33,13 +33,13 @@ export const MessageSendResultModal = (
                 <p>
                   <Trans
                     t={t}
-                    i18nKey={"messageId"}
+                    i18nKey="messageId"
                     components={[<span>{result.data.id}</span>]}
                   />
                   <br />
                   <Trans
                     t={t}
-                    i18nKey={"channelId"}
+                    i18nKey="channelId"
                     components={[<span>{result.data.channel_id}</span>]}
                   />
                   <br />
