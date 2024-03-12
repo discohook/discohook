@@ -1,15 +1,21 @@
 import { MetaFunction, SerializeFrom, json } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { desc, eq } from "drizzle-orm";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
+import { TabsWindow } from "~/components/tabs";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { getUser } from "~/session.server";
@@ -124,14 +130,22 @@ export const action = async ({ request, context }: ActionArgs) => {
 
 export const meta: MetaFunction = () => [{ title: "Your Data - Discohook" }];
 
+const tabValues = ["profile", "backups", "linkEmbeds", "shareLinks"] as const;
+
 export default function Me() {
   const { t } = useTranslation();
   const { user, backups, links } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const now = new Date();
 
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingBackup, setEditingBackup] = useState<LoadedBackup>();
+
+  const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
+  const [tab, setTab] = useState<(typeof tabValues)[number]>(
+    defaultTab && tabValues.includes(defaultTab) ? defaultTab : "profile",
+  );
 
   return (
     <div>
@@ -147,215 +161,282 @@ export default function Me() {
       />
       <Header user={user} />
       <Prose>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          <div className="w-full rounded-lg bg-gray-200 dark:bg-gray-700 shadow-md p-2 h-fit">
-            <div className="flex">
-              <img
-                className="rounded-full mr-4 h-16 w-16"
-                src={getUserAvatar(user)}
-                alt={user.name}
-              />
-              <div className="grow my-auto">
-                <p className="text-2xl font-semibold dark:text-gray-100">
-                  {user.name}
-                </p>
-                <p className="leading-none">{getUserTag(user)}</p>
+        <TabsWindow
+          tab={tab}
+          setTab={setTab as (v: string) => void}
+          data={[
+            {
+              label: t("profile"),
+              value: "profile",
+            },
+            {
+              label: t("backups"),
+              value: "backups",
+            },
+            {
+              label: (
+                <>
+                  <p className="text-xs font-semibold uppercase text-brand-pink">
+                    {t("deluxe")}
+                  </p>
+                  {t("linkEmbeds")}
+                </>
+              ),
+              value: "linkEmbeds",
+            },
+            {
+              label: t("shareLinks"),
+              value: "shareLinks",
+            },
+          ]}
+        >
+          {tab === "profile" ? (
+            <div>
+              <p className="text-xl font-semibold dark:text-gray-100 mb-4">
+                {t(tab)}
+              </p>
+              <div className="w-full rounded-lg bg-gray-200 dark:bg-gray-900 shadow-md p-4">
+                <div className="flex">
+                  <img
+                    className="rounded-full mr-4 h-[4.5rem] w-[4.5rem]"
+                    src={getUserAvatar(user)}
+                    alt={user.name}
+                  />
+                  <div className="grow my-auto">
+                    <p className="text-2xl font-semibold leading-none dark:text-gray-100">
+                      {user.name}
+                    </p>
+                    <span className="text-base font-medium dark:text-gray-400">
+                      {getUserTag(user)}
+                    </span>
+                  </div>
+                  <Link to="/auth/logout" className="block mb-auto ml-auto">
+                    <Button discordstyle={ButtonStyle.Secondary}>
+                      {t("logOut")}
+                    </Button>
+                  </Link>
+                </div>
+                <div className="space-y-4 mt-4 rounded-lg p-4 bg-gray-400 dark:bg-gray-800">
+                  <div>
+                    <p className="uppercase font-bold text-sm leading-4 dark:text-gray-400">
+                      {t("subscribedSince")}
+                    </p>
+                    <p className="text-base font-normal">
+                      {user.subscribedSince
+                        ? new Date(user.subscribedSince).toLocaleDateString(
+                            undefined,
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )
+                        : t("notSubscribed")}
+                      {user.lifetime ? ` (${t("lifetime")}!)` : ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="uppercase font-bold text-sm leading-4 dark:text-gray-400">
+                      {t("firstSubscribed")}
+                    </p>
+                    <p className="text-base font-normal">
+                      {user.firstSubscribed
+                        ? new Date(user.firstSubscribed).toLocaleDateString(
+                            undefined,
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )
+                        : t("never")}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="grid gap-2 grid-cols-2 mt-4">
-              <div>
-                <p className="uppercase font-bold text-xs leading-4 dark:text-gray-100">
-                  {t("subscribedSince")}
+          ) : tab === "backups" ? (
+            <div>
+              <div className="mb-4 flex">
+                <p className="text-xl font-semibold dark:text-gray-100 my-auto">
+                  {t(tab)}
                 </p>
-                <p className="text-sm font-normal">
-                  {user.subscribedSince
-                    ? new Date(user.subscribedSince).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        },
-                      )
-                    : t("notSubscribed")}{user.lifetime ? ` (${t("lifetime")}!)` : ""}
-                </p>
-              </div>
-              <div>
-                <p className="uppercase font-bold text-xs leading-4 dark:text-gray-100">
-                  {t("firstSubscribed")}
-                </p>
-                <p className="text-sm font-normal">
-                  {user.firstSubscribed
-                    ? new Date(user.firstSubscribed).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        },
-                      )
-                    : t("never")}
-                </p>
-              </div>
-            </div>
-            <div className="w-full flex mt-4">
-              <Link to="/auth/logout" className="ml-auto">
-                <Button discordstyle={ButtonStyle.Secondary}>
-                  {t("logOut")}
+                <Button
+                  className="ml-auto my-auto"
+                  onClick={() => setImportModalOpen(true)}
+                >
+                  {t("import")}
                 </Button>
-              </Link>
-            </div>
-          </div>
-          <div className="w-full h-fit">
-            <p className="text-xl font-semibold dark:text-gray-100">
-              {t("yourBackups")}
-            </p>
-            {backups.length > 0 ? (
-              <div className="space-y-1 mt-1 overflow-y-auto max-h-96">
-                {backups.map((backup) => {
-                  return (
-                    <div
-                      key={`backup-${backup.id}`}
-                      className="w-full rounded p-2 bg-gray-100 dark:bg-gray-700 flex"
-                    >
-                      <div className="truncate">
-                        <div className="flex max-w-full">
-                          <p className="font-medium truncate">{backup.name}</p>
-                          <button
-                            type="button"
-                            className="ml-2 my-auto"
-                            onClick={() => setEditingBackup(backup)}
-                          >
-                            <CoolIcon icon="Edit_Pencil_01" />
-                          </button>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-500 text-sm">
-                          {t("version", {
-                            replace: { version: backup.dataVersion },
-                          })}
-                        </p>
-                      </div>
-                      <div className="ml-auto pl-2 my-auto flex flex-col">
-                        <Link to={`/?backup=${backup.id}`} target="_blank">
-                          <CoolIcon icon="External_Link" />
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            submit(
-                              {
-                                action: "DELETE_BACKUP",
-                                backupId: backup.id,
-                              },
-                              {
-                                method: "POST",
-                                replace: true,
-                              },
-                            );
-                          }}
-                        >
-                          <CoolIcon
-                            icon="Trash_Full"
-                            className="text-rose-600"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
-            ) : (
-              <p className="text-gray-500">{t("noBackups")}</p>
-            )}
-            <Button className="mt-1" onClick={() => setImportModalOpen(true)}>
-              {t("import")}
-            </Button>
-          </div>
-          <div className="w-full h-fit">
-            <p className="text-xl font-semibold dark:text-gray-100">
-              {t("yourLinks")}
-            </p>
-            <p>{t("noShareLinkData")}</p>
-            {links.length > 0 ? (
-              <div className="space-y-1 mt-1 overflow-y-auto max-h-96">
-                {links.map((link) => {
-                  const created = new Date(link.createdAt);
-                  const expires = new Date(link.expiresAt);
-                  return (
-                    <div
-                      key={`link-${link.id}`}
-                      className="w-full rounded p-2 bg-gray-100 dark:bg-gray-700 flex"
-                    >
-                      <div className="truncate shrink-0">
-                        <p className="font-medium">
-                          {created.toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year:
-                              now.getFullYear() === created.getFullYear()
-                                ? undefined
-                                : "numeric",
-                          })}
-                          <span
-                            className={`ml-1 ${
-                              expires < now
-                                ? "text-rose-400"
-                                : expires.getTime() - now.getTime() <= 86400000
-                                  ? "text-yellow-500 dark:text-yellow-400"
-                                  : "text-gray-600 dark:text-gray-500"
-                            }`}
+              {backups.length > 0 ? (
+                <div className="space-y-1">
+                  {backups.map((backup) => {
+                    return (
+                      <div
+                        key={`backup-${backup.id}`}
+                        className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
+                      >
+                        <div className="truncate">
+                          <div className="flex max-w-full">
+                            <p className="font-medium truncate">
+                              {backup.name}
+                            </p>
+                            <button
+                              type="button"
+                              className="ml-2 my-auto"
+                              onClick={() => setEditingBackup(backup)}
+                            >
+                              <CoolIcon icon="Edit_Pencil_01" />
+                            </button>
+                          </div>
+                          <p className="text-gray-600 dark:text-gray-500 text-sm">
+                            {t("createdAt", {
+                              replace: {
+                                createdAt: new Date(
+                                  backup.createdAt,
+                                ).toLocaleDateString(),
+                              },
+                            })}
+                          </p>
+                        </div>
+                        <div className="ml-auto pl-2 my-auto flex gap-2">
+                          <Link to={`/?backup=${backup.id}`} target="_blank">
+                            <Button discordstyle={ButtonStyle.Secondary}>
+                              <CoolIcon icon="External_Link" />
+                            </Button>
+                          </Link>
+                          <Button
+                            discordstyle={ButtonStyle.Danger}
+                            onClick={() => {
+                              submit(
+                                {
+                                  action: "DELETE_BACKUP",
+                                  backupId: backup.id,
+                                },
+                                {
+                                  method: "POST",
+                                  replace: true,
+                                },
+                              );
+                            }}
                           >
-                            -{" "}
-                            {expires.toLocaleDateString(undefined, {
+                            <CoolIcon icon="Trash_Full" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-500">{t("noBackups")}</p>
+              )}
+            </div>
+          ) : tab === "shareLinks" ? (
+            <div className="w-full h-fit">
+              <p className="text-xl font-semibold dark:text-gray-100">
+                {t(tab)}
+              </p>
+              <p className="mb-4">
+                <Trans
+                  t={t}
+                  i18nKey="noShareLinkData"
+                  components={{
+                    backups: (
+                      <button
+                        type="button"
+                        className="underline hover:no-underline"
+                        onClick={() => setTab("backups")}
+                      />
+                    ),
+                  }}
+                />
+              </p>
+              {links.length > 0 ? (
+                <div className="space-y-1">
+                  {links.map((link) => {
+                    const created = new Date(link.createdAt);
+                    const expires = new Date(link.expiresAt);
+                    return (
+                      <div
+                        key={`share-link-${link.id}`}
+                        className="rounded p-4 bg-gray-100 dark:bg-gray-900 flex"
+                      >
+                        <div className="truncate shrink-0">
+                          <p className="font-medium">
+                            {created.toLocaleDateString(undefined, {
                               month: "short",
                               day: "numeric",
                               year:
-                                now.getFullYear() === expires.getFullYear()
+                                now.getFullYear() === created.getFullYear()
                                   ? undefined
                                   : "numeric",
                             })}
-                          </span>
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-500 text-sm">
-                          {t("id", { replace: { id: link.shareId } })}
-                        </p>
+                            <span
+                              className={`ml-1 ${
+                                expires < now
+                                  ? "text-rose-400"
+                                  : expires.getTime() - now.getTime() <=
+                                      86400000
+                                    ? "text-yellow-500 dark:text-yellow-400"
+                                    : "text-gray-600 dark:text-gray-500"
+                              }`}
+                            >
+                              -{" "}
+                              {expires.toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year:
+                                  now.getFullYear() === expires.getFullYear()
+                                    ? undefined
+                                    : "numeric",
+                              })}
+                            </span>
+                          </p>
+                          <p className="text-gray-600 dark:text-gray-500 text-sm">
+                            {t("id", { replace: { id: link.shareId } })}
+                          </p>
+                        </div>
+                        <div className="ml-auto pl-2 my-auto flex gap-2">
+                          {expires > now && (
+                            <Link
+                              to={`/?share=${link.shareId}`}
+                              target="_blank"
+                            >
+                              <Button discordstyle={ButtonStyle.Secondary}>
+                                <CoolIcon icon="External_Link" />
+                              </Button>
+                            </Link>
+                          )}
+                          <Button
+                            discordstyle={ButtonStyle.Danger}
+                            onClick={() => {
+                              submit(
+                                {
+                                  action: "DELETE_SHARE_LINK",
+                                  linkId: link.id,
+                                },
+                                {
+                                  method: "POST",
+                                  replace: true,
+                                },
+                              );
+                            }}
+                          >
+                            <CoolIcon icon="Trash_Full" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="ml-auto pl-2 my-auto flex flex-col">
-                        {expires > now && (
-                          <Link to={`/?share=${link.shareId}`} target="_blank">
-                            <CoolIcon icon="External_Link" />
-                          </Link>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            submit(
-                              {
-                                action: "DELETE_SHARE_LINK",
-                                linkId: link.id,
-                              },
-                              {
-                                method: "POST",
-                                replace: true,
-                              },
-                            );
-                          }}
-                        >
-                          <CoolIcon
-                            icon="Trash_Full"
-                            className="text-rose-600"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-gray-500">{t("noLinks")}</p>
-            )}
-          </div>
-        </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-500">{t("noLinks")}</p>
+              )}
+            </div>
+          ) : (
+            <></>
+          )}
+        </TabsWindow>
       </Prose>
     </div>
   );
