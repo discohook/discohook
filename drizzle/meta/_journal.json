@@ -29,6 +29,13 @@
       "when": 1710096298563,
       "tag": "0003_gifted_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1710284726414,
+      "tag": "0004_perfect_vance_astro",
+      "breakpoints": true
     }
   ]
 }

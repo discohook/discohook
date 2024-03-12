@@ -41,7 +41,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     columns: {
       id: true,
       name: true,
-      dataVersion: true,
+      previewImageUrl: true,
       createdAt: true,
     },
     orderBy: desc(dBackups.name),
@@ -54,6 +54,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       id: true,
       name: true,
       code: true,
+      previewImageUrl: true,
       createdAt: true,
     },
     orderBy: desc(dBackups.name),
@@ -305,7 +306,15 @@ export default function Me() {
                         key={`backup-${backup.id}`}
                         className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
                       >
-                        <div className="truncate">
+                        {backup.previewImageUrl && (
+                          <div
+                            style={{
+                              backgroundImage: `url(${backup.previewImageUrl})`,
+                            }}
+                            className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                          />
+                        )}
+                        <div className="truncate my-auto">
                           <div className="flex max-w-full">
                             <p className="font-medium truncate">
                               {backup.name}
@@ -381,7 +390,15 @@ export default function Me() {
                         key={`link-backup-${backup.id}`}
                         className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
                       >
-                        <div className="truncate">
+                        {backup.previewImageUrl && (
+                          <div
+                            style={{
+                              backgroundImage: `url(${backup.previewImageUrl})`,
+                            }}
+                            className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                          />
+                        )}
+                        <div className="truncate my-auto">
                           <div className="flex max-w-full">
                             <p className="font-medium truncate">
                               {backup.name}

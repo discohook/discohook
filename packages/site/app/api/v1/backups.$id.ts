@@ -7,6 +7,7 @@ import { backups, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { jsonAsString } from "~/util/zod";
+import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
@@ -66,7 +67,13 @@ export const action = async ({ request, params, context }: ActionArgs) => {
   return (
     await db
       .update(backups)
-      .set({ name, data })
+      .set({
+        name,
+        data,
+        previewImageUrl: data
+          ? findMessagesPreviewImageUrl(data.messages)
+          : undefined,
+      })
       .where(eq(backups.id, id))
       .returning({
         id: backups.id,

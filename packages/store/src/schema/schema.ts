@@ -244,6 +244,7 @@ export const backups = pgTable("Backup", {
   updatedAt: date("updatedAt"),
   dataVersion: text("dataVersion").notNull(),
   data: json("data").notNull().$type<QueryData>(),
+  previewImageUrl: text("previewImageUrl"),
 
   ownerId: integer("ownerId").notNull(),
 });
@@ -268,6 +269,7 @@ export const linkBackups = pgTable("LinkBackup", {
   updatedAt: date("updatedAt"),
   dataVersion: text("dataVersion").notNull(),
   data: json("data").notNull().$type<LinkQueryData>(),
+  previewImageUrl: text("previewImageUrl"),
 
   ownerId: integer("ownerId").notNull(),
 });

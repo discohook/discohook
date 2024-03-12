@@ -7,6 +7,7 @@ import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { jsonAsString } from "~/util/zod";
+import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
@@ -61,7 +62,15 @@ export const action = async ({ request, params, context }: ActionArgs) => {
   return (
     await db
       .update(linkBackups)
-      .set({ name: name?.trim() || undefined, data })
+      .set({
+        name: name?.trim() || undefined,
+        data,
+        previewImageUrl: data
+          ? findMessagesPreviewImageUrl([
+              { data: { embeds: [data.embed.data] } },
+            ])
+          : undefined,
+      })
       .where(eq(linkBackups.id, id))
       .returning({
         id: linkBackups.id,

@@ -8,6 +8,7 @@ import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { jsonAsString } from "~/util/zod";
 import { getDb, linkBackups } from "../../store.server";
+import { findMessagesPreviewImageUrl } from "./backups";
 
 export const action = async ({ request, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
@@ -55,6 +56,9 @@ export const action = async ({ request, context }: ActionArgs) => {
         code,
         data,
         dataVersion: String(data.version ?? 1),
+        previewImageUrl: findMessagesPreviewImageUrl([
+          { data: { embeds: [data.embed.data] } },
+        ]),
         ownerId: user.id,
       })
       .returning({
