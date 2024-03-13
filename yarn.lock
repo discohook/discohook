@@ -9829,14 +9829,14 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=944a53&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=39221e&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/48e17f36ffcb76474af909c7fff46c0bab73acd4c0e895f8db5d2ec789865f9d0e2e5a8ab18201aee29039c1d0e4ac3c1cca49a0f5cab742dcf6983b25e1a5e1
+  checksum: 10c0/e25472373d3cd8edbafb1a43101cad1e2b939e306e92462aea6a92b10fc6ee3aadfc076e5415f8c947c55d0b358a4f70a2e968027a3cc147e25fe91361c7a912
   languageName: node
   linkType: hard
 
