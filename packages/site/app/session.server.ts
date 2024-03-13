@@ -97,6 +97,9 @@ export async function getUser(
       name: true,
       firstSubscribed: true,
       subscribedSince: true,
+      subscriptionExpiresAt: true,
+      lifetime: true,
+      discordId: true,
     },
     with: {
       discordUser: {
@@ -118,5 +121,5 @@ export async function getUser(
     }
   }
 
-  return doubleDecode<typeof user>(user) as User;
+  return doubleDecode<typeof user>(user) satisfies User;
 }

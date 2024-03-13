@@ -101,6 +101,7 @@ export const upsertDiscordUser = async (
       name: true,
       firstSubscribed: true,
       subscribedSince: true,
+      subscriptionExpiresAt: true,
       lifetime: true,
       discordId: true,
     },
