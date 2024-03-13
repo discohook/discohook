@@ -36,7 +36,10 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
   return {
     ...backup,
-    data: "data" in backup ? doubleDecode<QueryData>(backup.data) : null,
+    data:
+      "data" in backup
+        ? doubleDecode<QueryData>(backup.data as QueryData)
+        : null,
   };
 };
 
