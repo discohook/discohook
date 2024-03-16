@@ -47,7 +47,9 @@ manager.on(WebSocketShardEvents.Ready, (event) => {
   console.log(
     `${event.data.user.username}#${event.data.user.discriminator} ready with ${
       event.data.shard ? event.data.shard[1] : 0
-    } shards on ${event.data.guilds.length} guilds`,
+    } shards on ${event.data.guilds.length} guilds\nWorker origin: ${
+      env.WORKER_ORIGIN
+    }`,
   );
 });
 
