@@ -30,6 +30,10 @@ export const meta: MetaFunction = () => {
       property: "og:image",
       content: "logos/discohook_512w.png",
     },
+    {
+      name: "theme-color",
+      content: "#58b9ff",
+    }
   ];
 };
 
@@ -80,7 +84,7 @@ export default function App() {
         <Links />
         <TailwindThemeScript />
       </head>
-      <body className="bg-white text-black dark:bg-[#313338] dark:text-primary-230">
+      <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
@@ -103,7 +107,7 @@ export function ErrorBoundary() {
         <Links />
         <TailwindThemeScript />
       </head>
-      <body className="bg-white text-black dark:bg-[#313338] dark:text-primary-230 h-screen flex">
+      <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230 h-screen flex">
         <div className="p-8 max-w-3xl mx-auto">
           <Message
             message={{

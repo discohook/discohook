@@ -37,7 +37,16 @@ export const getUserTag = (user: User): string =>
       : `${user.discordUser.name}#${user.discordUser.discriminator}`
     : user.name;
 
-export const getUserAvatar = (user: User, options?: ImageURLOptions): string =>
+export const getUserAvatar = (
+  user: {
+    discordUser?: {
+      id: bigint;
+      discriminator: string | null;
+      avatar: string | null;
+    } | null;
+  },
+  options?: ImageURLOptions,
+): string =>
   user.discordUser
     ? user.discordUser.avatar
       ? cdn.avatar(
@@ -47,7 +56,7 @@ export const getUserAvatar = (user: User, options?: ImageURLOptions): string =>
         )
       : cdn.defaultAvatar(
           user.discordUser.discriminator === "0"
-            ? Number((BigInt(user.discordUser.id) >> BigInt(22)) % BigInt(6))
+            ? Number((user.discordUser.id >> BigInt(22)) % BigInt(6))
             : Number(user.discordUser.discriminator) % 5,
         )
     : cdn.defaultAvatar(0);

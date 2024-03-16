@@ -181,6 +181,7 @@ export const discordMembers = pgTable(
     guildId: snowflake("guildId")
       .references(() => discordGuilds.id, { onDelete: "cascade" })
       .notNull(),
+    permissions: text("permissions").default("0"),
   },
   (table) => ({
     unq: unique().on(table.userId, table.guildId),
@@ -224,7 +225,9 @@ export const shareLinks = pgTable("ShareLink", {
   expiresAt: date("expiresAt").notNull(),
   origin: text("origin"),
 
-  userId: integer("userId"),
+  userId: integer("userId").references(() => users.id, {
+    onDelete: "cascade",
+  }),
 });
 
 export const shareLinksRelations = relations(shareLinks, ({ one }) => ({
@@ -245,8 +248,11 @@ export const backups = pgTable("Backup", {
   dataVersion: text("dataVersion").notNull(),
   data: json("data").notNull().$type<QueryData>(),
   previewImageUrl: text("previewImageUrl"),
+  importedFromOrg: boolean("importedFromOrg").notNull().default(false),
 
-  ownerId: integer("ownerId").notNull(),
+  ownerId: integer("ownerId")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
 });
 
 export const backupsRelations = relations(backups, ({ one, many }) => ({
@@ -271,7 +277,9 @@ export const linkBackups = pgTable("LinkBackup", {
   data: json("data").notNull().$type<LinkQueryData>(),
   previewImageUrl: text("previewImageUrl"),
 
-  ownerId: integer("ownerId").notNull(),
+  ownerId: integer("ownerId")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
 });
 
 export const linkBackupsRelations = relations(backups, ({ one, many }) => ({

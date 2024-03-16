@@ -1,4 +1,5 @@
 import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v10";
+import { twJoin } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { CoolIcon } from "./CoolIcon";
 import { Twemoji } from "./Twemoji";
@@ -16,7 +17,8 @@ export const Button = (
     <button
       type="button"
       {...props}
-      className={`rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex ${
+      className={twJoin(
+        "rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex",
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
           ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
           : [ButtonStyle.Link, ButtonStyle.Secondary].includes(
@@ -27,8 +29,9 @@ export const Button = (
               ? "bg-[#da373c] hover:bg-[#a12828]"
               : props.discordstyle === ButtonStyle.Success
                 ? "bg-[#248046] hover:bg-[#15562b] dark:bg-[#248046] dark:hover:bg-[#1a6334]"
-                : ""
-      } ${props.className ?? ""}`}
+                : "",
+        props.className ?? "",
+      )}
     >
       {props.emoji &&
         (props.emoji.id ? (

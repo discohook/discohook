@@ -55,7 +55,7 @@ export const HistoryModal = <
                     </span>
                   </summary>
                   <div className="flex w-full">
-                    <div className="bg-white dark:bg-[#313338] border border-gray-300 dark:border-transparent shadow rounded p-2 grow">
+                    <div className="bg-white dark:bg-primary-600 border border-gray-300 dark:border-transparent shadow rounded p-2 grow">
                       {item.data.messages.map((message, i) => (
                         <Message
                           key={`history-${item.id}-message-${i}`}
@@ -121,7 +121,7 @@ export const HistoryModal = <
                     </span>
                   </summary>
                   <div className="flex w-full">
-                    <div className="bg-white dark:bg-[#313338] border border-gray-300 dark:border-transparent shadow rounded p-2 grow">
+                    <div className="bg-white dark:bg-primary-600 border border-gray-300 dark:border-transparent shadow rounded p-2 grow">
                       <Embed {...linkEmbedToAPIEmbed(item.data.embed.data)} />
                     </div>
                     <div className="space-y-1 ml-2 text-xl">

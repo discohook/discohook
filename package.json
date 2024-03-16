@@ -9,6 +9,7 @@
     "ngrok:bot": "ngrok http 8787",
     "bot-ws": "cd packages/bot-ws && npm run bot",
     "dev:site": "cd packages/site && npm run dev",
+    "dev:backups": "cd packages/magic-backup-importer && npm run dev",
     "ngrok:site": "ngrok http 8788",
     "fix": "biome format . --write",
     "db-migrate": "drizzle-kit generate:pg",

@@ -11,4 +11,6 @@ export interface Env {
   KOFI_WEBHOOK_TOKEN?: string;
   CRYPTO_ALERTS_TOKEN?: string;
   BITCOIN_ADDRESS?: string;
+  // discohook.org - for importing old-style backups
+  LEGACY_ORIGIN?: string;
 }

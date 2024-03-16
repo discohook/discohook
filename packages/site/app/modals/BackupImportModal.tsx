@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { FileInput } from "~/components/FileInput";
+import { InfoBox } from "~/components/InfoBox";
 import { QueryData } from "~/types/QueryData";
 import { DiscohookBackup, DiscohookBackupExportData } from "~/types/discohook";
 import { base64UrlEncode } from "~/util/text";
@@ -67,6 +68,18 @@ export const BackupImportModal = (
 
   return (
     <Modal title="Import Backups" {...props}>
+      <InfoBox>
+        <CoolIcon icon="Info" /> If you still have backups stored on
+        Discohook.org, you can{" "}
+        <Link
+          className="text-blurple-500 hover:underline"
+          to="/me/import-org-backups"
+        >
+          import them by clicking here
+        </Link>
+        . Otherwise, you can use this menu to import backup files that you have
+        previously exported.
+      </InfoBox>
       <FileInput
         label="Backups File"
         accept=".json"

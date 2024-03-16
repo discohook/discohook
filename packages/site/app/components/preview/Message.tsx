@@ -199,7 +199,7 @@ export const Message: React.FC<{
           )}
           {message.content && (
             <div
-              className="contents font-medium text-[#313338] dark:text-primary-230 dark:font-normal text-base leading-[1.375]"
+              className="contents font-medium text-primary-600 dark:text-primary-230 dark:font-normal text-base leading-[1.375]"
               style={{
                 // @ts-expect-error
                 "--font-size": "1rem",

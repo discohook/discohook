@@ -15,6 +15,7 @@ import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
+import { Twemoji } from "~/components/Twemoji";
 import { TabsWindow } from "~/components/tabs";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
@@ -42,6 +43,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       id: true,
       name: true,
       previewImageUrl: true,
+      importedFromOrg: true,
       createdAt: true,
     },
     orderBy: desc(dBackups.name),
@@ -328,13 +330,23 @@ export default function Me() {
                             </button>
                           </div>
                           <p className="text-gray-600 dark:text-gray-500 text-sm">
-                            {t("createdAt", {
-                              replace: {
-                                createdAt: new Date(
+                            {backup.importedFromOrg ? (
+                              <>
+                                <Twemoji emoji="✨" className="grayscale" />{" "}
+                                Imported from discohook.org on{" "}
+                                {new Date(
                                   backup.createdAt,
-                                ).toLocaleDateString(),
-                              },
-                            })}
+                                ).toLocaleDateString()}
+                              </>
+                            ) : (
+                              t("createdAt", {
+                                replace: {
+                                  createdAt: new Date(
+                                    backup.createdAt,
+                                  ).toLocaleDateString(),
+                                },
+                              })
+                            )}
                           </p>
                         </div>
                         <div className="ml-auto pl-2 my-auto flex gap-2">

@@ -23,11 +23,12 @@ Discohook is free, but you are encouraged to [donate and get extra perks](https:
 
 ## Meta
 
-This monorepo comes in three main parts:
+This monorepo comes in a few main parts:
 
 - [site](/packages/site) - The Discohook website
 - [bot](/packages/bot) - Handles Discord interactions & proxied gateway events
 - [bot-ws](/packages/bot-ws) - Proxies gateway events to `bot`
+- [magic-backup-importer](/packages/magic-backup-importer) - Hosted on a domain where users may have local backups stored (`site` redirects here and vice versa)
 
 Along with some shared packages:
 
