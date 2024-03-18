@@ -48,3 +48,12 @@ export const Tab: React.FC<{
     {label}
   </button>
 );
+
+export const TabHeader: React.FC<
+  React.PropsWithChildren & { subtitle?: React.ReactNode }
+> = ({ children, subtitle }) => (
+  <div className="mb-4">
+    <p className="text-xl font-semibold dark:text-gray-100">{children}</p>
+    {subtitle}
+  </div>
+);

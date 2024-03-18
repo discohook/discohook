@@ -139,6 +139,9 @@ export const discordGuildsRelations = relations(discordGuilds, ({ many }) => ({
   reactionRoles: many(discordReactionRoles, {
     relationName: "DiscordGuild_ReactionRole",
   }),
+  messageLogEntries: many(messageLogEntries, {
+    relationName: "DiscordGuild_MessageLogEntry",
+  }),
 }));
 
 export const discordRoles = pgTable(
@@ -213,6 +216,9 @@ export const guildedServersRelations = relations(
     backups: many(backups, { relationName: "GuildedServer_Backup" }),
     webhooks: many(webhooks, { relationName: "GuildedServer_Webhook" }),
     triggers: many(triggers, { relationName: "GuildedServer_Trigger" }),
+    messageLogEntries: many(messageLogEntries, {
+      relationName: "GuildedServer_MessageLogEntry",
+    }),
   }),
 );
 
@@ -333,6 +339,13 @@ export const messageLogEntries = pgTable("MessageLogEntry", {
   id: serial("id").primaryKey(),
   type: text("type").$type<"send" | "edit" | "delete">(),
   webhookId: text("webhookId").notNull(),
+  discordGuildId: snowflake("discordGuildId").references(
+    () => discordGuilds.id,
+    { onDelete: "cascade" },
+  ),
+  guildedServerId: text("guildedServerId").references(() => guildedServers.id, {
+    onDelete: "cascade",
+  }),
   channelId: text("channelId").notNull(),
   messageId: text("messageId").notNull(),
   threadId: text("threadId"),
@@ -353,6 +366,16 @@ export const messageLogEntriesRelations = relations(
     //   fields: [messageLogEntries.webhookId],
     //   references: [webhooks.id],
     // }),
+    discordGuild: one(discordGuilds, {
+      fields: [messageLogEntries.discordGuildId],
+      references: [discordGuilds.id],
+      relationName: "DiscordGuild_MessageLogEntry",
+    }),
+    guildedServer: one(guildedServers, {
+      fields: [messageLogEntries.guildedServerId],
+      references: [guildedServers.id],
+      relationName: "GuildedServer_MessageLogEntry",
+    }),
     user: one(users, {
       fields: [messageLogEntries.userId],
       references: [users.id],

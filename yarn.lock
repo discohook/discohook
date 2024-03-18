@@ -4392,6 +4392,7 @@ __metadata:
     "@types/react-modal": "npm:^3.16.3"
     "@types/showdown": "npm:^2.0.6"
     discord-api-types: "npm:^0.37.66"
+    discord-bitflag: "npm:^1.0.1"
     discord-snowflake: "npm:^2.0.0"
     emoji-mart: "npm:^5.5.2"
     he: "npm:^1.2.0"
@@ -10142,14 +10143,14 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=eb14d5&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=3ccf1a&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/d2f195191e0851eee2f90d7229dd97eb4f4fff8ef3b052fd245486eecb81d205b96eac719cd51ecb77d91c5f47850a616032e99574bfee197ba69ee7bca9e6a4
+  checksum: 10c0/df781cf36cf2a2c23b9ea0b1b78b0be638a62108f4e8c06b863bb5d4c4a2dd04ee51d27440cbeab364a9d2c5f138c176386ee65c7e44c326f60eb1bba046069f
   languageName: node
   linkType: hard
 

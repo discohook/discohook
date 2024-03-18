@@ -25,6 +25,7 @@
     "@twemoji/api": "^15.0.3",
     "@types/showdown": "^2.0.6",
     "discord-api-types": "^0.37.66",
+    "discord-bitflag": "^1.0.1",
     "discord-snowflake": "^2.0.0",
     "emoji-mart": "^5.5.2",
     "he": "^1.2.0",

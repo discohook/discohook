@@ -33,7 +33,14 @@ export const meta: MetaFunction = () => {
     {
       name: "theme-color",
       content: "#58b9ff",
-    }
+    },
+    // This is here instead of `links` so that it can be overridden by server pages
+    {
+      tagName: "link",
+      rel: "icon",
+      type: "image/x-icon",
+      href: "/favicon.ico",
+    },
   ];
 };
 

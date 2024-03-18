@@ -21,7 +21,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   return { user, wallets };
 };
 
-const Cell: React.FC<
+export const Cell: React.FC<
   React.PropsWithChildren & {
     className?: string;
     premium?: boolean;

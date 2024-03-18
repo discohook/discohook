@@ -93,6 +93,10 @@ export const resources = {
       lifetime: "Lifetime",
       graceRemaining_one: "{{count}} day remaining",
       graceRemaining_other: "{{count}} days remaining",
+      server_one: "Server",
+      server_other: "Servers",
+      noServers: "You don't appear to share any servers with Discohook Utils.",
+      inviteBot: "Invite Bot",
       // Editor
       rowEmpty: "Must contain at least one component (button/select)",
       labelEmpty: "Must have a label or emoji, or both",

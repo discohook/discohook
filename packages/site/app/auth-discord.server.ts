@@ -5,17 +5,21 @@ import {
   RESTPostOAuth2AccessTokenResult,
   Routes,
 } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
 import { getSessionStorage } from "./session.server";
 import {
   DBWithSchema,
+  discordGuilds,
+  discordMembers,
   getDb,
+  makeSnowflake,
   oauthInfo,
   upsertDiscordUser,
 } from "./store.server";
 import { Env } from "./types/env";
+import { getCurrentUserGuilds } from "./util/discord";
 import { Context } from "./util/loader";
 import { base64Encode } from "./util/text";
 
@@ -57,11 +61,36 @@ export const getDiscordAuth = (
         ),
       });
 
-      // const userGuilds = await getCurrentUserGuilds(accessToken);
-      // const guilds = userGuilds.filter(
-      //  // Owner or manage webhooks
-      //  (g) => g.owner || (BigInt(g.permissions) & BigInt(0x29)) == BigInt(0x29)
-      // );
+      const guilds = await getCurrentUserGuilds(accessToken);
+      await db
+        .insert(discordGuilds)
+        .values(
+          guilds.map((guild) => ({
+            id: makeSnowflake(guild.id),
+            name: guild.name,
+            icon: guild.icon,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: discordGuilds.id,
+          set: {
+            name: sql`excluded.name`,
+            icon: sql`excluded.icon`,
+          },
+        });
+      await db
+        .insert(discordMembers)
+        .values(
+          guilds.map((guild) => ({
+            guildId: makeSnowflake(guild.id),
+            userId: makeSnowflake(j.id),
+            permissions: guild.permissions,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: [discordMembers.guildId, discordMembers.userId],
+          set: { permissions: sql`excluded.permissions` },
+        });
 
       return {
         id: user.id,

@@ -6,11 +6,11 @@ import { getUser } from "~/session.server";
 import { getWebhook, getWebhookMessage } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import {
-    getDb,
-    getchGuild,
-    messageLogEntries,
-    upsertGuild,
-    webhooks
+  getDb,
+  getchGuild,
+  messageLogEntries,
+  upsertGuild,
+  webhooks
 } from "../../store.server";
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -90,6 +90,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       .values({
         webhookId,
         type,
+        discordGuildId: guildId,
         messageId: message.id,
         channelId: message.channel_id,
         threadId,

@@ -6,6 +6,7 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -16,11 +17,12 @@ import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { Twemoji } from "~/components/Twemoji";
-import { TabsWindow } from "~/components/tabs";
+import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { getUser } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
+import { cdn } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { jsonAsString } from "~/util/zod";
@@ -29,6 +31,7 @@ import {
   backups as dBackups,
   linkBackups as dLinkBackups,
   shareLinks as dShareLinks,
+  discordMembers,
   getDb,
 } from "../store.server";
 
@@ -69,7 +72,15 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     limit: 50,
   });
 
-  return { user, backups, linkBackups, links };
+  const memberships = user.discordId
+    ? await db.query.discordMembers.findMany({
+        where: eq(discordMembers.userId, user.discordId),
+        columns: { permissions: true },
+        with: { guild: true },
+      })
+    : [];
+
+  return { user, backups, linkBackups, links, memberships };
 };
 
 export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
@@ -162,11 +173,18 @@ export const action = async ({ request, context }: ActionArgs) => {
 
 export const meta: MetaFunction = () => [{ title: "Your Data - Discohook" }];
 
-const tabValues = ["profile", "backups", "linkEmbeds", "shareLinks"] as const;
+const tabValues = [
+  "profile",
+  "backups",
+  "linkEmbeds",
+  "shareLinks",
+  "servers",
+] as const;
 
 export default function Me() {
   const { t } = useTranslation();
-  const { user, backups, linkBackups, links } = useLoaderData<typeof loader>();
+  const { user, backups, linkBackups, links, memberships } =
+    useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const now = new Date();
@@ -176,7 +194,7 @@ export default function Me() {
 
   const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
   const [tab, setTab] = useState<(typeof tabValues)[number]>(
-    defaultTab && tabValues.includes(defaultTab) ? defaultTab : "profile",
+    defaultTab && tabValues.includes(defaultTab) ? defaultTab : tabValues[0],
   );
 
   return (
@@ -202,6 +220,10 @@ export default function Me() {
               value: "profile",
             },
             {
+              label: t("server_other"),
+              value: "servers",
+            },
+            {
               label: t("backups"),
               value: "backups",
             },
@@ -224,9 +246,7 @@ export default function Me() {
         >
           {tab === "profile" ? (
             <div>
-              <p className="text-xl font-semibold dark:text-gray-100 mb-4">
-                {t(tab)}
-              </p>
+              <TabHeader>{t(tab)}</TabHeader>
               <div className="w-full rounded-lg bg-gray-200 dark:bg-gray-900 shadow-md p-4">
                 <div className="flex">
                   <img
@@ -286,6 +306,80 @@ export default function Me() {
                   </div>
                 </div>
               </div>
+            </div>
+          ) : tab === "servers" ? (
+            <div>
+              <div className="mb-4 flex">
+                <p className="text-xl font-semibold dark:text-gray-100 my-auto">
+                  {t("server_other")}
+                </p>
+                <Link to="/bot" className="ml-auto my-auto">
+                  <Button discordstyle={ButtonStyle.Link}>
+                    {t("inviteBot")}
+                  </Button>
+                </Link>
+              </div>
+              {memberships.length > 0 ? (
+                <div className="space-y-1">
+                  {memberships
+                    .filter((m) => {
+                      const perm = new PermissionsBitField(
+                        BigInt(m.permissions ?? "0"),
+                      );
+                      return (
+                        perm.has(PermissionFlags.ManageMessages) ||
+                        perm.has(PermissionFlags.ManageWebhooks)
+                      );
+                    })
+                    .sort((a, b) => {
+                      // const perm = new PermissionsBitField(
+                      //   BigInt(m.permissions ?? "0"),
+                      // );
+                      // if (perm.has(PermissionFlags.Administrator)) {
+                      //   return -20;
+                      // }
+                      // return 0;
+                      return a.guild.name > b.guild.name ? 1 : -1;
+                    })
+                    .map(({ guild }) => {
+                      return (
+                        <div
+                          key={`guild-${guild.id}`}
+                          className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
+                        >
+                          <div
+                            style={{
+                              backgroundImage: `url(${
+                                guild.icon
+                                  ? cdn.icon(String(guild.id), guild.icon, {
+                                      size: 64,
+                                    })
+                                  : cdn.defaultAvatar(5)
+                              })`,
+                            }}
+                            className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                          />
+                          <div className="truncate my-auto">
+                            <div className="flex max-w-full">
+                              <p className="font-medium truncate">
+                                {guild.name}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="ml-auto pl-2 my-auto flex gap-2">
+                            <Link to={`/s/${guild.id}`}>
+                              <Button discordstyle={ButtonStyle.Secondary}>
+                                <CoolIcon icon="Chevron_Right" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="text-gray-500">{t("noServers")}</p>
+              )}
             </div>
           ) : tab === "backups" ? (
             <div>

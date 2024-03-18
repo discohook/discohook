@@ -216,8 +216,27 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   payload: GatewayGuildMemberAddDispatchData,
 ) => {
   const rest = new REST().setToken(env.DISCORD_TOKEN);
+
   const db = getDb(env.DATABASE_URL);
   const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
+
+  // Store member relation data. This isn't *super* important so we
+  // skip it if necessary in order to let triggers succeed
+  // try {
+  //   // biome-ignore lint/style/noNonNullAssertion: Only absent for message_create and message_update
+  //   const user = payload.user!;
+  //   await upsertGuild(db, guild);
+  //   await upsertDiscordUser(db, user);
+  //   await db
+  //     .insert(discordMembers)
+  //     .values({
+  //       userId: makeSnowflake(user.id),
+  //       guildId: makeSnowflake(payload.guild_id),
+  //     })
+  //     .onConflictDoNothing();
+  // } catch {}
+
+  // Get & execute triggers
   const triggers = await getWelcomerConfigurations(db, "add", rest, guild);
   const applicable = triggers.filter(
     (t) =>
