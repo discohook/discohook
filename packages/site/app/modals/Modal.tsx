@@ -20,11 +20,11 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode }> = ({
       closeTimeoutMS={100}
       style={{
         overlay: {
-          zIndex: 11,
+          zIndex: 21,
           backgroundColor: "rgb(0 0 0 / 0.5)",
         },
         content: {
-          zIndex: 11,
+          zIndex: 21,
           padding: 0,
           inset: "1rem",
           background: "none",
@@ -55,7 +55,11 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode }> = ({
 export const ModalCloseButton: React.FC<Pick<ModalProps, "setOpen">> = ({
   setOpen,
 }) => (
-  <button className="ml-auto mb-auto" onClick={() => setOpen(false)}>
+  <button
+    type="button"
+    className="ml-auto mb-auto"
+    onClick={() => setOpen(false)}
+  >
     <CoolIcon
       icon="Close_MD"
       className="text-2xl text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-gray-300 transition"

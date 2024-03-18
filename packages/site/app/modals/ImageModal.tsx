@@ -28,12 +28,12 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
       closeTimeoutMS={100}
       style={{
         overlay: {
-          zIndex: 11,
+          zIndex: 21,
           backgroundColor: "rgb(0 0 0 / 0.5)",
           cursor: "zoom-out",
         },
         content: {
-          zIndex: 11,
+          zIndex: 21,
           padding: "2rem",
           background: "none",
           border: "none",

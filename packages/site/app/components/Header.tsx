@@ -36,7 +36,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
     editorPaths.includes(location.pathname.replace(/\/$/, ""));
 
   return (
-    <div className="sticky top-0 left-0 z-10 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
+    <div className="sticky top-0 left-0 z-20 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
       <HelpModal open={helpOpen} setOpen={setHelpOpen} />
       <SettingsModal
         open={settingsOpen}
