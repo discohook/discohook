@@ -45,3 +45,5 @@ If you would also like to work on gateway event processing (the logic for which 
 ### Site
 
 Run `yarn dev:site` to start a miniflare server for the site. An `ngrok:site` script is provided for convenience, but it is not necessary as you can just visit http://localhost:8788 for testing.
+
+If you want to develop `magic-backup-importer`, also run `yarn dev:backups` and [set up its environment](/packages/magic-backup-importer/README.md#development). This will be hosted on http://localhost:8789 by default. To save a backup to the local database, uncomment the execution of the `saveBackup()` method in the index route's `useEffect` callback.
