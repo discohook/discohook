@@ -3816,6 +3816,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chrono-node@npm:^2.7.5":
+  version: 2.7.5
+  resolution: "chrono-node@npm:2.7.5"
+  dependencies:
+    dayjs: "npm:^1.10.0"
+  checksum: 10c0/325fc93b25082c9250cb4abe28ddd4b0f4905079060d59acde2a471660e0d178e98b5d7c6fe717fe0e494e78584f5f166f68f1cddf0d0559a646238786a5361a
+  languageName: node
+  linkType: hard
+
 "classnames@npm:^2.3.2":
   version: 2.3.2
   resolution: "classnames@npm:2.3.2"
@@ -4058,6 +4067,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+cron-parser@shayypy/cron-parser:
+  version: 4.9.0
+  resolution: "cron-parser@https://github.com/shayypy/cron-parser.git#commit=ac8d4dd9dccf08bbfbfab4ef2f63ca4ecb72740a"
+  dependencies:
+    luxon: "npm:^3.2.1"
+  checksum: 10c0/b8af4f9ccc4a29f5acd1f85dcc7a6191a9068f6092094e8ff986aef18b075f84eed7afba6e9dfa644e2cbd12e585f0d4570f729fbe8f76f21b608fb31be9727c
+  languageName: node
+  linkType: hard
+
 "cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3":
   version: 7.0.3
   resolution: "cross-spawn@npm:7.0.3"
@@ -4113,6 +4131,13 @@ __metadata:
   version: 3.0.1
   resolution: "data-uri-to-buffer@npm:3.0.1"
   checksum: 10c0/01fa28525402582fbb972c91822533f5528156e9e7241512b903467acbe2e0505760504e22c548bb707c7a56b5459194ee4fa6434e5995fa1a658744c2ce0cff
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.10.0":
+  version: 1.11.10
+  resolution: "dayjs@npm:1.11.10"
+  checksum: 10c0/4de9af50639d47df87f2e15fa36bb07e0f9ed1e9c52c6caa1482788ee9a384d668f1dbd00c54f82aaab163db07d61d2899384b8254da3a9184fc6deca080e2fe
   languageName: node
   linkType: hard
 
@@ -4391,6 +4416,8 @@ __metadata:
     "@types/react-dom": "npm:^18.2.7"
     "@types/react-modal": "npm:^3.16.3"
     "@types/showdown": "npm:^2.0.6"
+    chrono-node: "npm:^2.7.5"
+    cron-parser: shayypy/cron-parser
     discord-api-types: "npm:^0.37.66"
     discord-bitflag: "npm:^1.0.1"
     discord-snowflake: "npm:^2.0.0"
@@ -4399,6 +4426,7 @@ __metadata:
     highlight.js: "npm:^11.9.0"
     i18next: "npm:^23.8.2"
     isbot: "npm:^3.6.8"
+    moment: "npm:^2.30.1"
     react: "npm:^18.2.0"
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.2.0"
@@ -7258,6 +7286,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"luxon@npm:^3.2.1":
+  version: 3.4.4
+  resolution: "luxon@npm:3.4.4"
+  checksum: 10c0/02e26a0b039c11fd5b75e1d734c8f0332c95510f6a514a9a0991023e43fb233884da02d7f966823ffb230632a733fc86d4a4b1e63c3fbe00058b8ee0f8c728af
+  languageName: node
+  linkType: hard
+
 "magic-backup-importer@workspace:packages/magic-backup-importer":
   version: 0.0.0-use.local
   resolution: "magic-backup-importer@workspace:packages/magic-backup-importer"
@@ -8254,6 +8289,13 @@ __metadata:
   version: 1.0.1
   resolution: "modern-ahocorasick@npm:1.0.1"
   checksum: 10c0/90ef4516ba8eef136d0cd4949faacdadee02217b8e25deda2881054ca8fcc32b985ef159b6e794c40e11c51040303c8e2975b20b23b86ec8a2a63516bbf93add
+  languageName: node
+  linkType: hard
+
+"moment@npm:^2.30.1":
+  version: 2.30.1
+  resolution: "moment@npm:2.30.1"
+  checksum: 10c0/865e4279418c6de666fca7786607705fd0189d8a7b7624e2e56be99290ac846f90878a6f602e34b4e0455c549b85385b1baf9966845962b313699e7cb847543a
   languageName: node
   linkType: hard
 
@@ -10143,14 +10185,14 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=3ccf1a&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=6d4c74&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/df781cf36cf2a2c23b9ea0b1b78b0be638a62108f4e8c06b863bb5d4c4a2dd04ee51d27440cbeab364a9d2c5f138c176386ee65c7e44c326f60eb1bba046069f
+  checksum: 10c0/387993921f36872e77b5d4c181f6191d238e9c8bb68618f278d710e67b7d20085cb95d70e5014c93d365dc0b34a328cad23fec51d2ea47faa26b95bbe6546200
   languageName: node
   linkType: hard
 
