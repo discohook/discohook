@@ -1,4 +1,5 @@
 import { json } from "@remix-run/cloudflare";
+import { parseExpression } from "cron-parser";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
@@ -46,18 +47,49 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 export const action = async ({ request, params, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
   const { id } = zx.parseParams(params, { id: zx.NumAsString });
-  const { name, data } = await zx.parseForm(request, {
-    name: z
-      .ostring()
-      .refine((val) => (val !== undefined ? val.length <= 100 : true)),
-    data: z.optional(jsonAsString(ZodQueryData)),
-  });
+  const { name, data, scheduleAt, cron, timezone } = await zx.parseForm(
+    request,
+    {
+      name: z
+        .ostring()
+        .refine((val) => (val !== undefined ? val.length <= 100 : true)),
+      data: z.optional(jsonAsString(ZodQueryData)),
+      scheduleAt: z
+        .string()
+        .datetime()
+        .transform((v) => new Date(v))
+        // Must be at least 30 seconds in the future
+        .refine((d) => d.getTime() - new Date().getTime() >= 30_000)
+        .or(z.literal(""))
+        .optional(),
+      cron: z
+        .string()
+        .refine((v) => {
+          try {
+            const exp = parseExpression(v);
+            if (!exp.hasNext()) return false;
+
+            const next = exp.next();
+            const after = exp.next();
+            // Maximum closeness is once every two hours
+            return after.getTime() - next.getTime() >= 7_200_000;
+          } catch {
+            return false;
+          }
+        })
+        .transform((v) => parseExpression(v))
+        .or(z.literal(""))
+        .optional(),
+      timezone: z.ostring(),
+    },
+  );
 
   const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, id),
     columns: {
       ownerId: true,
+      scheduled: true,
     },
   });
   if (!backup || backup.ownerId !== user.id) {
@@ -67,7 +99,9 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     );
   }
 
-  return (
+  const isScheduled = !!(scheduleAt || cron || undefined);
+  const nextRunAt = cron ? cron.next().toDate() : scheduleAt || undefined;
+  const updated = (
     await db
       .update(backups)
       .set({
@@ -76,6 +110,10 @@ export const action = async ({ request, params, context }: ActionArgs) => {
         previewImageUrl: data
           ? findMessagesPreviewImageUrl(data.messages)
           : undefined,
+        scheduled: isScheduled,
+        nextRunAt,
+        cron: cron ? cron.stringify() : undefined,
+        timezone,
       })
       .where(eq(backups.id, id))
       .returning({
@@ -83,6 +121,21 @@ export const action = async ({ request, params, context }: ActionArgs) => {
         name: backups.name,
         ownerId: backups.ownerId,
         updatedAt: backups.updatedAt,
+        scheduled: backups.scheduled,
+        nextRunAt: backups.nextRunAt,
       })
   )[0];
+
+  if (isScheduled && nextRunAt) {
+    const doId = context.env.SCHEDULER.idFromName(String(id));
+    const stub = context.env.SCHEDULER.get(doId);
+    await stub.fetch(
+      `http://do/schedule?${new URLSearchParams({
+        id: String(id),
+        nextRunAt: nextRunAt.toISOString(),
+      })}`,
+    );
+  }
+
+  return updated;
 };

@@ -1,6 +1,7 @@
 import type {
   BaseImageURLOptions,
   ImageExtension,
+  REST,
   RawFile,
 } from "@discordjs/rest";
 import { DiscordSnowflake } from "@sapphire/snowflake";
@@ -15,6 +16,7 @@ import {
   RESTPatchAPIWebhookWithTokenResult,
   RESTPostAPIWebhookWithTokenJSONBody,
   RESTPostAPIWebhookWithTokenWaitResult,
+  Routes,
 } from "discord-api-types/v10";
 
 export const DISCORD_API = "https://discord.com/api";
@@ -68,10 +70,18 @@ export const executeWebhook = async (
   payload: RESTPostAPIWebhookWithTokenJSONBody,
   files?: RawFile[],
   threadId?: string,
+  rest?: REST,
 ) => {
   const query = new URLSearchParams({ wait: "true" });
   if (threadId) {
     query.set("thread_id", threadId);
+  }
+
+  if (rest) {
+    return (await rest.post(Routes.webhook(webhookId, webhookToken), {
+      body: payload,
+      files,
+    })) as RESTPostAPIWebhookWithTokenWaitResult;
   }
 
   const data = await discordRequest(
@@ -102,10 +112,21 @@ export const updateWebhookMessage = async (
   payload: RESTPatchAPIWebhookWithTokenMessageJSONBody,
   files?: RawFile[],
   threadId?: string,
+  rest?: REST,
 ) => {
   const query = new URLSearchParams();
   if (threadId) {
     query.set("thread_id", threadId);
+  }
+
+  if (rest) {
+    return (await rest.patch(
+      Routes.webhookMessage(webhookId, webhookToken, messageId),
+      {
+        body: payload,
+        files,
+      },
+    )) as RESTPatchAPIWebhookWithTokenMessageResult;
   }
 
   const data = await discordRequest(

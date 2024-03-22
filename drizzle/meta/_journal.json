@@ -43,6 +43,13 @@
       "when": 1710622055826,
       "tag": "0005_useful_ben_urich",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1711139341419,
+      "tag": "0006_petite_red_wolf",
+      "breakpoints": true
     }
   ]
 }

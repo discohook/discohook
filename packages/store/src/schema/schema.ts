@@ -12,7 +12,11 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
-import { LinkQueryData, QueryData } from "../types/backups.js";
+import {
+  LinkQueryData,
+  QueryData,
+  ScheduledRunData,
+} from "../types/backups.js";
 import { Flow, StorableComponent } from "../types/components.js";
 import { TriggerEvent } from "../types/triggers.js";
 
@@ -255,6 +259,14 @@ export const backups = pgTable("Backup", {
   data: json("data").notNull().$type<QueryData>(),
   previewImageUrl: text("previewImageUrl"),
   importedFromOrg: boolean("importedFromOrg").notNull().default(false),
+
+  // Scheduling
+  scheduled: boolean("scheduled").notNull().default(false),
+  nextRunAt: date("nextRunAt"),
+  lastRunData: json("lastRunData").$type<ScheduledRunData>(),
+  cron: text("cron"),
+  /** IANA database name */
+  timezone: text("timezone"),
 
   ownerId: integer("ownerId")
     .references(() => users.id, { onDelete: "cascade" })

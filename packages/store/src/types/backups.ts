@@ -91,3 +91,14 @@ export const ZodLinkQueryData = z.object({
 export type LinkQueryData = z.infer<typeof ZodLinkQueryData>;
 export type LinkEmbed = z.infer<typeof ZodLinkEmbed>;
 export type LinkEmbedContainer = LinkQueryData["embed"];
+
+export enum ScheduledRunStatus {
+  Success = 0,
+  Failure = 1,
+  Warning = 2,
+}
+
+export interface ScheduledRunData {
+  status: ScheduledRunStatus;
+  message: string;
+}

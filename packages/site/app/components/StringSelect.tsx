@@ -10,7 +10,10 @@ export const selectClassNames: ClassNamesConfig<
 > = {
   control: () =>
     "!rounded !bg-[#ebebeb] dark:!bg-[#1e1f22] !border !border-black/[0.08] dark:!border-transparent hover:!border-[#c4c9ce] dark:hover:!border-[#020202] transition-[border] duration-200 !font-medium",
+  multiValue: () =>
+    "!bg-white !text-[#060607] dark:!bg-primary-600 dark:!text-white",
   multiValueLabel: () => "dark:!text-[#ddd]",
+  multiValueRemove: () => "hover:!bg-[#da373c] hover:!text-white",
   singleValue: () => "dark:!text-[#ddd]",
   input: () => "dark:!text-[#ddd]",
   menu: () => "!rounded dark:!bg-[#2b2d31]",

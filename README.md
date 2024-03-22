@@ -13,8 +13,8 @@ This is a complete rewrite of the [original Discohook project](https://github.co
 - Button/select editor
 - Localization
 - Reordering messages
+- Scheduled messages
 <!-- - Mobile-specific preview toggle for ironing out Discord inconsistencies -->
-<!-- - Scheduled messages -->
 <!-- - Custom bots -->
 
 ## Free?
@@ -35,6 +35,12 @@ Along with some shared packages:
 - [store](/packages/store) - Database & KV utilities
 
 ## Development
+
+#### Warning
+
+This project utilizes [Durable Objects](https://developers.cloudflare.com/durable-objects/) for message scheduling, which is a feature exclusive to accounts on the Workers Paid plan. You will not need to subscribe for local development, but if you want to *host* this project, you will have to remove this feature in your fork or subscribe to Workers Paid.
+
+Or, if you don't want to do either of those, consider joining the [support server](https://discohook.app/discord) and letting me know what you want to see in the main instance.
 
 ### Bot
 

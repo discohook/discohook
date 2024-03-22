@@ -1,4 +1,4 @@
-import { DiscordErrorData } from "@discordjs/rest";
+import { DiscordErrorData, REST } from "@discordjs/rest";
 import { useFetcher } from "@remix-run/react";
 import { APIMessage, APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
@@ -28,8 +28,9 @@ export type SubmitMessageResult =
     };
 
 export const submitMessage = async (
-  target: APIWebhook,
+  target: Pick<APIWebhook, "id" | "token">,
   message: QueryData["messages"][number],
+  rest?: REST,
 ): Promise<SubmitMessageResult> => {
   const token = target.token;
   if (!token) {
@@ -47,17 +48,32 @@ export const submitMessage = async (
     if (!match) {
       throw Error(`Invalid message reference: ${message.reference}`);
     }
-    data = await updateWebhookMessage(target.id, token, match[3], {
-      content: message.data.content?.trim() || undefined,
-      embeds: message.data.embeds || undefined,
-    });
+    data = await updateWebhookMessage(
+      target.id,
+      token,
+      match[3],
+      {
+        content: message.data.content?.trim() || undefined,
+        embeds: message.data.embeds || undefined,
+      },
+      undefined,
+      undefined,
+      rest,
+    );
   } else {
-    data = await executeWebhook(target.id, token, {
-      username: message.data.author?.name,
-      avatar_url: message.data.author?.icon_url,
-      content: message.data.content?.trim() || undefined,
-      embeds: message.data.embeds || undefined,
-    });
+    data = await executeWebhook(
+      target.id,
+      token,
+      {
+        username: message.data.author?.name,
+        avatar_url: message.data.author?.icon_url,
+        content: message.data.content?.trim() || undefined,
+        embeds: message.data.embeds || undefined,
+      },
+      undefined,
+      undefined,
+      rest,
+    );
   }
   return {
     status: "code" in data ? "error" : "success",
@@ -76,6 +92,7 @@ export const MessageSendModal = (
   const { targets, setAddingTarget, data } = props;
 
   const auditLogFetcher = useFetcher<typeof ApiAuditLogAction>();
+  // const backupFetcher = useFetcher<typeof ApiBackupsAction>();
 
   const [selectedWebhooks, updateSelectedWebhooks] = useReducer(
     (d: Record<string, boolean>, partialD: Record<string, boolean>) => ({
@@ -374,6 +391,15 @@ export const MessageSendModal = (
                   ? "sendToAll"
                   : "send",
             )}
+          </Button>
+          <Button
+            disabled={
+              countSelected(selectedWebhooks) === 0 ||
+              enabledMessagesCount === 0
+            }
+            onClick={() => {}}
+          >
+            {t(enabledMessagesCount > 1 ? "scheduleSendAll" : "schedule")}
           </Button>
         </div>
       </div>

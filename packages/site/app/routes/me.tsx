@@ -24,6 +24,7 @@ import { getUser } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { cdn } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
+import { relativeTime } from "~/util/time";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { jsonAsString } from "~/util/zod";
 import {
@@ -48,6 +49,10 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       previewImageUrl: true,
       importedFromOrg: true,
       createdAt: true,
+      scheduled: true,
+      nextRunAt: true,
+      cron: true,
+      timezone: true,
     },
     orderBy: desc(dBackups.name),
     limit: 50,
@@ -424,7 +429,24 @@ export default function Me() {
                             </button>
                           </div>
                           <p className="text-gray-600 dark:text-gray-500 text-sm">
-                            {backup.importedFromOrg ? (
+                            {backup.nextRunAt ? (
+                              <>
+                                <Twemoji emoji="🕑" className="grayscale" />{" "}
+                                Next run{" "}
+                                {relativeTime(new Date(backup.nextRunAt))} (
+                                {new Date(backup.nextRunAt).toLocaleString(
+                                  undefined,
+                                  {
+                                    month: "numeric",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                                )
+                              </>
+                            ) : backup.importedFromOrg ? (
                               <>
                                 <Twemoji emoji="✨" className="grayscale" />{" "}
                                 Imported from discohook.org on{" "}
