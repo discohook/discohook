@@ -392,7 +392,7 @@ export const MessageSendModal = (
                   : "send",
             )}
           </Button>
-          <Button
+          {/* <Button
             disabled={
               countSelected(selectedWebhooks) === 0 ||
               enabledMessagesCount === 0
@@ -400,7 +400,7 @@ export const MessageSendModal = (
             onClick={() => {}}
           >
             {t(enabledMessagesCount > 1 ? "scheduleSendAll" : "schedule")}
-          </Button>
+          </Button> */}
         </div>
       </div>
     </Modal>
