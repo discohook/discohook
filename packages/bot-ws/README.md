@@ -23,5 +23,5 @@ I have attempted to turn this *situation* into an ✨ opportunity ✨ to take ad
 1. Clone the repository. CD to project root. Run `yarn` / `npm install`
 2. Create your `.env` file. Specify the following variables:
   - `DISCORD_TOKEN` - your bot token. must be the same as the one configured for your worker application
-  - `WORKER_ORIGIN` - the URL origin (`https://example.com`, no path) of your worker application. your bot token is sent to this process in order to verify requests
+  - `WORKER_ORIGIN` - the [origin](https://developer.mozilla.org/en-US/docs/Web/API/URL/origin) of your worker application. your bot token is sent to this process in order to verify requests
 3. Run `yarn bot` / `npm run bot`

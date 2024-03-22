@@ -6,7 +6,7 @@ This app is placed on the `discohook.org` domain and allows users to transfer th
 
 - Clone the repository and navigate to this package
 - Create a `.dev.vars` file and populate it:
-  - `DISCOHOOK_ORIGIN` - the URL origin (`https://example.com`, no path) of your Discohook process
+  - `DISCOHOOK_ORIGIN` - the [origin](https://developer.mozilla.org/en-US/docs/Web/API/URL/origin) of your Discohook process
 - Install dependencies with `yarn install`
 - Run `yarn dev`
 
