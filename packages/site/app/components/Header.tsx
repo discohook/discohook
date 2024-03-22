@@ -1,4 +1,9 @@
-import { Link, useLocation, useSearchParams } from "@remix-run/react";
+import {
+  Link,
+  useLocation,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,6 +22,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const dm = searchParams.get("m");
   const [helpOpen, setHelpOpen] = useState(dm === "help");
   const [settingsOpen, setSettingsOpen] = useState(dm === "settings");
+  const navigation = useNavigation();
 
   const premiumDetails = user ? getUserPremiumDetails(user) : undefined;
   const logo = (
@@ -36,7 +42,19 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
     editorPaths.includes(location.pathname.replace(/\/$/, ""));
 
   return (
-    <div className="sticky top-0 left-0 z-20 bg-slate-50 dark:bg-[#1E1F22] shadow-md w-full px-4 h-12 flex">
+    <div
+      className={twJoin(
+        "sticky top-0 left-0 z-20 bg-slate-50 dark:bg-[#1E1F22] border-2 border-slate-50 dark:border-[#1E1F22] shadow-md w-full px-4 h-12 flex",
+        navigation.state === "idle"
+          ? ""
+          : twJoin(
+              "animate-pulse",
+              premiumDetails?.active
+                ? "!border-b-brand-pink/30"
+                : "!border-b-brand-blue/30",
+            ),
+      )}
+    >
       <HelpModal open={helpOpen} setOpen={setHelpOpen} />
       <SettingsModal
         open={settingsOpen}
