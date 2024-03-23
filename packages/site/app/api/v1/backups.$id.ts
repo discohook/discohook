@@ -99,7 +99,10 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     );
   }
 
-  const isScheduled = !!(scheduleAt || cron || undefined);
+  const isScheduled =
+    scheduleAt === undefined && cron === undefined
+      ? undefined
+      : !!(scheduleAt || cron || undefined);
   const nextRunAt = cron ? cron.next().toDate() : scheduleAt || undefined;
   const updated = (
     await db
