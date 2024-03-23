@@ -1,6 +1,9 @@
 import { MetaFunction, useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
+import { useEffect, useState } from "react";
+import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
+import { InfoBox } from "~/components/InfoBox";
 import { Prose } from "~/components/Prose";
 import { MessageComponents } from "~/components/preview/Components";
 import { getUser } from "~/session.server";
@@ -15,11 +18,20 @@ export const meta: MetaFunction = () => [
 
 export default function Legal() {
   const user = useLoaderData<typeof loader>();
+  const [host, setHost] = useState<string>();
+  useEffect(() => setHost(location.host), []);
 
   return (
     <div>
       <Header user={user} />
       <Prose>
+        {host && host !== "discohook.app" && (
+          <InfoBox severity="yellow">
+            <CoolIcon icon="Shield_Warning" /> You are not on discohook.app, so
+            the below policies may not apply to the service you are using.
+            Proceed with caution.
+          </InfoBox>
+        )}
         <h1 className="font-bold text-2xl" id="terms-of-service">
           Terms of Service
         </h1>
