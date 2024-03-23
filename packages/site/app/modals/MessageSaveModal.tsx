@@ -49,7 +49,7 @@ export const MessageSaveModal = (
             includeTargets_ ?? includeTargets ? dataWithTargets() : data,
           ),
         },
-        { method: "POST", action: apiUrl(BRoutes.auditLog()) },
+        { method: "POST", action: apiUrl(BRoutes.share()) },
       );
     },
     [includeTargets, data, shareFetcher.submit],
