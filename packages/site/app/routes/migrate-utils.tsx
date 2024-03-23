@@ -25,59 +25,56 @@ export default function Legal() {
       <Prose>
         <InfoBox>
           <Twemoji emoji="👋" className="inline-block align-sub mr-1" /> Hello
-          there. If you use Discohook Utils, please read below! In short,
-          Discohook & Discohook Utils are now one in the same. Also, read the{" "}
+          there, please read below if you use Discohook or Discohook Utils! Also
+          read the{" "}
           <Link to="/legal" className="underline hover:no-underline">
             updated legal documents
           </Link>
-          .
+          !
         </InfoBox>
-        <h1 className="font-bold text-3xl">
+        <h1 className="font-bold text-2xl">
           What's the difference between Discohook and Discohook Utils?
         </h1>
         <p>
           In 2024, Discohook and Discohook Utils merged into one service.
-          "Discohook" may refer to this website or its Discord bot. For
-          technical reasons, we stuck with Discohook Utils#4333 for the bot
-          account.
+          "Discohook" may refer to this website or its Discord bot. We now use
+          Discohook Utils#4333 as our primary bot account.
         </p>
-        <h1 className="font-bold text-3xl mt-4">
+        <h1 className="font-bold text-2xl mt-4">
           Do I need to do anything if I already use Discohook Utils?
         </h1>
         <p>
           As far as your buttons go, nope! Just bask in the new and improved
           suite of functionality at your disposal.
         </p>
-        <h1 className="font-bold text-3xl mt-4">
+        <h1 className="font-bold text-2xl mt-4">
           I still have reaction roles with Discobot, not Discohook Utils
         </h1>
         <p>
           Simply invite Discohook Utils to your server and remove Discobot. Your
-          reaction roles will continue working, but Discohook Utils will be used
-          to manage them instead.
+          reaction roles will continue working, but the Discohook Utils bot will
+          be used to manage them instead.
         </p>
-        <h1 className="font-bold text-3xl mt-4">
+        <h1 className="font-bold text-2xl mt-4">
           Can I still use the old Discohook?
         </h1>
         <p>
-          No, sorry. We hope you'll love this one though. If you're technically
-          inclined, feel free to clone the old Discohook repository and host it
-          for yourself. We take no responsibility if you see someone doing this
-          and they turn out to be malicious!
+          For the first month or so, the previous version of Discohook will
+          still be accessible at discohook.org. After that, it's gone forever!!
         </p>
-        <h1 className="font-bold text-2xl mt-4">But what about my backups?</h1>
+        <h1 className="font-bold text-xl mt-4">But what about my backups?</h1>
         <p>
-          Backups are no longer stored on your browser. Your backups are now
-          stored in the cloud, and are available everywhere you are signed in
-          with your Discord account. Although we do encourage you to keep
-          offline backups of your data somewhere (on your computer) regardless.
-        </p>
-        <p>
+          New backups are not stored on your browser, and are now instead stored
+          in the cloud, available everywhere you are signed in with your Discord
+          account - but we do still encourage you to keep offline backups
+          somewhere on your computer!
+          <br />
+          <br />
           If you have backups on Discohook.org, click this button to link them
           to your account:
         </p>
-        <Link to="/me/import-org-backups">
-          <Button>Import</Button>
+        <Link to="/me/import-org-backups" className="block w-fit mt-1">
+          <Button discordstyle={ButtonStyle.Link}>Import Backups</Button>
         </Link>
         <hr className="border border-gray-500/20 my-4" />
         <MessageComponents
