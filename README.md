@@ -19,7 +19,7 @@ This is a complete rewrite of the [original Discohook project](https://github.co
 
 ## Free?
 
-Discohook is free, but you are encouraged to [donate and get extra perks](https://discohook.app/donate)! And if that $4 didn't wipe out your wallet, consider also donating to [the original maintainer](https://patreon.com/vivifund).
+Discohook is free, but you are encouraged to [donate and get extra perks](https://discohook.app/donate)!
 
 ## Meta
 
