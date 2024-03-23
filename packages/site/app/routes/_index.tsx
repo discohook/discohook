@@ -67,6 +67,18 @@ export default function Index() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
+    const loadInitialTargets = async (targets: { url: string }[]) => {
+      for (const target of targets) {
+        const match = target.url.match(WEBHOOK_URL_RE);
+        if (!match) continue;
+
+        const webhook = await getWebhook(match[1], match[2]);
+        if (webhook.id) {
+          updateTargets({ [webhook.id]: webhook });
+        }
+      }
+    };
+
     if (shareId) {
       fetch(apiUrl(BRoutes.share(shareId)), { method: "GET" }).then((r) => {
         if (r.status === 200) {
@@ -77,6 +89,7 @@ export default function Index() {
               qd.messages = [];
             }
             setData(qd);
+            loadInitialTargets(qd.targets ?? []);
           });
         }
       });
@@ -93,6 +106,7 @@ export default function Index() {
               qd.messages = [];
             }
             setData({ ...qd, backup_id: backupIdParsed.data });
+            loadInitialTargets(qd.targets ?? []);
           });
         }
       });
@@ -122,17 +136,7 @@ export default function Index() {
         if (parsed.data?.targets && parsed.data.targets.length !== 0) {
           // Load webhook URLs on initial parse of query data
           const targets = parsed.data.targets;
-          (async () => {
-            for (const target of targets) {
-              const match = target.url.match(WEBHOOK_URL_RE);
-              if (!match) continue;
-
-              const webhook = await getWebhook(match[1], match[2]);
-              if (webhook.id) {
-                updateTargets({ [webhook.id]: webhook });
-              }
-            }
-          })();
+          loadInitialTargets(targets);
         }
       } else {
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });

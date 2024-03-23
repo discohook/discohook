@@ -27,6 +27,15 @@ export const MessageSaveModal = (
   const { targets, data, setData, user } = props;
 
   const [includeTargets, setIncludeTargets] = useState(false);
+  const dataWithTargets = useCallback(
+    () => ({
+      ...data,
+      targets: Object.values(targets).map((t) => ({
+        url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
+      })),
+    }),
+    [data, targets],
+  );
 
   const shareFetcher = useFetcher<typeof shareCreateAction>();
   const backupFetcher = useFetcher<typeof backupCreateAction>();
@@ -36,20 +45,14 @@ export const MessageSaveModal = (
       const { includeTargets_ } = options ?? {};
       shareFetcher.submit(
         {
-          data: JSON.stringify({
-            ...data,
-            targets:
-              includeTargets_ ?? includeTargets
-                ? Object.values(targets).map((t) => ({
-                    url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-                  }))
-                : undefined,
-          }),
+          data: JSON.stringify(
+            includeTargets_ ?? includeTargets ? dataWithTargets() : data,
+          ),
         },
         { method: "POST", action: apiUrl(BRoutes.auditLog()) },
       );
     },
-    [includeTargets, data, targets, shareFetcher.submit],
+    [includeTargets, data, shareFetcher.submit],
   );
 
   const [backup, setBackup] = useState<typeof backupFetcher.data>();
@@ -146,7 +149,7 @@ export const MessageSaveModal = (
                   if (backup) {
                     backupFetcher.submit(
                       {
-                        data: JSON.stringify(data),
+                        data: JSON.stringify(dataWithTargets()),
                       },
                       {
                         action: apiUrl(BRoutes.backups(backup.id)),
@@ -166,7 +169,7 @@ export const MessageSaveModal = (
                   backupFetcher.submit(
                     {
                       name: new Date().toLocaleDateString(),
-                      data: JSON.stringify(data),
+                      data: JSON.stringify(dataWithTargets()),
                     },
                     {
                       action: apiUrl(BRoutes.backups()),
