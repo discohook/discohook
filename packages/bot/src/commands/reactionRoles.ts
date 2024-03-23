@@ -322,7 +322,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
         .delete(discordReactionRoles)
         .where(
           and(
-            eq(discordReactionRoles.messageId, message.id),
+            eq(discordReactionRoles.messageId, makeSnowflake(message.id)),
             eq(discordReactionRoles.reaction, reaction),
           ),
         )
@@ -365,7 +365,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
 
   const db = getDb(ctx.env.DATABASE_URL);
   const entries = await db.query.discordReactionRoles.findMany({
-    where: eq(discordReactionRoles.messageId, message.id),
+    where: eq(discordReactionRoles.messageId, makeSnowflake(message.id)),
   });
 
   if (entries.length === 0) {
@@ -436,7 +436,7 @@ export const deleteReactionRoleButtonCallback: ButtonCallback = async (ctx) => {
       .delete(discordReactionRoles)
       .where(
         and(
-          eq(discordReactionRoles.messageId, messageId),
+          eq(discordReactionRoles.messageId, makeSnowflake(messageId)),
           eq(discordReactionRoles.reaction, reaction),
         ),
       )
