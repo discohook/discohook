@@ -111,8 +111,8 @@ export default function Legal() {
             </ul>
           </li>
           <li>
-            All data is stored either on Cloudflare D1, Cloudflare KV, or
-            Cloudflare R2, depending on the data.
+            All data is stored either on a PostgreSQL server, Cloudflare KV, or
+            Backblaze B2, depending on the data.
           </li>
           <li>
             Data is not sold to third parties for any reason. Discohook is
