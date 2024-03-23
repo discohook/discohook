@@ -19,5 +19,5 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     JSON.stringify({ userId: user.id }),
     { expirationTtl: 600 },
   );
-  return redirect(`${legacyOrigin}/?token=${token}`);
+  return redirect(`${legacyOrigin}/migrate?token=${token}`);
 };
