@@ -1,10 +1,10 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
-import { zx } from "zodix";
 import { getUser } from "~/session.server";
 import { getWebhook, getWebhookMessage } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
+import { zxParseForm } from "~/util/zod";
 import {
   getDb,
   getchGuild,
@@ -15,7 +15,7 @@ import {
 
 export const action = async ({ request, context }: ActionArgs) => {
   const { type, webhookId, webhookToken, messageId, threadId } =
-    await zx.parseForm(request, {
+    await zxParseForm(request, {
       type: z.enum(["send", "edit", "delete"]),
       webhookId: z
         .string()

@@ -26,7 +26,7 @@ import { cdn } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { relativeTime } from "~/util/time";
 import { getUserAvatar, getUserTag } from "~/util/users";
-import { jsonAsString } from "~/util/zod";
+import { jsonAsString, zxParseForm } from "~/util/zod";
 import {
   QueryDataVersion,
   backups as dBackups,
@@ -92,7 +92,7 @@ export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
 
 export const action = async ({ request, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
-  const data = await zx.parseForm(
+  const data = await zxParseForm(
     request,
     z.discriminatedUnion("action", [
       z.object({

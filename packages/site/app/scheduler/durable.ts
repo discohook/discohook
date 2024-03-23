@@ -12,6 +12,7 @@ import {
 } from "~/store.server";
 import { Env } from "~/types/env";
 import { WEBHOOK_URL_RE } from "~/util/constants";
+import { zxParseQuery } from "~/util/zod";
 
 export class DurableScheduler implements DurableObject {
   constructor(
@@ -20,7 +21,7 @@ export class DurableScheduler implements DurableObject {
   ) {}
 
   async fetch(request: Request) {
-    const data = zx.parseQuery(request, {
+    const data = zxParseQuery(request, {
       id: zx.IntAsString,
       nextRunAt: z.string().datetime(),
     });

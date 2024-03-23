@@ -22,12 +22,13 @@ import { Flow } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
+import { zxParseQuery } from "~/util/zod";
 import { loader as apiComponentIdLoader } from "../api/v1/components.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
 
-  const { id } = zx.parseQuery(request, {
+  const { id } = zxParseQuery(request, {
     id: zx.IntAsString,
   });
 

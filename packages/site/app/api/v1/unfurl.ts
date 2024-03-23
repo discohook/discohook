@@ -7,11 +7,10 @@ import {
 } from "discord-api-types/v10";
 import he from "he";
 import { z } from "zod";
-import { zx } from "zodix";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
 import { LoaderArgs } from "~/util/loader";
 import Scraper from "~/util/scraper";
-import { jsonAsString } from "~/util/zod";
+import { jsonAsString, zxParseQuery } from "~/util/zod";
 import { ZodOEmbedData } from "./oembed";
 
 // Sorry this solution is pretty bad
@@ -104,7 +103,7 @@ const getMetaTags = (html: string) => {
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const { url: url_ } = zx.parseQuery(request, { url: z.string().url() });
+  const { url: url_ } = zxParseQuery(request, { url: z.string().url() });
 
   /*
     Discord doesn't respect robots.txt at all, and is actually explicitly

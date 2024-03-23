@@ -6,12 +6,12 @@ import { getUser } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
-import { jsonAsString } from "~/util/zod";
+import { jsonAsString, zxParseForm, zxParseParams } from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
-  const { id } = zx.parseParams(params, { id: zx.IntAsString });
+  const { id } = zxParseParams(params, { id: zx.IntAsString });
 
   const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.linkBackups.findFirst({
@@ -37,8 +37,8 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
 export const action = async ({ request, params, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
-  const { id } = zx.parseParams(params, { id: zx.NumAsString });
-  const { name, data } = await zx.parseForm(request, {
+  const { id } = zxParseParams(params, { id: zx.NumAsString });
+  const { name, data } = await zxParseForm(request, {
     name: z
       .ostring()
       .refine((val) => (val !== undefined ? val.length <= 100 : true)),

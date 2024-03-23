@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { zx } from "zodix";
 import { LoaderArgs } from "~/util/loader";
-import { jsonAsString } from "~/util/zod";
+import { jsonAsString, zxParseQuery } from "~/util/zod";
 
 // Schemas and descriptions from https://oembed.com/#section2
 
@@ -36,6 +35,6 @@ export const ZodOEmbedData = z.object({
 });
 
 export const loader = async ({ request }: LoaderArgs) =>
-  zx.parseQuery(request, {
+  zxParseQuery(request, {
     data: jsonAsString(ZodOEmbedData),
   }).data;

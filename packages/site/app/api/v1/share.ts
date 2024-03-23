@@ -6,7 +6,7 @@ import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
-import { jsonAsString } from "~/util/zod";
+import { jsonAsString, zxParseForm } from "~/util/zod";
 
 const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 
@@ -46,7 +46,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     data,
     ttl,
     origin: origin_,
-  } = await zx.parseForm(request, {
+  } = await zxParseForm(request, {
     data: jsonAsString(ZodQueryData),
     // Max 4 weeks, min 5 minutes
     ttl: zx.IntAsString.optional()

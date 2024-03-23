@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { zx } from "zodix";
 import { getUserId } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
+import { zxParseParams } from "~/util/zod";
 
 export const ZodDonateKeyType = z.literal("btc");
 
 export const action = async ({ request, params, context }: LoaderArgs) => {
-  const { type } = zx.parseParams(params, {
+  const { type } = zxParseParams(params, {
     type: ZodDonateKeyType,
   });
   const userId = await getUserId(request, context, true);

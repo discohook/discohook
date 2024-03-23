@@ -23,7 +23,6 @@ import { eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { zx } from "zodix";
 import { refreshDiscordOAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -35,6 +34,7 @@ import { getDb, oauthInfo } from "~/store.server";
 import { cdn } from "~/util/discord";
 import { Context, LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
+import { zxParseParams, zxParseQuery } from "~/util/zod";
 import { loader as ApiGetAuditLogGuild } from "../api/v1/audit-log.$guildId";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import { Cell } from "./donate";
@@ -142,7 +142,7 @@ export const verifyAuthToken = async (request: Request, context: Context) => {
   if (!userId) {
     throw json({ message: "Must be logged in" }, 401);
   }
-  const { token } = zx.parseQuery(request, { token: z.string() });
+  const { token } = zxParseQuery(request, { token: z.string() });
   const key = `auth-token-${token}`;
   const data = await context.env.KV.get<AuthTokenData>(key, "json");
   if (!data || data.userId !== userId) {
@@ -192,7 +192,7 @@ export const refreshAuthToken = async (
 };
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
-  const { guildId } = zx.parseParams(params, {
+  const { guildId } = zxParseParams(params, {
     guildId: z.string().refine((v) => !Number.isNaN(Number(v))),
   });
   const { guild, user, member, permissions, token } = await refreshAuthToken(

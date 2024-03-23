@@ -7,13 +7,18 @@ import { doubleDecode, getUser } from "~/session.server";
 import { backups, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
-import { jsonAsString } from "~/util/zod";
+import {
+  jsonAsString,
+  zxParseForm,
+  zxParseParams,
+  zxParseQuery,
+} from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
-  const { id } = zx.parseParams(params, { id: zx.NumAsString });
-  const { data: returnData } = zx.parseQuery(request, {
+  const { id } = zxParseParams(params, { id: zx.NumAsString });
+  const { data: returnData } = zxParseQuery(request, {
     data: z.optional(zx.BoolAsString),
   });
 
@@ -46,8 +51,8 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
 export const action = async ({ request, params, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
-  const { id } = zx.parseParams(params, { id: zx.NumAsString });
-  const { name, data, scheduleAt, cron, timezone } = await zx.parseForm(
+  const { id } = zxParseParams(params, { id: zx.IntAsString });
+  const { name, data, scheduleAt, cron, timezone } = await zxParseForm(
     request,
     {
       name: z

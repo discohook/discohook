@@ -18,9 +18,10 @@ import {
 } from "~/store.server";
 import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
+import { zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
-  const { id } = zx.parseParams(params, { id: zx.IntAsString });
+  const { id } = zxParseParams(params, { id: zx.IntAsString });
 
   const user = await getUser(request, context, true);
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);

@@ -1,14 +1,14 @@
 import { json } from "@remix-run/cloudflare";
 import { and, eq, lt } from "drizzle-orm";
 import { z } from "zod";
-import { zx } from "zodix";
 import { getDb, shareLinks } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
+import { zxParseParams } from "~/util/zod";
 import { ShortenedData } from "./share";
 
 export const loader = async ({ params, context }: LoaderArgs) => {
-  const { shareId: id } = zx.parseParams(params, { shareId: z.string() });
+  const { shareId: id } = zxParseParams(params, { shareId: z.string() });
 
   const key = `share-${id}`;
   const { value: shortened, metadata } =

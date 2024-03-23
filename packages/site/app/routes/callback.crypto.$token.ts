@@ -1,11 +1,11 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
-import { zx } from "zodix";
 import { ZodCryptoAlert } from "~/types/crypto";
 import { LoaderArgs } from "~/util/loader";
+import { zxParseParams } from "~/util/zod";
 
 export const action = async ({ request, params, context }: LoaderArgs) => {
-  const { token } = zx.parseParams(params, {
+  const { token } = zxParseParams(params, {
     token: z.string(),
   });
   if (

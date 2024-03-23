@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { zx } from "zodix";
 import { getUser } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { ActionArgs } from "~/util/loader";
-import { jsonAsString } from "~/util/zod";
+import { jsonAsString, zxParseForm } from "~/util/zod";
 import { QueryData, backups, getDb } from "../../store.server";
 
 export const findMessagesPreviewImageUrl = (
@@ -38,7 +37,7 @@ export const findMessagesPreviewImageUrl = (
 
 export const action = async ({ request, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
-  const { name, data } = await zx.parseForm(request, {
+  const { name, data } = await zxParseForm(request, {
     name: z.string().refine((val) => val.length <= 100),
     data: jsonAsString(ZodQueryData),
   });

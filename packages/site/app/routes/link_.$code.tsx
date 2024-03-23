@@ -9,7 +9,6 @@ import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { zx } from "zodix";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
@@ -19,11 +18,12 @@ import { getDb, linkBackups } from "~/store.server";
 import { LinkQueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { copyText } from "~/util/text";
+import { zxParseParams } from "~/util/zod";
 import { ZodOEmbedData } from "../api/v1/oembed";
 import { linkEmbedToAPIEmbed } from "./link";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
-  const { code } = zx.parseParams(params, {
+  const { code } = zxParseParams(params, {
     code: z.string(),
   });
 

@@ -6,12 +6,13 @@ import { z } from "zod";
 import { zx } from "zodix";
 import { verifyAuthToken } from "~/routes/s.$guildId";
 import { LoaderArgs } from "~/util/loader";
+import { zxParseParams, zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
-  const { guildId } = zx.parseParams(params, {
+  const { guildId } = zxParseParams(params, {
     guildId: z.string().refine((v) => !Number.isNaN(Number(v))),
   });
-  const { page, limit } = zx.parseQuery(request, {
+  const { page, limit } = zxParseQuery(request, {
     limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
     page: zx.IntAsString.refine((v) => v >= 0).default("0"),
   });
