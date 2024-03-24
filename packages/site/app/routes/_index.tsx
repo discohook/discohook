@@ -42,6 +42,12 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   };
 };
 
+export interface DraftFile {
+  id: string;
+  file: File;
+  url?: string;
+}
+
 export interface HistoryItem {
   id: string;
   createdAt: Date;
@@ -63,6 +69,7 @@ export default function Index() {
     version: "d2",
     messages: [],
   });
+  const [files, setFiles] = useState<DraftFile[]>([]);
   const [urlTooLong, setUrlTooLong] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
@@ -408,8 +415,10 @@ export default function Index() {
               <MessageEditor
                 index={i}
                 data={data}
+                files={files}
                 discordApplicationId={discordApplicationId}
                 setData={setData}
+                setFiles={setFiles}
                 setSettingMessageIndex={setSettingMessageIndex}
                 webhooks={Object.values(targets)}
               />
@@ -452,6 +461,7 @@ export default function Index() {
                 webhooks={Object.values(targets)}
                 index={i}
                 data={data}
+                files={files}
                 setImageModalData={setImageModalData}
                 messageDisplay={settings.messageDisplay}
                 compactAvatars={settings.compactAvatars}

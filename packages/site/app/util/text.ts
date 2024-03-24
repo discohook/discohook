@@ -5,6 +5,7 @@ export const copyText = (text: string) => {
   input.style.opacity = "0";
 
   const root = document.body;
+  // @ts-expect-error
   root.append(input);
 
   input.focus();
@@ -77,3 +78,33 @@ export const hexToRgb = (hex: string) => {
 };
 
 export const getRgbComponents = (color: number) => hexToRgb(color.toString(16));
+
+// Thanks https://stackoverflow.com/a/14919494
+/**
+ * Format bytes as human-readable text.
+ *
+ * @param bytes Number of bytes.
+ * @param dp Number of decimal places to display.
+ *
+ * @return Formatted string.
+ */
+export const fileSize = (bytes: number, dp = 0) => {
+  let b = bytes;
+  const thresh = 1000;
+
+  if (Math.abs(b) < thresh) {
+    // Discord shows "bytes" for small files but abbreviations otherwise
+    return `${b} bytes`;
+  }
+
+  const units = ["KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  let u = -1;
+  const r = 10 ** dp;
+
+  while (Math.round(Math.abs(b) * r) / r >= thresh && u < units.length - 1) {
+    b = b / thresh;
+    u += 1;
+  }
+
+  return `${b.toFixed(dp)} ${units[u]}`;
+};

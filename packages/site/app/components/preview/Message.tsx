@@ -1,6 +1,12 @@
-import { APIEmbed, APIEmbedImage, APIWebhook } from "discord-api-types/v10";
+import {
+  APIAttachment,
+  APIEmbed,
+  APIEmbedImage,
+  APIWebhook,
+} from "discord-api-types/v10";
 import { Trans } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
+import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { PartialResource } from "~/types/resources";
 import { cdn } from "~/util/discord";
@@ -51,6 +57,7 @@ export const Message: React.FC<{
   discordApplicationId?: string;
   index?: number;
   data?: QueryData;
+  files?: DraftFile[];
   webhooks?: APIWebhook[];
   messageDisplay?: Settings["messageDisplay"];
   compactAvatars?: boolean;
@@ -62,6 +69,7 @@ export const Message: React.FC<{
   discordApplicationId,
   index,
   data,
+  files,
   webhooks,
   messageDisplay,
   compactAvatars,
@@ -111,12 +119,26 @@ export const Message: React.FC<{
     });
   }
 
-  const fileAttachments = (message.attachments ?? []).filter(
+  const allAttachments = [
+    ...(message.attachments ?? []),
+    ...(files?.map(
+      ({ id, file, url }) =>
+        ({
+          id,
+          filename: file.name,
+          size: file.size,
+          content_type: file.type,
+          url: url ?? "#",
+          proxy_url: "#",
+        }) satisfies APIAttachment,
+    ) ?? []),
+  ];
+  const fileAttachments = allAttachments.filter(
     (a) =>
-      a.content_type &&
+      !a.content_type ||
       !["video", "image"].includes(a.content_type.split("/")[0]),
   );
-  const mediaAttachments = (message.attachments ?? []).filter(
+  const mediaAttachments = allAttachments.filter(
     (a) =>
       a.content_type &&
       ["video", "image"].includes(a.content_type.split("/")[0]),
@@ -214,7 +236,7 @@ export const Message: React.FC<{
           )}
         </div>
         <div className={messageDisplay === "compact" ? "pl-20" : ""}>
-          {message.attachments && (
+          {allAttachments.length > 0 && (
             <div className="max-w-[550px] mt-1 space-y-1">
               {fileAttachments.map((attachment) => (
                 <FileAttachment

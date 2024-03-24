@@ -1,6 +1,8 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { Trans } from "react-i18next";
+import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
+import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
@@ -23,11 +25,21 @@ export const getMessageText = (
     ? message.embeds.map(getEmbedText).find((t) => !!t)
     : undefined);
 
+export const getBlobDataUrl = (blob: Blob): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+};
+
 export const MessageEditor: React.FC<{
   data: QueryData;
+  files: DraftFile[];
   discordApplicationId: string;
   index: number;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
+  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
@@ -35,8 +47,10 @@ export const MessageEditor: React.FC<{
 }> = ({
   index: i,
   data,
+  files,
   discordApplicationId,
   setData,
+  setFiles,
   setSettingMessageIndex,
   webhooks,
 }) => {
@@ -121,37 +135,104 @@ export const MessageEditor: React.FC<{
             setData({ ...data });
           }}
         />
-        <EmbedEditorSection name="Profile">
-          {!!message.reference && (
-            <InfoBox severity="yellow">
-              Profile info cannot be changed for existing messages.
-            </InfoBox>
-          )}
-          <TextInput
-            label="Name"
-            maxLength={80}
-            className="w-full"
-            disabled={!!message.reference}
-            value={message.data.author?.name ?? ""}
-            onChange={(e) => {
-              message.data.author = message.data.author ?? {};
-              message.data.author.name = e.currentTarget.value;
-              setData({ ...data });
-            }}
-          />
-          <TextInput
-            label="Avatar URL"
-            type="url"
-            className="w-full"
-            disabled={!!message.reference}
-            value={message.data.author?.icon_url ?? ""}
-            onChange={(e) => {
-              message.data.author = message.data.author ?? {};
-              message.data.author.icon_url = e.currentTarget.value;
-              setData({ ...data });
-            }}
-          />
-        </EmbedEditorSection>
+        <div className="-space-y-2">
+          <EmbedEditorSection name="Profile">
+            {!!message.reference && (
+              <InfoBox severity="yellow">
+                Profile info cannot be changed for existing messages.
+              </InfoBox>
+            )}
+            <TextInput
+              label="Name"
+              maxLength={80}
+              className="w-full"
+              disabled={!!message.reference}
+              value={message.data.author?.name ?? ""}
+              onChange={(e) => {
+                message.data.author = message.data.author ?? {};
+                message.data.author.name = e.currentTarget.value;
+                setData({ ...data });
+              }}
+            />
+            <TextInput
+              label="Avatar URL"
+              type="url"
+              className="w-full"
+              disabled={!!message.reference}
+              value={message.data.author?.icon_url ?? ""}
+              onChange={(e) => {
+                message.data.author = message.data.author ?? {};
+                message.data.author.icon_url = e.currentTarget.value;
+                setData({ ...data });
+              }}
+            />
+          </EmbedEditorSection>
+          <EmbedEditorSection name="Files">
+            {files.map(({ id, file }) => (
+              <div
+                key={`file-${id}`}
+                className="rounded border py-1.5 px-[14px] bg-gray-300 border-gray-200 dark:border-transparent dark:bg-[#292b2f] flex"
+              >
+                <CoolIcon icon="File_Blank" className="text-xl my-auto mr-2" />
+                <div className="my-auto truncate">
+                  <p className="font-medium">{file.name}</p>
+                  {/* <p className="text-sm">{file.size} bytes</p> */}
+                </div>
+                <button
+                  type="button"
+                  className="ml-auto my-auto hover:text-red-400 text-xl"
+                  onClick={() => {
+                    const newFiles = files.filter((f) => f.id !== id);
+                    setFiles(newFiles);
+                    setData({ ...data });
+                  }}
+                >
+                  <CoolIcon icon="Trash_Full" />
+                </button>
+              </div>
+            ))}
+            <input
+              id="files"
+              type="file"
+              hidden
+              multiple
+              onChange={async ({ currentTarget }) => {
+                const list = currentTarget.files;
+                if (!list) return;
+
+                const newFiles = [...files];
+                for (const file of Array.from(list).slice(
+                  0,
+                  10 - newFiles.length,
+                )) {
+                  newFiles.push({
+                    id: randomString(10),
+                    file,
+                    // We need this for the gallery. For regular files we'd
+                    // just be bloating state for the time being.
+                    url: ["video", "image"].includes(file.type.split("/")[0])
+                      ? await getBlobDataUrl(file)
+                      : undefined,
+                  });
+                }
+                setFiles(newFiles);
+                currentTarget.value = "";
+              }}
+            />
+            <Button
+              onClick={() => {
+                const input =
+                  document.querySelector<HTMLInputElement>("input#files");
+                // Shouldn't happen
+                if (!input) return;
+                input.click();
+              }}
+              disabled={files.length >= 10}
+            >
+              Add File
+            </Button>
+          </EmbedEditorSection>
+        </div>
         {message.data.embeds && message.data.embeds.length > 0 && (
           <div className="mt-1 space-y-1">
             {embedsLength > 6000 && (
