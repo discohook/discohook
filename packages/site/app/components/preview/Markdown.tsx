@@ -437,13 +437,18 @@ const linkRule = defineRule({
   capture(source) {
     const match = /^<([^ :>]+:\/[^ >]+)>/.exec(source);
     if (!match) return;
+    try {
+      new URL(match[1]);
+    } catch {
+      return;
+    }
     return {
       size: match[0].length,
       url: match[1],
     };
   },
   render(capture) {
-    const url = String(new URL(capture.url));
+    const url = new URL(capture.url).href;
     return (
       <a
         href={url}
@@ -461,6 +466,11 @@ const autoLinkRule = defineRule({
   capture(source) {
     const match = /^https?:\/\/[^\s<]+[^\s"',.:;<\]]/.exec(source);
     if (!match) return;
+    try {
+      new URL(match[0]);
+    } catch {
+      return;
+    }
 
     let url = match[0];
     let searchLeft = 0;
@@ -478,11 +488,11 @@ const autoLinkRule = defineRule({
 
     return {
       size: url.length,
-      url: String(new URL(url)),
+      url: new URL(url).href,
     };
   },
   render(capture) {
-    const url = String(new URL(capture.url));
+    const url = new URL(capture.url).href;
     return (
       <a
         href={url}
@@ -503,10 +513,16 @@ const maskedLinkRule = defineRule({
         source,
       );
     if (!match) return;
+    try {
+      new URL(match[2]);
+    } catch {
+      return;
+    }
+
     return {
       size: match[0].length,
       content: parse(match[1]),
-      url: String(new URL(match[2])),
+      url: new URL(match[2]).href,
       title: match[3],
     };
   },
