@@ -268,8 +268,8 @@ const blockQuoteRule = defineRule({
   render(capture, render) {
     return (
       <div className="flex">
-        <div className="w-[4px] rounded-[4px] bg-primary-300 dark:bg-primary-500" />
-        <blockquote className="max-w-[90%] pl-[12px] pr-[8px] indent-0">
+        <div className="w-1 rounded bg-primary-300 dark:bg-primary-500" />
+        <blockquote className="max-w-[90%] pl-3 pr-2 indent-0">
           {render(capture.content)}
         </blockquote>
       </div>
@@ -395,10 +395,10 @@ const escapeRule = defineRule({
 });
 
 const mentionStyle =
-  "rounded-[3px] bg-brand-500/[0.15] px-[2px] font-medium text-brand-500 [unicode-bidi:plaintext] dark:bg-brand-500/30 dark:text-brand-260";
+  "rounded-[3px] bg-blurple/[0.15] px-[2px] font-medium text-blurple [unicode-bidi:plaintext] dark:bg-blurple/30 dark:text-blurple-260 transition-colors transition-[50ms]";
 const actionableMentionStyle = twMerge(
   mentionStyle,
-  "cursor-pointer hover:bg-brand-500 hover:text-white dark:hover:bg-brand-500 dark:hover:text-white",
+  "cursor-pointer hover:bg-blurple hover:text-white dark:hover:bg-blurple dark:hover:text-white",
 );
 const coloredMentionStyle = twMerge(
   mentionStyle,
@@ -727,7 +727,7 @@ const channelMentionRule = defineRule({
     return (
       <span className={actionableMentionStyle}>
         {channelIcons[data.channel?.type ?? "text"]()}
-        {data.channel?.name ?? <em>Unknown</em>}
+        {data.channel?.name ?? <span className="italic">Unknown</span>}
       </span>
     );
   },
@@ -931,8 +931,7 @@ export const Markdown: React.FC<{
   const parse = parsers[features ?? "full"];
   const result = parse(content);
 
-  const resolver = { resolved: undefined }; // useResolutionStore();
-  // const intl = useVIntl<unknown>();
+  const resolver = { resolved: undefined };
 
   // watchEffect(() => {
   //   if (result.value.requests.size > 0) {
