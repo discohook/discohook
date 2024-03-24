@@ -8,7 +8,7 @@ import {
 import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
@@ -25,9 +25,10 @@ import { getUser } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { cdn } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
+import { useLocalStorage } from "~/util/localstorage";
 import { relativeTime } from "~/util/time";
 import { getUserAvatar, getUserTag } from "~/util/users";
-import { jsonAsString, zxParseForm } from "~/util/zod";
+import { jsonAsString, zxParseForm, zxParseQuery } from "~/util/zod";
 import {
   QueryDataVersion,
   backups as dBackups,
@@ -39,8 +40,18 @@ import {
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
-
   const db = getDb(context.env.DATABASE_URL);
+  const { settings: importedSettings } = zxParseQuery(request, {
+    settings: jsonAsString(
+      z.object({
+        theme: z.enum(["light", "dark"]).optional(),
+        display: z.enum(["cozy", "compact"]).optional(),
+        fontSize: z.onumber(),
+        confirmExit: z.oboolean(),
+        expandSections: z.oboolean(),
+      }),
+    ).optional(),
+  });
 
   const backups = await db.query.backups.findMany({
     where: eq(dBackups.ownerId, user.id),
@@ -86,7 +97,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       })
     : [];
 
-  return { user, backups, linkBackups, links, memberships };
+  return { user, backups, linkBackups, links, memberships, importedSettings };
 };
 
 export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
@@ -189,11 +200,22 @@ const tabValues = [
 
 export default function Me() {
   const { t } = useTranslation();
-  const { user, backups, linkBackups, links, memberships } =
+  const { user, backups, linkBackups, links, memberships, importedSettings } =
     useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const now = new Date();
+
+  const [settings, updateSettings] = useLocalStorage();
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  useEffect(() => {
+    if (importedSettings) {
+      updateSettings({
+        theme: importedSettings.theme ?? settings.theme,
+        messageDisplay: importedSettings.display ?? settings.messageDisplay,
+      });
+    }
+  }, []);
 
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
