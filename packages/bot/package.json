@@ -20,14 +20,11 @@
     "@discordjs/builders": "^1.7.0",
     "@discordjs/formatters": "^0.3.3",
     "@discordjs/rest": "^2.1.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.2",
-    "@typescript-eslint/parser": "^6.13.2",
     "dedent-js": "^1.0.1",
     "discord-api-types": "^0.37.63",
     "discord-bitflag": "^1.0.1",
     "discord-verify": "^1.2.0",
     "drizzle-orm": "^0.29.3",
-    "eslint-plugin-drizzle": "^0.2.2",
     "itty-router": "^4.0.13",
     "store": "../store"
   },
@@ -38,15 +35,11 @@
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
     "drizzle-kit": "^0.20.13",
-    "eslint": "^8.41.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
     "mocha": "^10.2.0",
     "ngrok": "^5.0.0-beta.2",
-    "prettier": "^3.0.1",
     "sinon": "^17.0.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
-    "wrangler": "^3.0.1"
+    "wrangler": "^3.21.0"
   }
 }
