@@ -5,9 +5,15 @@ import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
+import { TextInput } from "../TextInput";
 import { AuthorType, getAuthorType } from "../preview/Message";
 import { ActionRowEditor } from "./ComponentEditor";
-import { EmbedEditor, getEmbedLength, getEmbedText } from "./EmbedEditor";
+import {
+  EmbedEditor,
+  EmbedEditorSection,
+  getEmbedLength,
+  getEmbedText,
+} from "./EmbedEditor";
 
 export const getMessageText = (
   message: QueryData["messages"][number]["data"],
@@ -115,6 +121,37 @@ export const MessageEditor: React.FC<{
             setData({ ...data });
           }}
         />
+        <EmbedEditorSection name="Profile">
+          {!!message.reference && (
+            <InfoBox severity="yellow">
+              Profile info cannot be changed for existing messages.
+            </InfoBox>
+          )}
+          <TextInput
+            label="Name"
+            maxLength={80}
+            className="w-full"
+            disabled={!!message.reference}
+            value={message.data.author?.name ?? ""}
+            onChange={(e) => {
+              message.data.author = message.data.author ?? {};
+              message.data.author.name = e.currentTarget.value;
+              setData({ ...data });
+            }}
+          />
+          <TextInput
+            label="Avatar URL"
+            type="url"
+            className="w-full"
+            disabled={!!message.reference}
+            value={message.data.author?.icon_url ?? ""}
+            onChange={(e) => {
+              message.data.author = message.data.author ?? {};
+              message.data.author.icon_url = e.currentTarget.value;
+              setData({ ...data });
+            }}
+          />
+        </EmbedEditorSection>
         {message.data.embeds && message.data.embeds.length > 0 && (
           <div className="mt-1 space-y-1">
             {embedsLength > 6000 && (
