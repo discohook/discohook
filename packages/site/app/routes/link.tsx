@@ -37,9 +37,7 @@ import { loader as apiLinkBackupsId } from "../api/v1/link-backups.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
-  return {
-    user,
-  };
+  return { user };
 };
 
 export const linkEmbedToAPIEmbed = (

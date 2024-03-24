@@ -1,7 +1,7 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { zx } from "zodix";
-import { getUser } from "~/session.server";
+import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { ActionArgs } from "~/util/loader";
@@ -55,7 +55,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     origin: z.enum(ALLOWED_EXTERNAL_ORIGINS).optional(),
   });
 
-  const user = await getUser(request, context);
+  const userId = await getUserId(request, context);
   const expires = new Date(new Date().getTime() + ttl);
   const origin = origin_ ?? new URL(request.url).origin;
 
@@ -64,7 +64,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   const shortened: ShortenedData = {
     data: JSON.stringify(data),
     origin,
-    userId: user?.id,
+    userId: userId ?? undefined,
   };
 
   const db = getDb(context.env.DATABASE_URL);
@@ -75,9 +75,9 @@ export const action = async ({ request, context }: ActionArgs) => {
     // KV doesn't seem to provide a way to read `expirationTtl`
     metadata: { expiresAt: new Date(new Date().valueOf() + ttl).toISOString() },
   });
-  if (user) {
+  if (userId) {
     await db.insert(shareLinks).values({
-      userId: user.id,
+      userId,
       shareId: id,
       expiresAt: expires,
       origin: origin_,
@@ -89,6 +89,6 @@ export const action = async ({ request, context }: ActionArgs) => {
     origin,
     url: `${new URL(request.url).origin}/?share=${id}`,
     expires,
-    userId: user?.id,
+    userId: userId ?? undefined,
   };
 };

@@ -1,7 +1,7 @@
 import { json } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { getUser } from "~/session.server";
+import { getUserId } from "~/session.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
@@ -10,12 +10,12 @@ import { getDb, linkBackups } from "../../store.server";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const action = async ({ request, context }: ActionArgs) => {
-  const user = await getUser(request, context, true);
   const { name, data } = await zxParseForm(request, {
     name: z.string().refine((val) => val.length <= 100),
     data: jsonAsString(ZodLinkQueryData),
   });
 
+  const userId = await getUserId(request, context, true);
   const db = getDb(context.env.DATABASE_URL);
 
   // Roughly 99.7m combinations of 62 characters at a length of 6
@@ -58,7 +58,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         previewImageUrl: findMessagesPreviewImageUrl([
           { data: { embeds: [data.embed.data] } },
         ]),
-        ownerId: user.id,
+        ownerId: userId,
       })
       .returning({
         id: linkBackups.id,

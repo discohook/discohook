@@ -2,7 +2,7 @@ import { json } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
-import { getUser } from "~/session.server";
+import { getUserId } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -10,8 +10,8 @@ import { jsonAsString, zxParseForm, zxParseParams } from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
-  const user = await getUser(request, context, true);
   const { id } = zxParseParams(params, { id: zx.IntAsString });
+  const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.linkBackups.findFirst({
@@ -25,7 +25,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
       ownerId: true,
     },
   });
-  if (!backup || backup.ownerId !== user.id) {
+  if (!backup || backup.ownerId !== userId) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
       404,
@@ -36,7 +36,6 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 };
 
 export const action = async ({ request, params, context }: ActionArgs) => {
-  const user = await getUser(request, context, true);
   const { id } = zxParseParams(params, { id: zx.NumAsString });
   const { name, data } = await zxParseForm(request, {
     name: z
@@ -44,6 +43,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
       .refine((val) => (val !== undefined ? val.length <= 100 : true)),
     data: z.optional(jsonAsString(ZodLinkQueryData)),
   });
+  const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.linkBackups.findFirst({
@@ -52,7 +52,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
       ownerId: true,
     },
   });
-  if (!backup || backup.ownerId !== user.id) {
+  if (!backup || backup.ownerId !== userId) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
       404,

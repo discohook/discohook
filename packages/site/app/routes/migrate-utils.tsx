@@ -16,7 +16,7 @@ export const meta: MetaFunction = () => [
   { title: "About Discohook & Discohook Utils" },
 ];
 
-export default function Legal() {
+export default function MigrateUtils() {
   const user = useLoaderData<typeof loader>();
 
   return (

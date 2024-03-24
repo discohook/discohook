@@ -3,7 +3,7 @@ import { parseExpression } from "cron-parser";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
-import { doubleDecode, getUser } from "~/session.server";
+import { doubleDecode, getUserId } from "~/session.server";
 import { backups, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -16,11 +16,11 @@ import {
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
-  const user = await getUser(request, context, true);
   const { id } = zxParseParams(params, { id: zx.NumAsString });
   const { data: returnData } = zxParseQuery(request, {
     data: z.optional(zx.BoolAsString),
   });
+  const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.backups.findFirst({
@@ -33,7 +33,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
       ownerId: true,
     },
   });
-  if (!backup || backup.ownerId !== user.id) {
+  if (!backup || backup.ownerId !== userId) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
       404,
@@ -50,7 +50,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 };
 
 export const action = async ({ request, params, context }: ActionArgs) => {
-  const user = await getUser(request, context, true);
+  const userId = await getUserId(request, context, true);
   const { id } = zxParseParams(params, { id: zx.IntAsString });
   const { name, data, scheduleAt, cron, timezone } = await zxParseForm(
     request,
@@ -97,7 +97,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
       scheduled: true,
     },
   });
-  if (!backup || backup.ownerId !== user.id) {
+  if (!backup || backup.ownerId !== userId) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
       404,

@@ -1,7 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
-import { getUser } from "~/session.server";
+import { getUserId } from "~/session.server";
 import { getWebhook, getWebhookMessage } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import { zxParseForm } from "~/util/zod";
@@ -10,7 +10,7 @@ import {
   getchGuild,
   messageLogEntries,
   upsertGuild,
-  webhooks
+  webhooks,
 } from "../../store.server";
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -31,7 +31,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         ),
     });
 
-  const user = await getUser(request, context);
+  const userId = await getUserId(request, context);
 
   const message = await getWebhookMessage(
     webhookId,
@@ -94,7 +94,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         messageId: message.id,
         channelId: message.channel_id,
         threadId,
-        userId: user?.id,
+        userId,
         // Not really a reliable check but it doesn't matter much.
         // We might want to remove this entirely
         notifiedEveryoneHere:

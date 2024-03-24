@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/cloudflare";
-import { getUser } from "~/session.server";
+import { getUserId } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 
@@ -12,11 +12,11 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     );
   }
 
-  const user = await getUser(request, context, true);
+  const userId = await getUserId(request, context, true);
   const token = randomString(30);
   await context.env.KV.put(
     `magic-token-${token}`,
-    JSON.stringify({ userId: user.id }),
+    JSON.stringify({ userId: userId ?? undefined }),
     { expirationTtl: 600 },
   );
   return redirect(`${legacyOrigin}/migrate?token=${token}`);

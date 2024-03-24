@@ -21,7 +21,7 @@ import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
-import { getUser } from "~/session.server";
+import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { cdn } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -39,8 +39,6 @@ import {
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
-  const user = await getUser(request, context, true);
-  const db = getDb(context.env.DATABASE_URL);
   const { settings: importedSettings } = zxParseQuery(request, {
     settings: jsonAsString(
       z.object({
@@ -52,6 +50,8 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       }),
     ).optional(),
   });
+  const user = await getUser(request, context, true);
+  const db = getDb(context.env.DATABASE_URL);
 
   const backups = await db.query.backups.findMany({
     where: eq(dBackups.ownerId, user.id),
@@ -103,7 +103,6 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
 
 export const action = async ({ request, context }: ActionArgs) => {
-  const user = await getUser(request, context, true);
   const data = await zxParseForm(
     request,
     z.discriminatedUnion("action", [
@@ -125,6 +124,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       }),
     ]),
   );
+  const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.DATABASE_URL);
   switch (data.action) {
@@ -134,7 +134,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       });
       if (!link) {
         throw json({ message: "No link with that ID." }, 404);
-      } else if (link.userId !== user.id) {
+      } else if (link.userId !== userId) {
         throw json({ message: "You do not own this share link." }, 403);
       }
       const key = `share-${link.shareId}`;
@@ -148,7 +148,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       });
       if (!backup) {
         throw json({ message: "No backup with that ID." }, 404);
-      } else if (backup.ownerId !== user.id) {
+      } else if (backup.ownerId !== userId) {
         throw json({ message: "You do not own this backup." }, 403);
       }
       await db.delete(dBackups).where(eq(dBackups.id, data.backupId));
@@ -160,7 +160,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       });
       if (!backup) {
         throw json({ message: "No backup with that ID." }, 404);
-      } else if (backup.ownerId !== user.id) {
+      } else if (backup.ownerId !== userId) {
         throw json({ message: "You do not own this backup." }, 403);
       }
       await db.delete(dLinkBackups).where(eq(dBackups.id, data.backupId));
@@ -176,7 +176,7 @@ export const action = async ({ request, context }: ActionArgs) => {
             messages: backup.messages,
             targets: backup.targets,
           },
-          ownerId: user.id,
+          ownerId: userId,
         })),
       );
       return new Response(null, { status: 201 });
