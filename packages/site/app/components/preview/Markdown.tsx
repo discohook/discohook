@@ -429,6 +429,10 @@ const referenceRule = defineRule({
   },
 });
 
+export const linkClassName = twMerge(
+  "text-blue-430 [word-break:break-word] hover:underline dark:text-blue-345",
+);
+
 const linkRule = defineRule({
   capture(source) {
     const match = /^<([^ :>]+:\/[^ >]+)>/.exec(source);
@@ -443,7 +447,7 @@ const linkRule = defineRule({
     return (
       <a
         href={url}
-        className="text-blue-430 [word-break:break-word] hover:underline dark:text-blue-345"
+        className={linkClassName}
         rel="noreferrer noopener nofollow ugc"
         target="_blank"
       >

@@ -6,6 +6,7 @@ import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { Prose } from "~/components/Prose";
 import { MessageComponents } from "~/components/preview/Components";
+import { linkClassName } from "~/components/preview/Markdown";
 import { getUser } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 
@@ -50,7 +51,7 @@ export default function Legal() {
               </li>
               <li>
                 violate Discord's Terms of Service, available at{" "}
-                <a href="https://discord.com/terms">
+                <a href="https://discord.com/terms" className={linkClassName}>
                   https://discord.com/terms
                 </a>
                 .
