@@ -1,4 +1,3 @@
-import { REST } from "@discordjs/rest";
 import { SessionStorage } from "@remix-run/cloudflare";
 import {
   APIUser,
@@ -19,7 +18,11 @@ import {
   upsertDiscordUser,
 } from "./store.server";
 import { Env } from "./types/env";
-import { getCurrentUserGuilds } from "./util/discord";
+import {
+  DISCORD_API,
+  DISCORD_API_V,
+  getCurrentUserGuilds,
+} from "./util/discord";
 import { Context } from "./util/loader";
 import { base64Encode } from "./util/text";
 
@@ -133,19 +136,32 @@ export const refreshDiscordOAuth = async (
       await db.delete(oauthInfo).where(eq(oauthInfo.id, oauth.id));
       return undefined;
     }
-    const rest = new REST();
-    const response = (await rest.post(Routes.oauth2TokenExchange(), {
-      body: new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: oauth.refreshToken,
-      }),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${base64Encode(
-          `${env.DISCORD_CLIENT_ID}:${env.DISCORD_CLIENT_SECRET}`,
-        )}`,
+    // I don't know why but REST.post does not work here. I was getting
+    // generic bad requests with no response elaboration, maybe it mistreats
+    // a urlsearchparams body?
+    const raw = await fetch(
+      `${DISCORD_API}/v${DISCORD_API_V}${Routes.oauth2TokenExchange()}`,
+      {
+        method: "POST",
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: oauth.refreshToken,
+        }),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${base64Encode(
+            `${env.DISCORD_CLIENT_ID}:${env.DISCORD_CLIENT_SECRET}`,
+          )}`,
+        },
       },
-    })) as RESTPostOAuth2AccessTokenResult;
+    );
+    if (!raw.ok) {
+      // Assume the user has deauthorized
+      // const data = (await raw.json()) as DiscordErrorData;
+      await db.delete(oauthInfo).where(eq(oauthInfo.id, oauth.id));
+      return undefined;
+    }
+    const response = (await raw.json()) as RESTPostOAuth2AccessTokenResult;
 
     const updated = await db
       .update(oauthInfo)
