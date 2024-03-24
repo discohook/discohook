@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   QueryData,
   ZodQueryDataMessage,
-  ZodQueryDataTarget
+  ZodQueryDataTarget,
 } from "./QueryData";
 
 export interface DiscohookBackup {
@@ -10,6 +10,10 @@ export interface DiscohookBackup {
   name: string;
   messages: QueryData["messages"];
   targets: QueryData["targets"];
+  schedule?: {
+    cron: string;
+    timezone?: string;
+  };
 }
 
 export const ZodDiscohookBackup: z.ZodType<DiscohookBackup> = z.object({
@@ -17,6 +21,12 @@ export const ZodDiscohookBackup: z.ZodType<DiscohookBackup> = z.object({
   name: z.string(),
   messages: ZodQueryDataMessage.array(),
   targets: ZodQueryDataTarget.array(),
+  schedule: z
+    .object({
+      cron: z.string(),
+      timezone: z.ostring(),
+    })
+    .optional(),
 });
 
 // https://github.com/discohook/site/blob/main/modules/database/backup/types/ExportData.ts
@@ -63,6 +73,10 @@ export type DiscohookBackupExportDataWithBackups =
     }
   | {
       version: 7;
+      backups: Pick<DiscohookBackup, "name" | "messages" | "targets">[];
+    }
+  | {
+      version: 8;
       backups: Omit<DiscohookBackup, "id">[];
     };
 

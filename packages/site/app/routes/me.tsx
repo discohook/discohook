@@ -19,6 +19,7 @@ import { Prose } from "~/components/Prose";
 import { Twemoji } from "~/components/Twemoji";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BackupEditModal } from "~/modals/BackupEditModal";
+import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { getUser } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
@@ -195,6 +196,7 @@ export default function Me() {
   const now = new Date();
 
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   const [editingBackup, setEditingBackup] = useState<LoadedBackup>();
 
   const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
@@ -207,6 +209,11 @@ export default function Me() {
       <BackupImportModal
         open={importModalOpen}
         setOpen={setImportModalOpen}
+        backups={backups}
+      />
+      <BackupExportModal
+        open={exportModalOpen}
+        setOpen={setExportModalOpen}
         backups={backups}
       />
       <BackupEditModal
@@ -397,6 +404,12 @@ export default function Me() {
                   onClick={() => setImportModalOpen(true)}
                 >
                   {t("import")}
+                </Button>
+                <Button
+                  className="ml-2 my-auto"
+                  onClick={() => setExportModalOpen(true)}
+                >
+                  {t("export")}
                 </Button>
               </div>
               {backups.length > 0 ? (

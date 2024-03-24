@@ -1,9 +1,51 @@
+import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
-import { getUser } from "~/session.server";
+import { getUserId } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
-import { ActionArgs } from "~/util/loader";
-import { jsonAsString, zxParseForm } from "~/util/zod";
-import { QueryData, backups, getDb } from "../../store.server";
+import { ActionArgs, LoaderArgs } from "~/util/loader";
+import { jsonAsString, zxParseForm, zxParseQuery } from "~/util/zod";
+import { QueryData, backups, getDb, inArray } from "../../store.server";
+
+export const loader = async ({ request, context }: LoaderArgs) => {
+  const userId = await getUserId(request, context, true);
+  const { ids } = zxParseQuery(request, {
+    ids: z
+      .string()
+      .refine(
+        (v) =>
+          v
+            .split(",")
+            .map(Number)
+            .filter((n) => !Number.isNaN(n)).length > 0,
+      )
+      .transform((v) => v.split(",").map(Number)),
+  });
+
+  const db = getDb(context.env.DATABASE_URL);
+  const results = await db.query.backups.findMany({
+    where: inArray(backups.id, ids),
+    columns: {
+      id: true,
+      name: true,
+      data: true,
+      ownerId: true,
+      scheduled: true,
+      cron: true,
+      timezone: true,
+    },
+  });
+  if (
+    results.length < ids.length ||
+    results.filter((r) => r.ownerId !== userId).length !== 0
+  ) {
+    throw json(
+      { message: "Some IDs were not found or are not owned by you." },
+      404,
+    );
+  }
+
+  return results;
+};
 
 export const findMessagesPreviewImageUrl = (
   messages: QueryData["messages"],
@@ -36,7 +78,7 @@ export const findMessagesPreviewImageUrl = (
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
-  const user = await getUser(request, context, true);
+  const userId = await getUserId(request, context, true);
   const { name, data } = await zxParseForm(request, {
     name: z.string().refine((val) => val.length <= 100),
     data: jsonAsString(ZodQueryData),
@@ -50,7 +92,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         name,
         data,
         dataVersion: data.version ?? "d2",
-        ownerId: user.id,
+        ownerId: userId,
         previewImageUrl: findMessagesPreviewImageUrl(data.messages),
       })
       .returning({

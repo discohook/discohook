@@ -78,6 +78,11 @@ export const resources = {
       backups: "Backups",
       noBackups: "You haven't created any backups.",
       import: "Import",
+      importBackups: "Import Backups",
+      export: "Export",
+      exportBackups: "Export Backups",
+      exportBackupsNote:
+        "This menu is for exporting backup files to your computer. This is not really necessary, but it's a great way to copy your messages offline or for use with other bots. Your schedule setup, if any, will only be exported for repeating schedules.",
       version: "Version: {{version}}",
       shareLinks: "Share Links",
       noLinks: "You haven't created any share links.",

@@ -1,5 +1,6 @@
 import { Link, useSubmit } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { FileInput } from "~/components/FileInput";
@@ -41,6 +42,7 @@ export const backupDataAsNewest = (
         targets: backup.target.url ? [{ url: backup.target.url }] : undefined,
       }));
     case 7:
+    case 8:
       return data.backups;
     default:
       break;
@@ -51,6 +53,7 @@ export const backupDataAsNewest = (
 export const BackupImportModal = (
   props: ModalProps & { backups: { name: string }[] },
 ) => {
+  const { t } = useTranslation();
   const [fileErrors, setFileErrors] = useState<string[]>([]);
   const [data, setData] = useState<DiscohookBackupExportData>();
   const [selectedBackups, setSelectedBackups] = useState<string[]>([]);
@@ -67,7 +70,7 @@ export const BackupImportModal = (
   const backups = data ? backupDataAsNewest(data) : undefined;
 
   return (
-    <Modal title="Import Backups" {...props}>
+    <Modal title={t("importBackups")} {...props}>
       <InfoBox>
         <CoolIcon icon="Info" /> If you still have backups stored on
         Discohook.org, you can{" "}
