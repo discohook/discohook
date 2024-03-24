@@ -121,6 +121,13 @@ export const resources = {
         'other. To reset a field to "Every month/day/weekday," remove all',
         "chosen options.",
       ].join(" "),
+      havingTrouble: "Having Trouble?",
+      troubleshootMessage: [
+        "If you press the send button and nothing happens, it may be because",
+        "your browser is blocking connections to Discord, which is not",
+        "uncommon for privacy-focused extensions like Privacy Badger. Try",
+        "disabling privacy extensions or entering incognito/private mode.",
+      ].join(" "),
       // Editor
       rowEmpty: "Must contain at least one component (button/select)",
       labelEmpty: "Must have a label or emoji, or both",

@@ -1,6 +1,6 @@
 import { DiscordErrorData, REST } from "@discordjs/rest";
 import { useFetcher } from "@remix-run/react";
-import { APIMessage, APIWebhook } from "discord-api-types/v10";
+import { APIMessage, APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
@@ -12,6 +12,7 @@ import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
 import { action as ApiAuditLogAction } from "../api/v1/audit-log";
 import { MessageSendResultModal } from "./MessageSendResultModal";
+import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
 import { Modal, ModalProps } from "./Modal";
 
 const countSelected = (data: Record<string, boolean>) =>
@@ -174,6 +175,7 @@ export const MessageSendModal = (
   };
 
   const [showingResult, setShowingResult] = useState<SubmitMessageResult>();
+  const [troubleshootOpen, setTroubleshootOpen] = useState(false);
 
   return (
     <Modal
@@ -185,6 +187,10 @@ export const MessageSendModal = (
         open={!!showingResult}
         setOpen={() => setShowingResult(undefined)}
         result={showingResult}
+      />
+      <MessageTroubleshootModal
+        open={troubleshootOpen}
+        setOpen={setTroubleshootOpen}
       />
       <p className="text-sm font-medium">Messages</p>
       <div className="space-y-1">
@@ -391,6 +397,12 @@ export const MessageSendModal = (
                   ? "sendToAll"
                   : "send",
             )}
+          </Button>
+          <Button
+            discordstyle={ButtonStyle.Secondary}
+            onClick={() => setTroubleshootOpen(true)}
+          >
+            {t("havingTrouble")}
           </Button>
           {/* <Button
             disabled={
