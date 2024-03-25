@@ -279,6 +279,12 @@ export default function Index() {
         localHistory={localHistory}
         setLocalHistory={setLocalHistory}
         setData={setData}
+        resetData={() => {
+          setData({
+            messages: [{ data: {} }],
+            targets: undefined,
+          });
+        }}
       />
       <TargetAddModal
         open={addingTarget}
@@ -405,7 +411,6 @@ export default function Index() {
               className="ml-2"
               onClick={() => setShowHistory(true)}
               discordstyle={ButtonStyle.Secondary}
-              disabled={localHistory.length === 0}
             >
               {t("history")}
             </Button>

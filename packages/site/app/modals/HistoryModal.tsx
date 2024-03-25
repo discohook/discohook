@@ -1,5 +1,7 @@
-import React from "react";
+import { ButtonStyle } from "discord-api-types/v10";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message";
@@ -9,6 +11,12 @@ import { LinkQueryData, QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
+enum ResetState {
+  Default = 0,
+  Confirm = 1,
+  Finish = 2,
+}
+
 export const HistoryModal = <
   T extends HistoryItem | LinkHistoryItem,
   Q extends QueryData | LinkQueryData,
@@ -17,14 +25,56 @@ export const HistoryModal = <
     localHistory: T[];
     setLocalHistory: React.Dispatch<React.SetStateAction<T[]>>;
     setData: React.Dispatch<React.SetStateAction<Q>>;
+    resetData: () => void;
   },
 ) => {
   const { t } = useTranslation();
-  const { localHistory, setLocalHistory, setData } = props;
+  const { localHistory, setLocalHistory, setData, resetData } = props;
   const [settings] = useLocalStorage();
+  const [resetState, setResetState] = useState(ResetState.Default);
+  useEffect(() => {
+    if (resetState === ResetState.Confirm) {
+      setTimeout(() => {
+        if (resetState === ResetState.Confirm) {
+          setResetState(ResetState.Default);
+        }
+      }, 5000);
+    }
+  }, [resetState]);
 
   return (
     <Modal title={t("history")} {...props}>
+      <div className="flex mb-4">
+        <p className="mr-2">
+          Here you can view and manage the past 20 autosaved instances of editor
+          history. Pressing "{t("resetEditor")}" will reset everything in the
+          left pane, but it will not wipe history (until it is overwritten by
+          your new changes). Just remember that history is{" "}
+          <span className="font-bold">not persisted</span> when you reload the
+          page.
+        </p>
+        <Button
+          className="ml-auto shrink-0"
+          onClick={() => {
+            if (resetState === ResetState.Default) {
+              setResetState(ResetState.Confirm);
+              return;
+            }
+            resetData();
+            setResetState(ResetState.Finish);
+            return;
+          }}
+          discordstyle={ButtonStyle.Danger}
+        >
+          {t(
+            resetState === ResetState.Default
+              ? "resetEditor"
+              : resetState === ResetState.Finish
+                ? "resetFinished"
+                : "resetEditorWarning",
+          )}
+        </Button>
+      </div>
       {localHistory.length === 0 ? (
         <p>{t("noHistory")}</p>
       ) : (

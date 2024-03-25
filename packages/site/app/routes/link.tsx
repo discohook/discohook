@@ -240,6 +240,11 @@ export default function Index() {
         localHistory={localHistory}
         setLocalHistory={setLocalHistory}
         setData={setData}
+        resetData={() => {
+          setData({
+            embed: { data: {} },
+          });
+        }}
       />
       <ImageModal
         clear={() => setImageModalData(undefined)}

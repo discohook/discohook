@@ -12,8 +12,8 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
     content: [
       "Hey, welcome to <:discohook:736648398081622016> **Discohook**! The easiest way to personalize your Discord server.",
       "",
-      // "There's more info below, but you don't have to read it. If you're ready press **Clear All** in the top of the editor to get started.",
-      // "",
+      "There's more info below if you want to read it. When you're ready, press **History** at the top of the editor and then **Reset Editor** to delete what's written here.",
+      "",
       "_ _",
     ].join("\n"),
     embeds: [
@@ -26,7 +26,7 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
           {
             name: "Discohook Utils - complementary bot",
             value:
-              "You can [invite our bot here](https://discohook.app/bot). You may recognize this name - [Discohook was absorbed by Discohook Utils in 2024](https://discohook.app/migrate-utils). If you have Discobot in your server, invite Discohook Utils instead for all future use.",
+              "You can [invite our bot here](https://discohook.app/bot). In case you recognize that name, Discohook [merged with Discohook Utils](https://discohook.app/migrate-utils) in 2024. If you have Discobot in your server, invite Discohook Utils instead for all future use.",
           },
         ],
         color: 0x58b9ff,
@@ -92,7 +92,7 @@ export const LINK_INDEX_EMBED: LinkQueryData["embed"] = {
     description: [
       "Welcome to the super special <:discohook:736648398081622016> **Discohook** link embed editor! [Deluxe members](https://discohook.app/donate) are able to leverage this page to create beautiful embeds that they can use anywhere on Discord. These embeds can even include videos!",
       "",
-      "To save your embed and get posting, type a name in the box on the left, then click **Save**. Copy your link with **Copy Link**."
+      "To save your embed and get posting, type a name in the box on the left, then click **Save**. Copy your link with **Copy Link**.",
     ].join("\n"),
     // TODO tutorial video on how to use this editor
     video: {

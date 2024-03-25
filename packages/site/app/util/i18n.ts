@@ -140,6 +140,9 @@ export const resources = {
       noHistory: "This editor session has no history recorded.",
       historyDescription:
         'This is cleared whenever the editor is loaded. If you need to store messages persistently, use the "Save Message" button.',
+      resetEditor: "Reset Editor",
+      resetEditorWarning: "Click to confirm",
+      resetFinished: "Reset Finished",
       nMessage_one: "{{count}} message",
       nMessage_other: "{{count}} messages",
       nEmbed_one: "{{count}} embed",
