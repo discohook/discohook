@@ -216,11 +216,12 @@ export const EmbedEditor: React.FC<{
           <EmbedEditorSection name="Author" open={open}>
             <div className="flex">
               <div className="grow">
-                <TextInput
+                <TextArea
                   label="Name"
                   className="w-full"
                   maxLength={256}
                   value={embed.author?.name ?? ""}
+                  short
                   onInput={(e) =>
                     updateEmbed({
                       author: {
@@ -306,11 +307,12 @@ export const EmbedEditor: React.FC<{
           <>
             <div className="flex">
               <div className="grow">
-                <TextInput
+                <TextArea
                   label="Title"
                   className="w-full"
                   maxLength={256}
                   value={embed.title ?? ""}
+                  short
                   onInput={(e) =>
                     updateEmbed({
                       title: e.currentTarget.value || undefined,
@@ -438,11 +440,12 @@ export const EmbedEditor: React.FC<{
                   >
                     <div className="flex">
                       <div className="grow">
-                        <TextInput
+                        <TextArea
                           label="Name"
                           value={field.name}
                           maxLength={256}
                           className="w-full"
+                          short
                           onInput={(e) => {
                             field.name = e.currentTarget.value;
                             updateEmbed({});
@@ -540,11 +543,12 @@ export const EmbedEditor: React.FC<{
           <EmbedEditorSection name="Footer" open={open}>
             <div className="flex">
               <div className="grow">
-                <TextInput
+                <TextArea
                   label="Text"
                   className="w-full"
                   maxLength={2048}
                   value={embed.footer?.text ?? ""}
+                  short
                   onInput={(e) =>
                     updateEmbed({
                       footer: {

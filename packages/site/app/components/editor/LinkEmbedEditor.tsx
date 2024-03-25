@@ -113,11 +113,12 @@ export const LinkEmbedEditor: React.FC<{
       <EmbedEditorSection name="Provider" open={open}>
         <div className="flex">
           <div className="grow">
-            <TextInput
+            <TextArea
               label="Name"
               className="w-full"
               maxLength={256}
               value={embed.provider?.name ?? ""}
+              short
               onInput={(e) =>
                 updateEmbed({
                   provider: {
@@ -185,11 +186,12 @@ export const LinkEmbedEditor: React.FC<{
       <EmbedEditorSection name="Author" open={open}>
         <div className="flex">
           <div className="grow">
-            <TextInput
+            <TextArea
               label="Name"
               className="w-full"
               maxLength={256}
               value={embed.author?.name ?? ""}
+              short
               onInput={(e) =>
                 updateEmbed({
                   author: {
@@ -257,11 +259,12 @@ export const LinkEmbedEditor: React.FC<{
       <EmbedEditorSection name="Body" open={open}>
         <div className="flex">
           <div className="grow">
-            <TextInput
+            <TextArea
               label="Title"
               className="w-full"
               maxLength={256}
               value={embed.title ?? ""}
+              short
               onInput={(e) =>
                 updateEmbed({
                   title: e.currentTarget.value || undefined,

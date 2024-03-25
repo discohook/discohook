@@ -1,4 +1,5 @@
 import { ReactNode, useState } from "react";
+import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "./CoolIcon";
 
 export const TextArea = (
@@ -10,6 +11,7 @@ export const TextArea = (
     description?: ReactNode;
     delayOnInput?: number;
     errors?: ReactNode[];
+    short?: boolean;
   },
 ) => {
   const { label, onInput, delayOnInput } = props;
@@ -18,6 +20,7 @@ export const TextArea = (
 
   // React yells when providing props like this, so we remove it
   const newProps = { ...props };
+  // biome-ignore lint/performance/noDelete:
   delete newProps.delayOnInput;
 
   return (
@@ -54,22 +57,23 @@ export const TextArea = (
             return onInput(event);
           }
         }}
-        className={`rounded border bg-gray-300 border-gray-200 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] p-2 invalid:border-rose-400 dark:invalid:border-rose-400 transition ${
-          props.className ?? ""
-        }`}
+        className={twJoin(
+          "rounded border bg-gray-300 border-gray-200 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 transition",
+          props.short ? "min-h-[36px] max-h-9 py-1 px-[14px]" : "p-2",
+          props.className ?? "",
+        )}
       />
-      {props.errors &&
-        props.errors
-          .filter((e) => e !== undefined)
-          .map((error, i) => (
-            <p
-              key={`${props.id ?? label}-error-${i}`}
-              className="text-rose-500 font-medium mt-1 text-sm"
-            >
-              <CoolIcon icon="Circle_Warning" className="mr-1.5" />
-              {error}
-            </p>
-          ))}
+      {props.errors
+        ?.filter((e) => e !== undefined)
+        .map((error, i) => (
+          <p
+            key={`${props.id ?? label}-error-${i}`}
+            className="text-rose-500 font-medium mt-1 text-sm"
+          >
+            <CoolIcon icon="Circle_Warning" className="mr-1.5" />
+            {error}
+          </p>
+        ))}
     </label>
   );
 };
