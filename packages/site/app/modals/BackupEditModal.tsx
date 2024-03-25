@@ -118,7 +118,6 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
           form.set("scheduleAt", "");
           form.set("cron", "");
         }
-        console.log(Object.fromEntries(form.entries()));
         fetcher.submit(form, {
           action: apiUrl(BRoutes.backups(backup.id)),
           method: "PATCH",
