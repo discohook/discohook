@@ -17,6 +17,7 @@ export const resources = {
         "To edit the messages in a backup, click the <0/> button.",
       saveMessageTitle: "Save Message",
       temporaryShareUrl: "Temporary Share URL",
+      shareExpired: "Invalid Share Link",
       generate: "Generate",
       copy: "Copy",
       copyLink: "Copy Link",

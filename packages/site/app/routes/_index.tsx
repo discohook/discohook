@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { SafeParseReturnType } from "zod";
 import { zx } from "zodix";
 import { BRoutes, apiUrl } from "~/api/routing";
+import { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
@@ -20,6 +21,7 @@ import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
+import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
@@ -71,6 +73,7 @@ export default function Index() {
   });
   const [files, setFiles] = useState<DraftFile[]>([]);
   const [urlTooLong, setUrlTooLong] = useState(false);
+  const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
@@ -97,6 +100,10 @@ export default function Index() {
             }
             setData(qd);
             loadInitialTargets(qd.targets ?? []);
+          });
+        } else {
+          r.json().then((d: any) => {
+            setBadShareData(d as InvalidShareIdData);
           });
         }
       });
@@ -194,6 +201,8 @@ export default function Index() {
     const encoded = base64UrlEncode(JSON.stringify(data));
     if (backupId === undefined) {
       // URLs on Cloudflare are limited to 16KB
+      // We might want to lower this even more since the
+      // browser starts to complain at 4,096 bytes
       const fullUrl = new URL(`${pathUrl}?data=${encoded}`);
       if (fullUrl.toString().length >= 16000) {
         setUrlTooLong(true);
@@ -290,6 +299,11 @@ export default function Index() {
         open={addingTarget}
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
+      />
+      <ShareExpiredModal
+        open={!!badShareData}
+        setOpen={() => setBadShareData(undefined)}
+        data={badShareData}
       />
       <AuthSuccessModal
         open={authSuccessOpen}

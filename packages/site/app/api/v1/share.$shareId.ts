@@ -7,6 +7,11 @@ import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 import { ShortenedData } from "./share";
 
+export interface InvalidShareIdData {
+  message: string;
+  expiredAt: string | undefined;
+}
+
 export const loader = async ({ params, context }: LoaderArgs) => {
   const { shareId: id } = zxParseParams(params, { shareId: z.string() });
 
@@ -34,8 +39,8 @@ export const loader = async ({ params, context }: LoaderArgs) => {
     throw json(
       {
         message: "No shortened data with that ID. It may have expired.",
-        expiredAt,
-      },
+        expiredAt: expiredAt?.toISOString(),
+      } satisfies InvalidShareIdData,
       404,
     );
   }
