@@ -9,8 +9,8 @@ import { memo, useState } from "react";
 import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
-import { TextInput } from "./TextInput";
-import { Twemoji } from "./Twemoji";
+import { TextInput } from "../TextInput";
+import { Twemoji } from "../Twemoji";
 
 // Dec x 2023
 // We were originally using emoji-mart since it seemed more fit for our

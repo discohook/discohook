@@ -20,9 +20,9 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
-import { PopoutEmojiPicker } from "../EmojiPicker";
 import { InfoBox } from "../InfoBox";
 import { TextInput } from "../TextInput";
+import { PopoutEmojiPicker } from "./EmojiPicker";
 
 export const getComponentText = (
   component: APIMessageComponent,
