@@ -48,7 +48,6 @@ export const resources = {
         "If you cannot see the message, make sure it wasn't deleted by another bot. Some moderation bots consider all webhook messages to be spam by default.",
       theme: "Theme",
       messageDisplay: "Message Display",
-      addTargetModalTitle: "Add Target",
       webhookUrl: "Webhook URL",
       invalidWebhookUrl:
         "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",

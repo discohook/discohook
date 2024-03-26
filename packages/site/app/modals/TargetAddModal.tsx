@@ -37,7 +37,7 @@ export const TargetAddModal = (
   }, [webhook, setOpen, props.updateTargets]);
 
   return (
-    <Modal title={t("addTargetModalTitle")} {...props} setOpen={setOpen}>
+    <Modal title={t("addWebhook")} {...props} setOpen={setOpen}>
       <div>
         <TextInput
           label={t("webhookUrl")}
