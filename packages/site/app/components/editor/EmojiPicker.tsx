@@ -6,6 +6,7 @@ import emojiData, {
 } from "@emoji-mart/data";
 import { APIMessageComponentEmoji } from "discord-api-types/v10";
 import { memo, useState } from "react";
+import { twJoin } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
@@ -27,6 +28,7 @@ export interface PickerProps {
   id: string;
   onEmojiClick: (emoji: SelectedEmoji) => void;
   customEmojis?: APIMessageComponentEmoji[];
+  className?: string;
 }
 
 const categoryToEmoji: Record<string, string> = {
@@ -99,6 +101,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
   id,
   onEmojiClick,
   customEmojis,
+  className,
 }) => {
   const [settings, setSettings] = useLocalStorage();
   const [hoverEmoji, setHoverEmoji] = useState<SelectedEmoji>();
@@ -106,8 +109,9 @@ const EmojiPicker_: React.FC<PickerProps> = ({
 
   const data = structuredClone(emojiData as EmojiMartData);
   const validCustomEmojis = (customEmojis ?? []).filter(
-    (e) => !!e.id && !!e.name,
-  ) as { id: string; name: string; animated?: boolean }[];
+    (e): e is { id: string; name: string; animated?: boolean } =>
+      !!e.id && !!e.name,
+  );
 
   for (const emoji of validCustomEmojis) {
     const id = `discord_${emoji.id}`;
@@ -150,7 +154,12 @@ const EmojiPicker_: React.FC<PickerProps> = ({
   ];
 
   return (
-    <div className="rounded bg-gray-300 dark:bg-gray-800 w-[385px] h-80 border border-black/5 shadow-md flex flex-col">
+    <div
+      className={twJoin(
+        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] h-80 border border-black/5 shadow-md flex flex-col",
+        className,
+      )}
+    >
       <div className="p-2 shadow border-b border-b-black/5 flex">
         <div className="grow">
           <TextInput

@@ -312,6 +312,7 @@ export const EmbedEditor: React.FC<{
                   className="w-full"
                   maxLength={256}
                   value={embed.title ?? ""}
+                  markdown="title"
                   short
                   onInput={(e) =>
                     updateEmbed({
@@ -415,6 +416,7 @@ export const EmbedEditor: React.FC<{
             className="w-full h-40"
             value={embed.description ?? ""}
             maxLength={4096}
+            markdown="full"
             onInput={(e) =>
               updateEmbed({
                 description: e.currentTarget.value || undefined,
@@ -445,6 +447,7 @@ export const EmbedEditor: React.FC<{
                           value={field.name}
                           maxLength={256}
                           className="w-full"
+                          markdown="full"
                           short
                           onInput={(e) => {
                             field.name = e.currentTarget.value;
@@ -468,6 +471,7 @@ export const EmbedEditor: React.FC<{
                       value={field.value}
                       maxLength={1024}
                       className="w-full"
+                      markdown="full"
                       onInput={(e) => {
                         field.value = e.currentTarget.value;
                         updateEmbed({});

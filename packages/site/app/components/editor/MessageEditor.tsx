@@ -130,6 +130,7 @@ export const MessageEditor: React.FC<{
           className="w-full h-40"
           value={message.data.content ?? undefined}
           maxLength={2000}
+          markdown="full"
           onInput={(e) => {
             message.data.content = e.currentTarget.value || undefined;
             setData({ ...data });

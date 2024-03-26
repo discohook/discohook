@@ -902,7 +902,7 @@ const textRule = defineRule({
   },
 });
 
-function getRules(type: keyof typeof parsers) {
+function getRules(type: MarkdownFeatures) {
   return [
     type === "full" ? headingRule : undefined,
     type === "full" ? codeBlockRule : undefined,
@@ -943,9 +943,11 @@ const parsers = {
   title: parseTitleMarkdown,
 };
 
+export type MarkdownFeatures = keyof typeof parsers;
+
 export const Markdown: React.FC<{
   content: string;
-  features?: keyof typeof parsers;
+  features?: MarkdownFeatures;
 }> = ({ content, features }) => {
   const parse = parsers[features ?? "full"];
   const result = parse(content);
