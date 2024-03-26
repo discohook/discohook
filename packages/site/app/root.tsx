@@ -12,6 +12,7 @@ import {
 } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import i18n from "i18next";
+import moment from "moment";
 import { initReactI18next } from "react-i18next";
 import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message";
@@ -57,6 +58,10 @@ i18n.use(initReactI18next).init({
   fallbackLng: "en",
   interpolation: {
     escapeValue: false,
+    format: (value, formatting) => {
+      if (value instanceof Date) return moment(value).format(formatting);
+      return value.toString();
+    },
   },
 });
 

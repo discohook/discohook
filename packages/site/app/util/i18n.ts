@@ -153,6 +153,28 @@ export const resources = {
       // Preview
       defaultPlaceholder: "Make a selection",
       todayAt: "Today at {{time}}",
+      timestamp: {
+        time: "{{ date, h:mm a }}",
+        time_verbose: "{{ date, h:mm:ss A }}",
+        full: "{{ date, MMMM D, YYYY h:mm A }}",
+        full_verbose: "{{ date, dddd, MMMM D, YYYY h:mm:ss A }}",
+        date: "{{ date, MM/DD/YYYY }}",
+        date_verbose: "{{ date, MMMM D, YYYY }}",
+        relative: {
+          seconds_future: "in {{n}} seconds",
+          seconds_past: "{{n}} seconds ago",
+          minutes_future: "in {{n}} minutes",
+          minutes_past: "{{n}} minutes ago",
+          hours_future: "in {{n}} hours",
+          hours_past: "{{n}} hours ago",
+          days_future: "in {{n}} days",
+          days_past: "{{n}} days ago",
+          months_future: "in {{n}} months",
+          months_past: "{{n}} months ago",
+          years_future: "in {{n}} years",
+          years_past: "{{n}} years ago",
+        },
+      },
     },
   },
   cn: {

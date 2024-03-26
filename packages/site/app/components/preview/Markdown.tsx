@@ -1,6 +1,7 @@
 // This file is a fork of @maddymeow's work on Discohook (AGPL 3.0) - thank you
 // https://github.com/discohook/site
 
+import { Trans } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { highlightCode } from "~/util/highlighting";
@@ -679,12 +680,14 @@ const timestampRule = defineRule({
         : capture.format;
 
     return (
-      <span className="rounded-[3px] bg-primary-400/[0.24] px-[2px] dark:bg-primary-500/[0.48]">
-        {n}
-        {/*intl.formatMessage(`timestamp.${format}`, {
-          date: capture.date,
-          n,
-        })*/}
+      <span
+        className="rounded-[3px] bg-primary-400/[0.24] px-[2px] dark:bg-primary-500/[0.48]"
+        title={capture.date.toLocaleString()}
+      >
+        <Trans
+          i18nKey={`timestamp.${format}`}
+          values={{ date: capture.date, n }}
+        />
       </span>
     );
   },
