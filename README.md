@@ -34,6 +34,18 @@ Along with some shared packages:
 
 - [store](/packages/store) - Database & KV utilities
 
+## Attribution
+
+### Translations
+
+| Thanks to | Language(s) |
+|-----------|-------------|
+| anonymous | Chinese     |
+
+### Original Project
+
+Big thanks to [@maddysrc](https://github.com/maddysrc) and [@crawron](https://twitter.com/Crawron) for creating the original Discohook project in 2019 and later working with me to gracefully transfer ownership after 5 years.
+
 ## Development
 
 #### Warning
