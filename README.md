@@ -41,6 +41,7 @@ Along with some shared packages:
 | Thanks to | Language(s) |
 |-----------|-------------|
 | anonymous | Chinese     |
+| mew610    | Arabic      |
 
 ### Original Project
 
