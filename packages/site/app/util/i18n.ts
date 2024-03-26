@@ -176,6 +176,18 @@ export const resources = {
       },
     },
   },
+  "en-GB": {
+    translation: {
+      timestamp: {
+        time: "{{ date, H:mm }}",
+        time_verbose: "{{ date, H:mm:ss }}",
+        full: "{{ date, D MMMM YYYY H:mm }}",
+        full_verbose: "{{ date, dddd, D MMMM YYYY H:mm:ss }}",
+        date: "{{ date, DD/MM/YYYY }}",
+        date_verbose: "{{ date, D MMMM YYYY }}",
+      },
+    },
+  },
   cn: {
     translation: {
       settings: "设置",
