@@ -6,6 +6,8 @@ import {
   MonthRange,
   SixtyRange,
 } from "cron-parser";
+import { TFunction } from "i18next";
+import { getRelativeDateFormat } from "./markdown/dates";
 
 type IntervalUnit =
   | "millisecond"
@@ -58,9 +60,12 @@ export const timeDiff = (earlier: Date, later: Date, short = false) => {
   return { text: diffText, future: later.getTime() < earlier.getTime() };
 };
 
-export const relativeTime = (date: Date, short = false): string => {
-  const { text, future } = timeDiff(date, new Date(), short);
-  return future ? `in ${text}` : `${text} ago`;
+export const relativeTime = (
+  date: Date,
+  t: TFunction<"translation", undefined>,
+): string => {
+  const [relativeFormat, n] = getRelativeDateFormat(date);
+  return t(`timestamp.relative.${relativeFormat}`, { replace: { n } });
 };
 
 export const sleep = (ms: number) =>

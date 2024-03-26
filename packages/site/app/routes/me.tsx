@@ -468,7 +468,7 @@ export default function Me() {
                               <>
                                 <Twemoji emoji="🕑" className="grayscale" />{" "}
                                 Next run{" "}
-                                {relativeTime(new Date(backup.nextRunAt))} (
+                                {relativeTime(new Date(backup.nextRunAt), t)} (
                                 {new Date(backup.nextRunAt).toLocaleString(
                                   undefined,
                                   {
