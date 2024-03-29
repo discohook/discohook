@@ -26,6 +26,7 @@ import {
   ApplicationCommandType,
   InteractionResponseType,
   InteractionType,
+  MessageFlags,
   ModalSubmitComponent,
   RESTGetAPIInteractionFollowupResult,
   RESTPatchAPIInteractionFollowupJSONBody,
@@ -41,7 +42,7 @@ import { APIPartialResolvedChannel } from "./types/api.js";
 import { Env } from "./types/env.js";
 
 export class InteractionContext<
-  T extends APIInteraction,
+  T extends APIInteraction = APIInteraction,
   S extends MinimumKVComponentState | Record<string, any> = {},
 > {
   public rest: REST;
@@ -291,16 +292,38 @@ export class InteractionContext<
     return component;
   }
 
-  defer(
-    type?:
-      | InteractionResponseType.DeferredChannelMessageWithSource
-      | InteractionResponseType.DeferredMessageUpdate,
-  ):
-    | APIInteractionResponseDeferredChannelMessageWithSource
-    | APIInteractionResponseDeferredMessageUpdate {
-    return {
-      type: type ?? InteractionResponseType.DeferredChannelMessageWithSource,
-    };
+  defer(options?: {
+    /** Whether the response will eventually be ephemeral */
+    ephemeral?: boolean;
+    /** Whether the bot should be displayed as "thinking" in the UI */
+    thinking?: boolean;
+  }):
+    | APIInteractionResponseDeferredMessageUpdate
+    | APIInteractionResponseDeferredChannelMessageWithSource {
+    if (
+      this.interaction.type === InteractionType.MessageComponent ||
+      this.interaction.type === InteractionType.ModalSubmit
+    ) {
+      return {
+        type: options?.thinking
+          ? InteractionResponseType.DeferredChannelMessageWithSource
+          : InteractionResponseType.DeferredMessageUpdate,
+        data:
+          options?.thinking && options?.ephemeral
+            ? { flags: MessageFlags.Ephemeral }
+            : undefined,
+      };
+    } else if (this.interaction.type === InteractionType.ApplicationCommand) {
+      return {
+        type: InteractionResponseType.DeferredChannelMessageWithSource,
+        data: options?.ephemeral
+          ? { flags: MessageFlags.Ephemeral }
+          : undefined,
+      };
+    }
+    throw Error(
+      `Invalid stack. Does this interaction type (${this.interaction.type}) support deferring?`,
+    );
   }
 
   reply(

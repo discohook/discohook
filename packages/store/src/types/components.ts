@@ -5,6 +5,7 @@ import {
   ButtonStyle,
   ChannelType,
   ComponentType,
+  MessageFlags,
   RESTPostAPIGuildForumThreadsJSONBody,
   SelectMenuDefaultValueType,
 } from "discord-api-types/v10";
@@ -140,6 +141,8 @@ export interface FlowActionSendMessage extends FlowActionBase {
   type: FlowActionType.SendMessage;
   backupId: number;
   backupMessageIndex?: number;
+  response?: boolean;
+  flags?: MessageFlags;
 }
 
 export interface FlowActionSendWebhookMessage extends FlowActionBase {
@@ -147,6 +150,7 @@ export interface FlowActionSendWebhookMessage extends FlowActionBase {
   webhookId: string;
   backupId: number;
   backupMessageIndex?: number;
+  flags?: MessageFlags;
 }
 
 export interface FlowActionCreateThread extends FlowActionBase {
