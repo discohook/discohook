@@ -1,9 +1,14 @@
 import { time } from "@discordjs/formatters";
 import { getDate } from "discord-snowflake";
-import { makeSnowflake } from "store/src/schema";
 import type { QueryData } from "store/src/types";
+import { isSnowflakeSafe } from "../commands/reactionRoles.js";
 import { cdn } from "../util/cdn.js";
 import { FlowFailure, LiveVariables } from "./flows.js";
+
+export const assertGetSnowflake = (id: string): `${bigint}` => {
+  if (isSnowflakeSafe(id)) return id;
+  throw Error(`${id} is not a snowflake.`);
+};
 
 export const getReplacements = (
   vars: LiveVariables,
@@ -50,13 +55,13 @@ export const getReplacements = (
     ),
     "member.bot": vars.user?.bot ? "True" : "False",
     "member.created": vars.user
-      ? time(getDate(makeSnowflake(vars.user.id)), "d")
+      ? time(getDate(assertGetSnowflake(vars.user.id)), "d")
       : undefined,
     "member.created_relative": vars.user
-      ? time(getDate(makeSnowflake(vars.user.id)), "R")
+      ? time(getDate(assertGetSnowflake(vars.user.id)), "R")
       : undefined,
     "member.created_long": vars.user
-      ? time(getDate(makeSnowflake(vars.user.id)), "F")
+      ? time(getDate(assertGetSnowflake(vars.user.id)), "F")
       : undefined,
     // Server
     "server.id": vars.guild?.id,
@@ -73,13 +78,13 @@ export const getReplacements = (
     "server.emoji_limit": vars.guild?.emoji_limit,
     "server.sticker_limit": vars.guild?.sticker_limit,
     "server.created": vars.guild
-      ? time(getDate(makeSnowflake(vars.guild.id)), "d")
+      ? time(getDate(assertGetSnowflake(vars.guild.id)), "d")
       : undefined,
     "server.created_relative": vars.guild
-      ? time(getDate(makeSnowflake(vars.guild.id)), "R")
+      ? time(getDate(assertGetSnowflake(vars.guild.id)), "R")
       : undefined,
     "server.created_long": vars.guild
-      ? time(getDate(makeSnowflake(vars.guild.id)), "F")
+      ? time(getDate(assertGetSnowflake(vars.guild.id)), "F")
       : undefined,
     // More
     now: time(now, "d"),
@@ -99,8 +104,8 @@ export const processQueryData = async (
     throw new FlowFailure("No message at the specified position.");
   }
   const data = {
-    content: message.data.content,
-    embeds: message.data.embeds,
+    content: message.data.content || undefined,
+    embeds: message.data.embeds || undefined,
     components: message.data.components,
     username: message.data.author?.name,
     avatar_url: message.data.author?.icon_url,
