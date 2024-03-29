@@ -1,6 +1,7 @@
 import { FlowActionType } from "./src/types";
 
 export * from "./src/db.js";
+export * from "./src/durable/components.js";
 export * from "./src/kv.js";
 export * from "./src/schema";
 export * from "./src/types";

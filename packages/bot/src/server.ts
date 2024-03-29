@@ -19,6 +19,7 @@ import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { and, eq } from "drizzle-orm";
 import { Router } from "itty-router";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
+import { DurableStoredComponent } from "store/src/durable/components.js";
 import {
   backups,
   discordMessageComponents,
@@ -50,6 +51,7 @@ import { InteractionContext } from "./interactions.js";
 import { Env } from "./types/env.js";
 import { getCustomId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
+export { DurableComponentState } from "store/src/durable/components.js";
 
 const router = Router();
 
@@ -207,30 +209,55 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
         });
       }
     } else if (customId.startsWith("p_")) {
-      // Permanent, user-created components
-      // todo: store in KV or a DO?
       const db = getDb(env.DATABASE_URL);
-      const component = await db.query.discordMessageComponents.findFirst({
-        where: and(
-          eq(discordMessageComponents.customId, customId),
-          eq(
-            discordMessageComponents.messageId,
-            makeSnowflake(interaction.message.id),
+      const doId = env.COMPONENTS.idFromName(
+        `${interaction.message.id}-${customId}`,
+      );
+      const stub = env.COMPONENTS.get(doId, { locationHint: "enam" });
+      const response = await stub.fetch("http://do/", { method: "GET" });
+      let component: DurableStoredComponent;
+      if (response.status === 404) {
+        // In case a durable object does not exist for this component for
+        // whatever reason. Usually because of migrated components that have
+        // not yet actually been activated.
+        const dbComponent = await db.query.discordMessageComponents.findFirst({
+          where: and(
+            eq(discordMessageComponents.customId, customId),
+            eq(
+              discordMessageComponents.messageId,
+              makeSnowflake(interaction.message.id),
+            ),
           ),
-        ),
-        columns: {
-          id: true,
-          customId: true,
-          guildId: true,
-          data: true,
-          draft: true,
-        },
-      });
-      if (!component || component.draft) {
-        return respond({ error: "Unknown custom ID or it is marked as draft" });
+          columns: {
+            id: true,
+            data: true,
+            draft: true,
+          },
+        });
+        if (!dbComponent) {
+          return respond({
+            error: response.statusText,
+            status: response.status,
+          });
+        }
+        await stub.fetch(`http://do/?id=${dbComponent.id}`, { method: "POST" });
+        component = dbComponent;
+      } else if (!response.ok) {
+        return respond({
+          error: response.statusText,
+          status: response.status,
+        });
+      } else {
+        component = (await response.json()) as DurableStoredComponent;
+      }
+      if (component.draft) {
+        return respond({ error: "Component is marked as draft" });
+      }
+      const guildId = interaction.guild_id;
+      if (!guildId) {
+        return respond({ error: "No guild ID" });
       }
 
-      const guildId = interaction.guild_id ?? String(component.guildId);
       const liveVars: LiveVariables = {
         guild: await getchTriggerGuild(rest, env.KV, guildId),
         member: interaction.member,
@@ -279,8 +306,9 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
           }),
         );
       }
+
       // Don't like this. We should be returning a response
-      // from one of the flows instead.
+      // from one of the flows instead, especially for modals.
       eCtx.waitUntil(
         (async () => {
           for (const flow of flows) {
@@ -576,6 +604,15 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
             thisButton.data.type === ComponentType.Button &&
             thisButton.data.style !== ButtonStyle.Link
           ) {
+            // Store the durable object for later
+            const doId = env.COMPONENTS.idFromName(
+              `${interaction.message.id}-${customId}`,
+            );
+            const stub = env.COMPONENTS.get(doId);
+            await stub.fetch(`http://do/?id=${thisButton.id}`, {
+              method: "POST",
+            });
+
             const liveVars: LiveVariables = {
               guild,
               member: interaction.member,

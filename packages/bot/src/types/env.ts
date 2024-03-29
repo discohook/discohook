@@ -6,4 +6,5 @@ export interface Env {
   DISCOHOOK_ORIGIN: string;
   DATABASE_URL: string;
   KV: KVNamespace;
+  COMPONENTS: DurableObjectNamespace;
 }
