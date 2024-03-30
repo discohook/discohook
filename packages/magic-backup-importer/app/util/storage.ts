@@ -1,4 +1,3 @@
-
 export interface Settings {
   theme?: "light" | "dark";
   display?: "cozy" | "compact";
@@ -27,5 +26,3 @@ export const getLocalStorage = (): LocalStorage => {
 
   return { settings, databaseUpgradedVersion };
 };
-
-

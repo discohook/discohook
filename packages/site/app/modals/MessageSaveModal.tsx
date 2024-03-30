@@ -100,7 +100,10 @@ export const MessageSaveModal = (
             i18nKey="linkExpiresAt"
             values={{
               time: new Date(shareFetcher.data.expires).toLocaleString(),
-              relativeTime: relativeTime(new Date(shareFetcher.data.expires), t),
+              relativeTime: relativeTime(
+                new Date(shareFetcher.data.expires),
+                t,
+              ),
             }}
           />
         </p>

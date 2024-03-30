@@ -20,8 +20,7 @@ export const action = async ({ request, params, context }: LoaderArgs) => {
 
   switch (payload.type) {
     case "wallet": {
-      // Calculate exchange rate
-      // 
+      // Calculate exchange rate here
       break;
     }
     default:

@@ -110,7 +110,16 @@ export const ActionRowEditor: React.FC<{
   emojis?: APIMessageComponentEmoji[];
   open?: boolean;
   notManageable?: boolean;
-}> = ({ message, row, rowIndex: i, data, setData, emojis, open, notManageable }) => {
+}> = ({
+  message,
+  row,
+  rowIndex: i,
+  data,
+  setData,
+  emojis,
+  open,
+  notManageable,
+}) => {
   const { t } = useTranslation();
   const mi = data.messages.indexOf(message);
   const errors = getComponentErrors(row);

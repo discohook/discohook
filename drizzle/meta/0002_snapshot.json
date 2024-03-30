@@ -108,10 +108,7 @@
         "DiscordMember_userId_guildId_unique": {
           "name": "DiscordMember_userId_guildId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "userId",
-            "guildId"
-          ]
+          "columns": ["userId", "guildId"]
         }
       }
     },
@@ -194,10 +191,7 @@
         "DiscordMessageComponent_messageId_customId_unique": {
           "name": "DiscordMessageComponent_messageId_customId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "messageId",
-            "customId"
-          ]
+          "columns": ["messageId", "customId"]
         }
       }
     },
@@ -284,10 +278,7 @@
         "DiscordRoles_id_guildId_unique": {
           "name": "DiscordRoles_id_guildId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "guildId"
-          ]
+          "columns": ["id", "guildId"]
         }
       }
     },
@@ -526,16 +517,12 @@
         "OAuthInfo_discordId_unique": {
           "name": "OAuthInfo_discordId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "discordId"
-          ]
+          "columns": ["discordId"]
         },
         "OAuthInfo_guildedId_unique": {
           "name": "OAuthInfo_guildedId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "guildedId"
-          ]
+          "columns": ["guildedId"]
         }
       }
     },
@@ -712,16 +699,12 @@
         "User_discordId_unique": {
           "name": "User_discordId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "discordId"
-          ]
+          "columns": ["discordId"]
         },
         "User_guildedId_unique": {
           "name": "User_guildedId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "guildedId"
-          ]
+          "columns": ["guildedId"]
         }
       }
     },
@@ -797,10 +780,7 @@
         "Webhook_platform_id_unique": {
           "name": "Webhook_platform_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "platform",
-            "id"
-          ]
+          "columns": ["platform", "id"]
         }
       }
     },

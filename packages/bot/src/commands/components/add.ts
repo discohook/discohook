@@ -438,9 +438,9 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
                 .setURL(
-                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams(
-                    { id: String(component.id) },
-                  )}`,
+                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams({
+                    id: String(component.id),
+                  })}`,
                 ),
             )
             .toJSON(),
@@ -541,41 +541,39 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
                 .setURL(
-                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams(
-                    {
-                      data: base64UrlEncode(
-                        JSON.stringify({
-                          type:
-                            value === "string-select"
-                              ? 3
-                              : value === "user-select"
-                                ? 4
-                                : value === "role-select"
-                                  ? 5
-                                  : value === "mentionable-select"
-                                    ? 6
-                                    : value === "channel-select"
-                                      ? 7
-                                      : undefined,
-                          // ...(value === "string-select"
-                          //   ? {
-                          //       options: [],
-                          //     }
-                          //   : {}),
-                        }),
-                      ),
-                      resolved: base64UrlEncode(
-                        JSON.stringify({
-                          guildId: state.message.guildId,
-                          webhook: {
-                            id: state.message.webhookId,
-                            name: state.message.webhookName,
-                            avatar: state.message.webhookAvatar,
-                          },
-                        }),
-                      ),
-                    },
-                  )}`,
+                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams({
+                    data: base64UrlEncode(
+                      JSON.stringify({
+                        type:
+                          value === "string-select"
+                            ? 3
+                            : value === "user-select"
+                              ? 4
+                              : value === "role-select"
+                                ? 5
+                                : value === "mentionable-select"
+                                  ? 6
+                                  : value === "channel-select"
+                                    ? 7
+                                    : undefined,
+                        // ...(value === "string-select"
+                        //   ? {
+                        //       options: [],
+                        //     }
+                        //   : {}),
+                      }),
+                    ),
+                    resolved: base64UrlEncode(
+                      JSON.stringify({
+                        guildId: state.message.guildId,
+                        webhook: {
+                          id: state.message.webhookId,
+                          name: state.message.webhookName,
+                          avatar: state.message.webhookAvatar,
+                        },
+                      }),
+                    ),
+                  })}`,
                 ),
             )
             .toJSON(),

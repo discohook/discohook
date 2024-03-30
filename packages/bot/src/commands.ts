@@ -12,7 +12,7 @@ import {
 import {
   addComponentChatEntry,
   addComponentMessageAutocomplete,
-  addComponentMessageEntry
+  addComponentMessageEntry,
 } from "./commands/components/entry.js";
 import { helpAutocomplete, helpEntry } from "./commands/help.js";
 import { inviteCallback } from "./commands/invite.js";

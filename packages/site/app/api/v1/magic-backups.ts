@@ -21,7 +21,14 @@ const verifyToken = async (request: Request, kv: KVNamespace) => {
   if (!token) throw json({ message: "No token provided." }, 401);
 
   const data = await kv.get<{ userId: number }>(`magic-token-${token}`, "json");
-  if (!data) throw json({ message: "Invalid or expired session. Go back to the previous page and try again." }, 401);
+  if (!data)
+    throw json(
+      {
+        message:
+          "Invalid or expired session. Go back to the previous page and try again.",
+      },
+      401,
+    );
   return { ...data, token };
 };
 

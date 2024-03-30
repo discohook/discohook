@@ -7,7 +7,8 @@
       "./packages/site/functions/",
       "./packages/site/public/emoji.json",
       "./packages/site/public/help.json",
-      "./packages/site/app/util/highlights.json"
+      "./packages/site/app/util/highlights.json",
+      "./persistence/"
     ]
   },
   "organizeImports": {
