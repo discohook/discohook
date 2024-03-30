@@ -1,4 +1,4 @@
-name = "remix-cloudflare-workers"
+name = "discohook-backup-importer"
 
 workers_dev = true
 main = "./build/index.js"
