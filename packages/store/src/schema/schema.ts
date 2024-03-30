@@ -29,7 +29,7 @@ const date = (name: string) => timestamp(name, { mode: "date" }).$type<Date>();
 const snowflake = (name: string) => bigint(name, { mode: "bigint" });
 
 // We in the business call this a make-flake
-/** Assert that `id` is a snowflake and return the appropriately typed value */
+/** Assert that `id` is a snowflake and return it as a BigInt */
 export const makeSnowflake = (id: string) => {
   if (isSnowflake(id)) return BigInt(id);
   throw new Error(`${id} is not a snowflake.`);
