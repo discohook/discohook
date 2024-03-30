@@ -17,6 +17,7 @@ import { StringSelect } from "~/components/StringSelect";
 import { ActionRowEditor } from "~/components/editor/ComponentEditor";
 import { FlowEditor } from "~/components/editor/FlowEditor";
 import { Message } from "~/components/preview/Message";
+import { FailureDataModal } from "~/modals/FailureDataModal";
 import { getUser } from "~/session.server";
 import { Flow } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
@@ -39,6 +40,7 @@ export default function ComponentEditorPage() {
   const { t } = useTranslation();
   const { componentId, user } = useLoaderData<typeof loader>();
 
+  const [failureData, setFailureData] = useState<unknown>();
   const [data, setData] = useState<QueryData>({
     messages: [
       {
@@ -106,6 +108,8 @@ export default function ComponentEditorPage() {
                   : qd.component.customId ?? "",
             });
           });
+        } else {
+          r.json().then(setFailureData);
         }
       },
     );
@@ -128,6 +132,11 @@ export default function ComponentEditorPage() {
 
   return (
     <div className="h-screen overflow-hidden">
+      <FailureDataModal
+        data={failureData}
+        open={!!failureData}
+        setOpen={() => {}}
+      />
       <Header user={user} />
       <div className="md:flex h-[calc(100%_-_3rem)]">
         <div
