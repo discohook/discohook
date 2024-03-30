@@ -7,7 +7,7 @@
     "build": "remix build",
     "deploy": "wrangler deploy",
     "dev": "remix dev --manual -c \"npm start\"",
-    "start": "wrangler dev ./build/index.js --port=8789",
+    "start": "wrangler dev ./build/index.js --port=8789 --persist-to=../../persistence",
     "typecheck": "tsc"
   },
   "dependencies": {

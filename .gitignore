@@ -9,6 +9,7 @@ build/
 app/styles/app.css
 yarn-error.log
 .DS_Store
+persistence/
 
 .pnp.*
 .yarn/*

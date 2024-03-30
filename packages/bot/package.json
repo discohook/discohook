@@ -7,7 +7,7 @@
   "main": "src/server.ts",
   "scripts": {
     "start": "tsx src/server.ts",
-    "dev": "wrangler dev src/server.ts",
+    "dev": "wrangler dev src/server.ts --persist-to=../../persistence",
     "ngrok": "ngrok http 8787",
     "fix": "eslint --fix '**/*.ts'",
     "lint": "eslint '**/*.ts'",
