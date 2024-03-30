@@ -18,18 +18,17 @@ export interface ShortenedData {
 
 export const generateUniqueShortenKey = async (
   kv: KVNamespace,
-  defaultLength: number,
+  length: number,
   tries = 10,
 ): Promise<{ id: string; key: string }> => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const _ of Array(tries)) {
-    const id = randomString(defaultLength);
+    const id = randomString(length);
     const key = `share-${id}`;
     if (!(await kv.get(key))) {
       return { id, key };
     }
   }
-  return await generateUniqueShortenKey(kv, defaultLength + 1);
+  return await generateUniqueShortenKey(kv, length + 1);
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
