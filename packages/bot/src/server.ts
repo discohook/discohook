@@ -499,7 +499,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
                             animated: button.emoji.split(":")[0] === "<a",
                           }
                         : {
-                            id: button.emoji,
+                            name: button.emoji,
                           }
                       : undefined,
                     ...(button.url
