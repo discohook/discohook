@@ -122,7 +122,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
         }
       } catch (e) {
         if (isDiscordError(e)) {
-          const errorResponse = getErrorMessage(ctx, e.raw);
+          const errorResponse = getErrorMessage(ctx, e.rawError);
           if (errorResponse) {
             return respond(errorResponse);
           }
@@ -196,7 +196,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
         }
       } catch (e) {
         if (isDiscordError(e)) {
-          const errorResponse = getErrorMessage(ctx, e.raw);
+          const errorResponse = getErrorMessage(ctx, e.rawError);
           if (errorResponse) {
             return respond(errorResponse);
           }
@@ -354,7 +354,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
         }
       } catch (e) {
         if (isDiscordError(e)) {
-          const errorResponse = getErrorMessage(ctx, e.raw);
+          const errorResponse = getErrorMessage(ctx, e.rawError);
           if (errorResponse) {
             return respond(errorResponse);
           }
@@ -681,7 +681,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
         }
       } catch (e) {
         if (isDiscordError(e)) {
-          const errorResponse = getErrorMessage(ctx, e.raw);
+          const errorResponse = getErrorMessage(ctx, e.rawError);
           if (errorResponse) {
             return respond(errorResponse);
           }

@@ -198,7 +198,7 @@ export const executeFlow = async (
 
 const httpFlowFailure = (e: unknown, message: string) => {
   if (isDiscordError(e)) {
-    return new FlowFailure(message, e.raw);
+    return new FlowFailure(message, e.rawError);
   }
   return new FlowFailure(message);
 };

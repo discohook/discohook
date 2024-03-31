@@ -88,7 +88,8 @@ export const getErrorMessage = (
       case 40062:
         return "Resource is being rate limited.";
       case 50001:
-        return "I am not allowed to do something that I need to do here.";
+      case 50013:
+        return `I am not allowed to do something that I need to do here (${error.message}).`;
       case 50021:
         return "Cannot execute action on a system message.";
       case 50024:
