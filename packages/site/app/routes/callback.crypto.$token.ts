@@ -20,7 +20,19 @@ export const action = async ({ request, params, context }: LoaderArgs) => {
 
   switch (payload.type) {
     case "wallet": {
-      // Calculate exchange rate here
+      const response = await fetch(
+        "https://blockchain.info/tobtc?currency=USD&value=4",
+        {
+          method: "GET",
+        },
+      );
+      // If the increased value is less than whatever $4 is worth right now, reject
+      const btcMin = Number(await response.text());
+      if (payload.value < btcMin) {
+        // Alert the user somehow
+        break;
+      }
+      // Determine the user who donated
       break;
     }
     default:

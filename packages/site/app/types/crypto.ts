@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zx } from "zodix";
 
 export const ZodCryptoWalletWatchPayload = z.object({
   type: z.literal("wallet"),
@@ -6,7 +7,7 @@ export const ZodCryptoWalletWatchPayload = z.object({
   blockchain: z.string(),
   address: z.string(),
   currency: z.string(),
-  value: z.string(),
+  value: zx.NumAsString,
 });
 
 export const ZodCryptoAlert = z.discriminatedUnion("type", [
