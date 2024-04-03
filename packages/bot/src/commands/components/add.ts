@@ -41,7 +41,7 @@ import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentWidth,
   getRowWidth,
-  storeComponents
+  storeComponents,
 } from "../../util/components.js";
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";
