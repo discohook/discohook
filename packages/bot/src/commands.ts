@@ -21,6 +21,7 @@ import {
   deleteReactionRoleHandler,
   messageAndEmojiAutocomplete,
 } from "./commands/reactionRoles.js";
+import { restoreMessageEntry } from "./commands/restore.js";
 import {
   addTriggerCallback,
   triggerAutocompleteCallback,
@@ -134,7 +135,9 @@ export const appCommands: Record<
       handlers: {},
     },
     restore: {
-      handlers: {},
+      handlers: {
+        BASE: restoreMessageEntry,
+      },
     },
     // repeat: {
     //   handlers: {

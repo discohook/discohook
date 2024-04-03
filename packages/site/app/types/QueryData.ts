@@ -5,6 +5,8 @@ import {
   APIMessageActionRowComponent,
 } from "discord-api-types/v10";
 import { z } from "zod";
+import { StorableComponent } from "~/store.server";
+import { ZodAPIMessageActionRowComponent } from "./components";
 
 /** The version of the query data, defaults to `d2`
  *
@@ -33,6 +35,15 @@ export interface QueryData {
     };
     reference?: string;
   }[];
+  components?: Record<
+    string,
+    {
+      id: string;
+      // @ts-expect-error
+      data: Partial<Pick<StorableComponent, "flow" | "flows">>;
+      draft?: boolean;
+    }[]
+  >;
   targets?: { url: string }[];
 }
 
@@ -112,6 +123,23 @@ export const ZodQueryDataMessage: z.ZodType<QueryData["messages"][number]> =
     reference: z.ostring(),
   });
 
+export type QueryDataComponent = NonNullable<
+  QueryData["components"]
+>[string][number];
+
+export const ZodQueryDataComponent: z.ZodType<QueryDataComponent> = z.object({
+  id: z.string(),
+  data: ZodAPIMessageActionRowComponent.and(
+    z.object({
+      flow: z.object({
+        name: z.string(),
+        actions: z.object({}).array(),
+      }),
+    }),
+  ),
+  draft: z.oboolean(),
+});
+
 export const ZodQueryDataTarget: z.ZodType<
   NonNullable<QueryData["targets"]>[number]
 > = z.object({ url: z.string() });
@@ -120,6 +148,7 @@ export const ZodQueryData: z.ZodType<QueryData> = z.object({
   version: z.enum(["d2"]).optional(),
   backup_id: z.onumber(),
   messages: ZodQueryDataMessage.array(),
+  components: z.record(z.string(), ZodQueryDataComponent.array()).optional(),
   targets: ZodQueryDataTarget.array().optional(),
 });
 

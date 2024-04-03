@@ -838,6 +838,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@theinternetfolks/snowflake@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@theinternetfolks/snowflake@npm:1.3.0"
+  checksum: 10c0/8b894dea3827f3512c87cdf18bf8618e1a6c94be42c8db18d603a0ff436a7e566ffde6e260a9ddb27ef2e0f7314a65f5df9db2ad3abedf2a86c4e54b3d6f0533
+  languageName: node
+  linkType: hard
+
 "@tsconfig/node18@npm:^18.2.2":
   version: 18.2.2
   resolution: "@tsconfig/node18@npm:18.2.2"
@@ -3800,14 +3807,15 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=6d4c74&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=e37e89&locator=discohook-bot%40workspace%3A."
   dependencies:
+    "@theinternetfolks/snowflake": "npm:^1.3.0"
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/387993921f36872e77b5d4c181f6191d238e9c8bb68618f278d710e67b7d20085cb95d70e5014c93d365dc0b34a328cad23fec51d2ea47faa26b95bbe6546200
+  checksum: 10c0/5b9ef352374189728e15ba9402899fab42c5fe1ba2af383b1f456226b03bd279ada9255e7af45de513347854393204286c23f19e7b0fec9b3c3180cc25c0a5d9
   languageName: node
   linkType: hard
 

@@ -19,13 +19,17 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
+import { generateId } from "store/src/schema";
 import { MinimumKVComponentState } from "../components.js";
 import { Env } from "../types/env.js";
 
 export const getCustomId = (temporary = false) => {
+  if (!temporary) {
+    return `p_${generateId()}`;
+  }
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = temporary ? "t_" : "p_";
+  let result = "t_";
   for (let i = 0; i < 98; i += 1) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }

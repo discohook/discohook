@@ -9,6 +9,7 @@ import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import {
   jsonAsString,
+  snowflakeAsString,
   zxParseForm,
   zxParseParams,
   zxParseQuery,
@@ -16,7 +17,7 @@ import {
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
-  const { id } = zxParseParams(params, { id: zx.NumAsString });
+  const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const { data: returnData } = zxParseQuery(request, {
     data: z.optional(zx.BoolAsString),
   });
@@ -51,7 +52,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
 export const action = async ({ request, params, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
-  const { id } = zxParseParams(params, { id: zx.IntAsString });
+  const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const { name, data, scheduleAt, cron, timezone } = await zxParseForm(
     request,
     {

@@ -1,16 +1,20 @@
 import { json } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { zx } from "zodix";
 import { getUserId } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
-import { jsonAsString, zxParseForm, zxParseParams } from "~/util/zod";
+import {
+  jsonAsString,
+  snowflakeAsString,
+  zxParseForm,
+  zxParseParams,
+} from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
-  const { id } = zxParseParams(params, { id: zx.IntAsString });
+  const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.DATABASE_URL);
@@ -36,7 +40,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 };
 
 export const action = async ({ request, params, context }: ActionArgs) => {
-  const { id } = zxParseParams(params, { id: zx.NumAsString });
+  const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const { name, data } = await zxParseForm(request, {
     name: z
       .ostring()

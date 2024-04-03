@@ -11,11 +11,18 @@ kv_namespaces = [
 ]
 
 [durable_objects]
-bindings = [{name = "SCHEDULER", class_name = "DurableScheduler"}]
+bindings = [
+  {name = "SCHEDULER", class_name = "DurableScheduler"},
+  {name = "COMPONENTS", class_name = "DurableComponentState", script_name="discohook-bot"}
+]
 
 [[migrations]]
 tag = "v1"
 new_classes = ["DurableScheduler"]
+
+[[migrations]]
+tag = "v2"
+new_classes = ["DurableComponentState"]
 
 [site]
   bucket = "./public"

@@ -5,7 +5,7 @@ import {
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "store";
-import { discordReactionRoles } from "store/src/schema";
+import { discordReactionRoles, makeSnowflake } from "store/src/schema";
 import { GatewayEventCallback } from "../events.js";
 
 export interface DiscordReactionRoleData {
@@ -18,14 +18,15 @@ export const messageReactionAddCallback: GatewayEventCallback = async (
 ) => {
   if (!event.guild_id || event.member?.user?.bot) return;
 
-  const reaction = event.emoji.id ?? event.emoji.name;
+  // biome-ignore lint/style/noNonNullAssertion: One is required
+  const reaction = (event.emoji.id ?? event.emoji.name)!;
   const key = `discord-reaction-role-${event.message_id}-${reaction}`;
   let data = await env.KV.get<DiscordReactionRoleData>(key, "json");
   if (!data) {
     const db = getDb(env.DATABASE_URL);
     const stored = await db.query.discordReactionRoles.findFirst({
       where: and(
-        eq(discordReactionRoles.messageId, event.message_id),
+        eq(discordReactionRoles.messageId, makeSnowflake(event.message_id)),
         eq(discordReactionRoles.reaction, reaction),
       ),
     });

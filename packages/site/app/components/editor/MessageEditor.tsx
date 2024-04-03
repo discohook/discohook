@@ -1,7 +1,7 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { Trans } from "react-i18next";
 import { DraftFile } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
+import { QueryData, QueryDataComponent } from "~/types/QueryData";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
@@ -60,6 +60,7 @@ export const MessageEditor: React.FC<{
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
       : 0;
   const previewText = getMessageText(message.data);
+  const components = data.components?.[i];
 
   const authorTypes = webhooks
     ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
@@ -266,11 +267,11 @@ export const MessageEditor: React.FC<{
                 {!webhooks || webhooks?.length === 0 ? (
                   <>
                     Component availability is dependent on the type of webhook
-                    that you send a message with. In order to send link buttons,
-                    the webhook must be created by an application (any bot), but
-                    to send other buttons and select menus, the webhook must be
-                    owned by the Discohook application (this website/its bot).
-                    Add a webhook for more information.
+                    that you send a message with. For link buttons, the webhook
+                    must be owned by a bot, but to send other buttons and select
+                    menus, the webhook must be owned by the Discohook
+                    application (this website/its bot). Add a webhook for more
+                    information.
                   </>
                 ) : possiblyApplication ? (
                   <>
@@ -296,6 +297,15 @@ export const MessageEditor: React.FC<{
                     rowIndex={ri}
                     data={data}
                     setData={setData}
+                    setComponents={(value: QueryDataComponent[]) => {
+                      setData({
+                        ...data,
+                        components: {
+                          ...(data.components ?? {}),
+                          [i]: value,
+                        },
+                      });
+                    }}
                     open
                   />
                   {message.data.components &&

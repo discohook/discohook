@@ -71,12 +71,12 @@ export const getWelcomerConfigurations = async (
       .where(eq(oldTable.guildId, BigInt(guild.id)));
 
     if (oldConfiguration.length !== 0) {
-      let backupId: number | undefined = undefined;
+      let backupId: bigint | undefined;
       const dUserId = oldConfiguration[0].lastModifiedById
         ? String(oldConfiguration[0].lastModifiedById)
         : guild.owner_id;
 
-      let userId = 0;
+      let userId = 0n;
 
       if (
         oldConfiguration[0].messageData ||
@@ -163,7 +163,7 @@ export const getWelcomerConfigurations = async (
                         {
                           type: FlowActionType.SendWebhookMessage,
                           webhookId: String(oldConfiguration[0].webhookId),
-                          backupId,
+                          backupId: backupId.toString(),
                         },
                       ]
                     : [
@@ -174,7 +174,7 @@ export const getWelcomerConfigurations = async (
                         },
                         {
                           type: FlowActionType.SendMessage,
-                          backupId,
+                          backupId: backupId.toString(),
                         },
                       ]),
                   ...(oldConfiguration[0].deleteMessagesAfter

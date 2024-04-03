@@ -149,9 +149,10 @@ export const addComponentMessageAutocomplete: AppCommandAutocompleteCallback = (
     "autocompleteChannelWebhookMessages",
   );
 
-export const addComponentMessageEntry: MessageAppCommandCallback = async (
-  ctx,
-) => {
+export const addComponentMessageEntry: MessageAppCommandCallback = (ctx) => {
   const message = ctx.getMessage();
-  return await startComponentFlow(ctx, message);
+  return startComponentFlow(
+    ctx,
+    message,
+  ) as ReturnType<MessageAppCommandCallback>;
 };

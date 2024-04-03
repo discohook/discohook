@@ -36,7 +36,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
     />
   );
 
-  const editorPaths = ["/component", "/link"];
+  const editorPaths = ["/link"];
   const isEditorPage =
     location.pathname === "/" ||
     editorPaths.includes(location.pathname.replace(/\/$/, ""));

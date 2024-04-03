@@ -127,7 +127,7 @@ export const authenticateGuildMember = async (
 };
 
 export interface AuthTokenData {
-  userId: number;
+  userId: string;
   guildId: string;
   owner: boolean;
   permissions: string;
@@ -145,7 +145,7 @@ export const verifyAuthToken = async (request: Request, context: Context) => {
   const { token } = zxParseQuery(request, { token: z.string() });
   const key = `auth-token-${token}`;
   const data = await context.env.KV.get<AuthTokenData>(key, "json");
-  if (!data || data.userId !== userId) {
+  if (!data || data.userId !== String(userId)) {
     throw json({ message: "Invalid auth token" }, 401);
   }
 
@@ -176,7 +176,7 @@ export const refreshAuthToken = async (
     dataOnly,
   );
   const auth = {
-    userId: data.user.id,
+    userId: data.user.id.toString(),
     guildId: data.guild.id,
     owner: data.guild.owner_id === data.member.user?.id,
     permissions: String(data.permissions.value),

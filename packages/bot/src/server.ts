@@ -16,13 +16,14 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Router } from "itty-router";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { DurableStoredComponent } from "store/src/durable/components.js";
 import {
   backups,
   discordMessageComponents,
+  generateId,
   makeSnowflake,
   buttons as oButtons,
 } from "store/src/schema";
@@ -49,7 +50,7 @@ import { eventNameToCallback } from "./events.js";
 import { LiveVariables, executeFlow } from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
 import { Env } from "./types/env.js";
-import { getCustomId, parseAutoComponentId } from "./util/components.js";
+import { parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";
 
@@ -221,12 +222,9 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
         // whatever reason. Usually because of migrated components that have
         // not yet actually been activated.
         const dbComponent = await db.query.discordMessageComponents.findFirst({
-          where: and(
-            eq(discordMessageComponents.customId, customId),
-            eq(
-              discordMessageComponents.messageId,
-              makeSnowflake(interaction.message.id),
-            ),
+          where: eq(
+            discordMessageComponents.messageId,
+            makeSnowflake(interaction.message.id),
           ),
           columns: {
             id: true,
@@ -466,28 +464,30 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
             )
             .returning({ id: backups.id, name: backups.name });
 
+          const oldIdMap: Record<string, string> = {};
           const inserted = await db
             .insert(discordMessageComponents)
             .values(
               oldMessageButtons.map((button) => {
                 const old = getOldCustomId(button);
-                // This makes old custom IDs searchable, preserves
-                // uniqueness for role buttons, and uses the new custom
-                // ID format
-                // permanent_ old id - new id
-                const newCustomId = old
-                  ? `p_${old}-${getCustomId(false).replace(/^p_/, "")}`.slice(
-                      0,
-                      100,
-                    )
-                  : undefined;
+                const newId = generateId();
+                const newCustomId = `p_${newId}`;
+                if (old) {
+                  oldIdMap[old] = newId;
+                }
+                // const newCustomId = old
+                //   ? `p_${old}-${getCustomId(false).replace(/^p_/, "")}`.slice(
+                //       0,
+                //       100,
+                //     )
+                //   : undefined;
 
                 return {
+                  id: BigInt(newId),
                   channelId: makeSnowflake(interaction.channel.id),
                   guildId: makeSnowflake(guildId),
                   messageId: makeSnowflake(interaction.message.id),
                   draft: false,
-                  customId: newCustomId,
                   data: {
                     type: ComponentType.Button,
                     label: button.customLabel ?? undefined,
@@ -529,7 +529,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
                                   ? [
                                       {
                                         type: FlowActionType.SendMessage,
-                                        backupId,
+                                        backupId: backupId.toString(),
                                         response: true,
                                         flags:
                                           button.roleId ||
@@ -540,7 +540,7 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
                                     ]
                                   : []),
                               ] satisfies FlowAction[],
-                            },
+                            } as Flow,
                             style:
                               (
                                 {
@@ -560,7 +560,6 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
             .onConflictDoNothing()
             .returning({
               id: discordMessageComponents.id,
-              customId: discordMessageComponents.customId,
               data: discordMessageComponents.data,
             });
 
@@ -575,14 +574,14 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
                 return component;
               }
 
-              const button = inserted.find((b) =>
-                b.customId?.startsWith(`p_${component.custom_id}`),
+              const button = inserted.find(
+                (b) => String(b.id) === oldIdMap[component.custom_id],
               );
               return {
                 ...component,
                 disabled: !button,
                 // This shouldn't happen, but fall back anyway to avoid failure
-                custom_id: button?.customId ?? component.custom_id,
+                custom_id: button ? `p_${button.id}` : component.custom_id,
               };
             }),
           }));
@@ -596,8 +595,8 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
           //     eq(oButtons.messageId, makeSnowflake(interaction.message.id)),
           //   );
 
-          const thisButton = inserted.find((b) =>
-            b.customId?.startsWith(`p_${customId}`),
+          const thisButton = inserted.find(
+            (b) => String(b.id) === oldIdMap[customId],
           );
           if (
             thisButton &&

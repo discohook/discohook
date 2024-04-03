@@ -11,6 +11,10 @@ export const PreviewDisclaimerModal = (props: ModalProps) => {
         inconsistent).
       </p>
       <p className="mt-2">
+        Components don't do anything in the preview! You will have to send your
+        message to test buttons and select menus.
+      </p>
+      <p className="mt-2">
         If something doesn't seem right, just send the message in a private
         channel to make sure everything is working as expected. New Discord
         style updates will usually be reflected within a few days or weeks.

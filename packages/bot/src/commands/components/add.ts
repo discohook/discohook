@@ -23,9 +23,12 @@ import {
   TextInputStyle,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { getDb, upsertDiscordUser, upsertGuild } from "store/src/db.js";
-import { getchGuild } from "store/src/kv.js";
-import { discordMessageComponents, makeSnowflake } from "store/src/schema";
+import { getDb, getchGuild, upsertDiscordUser, upsertGuild } from "store";
+import {
+  discordMessageComponents,
+  generateId,
+  makeSnowflake,
+} from "store/src/schema";
 import { StorableComponent } from "store/src/types/components.js";
 import {
   ButtonCallback,
@@ -37,14 +40,14 @@ import { InteractionContext } from "../../interactions.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentWidth,
-  getCustomId,
   getRowWidth,
-  storeComponents,
+  storeComponents
 } from "../../util/components.js";
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
 import { base64UrlEncode } from "../../util/text.js";
+import { getUserPremiumDetails } from "../../util/user.js";
 
 const buildStorableComponent = (
   component: StorableComponent,
@@ -106,8 +109,8 @@ interface ComponentFlow extends MinimumKVComponentState {
     webhookAvatar: string | null;
   };
   user: {
-    id?: number;
-    subscribedSince: Date | null;
+    id: string;
+    premium: ReturnType<typeof getUserPremiumDetails>;
   };
   component?: StorableComponent;
 }
@@ -161,10 +164,11 @@ const registerComponent = async (
   // biome-ignore lint/style/noNonNullAssertion: It's not null
   const data = flow.component!;
 
+  const id = BigInt(generateId());
   const customId =
     data.type === ComponentType.Button && data.style === ButtonStyle.Link
       ? undefined
-      : getCustomId(false);
+      : `p_${id}`;
   const built = buildStorableComponent(data, customId);
   if (!built) {
     throw new Error(`Failed to built the component (type ${data.type}).`);
@@ -209,23 +213,20 @@ const registerComponent = async (
   const returned = await db
     .insert(discordMessageComponents)
     .values({
+      id,
       guildId: makeSnowflake(flow.message.guildId),
       channelId: makeSnowflake(flow.message.channelId),
       messageId: makeSnowflake(flow.message.id),
-      createdById: flow.user.id,
-      customId,
+      createdById: makeSnowflake(flow.user.id),
       data,
     })
     .onConflictDoUpdate({
-      target: [
-        discordMessageComponents.messageId,
-        discordMessageComponents.customId,
-      ],
+      target: discordMessageComponents.id,
       set: {
         data,
         draft: false,
         updatedAt: new Date(),
-        updatedById: flow.user.id,
+        updatedById: makeSnowflake(flow.user.id),
       },
     })
     .returning({
@@ -272,16 +273,13 @@ export const startComponentFlow = async (
       flags: MessageFlags.Ephemeral,
     });
   }
-  let webhookToken: string | undefined;
-  try {
-    const webhook = (await ctx.rest.get(
-      Routes.webhook(message.webhook_id),
-    )) as APIWebhook;
-    webhookToken = webhook.token;
-  } catch {}
+  const webhook = (await ctx.rest.get(
+    Routes.webhook(message.webhook_id),
+  )) as APIWebhook;
+  const webhookToken = webhook.token;
   if (!webhookToken) {
     return ctx.reply({
-      content: `
+      content: dedent`
         Webhook token (ID ${message.webhook_id}) was not available.
         It may be an incompatible type of webhook, or it may have been
         created by a different bot user.
@@ -305,84 +303,93 @@ export const startComponentFlow = async (
       webhookName: message.author.username,
       webhookAvatar: message.author.avatar,
     },
-    user,
+    user: {
+      id: String(user.id),
+      premium: getUserPremiumDetails(user),
+    },
   };
-
-  const guild = await getchGuild(
-    ctx.rest,
-    ctx.env.KV,
-    // biome-ignore lint/style/noNonNullAssertion:
-    ctx.interaction.guild_id!,
-  );
-  await upsertGuild(db, guild);
 
   // Maybe switch to a quickie web form instead of a long flow like this
   // but some users prefer to stay within discord (for whatever reason!)
-  return ctx.reply({
-    embeds: [getComponentFlowEmbed(componentFlow).toJSON()],
-    components: [
-      new ActionRowBuilder<StringSelectMenuBuilder>()
-        .addComponents(
-          await storeComponents(ctx.env.KV, [
-            new StringSelectMenuBuilder({
-              placeholder: "Select a component type",
-              options: [
-                {
-                  label: "Button",
-                  description: "One press to execute one or several actions",
-                  value: "button",
-                  emoji: { name: "🟦" },
-                },
-                {
-                  label: "Link Button",
-                  description: "Direct a user to a specified URL",
-                  value: "link-button",
-                  emoji: { name: "🌐" },
-                },
-                {
-                  label: "String Select",
-                  description:
-                    "Select from a custom list of options to execute actions",
-                  value: "string-select",
-                  emoji: { name: "🔽" },
-                },
-                {
-                  label: "User Select",
-                  description: "Select from a list of users to execute actions",
-                  value: "user-select",
-                  emoji: { name: "👤" },
-                },
-                {
-                  label: "Role Select",
-                  description: "Select from a list of roles to execute actions",
-                  value: "role-select",
-                  emoji: { name: "🏷️" },
-                },
-                {
-                  label: "User/Role Select",
-                  description:
-                    "Select from a list of users and roles to execute actions",
-                  value: "mentionable-select",
-                  emoji: { name: "*️⃣" },
-                },
-                {
-                  label: "Channel Select",
-                  description:
-                    "Select from a list of channels to execute actions",
-                  value: "channel-select",
-                  emoji: { name: "#️⃣" },
-                },
-              ],
-            }),
-            {
-              ...componentFlow,
-              componentOnce: true,
-            },
-          ]),
-        )
-        .toJSON(),
-    ],
-  });
+  return [
+    ctx.reply({
+      embeds: [getComponentFlowEmbed(componentFlow).toJSON()],
+      components: [
+        new ActionRowBuilder<StringSelectMenuBuilder>()
+          .addComponents(
+            await storeComponents(ctx.env.KV, [
+              new StringSelectMenuBuilder({
+                placeholder: "Select a component type",
+                options: [
+                  {
+                    label: "Button",
+                    description: "One press to execute one or several actions",
+                    value: "button",
+                    emoji: { name: "🟦" },
+                  },
+                  {
+                    label: "Link Button",
+                    description: "Direct a user to a specified URL",
+                    value: "link-button",
+                    emoji: { name: "🌐" },
+                  },
+                  {
+                    label: "String Select",
+                    description:
+                      "Select from a custom list of options to execute actions",
+                    value: "string-select",
+                    emoji: { name: "🔽" },
+                  },
+                  {
+                    label: "User Select",
+                    description:
+                      "Select from a list of users to execute actions",
+                    value: "user-select",
+                    emoji: { name: "👤" },
+                  },
+                  {
+                    label: "Role Select",
+                    description:
+                      "Select from a list of roles to execute actions",
+                    value: "role-select",
+                    emoji: { name: "🏷️" },
+                  },
+                  {
+                    label: "User/Role Select",
+                    description:
+                      "Select from a list of users and roles to execute actions",
+                    value: "mentionable-select",
+                    emoji: { name: "*️⃣" },
+                  },
+                  {
+                    label: "Channel Select",
+                    description:
+                      "Select from a list of channels to execute actions",
+                    value: "channel-select",
+                    emoji: { name: "#️⃣" },
+                  },
+                ],
+              }),
+              {
+                ...componentFlow,
+                componentOnce: true,
+              },
+            ]),
+          )
+          .toJSON(),
+      ],
+      flags: MessageFlags.Ephemeral,
+    }),
+    async () => {
+      const guild = await getchGuild(
+        ctx.rest,
+        ctx.env.KV,
+        // biome-ignore lint/style/noNonNullAssertion:
+        ctx.interaction.guild_id!,
+      );
+      await upsertGuild(db, guild);
+    },
+  ];
 };
 
 export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
@@ -398,12 +405,12 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   switch (value) {
     case "button": {
       const db = getDb(ctx.env.DATABASE_URL);
-      const customId = getCustomId(false);
+      const id = BigInt(generateId());
       state.component = state.component ?? {
         type: ComponentType.Button,
         style: ButtonStyle.Primary,
         flow: {
-          name: "Unnamed Flow",
+          name: "Flow",
           actions: [],
         },
         label: "New Component",
@@ -413,13 +420,13 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         await db
           .insert(discordMessageComponents)
           .values({
+            id,
             guildId: makeSnowflake(state.message.guildId),
             channelId: makeSnowflake(state.message.channelId),
             messageId: makeSnowflake(state.message.id),
-            customId,
             data: state.component,
-            createdById: state.user.id,
-            updatedById: state.user.id,
+            createdById: makeSnowflake(state.user.id),
+            updatedById: makeSnowflake(state.user.id),
             draft: true,
           })
           .returning({
@@ -438,7 +445,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
                 .setURL(
-                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams({
+                  `${ctx.env.DISCOHOOK_ORIGIN}/flows?${new URLSearchParams({
                     id: String(component.id),
                   })}`,
                 ),

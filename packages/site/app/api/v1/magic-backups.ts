@@ -2,7 +2,7 @@ import { json } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { getDb } from "store";
 import { z } from "zod";
-import { backups, users } from "~/store.server";
+import { backups, makeSnowflake, users } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
@@ -20,7 +20,7 @@ const verifyToken = async (request: Request, kv: KVNamespace) => {
   const token = request.headers.get("X-Discohook-Pixiedust");
   if (!token) throw json({ message: "No token provided." }, 401);
 
-  const data = await kv.get<{ userId: number }>(`magic-token-${token}`, "json");
+  const data = await kv.get<{ userId: string }>(`magic-token-${token}`, "json");
   if (!data)
     throw json(
       {
@@ -41,7 +41,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const { userId } = await verifyToken(request, context.env.KV);
   const db = getDb(context.env.DATABASE_URL);
   const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
+    where: eq(users.id, makeSnowflake(userId)),
     columns: {
       name: true,
     },
@@ -68,7 +68,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     );
   }
   const userBackups = await db.query.backups.findMany({
-    where: eq(backups.ownerId, userId),
+    where: eq(backups.ownerId, makeSnowflake(userId)),
     columns: {
       name: true,
     },
@@ -118,7 +118,7 @@ export const action = async ({ request, context }: ActionArgs) => {
           targets: backup.targets,
         },
         dataVersion: "d2" as const,
-        ownerId: userId,
+        ownerId: makeSnowflake(userId),
         previewImageUrl: findMessagesPreviewImageUrl(backup.messages),
         importedFromOrg: true,
       })),

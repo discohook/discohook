@@ -60,7 +60,7 @@ export const getDiscordWebhookAuth = (context: Context) => {
           guildId = undefined;
         }
       }
-      let userId: number | undefined = undefined;
+      let userId: bigint | undefined;
       if (profile.__json) {
         try {
           const upserted = await upsertDiscordUser(

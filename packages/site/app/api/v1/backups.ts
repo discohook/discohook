@@ -18,7 +18,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
             .map(Number)
             .filter((n) => !Number.isNaN(n)).length > 0,
       )
-      .transform((v) => v.split(",").map(Number)),
+      .transform((v) => v.split(",").map(BigInt)),
   });
 
   const db = getDb(context.env.DATABASE_URL);

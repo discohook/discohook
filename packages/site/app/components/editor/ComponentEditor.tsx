@@ -1,3 +1,4 @@
+import { Link } from "@remix-run/react";
 import {
   APIActionRowComponent,
   APIButtonComponent,
@@ -15,14 +16,18 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
-import { QueryData } from "~/types/QueryData";
+import { twJoin } from "tailwind-merge";
+import { Flow } from "~/store.server";
+import { QueryData, QueryDataComponent } from "~/types/QueryData";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { TextInput } from "../TextInput";
+import { linkClassName } from "../preview/Markdown";
 import { PopoutEmojiPicker } from "./EmojiPicker";
+import { FlowEditor } from "./FlowEditor";
 
 export const getComponentText = (
   component: APIMessageComponent,
@@ -101,24 +106,29 @@ export const getComponentErrors = (
   return errors;
 };
 
+export const componentMatches = (
+  left: APIMessageActionRowComponent,
+  right: QueryDataComponent,
+) => "custom_id" in left && left.custom_id === `p_${right.id}`;
+
 export const ActionRowEditor: React.FC<{
   message: QueryData["messages"][number];
   row: APIActionRowComponent<APIMessageActionRowComponent>;
   rowIndex: number;
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
+  setComponents: (value: QueryDataComponent[]) => void;
   emojis?: APIMessageComponentEmoji[];
   open?: boolean;
-  notManageable?: boolean;
 }> = ({
   message,
   row,
   rowIndex: i,
   data,
   setData,
+  setComponents,
   emojis,
   open,
-  notManageable,
 }) => {
   const { t } = useTranslation();
   const mi = data.messages.indexOf(message);
@@ -131,61 +141,75 @@ export const ActionRowEditor: React.FC<{
           className="group-open/action-row:rotate-90 mr-2 my-auto transition-transform"
         />
         Row {i + 1}
-        {!notManageable && (
-          <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
-            <button
-              type="button"
-              className={i === 0 ? "hidden" : ""}
-              onClick={() => {
-                message.data.components?.splice(i, 1);
-                message.data.components?.splice(i - 1, 0, row);
-                setData({ ...data });
-              }}
-            >
-              <CoolIcon icon="Chevron_Up" />
-            </button>
-            <button
-              type="button"
-              className={
-                !!message.data.components &&
-                i === message.data.components.length - 1
-                  ? "hidden"
-                  : ""
-              }
-              onClick={() => {
-                message.data.components?.splice(i, 1);
-                message.data.components?.splice(i + 1, 0, row);
-                setData({ ...data });
-              }}
-            >
-              <CoolIcon icon="Chevron_Down" />
-            </button>
-            <button
-              type="button"
-              className={
-                !!message.data.components &&
-                message.data.components.length - 1 + 1 >= 5
-                  ? "hidden"
-                  : ""
-              }
-              onClick={() => {
-                message.data.components?.splice(i + 1, 0, structuredClone(row));
-                setData({ ...data });
-              }}
-            >
-              <CoolIcon icon="Copy" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                message.data.components?.splice(i, 1);
-                setData({ ...data });
-              }}
-            >
-              <CoolIcon icon="Trash_Full" />
-            </button>
-          </div>
-        )}
+        <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
+          <button
+            type="button"
+            className={i === 0 ? "hidden" : ""}
+            onClick={() => {
+              message.data.components?.splice(i, 1);
+              message.data.components?.splice(i - 1, 0, row);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            type="button"
+            className={
+              !!message.data.components &&
+              i === message.data.components.length - 1
+                ? "hidden"
+                : ""
+            }
+            onClick={() => {
+              message.data.components?.splice(i, 1);
+              message.data.components?.splice(i + 1, 0, row);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            type="button"
+            className={
+              !!message.data.components &&
+              message.data.components.length - 1 + 1 >= 5
+                ? "hidden"
+                : ""
+            }
+            onClick={() => {
+              message.data.components?.splice(i + 1, 0, structuredClone(row));
+              const copied =
+                data.components?.[mi].filter((c) =>
+                  row.components
+                    .filter((rc) => "custom_id" in rc)
+                    .map((rc) => rc.custom_id)
+                    .includes(`p_${c.id}`),
+                ) ?? [];
+              // This also calls setData
+              setComponents([...(data.components?.[mi] ?? []), ...copied]);
+            }}
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              message.data.components?.splice(i, 1);
+              const withoutRow =
+                data.components?.[mi].filter(
+                  (c) =>
+                    !row.components
+                      .filter((rc) => "custom_id" in rc)
+                      .map((rc) => rc.custom_id)
+                      .includes(`p_${c.id}`),
+                ) ?? [];
+              setComponents(withoutRow);
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
       </summary>
       {errors.length > 0 && (
         <div className="-mt-1 mb-1">
@@ -195,109 +219,68 @@ export const ActionRowEditor: React.FC<{
         </div>
       )}
       <div className="ml-1 md:ml-2">
-        {row.components.map((component, ci) => (
-          <IndividualComponentEditor
-            key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}`}
-            component={component}
-            index={ci}
-            row={row}
-            updateRow={() => setData({ ...data })}
-            open={component.type !== ComponentType.Button || open}
-            notManageable={notManageable}
-          >
-            {component.type === ComponentType.Button ? (
-              <>
-                <div className="flex">
-                  <div className="mr-2 mt-auto">
-                    <p className="text-sm cursor-default font-medium">Emoji</p>
-                    <PopoutEmojiPicker
-                      emoji={component.emoji}
-                      emojis={emojis}
-                      setEmoji={(emoji) => {
-                        component.emoji = emoji;
-                        setData({ ...data });
-                      }}
-                    />
-                  </div>
-                  <div className="grow">
-                    <TextInput
-                      label="Label"
-                      className="w-full"
-                      value={component.label ?? ""}
-                      onInput={(e) => {
-                        component.label = e.currentTarget.value || undefined;
-                        setData({ ...data });
-                      }}
-                      maxLength={80}
-                    />
-                  </div>
-                  <div className="ml-2 my-auto">
-                    <Checkbox
-                      label="Disabled"
-                      checked={component.disabled ?? false}
-                      onChange={(e) => {
-                        component.disabled = e.currentTarget.checked;
-                        setData({ ...data });
-                      }}
-                    />
-                  </div>
-                </div>
-                {component.style === ButtonStyle.Link ? (
-                  <TextInput
-                    label="URL"
-                    type="url"
-                    className="w-full"
-                    value={component.url}
-                    onInput={(e) => {
-                      component.url = e.currentTarget.value;
-                      setData({ ...data });
-                    }}
-                  />
-                ) : (
-                  <div>
-                    <p className="text-sm font-medium cursor-default">Style</p>
-                    <div className="grid gap-1 grid-cols-4">
-                      {(
-                        [
-                          ButtonStyle.Primary,
-                          ButtonStyle.Secondary,
-                          ButtonStyle.Success,
-                          ButtonStyle.Danger,
-                        ] as const
-                      ).map((style) => (
-                        <ButtonStylePicker
-                          key={`edit-message-${i}-row-${i}-component-${component.type}-${ci}-style-${style}`}
-                          style={style}
-                          component={component}
-                          update={() => setData({ ...data })}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              [
-                ComponentType.StringSelect,
-                ComponentType.UserSelect,
-                ComponentType.RoleSelect,
-                ComponentType.MentionableSelect,
-                ComponentType.ChannelSelect,
-              ].includes(component.type) && (
+        {row.components.map((component, ci) => {
+          const qdComponents = data.components?.[mi] ?? [];
+          const qComponent = qdComponents.find(
+            (c) =>
+              "custom_id" in component &&
+              c.id === component.custom_id.replace(/^p_/, ""),
+          );
+          return (
+            <IndividualComponentEditor
+              key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}`}
+              component={component}
+              index={ci}
+              row={row}
+              updateRow={() => setData({ ...data })}
+              copyQdComponent={() => {
+                const newId = String(Math.floor(Math.random() * 100000000000));
+                if (qComponent) {
+                  const copied = structuredClone(qComponent);
+                  copied.id = newId;
+                  qdComponents.splice(
+                    qdComponents.indexOf(qComponent),
+                    0,
+                    copied,
+                  );
+                }
+                setComponents(qdComponents);
+                return newId;
+              }}
+              removeQdComponent={() => {
+                if (qComponent) {
+                  qdComponents.splice(qdComponents.indexOf(qComponent), 1);
+                }
+                setComponents(qdComponents);
+              }}
+              open={component.type !== ComponentType.Button || open}
+            >
+              {component.type === ComponentType.Button ? (
                 <>
                   <div className="flex">
-                    <div className="grow">
-                      <TextInput
-                        label="Placeholder"
-                        value={component.placeholder ?? ""}
-                        placeholder={t("defaultPlaceholder")}
-                        maxLength={150}
-                        className="w-full"
-                        onInput={(e) => {
-                          component.placeholder =
-                            e.currentTarget.value || undefined;
+                    <div className="mr-2 mt-auto">
+                      <p className="text-sm cursor-default font-medium">
+                        Emoji
+                      </p>
+                      <PopoutEmojiPicker
+                        emoji={component.emoji}
+                        emojis={emojis}
+                        setEmoji={(emoji) => {
+                          component.emoji = emoji;
                           setData({ ...data });
                         }}
+                      />
+                    </div>
+                    <div className="grow">
+                      <TextInput
+                        label="Label"
+                        className="w-full"
+                        value={component.label ?? ""}
+                        onInput={(e) => {
+                          component.label = e.currentTarget.value || undefined;
+                          setData({ ...data });
+                        }}
+                        maxLength={80}
                       />
                     </div>
                     <div className="ml-2 my-auto">
@@ -311,199 +294,327 @@ export const ActionRowEditor: React.FC<{
                       />
                     </div>
                   </div>
-                  {component.type === ComponentType.StringSelect && (
-                    <>
-                      <div className="pt-2 -mb-2">
-                        {component.options.map((option, oi) => (
-                          <SelectMenuOptionsSection
-                            key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}-option-${oi}`}
-                            option={option}
-                            index={oi}
+                  {component.style === ButtonStyle.Link ? (
+                    <TextInput
+                      label="URL"
+                      type="url"
+                      className="w-full"
+                      value={component.url}
+                      onInput={(e) => {
+                        component.url = e.currentTarget.value;
+                        setData({ ...data });
+                      }}
+                    />
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium cursor-default">
+                        Style
+                      </p>
+                      <div className="grid gap-1 grid-cols-4">
+                        {(
+                          [
+                            ButtonStyle.Primary,
+                            ButtonStyle.Secondary,
+                            ButtonStyle.Success,
+                            ButtonStyle.Danger,
+                          ] as const
+                        ).map((style) => (
+                          <ButtonStylePicker
+                            key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}-style-${style}`}
+                            style={style}
                             component={component}
                             update={() => setData({ ...data })}
-                          >
-                            <div className="flex">
-                              <div className="grow">
-                                <TextInput
-                                  label="Label"
-                                  className="w-full"
-                                  value={option.label ?? ""}
-                                  maxLength={100}
-                                  onInput={(e) => {
-                                    option.label = e.currentTarget.value;
-                                    setData({ ...data });
-                                  }}
-                                  required
-                                />
-                              </div>
-                              <div className="ml-2 my-auto">
-                                <Checkbox
-                                  label="Default"
-                                  checked={option.default ?? false}
-                                  onChange={(e) => {
-                                    option.default = e.currentTarget.checked;
-                                    setData({ ...data });
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <PopoutEmojiPicker
-                              emoji={option.emoji}
-                              setEmoji={(emoji) => {
-                                option.emoji = emoji;
-                                setData({ ...data });
-                              }}
-                            />
-                            <TextInput
-                              label="Description"
-                              className="w-full"
-                              value={option.description ?? ""}
-                              maxLength={100}
-                              onInput={(e) => {
-                                option.description = e.currentTarget.value;
-                                setData({ ...data });
-                              }}
-                            />
-                            <TextInput
-                              label="Value (hidden)"
-                              className="w-full"
-                              value={option.value ?? ""}
-                              maxLength={100}
-                              onInput={(e) => {
-                                option.value = e.currentTarget.value;
-                                setData({ ...data });
-                              }}
-                              required
-                            />
-                          </SelectMenuOptionsSection>
+                          />
                         ))}
                       </div>
-                      <Button
-                        className=""
-                        disabled={component.options.length >= 25}
-                        onClick={() => {
-                          component.options.push({
-                            label: "",
-                            value: "",
-                          });
-                          setData({ ...data });
-                        }}
-                      >
-                        Add Option
-                      </Button>
-                    </>
+                      {!qComponent && (
+                        <div className="mt-1">
+                          <Button
+                            onClick={async () => {
+                              // We just need a unique ID for state. We don't
+                              // generate a snowflake here because it would be
+                              // confusing. These IDs are replaced later by the
+                              // server.
+                              const newId = String(
+                                Math.floor(Math.random() * 100000000000),
+                              );
+                              component.custom_id = `p_${newId}`;
+                              setComponents([
+                                ...qdComponents,
+                                {
+                                  id: newId,
+                                  data: {
+                                    flow: {
+                                      name: "Flow",
+                                      actions: [{ type: 0 }],
+                                    },
+                                  },
+                                  draft: true,
+                                },
+                              ]);
+                            }}
+                          >
+                            Add Flow
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </>
-              )
-            )}
-          </IndividualComponentEditor>
-        ))}
+              ) : (
+                [
+                  ComponentType.StringSelect,
+                  ComponentType.UserSelect,
+                  ComponentType.RoleSelect,
+                  ComponentType.MentionableSelect,
+                  ComponentType.ChannelSelect,
+                ].includes(component.type) && (
+                  <>
+                    <div className="flex">
+                      <div className="grow">
+                        <TextInput
+                          label="Placeholder"
+                          value={component.placeholder ?? ""}
+                          placeholder={t("defaultPlaceholder")}
+                          maxLength={150}
+                          className="w-full"
+                          onInput={(e) => {
+                            component.placeholder =
+                              e.currentTarget.value || undefined;
+                            setData({ ...data });
+                          }}
+                        />
+                      </div>
+                      <div className="ml-2 my-auto">
+                        <Checkbox
+                          label="Disabled"
+                          checked={component.disabled ?? false}
+                          onChange={(e) => {
+                            component.disabled = e.currentTarget.checked;
+                            setData({ ...data });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {component.type === ComponentType.StringSelect && (
+                      <>
+                        <div className="pt-2 -mb-2">
+                          {component.options.map((option, oi) => (
+                            <SelectMenuOptionsSection
+                              key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}-option-${oi}`}
+                              option={option}
+                              index={oi}
+                              component={component}
+                              update={() => setData({ ...data })}
+                            >
+                              <div className="flex">
+                                <div className="grow">
+                                  <TextInput
+                                    label="Label"
+                                    className="w-full"
+                                    value={option.label ?? ""}
+                                    maxLength={100}
+                                    onInput={(e) => {
+                                      option.label = e.currentTarget.value;
+                                      setData({ ...data });
+                                    }}
+                                    required
+                                  />
+                                </div>
+                                <div className="ml-2 my-auto">
+                                  <Checkbox
+                                    label="Default"
+                                    checked={option.default ?? false}
+                                    onChange={(e) => {
+                                      option.default = e.currentTarget.checked;
+                                      setData({ ...data });
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              <PopoutEmojiPicker
+                                emoji={option.emoji}
+                                setEmoji={(emoji) => {
+                                  option.emoji = emoji;
+                                  setData({ ...data });
+                                }}
+                              />
+                              <TextInput
+                                label="Description"
+                                className="w-full"
+                                value={option.description ?? ""}
+                                maxLength={100}
+                                onInput={(e) => {
+                                  option.description = e.currentTarget.value;
+                                  setData({ ...data });
+                                }}
+                              />
+                              <TextInput
+                                label="Value (hidden)"
+                                className="w-full"
+                                value={option.value ?? ""}
+                                maxLength={100}
+                                onInput={(e) => {
+                                  option.value = e.currentTarget.value;
+                                  setData({ ...data });
+                                }}
+                                required
+                              />
+                            </SelectMenuOptionsSection>
+                          ))}
+                        </div>
+                        <Button
+                          className=""
+                          disabled={component.options.length >= 25}
+                          onClick={() => {
+                            component.options.push({
+                              label: "",
+                              value: "",
+                            });
+                            setData({ ...data });
+                          }}
+                        >
+                          Add Option
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )
+              )}
+              {qComponent &&
+                !!(qComponent.data.flow || qComponent.data.flows) && (
+                  <div>
+                    <p className="text-sm font-medium cursor-default">
+                      Flow (
+                      <Link
+                        to="/flows"
+                        target="_blank"
+                        className={twJoin(linkClassName, "cursor-pointer")}
+                      >
+                        what's a flow?
+                      </Link>
+                      )
+                    </p>
+                    {!!qComponent.data.flow && (
+                      <FlowEditor
+                        flow={qComponent.data.flow as Flow}
+                        setFlow={(flow) => {
+                          if ("flow" in qComponent.data) {
+                            qComponent.data.flow = flow;
+                          }
+                          setComponents([...(qdComponents ?? [])]);
+                        }}
+                      />
+                    )}
+                  </div>
+                )}
+            </IndividualComponentEditor>
+          );
+        })}
       </div>
-      {!notManageable && (
-        <ButtonSelect
-          name="component-type"
-          options={[
-            {
-              label: "Button",
-              value: "button",
-              isDisabled: getRowWidth(row) >= 5,
-            },
-            {
-              label: "Link Button",
-              value: "link-button",
-              isDisabled: getRowWidth(row) >= 5,
-            },
-            {
-              label: "String Select Menu",
-              value: "string-select",
-              isDisabled: getRowWidth(row) > 0,
-            },
-            {
-              label: "User Select Menu",
-              value: "user-select",
-              isDisabled: getRowWidth(row) > 0,
-            },
-            {
-              label: "Role Select Menu",
-              value: "role-select",
-              isDisabled: getRowWidth(row) > 0,
-            },
-            {
-              label: "User & Role Select Menu",
-              value: "mentionable-select",
-              isDisabled: getRowWidth(row) > 0,
-            },
-            {
-              label: "Channel Select Menu",
-              value: "channel-select",
-              isDisabled: getRowWidth(row) > 0,
-            },
-          ]}
-          isDisabled={getRowWidth(row) >= 5}
-          onChange={(v) => {
-            const { value: type } = v as { value: string };
-            switch (type) {
-              case "button": {
-                row.components.push({
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Primary,
-                  custom_id: "",
-                });
-                break;
-              }
-              case "link-button": {
-                row.components.push({
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Link,
-                  url: "",
-                });
-                break;
-              }
-              case "string-select": {
-                row.components.push({
-                  type: ComponentType.StringSelect,
-                  options: [],
-                  custom_id: "",
-                });
-                break;
-              }
-              case "user-select": {
-                row.components.push({
-                  custom_id: "",
-                  type: ComponentType.UserSelect,
-                });
-                break;
-              }
-              case "role-select": {
-                row.components.push({
-                  custom_id: "",
-                  type: ComponentType.RoleSelect,
-                });
-                break;
-              }
-              case "mentionable-select": {
-                row.components.push({
-                  custom_id: "",
-                  type: ComponentType.MentionableSelect,
-                });
-                break;
-              }
-              case "channel-select": {
-                row.components.push({
-                  custom_id: "",
-                  type: ComponentType.ChannelSelect,
-                });
-                break;
-              }
-              default:
-                break;
+      <ButtonSelect
+        name="component-type"
+        options={[
+          {
+            label: "Button",
+            value: "button",
+            isDisabled: getRowWidth(row) >= 5,
+          },
+          {
+            label: "Link Button",
+            value: "link-button",
+            isDisabled: getRowWidth(row) >= 5,
+          },
+          {
+            label: "String Select Menu",
+            value: "string-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "User Select Menu",
+            value: "user-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "Role Select Menu",
+            value: "role-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "User & Role Select Menu",
+            value: "mentionable-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+          {
+            label: "Channel Select Menu",
+            value: "channel-select",
+            isDisabled: getRowWidth(row) > 0,
+          },
+        ]}
+        isDisabled={getRowWidth(row) >= 5}
+        onChange={(v) => {
+          const { value: type } = v as { value: string };
+          switch (type) {
+            case "button": {
+              row.components.push({
+                type: ComponentType.Button,
+                style: ButtonStyle.Primary,
+                custom_id: "",
+              });
+              break;
             }
-            setData({ ...data });
-          }}
-        >
-          Add Component
-        </ButtonSelect>
-      )}
+            case "link-button": {
+              row.components.push({
+                type: ComponentType.Button,
+                style: ButtonStyle.Link,
+                url: "",
+              });
+              break;
+            }
+            case "string-select": {
+              row.components.push({
+                type: ComponentType.StringSelect,
+                options: [],
+                custom_id: "",
+              });
+              break;
+            }
+            case "user-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.UserSelect,
+              });
+              break;
+            }
+            case "role-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.RoleSelect,
+              });
+              break;
+            }
+            case "mentionable-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.MentionableSelect,
+              });
+              break;
+            }
+            case "channel-select": {
+              row.components.push({
+                custom_id: "",
+                type: ComponentType.ChannelSelect,
+              });
+              break;
+            }
+            default:
+              break;
+          }
+          setData({ ...data });
+        }}
+      >
+        Add Component
+      </ButtonSelect>
     </details>
   );
 };
@@ -531,10 +642,20 @@ export const IndividualComponentEditor: React.FC<
     index: number;
     row: APIActionRowComponent<APIMessageActionRowComponent>;
     updateRow: () => void;
+    copyQdComponent: () => string;
+    removeQdComponent: () => void;
     open?: boolean;
-    notManageable?: boolean;
   }>
-> = ({ component, index, row, updateRow, open, children, notManageable }) => {
+> = ({
+  component,
+  index,
+  row,
+  updateRow,
+  copyQdComponent,
+  removeQdComponent,
+  open,
+  children,
+}) => {
   const previewText = getComponentText(component);
   return (
     <details className="group/component pb-2 -my-1" open={open}>
@@ -564,51 +685,55 @@ export const IndividualComponentEditor: React.FC<
           )}
         </span>
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
-        {!notManageable && (
-          <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
-            <button
-              type="button"
-              className={index === 0 ? "hidden" : ""}
-              onClick={() => {
-                row.components.splice(index, 1);
-                row.components.splice(index - 1, 0, component);
-                updateRow();
-              }}
-            >
-              <CoolIcon icon="Chevron_Up" />
-            </button>
-            <button
-              type="button"
-              className={index === row.components.length - 1 ? "hidden" : ""}
-              onClick={() => {
-                row.components.splice(index, 1);
-                row.components.splice(index + 1, 0, component);
-                updateRow();
-              }}
-            >
-              <CoolIcon icon="Chevron_Down" />
-            </button>
-            <button
-              type="button"
-              className={getRowWidth(row) >= 5 ? "hidden" : ""}
-              onClick={() => {
-                row.components.splice(index + 1, 0, structuredClone(component));
-                updateRow();
-              }}
-            >
-              <CoolIcon icon="Copy" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                row.components.splice(index, 1);
-                updateRow();
-              }}
-            >
-              <CoolIcon icon="Trash_Full" />
-            </button>
-          </div>
-        )}
+        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+          <button
+            type="button"
+            className={index === 0 ? "hidden" : ""}
+            onClick={() => {
+              row.components.splice(index, 1);
+              row.components.splice(index - 1, 0, component);
+              updateRow();
+            }}
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            type="button"
+            className={index === row.components.length - 1 ? "hidden" : ""}
+            onClick={() => {
+              row.components.splice(index, 1);
+              row.components.splice(index + 1, 0, component);
+              updateRow();
+            }}
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            type="button"
+            className={getRowWidth(row) >= 5 ? "hidden" : ""}
+            onClick={() => {
+              const newId = copyQdComponent();
+              const copied = structuredClone(component);
+              if ("custom_id" in copied) {
+                copied.custom_id = `p_${newId}`;
+              }
+              row.components.splice(index + 1, 0, copied);
+              updateRow();
+            }}
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              row.components.splice(index, 1);
+              removeQdComponent();
+              // updateRow();
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
       </summary>
       <div className="space-y-2 mb-2">{children}</div>
     </details>

@@ -13,7 +13,7 @@ const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 export interface ShortenedData {
   data: string;
   origin?: string;
-  userId?: number;
+  userId?: string;
 }
 
 export const generateUniqueShortenKey = async (
@@ -63,7 +63,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   const shortened: ShortenedData = {
     data: JSON.stringify(data),
     origin,
-    userId: userId ?? undefined,
+    userId: userId?.toString(),
   };
 
   const db = getDb(context.env.DATABASE_URL);

@@ -106,7 +106,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   const trigger = welcomerTriggers.find((t) =>
     name.startsWith("_id:")
-      ? t.id === Number(name.split(":")[1])
+      ? t.id === BigInt(name.split(":")[1])
       : t.flow?.name === name,
   );
   if (!trigger) {

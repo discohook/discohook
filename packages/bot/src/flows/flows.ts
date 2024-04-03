@@ -14,7 +14,12 @@ import {
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { DBWithSchema } from "store";
-import { backups, messageLogEntries, webhooks } from "store/src/schema";
+import {
+  backups,
+  makeSnowflake,
+  messageLogEntries,
+  webhooks,
+} from "store/src/schema";
 import {
   Flow,
   FlowActionAddRole,
@@ -217,7 +222,7 @@ export const executeSendMessage = async (
   ctx?: InteractionContext<APIMessageComponentInteraction>,
 ): Promise<APIMessage> => {
   const backup = await db.query.backups.findFirst({
-    where: eq(backups.id, action.backupId),
+    where: eq(backups.id, makeSnowflake(action.backupId)),
     columns: {
       data: true,
     },
@@ -281,7 +286,7 @@ export const executeSendWebhookMessage = async (
     );
   }
   const backup = await db.query.backups.findFirst({
-    where: eq(backups.id, action.backupId),
+    where: eq(backups.id, makeSnowflake(action.backupId)),
     columns: {
       data: true,
     },

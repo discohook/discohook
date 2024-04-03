@@ -12,6 +12,7 @@ export const AuthSuccessModal = (props: ModalProps & { user: User | null }) => {
           <img
             className="rounded-full inline-block h-5 ml-1 mr-0.5"
             src={getUserAvatar(props.user, { size: 32 })}
+            alt={props.user.name}
           />{" "}
           <span className="font-medium">{getUserTag(props.user)}</span>.
         </p>

@@ -11,6 +11,7 @@ import {
   submitCustomizeModal,
 } from "./commands/components/add.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
+import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import { InteractionContext } from "./interactions.js";
 
 export interface MinimumKVComponentState {
@@ -50,11 +51,12 @@ export type ModalRoutingId = "add-component-flow_customize-modal";
 export type ComponentRoutingId =
   | "add-component-flow"
   | "add-component-flow_customize-modal-resend"
-  | "delete-reaction-role";
+  | "delete-reaction-role"
+  | "select-restore-options";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
 
-export type AutoComponentCustomId = `a_${ComponentRoutingId}_${string}`
+export type AutoComponentCustomId = `a_${ComponentRoutingId}_${string}`;
 
 export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "add-component-flow": {
@@ -65,6 +67,9 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   },
   "delete-reaction-role": {
     handler: deleteReactionRoleButtonCallback,
+  },
+  "select-restore-options": {
+    handler: selectRestoreOptionsCallback,
   },
 };
 

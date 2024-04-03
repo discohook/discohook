@@ -16,7 +16,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const token = randomString(30);
   await context.env.KV.put(
     `magic-token-${token}`,
-    JSON.stringify({ userId: userId ?? undefined }),
+    JSON.stringify({ userId: userId?.toString() }),
     { expirationTtl: 600 },
   );
   return redirect(`${legacyOrigin}/migrate?token=${token}`);

@@ -2470,6 +2470,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@theinternetfolks/snowflake@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@theinternetfolks/snowflake@npm:1.3.0"
+  checksum: 10c0/8b894dea3827f3512c87cdf18bf8618e1a6c94be42c8db18d603a0ff436a7e566ffde6e260a9ddb27ef2e0f7314a65f5df9db2ad3abedf2a86c4e54b3d6f0533
+  languageName: node
+  linkType: hard
+
 "@tsconfig/node10@npm:^1.0.7":
   version: 1.0.9
   resolution: "@tsconfig/node10@npm:1.0.9"
@@ -9750,14 +9757,15 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=9d08dd&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=2e6e3c&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
+    "@theinternetfolks/snowflake": "npm:^1.3.0"
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/1a09b1c39db84713a7828f8b1082d050d4be3cc91d10ae816a8779dd9f8416a5ac377a27bcf36b615cf65446e6138f7afd134323cae8fd714982f38bfd4eb23b
+  checksum: 10c0/35f967e90df3528b84133079aeba08c49ffa90abeebe9b0a77d1c2b27a0db977f5fb27fd0af22e706361e0241251eb3ecb286a8beb18c3f41059f08dd374e3bf
   languageName: node
   linkType: hard
 
@@ -9766,6 +9774,7 @@ cron-parser@shayypy/cron-parser:
   resolution: "store@workspace:packages/store"
   dependencies:
     "@discordjs/rest": "npm:^2.2.0"
+    "@theinternetfolks/snowflake": "npm:^1.3.0"
     "@types/json-bigint": "npm:^1.0.4"
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"

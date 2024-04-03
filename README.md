@@ -49,12 +49,6 @@ Big thanks to [@maddysrc](https://github.com/maddysrc) and [@crawron](https://tw
 
 ## Development
 
-#### Warning
-
-This project utilizes [Durable Objects](https://developers.cloudflare.com/durable-objects/) for message scheduling, which is a feature exclusive to accounts on the Workers Paid plan. You will not need to subscribe for local development, but if you want to *host* this project, you will have to remove this feature in your fork or subscribe to Workers Paid.
-
-Or, if you don't want to do either of those, consider joining the [support server](https://discohook.app/discord) and letting me know what you want to see in the main instance.
-
 ### Bot
 
 Run `yarn dev:bot` to start a miniflare server for the "primary" portion of the bot. In another terminal window, run `yarn ngrok:bot` to forward local port `8787` to Ngrok. Copy the logged `Forwarding` address to your bot application's Interactions Endpoint URL field.
@@ -66,3 +60,9 @@ If you would also like to work on gateway event processing (the logic for which 
 Run `yarn dev:site` to start a miniflare server for the site. An `ngrok:site` script is provided for convenience, but it is not necessary as you can just visit http://localhost:8788 for testing.
 
 If you want to develop `magic-backup-importer`, also run `yarn dev:backups` after [setting up its environment](/packages/magic-backup-importer/README.md#development). This will be hosted on http://localhost:8789 by default. To save a backup to the local database, uncomment the execution of the `saveBackup()` method in the index route's `useEffect` callback.
+
+## Deployment
+
+This project relies on [Durable Objects](https://developers.cloudflare.com/durable-objects/), which is a feature exclusive to accounts on the Workers Paid plan, for message scheduling and persistent component callbacks (defined by users). If you do not want to subscribe to Workers Paid, you will have to remove these features in your fork.
+
+Or, if you don't want to do either of those, consider joining the [support server](https://discohook.app/discord) and letting me know what you want to see in the main instance.

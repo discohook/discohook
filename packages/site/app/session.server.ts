@@ -5,6 +5,7 @@ import {
   json,
   redirect,
 } from "@remix-run/cloudflare";
+import { isSnowflake } from "discord-snowflake";
 import { eq } from "drizzle-orm";
 import { getDb, upsertDiscordUser, users } from "./store.server";
 import { Context } from "./util/loader";
@@ -37,28 +38,28 @@ export async function getUserId(
   request: Request,
   context: Context,
   throwIfNull?: false,
-): Promise<number | null>;
+): Promise<bigint | null>;
 export async function getUserId(
   request: Request,
   context: Context,
   throwIfNull?: true,
-): Promise<number>;
+): Promise<bigint>;
 export async function getUserId(
   request: Request,
   context: Context,
   throwIfNull?: boolean,
-): Promise<number | null> {
+): Promise<bigint | null> {
   const session = await getSessionStorage(context).getSession(
     request.headers.get("Cookie"),
   );
   const userId = session.get("user")?.id;
-  if (!userId || typeof userId !== "number") {
+  if (!userId || !isSnowflake(String(userId))) {
     if (throwIfNull) {
       throw json({ message: "Must be logged in." }, 401);
     }
     return null;
   }
-  return userId;
+  return BigInt(userId);
 }
 
 export async function getUser(
@@ -78,7 +79,6 @@ export async function getUser(
 ): Promise<User | null> {
   const userId = await getUserId(request, context, false);
   if (!userId && throwIfNull) {
-    // throw json({ message: "Must be logged in." }, 401);
     throw redirect(
       `/auth/discord?redirect=${encodeURIComponent(
         // Return to the same page
@@ -113,12 +113,17 @@ export async function getUser(
       },
     },
   });
-  if (!user) {
-    if (throwIfNull) {
-      throw json({ message: "Must be logged in." }, 401);
-    } else {
-      return null;
-    }
+  if (!user && throwIfNull) {
+    // A note here about how the user's data was
+    // previously removed might be useful
+    throw redirect(
+      `/auth/discord?redirect=${encodeURIComponent(
+        // Return to the same page
+        request.url.replace(context.origin, ""),
+      )}`,
+    );
+  } else if (!user) {
+    return null;
   }
 
   return doubleDecode<typeof user>(user) satisfies User;

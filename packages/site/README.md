@@ -4,6 +4,10 @@ Here is some information detailing public API endpoints that you can utilize if 
 
 Base URL for all requests: `https://discohook.app/api/v1`
 
+## IDs
+
+You won't encounter any of these in the current state of the API, but this section is here anyway for posterity. Discohook generates unique [snowflake IDs](https://en.wikipedia.org/wiki/Snowflake_ID) similar to Discord, but with an epoch of 2024-01-01 at 0:00:00 UTC. Be sure not to confuse these with Discord's snowflakes!
+
 ## Share Links
 
 If you are currently using `share.discohook.app`, migrate ASAP; it will stop being hosted soon!

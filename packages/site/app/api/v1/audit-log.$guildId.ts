@@ -1,16 +1,15 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { z } from "zod";
 import { zx } from "zodix";
 import { verifyAuthToken } from "~/routes/s.$guildId";
 import { getDb, messageLogEntries, webhooks } from "~/store.server";
 import { LoaderArgs } from "~/util/loader";
-import { zxParseParams, zxParseQuery } from "~/util/zod";
+import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
-    guildId: z.string().refine((v) => !Number.isNaN(Number(v))),
+    guildId: snowflakeAsString(),
   });
   const { page, limit } = zxParseQuery(request, {
     limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
@@ -29,7 +28,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const db = getDb(context.env.DATABASE_URL);
   const entries = await db.query.messageLogEntries.findMany({
-    where: eq(messageLogEntries.discordGuildId, BigInt(guildId)),
+    where: eq(messageLogEntries.discordGuildId, guildId),
     columns: {
       type: true,
       channelId: true,

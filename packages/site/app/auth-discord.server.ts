@@ -27,10 +27,8 @@ import { Context } from "./util/loader";
 import { base64Encode } from "./util/text";
 
 export type UserAuth = {
-  id: number;
+  id: string;
   authType: "discord";
-  accessToken: string;
-  refreshToken?: string;
 };
 
 export const getDiscordAuth = (
@@ -96,10 +94,8 @@ export const getDiscordAuth = (
         });
 
       return {
-        id: user.id,
+        id: String(user.id),
         authType: "discord",
-        accessToken,
-        refreshToken,
       };
     },
   );

@@ -66,12 +66,15 @@ export default function Index() {
   const shareId = searchParams.get("share");
   const backupIdParsed = zx.NumAsString.safeParse(searchParams.get("backup"));
 
+  // Editor state
   const [backupId, setBackupId] = useState<number>();
   const [data, setData] = useState<QueryData>({
     version: "d2",
     messages: [],
+    components: {},
   });
   const [files, setFiles] = useState<DraftFile[]>([]);
+
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
 
@@ -89,6 +92,35 @@ export default function Index() {
       }
     };
 
+    const loadMessageComponents = async (messages: QueryData["messages"]) => {
+      const built: typeof data.components = {};
+      let i = -1;
+      for (const message of messages) {
+        i += 1;
+        const withCustomIds = (message.data.components ?? [])
+          .map((r) => r.components)
+          .reduce((prev, cur) => {
+            prev.push(...cur);
+            return prev;
+          }, [])
+          .filter((c) => "custom_id" in c);
+        if (withCustomIds.length === 0) {
+          // built[i] = [];
+          continue;
+        }
+
+        const url = new URL(apiUrl(BRoutes.components()));
+        for (const component of withCustomIds) {
+          url.searchParams.append("id", component.custom_id.replace(/^p_/, ""));
+        }
+        const response = await fetch(url, { method: "GET" });
+        built[i] = await response.json();
+      }
+      if (Object.keys(built).length !== 0) {
+        setData({ ...data, components: built });
+      }
+    };
+
     if (shareId) {
       fetch(apiUrl(BRoutes.share(shareId)), { method: "GET" }).then((r) => {
         if (r.status === 200) {
@@ -100,6 +132,7 @@ export default function Index() {
             }
             setData(qd);
             loadInitialTargets(qd.targets ?? []);
+            loadMessageComponents(qd.messages);
           });
         } else {
           r.json().then((d: any) => {
@@ -121,6 +154,7 @@ export default function Index() {
             }
             setData({ ...qd, backup_id: backupIdParsed.data });
             loadInitialTargets(qd.targets ?? []);
+            loadMessageComponents(qd.messages);
           });
         }
       });
@@ -146,12 +180,9 @@ export default function Index() {
         if (parsed.data?.backup_id !== undefined) {
           setBackupId(parsed.data.backup_id);
         }
-        setData({ version: "d2", ...(parsed.data as QueryData) });
-        if (parsed.data?.targets && parsed.data.targets.length !== 0) {
-          // Load webhook URLs on initial parse of query data
-          const targets = parsed.data.targets;
-          loadInitialTargets(targets);
-        }
+        setData({ version: "d2", ...parsed.data });
+        loadInitialTargets(parsed.data.targets ?? []);
+        loadMessageComponents(parsed.data.messages);
       } else {
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
       }

@@ -16,9 +16,12 @@ export const BRoutes = {
     return id ? (`/backups/${id}` as const) : ("/backups" as const);
   },
 
-  /** - GET /components/:id */
-  components(id: number) {
-    return `/components/${id}` as const;
+  /**
+   * - POST /components
+   * - GET /components?id=...
+   */
+  components() {
+    return "/components" as const;
   },
 
   /** - POST /donate/:type */

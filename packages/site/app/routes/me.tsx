@@ -11,7 +11,6 @@ import { desc, eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
-import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
@@ -28,7 +27,12 @@ import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { relativeTime } from "~/util/time";
 import { getUserAvatar, getUserTag } from "~/util/users";
-import { jsonAsString, zxParseForm, zxParseQuery } from "~/util/zod";
+import {
+  jsonAsString,
+  snowflakeAsString,
+  zxParseForm,
+  zxParseQuery,
+} from "~/util/zod";
 import {
   QueryDataVersion,
   backups as dBackups,
@@ -36,6 +40,7 @@ import {
   shareLinks as dShareLinks,
   discordMembers,
   getDb,
+  getId,
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -60,7 +65,6 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       name: true,
       previewImageUrl: true,
       importedFromOrg: true,
-      createdAt: true,
       scheduled: true,
       nextRunAt: true,
       cron: true,
@@ -77,7 +81,6 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       name: true,
       code: true,
       previewImageUrl: true,
-      createdAt: true,
     },
     orderBy: desc(dBackups.name),
     limit: 50,
@@ -108,15 +111,15 @@ export const action = async ({ request, context }: ActionArgs) => {
     z.discriminatedUnion("action", [
       z.object({
         action: z.literal("DELETE_SHARE_LINK"),
-        linkId: zx.IntAsString,
+        linkId: snowflakeAsString(),
       }),
       z.object({
         action: z.literal("DELETE_BACKUP"),
-        backupId: zx.IntAsString,
+        backupId: snowflakeAsString(),
       }),
       z.object({
         action: z.literal("DELETE_LINK_BACKUP"),
-        backupId: zx.IntAsString,
+        backupId: snowflakeAsString(),
       }),
       z.object({
         action: z.literal("IMPORT_BACKUPS"),
@@ -437,6 +440,7 @@ export default function Me() {
               {backups.length > 0 ? (
                 <div className="space-y-1">
                   {backups.map((backup) => {
+                    const createdAt = new Date(getId(backup).timestamp);
                     return (
                       <div
                         key={`backup-${backup.id}`}
@@ -485,16 +489,12 @@ export default function Me() {
                               <>
                                 <Twemoji emoji="✨" className="grayscale" />{" "}
                                 Imported from discohook.org on{" "}
-                                {new Date(
-                                  backup.createdAt,
-                                ).toLocaleDateString()}
+                                {createdAt.toLocaleDateString()}
                               </>
                             ) : (
                               t("createdAt", {
                                 replace: {
-                                  createdAt: new Date(
-                                    backup.createdAt,
-                                  ).toLocaleDateString(),
+                                  createdAt: createdAt.toLocaleDateString(),
                                 },
                               })
                             )}
@@ -512,7 +512,7 @@ export default function Me() {
                               submit(
                                 {
                                   action: "DELETE_BACKUP",
-                                  backupId: backup.id,
+                                  backupId: String(backup.id),
                                 },
                                 {
                                   method: "POST",
@@ -589,7 +589,7 @@ export default function Me() {
                               submit(
                                 {
                                   action: "DELETE_LINK_BACKUP",
-                                  backupId: backup.id,
+                                  backupId: String(backup.id),
                                 },
                                 {
                                   method: "POST",
@@ -632,7 +632,7 @@ export default function Me() {
               {links.length > 0 ? (
                 <div className="space-y-1">
                   {links.map((link) => {
-                    const created = new Date(link.createdAt);
+                    const created = new Date(getId(link).timestamp);
                     const expires = new Date(link.expiresAt);
                     return (
                       <div
@@ -691,7 +691,7 @@ export default function Me() {
                               submit(
                                 {
                                   action: "DELETE_SHARE_LINK",
-                                  linkId: link.id,
+                                  linkId: String(link.id),
                                 },
                                 {
                                   method: "POST",
