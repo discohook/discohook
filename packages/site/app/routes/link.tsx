@@ -3,8 +3,8 @@ import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIEmbed, APIEmbedImage, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { SafeParseReturnType, z } from "zod";
-import { zx } from "zodix";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -32,21 +32,34 @@ import {
   copyText,
   randomString,
 } from "~/util/text";
-import { getUserAvatar } from "~/util/users";
+import { getUserAvatar, userIsPremium } from "~/util/users";
+import { snowflakeAsString } from "~/util/zod";
 import { loader as apiLinkBackupsId } from "../api/v1/link-backups.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
-  return { user };
+  return { user, myOrigin: context.env.MY_ORIGIN };
+};
+
+export const linkEmbedUrl = (code: string, myOrigin?: string) => {
+  if (myOrigin) {
+    return `${myOrigin}/${code}`;
+  }
+  try {
+    return `${origin}/link/${code}`;
+  } catch {
+    return `/link/${code}`;
+  }
 };
 
 export const linkEmbedToAPIEmbed = (
   data: z.infer<typeof ZodLinkEmbed>,
   code?: string,
+  myOrigin?: string,
 ): { embed: APIEmbed; extraImages: APIEmbedImage[] } => {
   const embed: APIEmbed = {
     title: data.title,
-    url: code ? `/link/${code}` : "#",
+    url: code ? linkEmbedUrl(code, myOrigin) : "#",
     provider: data.provider,
     author: data.author,
     description: data.description,
@@ -75,7 +88,7 @@ export interface LinkHistoryItem {
 
 export default function Index() {
   const { t } = useTranslation();
-  const { user } = useLoaderData<typeof loader>();
+  const { user, myOrigin } = useLoaderData<typeof loader>();
 
   const [settings] = useLocalStorage();
   const [loc, setLoc] = useState<Location>();
@@ -85,13 +98,15 @@ export default function Index() {
   const dm = searchParams.get("m");
 
   interface BackupInfo {
-    id: number;
+    id: bigint;
     code: string;
     name: string;
     data?: LinkQueryData;
   }
 
-  const backupIdParsed = zx.NumAsString.safeParse(searchParams.get("backup"));
+  const backupIdParsed = snowflakeAsString().safeParse(
+    searchParams.get("backup"),
+  );
   const [backupInfo, setBackupInfo] = useState<BackupInfo>();
   const [backupNameDraft, setBackupNameDraft] = useState<string>();
 
@@ -101,7 +116,7 @@ export default function Index() {
   });
 
   const getBackupInfo = async (
-    backupId: number,
+    backupId: bigint | string,
   ): Promise<BackupInfo | null> => {
     const r = await fetch(apiUrl(BRoutes.linkBackups(backupId)), {
       method: "GET",
@@ -152,7 +167,7 @@ export default function Index() {
 
       if (parsed.success) {
         if (parsed.data?.backup_id !== undefined) {
-          getBackupInfo(parsed.data?.backup_id).then((info) => {
+          getBackupInfo(parsed.data?.backup_id?.toString()).then((info) => {
             if (!info) return;
             setBackupInfo({ ...info, data: undefined });
           });
@@ -276,8 +291,7 @@ export default function Index() {
               disabled={!backupInfo?.code}
               onClick={() => {
                 if (!backupInfo) return;
-                // In the future this will be something like `my.example.com/$code`
-                copyText(`${window.origin}/link/${backupInfo.code}`);
+                copyText(linkEmbedUrl(backupInfo.code, myOrigin));
               }}
             >
               {t("copyLink")}
@@ -330,77 +344,87 @@ export default function Index() {
           <LinkEmbedEditor embed={data.embed} data={data} setData={setData} />
         </div>
         <div
-          className={`md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] p-4 md:w-1/2 h-full overflow-y-scroll relative ${
-            tab === "preview" ? "" : "hidden md:block"
-          }`}
-        >
-          <div className="md:hidden">
-            <Button
-              onClick={() => setTab("editor")}
-              discordstyle={ButtonStyle.Secondary}
-            >
-              <CoolIcon icon="Chevron_Left" /> {t("editor")}
-            </Button>
-            <hr className="border border-gray-400 dark:border-gray-600 my-4" />
-          </div>
-          {user ? (
-            <Message
-              message={{
-                author: {
-                  name:
-                    user.discordUser?.globalName ??
-                    user.discordUser?.name ??
-                    user.name,
-                  icon_url: getUserAvatar(user),
-                  badge: null,
-                },
-                content:
-                  loc && backupInfo
-                    ? `${loc.origin}/link/${backupInfo.code}`
-                    : undefined,
-                embeds: [
-                  linkEmbedToAPIEmbed(data.embed.data, backupInfo?.code).embed,
-                  ...linkEmbedToAPIEmbed(
-                    data.embed.data,
-                    backupInfo?.code,
-                  ).extraImages.map((image) => ({
-                    url: backupInfo ? `/link/${backupInfo.code}` : "#",
-                    image,
-                  })),
-                ],
-              }}
-              messageDisplay={settings.messageDisplay}
-              compactAvatars={settings.compactAvatars}
-              setImageModalData={setImageModalData}
-            />
-          ) : (
-            <Embed
-              {...linkEmbedToAPIEmbed(data.embed.data, backupInfo?.code)}
-              setImageModalData={setImageModalData}
-            />
+          className={twJoin(
+            "md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] md:w-1/2 h-full flex-col",
+            tab === "preview" ? "flex" : "hidden md:flex",
           )}
-          <div className="fixed bottom-4 right-4 grid gap-2 grid-cols-1">
-            {/* <Button
-              discordstyle={ButtonStyle.Secondary}
-              onClick={() => setExampleOpen(true)}
-            >
-              {t("embedExample")}
-            </Button> */}
+        >
+          <div className="overflow-y-scroll grow p-4 pb-8">
+            <div className="md:hidden">
+              <Button
+                onClick={() => setTab("editor")}
+                discordstyle={ButtonStyle.Secondary}
+              >
+                <CoolIcon icon="Chevron_Left" /> {t("editor")}
+              </Button>
+              <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+            </div>
+            {user ? (
+              <Message
+                message={{
+                  author: {
+                    name:
+                      user.discordUser?.globalName ??
+                      user.discordUser?.name ??
+                      user.name,
+                    icon_url: getUserAvatar(user),
+                    badge: null,
+                  },
+                  content:
+                    loc && backupInfo
+                      ? linkEmbedUrl(backupInfo.code, myOrigin)
+                      : undefined,
+                  embeds: [
+                    linkEmbedToAPIEmbed(
+                      data.embed.data,
+                      backupInfo?.code,
+                      myOrigin,
+                    ).embed,
+                    ...linkEmbedToAPIEmbed(
+                      data.embed.data,
+                      backupInfo?.code,
+                      myOrigin,
+                    ).extraImages.map((image) => ({
+                      url: backupInfo
+                        ? linkEmbedUrl(backupInfo.code, myOrigin)
+                        : "#",
+                      image,
+                    })),
+                  ],
+                }}
+                messageDisplay={settings.messageDisplay}
+                compactAvatars={settings.compactAvatars}
+                setImageModalData={setImageModalData}
+              />
+            ) : (
+              <Embed
+                {...linkEmbedToAPIEmbed(
+                  data.embed.data,
+                  backupInfo?.code,
+                  myOrigin,
+                )}
+                setImageModalData={setImageModalData}
+              />
+            )}
+          </div>
+          <div className="grid gap-2 grid-cols-2 mt-auto px-4 py-2 bg-slate-50 dark:bg-[#1E1F22]">
             <Button
               discordstyle={ButtonStyle.Secondary}
+              // TODO: This needs to be a different modal that details the limitations of link embeds
               onClick={() => setShowDisclaimer(true)}
             >
-              <CoolIcon icon="Info" className="mr-1.5" />
               {t("previewInfo")}
             </Button>
-            <Link to="/donate" target="_blank" className="contents">
-              <Button
-                // Green link buttons are sinful, but eye-catching
-                discordstyle={ButtonStyle.Success}
-              >
-                {t("donate")}
-              </Button>
-            </Link>
+            {(!user || !userIsPremium(user)) && (
+              <Link to="/donate" target="_blank" className="contents">
+                <Button
+                  // Green link buttons are sinful, but eye-catching
+                  discordstyle={ButtonStyle.Success}
+                >
+                  {t("donate")}
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

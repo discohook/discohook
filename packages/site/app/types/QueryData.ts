@@ -19,7 +19,7 @@ export type QueryDataVersion = "d2";
 
 export interface QueryData {
   version?: QueryDataVersion;
-  backup_id?: number;
+  backup_id?: string;
   messages: {
     data: {
       author?: {
@@ -146,7 +146,7 @@ export const ZodQueryDataTarget: z.ZodType<
 
 export const ZodQueryData: z.ZodType<QueryData> = z.object({
   version: z.enum(["d2"]).optional(),
-  backup_id: z.onumber(),
+  backup_id: z.ostring(),
   messages: ZodQueryDataMessage.array(),
   components: z.record(z.string(), ZodQueryDataComponent.array()).optional(),
   targets: ZodQueryDataTarget.array().optional(),

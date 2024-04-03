@@ -14,4 +14,6 @@ export interface Env {
   BITCOIN_ADDRESS?: string;
   // discohook.org - for importing old-style backups
   LEGACY_ORIGIN?: string;
+  // my.discohook.app - prettier links for link embeds
+  MY_ORIGIN?: string;
 }

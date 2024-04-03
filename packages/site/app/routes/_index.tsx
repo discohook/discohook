@@ -2,8 +2,8 @@ import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { SafeParseReturnType } from "zod";
-import { zx } from "zodix";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import { Button } from "~/components/Button";
@@ -35,6 +35,7 @@ import { cdn, getWebhook } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
+import { snowflakeAsString } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
@@ -64,10 +65,12 @@ export default function Index() {
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
   const shareId = searchParams.get("share");
-  const backupIdParsed = zx.NumAsString.safeParse(searchParams.get("backup"));
+  const backupIdParsed = snowflakeAsString().safeParse(
+    searchParams.get("backup"),
+  );
 
   // Editor state
-  const [backupId, setBackupId] = useState<number>();
+  const [backupId, setBackupId] = useState<bigint>();
   const [data, setData] = useState<QueryData>({
     version: "d2",
     messages: [],
@@ -152,7 +155,7 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               qd.messages = [];
             }
-            setData({ ...qd, backup_id: backupIdParsed.data });
+            setData({ ...qd, backup_id: backupIdParsed.data.toString() });
             loadInitialTargets(qd.targets ?? []);
             loadMessageComponents(qd.messages);
           });
@@ -178,7 +181,7 @@ export default function Index() {
 
       if (parsed.success) {
         if (parsed.data?.backup_id !== undefined) {
-          setBackupId(parsed.data.backup_id);
+          setBackupId(BigInt(parsed.data.backup_id));
         }
         setData({ version: "d2", ...parsed.data });
         loadInitialTargets(parsed.data.targets ?? []);
@@ -489,9 +492,10 @@ export default function Index() {
           </Button>
         </div>
         <div
-          className={`md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] md:w-1/2 h-full flex-col ${
-            tab === "preview" ? "flex" : "hidden md:flex"
-          }`}
+          className={twJoin(
+            "md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] md:w-1/2 h-full flex-col",
+            tab === "preview" ? "flex" : "hidden md:flex",
+          )}
         >
           <div className="overflow-y-scroll grow p-4 pb-8">
             <div className="md:hidden">

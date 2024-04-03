@@ -12,7 +12,7 @@ export const BRoutes = {
    * - GET /backups/:id
    * - PATCH /backups/:id
    */
-  backups(id?: number) {
+  backups(id?: bigint | string) {
     return id ? (`/backups/${id}` as const) : ("/backups" as const);
   },
 
@@ -34,7 +34,7 @@ export const BRoutes = {
    * - GET /link-backups/:id
    * - PATCH /link-backups/:id
    */
-  linkBackups(id?: number) {
+  linkBackups(id?: bigint | string) {
     return id ? (`/link-backups/${id}` as const) : ("/link-backups" as const);
   },
 

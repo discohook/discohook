@@ -1,5 +1,12 @@
+import { ChannelType } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
-import { Flow, FlowAction, FlowActionType } from "~/store.server";
+import {
+  Flow,
+  FlowAction,
+  FlowActionCreateThread,
+  FlowActionSetVariableType,
+  FlowActionType,
+} from "~/store.server";
 import { Button } from "../Button";
 import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
@@ -101,6 +108,57 @@ const getActionText = (action: FlowAction) => {
 };
 
 // FlowActionType[action.type].replace(/([A-Z])/g, (x) => ` ${x}`).trim();
+
+const threadTypeOptions = [
+  {
+    label: "Public Thread",
+    value: ChannelType.PublicThread,
+  },
+  {
+    label: "Private Thread",
+    value: ChannelType.PublicThread,
+  },
+  {
+    label: "Announcement Thread",
+    value: ChannelType.AnnouncementThread,
+  },
+];
+
+const threadAutoArchiveOptions: {
+  label: string;
+  value: FlowActionCreateThread["autoArchiveDuration"];
+}[] = [
+  {
+    label: "1 hour",
+    value: 60,
+  },
+  {
+    label: "1 day",
+    value: 1440,
+  },
+  {
+    label: "3 days",
+    value: 4320,
+  },
+  {
+    label: "1 week",
+    value: 10080,
+  },
+];
+
+const varTypeOptions: {
+  label: string;
+  value: FlowActionSetVariableType;
+}[] = [
+  {
+    label: "Static",
+    value: 0,
+  },
+  {
+    label: "Adaptive",
+    value: 1,
+  },
+];
 
 export const FlowActionEditor: React.FC<{
   flow: FlowWithPartials;
@@ -232,15 +290,132 @@ export const FlowActionEditor: React.FC<{
                 update();
               }}
             />
-          ) : action.type === 3 ? (
+          ) : action.type === 3 || action.type === 4 || action.type === 5 ? (
+            <>
+              <StringSelect name="roleId" label="Role" options={[]} />
+              {/* <TextArea label="Reason" maxLength={512} className="w-full" /> */}
+            </>
+          ) : action.type === 6 ? (
+            <>
+              <StringSelect name="backupId" label="Backup" options={[]} />
+              <StringSelect
+                name="backupMessageIndex"
+                label="Message"
+                options={[]}
+              />
+              {/* <MessageFlagSelect /> */}
+            </>
+          ) : action.type === 7 ? (
+            <>
+              <StringSelect name="webhookId" label="Webhook" options={[]} />
+              <StringSelect name="backupId" label="Backup" options={[]} />
+              <StringSelect
+                name="backupMessageIndex"
+                label="Message"
+                options={[]}
+              />
+              {/* <MessageFlagSelect /> */}
+            </>
+          ) : action.type === 8 ? (
+            <>
+              <StringSelect name="channelId" label="Channel" options={[]} />
+              <TextInput
+                name="name"
+                label="Name"
+                className="w-full"
+                value={action.name}
+                maxLength={100}
+                onChange={(e) => {
+                  action.name = e.currentTarget.value;
+                  update();
+                }}
+              />
+              <StringSelect
+                name="threadType"
+                label="Type"
+                options={threadTypeOptions}
+                value={threadTypeOptions.find(
+                  (o) => o.value === action.threadType,
+                )}
+                onChange={(opt) => {
+                  action.threadType = opt
+                    ? (opt as { value: (typeof action)["threadType"] }).value
+                    : undefined;
+                  update();
+                }}
+              />
+              <StringSelect
+                name="autoArchiveDuration"
+                label="Auto Archive Duration"
+                options={threadAutoArchiveOptions}
+                value={threadAutoArchiveOptions.find(
+                  (o) => o.value === action.autoArchiveDuration,
+                )}
+                onChange={(opt) => {
+                  action.autoArchiveDuration = opt
+                    ? (opt as { value: (typeof action)["autoArchiveDuration"] })
+                        .value
+                    : undefined;
+                  update();
+                }}
+              />
+              <StringSelect name="appliedTags" label="Tags" options={[]} />
+              {/* <StringSelect name="backupId" label="Backup" options={[]} />
+              <StringSelect
+                name="backupMessageIndex"
+                label="Message"
+                options={[]}
+              /> */}
+              {/* <MessageFlagSelect /> */}
+            </>
+          ) : action.type === 9 ? (
             <>
               <StringSelect
-                name="roleId"
-                label="Role"
-                options={[]}
-                defaultValue={null}
+                name="varType"
+                label="Type"
+                options={varTypeOptions}
+                defaultValue={varTypeOptions.find((o) => o.value === 0)}
+                value={varTypeOptions.find((o) => o.value === action.varType)}
+                onChange={(opt) => {
+                  action.varType = opt
+                    ? (opt as { value: FlowActionSetVariableType }).value
+                    : undefined;
+                  update();
+                }}
               />
-              {/* <TextArea label="Reason" maxLength={1000} className="w-full" /> */}
+              <TextInput
+                name="name"
+                label="Name"
+                className="w-full"
+                maxLength={100}
+                value={action.name}
+                onChange={(e) => {
+                  action.name = e.currentTarget.value;
+                  update();
+                }}
+              />
+              <TextInput
+                name="value"
+                label="Value"
+                className="w-full"
+                maxLength={500}
+                value={String(action.value ?? "")}
+                onChange={({ currentTarget }) => {
+                  const v = currentTarget.value;
+                  if (["true", "false"].includes(v)) {
+                    action.value = v === "true";
+                  } else {
+                    action.value = currentTarget.value;
+                  }
+                  update();
+                }}
+              />
+            </>
+          ) : action.type === 10 ? (
+            <>
+              <p>
+                A message with the ID of <code>messageId</code> will be deleted.
+              </p>
             </>
           ) : (
             <></>
