@@ -3,7 +3,7 @@ import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { SafeParseReturnType } from "zod";
+import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import { Button } from "~/components/Button";
@@ -166,7 +166,7 @@ export default function Index() {
     } else {
       let parsed:
         | SafeParseReturnType<QueryData, QueryData>
-        | { success: false };
+        | SafeParseError<QueryData>;
       try {
         parsed = ZodQueryData.safeParse(
           JSON.parse(
@@ -175,9 +175,10 @@ export default function Index() {
               : JSON.stringify({ messages: [INDEX_MESSAGE] }),
           ),
         );
-      } catch {
+      } catch (e) {
         parsed = {
           success: false,
+          error: { issues: [e] } as ZodError<QueryData>,
         };
       }
 
@@ -189,6 +190,7 @@ export default function Index() {
         loadInitialTargets(parsed.data.targets ?? []);
         loadMessageComponents(parsed.data.messages);
       } else {
+        console.error("QueryData failed parsing:", parsed.error.issues);
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
       }
     }
