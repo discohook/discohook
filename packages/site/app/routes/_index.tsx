@@ -35,6 +35,7 @@ import { cdn, getWebhook } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
+import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -60,6 +61,7 @@ export interface HistoryItem {
 export default function Index() {
   const { t } = useTranslation();
   const { user, discordApplicationId } = useLoaderData<typeof loader>();
+  const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
 
   const [searchParams] = useSearchParams();
@@ -214,7 +216,7 @@ export default function Index() {
                 createdAt: new Date(),
                 data: structuredClone(data),
               },
-            ].slice(-20),
+            ].slice(isPremium ? -30 : -15),
           );
         }
         setUpdateCount(updateCount + 1);

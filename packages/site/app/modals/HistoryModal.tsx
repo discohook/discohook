@@ -46,10 +46,10 @@ export const HistoryModal = <
     <Modal title={t("history")} {...props}>
       <div className="flex mb-4">
         <p className="mr-2">
-          Here you can view and manage the past 20 autosaved instances of editor
-          history. Pressing "{t("resetEditor")}" will reset everything in the
-          left pane, but it will not wipe history (until it is overwritten by
-          your new changes). Just remember that history is{" "}
+          Here you can view and manage the past 15 autosaved instances of editor
+          history (or 30 with Deluxe). Pressing "{t("resetEditor")}" will reset
+          everything in the left pane, but it will not wipe history (until it is
+          overwritten by your new changes). Just remember that history is{" "}
           <span className="font-bold">not persisted</span> when you reload the
           page.
         </p>
