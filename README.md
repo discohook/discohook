@@ -29,6 +29,7 @@ This monorepo comes in a few main parts:
 - [bot](/packages/bot) - Handles Discord interactions & proxied gateway events
 - [bot-ws](/packages/bot-ws) - Proxies gateway events to `bot`
 - [magic-backup-importer](/packages/magic-backup-importer) - Hosted on a domain where users may have local backups stored (`site` redirects here and vice versa)
+- [my](/packages/my) - Hosted on a subdomain or shorter domain, used for redirecting to `/link/...`
 
 Along with some shared packages:
 
