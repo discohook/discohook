@@ -11,7 +11,7 @@ import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { z } from "zod";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -318,16 +318,23 @@ export default function Me() {
                       {t("subscribedSince")}
                     </p>
                     <p className="text-base font-normal">
-                      {user.subscribedSince
-                        ? new Date(user.subscribedSince).toLocaleDateString(
-                            undefined,
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )
-                        : t("notSubscribed")}
+                      {user.subscribedSince ? (
+                        new Date(user.subscribedSince).toLocaleDateString(
+                          undefined,
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )
+                      ) : (
+                        <Link
+                          to="/donate"
+                          className={twMerge(linkClassName, "text-brand-pink dark:text-brand-pink")}
+                        >
+                          {t("notSubscribed")}
+                        </Link>
+                      )}
                       {user.lifetime ? ` (${t("lifetime")}!)` : ""}
                     </p>
                   </div>
