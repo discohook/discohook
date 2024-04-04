@@ -5,17 +5,22 @@ import {
   useSearchParams,
   useSubmit,
 } from "@remix-run/react";
+import { Snowflake } from "@theinternetfolks/snowflake";
 import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
+import { InfoBox } from "~/components/InfoBox";
 import { Prose } from "~/components/Prose";
+import { TextInput } from "~/components/TextInput";
 import { Twemoji } from "~/components/Twemoji";
+import { linkClassName } from "~/components/preview/Markdown";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
@@ -26,7 +31,7 @@ import { cdn } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { relativeTime } from "~/util/time";
-import { getUserAvatar, getUserTag } from "~/util/users";
+import { getUserAvatar, getUserTag, userIsPremium } from "~/util/users";
 import {
   jsonAsString,
   snowflakeAsString,
@@ -193,6 +198,8 @@ export const action = async ({ request, context }: ActionArgs) => {
 
 export const meta: MetaFunction = () => [{ title: "Your Data - Discohook" }];
 
+const EPOCH = Date.UTC(2024, 1, 1).valueOf();
+
 const tabValues = [
   "profile",
   "backups",
@@ -339,6 +346,20 @@ export default function Me() {
                             },
                           )
                         : t("never")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="uppercase font-bold text-sm leading-4 dark:text-gray-400">
+                      {t("joinedDiscohook")}
+                    </p>
+                    <p className="text-base font-normal">
+                      {new Date(
+                        Snowflake.parse(String(user.id), EPOCH).timestamp,
+                      ).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </p>
                   </div>
                 </div>
@@ -545,6 +566,20 @@ export default function Me() {
                   {t("import")}
                 </Button> */}
               </div>
+              {!userIsPremium(user) && (
+                <InfoBox icon="Handbag" severity="pink">
+                  <Trans
+                    t={t}
+                    i18nKey="linkEmbedsPremiumNote"
+                    components={[
+                      <Link
+                        to="/link"
+                        className={twJoin(linkClassName, "dark:brightness-90")}
+                      />,
+                    ]}
+                  />
+                </InfoBox>
+              )}
               {linkBackups.length > 0 ? (
                 <div className="space-y-1">
                   {linkBackups.map((backup) => {

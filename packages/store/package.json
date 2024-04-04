@@ -8,7 +8,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@theinternetfolks/snowflake": "^1.3.0",
+    "@theinternetfolks/snowflake": "shayypy/snowflake",
     "discord-api-types": "^0.37.67",
     "discord-snowflake": "^2.0.0",
     "drizzle-orm": "^0.29.3",

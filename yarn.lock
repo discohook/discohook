@@ -2505,10 +2505,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theinternetfolks/snowflake@npm:^1.3.0":
+"@theinternetfolks/snowflake@shayypy/snowflake":
   version: 1.3.0
-  resolution: "@theinternetfolks/snowflake@npm:1.3.0"
-  checksum: 10c0/8b894dea3827f3512c87cdf18bf8618e1a6c94be42c8db18d603a0ff436a7e566ffde6e260a9ddb27ef2e0f7314a65f5df9db2ad3abedf2a86c4e54b3d6f0533
+  resolution: "@theinternetfolks/snowflake@https://github.com/shayypy/snowflake.git#commit=2aa9fe03f804aa2598c72f511194695106d991b4"
+  checksum: 10c0/9649ce13163279dab0810a9b8d8b91772cfb735bd2b84c054c6b0b20cbb72540846a1f1d947608b49b402c1f2093aec69d29a54864390c0192124afa08c481d7
   languageName: node
   linkType: hard
 
@@ -9823,15 +9823,15 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=e37e89&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=d33c73&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
-    "@theinternetfolks/snowflake": "npm:^1.3.0"
+    "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/5b9ef352374189728e15ba9402899fab42c5fe1ba2af383b1f456226b03bd279ada9255e7af45de513347854393204286c23f19e7b0fec9b3c3180cc25c0a5d9
+  checksum: 10c0/cf466e66707a74047fa0417c30f6164496773ba818a8e443f4b4df9f57b2fcf4c3c2b38c4d33d1f82aaa465f7bdd64b97623b6645b00ebd700efad638b2d7375
   languageName: node
   linkType: hard
 
@@ -9840,7 +9840,7 @@ cron-parser@shayypy/cron-parser:
   resolution: "store@workspace:packages/store"
   dependencies:
     "@discordjs/rest": "npm:^2.2.0"
-    "@theinternetfolks/snowflake": "npm:^1.3.0"
+    "@theinternetfolks/snowflake": shayypy/snowflake
     "@types/json-bigint": "npm:^1.0.4"
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"

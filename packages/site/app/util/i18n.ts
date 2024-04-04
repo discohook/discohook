@@ -93,6 +93,8 @@ export const resources = {
       notSubscribed: "Not subscribed",
       firstSubscribed: "First Subscribed",
       never: "Never",
+      joinedDiscohook: "Joined Discohook",
+      linkEmbedsPremiumNote: "You've uncovered a Deluxe feature! <0>Read more about link embeds here.</0>",
       donate: "Donate",
       deluxe: "Deluxe",
       lifetime: "Lifetime",

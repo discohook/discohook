@@ -27,21 +27,21 @@ BigInt.prototype.toJSON = function () {
 
 // ID generation
 export const EPOCH = Date.UTC(2024, 1, 1).valueOf();
-Snowflake.EPOCH = EPOCH;
 
 export const generateId = (timestamp?: number | Date) => {
   // I wanted to incorporate some Cloudflare metadata as the shard_id (e.g.
   // something unique to that machine) but I'm not really sure there is
   // anything I can use that doesn't involve the user's location
+
   return Snowflake.generate({
     timestamp,
-    // shard_id: request ? request.cf. : undefined
+    epoch: EPOCH,
   });
 };
 
 export const getId = ({ id }: { id: string | bigint }) => {
   return {
-    ...Snowflake.parse(String(id)),
+    ...Snowflake.parse(String(id), EPOCH),
     id: String(id),
   };
 };
