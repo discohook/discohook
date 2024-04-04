@@ -1,5 +1,5 @@
-import { Link, useSubmit } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { Await, Link, useSubmit } from "@remix-run/react";
+import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/CoolIcon";
@@ -51,7 +51,7 @@ export const backupDataAsNewest = (
 };
 
 export const BackupImportModal = (
-  props: ModalProps & { backups: { name: string }[] },
+  props: ModalProps & { backups: Promise<{ name: string }[]> },
 ) => {
   const { t } = useTranslation();
   const [fileErrors, setFileErrors] = useState<string[]>([]);
@@ -153,14 +153,20 @@ export const BackupImportModal = (
                     >
                       <div className="my-auto truncate mr-2 text-left py-2">
                         <p className="font-semibold truncate">{backup.name}</p>
-                        {props.backups
-                          .map((b) => b.name)
-                          .includes(backup.name) && (
-                          <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                            <CoolIcon icon="Circle_Warning" /> You already have
-                            a backup with this name
-                          </p>
-                        )}
+                        <Suspense>
+                          <Await resolve={props.backups}>
+                            {(pBackups) =>
+                              pBackups
+                                .map((b) => b.name)
+                                .includes(backup.name) && (
+                                <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                                  <CoolIcon icon="Circle_Warning" /> You already
+                                  have a backup with this name
+                                </p>
+                              )
+                            }
+                          </Await>
+                        </Suspense>
                       </div>
                       <div className="my-auto ml-auto">
                         <CoolIcon

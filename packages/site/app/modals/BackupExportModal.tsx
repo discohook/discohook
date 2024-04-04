@@ -1,6 +1,6 @@
 import { SerializeFrom } from "@remix-run/cloudflare";
-import { Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { Await, Link } from "@remix-run/react";
+import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { loader as ApiGetBackups } from "~/api/v1/backups";
@@ -32,11 +32,11 @@ export const downloadBlob = (blob: Blob, name: string) => {
 };
 
 export const BackupExportModal = (
-  props: ModalProps & { backups: LoadedBackup[] },
+  props: ModalProps & { backups: Promise<LoadedBackup[]> },
 ) => {
   const { t } = useTranslation();
   const { backups } = props;
-  const [selectedBackups, setSelectedBackups] = useState<number[]>([]);
+  const [selectedBackups, setSelectedBackups] = useState<bigint[]>([]);
   const [error, setError] = useState<string>();
 
   useEffect(() => {
@@ -51,50 +51,56 @@ export const BackupExportModal = (
       {error && <InfoBox severity="red">{error}</InfoBox>}
       <p>{t("exportBackupsNote")}</p>
       <div className="my-2 space-y-1 overflow-y-auto max-h-96">
-        {backups.map((backup) => {
-          return (
-            <div className="flex" key={`export-backup-${backup.id}`}>
-              <button
-                type="button"
-                className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
-                onClick={() => {
-                  if (selectedBackups.includes(backup.id)) {
-                    setSelectedBackups(
-                      selectedBackups.filter((b) => b !== backup.id),
-                    );
-                  } else {
-                    setSelectedBackups([...selectedBackups, backup.id]);
-                  }
-                }}
-              >
-                <div className="my-auto truncate mr-2 text-left py-2">
-                  <p className="font-semibold truncate">{backup.name}</p>
-                </div>
-                <div className="my-auto ml-auto">
-                  <CoolIcon
-                    icon={
-                      selectedBackups.includes(backup.id)
-                        ? "Checkbox_Check"
-                        : "Checkbox_Unchecked"
-                    }
-                    className="text-blurple-400 text-xl"
-                  />
-                </div>
-              </button>
-              <Link
-                to={`/?backup=${backup.id}`}
-                className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
-                title={`View ${backup.name}`}
-                target="_blank"
-              >
-                <CoolIcon
-                  icon="External_Link"
-                  className="text-blurple-400 m-auto"
-                />
-              </Link>
-            </div>
-          );
-        })}
+        <Suspense>
+          <Await resolve={backups}>
+            {(backups) =>
+              backups.map((backup) => {
+                return (
+                  <div className="flex" key={`export-backup-${backup.id}`}>
+                    <button
+                      type="button"
+                      className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
+                      onClick={() => {
+                        if (selectedBackups.includes(backup.id)) {
+                          setSelectedBackups(
+                            selectedBackups.filter((b) => b !== backup.id),
+                          );
+                        } else {
+                          setSelectedBackups([...selectedBackups, backup.id]);
+                        }
+                      }}
+                    >
+                      <div className="my-auto truncate mr-2 text-left py-2">
+                        <p className="font-semibold truncate">{backup.name}</p>
+                      </div>
+                      <div className="my-auto ml-auto">
+                        <CoolIcon
+                          icon={
+                            selectedBackups.includes(backup.id)
+                              ? "Checkbox_Check"
+                              : "Checkbox_Unchecked"
+                          }
+                          className="text-blurple-400 text-xl"
+                        />
+                      </div>
+                    </button>
+                    <Link
+                      to={`/?backup=${backup.id}`}
+                      className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
+                      title={`View ${backup.name}`}
+                      target="_blank"
+                    >
+                      <CoolIcon
+                        icon="External_Link"
+                        className="text-blurple-400 m-auto"
+                      />
+                    </Link>
+                  </div>
+                );
+              })
+            }
+          </Await>
+        </Suspense>
       </div>
       <div className="flex w-full mt-4">
         <Button
@@ -116,12 +122,13 @@ export const BackupExportModal = (
               typeof ApiGetBackups
             >;
 
+            const resolved = await backups;
             const blob = new Blob(
               [
                 JSON.stringify(
                   {
                     version: 8,
-                    backups: backups
+                    backups: resolved
                       .filter((b) => selectedBackups.includes(b.id))
                       .map((backup) => {
                         const data = withData.find((b) => b.id === backup.id);

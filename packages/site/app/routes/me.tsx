@@ -1,15 +1,20 @@
-import { MetaFunction, SerializeFrom, json } from "@remix-run/cloudflare";
 import {
+  MetaFunction,
+  SerializeFrom,
+  defer,
+  json,
+} from "@remix-run/cloudflare";
+import {
+  Await,
   Link,
   useLoaderData,
   useSearchParams,
   useSubmit,
 } from "@remix-run/react";
-import { Snowflake } from "@theinternetfolks/snowflake";
 import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { z } from "zod";
@@ -28,6 +33,7 @@ import { BackupImportModal } from "~/modals/BackupImportModal";
 import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { cdn } from "~/util/discord";
+import { DeconstructedSnowflake, getId } from "~/util/id";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { relativeTime } from "~/util/time";
@@ -45,7 +51,6 @@ import {
   shareLinks as dShareLinks,
   discordMembers,
   getDb,
-  getId,
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -63,52 +68,65 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
   const db = getDb(context.env.DATABASE_URL);
 
-  const backups = await db.query.backups.findMany({
-    where: eq(dBackups.ownerId, user.id),
-    columns: {
-      id: true,
-      name: true,
-      previewImageUrl: true,
-      importedFromOrg: true,
-      scheduled: true,
-      nextRunAt: true,
-      cron: true,
-      timezone: true,
-    },
-    orderBy: desc(dBackups.name),
-    limit: 50,
+  const backups = (async () =>
+    await db.query.backups.findMany({
+      where: eq(dBackups.ownerId, user.id),
+      columns: {
+        id: true,
+        name: true,
+        previewImageUrl: true,
+        importedFromOrg: true,
+        scheduled: true,
+        nextRunAt: true,
+        cron: true,
+        timezone: true,
+      },
+      orderBy: desc(dBackups.name),
+      limit: 50,
+    }))();
+
+  const linkBackups = (async () =>
+    await db.query.linkBackups.findMany({
+      where: eq(dBackups.ownerId, user.id),
+      columns: {
+        id: true,
+        name: true,
+        code: true,
+        previewImageUrl: true,
+      },
+      orderBy: desc(dBackups.name),
+      limit: 50,
+    }))();
+
+  const links = (async () =>
+    await db.query.shareLinks.findMany({
+      where: eq(dShareLinks.userId, user.id),
+      orderBy: desc(dShareLinks.expiresAt),
+      limit: 50,
+    }))();
+
+  const memberships = (async () =>
+    user.discordId
+      ? await db.query.discordMembers.findMany({
+          where: eq(discordMembers.userId, user.discordId),
+          columns: { permissions: true },
+          with: { guild: true },
+        })
+      : [])();
+
+  return defer({
+    user,
+    backups,
+    linkBackups,
+    links,
+    memberships,
+    importedSettings,
   });
-
-  const linkBackups = await db.query.linkBackups.findMany({
-    where: eq(dBackups.ownerId, user.id),
-    columns: {
-      id: true,
-      name: true,
-      code: true,
-      previewImageUrl: true,
-    },
-    orderBy: desc(dBackups.name),
-    limit: 50,
-  });
-
-  const links = await db.query.shareLinks.findMany({
-    where: eq(dShareLinks.userId, user.id),
-    orderBy: desc(dShareLinks.expiresAt),
-    limit: 50,
-  });
-
-  const memberships = user.discordId
-    ? await db.query.discordMembers.findMany({
-        where: eq(discordMembers.userId, user.discordId),
-        columns: { permissions: true },
-        with: { guild: true },
-      })
-    : [];
-
-  return { user, backups, linkBackups, links, memberships, importedSettings };
 };
 
-export type LoadedBackup = SerializeFrom<typeof loader>["backups"][number];
+export type LoadedBackup = Awaited<
+  SerializeFrom<typeof loader>["backups"]
+>[number];
 
 export const action = async ({ request, context }: ActionArgs) => {
   const data = await zxParseForm(
@@ -198,14 +216,13 @@ export const action = async ({ request, context }: ActionArgs) => {
 
 export const meta: MetaFunction = () => [{ title: "Your Data - Discohook" }];
 
-const EPOCH = Date.UTC(2024, 1, 1).valueOf();
-
 const tabValues = [
   "profile",
   "backups",
   "linkEmbeds",
   "shareLinks",
   "servers",
+  "developer",
 ] as const;
 
 export default function Me() {
@@ -235,6 +252,14 @@ export default function Me() {
   const [tab, setTab] = useState<(typeof tabValues)[number]>(
     defaultTab && tabValues.includes(defaultTab) ? defaultTab : tabValues[0],
   );
+
+  const [snowflake, setSnowflake] = useState<string>();
+  let snowflakeDecoded: DeconstructedSnowflake | undefined;
+  try {
+    if (snowflake) {
+      snowflakeDecoded = getId({ id: snowflake });
+    }
+  } catch {}
 
   return (
     <div>
@@ -286,6 +311,10 @@ export default function Me() {
               label: t("shareLinks"),
               value: "shareLinks",
             },
+            {
+              label: "Developer",
+              value: "developer",
+            },
           ]}
         >
           {tab === "profile" ? (
@@ -330,7 +359,10 @@ export default function Me() {
                       ) : (
                         <Link
                           to="/donate"
-                          className={twMerge(linkClassName, "text-brand-pink dark:text-brand-pink")}
+                          className={twMerge(
+                            linkClassName,
+                            "text-brand-pink dark:text-brand-pink",
+                          )}
                         >
                           {t("notSubscribed")}
                         </Link>
@@ -360,13 +392,14 @@ export default function Me() {
                       {t("joinedDiscohook")}
                     </p>
                     <p className="text-base font-normal">
-                      {new Date(
-                        Snowflake.parse(String(user.id), EPOCH).timestamp,
-                      ).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                      {new Date(getId(user).timestamp).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        },
+                      )}
                     </p>
                   </div>
                 </div>
@@ -384,67 +417,79 @@ export default function Me() {
                   </Button>
                 </Link>
               </div>
-              {memberships.length > 0 ? (
-                <div className="space-y-1">
-                  {memberships
-                    .filter((m) => {
-                      const perm = new PermissionsBitField(
-                        BigInt(m.permissions ?? "0"),
-                      );
-                      return (
-                        perm.has(PermissionFlags.ManageMessages) ||
-                        perm.has(PermissionFlags.ManageWebhooks)
-                      );
-                    })
-                    .sort((a, b) => {
-                      // const perm = new PermissionsBitField(
-                      //   BigInt(m.permissions ?? "0"),
-                      // );
-                      // if (perm.has(PermissionFlags.Administrator)) {
-                      //   return -20;
-                      // }
-                      // return 0;
-                      return a.guild.name > b.guild.name ? 1 : -1;
-                    })
-                    .map(({ guild }) => {
-                      return (
-                        <div
-                          key={`guild-${guild.id}`}
-                          className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
-                        >
-                          <div
-                            style={{
-                              backgroundImage: `url(${
-                                guild.icon
-                                  ? cdn.icon(String(guild.id), guild.icon, {
-                                      size: 64,
-                                    })
-                                  : cdn.defaultAvatar(5)
-                              })`,
-                            }}
-                            className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
-                          />
-                          <div className="truncate my-auto">
-                            <div className="flex max-w-full">
-                              <p className="font-medium truncate">
-                                {guild.name}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="ml-auto pl-2 my-auto flex gap-2">
-                            <Link to={`/s/${guild.id}`}>
-                              <Button discordstyle={ButtonStyle.Secondary}>
-                                <CoolIcon icon="Chevron_Right" />
-                              </Button>
-                            </Link>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <p className="text-gray-500">{t("noServers")}</p>
-              )}
+              <Suspense>
+                <Await resolve={memberships}>
+                  {(memberships) =>
+                    memberships.length > 0 ? (
+                      <div className="space-y-1">
+                        {memberships
+                          .filter((m) => {
+                            const perm = new PermissionsBitField(
+                              BigInt(m.permissions ?? "0"),
+                            );
+                            return (
+                              perm.has(PermissionFlags.ManageMessages) ||
+                              perm.has(PermissionFlags.ManageWebhooks)
+                            );
+                          })
+                          .sort((a, b) => {
+                            // const perm = new PermissionsBitField(
+                            //   BigInt(m.permissions ?? "0"),
+                            // );
+                            // if (perm.has(PermissionFlags.Administrator)) {
+                            //   return -20;
+                            // }
+                            // return 0;
+                            return a.guild.name > b.guild.name ? 1 : -1;
+                          })
+                          .map(({ guild }) => {
+                            return (
+                              <div
+                                key={`guild-${guild.id}`}
+                                className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
+                              >
+                                <div
+                                  style={{
+                                    backgroundImage: `url(${
+                                      guild.icon
+                                        ? cdn.icon(
+                                            String(guild.id),
+                                            guild.icon,
+                                            {
+                                              size: 64,
+                                            },
+                                          )
+                                        : cdn.defaultAvatar(5)
+                                    })`,
+                                  }}
+                                  className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                                />
+                                <div className="truncate my-auto">
+                                  <div className="flex max-w-full">
+                                    <p className="font-medium truncate">
+                                      {guild.name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="ml-auto pl-2 my-auto flex gap-2">
+                                  <Link to={`/s/${guild.id}`}>
+                                    <Button
+                                      discordstyle={ButtonStyle.Secondary}
+                                    >
+                                      <CoolIcon icon="Chevron_Right" />
+                                    </Button>
+                                  </Link>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">{t("noServers")}</p>
+                    )
+                  }
+                </Await>
+              </Suspense>
             </div>
           ) : tab === "backups" ? (
             <div>
@@ -465,100 +510,119 @@ export default function Me() {
                   {t("export")}
                 </Button>
               </div>
-              {backups.length > 0 ? (
-                <div className="space-y-1">
-                  {backups.map((backup) => {
-                    const createdAt = new Date(getId(backup).timestamp);
-                    return (
-                      <div
-                        key={`backup-${backup.id}`}
-                        className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
-                      >
-                        {backup.previewImageUrl && (
-                          <div
-                            style={{
-                              backgroundImage: `url(${backup.previewImageUrl})`,
-                            }}
-                            className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
-                          />
-                        )}
-                        <div className="truncate my-auto">
-                          <div className="flex max-w-full">
-                            <p className="font-medium truncate">
-                              {backup.name}
-                            </p>
-                            <button
-                              type="button"
-                              className="ml-2 my-auto"
-                              onClick={() => setEditingBackup(backup)}
+              <Suspense>
+                <Await resolve={backups}>
+                  {(backups) =>
+                    backups.length > 0 ? (
+                      <div className="space-y-1">
+                        {backups.map((backup) => {
+                          const createdAt = new Date(getId(backup).timestamp);
+                          return (
+                            <div
+                              key={`backup-${backup.id}`}
+                              className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
                             >
-                              <CoolIcon icon="Edit_Pencil_01" />
-                            </button>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-500 text-sm">
-                            {backup.nextRunAt ? (
-                              <>
-                                <Twemoji emoji="🕑" className="grayscale" />{" "}
-                                Next run{" "}
-                                {relativeTime(new Date(backup.nextRunAt), t)} (
-                                {new Date(backup.nextRunAt).toLocaleString(
-                                  undefined,
-                                  {
-                                    month: "numeric",
-                                    day: "numeric",
-                                    year: "numeric",
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                  },
-                                )}
-                                )
-                              </>
-                            ) : backup.importedFromOrg ? (
-                              <>
-                                <Twemoji emoji="✨" className="grayscale" />{" "}
-                                Imported from discohook.org on{" "}
-                                {createdAt.toLocaleDateString()}
-                              </>
-                            ) : (
-                              t("createdAt", {
-                                replace: {
-                                  createdAt: createdAt.toLocaleDateString(),
-                                },
-                              })
-                            )}
-                          </p>
-                        </div>
-                        <div className="ml-auto pl-2 my-auto flex gap-2">
-                          <Link to={`/?backup=${backup.id}`} target="_blank">
-                            <Button discordstyle={ButtonStyle.Secondary}>
-                              <CoolIcon icon="External_Link" />
-                            </Button>
-                          </Link>
-                          <Button
-                            discordstyle={ButtonStyle.Danger}
-                            onClick={() => {
-                              submit(
-                                {
-                                  action: "DELETE_BACKUP",
-                                  backupId: String(backup.id),
-                                },
-                                {
-                                  method: "POST",
-                                  replace: true,
-                                },
-                              );
-                            }}
-                          >
-                            <CoolIcon icon="Trash_Full" />
-                          </Button>
-                        </div>
+                              {backup.previewImageUrl && (
+                                <div
+                                  style={{
+                                    backgroundImage: `url(${backup.previewImageUrl})`,
+                                  }}
+                                  className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                                />
+                              )}
+                              <div className="truncate my-auto">
+                                <div className="flex max-w-full">
+                                  <p className="font-medium truncate">
+                                    {backup.name}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    className="ml-2 my-auto"
+                                    onClick={() => setEditingBackup(backup)}
+                                  >
+                                    <CoolIcon icon="Edit_Pencil_01" />
+                                  </button>
+                                </div>
+                                <p className="text-gray-600 dark:text-gray-500 text-sm">
+                                  {backup.nextRunAt ? (
+                                    <>
+                                      <Twemoji
+                                        emoji="🕑"
+                                        className="grayscale"
+                                      />{" "}
+                                      Next run{" "}
+                                      {relativeTime(
+                                        new Date(backup.nextRunAt),
+                                        t,
+                                      )}{" "}
+                                      (
+                                      {new Date(
+                                        backup.nextRunAt,
+                                      ).toLocaleString(undefined, {
+                                        month: "numeric",
+                                        day: "numeric",
+                                        year: "numeric",
+                                        hour: "numeric",
+                                        minute: "2-digit",
+                                      })}
+                                      )
+                                    </>
+                                  ) : backup.importedFromOrg ? (
+                                    <>
+                                      <Twemoji
+                                        emoji="✨"
+                                        className="grayscale"
+                                      />{" "}
+                                      Imported from discohook.org on{" "}
+                                      {createdAt.toLocaleDateString()}
+                                    </>
+                                  ) : (
+                                    t("createdAt", {
+                                      replace: {
+                                        createdAt:
+                                          createdAt.toLocaleDateString(),
+                                      },
+                                    })
+                                  )}
+                                </p>
+                              </div>
+                              <div className="ml-auto pl-2 my-auto flex gap-2">
+                                <Link
+                                  to={`/?backup=${backup.id}`}
+                                  target="_blank"
+                                >
+                                  <Button discordstyle={ButtonStyle.Secondary}>
+                                    <CoolIcon icon="External_Link" />
+                                  </Button>
+                                </Link>
+                                <Button
+                                  discordstyle={ButtonStyle.Danger}
+                                  onClick={() => {
+                                    submit(
+                                      {
+                                        action: "DELETE_BACKUP",
+                                        backupId: String(backup.id),
+                                      },
+                                      {
+                                        method: "POST",
+                                        replace: true,
+                                      },
+                                    );
+                                  }}
+                                >
+                                  <CoolIcon icon="Trash_Full" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-gray-500">{t("noBackups")}</p>
-              )}
+                    ) : (
+                      <p className="text-gray-500">{t("noBackups")}</p>
+                    )
+                  }
+                </Await>
+              </Suspense>
             </div>
           ) : tab === "linkEmbeds" ? (
             <div>
@@ -587,69 +651,78 @@ export default function Me() {
                   />
                 </InfoBox>
               )}
-              {linkBackups.length > 0 ? (
-                <div className="space-y-1">
-                  {linkBackups.map((backup) => {
-                    return (
-                      <div
-                        key={`link-backup-${backup.id}`}
-                        className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
-                      >
-                        {backup.previewImageUrl && (
-                          <div
-                            style={{
-                              backgroundImage: `url(${backup.previewImageUrl})`,
-                            }}
-                            className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
-                          />
-                        )}
-                        <div className="truncate my-auto">
-                          <div className="flex max-w-full">
-                            <p className="font-medium truncate">
-                              {backup.name}
-                            </p>
-                            <Link
-                              to={`/link?backup=${backup.id}`}
-                              className="ml-2 my-auto"
+              <Suspense>
+                <Await resolve={linkBackups}>
+                  {(linkBackups) =>
+                    linkBackups.length > 0 ? (
+                      <div className="space-y-1">
+                        {linkBackups.map((backup) => {
+                          return (
+                            <div
+                              key={`link-backup-${backup.id}`}
+                              className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
                             >
-                              <CoolIcon icon="Edit_Pencil_01" />
-                            </Link>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-500 text-sm">
-                            {t("id", { replace: { id: backup.code } })}
-                          </p>
-                        </div>
-                        <div className="ml-auto pl-2 my-auto flex gap-2">
-                          <Link to={`/link/${backup.code}`} target="_blank">
-                            <Button discordstyle={ButtonStyle.Secondary}>
-                              <CoolIcon icon="External_Link" />
-                            </Button>
-                          </Link>
-                          <Button
-                            discordstyle={ButtonStyle.Danger}
-                            onClick={() => {
-                              submit(
-                                {
-                                  action: "DELETE_LINK_BACKUP",
-                                  backupId: String(backup.id),
-                                },
-                                {
-                                  method: "POST",
-                                  replace: true,
-                                },
-                              );
-                            }}
-                          >
-                            <CoolIcon icon="Trash_Full" />
-                          </Button>
-                        </div>
+                              {backup.previewImageUrl && (
+                                <div
+                                  style={{
+                                    backgroundImage: `url(${backup.previewImageUrl})`,
+                                  }}
+                                  className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                                />
+                              )}
+                              <div className="truncate my-auto">
+                                <div className="flex max-w-full">
+                                  <p className="font-medium truncate">
+                                    {backup.name}
+                                  </p>
+                                  <Link
+                                    to={`/link?backup=${backup.id}`}
+                                    className="ml-2 my-auto"
+                                  >
+                                    <CoolIcon icon="Edit_Pencil_01" />
+                                  </Link>
+                                </div>
+                                <p className="text-gray-600 dark:text-gray-500 text-sm">
+                                  {t("id", { replace: { id: backup.code } })}
+                                </p>
+                              </div>
+                              <div className="ml-auto pl-2 my-auto flex gap-2">
+                                <Link
+                                  to={`/link/${backup.code}`}
+                                  target="_blank"
+                                >
+                                  <Button discordstyle={ButtonStyle.Secondary}>
+                                    <CoolIcon icon="External_Link" />
+                                  </Button>
+                                </Link>
+                                <Button
+                                  discordstyle={ButtonStyle.Danger}
+                                  onClick={() => {
+                                    submit(
+                                      {
+                                        action: "DELETE_LINK_BACKUP",
+                                        backupId: String(backup.id),
+                                      },
+                                      {
+                                        method: "POST",
+                                        replace: true,
+                                      },
+                                    );
+                                  }}
+                                >
+                                  <CoolIcon icon="Trash_Full" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-gray-500">{t("noBackups")}</p>
-              )}
+                    ) : (
+                      <p className="text-gray-500">{t("noBackups")}</p>
+                    )
+                  }
+                </Await>
+              </Suspense>
             </div>
           ) : tab === "shareLinks" ? (
             <div className="w-full h-fit">
@@ -671,87 +744,122 @@ export default function Me() {
                   }}
                 />
               </p>
-              {links.length > 0 ? (
-                <div className="space-y-1">
-                  {links.map((link) => {
-                    const created = new Date(getId(link).timestamp);
-                    const expires = new Date(link.expiresAt);
-                    return (
-                      <div
-                        key={`share-link-${link.id}`}
-                        className="rounded p-4 bg-gray-100 dark:bg-gray-900 flex"
-                      >
-                        <div className="truncate shrink-0">
-                          <p className="font-medium">
-                            {created.toLocaleDateString(undefined, {
-                              month: "short",
-                              day: "numeric",
-                              year:
-                                now.getFullYear() === created.getFullYear()
-                                  ? undefined
-                                  : "numeric",
-                            })}
-                            <span
-                              className={`ml-1 ${
-                                expires < now
-                                  ? "text-rose-400"
-                                  : expires.getTime() - now.getTime() <=
-                                      86400000
-                                    ? "text-yellow-500 dark:text-yellow-400"
-                                    : "text-gray-600 dark:text-gray-500"
-                              }`}
+              <Suspense>
+                <Await resolve={links}>
+                  {(links) =>
+                    links.length > 0 ? (
+                      <div className="space-y-1">
+                        {links.map((link) => {
+                          const created = new Date(getId(link).timestamp);
+                          const expires = new Date(link.expiresAt);
+                          return (
+                            <div
+                              key={`share-link-${link.id}`}
+                              className="rounded p-4 bg-gray-100 dark:bg-gray-900 flex"
                             >
-                              -{" "}
-                              {expires.toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year:
-                                  now.getFullYear() === expires.getFullYear()
-                                    ? undefined
-                                    : "numeric",
-                              })}
-                            </span>
-                          </p>
-                          <p className="text-gray-600 dark:text-gray-500 text-sm">
-                            {t("id", { replace: { id: link.shareId } })}
-                          </p>
-                        </div>
-                        <div className="ml-auto pl-2 my-auto flex gap-2">
-                          {expires > now && (
-                            <Link
-                              to={`/?share=${link.shareId}`}
-                              target="_blank"
-                            >
-                              <Button discordstyle={ButtonStyle.Secondary}>
-                                <CoolIcon icon="External_Link" />
-                              </Button>
-                            </Link>
-                          )}
-                          <Button
-                            discordstyle={ButtonStyle.Danger}
-                            onClick={() => {
-                              submit(
-                                {
-                                  action: "DELETE_SHARE_LINK",
-                                  linkId: String(link.id),
-                                },
-                                {
-                                  method: "POST",
-                                  replace: true,
-                                },
-                              );
-                            }}
-                          >
-                            <CoolIcon icon="Trash_Full" />
-                          </Button>
-                        </div>
+                              <div className="truncate shrink-0">
+                                <p className="font-medium">
+                                  {created.toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year:
+                                      now.getFullYear() ===
+                                      created.getFullYear()
+                                        ? undefined
+                                        : "numeric",
+                                  })}
+                                  <span
+                                    className={`ml-1 ${
+                                      expires < now
+                                        ? "text-rose-400"
+                                        : expires.getTime() - now.getTime() <=
+                                            86400000
+                                          ? "text-yellow-500 dark:text-yellow-400"
+                                          : "text-gray-600 dark:text-gray-500"
+                                    }`}
+                                  >
+                                    -{" "}
+                                    {expires.toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                      year:
+                                        now.getFullYear() ===
+                                        expires.getFullYear()
+                                          ? undefined
+                                          : "numeric",
+                                    })}
+                                  </span>
+                                </p>
+                                <p className="text-gray-600 dark:text-gray-500 text-sm">
+                                  {t("id", { replace: { id: link.shareId } })}
+                                </p>
+                              </div>
+                              <div className="ml-auto pl-2 my-auto flex gap-2">
+                                {expires > now && (
+                                  <Link
+                                    to={`/?share=${link.shareId}`}
+                                    target="_blank"
+                                  >
+                                    <Button
+                                      discordstyle={ButtonStyle.Secondary}
+                                    >
+                                      <CoolIcon icon="External_Link" />
+                                    </Button>
+                                  </Link>
+                                )}
+                                <Button
+                                  discordstyle={ButtonStyle.Danger}
+                                  onClick={() => {
+                                    submit(
+                                      {
+                                        action: "DELETE_SHARE_LINK",
+                                        linkId: String(link.id),
+                                      },
+                                      {
+                                        method: "POST",
+                                        replace: true,
+                                      },
+                                    );
+                                  }}
+                                >
+                                  <CoolIcon icon="Trash_Full" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-gray-500">{t("noLinks")}</p>
-              )}
+                    ) : (
+                      <p className="text-gray-500">{t("noLinks")}</p>
+                    )
+                  }
+                </Await>
+              </Suspense>
+            </div>
+          ) : tab === "developer" ? (
+            <div>
+              <TabHeader>Developer</TabHeader>
+              <p>Your ID: {String(user.id)}</p>
+              <div className="mt-2">
+                <TextInput
+                  label="Snowflake Decoder"
+                  value={snowflake ?? ""}
+                  onChange={(e) => {
+                    setSnowflake(e.currentTarget.value);
+                  }}
+                />
+                {snowflakeDecoded && (
+                  <p>
+                    Timestamp:{" "}
+                    {new Date(
+                      snowflakeDecoded.timestamp * 1000,
+                    ).toLocaleString()}{" "}
+                    ({snowflakeDecoded.timestamp} - sec.)
+                    <br />
+                    Sequence: {snowflakeDecoded.sequence}
+                  </p>
+                )}
+              </div>
             </div>
           ) : (
             <></>
