@@ -58,7 +58,7 @@ export const TextInput = (
           }
         }}
         className={twJoin(
-          "rounded border min-h-[36px] max-h-9 py-0 px-[14px] bg-gray-300 border-gray-200 placeholder-gray-500 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] dark:placeholder-gray-400 invalid:border-rose-400 dark:invalid:border-rose-400 transition",
+          "rounded border min-h-[36px] max-h-9 py-0 px-[14px] bg-gray-300 border-gray-200 placeholder-gray-500 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] dark:placeholder-gray-400 invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-500 disabled:cursor-not-allowed transition",
           props.className ?? "",
         )}
       />

@@ -13,6 +13,7 @@ import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { Embed } from "~/components/preview/Embed";
+import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
@@ -89,6 +90,7 @@ export interface LinkHistoryItem {
 export default function Index() {
   const { t } = useTranslation();
   const { user, myOrigin } = useLoaderData<typeof loader>();
+  const isPremium = user ? userIsPremium(user) : false;
 
   const [settings] = useLocalStorage();
   const [loc, setLoc] = useState<Location>();
@@ -205,7 +207,7 @@ export default function Index() {
           );
         }
         setUpdateCount(updateCount + 1);
-        if (backupInfo !== undefined) {
+        if (backupInfo !== undefined && isPremium) {
           console.log("Saving backup", backupInfo.id);
           fetch(apiUrl(BRoutes.linkBackups(backupInfo.id)), {
             method: "PATCH",
@@ -272,10 +274,21 @@ export default function Index() {
             tab === "editor" ? "" : "hidden md:block"
           }`}
         >
-          {backupInfo && (
-            <InfoBox icon="Save" collapsible open>
-              {t("editingLinkBackupNote")}
+          {!isPremium ? (
+            <InfoBox icon="Info" severity="pink">
+              You're currently in read-only mode. You can play around in the
+              editor, but in order to save a link, you will need to subscribe to{" "}
+              <Link to="/donate" className={twJoin(linkClassName, "dark:brightness-90")}>
+                Discohook Deluxe
+              </Link>
+              .
             </InfoBox>
+          ) : (
+            backupInfo && (
+              <InfoBox icon="Save" collapsible open>
+                {t("editingLinkBackupNote")}
+              </InfoBox>
+            )
           )}
           <div className="flex mb-2">
             <Button
@@ -311,14 +324,18 @@ export default function Index() {
                 name="backup-name"
                 className="w-full"
                 maxLength={100}
-                disabled={!!backupInfo?.name}
+                disabled={!!backupInfo?.name || !isPremium}
                 value={backupNameDraft ?? backupInfo?.name ?? ""}
                 onChange={(e) => setBackupNameDraft(e.currentTarget.value)}
               />
             </div>
             <Button
               className="ml-2 mt-5"
+              disabled={!isPremium}
               onClick={async () => {
+                // Try to save an API request if someone removes the disabled prop
+                if (!isPremium) return;
+
                 const r = await fetch(
                   apiUrl(BRoutes.linkBackups(backupInfo?.id)),
                   {

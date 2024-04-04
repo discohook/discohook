@@ -1,10 +1,13 @@
 import { json } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { getUserId } from "~/session.server";
+import { getUser, getUserId } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
+import {
+  requirePremiumOrThrow
+} from "~/util/users";
 import {
   jsonAsString,
   snowflakeAsString,
@@ -47,7 +50,8 @@ export const action = async ({ request, params, context }: ActionArgs) => {
       .refine((val) => (val !== undefined ? val.length <= 100 : true)),
     data: z.optional(jsonAsString(ZodLinkQueryData)),
   });
-  const userId = await getUserId(request, context, true);
+  const user = await getUser(request, context, true);
+  requirePremiumOrThrow(user);
 
   const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.linkBackups.findFirst({
@@ -56,7 +60,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
       ownerId: true,
     },
   });
-  if (!backup || backup.ownerId !== userId) {
+  if (!backup || backup.ownerId !== user.id) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
       404,
