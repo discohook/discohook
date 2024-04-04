@@ -50,6 +50,14 @@ Big thanks to [@maddysrc](https://github.com/maddysrc) and [@crawron](https://tw
 
 ## Development
 
+### Contributing
+
+Before submitting your pull request, please remember to run `npx biome check .` to check for errors, then `yarn fix` to format. This repository uses [Biome](https://biomejs.dev), not ESLint/Prettier. You may also want to install the [Biome extension for your editor](https://biomejs.dev/guides/integrate-in-editor).
+
+As far as style preferences not covered by the [Biome configuration](/biome.json):
+
+- Use `n += 1` rather than `n++`
+
 ### Bot
 
 Run `yarn dev:bot` to start a miniflare server for the "primary" portion of the bot. In another terminal window, run `yarn ngrok:bot` to forward local port `8787` to Ngrok. Copy the logged `Forwarding` address to your bot application's Interactions Endpoint URL field.
