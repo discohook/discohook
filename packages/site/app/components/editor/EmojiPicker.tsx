@@ -283,6 +283,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
             <div className="sticky bottom-0 left-0 w-full bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
               {hoverEmoji.keywords.includes("discord") ? (
                 <img
+                  loading="lazy"
                   src={cdn.emoji(
                     hoverEmoji.skin.native,
                     hoverEmoji.keywords.includes("animated") ? "gif" : "webp",
@@ -295,6 +296,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                   emoji={hoverEmoji.skin.native}
                   className="h-7 my-auto shrink-0 !align-bottom"
                   title={hoverEmoji.id}
+                  loading="lazy"
                 />
               )}
               <p className="ml-2 text-base font-semibold my-auto truncate">
