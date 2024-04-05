@@ -153,7 +153,7 @@ export const MessageEditor: React.FC<{
               value={message.data.author?.name ?? ""}
               onChange={(e) => {
                 message.data.author = message.data.author ?? {};
-                message.data.author.name = e.currentTarget.value;
+                message.data.author.name = e.currentTarget.value || undefined;
                 setData({ ...data });
               }}
             />
@@ -165,7 +165,8 @@ export const MessageEditor: React.FC<{
               value={message.data.author?.icon_url ?? ""}
               onChange={(e) => {
                 message.data.author = message.data.author ?? {};
-                message.data.author.icon_url = e.currentTarget.value;
+                message.data.author.icon_url =
+                  e.currentTarget.value || undefined;
                 setData({ ...data });
               }}
             />
