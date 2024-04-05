@@ -323,16 +323,21 @@ export const PopoutEmojiPicker: React.FC<{
   isClearable?: boolean;
 }> = ({ emoji, setEmoji, emojis }) => {
   const id = randomString(10);
+  const [open, setOpen] = useState(false);
   // const close = () => {
   //   const parent = document.querySelector<HTMLDetailsElement>(`#${id}`);
   //   if (parent) parent.open = false;
   // };
   return (
-    <details
+    <div
       className="relative group/emoji"
       // id={id}
     >
-      <summary className="flex cursor-pointer marker:hidden marker-none">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex cursor-pointer marker:hidden marker-none"
+      >
         <div className="h-9 w-9 rounded flex bg-gray-300 dark:bg-[#292b2f]">
           <div className="m-auto">
             {emoji ? (
@@ -353,36 +358,38 @@ export const PopoutEmojiPicker: React.FC<{
             )}
           </div>
         </div>
-      </summary>
-      <div className="absolute z-20 pb-8">
-        <EmojiPicker
-          id={id}
-          customEmojis={emojis}
-          onEmojiClick={(selectedEmoji) => {
-            // close();
-            const newEmoji: APIMessageComponentEmoji =
-              selectedEmoji.keywords.includes("discord")
-                ? {
-                    id: selectedEmoji.id.replace(/^discord_/, ""),
-                    name: selectedEmoji.name,
-                    animated: selectedEmoji.keywords.includes("animated"),
-                  }
-                : {
-                    name: selectedEmoji.skin.native,
-                  };
-            if (
-              emoji &&
-              emoji.id === newEmoji.id &&
-              emoji.name === newEmoji.name
-            ) {
-              // Clear on double click
-              setEmoji(undefined);
-            } else {
-              setEmoji(newEmoji);
-            }
-          }}
-        />
-      </div>
-    </details>
+      </button>
+      {open && (
+        <div className="absolute z-20 pb-8">
+          <EmojiPicker
+            id={id}
+            customEmojis={emojis}
+            onEmojiClick={(selectedEmoji) => {
+              // close();
+              const newEmoji: APIMessageComponentEmoji =
+                selectedEmoji.keywords.includes("discord")
+                  ? {
+                      id: selectedEmoji.id.replace(/^discord_/, ""),
+                      name: selectedEmoji.name,
+                      animated: selectedEmoji.keywords.includes("animated"),
+                    }
+                  : {
+                      name: selectedEmoji.skin.native,
+                    };
+              if (
+                emoji &&
+                emoji.id === newEmoji.id &&
+                emoji.name === newEmoji.name
+              ) {
+                // Clear on double click
+                setEmoji(undefined);
+              } else {
+                setEmoji(newEmoji);
+              }
+            }}
+          />
+        </div>
+      )}
+    </div>
   );
 };
