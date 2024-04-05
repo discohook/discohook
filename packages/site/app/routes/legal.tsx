@@ -1,7 +1,6 @@
 import { MetaFunction, useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
-import { CoolIcon } from "~/components/CoolIcon";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { Prose } from "~/components/Prose";
@@ -27,10 +26,9 @@ export default function Legal() {
       <Header user={user} />
       <Prose>
         {host && host !== "discohook.app" && (
-          <InfoBox severity="yellow">
-            <CoolIcon icon="Shield_Warning" /> You are not on discohook.app, so
-            the below policies may not apply to the service you are using.
-            Proceed with caution.
+          <InfoBox severity="yellow" icon="Shield_Warning">
+            You are not on discohook.app, so the below policies may not apply to
+            the service you are using. Proceed with caution.
           </InfoBox>
         )}
         <h1 className="font-bold text-2xl" id="terms-of-service">

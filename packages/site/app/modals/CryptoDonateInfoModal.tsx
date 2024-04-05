@@ -1,5 +1,4 @@
 import { Button } from "~/components/Button";
-import { CoolIcon } from "~/components/CoolIcon";
 import { InfoBox } from "~/components/InfoBox";
 import { copyText } from "~/util/text";
 import { Modal, ModalProps } from "./Modal";
@@ -44,9 +43,9 @@ export const CryptoDonateInfoModal = (
             <p className="my-auto ml-2 truncate">{key}</p>
           </div>
           <div className="mt-2" />
-          <InfoBox>
-            <CoolIcon icon="Info" /> Include the donation key in your message so
-            Discohook can verify who the donation came from.
+          <InfoBox icon="Info">
+            Include the donation key in your message so Discohook can verify who
+            the donation came from.
           </InfoBox>
           <div className="-mb-4" />
         </div>

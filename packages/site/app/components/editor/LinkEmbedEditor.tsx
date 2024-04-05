@@ -348,10 +348,9 @@ export const LinkEmbedEditor: React.FC<{
           </details>
         </div>
         {!!embed.video?.url && (
-          <InfoBox severity="yellow">
-            <CoolIcon icon="Info" /> On desktop clients, the description is not
-            visible for link embeds with a video. Users on Android can still
-            view the description.
+          <InfoBox severity="yellow" icon="Info">
+            On desktop clients, the description is not visible for link embeds
+            with a video. Users on Android can still view the description.
           </InfoBox>
         )}
         <TextArea
@@ -368,14 +367,14 @@ export const LinkEmbedEditor: React.FC<{
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
       <EmbedEditorSection name="Images" open={open}>
-        <InfoBox>
-          <CoolIcon icon="Info" /> Link embeds can have one thumbnail or up to 4
-          large images, but not both.
+        <InfoBox icon="Info">
+          Link embeds can have one thumbnail or up to 4 large images, but not
+          both.
         </InfoBox>
         {embed.video?.url && (
-          <InfoBox severity="yellow">
-            <CoolIcon icon="Triangle_Warning" /> Link embeds cannot have a video
-            paired with an image. Remove your video in order to add images.
+          <InfoBox severity="yellow" icon="Triangle_Warning">
+            Link embeds cannot have a video paired with an image. Remove your
+            video in order to add images.
           </InfoBox>
         )}
         <Checkbox
@@ -452,9 +451,9 @@ export const LinkEmbedEditor: React.FC<{
       <hr className="border border-gray-500/20" />
       <EmbedEditorSection name="Video" open={open}>
         {!!embed.images?.length && (
-          <InfoBox severity="yellow">
-            <CoolIcon icon="Triangle_Warning" /> Link embeds cannot have a video
-            paired with an image. Remove all images in order to add a video.
+          <InfoBox severity="yellow" icon="Triangle_Warning">
+            Link embeds cannot have a video paired with an image. Remove all
+            images in order to add a video.
           </InfoBox>
         )}
         <div>

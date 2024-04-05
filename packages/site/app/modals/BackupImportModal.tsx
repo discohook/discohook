@@ -71,9 +71,8 @@ export const BackupImportModal = (
 
   return (
     <Modal title={t("importBackups")} {...props}>
-      <InfoBox>
-        <CoolIcon icon="Info" /> If you still have backups stored on
-        Discohook.org, you can{" "}
+      <InfoBox icon="Info">
+        If you still have backups stored on Discohook.org, you can{" "}
         <Link
           className="text-blurple-500 hover:underline"
           to="/me/import-org-backups"
