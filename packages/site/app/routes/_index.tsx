@@ -58,6 +58,22 @@ export interface HistoryItem {
   data: QueryData;
 }
 
+export const safePushState = (data: any, url?: string | URL | null): void => {
+  // Avoid redundant call. This ignores `data` but we aren't using it for non-`url` state right now
+  if (url && url === location.href) return;
+  try {
+    history.pushState(data, "", url);
+  } catch (e) {
+    if (e instanceof DOMException) {
+      // We were getting errors about insecurity when inputting too quickly
+      // despite only dealing with the same origin, so we just ignore
+      // these and skip the state push.
+      return;
+    }
+    console.log(e);
+  }
+};
+
 export default function Index() {
   const { t } = useTranslation();
   const { user, discordApplicationId } = useLoaderData<typeof loader>();
@@ -245,17 +261,17 @@ export default function Index() {
       if (fullUrl.toString().length >= 16000) {
         setUrlTooLong(true);
         if (searchParams.get("data")) {
-          history.pushState({ path: pathUrl }, "", pathUrl);
+          safePushState({ path: pathUrl }, pathUrl);
         }
       } else {
         setUrlTooLong(false);
-        history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
+        safePushState({ path: fullUrl.toString() }, fullUrl.toString());
       }
     } else {
       // Make sure it stays there, we also want to wipe any other params
       setUrlTooLong(false);
       const fullUrl = `${pathUrl}?backup=${backupId}`;
-      history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
+      safePushState({ path: fullUrl.toString() }, fullUrl.toString());
     }
   }, [backupId, data, updateCount]);
 
