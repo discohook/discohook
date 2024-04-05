@@ -13,12 +13,13 @@ export const TextArea = (
     delayOnInput?: number;
     errors?: ReactNode[];
     short?: boolean;
+    freelength?: boolean;
     markdown?: MarkdownFeatures;
   },
 ) => {
   const { label, onInput, delayOnInput, short } = props;
   const ref = useRef<HTMLTextAreaElement>(null);
-  // const cursorRef = useRef(0);
+  const length = ref.current ? ref.current.value.length : 0;
 
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
@@ -26,13 +27,27 @@ export const TextArea = (
   const newProps = { ...props };
   // biome-ignore lint/performance/noDelete:
   delete newProps.delayOnInput;
+  if (props.freelength) {
+    newProps.maxLength = undefined;
+  }
 
   return (
     <label className="block">
-      <p className="text-sm font-medium flex">
+      <p className="text-sm font-medium">
         {label}
         {props.maxLength && (
-          <span className="ml-auto">max. {props.maxLength}</span>
+          <span
+            className={twJoin(
+              "ml-2 italic text-xs align-baseline",
+              length >= props.maxLength
+                ? "text-red-300"
+                : length / (props.maxLength || 1) >= 0.9
+                  ? "text-yellow-300"
+                  : "",
+            )}
+          >
+            {length}/{props.maxLength}
+          </span>
         )}
       </p>
       {props.description && <p className="text-sm">{props.description}</p>}

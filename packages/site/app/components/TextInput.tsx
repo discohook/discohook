@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "./CoolIcon";
 
@@ -10,10 +10,13 @@ export const TextInput = (
     label: ReactNode;
     description?: ReactNode;
     delayOnInput?: number;
+    freelength?: boolean;
     errors?: ReactNode[];
   },
 ) => {
   const { label, onInput, delayOnInput } = props;
+  const ref = useRef<HTMLInputElement>(null);
+  const length = ref.current ? ref.current.value.length : 0;
 
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
@@ -21,19 +24,34 @@ export const TextInput = (
   const newProps = { ...props };
   // biome-ignore lint/performance/noDelete: We don't want the prop to exist at all
   delete newProps.delayOnInput;
+  if (props.freelength) {
+    newProps.maxLength = undefined;
+  }
 
   return (
     <label className="block">
-      <p className="text-sm font-medium flex">
+      <p className="text-sm font-medium">
         {label}
         {props.maxLength && (
-          <span className="ml-auto">max. {props.maxLength}</span>
+          <span
+            className={twJoin(
+              "ml-2 italic text-xs align-baseline",
+              length >= props.maxLength
+                ? "text-red-300"
+                : length / (props.maxLength || 1) >= 0.9
+                  ? "text-yellow-300"
+                  : "",
+            )}
+          >
+            {length}/{props.maxLength}
+          </span>
         )}
       </p>
       {props.description && <p className="text-sm">{props.description}</p>}
       <input
         type="text"
         {...newProps}
+        ref={ref}
         onInput={(e) => {
           // For some reason, currentTarget is only available while processing
           // (i.e. during this callback). We make a shallow copy of the event
