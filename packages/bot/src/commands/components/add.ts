@@ -297,7 +297,7 @@ export const startComponentFlow = async (
     message: {
       id: message.id,
       channelId: message.channel_id,
-      // biome-ignore lint/style/noNonNullAssertion:
+      // biome-ignore lint/style/noNonNullAssertion: Guild-only command
       guildId: ctx.interaction.guild_id!,
       webhookId: message.webhook_id,
       webhookName: message.author.username,
