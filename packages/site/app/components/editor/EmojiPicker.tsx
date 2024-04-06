@@ -73,10 +73,19 @@ const GridEmoji: React.FC<{
 }> = ({ emoji, onEmojiClick, setHoverEmoji }) => (
   <button
     type="button"
-    className="rounded p-1 h-11 w-11 hover:bg-white/10 transition"
+    className={`rounded p-1 h-11 w-11 hover:bg-white/10 transition invisible data-[visible="true"]:visible`}
     onClick={() => onEmojiClick(emoji)}
     onMouseOver={() => setHoverEmoji(emoji)}
     onFocus={() => setHoverEmoji(emoji)}
+    data-visible={true}
+    // onLoad={({ currentTarget }) => {
+    //   currentTarget.dataset.visible =
+    //     elementPartiallyVisible(currentTarget).toString();
+    // }}
+    // onScroll={({ currentTarget }) => {
+    //   currentTarget.dataset.visible =
+    //     elementPartiallyVisible(currentTarget).toString();
+    // }}
   >
     {emoji.keywords.includes("discord") ? (
       <img
@@ -96,6 +105,22 @@ const GridEmoji: React.FC<{
     )}
   </button>
 );
+
+const elementPartiallyVisible = (e: Element) => {
+  const rect = e.getBoundingClientRect();
+  const parentBottomEdge = e.parentElement
+    ? e.parentElement.getBoundingClientRect().right
+    : window.innerHeight || document.documentElement.clientHeight;
+  const parentRightEdge = e.parentElement
+    ? e.parentElement.getBoundingClientRect().bottom
+    : window.innerWidth || document.documentElement.clientWidth;
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= parentBottomEdge &&
+    rect.right <= parentRightEdge
+  );
+};
 
 const EmojiPicker_: React.FC<PickerProps> = ({
   id,
