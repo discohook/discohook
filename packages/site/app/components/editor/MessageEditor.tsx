@@ -171,7 +171,7 @@ export const MessageEditor: React.FC<{
               }}
             />
           </EmbedEditorSection>
-          <EmbedEditorSection name="Files">
+          <EmbedEditorSection name={`Files (${files.length}/10)`}>
             {files.map(({ id, file }) => (
               <div
                 key={`file-${id}`}
