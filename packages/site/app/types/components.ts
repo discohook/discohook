@@ -1,4 +1,7 @@
 import {
+  APIButtonComponentWithCustomId,
+  APIButtonComponentWithURL,
+  APIMessageComponentEmoji,
   ButtonStyle,
   ChannelType,
   ComponentType,
@@ -6,27 +9,39 @@ import {
 } from "discord-api-types/v10";
 import { z } from "zod";
 
-export const ZodPartialEmoji = z.object({
-  id: z.string(),
+export const ZodPartialEmoji: z.ZodType<APIMessageComponentEmoji> = z.object({
+  id: z.ostring(),
   name: z.ostring(),
   animated: z.oboolean(),
 });
 
-export const ZodAPIButtonComponent = z.object({
+export const ZodAPIButtonComponentWithCustomId = z.object({
   type: z.literal(ComponentType.Button),
   style: z.union([
     z.literal(ButtonStyle.Primary),
     z.literal(ButtonStyle.Secondary),
     z.literal(ButtonStyle.Success),
     z.literal(ButtonStyle.Danger),
-    z.literal(ButtonStyle.Link),
   ]),
   label: z.ostring(),
   emoji: ZodPartialEmoji.optional(),
-  custom_id: z.ostring(),
-  url: z.ostring(),
+  custom_id: z.string(),
   disabled: z.oboolean(),
-});
+}) satisfies z.ZodType<APIButtonComponentWithCustomId>;
+
+export const ZodAPIButtonComponentWithURL = z.object({
+  type: z.literal(ComponentType.Button),
+  style: z.literal(ButtonStyle.Link),
+  label: z.ostring(),
+  emoji: ZodPartialEmoji.optional(),
+  url: z.string(),
+  disabled: z.oboolean(),
+}) satisfies z.ZodType<APIButtonComponentWithURL>;
+
+export const ZodAPIButtonComponent = z.union([
+  ZodAPIButtonComponentWithCustomId,
+  ZodAPIButtonComponentWithURL,
+]);
 
 export const ZodAPISelectMenuComponent = z.object({
   type: z.union([
@@ -74,46 +89,16 @@ export const ZodAPISelectMenuComponent = z.object({
           z.literal(SelectMenuDefaultValueType.User),
           z.literal(SelectMenuDefaultValueType.Role),
           z.literal(SelectMenuDefaultValueType.Channel),
-        ]),
+        ]) satisfies z.ZodType<SelectMenuDefaultValueType>,
       }),
     )
     .optional(),
   min_values: z.onumber(),
   max_values: z.onumber(),
   disabled: z.oboolean(),
-});
+}); // satisfies z.ZodType<APISelectMenuComponent>;
 
 export const ZodAPIMessageActionRowComponent = z.union([
   ZodAPIButtonComponent,
   ZodAPISelectMenuComponent,
 ]);
-
-export const ZodComponentQueryData = z.object({
-  version: z.literal(1),
-  components: z.object({
-    rows: z
-      .object({
-        type: z.literal(ComponentType.ActionRow),
-        components: z
-          .union([
-            ZodAPIButtonComponent.partial(),
-            ZodAPISelectMenuComponent.partial(),
-          ])
-          .array()
-          .max(5)
-          .min(1),
-      })
-      .array(),
-    target: z.array(z.number().max(4).min(0)).length(2),
-  }),
-  guildId: z.string(),
-  webhook: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      avatar: z.ostring().nullable(),
-    })
-    .optional(),
-});
-
-export type ComponentQueryData = z.infer<typeof ZodComponentQueryData>;

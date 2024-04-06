@@ -6,14 +6,17 @@ import {
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { StorableComponent } from "~/store.server";
-import { ZodAPIMessageActionRowComponent } from "./components";
 
 /** The version of the query data, defaults to `d2`
  *
- * `d2` is based on Discohook's second data format, which supports multiple
- * messages and targets. `d2`-versioned data can also include `webhook_id`
- * for messages and `backup_id` at the top level, both of which are backwards
- * compatible with Discohook.
+ * `d2` is based on Discohook's ~2023 data format, which supports multiple
+ * messages and targets. `d2`-versioned data can also include:
+ * - `messages[n].webhook_id`
+ * - `messages[n].components`
+ * - `backup_id`
+ * - `components` (flow data)
+ *
+ * All of these are backwards compatible with pre-2024 Discohook.
  */
 export type QueryDataVersion = "d2";
 
@@ -127,16 +130,19 @@ export type QueryDataComponent = NonNullable<
   QueryData["components"]
 >[string][number];
 
+export const ZodFlow = z.object({
+  name: z.string(),
+  actions: z.object({}).array(),
+});
+
 export const ZodQueryDataComponent: z.ZodType<QueryDataComponent> = z.object({
   id: z.string(),
-  data: ZodAPIMessageActionRowComponent.and(
+  data: z.union([
+    z.object({ flow: ZodFlow }),
     z.object({
-      flow: z.object({
-        name: z.string(),
-        actions: z.object({}).array(),
-      }),
+      flows: z.record(z.string(), ZodFlow),
     }),
-  ),
+  ]),
   draft: z.oboolean(),
 });
 
