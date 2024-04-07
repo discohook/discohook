@@ -8,11 +8,10 @@ import { backups, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import {
-  jsonAsString,
   snowflakeAsString,
-  zxParseForm,
+  zxParseJson,
   zxParseParams,
-  zxParseQuery,
+  zxParseQuery
 } from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
 
@@ -53,20 +52,22 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 export const action = async ({ request, params, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { name, data, scheduleAt, cron, timezone } = await zxParseForm(
+  const { name, data, scheduleAt, cron, timezone } = await zxParseJson(
     request,
     {
       name: z
         .ostring()
         .refine((val) => (val !== undefined ? val.length <= 100 : true)),
-      data: z.optional(jsonAsString(ZodQueryData)),
+      data: ZodQueryData.optional(),
       scheduleAt: z
         .string()
         .datetime()
         .transform((v) => new Date(v))
-        // Must be at least 30 seconds in the future
-        .refine((d) => d.getTime() - new Date().getTime() >= 30_000)
-        .or(z.literal(""))
+        .refine(
+          (d) => d.getTime() - new Date().getTime() >= 30_000,
+          "Scheduled time must be at least 30 seconds in the future",
+        )
+        .nullable()
         .optional(),
       cron: z
         .string()
@@ -82,9 +83,9 @@ export const action = async ({ request, params, context }: ActionArgs) => {
           } catch {
             return false;
           }
-        })
+        }, "Scheduled runs cannot be more frequent than once every 2 hours")
         .transform((v) => parseExpression(v))
-        .or(z.literal(""))
+        .nullable()
         .optional(),
       timezone: z.ostring(),
     },

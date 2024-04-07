@@ -1,4 +1,4 @@
-import { Form, useFetcher } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 import {
   CronFields,
   DayOfTheMonthRange,
@@ -18,9 +18,11 @@ import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon } from "~/components/CoolIcon";
 import DatePicker, { generateDateRange } from "~/components/DatePicker";
+import { useError } from "~/components/Error";
 import { StringSelect } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import { LoadedBackup } from "~/routes/me";
+import { useSafeFetcher } from "~/util/loader";
 import {
   cronDaysOfMonth,
   cronDaysOfWeek,
@@ -35,7 +37,10 @@ import { Modal, ModalProps } from "./Modal";
 
 const Inner = ({ backup }: { backup: LoadedBackup }) => {
   const { t } = useTranslation();
-  const fetcher = useFetcher<typeof ApiBackupsIdAction>();
+  const [error, setError] = useError(t);
+  const fetcher = useSafeFetcher<typeof ApiBackupsIdAction>({
+    onError: (e) => setError({ message: e.message }),
+  });
 
   const now = new Date();
   const [scheduled, setScheduled] = useState(backup.scheduled);
@@ -97,33 +102,33 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
       onSubmit={(e) => {
         e.preventDefault();
 
-        const form = new FormData(e.currentTarget);
+        const data = Object.fromEntries(
+          new FormData(e.currentTarget).entries(),
+        ) as Record<string, string | null | undefined>;
         if (scheduled && repeating) {
-          form.set("cron", fieldsToExpression(cron).stringify());
-          form.set(
-            "timezone",
-            Intl.DateTimeFormat().resolvedOptions().timeZone,
-          );
+          data.cron = fieldsToExpression(cron).stringify();
+          data.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         } else if (scheduled) {
-          const day = form.get("day")?.toString();
-          const time = form.get("time")?.toString();
+          const day = data.day?.toString();
+          const time = data.time?.toString();
           if (day && time) {
             const [hours, minutes] = time.split(":").map(Number);
             const date = new Date(new Date(day).setHours(hours, minutes, 0, 0));
-            form.set("scheduleAt", date.toISOString());
+            data.scheduleAt = date.toISOString();
           }
-          form.delete("day");
-          form.delete("time");
+          data.day = undefined;
+          data.time = undefined;
         } else {
-          form.set("scheduleAt", "");
-          form.set("cron", "");
+          data.scheduleAt = null;
+          data.cron = null;
         }
-        fetcher.submit(form, {
+        fetcher.submit(data, {
           action: apiUrl(BRoutes.backups(backup.id)),
           method: "PATCH",
         });
       }}
     >
+      {error}
       <div className="space-y-2">
         <p>
           <Trans

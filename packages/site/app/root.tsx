@@ -18,6 +18,7 @@ import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message";
 import icons from "./styles/coolicons.css";
 import { resources } from "./util/i18n";
+import { getZodErrorMessage } from "./util/loader";
 
 export const meta: MetaFunction = () => {
   return [
@@ -128,7 +129,7 @@ export function ErrorBoundary() {
                 "```",
                 isRouteErrorResponse(error)
                   ? typeof error.data === "object" && "message" in error.data
-                    ? error.data.message // JSON.stringify(error.data)
+                    ? getZodErrorMessage(error.data)
                     : String(error.data)
                   : String(error),
                 "```",
