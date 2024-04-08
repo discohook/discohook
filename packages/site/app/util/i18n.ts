@@ -58,6 +58,7 @@ export const resources = {
       editWebhook: "Edit Webhook",
       editor: "Editor",
       preview: "Preview",
+      previewAll: "Preview All",
       saveMessage: "Save Message",
       addMessage: "Add Message",
       embedExample: "Example",
@@ -94,7 +95,8 @@ export const resources = {
       firstSubscribed: "First Subscribed",
       never: "Never",
       joinedDiscohook: "Joined Discohook",
-      linkEmbedsPremiumNote: "You've uncovered a Deluxe feature! <0>Read more about link embeds here.</0>",
+      linkEmbedsPremiumNote:
+        "You've uncovered a Deluxe feature! <0>Read more about link embeds here.</0>",
       donate: "Donate",
       deluxe: "Deluxe",
       lifetime: "Lifetime",
