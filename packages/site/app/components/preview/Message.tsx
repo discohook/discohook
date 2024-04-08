@@ -64,6 +64,7 @@ export const Message: React.FC<{
   date?: Date;
   resolved?: Record<string, PartialResource>;
   setImageModalData?: SetImageModalData;
+  forceSeparateAuthor?: boolean;
 }> = ({
   message,
   discordApplicationId,
@@ -76,6 +77,7 @@ export const Message: React.FC<{
   date,
   resolved,
   setImageModalData,
+  forceSeparateAuthor,
 }) => {
   const webhook = webhooks
     ? webhooks.find((w) => w.application_id === discordApplicationId) ??
@@ -94,10 +96,12 @@ export const Message: React.FC<{
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;
-  const showProfile = lastMessage
-    ? lastMessage.data.author?.name !== message.author?.name ||
-      lastMessage.data.author?.icon_url !== message.author?.icon_url
-    : true;
+  const showProfile =
+    !!forceSeparateAuthor ||
+    (lastMessage
+      ? lastMessage.data.author?.name !== message.author?.name ||
+        lastMessage.data.author?.icon_url !== message.author?.icon_url
+      : true);
   // To save time, display components if the user has no webhooks
   const authorType = webhook
     ? getAuthorType(discordApplicationId, webhook)
@@ -147,7 +151,7 @@ export const Message: React.FC<{
   return (
     <div
       className={`flex dark:text-primary-230 ${
-        showProfile && lastMessage ? "mt-4" : ""
+        showProfile && !forceSeparateAuthor && lastMessage ? "mt-4" : ""
       }`}
     >
       {messageDisplay !== "compact" && (
