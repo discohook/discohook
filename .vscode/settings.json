@@ -15,4 +15,7 @@
   },
   "eslint.onIgnoredFiles": "off",
   "eslint.run": "onType",
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
 }

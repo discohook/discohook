@@ -2,18 +2,17 @@ name = "discohook-site"
 
 workers_dev = true
 main = "./build/index.js"
-# https://developers.cloudflare.com/workers/platform/compatibility-dates
 compatibility_date = "2023-04-20"
 node_compat = true
 
 kv_namespaces = [
-  { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }
+  { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" },
 ]
 
 [durable_objects]
 bindings = [
-  {name = "SCHEDULER", class_name = "DurableScheduler"},
-  {name = "COMPONENTS", class_name = "DurableComponentState", script_name="discohook-bot"}
+  { name = "SCHEDULER", class_name = "DurableScheduler" },
+  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
 ]
 
 [[migrations]]
@@ -25,7 +24,7 @@ tag = "v2"
 new_classes = ["DurableComponentState"]
 
 [site]
-  bucket = "./public"
+bucket = "./public"
 
 [build]
-  command = "npm run build"
+command = "npm run build"

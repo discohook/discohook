@@ -49,7 +49,7 @@
     "zodix": "^0.4.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230518.0",
+    "@cloudflare/workers-types": "^4.20240405.0",
     "@remix-run/dev": "^2.4.0",
     "@types/he": "^1",
     "@types/react": "^18.2.20",
