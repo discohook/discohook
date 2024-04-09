@@ -14,6 +14,7 @@ import {
   addComponentMessageAutocomplete,
   addComponentMessageEntry,
 } from "./commands/components/entry.js";
+import { debugMessageCallback } from "./commands/debug.js";
 import { helpAutocomplete, helpEntry } from "./commands/help.js";
 import { inviteCallback } from "./commands/invite.js";
 import {
@@ -150,6 +151,11 @@ export const appCommands: Record<
     "webhook info": {
       handlers: {
         BASE: webhookInfoMsgCallback,
+      },
+    },
+    debug: {
+      handlers: {
+        BASE: debugMessageCallback,
       },
     },
   },

@@ -375,6 +375,12 @@ export const allAppCommands: Record<
       dm_permission: false,
       // description: "Show information about the webhook that sent a message",
     },
+    debug: {
+      type: ApplicationCommandType.Message,
+      name: "Debug",
+      default_member_permissions: String(PermissionFlags.ManageMessages),
+      dm_permission: false,
+    },
   },
   [ApplicationCommandType.User]: {},
 };
