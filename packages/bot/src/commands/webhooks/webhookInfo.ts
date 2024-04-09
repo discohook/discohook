@@ -6,7 +6,12 @@ import {
   time,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
-import { APIWebhook, ChannelType } from "discord-api-types/v10";
+import {
+  APIWebhook,
+  ChannelType,
+  MessageFlags,
+  Routes,
+} from "discord-api-types/v10";
 import { Snowflake, getDate } from "discord-snowflake";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { color } from "../../util/meta.js";
@@ -73,7 +78,10 @@ export const getWebhookUrlEmbed = (
     });
   }
 
-  const url = `https://discord.com/api/v10/${webhook.id}/${webhook.token}`;
+  const url = `https://discord.com/api/v10/${Routes.webhook(
+    webhook.id,
+    webhook.token,
+  )}`;
   const embed = new EmbedBuilder({
     title,
     description: showUrl
