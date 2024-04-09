@@ -24,7 +24,6 @@
     "discord-api-types": "^0.37.63",
     "discord-bitflag": "^1.0.1",
     "discord-verify": "^1.2.0",
-    "drizzle-orm": "^0.29.3",
     "itty-router": "^4.0.13",
     "store": "../store"
   },
@@ -34,7 +33,6 @@
     "c8": "^8.0.0",
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
-    "drizzle-kit": "^0.20.13",
     "mocha": "^10.2.0",
     "ngrok": "^5.0.0-beta.2",
     "sinon": "^17.0.0",

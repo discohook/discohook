@@ -838,10 +838,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theinternetfolks/snowflake@npm:^1.3.0":
+"@theinternetfolks/snowflake@shayypy/snowflake":
   version: 1.3.0
-  resolution: "@theinternetfolks/snowflake@npm:1.3.0"
-  checksum: 10c0/8b894dea3827f3512c87cdf18bf8618e1a6c94be42c8db18d603a0ff436a7e566ffde6e260a9ddb27ef2e0f7314a65f5df9db2ad3abedf2a86c4e54b3d6f0533
+  resolution: "@theinternetfolks/snowflake@https://github.com/shayypy/snowflake.git#commit=5631e2ade0ec5ba9d02192455d2558db284f27b6"
+  checksum: 10c0/b9434c7b000ef4d8a92458e15f5f53f31d140d78416eb76c94a3a1f804cd6c4c433b537f6133aad8ad01206b8407c10c77762614d0b12ff736d3938536601c4c
   languageName: node
   linkType: hard
 
@@ -3807,15 +3807,15 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=e37e89&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=1b2c80&locator=discohook-bot%40workspace%3A."
   dependencies:
-    "@theinternetfolks/snowflake": "npm:^1.3.0"
+    "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/5b9ef352374189728e15ba9402899fab42c5fe1ba2af383b1f456226b03bd279ada9255e7af45de513347854393204286c23f19e7b0fec9b3c3180cc25c0a5d9
+  checksum: 10c0/4e76543d1d3607eb65ed746e693da460a7209faaf8911cbae3eeb6ee93b9d78ec6e12f7f11aaa4dd93ec6d0c01e9ad2ed4fba459278180145a6863caf316fd75
   languageName: node
   linkType: hard
 
