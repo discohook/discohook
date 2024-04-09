@@ -13,6 +13,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { Snowflake, getDate } from "discord-snowflake";
+import { ChatInputAppCommandCallback } from "../../commands.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { color } from "../../util/meta.js";
 
@@ -132,4 +133,28 @@ export const getWebhookUrlEmbed = (
   }
 
   return embed;
+};
+
+export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
+  const webhookId = ctx.getStringOption("webhook").value;
+  const showUrl = ctx.getBooleanOption("show-url")?.value ?? false;
+  const webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
+
+  const embeds = [getWebhookInfoEmbed(webhook).toJSON()];
+  if (showUrl) {
+    embeds.push(
+      getWebhookUrlEmbed(
+        webhook,
+        undefined,
+        ctx.interaction.application_id,
+        ctx.interaction.channel.type,
+        showUrl,
+      ).toJSON(),
+    );
+  }
+
+  return ctx.reply({
+    embeds,
+    flags: showUrl ? MessageFlags.Ephemeral : undefined,
+  });
 };

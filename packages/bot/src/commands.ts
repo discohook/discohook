@@ -29,6 +29,7 @@ import {
 } from "./commands/triggers.js";
 import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
 import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
+import { webhookInfoCallback } from "./commands/webhooks/webhookInfo.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { InteractionContext } from "./interactions.js";
 
@@ -39,8 +40,10 @@ export type AppCommandCallbackT<T extends APIInteraction> = (
 >;
 export type ChatInputAppCommandCallback =
   AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
-export type MessageAppCommandCallback =
-  AppCommandCallbackT<APIMessageApplicationCommandInteraction>;
+export type MessageAppCommandCallback<
+  T extends
+    APIMessageApplicationCommandInteraction = APIMessageApplicationCommandInteraction,
+> = AppCommandCallbackT<T>;
 export type UserAppCommandCallback =
   AppCommandCallbackT<APIUserApplicationCommandInteraction>;
 
@@ -91,6 +94,7 @@ export const appCommands: Record<
     webhook: {
       handlers: {
         create: webhookCreateEntry,
+        info: webhookInfoCallback,
       },
       autocompleteHandlers: {
         delete: webhookAutocomplete,
