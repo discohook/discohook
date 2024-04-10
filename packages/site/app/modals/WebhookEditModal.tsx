@@ -1,3 +1,4 @@
+import { Form } from "@remix-run/react";
 import { APIWebhook } from "discord-api-types/v10";
 import { useEffect, useReducer } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,7 +42,7 @@ export const WebhookEditModal = (
 
   return (
     <Modal title={t("editWebhook")} {...props}>
-      <form
+      <Form
         onSubmit={async (e) => {
           e.preventDefault();
           if (!webhook || !webhook.token) return;
@@ -68,12 +69,6 @@ export const WebhookEditModal = (
                     : parsed.data.avatar,
             },
             user ? getUserTag(user) : "anonymous",
-            // strings
-            //   .formatString(
-            //     strings.requestedBy,
-            //     user ? getUserTag(user) : "anonymous"
-            //   )
-            //   .toString()
           );
           updateTargets({ [webhook.id]: result });
         }}
@@ -161,9 +156,11 @@ export const WebhookEditModal = (
           </div>
         </div>
         <div className="flex w-full mt-4">
-          <Button className="mx-auto">{t("save")}</Button>
+          <Button type="submit" className="mx-auto">
+            {t("save")}
+          </Button>
         </div>
-      </form>
+      </Form>
     </Modal>
   );
 };
