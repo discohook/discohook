@@ -146,13 +146,12 @@ export const WebhookEditModal = (
               onInput={(e) => updatePayload({ name: e.currentTarget.value })}
               className="w-full"
             />
-            <TextInput
-              label={t("channel")}
-              description={t("cannotChangeChannel")}
-              value={webhook?.channel_id ?? ""}
-              className="w-full"
-              readOnly
-            />
+            <div>
+              {/* TODO: A way to change the channel with the bot */}
+              <p className="text-sm font-medium">{t("channel")}</p>
+              {/* <p>{t("cannotChangeChannel")}</p> */}
+              <p>ID: {webhook?.channel_id}</p>
+            </div>
           </div>
         </div>
         <div className="flex w-full mt-4">
