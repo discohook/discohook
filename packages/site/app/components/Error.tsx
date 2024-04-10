@@ -17,7 +17,11 @@ export const useError = (t?: TFunction) => {
         </InfoBox>
       )}
     </>,
-    (params: ErrorParams) => {
+    (params: ErrorParams | undefined) => {
+      if (!params) {
+        setText(undefined);
+        return;
+      }
       if (params.code && t) {
         setText(t(`errors.${params.code}`));
       } else {
