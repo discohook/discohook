@@ -88,7 +88,7 @@ export const authenticateGuildMember = async (
   } catch {
     if (dataOnly) {
       throw json(
-        { message: "Guild does not exist or it is inaccessible" },
+        { message: "Server does not exist or Discohook Utils is not a member of it" },
         404,
       );
     } else {
@@ -104,7 +104,7 @@ export const authenticateGuildMember = async (
   } catch (e) {
     console.log(e);
     throw json(
-      { message: "Guild does not exist or you are not a member of it" },
+      { message: "Server does not exist or you are not a member of it" },
       404,
     );
   }
