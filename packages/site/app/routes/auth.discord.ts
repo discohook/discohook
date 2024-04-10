@@ -1,10 +1,22 @@
 import { redirect } from "@remix-run/cloudflare";
+import { z } from "zod";
+import { zx } from "zodix";
 import { getDiscordAuth } from "~/auth-discord.server";
 import { getSessionStorage } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
+import { zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const auth = getDiscordAuth(context);
+  const { force, redirect: redirectTo } = zxParseQuery(request, {
+    redirect: z.ostring(),
+    force: zx.BoolAsString.optional(),
+  });
+
+  if (force) {
+    // Pretend the user is not logged in so remix-auth doesn't take us to auth-success
+    request.headers.delete("Cookie");
+  }
 
   let response: Response;
   try {
@@ -23,7 +35,6 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const { getSession, commitSession } = getSessionStorage(context);
   const session = await getSession(response.headers.get("Set-Cookie"));
 
-  const redirectTo = new URL(request.url).searchParams.get("redirect");
   if (
     redirectTo &&
     (redirectTo.startsWith("/") ||
