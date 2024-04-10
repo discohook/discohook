@@ -1,5 +1,7 @@
+import { SerializeFrom, defer } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -25,6 +27,7 @@ import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
+import { discordMembers, eq, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import {
   INDEX_FAILURE_MESSAGE,
@@ -40,11 +43,34 @@ import { snowflakeAsString } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
-  return {
+  const db = getDb(context.env.DATABASE_URL);
+  const memberships = (async () => {
+    return user?.discordId
+      ? (
+          await db.query.discordMembers.findMany({
+            where: eq(discordMembers.userId, user.discordId),
+            with: {
+              guild: true,
+            },
+          })
+        ).filter((m) =>
+          new PermissionsBitField(BigInt(m.permissions ?? "0")).has(
+            PermissionFlags.ManageWebhooks,
+          ),
+        )
+      : [];
+  })();
+
+  return defer({
     user,
+    memberships,
     discordApplicationId: context.env.DISCORD_CLIENT_ID,
-  };
+  });
 };
+
+export type LoadedMembership = Awaited<
+  SerializeFrom<typeof loader>["memberships"]
+>[number];
 
 export interface DraftFile {
   id: string;
@@ -76,7 +102,8 @@ export const safePushState = (data: any, url?: string | URL | null): void => {
 
 export default function Index() {
   const { t } = useTranslation();
-  const { user, discordApplicationId } = useLoaderData<typeof loader>();
+  const { user, memberships, discordApplicationId } =
+    useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
 
@@ -353,6 +380,7 @@ export default function Index() {
         open={addingTarget}
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
+        memberships={memberships}
       />
       <ShareExpiredModal
         open={!!badShareData}
@@ -411,44 +439,42 @@ export default function Index() {
             return (
               <div
                 key={`target-${webhook.id}`}
-                className="flex rounded bg-gray-300 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 md:px-4 mb-2"
+                className="rounded-lg py-2 px-3 mb-2 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
               >
                 <img
-                  className="rounded-full mr-4 h-12 my-auto"
+                  className="rounded-full my-auto w-8 h-8 mr-3"
                   src={avatarUrl}
                   alt=""
                 />
-                <div className="my-auto grow truncate">
-                  <p className="font-semibold truncate">{webhook.name}</p>
-                  <p className="text-sm leading-none truncate">
-                    {webhook.application_id === discordApplicationId ? (
-                      <>
-                        <CoolIcon
-                          icon="Circle_Check"
-                          className="text-blurple-500 dark:text-blurple-400 align-bottom"
-                        />{" "}
-                        <span>
-                          Discohook
-                          {webhook.user &&
-                          webhook.user.id !== discordApplicationId
-                            ? ` (by ${webhook.user.username})`
-                            : ""}
+                <div className="truncate my-auto">
+                  <div className="flex max-w-full">
+                    <p className="font-semibold truncate dark:text-primary-230 text-lg">
+                      <span className="align-baseline">{webhook.name}</span>
+                      {webhook.application_id === discordApplicationId && (
+                        <span
+                          className="ml-1 inline-block"
+                          title={t("createdByDiscohook")}
+                        >
+                          <CoolIcon
+                            icon="Circle_Check"
+                            className="text-blurple-500 dark:text-blurple-400"
+                          />
                         </span>
-                      </>
-                    ) : (
-                      webhook.user?.username
-                    )}
-                  </p>
+                      )}
+                    </p>
+                  </div>
                 </div>
                 <div className="ml-auto space-x-2 my-auto shrink-0 text-xl">
                   <button
                     type="button"
+                    title={t("editResource", { replace: [webhook.name] })}
                     onClick={() => setEditingWebhook(webhook.id)}
                   >
                     <CoolIcon icon="Edit_Pencil_01" />
                   </button>
                   <button
                     type="button"
+                    title={t("removeResource", { replace: [webhook.name] })}
                     onClick={() => {
                       delete targets[webhook.id];
                       updateTargets({ ...targets });

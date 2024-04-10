@@ -30,6 +30,24 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /guilds/:id/webhooks
+   *
+   * Accepts token or cookie auth.
+   */
+  guildWebhooks(id: bigint | string) {
+    return `/guilds/${String(id)}/webhooks` as const;
+  },
+
+  /**
+   * - GET /guilds/:guildId/webhooks/:webhookId/token
+   *
+   * Accepts token or cookie auth.
+   */
+  guildWebhookToken(guildId: bigint | string, id: bigint | string) {
+    return `/guilds/${String(guildId)}/webhooks/${String(id)}/token` as const;
+  },
+
+  /**
    * - POST /link-backups
    * - GET /link-backups/:id
    * - PATCH /link-backups/:id

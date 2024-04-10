@@ -38,7 +38,39 @@ export const useSafeFetcher = <TData = any>({
   return {
     data,
     state,
-    // load: () => {},
+    load: ((href) => {
+      setState("loading");
+      // TODO determine appropriate route for `_data` query param
+      // This data is passed to the client by Remix somewhere
+      fetch(href, { method: "GET" })
+        .then((response) => {
+          response
+            .json()
+            .then((raw) => {
+              if (!response.ok) {
+                if (onError) {
+                  onError({
+                    status: response.status,
+                    message: getZodErrorMessage(raw),
+                  });
+                }
+                setState("idle");
+                return;
+              }
+              const responseData = raw as SerializeFrom<TData>;
+              setData(responseData);
+              setState("idle");
+            })
+            .catch((e) => {
+              setState("idle");
+              throw e;
+            });
+        })
+        .catch((e) => {
+          setState("idle");
+          throw e;
+        });
+    }) as (href: string) => void,
     submit: ((target, options) => {
       setState("submitting");
       const contentType =
@@ -86,5 +118,13 @@ export const useSafeFetcher = <TData = any>({
       target: FormData | URLSearchParams | any,
       options?: Pick<SubmitOptions, "action" | "method">,
     ) => void,
+    /**
+     * Beware of making it possible to spam concurrent requests
+     * since this resets `state` to `idle`
+     */
+    reset: () => {
+      setData(undefined);
+      setState("idle");
+    },
   };
 };

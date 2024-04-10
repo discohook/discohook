@@ -56,11 +56,21 @@ export const resources = {
       addWebhook: "Add Webhook",
       createWebhook: "Create Webhook",
       editWebhook: "Edit Webhook",
+      createdByDiscohook: "This webhook is owned by Discohook",
+      selectWebhookGuildNote:
+        "Select a server that Discohook Utils is in to view its webhooks, or create a new webhook in any of your servers by clicking the button below.",
+      selectWebhookGuildMissing:
+        "Not seeing a server you have permissions in? <0>Try logging in again</0>",
+      selectWebhookGuildManual:
+        "You may also <0>input a webhook URL manually</0> (advanced)",
       editor: "Editor",
       preview: "Preview",
       previewAll: "Preview All",
       saveMessage: "Save Message",
       addMessage: "Add Message",
+      editResource: "Edit {{0}}",
+      removeResource: "Remove {{0}}",
+      use: "Use",
       embedExample: "Example",
       previewInfo: "Preview Info",
       editingBackupNote:
