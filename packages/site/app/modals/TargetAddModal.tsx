@@ -13,7 +13,7 @@ import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
 import { LoadedMembership } from "~/routes/_index";
 import { WEBHOOK_URL_RE } from "~/util/constants";
-import { cdn, getSnowflakeDate, getWebhook } from "~/util/discord";
+import { cdn, getWebhook } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
@@ -322,18 +322,6 @@ export const TargetAddModal = (
               {webhook ? (
                 <>
                   <p className="font-bold text-xl">{webhook.name}</p>
-                  <p>
-                    {t("createdAtBy", {
-                      replace: {
-                        createdAt: getSnowflakeDate(
-                          webhook.id,
-                        ).toLocaleDateString(),
-                        username: webhook?.user
-                          ? webhook.user.username
-                          : t("someone"),
-                      },
-                    })}
-                  </p>
                   <hr className="border border-gray-400 dark:border-gray-600 my-2" />
                   <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
                     <Trans
