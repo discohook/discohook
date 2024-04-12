@@ -17,6 +17,15 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /channels/:id
+   *
+   * Accepts token auth.
+   */
+  channel(id: string) {
+    return `/channels/${id}` as const;
+  },
+
+  /**
    * - POST /components
    * - GET /components?id=...
    */
@@ -27,6 +36,51 @@ export const BRoutes = {
   /** - POST /donate/:type */
   donate(type: z.infer<typeof ZodDonateKeyType>) {
     return `/donate/${type}` as const;
+  },
+
+  /**
+   * - GET /guilds/:id
+   *
+   * Accepts token auth.
+   */
+  guild(id: string) {
+    return `/guilds/${id}` as const;
+  },
+
+  /**
+   * - GET /guilds/:id/channels
+   *
+   * Accepts token auth.
+   */
+  guildChannels(id: string) {
+    return `/guilds/${id}/channels` as const;
+  },
+
+  /**
+   * - GET /guilds/:guildId/members/:userId
+   *
+   * Accepts token auth.
+   */
+  guildMember(guildId: string, userId: string) {
+    return `/guilds/${guildId}/members/${userId}` as const;
+  },
+
+  /**
+   * - GET /guilds/:guildId/roles/:roleId
+   *
+   * Accepts token auth.
+   */
+  guildRole(guildId: string, roleId: string) {
+    return `/guilds/${guildId}/roles/${roleId}` as const;
+  },
+
+  /**
+   * - GET /guilds/:id/roles
+   *
+   * Accepts token auth.
+   */
+  guildRoles(id: string) {
+    return `/guilds/${id}/roles` as const;
   },
 
   /**
@@ -76,7 +130,7 @@ export const BRoutes = {
   },
 };
 
-export const apiUrl = (
-  route: ReturnType<(typeof BRoutes)[keyof typeof BRoutes]>,
-  version?: 1,
-) => `/api/v${version ?? 1}${route}`;
+export type ApiRoute = ReturnType<(typeof BRoutes)[keyof typeof BRoutes]>;
+
+export const apiUrl = (route: ApiRoute, version?: 1) =>
+  `/api/v${version ?? 1}${route}`;

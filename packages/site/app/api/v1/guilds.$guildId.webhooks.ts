@@ -11,6 +11,7 @@ import { getDb, webhooks } from "store";
 import { z } from "zod";
 import { zx } from "zodix";
 import { refreshAuthToken, verifyAuthToken } from "~/routes/s.$guildId";
+import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
@@ -82,7 +83,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       freshWebhooks = (await rest.get(
         Routes.guildWebhooks(String(guildId)),
       )) as RESTGetAPIGuildWebhooksResult;
-    } catch {}
+    } catch (e) {
+      if (isDiscordError(e)) {
+        throw json(e.raw, 500);
+      }
+    }
     if (freshWebhooks) {
       guildWebhooks = (
         await db

@@ -5,16 +5,16 @@ import {
   APIEmbedImage,
 } from "discord-api-types/v10";
 import { SetImageModalData } from "~/modals/ImageModal";
-import { PartialResource } from "~/types/resources";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 
 export const Embed: React.FC<{
   embed: APIEmbed;
   extraImages?: APIEmbedImage[];
-  resolved?: Record<string, PartialResource>;
+  cache?: CacheManager;
   setImageModalData?: SetImageModalData;
-}> = ({ embed, extraImages, resolved, setImageModalData }) => {
+}> = ({ embed, extraImages, cache, setImageModalData }) => {
   const fieldLines: APIEmbedField[][] = [];
   for (const field of embed.fields ?? []) {
     const currentLine = fieldLines[fieldLines.length - 1];
@@ -105,15 +105,11 @@ export const Embed: React.FC<{
                 <Markdown
                   content={embed.title}
                   features="title"
-                  // resolved={resolved}
+                  cache={cache}
                 />
               </a>
             ) : (
-              <Markdown
-                content={embed.title}
-                features="title"
-                // resolved={resolved}
-              />
+              <Markdown content={embed.title} features="title" cache={cache} />
             )}
           </div>
         )}
@@ -122,7 +118,7 @@ export const Embed: React.FC<{
             <Markdown
               content={embed.description}
               features="full"
-              // resolved={resolved}
+              cache={cache}
             />
           </div>
         )}
@@ -166,14 +162,14 @@ export const Embed: React.FC<{
                         <Markdown
                           content={field.name}
                           features="full"
-                          // resolved={resolved}
+                          cache={cache}
                         />
                       </div>
                       <div className="font-normal">
                         <Markdown
                           content={field.value}
                           features="full"
-                          // resolved={resolved}
+                          cache={cache}
                         />
                       </div>
                     </div>

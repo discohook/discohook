@@ -1,39 +1,25 @@
 // This file is a fork of @maddymeow's work on Discohook (AGPL 3.0) - thank you
 // https://github.com/discohook/site
 
+import { useEffect } from "react";
 import { Trans } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
+import {
+  CacheManager,
+  Resolutions,
+  ResolvableAPIChannelType
+} from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { highlightCode } from "~/util/highlighting";
 import { getRelativeDateFormat } from "~/util/markdown/dates";
 import {
   findEmoji,
-  getEmojiImageUrl,
   getEmojiName,
   translateNamedEmoji,
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
-
-export type Resolutions = {
-  [key: `channel:${string}`]: ResolvedChannel | undefined | null;
-  [key: `member:${string}`]: ResolvedMember | undefined | null;
-  [key: `role:${string}`]: ResolvedRole | undefined | null;
-};
-
-export type ResolvedChannel = {
-  name: string;
-  type: "text" | "voice" | "thread" | "forum" | "post";
-};
-
-export type ResolvedMember = {
-  name: string;
-};
-
-export type ResolvedRole = {
-  name: string;
-  color: number;
-};
+import { Twemoji } from "../Twemoji";
 
 type Renderable = string | JSX.Element;
 type ResolutionRequests = Record<string, keyof Resolutions>;
@@ -142,7 +128,7 @@ function renderMarkdownNodes(
       data && node.data
         ? Object.fromEntries(
             Object.entries(node.data).map(([key, request]) => {
-              return [key, data[request as keyof Resolutions]];
+              return [key, data[request]];
             }),
           )
         : {},
@@ -695,7 +681,7 @@ const timestampRule = defineRule({
 
 const channelIconStyle =
   "mb-[calc(var(--font-size)*0.2)] inline size-[--font-size] align-middle";
-const channelIcons = {
+const channelIcons: Record<ResolvableAPIChannelType, () => JSX.Element> = {
   // text: () => <TextChannelIcon className={channelIconStyle} />,
   // voice: () => <VoiceChannelIcon className={channelIconStyle} />,
   // thread: () => <ThreadChannelIcon className={channelIconStyle} />,
@@ -763,7 +749,7 @@ const memberMentionRule = defineRule({
   },
   data(capture) {
     return {
-      member: `member:${capture.id}`,
+      member: `member:@global-${capture.id}`,
     };
   },
   render(capture, _, data) {
@@ -773,7 +759,13 @@ const memberMentionRule = defineRule({
 
     return (
       <span className={actionableMentionStyle}>
-        {data.member ? `@${data.member?.name}` : `<@${capture.id}>`}
+        {data.member
+          ? `@${
+              data.member.nick ??
+              data.member.user.global_name ??
+              data.member.user.username
+            }`
+          : `<@${capture.id}>`}
       </span>
     );
   },
@@ -870,14 +862,7 @@ const unicodeEmojiRule = defineRule({
     };
   },
   render(capture) {
-    return (
-      <img
-        src={getEmojiImageUrl(capture.emoji)}
-        alt={capture.emoji}
-        title={capture.name}
-        className={emojiStyle}
-      />
-    );
+    return <Twemoji emoji={capture.emoji} className={emojiStyle} />;
   },
 });
 
@@ -930,9 +915,7 @@ function getRules(type: MarkdownFeatures) {
     customEmojiRule,
     unicodeEmojiRule,
     textRule,
-  ]
-    .filter(Boolean)
-    .map((x) => x as NonNullable<typeof x>);
+  ].filter((v): v is NonNullable<typeof v> => Boolean(v));
 }
 
 const parseFullMarkdown = createMarkdownParser(getRules("full"));
@@ -948,17 +931,20 @@ export type MarkdownFeatures = keyof typeof parsers;
 export const Markdown: React.FC<{
   content: string;
   features?: MarkdownFeatures;
-}> = ({ content, features }) => {
+  cache?: CacheManager;
+}> = ({ content, features, cache }) => {
   const parse = parsers[features ?? "full"];
   const result = parse(content);
 
-  const resolver = { resolved: undefined };
+  const resolver = {
+    resolved: cache?.state,
+  };
 
-  // watchEffect(() => {
-  //   if (result.value.requests.size > 0) {
-  //     resolver.request(result.value.requests);
-  //   }
-  // });
+  useEffect(() => {
+    if (result.requests.size > 0 && cache) {
+      cache.resolveMany(result.requests);
+    }
+  }, [result, cache]);
 
   return <div>{renderMarkdownNodes(result.nodes, resolver.resolved)}</div>;
 };

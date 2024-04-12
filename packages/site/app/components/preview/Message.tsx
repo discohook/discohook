@@ -8,7 +8,7 @@ import { Trans } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
-import { PartialResource } from "~/types/resources";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
 import { MessageComponents } from "./Components";
@@ -55,6 +55,7 @@ export const getAuthorType = (
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
   discordApplicationId?: string;
+  cache?: CacheManager;
   index?: number;
   data?: QueryData;
   files?: DraftFile[];
@@ -62,12 +63,12 @@ export const Message: React.FC<{
   messageDisplay?: Settings["messageDisplay"];
   compactAvatars?: boolean;
   date?: Date;
-  resolved?: Record<string, PartialResource>;
   setImageModalData?: SetImageModalData;
   forceSeparateAuthor?: boolean;
 }> = ({
   message,
   discordApplicationId,
+  cache,
   index,
   data,
   files,
@@ -75,7 +76,6 @@ export const Message: React.FC<{
   messageDisplay,
   compactAvatars,
   date,
-  resolved,
   setImageModalData,
   forceSeparateAuthor,
 }) => {
@@ -234,7 +234,7 @@ export const Message: React.FC<{
               <Markdown
                 content={message.content}
                 features="full"
-                // resolved={resolved}
+                cache={cache}
               />
             </div>
           )}
@@ -262,8 +262,8 @@ export const Message: React.FC<{
                 <Embed
                   key={`message-preview-embed-${i}`}
                   {...embedData}
-                  resolved={resolved}
                   setImageModalData={setImageModalData}
+                  cache={cache}
                 />
               ))}
             </div>

@@ -29,6 +29,7 @@ import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
 import { discordMembers, eq, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
+import { useCache } from "~/util/cache/CacheManager";
 import {
   INDEX_FAILURE_MESSAGE,
   INDEX_MESSAGE,
@@ -106,6 +107,7 @@ export default function Index() {
     useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
+  const cache = useCache("");
 
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
@@ -574,6 +576,7 @@ export default function Index() {
               <Message
                 key={`preview-message-${i}`}
                 message={message.data}
+                cache={cache}
                 discordApplicationId={discordApplicationId}
                 webhooks={Object.values(targets)}
                 index={i}
