@@ -4,7 +4,7 @@ import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { Prose } from "~/components/Prose";
-import { Twemoji } from "~/components/Twemoji";
+import { Twemoji } from "~/components/icons/Twemoji";
 import { MessageComponents } from "~/components/preview/Components";
 import { getUser } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";

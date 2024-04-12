@@ -2,12 +2,12 @@
 
 import { ReactNode, useState } from "react";
 import { Button } from "./Button";
-import { CoolIcon } from "./CoolIcon";
 import {
   StringSelect,
   StringSelectProps,
   selectClassNames,
 } from "./StringSelect";
+import { CoolIcon } from "./icons/CoolIcon";
 
 export const ButtonSelect: React.FC<
   React.PropsWithChildren<StringSelectProps>

@@ -1,4 +1,4 @@
-import { CoolIcon } from "./CoolIcon";
+import { CoolIcon } from "./icons/CoolIcon";
 
 export const Radio = (
   props: React.DetailedHTMLProps<

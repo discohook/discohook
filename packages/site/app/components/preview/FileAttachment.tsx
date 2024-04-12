@@ -1,6 +1,6 @@
 import { APIAttachment } from "discord-api-types/v10";
 import { fileSize } from "~/util/text";
-import { CoolIcon } from "../CoolIcon";
+import { CoolIcon } from "../icons/CoolIcon";
 
 export const FileAttachment: React.FC<{ attachment: APIAttachment }> = ({
   attachment,

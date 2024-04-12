@@ -6,7 +6,7 @@ import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
-import { Twemoji } from "~/components/Twemoji";
+import { Twemoji } from "~/components/icons/Twemoji";
 import { PreviewButton } from "~/components/preview/Components";
 import { CryptoDonateInfoModal } from "~/modals/CryptoDonateInfoModal";
 import { getUser } from "~/session.server";

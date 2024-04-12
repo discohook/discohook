@@ -13,7 +13,7 @@ import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
 import { getUserAvatar, getUserPremiumDetails, getUserTag } from "~/util/users";
 import { Button } from "./Button";
-import { CoolIcon } from "./CoolIcon";
+import { CoolIcon } from "./icons/CoolIcon";
 
 export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const { t } = useTranslation();

@@ -1,6 +1,6 @@
 import { ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
-import { CoolIcon } from "./CoolIcon";
+import { CoolIcon } from "./icons/CoolIcon";
 import { MarkdownFeatures } from "./preview/Markdown";
 
 export const TextArea = (

@@ -1,8 +1,8 @@
 import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
 import { cdn } from "~/util/discord";
-import { CoolIcon } from "./CoolIcon";
-import { Twemoji } from "./Twemoji";
+import { CoolIcon } from "./icons/CoolIcon";
+import { Twemoji } from "./icons/Twemoji";
 
 export const Button = (
   props: React.DetailedHTMLProps<

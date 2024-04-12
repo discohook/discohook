@@ -1,8 +1,8 @@
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { ReactNode, useEffect, useState } from "react";
 import { Button } from "~/components/Button";
-import { CoolIcon } from "~/components/CoolIcon";
 import { TextInput } from "~/components/TextInput";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { QueryData } from "~/types/QueryData";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, getWebhookMessage } from "~/util/discord";

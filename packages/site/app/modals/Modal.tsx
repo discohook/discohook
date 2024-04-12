@@ -1,5 +1,5 @@
 import ReactModal from "react-modal";
-import { CoolIcon } from "~/components/CoolIcon";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 
 export type ModalProps = React.PropsWithChildren<{
   open: boolean;

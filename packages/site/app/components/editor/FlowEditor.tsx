@@ -8,10 +8,10 @@ import {
   FlowActionType,
 } from "~/store.server";
 import { Button } from "../Button";
-import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { StringSelect } from "../StringSelect";
 import { TextInput } from "../TextInput";
+import { CoolIcon } from "../icons/CoolIcon";
 
 type FlowWithPartials = Flow & {
   actions: (Partial<FlowAction> & Pick<FlowAction, "type">)[];

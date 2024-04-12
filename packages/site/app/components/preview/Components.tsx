@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { cdn } from "~/util/discord";
 import { Button } from "../Button";
-import { CoolIcon } from "../CoolIcon";
+import { CoolIcon } from "../icons/CoolIcon";
 import { AuthorType } from "./Message";
 
 type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{

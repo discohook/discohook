@@ -19,7 +19,7 @@ import {
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
-import { Twemoji } from "../Twemoji";
+import { Twemoji } from "../icons/Twemoji";
 
 type Renderable = string | JSX.Element;
 type ResolutionRequests = Record<string, keyof Resolutions>;

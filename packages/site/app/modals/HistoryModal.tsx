@@ -2,7 +2,7 @@ import { ButtonStyle } from "discord-api-types/v10";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
-import { CoolIcon } from "~/components/CoolIcon";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message";
 import { HistoryItem } from "~/routes/_index";

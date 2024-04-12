@@ -4,7 +4,6 @@ import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
-import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
@@ -15,6 +14,7 @@ import {
   getEmbedLength,
 } from "../editor/EmbedEditor";
 import { getBlobDataUrl, getMessageText } from "../editor/MessageEditor";
+import { CoolIcon } from "../icons/CoolIcon";
 import { AuthorType, getAuthorType } from "../preview/Message";
 
 export const SimpleMessageEditor: React.FC<{

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "~/components/Checkbox";
-import { CoolIcon } from "~/components/CoolIcon";
 import { Radio } from "~/components/Radio";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { User } from "~/session.server";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";

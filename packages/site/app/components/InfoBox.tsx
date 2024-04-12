@@ -1,5 +1,5 @@
 import { twJoin } from "tailwind-merge";
-import { CoolIcon, CoolIconsGlyph } from "./CoolIcon";
+import { CoolIcon, CoolIconsGlyph } from "./icons/CoolIcon";
 
 export const InfoBox: React.FC<
   React.PropsWithChildren<{

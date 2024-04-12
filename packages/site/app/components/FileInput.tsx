@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { CoolIcon } from "./CoolIcon";
+import { CoolIcon } from "./icons/CoolIcon";
 
 export const FileInput = (
   props: React.DetailedHTMLProps<

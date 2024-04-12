@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { loader as ApiGetBackups } from "~/api/v1/backups";
 import { Button } from "~/components/Button";
-import { CoolIcon } from "~/components/CoolIcon";
 import { InfoBox } from "~/components/InfoBox";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { LoadedBackup } from "~/routes/me";
 import {
   DiscohookBackup,

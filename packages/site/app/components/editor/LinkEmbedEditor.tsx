@@ -8,10 +8,10 @@ import {
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
-import { CoolIcon } from "../CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
+import { CoolIcon } from "../icons/CoolIcon";
 import { ColorPicker } from "./ColorPicker";
 import { EmbedEditorSection } from "./EmbedEditor";
 

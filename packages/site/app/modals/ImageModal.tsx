@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ReactModal from "react-modal";
-import { CoolIcon } from "~/components/CoolIcon";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 
 export interface ImageModalProps {
   images?: { url: string; alt?: string }[];
