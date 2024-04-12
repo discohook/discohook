@@ -9,9 +9,9 @@ import { useReducer } from "react";
 import { ApiRoute, BRoutes, apiUrl } from "~/api/routing";
 
 export type Resolutions = {
-  [key: `channel:${string}`]: ResolvableAPIChannel | undefined;
-  [key: `member:${string}`]: ResolvableAPIGuildMember | undefined;
-  [key: `role:${string}`]: ResolvableAPIRole | undefined;
+  [key: `channel:${string}`]: ResolvableAPIChannel | undefined | null;
+  [key: `member:${string}`]: ResolvableAPIGuildMember | undefined | null;
+  [key: `role:${string}`]: ResolvableAPIRole | undefined | null;
 };
 
 export type ResolutionKey = keyof Resolutions;
@@ -31,7 +31,7 @@ class ResourceCacheManagerBase<T extends Resolvable> {
     return this.manager.state[key] as T;
   }
 
-  _put(key: ResolutionKey, resource: T) {
+  _put(key: ResolutionKey, resource: T | null) {
     this.manager.setState({ [key]: resource } as Resolutions);
   }
 
@@ -43,7 +43,7 @@ class ResourceCacheManagerBase<T extends Resolvable> {
     this.manager.setState(Object.fromEntries(entries) as Resolutions);
   }
 
-  async _fetch<RawT = T>(route: ApiRoute): Promise<RawT> {
+  async _fetch<RawT = T>(route: ApiRoute): Promise<RawT | null> {
     const response = await fetch(apiUrl(route), {
       method: "GET",
       headers: {
@@ -52,7 +52,8 @@ class ResourceCacheManagerBase<T extends Resolvable> {
     });
     const data = await response.json();
     if (!response.ok) {
-      throw Error(`Fetch failed: ${JSON.stringify(data)}`);
+      console.log(`Fetch failed: ${JSON.stringify(data)}`);
+      return null;
     }
     return data as RawT;
   }
@@ -104,6 +105,8 @@ class ChannelResourceManager extends ResourceCacheManagerBase<ResolvableAPIChann
     const resource = await this._fetch<ResolvableAPIChannel[]>(
       BRoutes.guildChannels(guildId),
     );
+    if (!resource) return [];
+
     this.fill(
       ...resource.map(
         (r) =>
@@ -131,7 +134,6 @@ class ChannelResourceManager extends ResourceCacheManagerBase<ResolvableAPIChann
 
 class MemberResourceManager extends ResourceCacheManagerBase<ResolvableAPIGuildMember> {
   get(userId: string, guildId?: string) {
-    console.log(userId, guildId);
     if (guildId) {
       return this._get(`member:${guildId}-${userId}`);
     }
@@ -142,7 +144,6 @@ class MemberResourceManager extends ResourceCacheManagerBase<ResolvableAPIGuildM
     // still allowing a guild-specific search (above) if desired, with the
     // same state as a whole (i.e. not two maps w/ the same objects).
     const global = this._get(`member:@global-${userId}`);
-    console.log(global);
     if (global) {
       return global;
     }
@@ -180,6 +181,8 @@ class RoleResourceManager extends ResourceCacheManagerBase<ResolvableAPIRole> {
     const resource = await this._fetch<ResolvableAPIRole[]>(
       BRoutes.guildRoles(guildId),
     );
+    if (!resource) return [];
+
     this.fill(
       ...resource.map(
         (r) => [`role:${r.id}`, r] satisfies [ResolutionKey, ResolvableAPIRole],
@@ -221,9 +224,10 @@ export class CacheManager {
   // resolve(request: { scope: "roles"; key: string }): ResolvableAPIRole;
   resolve(request: { scope: ResolutionScope; key: string }) {
     const cached = this.state[`${request.scope}:${request.key}`];
-    console.log(cached);
     if (cached) {
       return cached;
+    } else if (cached === null) {
+      return null;
     }
 
     switch (request.scope) {
