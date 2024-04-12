@@ -5,6 +5,7 @@ import moment, { Moment } from "moment";
 import { useState } from "react";
 import Select, {
   GroupProps,
+  MenuProps,
   OptionProps,
   components as SelectComponents,
 } from "react-select";
@@ -284,7 +285,11 @@ const DatePicker = (props: DatePickerProps) => {
         options={options}
         value={props.value}
         // @ts-expect-error
-        classNames={selectClassNames}
+        classNames={{
+          ...selectClassNames,
+          menu: (p) =>
+            twJoin(selectClassNames.menu?.(p as MenuProps), "!w-72 !text-sm"),
+        }}
       />
     </label>
   );
