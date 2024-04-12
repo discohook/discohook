@@ -23,6 +23,8 @@ export const jsonAsString = <T extends z.ZodTypeAny>(schema?: T) =>
 export const snowflakeAsString = () =>
   z
     .string()
+    .min(17)
+    .max(22)
     .refine((v) => isSnowflake(v))
     .transform((v) => BigInt(v));
 
