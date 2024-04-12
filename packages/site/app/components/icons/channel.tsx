@@ -69,3 +69,27 @@ export const PostChannelIcon: IconFC = (props) => (
     />
   </Svg>
 );
+
+export const GuideChannelIcon: IconFC = (props) => (
+  <Svg {...props}>
+    <path
+      fill="currentColor"
+      d="M11 3a1 1 0 1 1 2 0v2h5.75c.16 0 .3.07.4.2l2.63 3.5a.5.5 0 0 1 0 .6l-2.63 3.5a.5.5 0 0 1-.4.2H13v5h2a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-1c0-1.1.9-2 2-2h2v-5H2.8a.5.5 0 0 1-.44-.72L3.9 9.22a.5.5 0 0 0 0-.44L2.36 5.72A.5.5 0 0 1 2.81 5H11V3z"
+    />
+  </Svg>
+);
+
+export const BrowseChannelIcon: IconFC = (props) => (
+  <Svg {...props}>
+    <path
+      fillRule="evenodd"
+      d="M18.5 23c.88 0 1.7-.25 2.4-.69l1.4 1.4a1 1 0 0 0 1.4-1.42l-1.39-1.4A4.5 4.5 0 1 0 18.5 23zm0-2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"
+      clipRule="evenodd"
+      fill="currentColor"
+    />
+    <path
+      d="M3 3a1 1 0 0 0 0 2h18a1 1 0 1 0 0-2H3zM2 8a1 1 0 0 1 1-1h18a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1zm1 3a1 1 0 1 0 0 2h11a1 1 0 1 0 0-2H3zm-1 5a1 1 0 0 1 1-1h8a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1zm1 3a1 1 0 1 0 0 2h8a1 1 0 1 0 0-2H3z"
+      fill="currentColor"
+    />
+  </Svg>
+);

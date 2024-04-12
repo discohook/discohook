@@ -1,5 +1,8 @@
+import insertTextAtCursor from "insert-text-at-cursor";
 import { ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
+import { CacheManager } from "~/util/cache/CacheManager";
+import { PopoutRichPicker } from "./editor/RichPicker";
 import { CoolIcon } from "./icons/CoolIcon";
 import { MarkdownFeatures } from "./preview/Markdown";
 
@@ -15,9 +18,10 @@ export const TextArea = (
     short?: boolean;
     freelength?: boolean;
     markdown?: MarkdownFeatures;
+    cache?: CacheManager;
   },
 ) => {
-  const { label, onInput, delayOnInput, short } = props;
+  const { label, onInput, delayOnInput, short, markdown, cache } = props;
   const ref = useRef<HTMLTextAreaElement>(null);
   const length = ref.current ? ref.current.value.length : 0;
 
@@ -87,8 +91,9 @@ export const TextArea = (
             props.className ?? "",
           )}
         />
-        {/*props.markdown && (
+        {props.markdown && (
           <PopoutRichPicker
+            cache={cache}
             insertText={(text) => {
               if (ref.current) {
                 // Feels choppy. Not sure if we should keep this.
@@ -104,7 +109,7 @@ export const TextArea = (
               )}
             />
           </PopoutRichPicker>
-        )*/}
+        )}
       </div>
       {props.errors
         ?.filter((e) => e !== undefined)

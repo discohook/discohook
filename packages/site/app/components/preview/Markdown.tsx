@@ -21,7 +21,9 @@ import {
 import { getRgbComponents } from "~/util/text";
 import { Twemoji } from "../icons/Twemoji";
 import {
+  BrowseChannelIcon,
   ForumChannelIcon,
+  GuideChannelIcon,
   PostChannelIcon,
   TextChannelIcon,
   ThreadChannelIcon,
@@ -688,12 +690,35 @@ const timestampRule = defineRule({
 
 const channelIconStyle =
   "mb-[calc(var(--font-size)*0.2)] inline size-[--font-size] align-text-bottom mr-1";
-const channelIcons: Record<ResolvableAPIChannelType, () => JSX.Element> = {
-  text: () => <TextChannelIcon className={channelIconStyle} />,
-  voice: () => <VoiceChannelIcon className={channelIconStyle} />,
-  thread: () => <ThreadChannelIcon className={channelIconStyle} />,
-  forum: () => <ForumChannelIcon className={channelIconStyle} />,
-  post: () => <PostChannelIcon className={channelIconStyle} />,
+export const channelIcons: Record<
+  ResolvableAPIChannelType | "guide" | "browse",
+  (props?: { className?: string }) => JSX.Element
+> = {
+  guide: (props?: { className?: string }) => (
+    <GuideChannelIcon className={twMerge(channelIconStyle, props?.className)} />
+  ),
+  browse: (props?: { className?: string }) => (
+    <BrowseChannelIcon
+      className={twMerge(channelIconStyle, props?.className)}
+    />
+  ),
+  text: (props?: { className?: string }) => (
+    <TextChannelIcon className={twMerge(channelIconStyle, props?.className)} />
+  ),
+  voice: (props?: { className?: string }) => (
+    <VoiceChannelIcon className={twMerge(channelIconStyle, props?.className)} />
+  ),
+  thread: (props?: { className?: string }) => (
+    <ThreadChannelIcon
+      className={twMerge(channelIconStyle, props?.className)}
+    />
+  ),
+  forum: (props?: { className?: string }) => (
+    <ForumChannelIcon className={twMerge(channelIconStyle, props?.className)} />
+  ),
+  post: (props?: { className?: string }) => (
+    <PostChannelIcon className={twMerge(channelIconStyle, props?.className)} />
+  ),
 } as const;
 
 const globalMentionRule = defineRule({
@@ -707,6 +732,38 @@ const globalMentionRule = defineRule({
   },
   render(capture) {
     return <span className={mentionStyle}>{capture.content}</span>;
+  },
+});
+
+const guildSectionMentionRule = defineRule({
+  capture(source) {
+    const match = /^<id:(guide|browse|customize)>/.exec(source);
+    if (!match) return;
+    return {
+      size: match[0].length,
+      id: match[1],
+    };
+  },
+  render(capture) {
+    const data = {
+      type:
+        capture.id === "customize"
+          ? "browse"
+          : (capture.id as "guide" | "browse"),
+      // TODO integrate i18n
+      name:
+        capture.id === "guide"
+          ? "Server Guide"
+          : capture.id === "browse"
+            ? "Browse Channels"
+            : "Channels & Roles",
+    };
+    return (
+      <span className={actionableMentionStyle}>
+        {channelIcons[data.type]()}
+        {data.name}
+      </span>
+    );
   },
 });
 
@@ -910,6 +967,7 @@ function getRules(type: MarkdownFeatures) {
     spoilerRule,
     type === "full" ? timestampRule : undefined,
     type === "full" ? globalMentionRule : undefined,
+    type === "full" ? guildSectionMentionRule : undefined,
     type === "full" ? channelMentionRule : undefined,
     type === "full" ? memberMentionRule : undefined,
     type === "full" ? roleMentionRule : undefined,

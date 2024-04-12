@@ -26,7 +26,10 @@ type SelectedEmoji = Omit<Emoji, "skins"> & { skin: Skin };
 
 export interface PickerProps {
   id: string;
-  onEmojiClick: (emoji: SelectedEmoji) => void;
+  onEmojiClick: (
+    emoji: SelectedEmoji,
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
   customEmojis?: APIMessageComponentEmoji[];
   className?: string;
 }
@@ -68,13 +71,16 @@ export const CategoryIconButton: React.FC<{
 
 const GridEmoji: React.FC<{
   emoji: SelectedEmoji;
-  onEmojiClick: (e: SelectedEmoji) => void;
+  onEmojiClick: (
+    e: SelectedEmoji,
+    ev: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
   setHoverEmoji: (e: SelectedEmoji) => void;
 }> = ({ emoji, onEmojiClick, setHoverEmoji }) => (
   <button
     type="button"
     className={`rounded p-1 h-11 w-11 hover:bg-white/10 transition invisible data-[visible="true"]:visible`}
-    onClick={() => onEmojiClick(emoji)}
+    onClick={(ev) => onEmojiClick(emoji, ev)}
     onMouseOver={() => setHoverEmoji(emoji)}
     onFocus={() => setHoverEmoji(emoji)}
     data-visible={true}
@@ -235,7 +241,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
             .filter((c) => c.emojis.length > 0)
             .map((category) => (
               <CategoryIconButton
-                key={`emoji-category-${category.id}-icon`}
+                key={`emoji-category-${id}-${category.id}-icon`}
                 categoryId={category.id}
                 id={id}
               />

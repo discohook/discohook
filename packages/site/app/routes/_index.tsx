@@ -535,6 +535,7 @@ export default function Index() {
                 setFiles={setFiles}
                 setSettingMessageIndex={setSettingMessageIndex}
                 webhooks={Object.values(targets)}
+                cache={cache}
               />
               {i < data.messages.length - 1 && (
                 <hr className="border border-gray-500/20 mt-4" />

@@ -1,6 +1,7 @@
 import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { QueryData } from "~/types/QueryData";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
@@ -61,6 +62,7 @@ export const EmbedEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
   open?: boolean;
+  cache?: CacheManager;
 }> = ({
   message,
   messageIndex: mi,
@@ -69,6 +71,7 @@ export const EmbedEditor: React.FC<{
   data,
   setData,
   open,
+  cache,
 }) => {
   const { t } = useTranslation();
   const messageEmbeds = message.data.embeds ?? [];
@@ -313,6 +316,7 @@ export const EmbedEditor: React.FC<{
                   maxLength={256}
                   value={embed.title ?? ""}
                   markdown="title"
+                  cache={cache}
                   short
                   onInput={(e) =>
                     updateEmbed({
@@ -417,6 +421,7 @@ export const EmbedEditor: React.FC<{
             value={embed.description ?? ""}
             maxLength={4096}
             markdown="full"
+            cache={cache}
             onInput={(e) =>
               updateEmbed({
                 description: e.currentTarget.value || undefined,
@@ -448,6 +453,7 @@ export const EmbedEditor: React.FC<{
                           maxLength={256}
                           className="w-full"
                           markdown="full"
+                          cache={cache}
                           short
                           onInput={(e) => {
                             field.name = e.currentTarget.value;
@@ -472,6 +478,7 @@ export const EmbedEditor: React.FC<{
                       maxLength={1024}
                       className="w-full"
                       markdown="full"
+                      cache={cache}
                       onInput={(e) => {
                         field.value = e.currentTarget.value;
                         updateEmbed({});

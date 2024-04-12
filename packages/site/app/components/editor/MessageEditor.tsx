@@ -2,6 +2,7 @@ import { APIWebhook } from "discord-api-types/v10";
 import { Trans } from "react-i18next";
 import { DraftFile } from "~/routes/_index";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { InfoBox } from "../InfoBox";
@@ -44,6 +45,7 @@ export const MessageEditor: React.FC<{
     React.SetStateAction<number | undefined>
   >;
   webhooks?: APIWebhook[];
+  cache?: CacheManager;
 }> = ({
   index: i,
   data,
@@ -53,6 +55,7 @@ export const MessageEditor: React.FC<{
   setFiles,
   setSettingMessageIndex,
   webhooks,
+  cache,
 }) => {
   const message = data.messages[i];
   const embedsLength =
@@ -133,6 +136,7 @@ export const MessageEditor: React.FC<{
           maxLength={2000}
           freelength
           markdown="full"
+          cache={cache}
           onInput={(e) => {
             message.data.content = e.currentTarget.value || undefined;
             setData({ ...data });
@@ -255,6 +259,7 @@ export const MessageEditor: React.FC<{
                 embedIndex={ei}
                 data={data}
                 setData={setData}
+                cache={cache}
               />
             ))}
           </div>
