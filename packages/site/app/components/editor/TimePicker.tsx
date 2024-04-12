@@ -32,13 +32,11 @@ export const TimePicker: React.FC<{
         className,
       )}
     >
-      <div className="select-none px-3 pt-2">
+      <div className="select-none p-3 pt-2">
         <DatePicker
           label="Date"
           onChange={(v) => {
-            if (v) {
-              setDate(v.date);
-            }
+            if (v) setDate(v.date);
           }}
         />
         <div className="mt-2">
