@@ -144,7 +144,7 @@ const Group = (props: GroupProps<DateOption, false>) => {
       >
         {label}
       </Heading>
-      <div className="mt-1 pt-1 mx-4 grid grid-cols-7 border-t border-t-[#27292D] cursor-default text-[75%] font-medium text-gray-500">
+      <div className="mt-1 pt-1 mx-4 grid grid-cols-7 border-t border-t-[#E3E5E8] dark:border-t-[#27292D] cursor-default text-[75%] font-medium text-gray-500">
         {days.map((day) => (
           <span key={day} className="inline-block text-center">
             {day}
@@ -152,7 +152,7 @@ const Group = (props: GroupProps<DateOption, false>) => {
         ))}
       </div>
       <div className="mx-4">
-        <div className="w-full grid grid-cols-7 gap-px rounded border border-[#1E1F22] bg-[#1E1F22]">
+        <div className="w-full grid grid-cols-7 gap-px rounded border border-[#E3E5E8] dark:border-[#1E1F22] bg-[#E3E5E8] dark:bg-[#1E1F22]">
           {preDays.map((m) => (
             // @ts-expect-error
             // We don't care about these being "real" options
@@ -201,8 +201,8 @@ const Option = (props: OptionProps<DateOption, false>) => {
         className={twJoin(
           "flex relative aspect-square first:rounded-tl last:rounded-br",
           props.isDisabled
-            ? "bg-[#25272A] text-gray-500"
-            : "bg-[#313338] hover:bg-blurple cursor-pointer",
+            ? "bg-[#F2F2F2] dark:bg-[#25272A] text-gray-500"
+            : "bg-white dark:bg-[#313338] hover:bg-blurple hover:text-white cursor-pointer",
           props.isSelected ? "font-semibold" : "",
           // day === 0 && weekOfMonth === 0
           //   ? "rounded-tl"

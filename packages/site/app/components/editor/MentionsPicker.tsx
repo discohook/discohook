@@ -149,16 +149,6 @@ export const MentionsPicker: React.FC<{
                           @{role.name}
                         </span>
                       );
-                      // label = role.name;
-                      // icon = <RoleIcon color={role.color} />;
-                      // icon = (
-                      //   <div
-                      //     style={{
-                      //       backgroundColor: `#${role.color.toString(16)}`,
-                      //     }}
-                      //     className="rounded-full w-5 h-5"
-                      //   />
-                      // );
                     }
                     return (
                       <button
