@@ -197,6 +197,10 @@ export const TargetAddModal = (
                     ))}
                 </div>
               )
+            ) : guildWebhooksFetcher.data.length === 0 ? (
+              <p className="text-center opacity-60 text-sm">
+                {t("selectWebhookGuildNoWebhooks")}
+              </p>
             ) : (
               <div className="space-y-2">
                 {guildWebhooksFetcher.data.map((gWebhook) => {

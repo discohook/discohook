@@ -60,6 +60,8 @@ export const resources = {
       createdByDiscohook: "This webhook is owned by Discohook",
       selectWebhookGuildNote:
         "Select a server that Discohook Utils is in to view its webhooks, or create a new webhook in any of your servers by clicking the button below.",
+      selectWebhookGuildNoWebhooks:
+        "The server you selected has no webhooks that Discohook Utils could access. Try creating a new one with the button below.",
       selectWebhookGuildMissing:
         "Not seeing a server you have permissions in? <0>Try logging in again</0>",
       selectWebhookGuildManual:
