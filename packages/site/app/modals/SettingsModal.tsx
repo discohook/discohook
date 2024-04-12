@@ -95,6 +95,20 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           />
         </div>
       </div>
+      <div className="mt-8">
+        <p className="text-sm font-black uppercase dark:text-gray-400">
+          {t("editorPanes")}
+        </p>
+        <div className="space-y-2 mt-2">
+          <Checkbox
+            label="Always use dual-pane editor"
+            checked={settings.forceDualPane === true}
+            onChange={(e) =>
+              updateSettings({ forceDualPane: e.currentTarget.checked })
+            }
+          />
+        </div>
+      </div>
     </Modal>
   );
 };

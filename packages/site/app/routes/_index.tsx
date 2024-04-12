@@ -4,7 +4,7 @@ import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { InvalidShareIdData } from "~/api/v1/share.$shareId";
@@ -399,11 +399,21 @@ export default function Index() {
         clear={() => setImageModalData(undefined)}
       />
       <Header user={user} />
-      <div className="md:flex h-[calc(100%_-_3rem)]">
+      <div
+        className={twJoin(
+          "h-[calc(100%_-_3rem)]",
+          settings.forceDualPane ? "flex" : "md:flex",
+        )}
+      >
         <div
-          className={`p-4 md:w-1/2 h-full overflow-y-scroll ${
-            tab === "editor" ? "" : "hidden md:block"
-          }`}
+          className={twMerge(
+            "p-4 h-full overflow-y-scroll md:w-1/2",
+            settings.forceDualPane
+              ? "w-1/2"
+              : tab === "editor"
+                ? ""
+                : "hidden md:block",
+          )}
         >
           {urlTooLong && (
             <InfoBox icon="Triangle_Warning" severity="yellow">
@@ -424,7 +434,10 @@ export default function Index() {
               {t("addWebhook")}
             </Button>
             <Button
-              className="ml-auto md:hidden"
+              className={twJoin(
+                "ml-auto",
+                settings.forceDualPane ? "hidden" : "md:hidden",
+              )}
               onClick={() => setTab("preview")}
               discordstyle={ButtonStyle.Secondary}
             >
@@ -538,13 +551,17 @@ export default function Index() {
           </Button>
         </div>
         <div
-          className={twJoin(
-            "md:border-l-2 border-l-gray-400 dark:border-l-[#1E1F22] md:w-1/2 h-full flex-col",
-            tab === "preview" ? "flex" : "hidden md:flex",
+          className={twMerge(
+            "border-l-gray-400 dark:border-l-[#1E1F22] h-full flex-col md:w-1/2",
+            settings.forceDualPane
+              ? "flex w-1/2 border-l-2"
+              : tab === "preview"
+                ? "flex"
+                : "hidden md:border-l-2 md:flex",
           )}
         >
           <div className="overflow-y-scroll grow p-4 pb-8">
-            <div className="md:hidden">
+            <div className={settings.forceDualPane ? "hidden" : "md:hidden"}>
               <Button
                 onClick={() => setTab("editor")}
                 discordstyle={ButtonStyle.Secondary}

@@ -5,6 +5,7 @@ export interface Settings {
   messageDisplay?: "cozy" | "compact";
   compactAvatars?: boolean;
   skinTone?: 0 | 1 | 2 | 3 | 4;
+  forceDualPane?: boolean;
 }
 
 export const useLocalStorage = (): [
