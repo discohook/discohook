@@ -7,7 +7,7 @@ import { twJoin, twMerge } from "tailwind-merge";
 import {
   CacheManager,
   Resolutions,
-  ResolvableAPIChannelType
+  ResolvableAPIChannelType,
 } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { highlightCode } from "~/util/highlighting";
@@ -20,6 +20,13 @@ import {
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
 import { Twemoji } from "../icons/Twemoji";
+import {
+  ForumChannelIcon,
+  PostChannelIcon,
+  TextChannelIcon,
+  ThreadChannelIcon,
+  VoiceChannelIcon,
+} from "../icons/channel";
 
 type Renderable = string | JSX.Element;
 type ResolutionRequests = Record<string, keyof Resolutions>;
@@ -680,18 +687,13 @@ const timestampRule = defineRule({
 });
 
 const channelIconStyle =
-  "mb-[calc(var(--font-size)*0.2)] inline size-[--font-size] align-middle";
+  "mb-[calc(var(--font-size)*0.2)] inline size-[--font-size] align-text-bottom mr-1";
 const channelIcons: Record<ResolvableAPIChannelType, () => JSX.Element> = {
-  // text: () => <TextChannelIcon className={channelIconStyle} />,
-  // voice: () => <VoiceChannelIcon className={channelIconStyle} />,
-  // thread: () => <ThreadChannelIcon className={channelIconStyle} />,
-  // forum: () => <ForumChannelIcon className={channelIconStyle} />,
-  // post: () => <PostChannelIcon className={channelIconStyle} />,
-  text: () => <div className={channelIconStyle} />,
-  voice: () => <div className={channelIconStyle} />,
-  thread: () => <div className={channelIconStyle} />,
-  forum: () => <div className={channelIconStyle} />,
-  post: () => <div className={channelIconStyle} />,
+  text: () => <TextChannelIcon className={channelIconStyle} />,
+  voice: () => <VoiceChannelIcon className={channelIconStyle} />,
+  thread: () => <ThreadChannelIcon className={channelIconStyle} />,
+  forum: () => <ForumChannelIcon className={channelIconStyle} />,
+  post: () => <PostChannelIcon className={channelIconStyle} />,
 } as const;
 
 const globalMentionRule = defineRule({
