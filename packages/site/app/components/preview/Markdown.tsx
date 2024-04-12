@@ -645,7 +645,7 @@ const spoilerRule = defineRule({
   },
 });
 
-const timestampFormats = {
+export const timestampFormats = {
   t: "time",
   T: "time_verbose",
   f: "full",

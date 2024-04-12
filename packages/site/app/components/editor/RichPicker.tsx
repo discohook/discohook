@@ -4,6 +4,7 @@ import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { EmojiPicker } from "./EmojiPicker";
 import { MentionsPicker } from "./MentionsPicker";
+import { TimePicker } from "./TimePicker";
 
 export const PopoutRichPicker: React.FC<
   React.PropsWithChildren<{
@@ -86,18 +87,21 @@ export const PopoutRichPicker: React.FC<
               }
             }}
           />
-          // ) : tab === "time" ? (
-          //   <TimePicker
-          //     id={id}
-          //     className="border-none shadow-none w-full"
-          //     onTimeClick={(timestamp) => {
-          //       insertText(
-          //         `<t:${timestamp.date.unix()}${
-          //           timestamp.style ? `:${timestamp.style}` : ""
-          //         }>`,
-          //       );
-          //     }}
-          //   />
+        ) : tab === "time" ? (
+          <TimePicker
+            id={id}
+            className="border-none shadow-none w-full"
+            // I'm not sure this one needs to be shift-clickable
+            // but we might patch that in later for consistency
+            onTimeClick={(timestamp) => {
+              insertText(
+                `<t:${timestamp.date.unix()}${
+                  timestamp.style ? `:${timestamp.style}` : ""
+                }>`,
+              );
+              collapse();
+            }}
+          />
         ) : tab === "emoji" ? (
           <EmojiPicker
             id={id}

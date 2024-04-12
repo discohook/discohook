@@ -79,18 +79,6 @@ export const MentionsPicker: React.FC<{
         className,
       )}
     >
-      <div className="p-2 shadow border-b border-b-black/5 flex">
-        {/* <div className="grow">
-          <TextInput
-            label=""
-            className="w-full"
-            placeholder="Who are you looking for?"
-            onInput={(e) =>
-              setQuery(e.currentTarget.value.toLowerCase().trim())
-            }
-          />
-        </div> */}
-      </div>
       <div className="flex grow h-full overflow-hidden">
         <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full scrollbar-none space-y-1 p-1 py-2 flex flex-col">
           {categories.map((category) => (
@@ -179,12 +167,12 @@ export const MentionsPicker: React.FC<{
                           if (!mentionId) return;
                           onMentionClick({ id: mentionId, scope }, event);
                         }}
-                        className="rounded p-0.5 flex hover:bg-slate-300 dark:hover:bg-gray-600"
+                        className="rounded p-0.5 flex hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                       >
                         <div className="mr-1.5">{icon}</div>
                         <p className="my-auto truncate">{label}</p>
                         {sublabel && (
-                          <p className="my-auto ml-auto mr-1 text-sm truncate dark:text-gray-500">
+                          <p className="my-auto ml-auto mr-1 text-sm truncate text-primary-400 dark:text-gray-500">
                             {sublabel}
                           </p>
                         )}
