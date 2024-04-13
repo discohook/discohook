@@ -383,6 +383,7 @@ export default function Index() {
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
         memberships={memberships}
+        cache={cache}
       />
       <ShareExpiredModal
         open={!!badShareData}

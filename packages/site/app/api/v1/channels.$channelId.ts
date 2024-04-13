@@ -1,6 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
+  APIChannel,
   ChannelType,
   RESTGetAPIChannelResult,
   Routes,
@@ -8,6 +9,35 @@ import {
 import { ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
+
+export const getChannelIconType = (channel: APIChannel) => {
+  switch (channel.type) {
+    case ChannelType.GuildText:
+    case ChannelType.GuildAnnouncement:
+      return "text";
+    case ChannelType.GuildForum:
+      return "forum";
+    // case ChannelType.GuildMedia:
+    //   return "media";
+    case ChannelType.PublicThread:
+    case ChannelType.PrivateThread:
+    case ChannelType.AnnouncementThread:
+      if (
+        // Don't seem to be able to check parent type without performing
+        // another fetch, so we make a guess
+        channel.type === ChannelType.PublicThread &&
+        "applied_tags" in channel
+      ) {
+        return "post";
+      }
+      return "thread";
+    case ChannelType.GuildVoice:
+    case ChannelType.GuildStageVoice:
+      return "voice";
+    default:
+      return "text";
+  }
+};
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { channelId } = zxParseParams(params, {
@@ -23,34 +53,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     channel = {
       id: rawChannel.id,
       name: rawChannel.name,
-      type: (() => {
-        switch (rawChannel.type) {
-          case ChannelType.GuildText:
-          case ChannelType.GuildAnnouncement:
-            return "text";
-          case ChannelType.GuildForum:
-            return "forum";
-          // case ChannelType.GuildMedia:
-          //   return "media";
-          case ChannelType.PublicThread:
-          case ChannelType.PrivateThread:
-          case ChannelType.AnnouncementThread:
-            if (
-              // Don't seem to be able to check parent type without performing
-              // another fetch, so we make a guess
-              rawChannel.type === ChannelType.PublicThread &&
-              "applied_tags" in rawChannel
-            ) {
-              return "post";
-            }
-            return "thread";
-          case ChannelType.GuildVoice:
-          case ChannelType.GuildStageVoice:
-            return "voice";
-          default:
-            return "text";
-        }
-      })(),
+      type: getChannelIconType(rawChannel),
     };
   } catch (e) {
     console.log(e);

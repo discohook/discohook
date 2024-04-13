@@ -39,12 +39,12 @@ export const BRoutes = {
   },
 
   /**
-   * - GET /guilds/:id
+   * - GET /guilds/:id/cacheable
    *
    * Accepts token auth.
    */
-  guild(id: string) {
-    return `/guilds/${id}` as const;
+  guildCacheable(id: string) {
+    return `/guilds/${id}/cacheable` as const;
   },
 
   /**

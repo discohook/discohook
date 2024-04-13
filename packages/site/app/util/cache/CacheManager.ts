@@ -35,14 +35,6 @@ class ResourceCacheManagerBase<T extends Resolvable> {
     this.manager.setState({ [key]: resource } as Resolutions);
   }
 
-  /**
-   * Fill the state, overwriting previously defined values but preserving
-   * values not present in the new set
-   */
-  fill(...entries: [key: ResolutionKey, resource: T][]) {
-    this.manager.setState(Object.fromEntries(entries) as Resolutions);
-  }
-
   async _fetch<RawT = T>(route: ApiRoute): Promise<RawT | null> {
     const response = await fetch(apiUrl(route), {
       method: "GET",
@@ -107,7 +99,7 @@ class ChannelResourceManager extends ResourceCacheManagerBase<ResolvableAPIChann
     );
     if (!resource) return [];
 
-    this.fill(
+    this.manager.fill(
       ...resource.map(
         (r) =>
           [`channel:${r.id}`, r] satisfies [
@@ -183,7 +175,7 @@ class RoleResourceManager extends ResourceCacheManagerBase<ResolvableAPIRole> {
     );
     if (!resource) return [];
 
-    this.fill(
+    this.manager.fill(
       ...resource.map(
         (r) => [`role:${r.id}`, r] satisfies [ResolutionKey, ResolvableAPIRole],
       ),
@@ -217,6 +209,14 @@ export class CacheManager {
     // this.guilds = new GuildResourceManager(token);
     this.member = new MemberResourceManager(this, token);
     this.role = new RoleResourceManager(this, token);
+  }
+
+  /**
+   * Fill the state, overwriting previously defined values but preserving
+   * values not present in the new set
+   */
+  fill(...entries: [key: ResolutionKey, resource: Resolvable][]) {
+    this.setState(Object.fromEntries(entries) as Resolutions);
   }
 
   // resolve(request: { scope: "channels"; key: string }): ResolvableAPIChannel;
