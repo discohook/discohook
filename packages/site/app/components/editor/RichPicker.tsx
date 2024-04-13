@@ -70,17 +70,19 @@ export const PopoutRichPicker: React.FC<
             cache={cache}
             onMentionClick={(mention, event) => {
               insertText(
-                `<${
-                  mention.scope === "special"
-                    ? "id:"
-                    : mention.scope === "channel"
-                      ? "#"
-                      : mention.scope === "member"
-                        ? "@"
-                        : mention.scope === "role"
-                          ? "@&"
-                          : ""
-                }${mention.id}>${event.shiftKey ? "" : " "}`,
+                mention.scope === "literal"
+                  ? mention.id
+                  : `<${
+                      mention.scope === "special"
+                        ? "id:"
+                        : mention.scope === "channel"
+                          ? "#"
+                          : mention.scope === "member"
+                            ? "@"
+                            : mention.scope === "role"
+                              ? "@&"
+                              : ""
+                    }${mention.id}>${event.shiftKey ? "" : " "}`,
               );
               if (!event.shiftKey) {
                 collapse();

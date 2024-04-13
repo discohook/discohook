@@ -29,7 +29,7 @@ export const CategoryIconButton: React.FC<{
   );
 };
 
-export type ActionableMentionScope = ResolutionScope | "special";
+export type ActionableMentionScope = ResolutionScope | "special" | "literal";
 
 export const MentionsPicker: React.FC<{
   id: string;
@@ -57,11 +57,17 @@ export const MentionsPicker: React.FC<{
             .map((entry) => entry[1]) as ResolvableAPIChannel[])
         : []),
     ],
-    role: cache
-      ? (Object.entries(cache.state)
-          .filter((entry) => entry[0].startsWith("role:") && Boolean(entry[1]))
-          .map((entry) => entry[1]) as ResolvableAPIRole[])
-      : [],
+    role: [
+      { id: "@everyone", name: "everyone", color: 0x5865f2 },
+      { id: "@here", name: "here", color: 0x5865f2 },
+      ...(cache
+        ? (Object.entries(cache.state)
+            .filter(
+              (entry) => entry[0].startsWith("role:") && Boolean(entry[1]),
+            )
+            .map((entry) => entry[1]) as ResolvableAPIRole[])
+        : []),
+    ],
     member: cache
       ? (Object.entries(cache.state)
           .filter(
@@ -139,6 +145,9 @@ export const MentionsPicker: React.FC<{
                     } else if (categoryId === "role") {
                       const role = resource as ResolvableAPIRole;
                       mentionId = role.id;
+                      if (role.id.startsWith("@")) {
+                        scope = "literal";
+                      }
                       label = (
                         <span
                           style={{

@@ -70,16 +70,18 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     // Unsure what to do about members since they aren't capped as low as
     // roles and channels. I suppose the client could paginate through the
     // server in the future
-    roles: guild.roles.map((role) => ({
-      id: role.id,
-      color: role.color,
-      icon: role.icon,
-      managed: role.managed,
-      mentionable: role.mentionable,
-      name: role.name,
-      position: role.position,
-      unicode_emoji: role.unicode_emoji,
-    })) satisfies ResolvableAPIRole[] as ResolvableAPIRole[],
+    roles: guild.roles
+      .filter((r) => r.id !== guild.id)
+      .map((role) => ({
+        id: role.id,
+        color: role.color,
+        icon: role.icon,
+        managed: role.managed,
+        mentionable: role.mentionable,
+        name: role.name,
+        position: role.position,
+        unicode_emoji: role.unicode_emoji,
+      })) satisfies ResolvableAPIRole[] as ResolvableAPIRole[],
     channels: channels
       .filter(
         (c) =>
