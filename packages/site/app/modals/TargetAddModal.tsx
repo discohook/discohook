@@ -16,6 +16,7 @@ import {
   CacheManager,
   ResolutionKey,
   ResolvableAPIChannel,
+  ResolvableAPIEmoji,
   ResolvableAPIRole,
 } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
@@ -108,6 +109,9 @@ export const TargetAddModal = (
               ResolutionKey,
               ResolvableAPIChannel,
             ],
+        ),
+        ...guildCacheableFetcher.data.emojis.map(
+          (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
         ),
       );
     }

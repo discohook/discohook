@@ -12,6 +12,7 @@ export type Resolutions = {
   [key: `channel:${string}`]: ResolvableAPIChannel | undefined | null;
   [key: `member:${string}`]: ResolvableAPIGuildMember | undefined | null;
   [key: `role:${string}`]: ResolvableAPIRole | undefined | null;
+  [key: `emoji:${string}`]: ResolvableAPIEmoji | undefined | null;
 };
 
 export type ResolutionKey = keyof Resolutions;
@@ -19,7 +20,8 @@ export type ResolutionKey = keyof Resolutions;
 type Resolvable =
   | ResolvableAPIChannel
   | ResolvableAPIGuildMember
-  | ResolvableAPIRole;
+  | ResolvableAPIRole
+  | ResolvableAPIEmoji;
 
 class ResourceCacheManagerBase<T extends Resolvable> {
   constructor(
@@ -81,6 +83,13 @@ export type ResolvableAPIRole = Pick<
   | "icon"
   | "unicode_emoji"
 >;
+
+export type ResolvableAPIEmoji = {
+  id: string | undefined;
+  name: string;
+  animated?: boolean;
+  available?: false;
+};
 
 class ChannelResourceManager extends ResourceCacheManagerBase<ResolvableAPIChannel> {
   get(id: string) {
@@ -184,7 +193,34 @@ class RoleResourceManager extends ResourceCacheManagerBase<ResolvableAPIRole> {
   }
 }
 
-export type ResolutionScope = "channel" | "member" | "role";
+class EmojiResourceManager extends ResourceCacheManagerBase<ResolvableAPIEmoji> {
+  get(id: string) {
+    return this._get(`emoji:${id}`);
+  }
+
+  // async fetch(id: string) {
+  //   const resource = await this._fetch(BRoutes.emoji(id));
+  //   this._put(`emoji:${id}`, resource);
+  //   return resource;
+  // }
+
+  // async fetchMany(guildId: string) {
+  //   const resource = await this._fetch<ResolvableAPIEmoji[]>(
+  //     BRoutes.guildEmojis(guildId),
+  //   );
+  //   if (!resource) return [];
+
+  //   this.manager.fill(
+  //     ...resource.map(
+  //       (r) =>
+  //         [`emoji:${r.id}`, r] satisfies [ResolutionKey, ResolvableAPIEmoji],
+  //     ),
+  //   );
+  //   return resource;
+  // }
+}
+
+export type ResolutionScope = "channel" | "member" | "role" | "emoji";
 
 // There's also weird behavior when mentioning webhooks that I'm
 // not sure how to emulate so I'm leaving it out for now.
@@ -196,6 +232,7 @@ export class CacheManager {
   // public guilds: GuildResourceManager;
   public member: MemberResourceManager;
   public role: RoleResourceManager;
+  public emoji: EmojiResourceManager;
 
   constructor(
     token: string,
@@ -209,6 +246,7 @@ export class CacheManager {
     // this.guilds = new GuildResourceManager(token);
     this.member = new MemberResourceManager(this, token);
     this.role = new RoleResourceManager(this, token);
+    this.emoji = new EmojiResourceManager(this, token);
   }
 
   /**
@@ -243,6 +281,15 @@ export class CacheManager {
         this.role.fetch("@global", request.key);
         break;
       }
+      case "emoji": {
+        // We don't really need to fetch emojis unless we want its details, so
+        // for now we just append it to state for the emoji pickers.
+        this.emoji._put(`emoji:${request.key}`, {
+          id: request.key,
+          name: "emoji",
+        });
+        break;
+      }
       default:
         break;
     }
@@ -253,6 +300,7 @@ export class CacheManager {
       channel: [],
       member: [],
       role: [],
+      emoji: [],
     };
     for (const request of requests) {
       const [scope, key] = request.split(":");

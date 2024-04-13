@@ -1,6 +1,10 @@
 import { useCallback, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
-import { CacheManager } from "~/util/cache/CacheManager";
+import {
+  CacheManager,
+  ResolutionKey,
+  ResolvableAPIEmoji,
+} from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { EmojiPicker } from "./EmojiPicker";
 import { MentionsPicker } from "./MentionsPicker";
@@ -108,6 +112,16 @@ export const PopoutRichPicker: React.FC<
           <EmojiPicker
             id={id}
             className="border-none shadow-none w-full"
+            customEmojis={
+              cache
+                ? Object.entries(cache.state)
+                    .filter(
+                      (entry): entry is [ResolutionKey, ResolvableAPIEmoji] =>
+                        entry[0].startsWith("emoji:") && !!entry[1],
+                    )
+                    .map((entry) => entry[1])
+                : []
+            }
             onEmojiClick={(emoji, event) => {
               insertText(
                 (emoji.keywords.includes("discord")

@@ -9,6 +9,7 @@ import { refreshAuthToken } from "~/routes/s.$guildId";
 import { discordRoles, getDb, makeSnowflake } from "~/store.server";
 import {
   ResolvableAPIChannel,
+  ResolvableAPIEmoji,
   ResolvableAPIRole,
 } from "~/util/cache/CacheManager";
 import { LoaderArgs } from "~/util/loader";
@@ -94,5 +95,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         name: channel.name,
         type: getChannelIconType(channel),
       })) satisfies ResolvableAPIChannel[] as ResolvableAPIChannel[],
+    emojis: guild.emojis.map((emoji) => ({
+      id: emoji.id ?? undefined,
+      // biome-ignore lint/style/noNonNullAssertion: Only nullable in reactions
+      name: emoji.name!,
+      animated: emoji.animated ? emoji.animated : undefined,
+      available: !emoji.available ? emoji.available : undefined,
+    })) satisfies ResolvableAPIEmoji[] as ResolvableAPIEmoji[],
   };
 };
