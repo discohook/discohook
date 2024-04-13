@@ -356,6 +356,7 @@ export default function Index() {
         updateTargets={updateTargets}
         webhookId={editingWebhook}
         user={user}
+        cache={cache}
       />
       <MessageSaveModal
         open={sharing}

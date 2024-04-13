@@ -81,6 +81,7 @@ export const resources = {
       editingLinkBackupNote:
         "You're editing a backup, so your work is saved periodically while you edit.",
       channel: "Channel",
+      webhookChannelMentionAndThreads: "<#{{0}}> (and its threads)",
       cannotChangeChannel: "Webhook channel must be set inside Discord.",
       requestedBy: "Requested on Discohook by {{username}}",
       resetAvatar: "Remove",

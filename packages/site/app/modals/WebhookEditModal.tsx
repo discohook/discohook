@@ -7,7 +7,9 @@ import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { Markdown } from "~/components/preview/Markdown";
 import { User } from "~/session.server";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { cdn, modifyWebhook } from "~/util/discord";
 import { getUserTag } from "~/util/users";
 import { Modal, ModalProps } from "./Modal";
@@ -18,10 +20,11 @@ export const WebhookEditModal = (
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
     webhookId: string | undefined;
     user?: User | null;
+    cache?: CacheManager;
   },
 ) => {
   const { t } = useTranslation();
-  const { webhookId, targets, updateTargets, user } = props;
+  const { webhookId, targets, updateTargets, user, cache } = props;
   const webhook = webhookId ? targets[webhookId] : undefined;
 
   type Payload = { name?: string; avatarUrl?: string | null };
@@ -149,8 +152,26 @@ export const WebhookEditModal = (
             <div>
               {/* TODO: A way to change the channel with the bot */}
               <p className="text-sm font-medium">{t("channel")}</p>
-              {/* <p>{t("cannotChangeChannel")}</p> */}
-              <p>ID: {webhook?.channel_id}</p>
+              {webhook &&
+                (cache ? (
+                  <div
+                    style={{
+                      // @ts-expect-error
+                      "--font-size": "1rem",
+                    }}
+                  >
+                    <Markdown
+                      content={t("webhookChannelMentionAndThreads", {
+                        replace: [webhook.channel_id],
+                      })}
+                      features="full"
+                      cache={cache}
+                    />
+                    <p>{t("cannotChangeChannel")}</p>
+                  </div>
+                ) : (
+                  <p>ID: {webhook?.channel_id}</p>
+                ))}
             </div>
           </div>
         </div>
