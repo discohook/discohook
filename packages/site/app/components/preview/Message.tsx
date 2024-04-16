@@ -125,17 +125,19 @@ export const Message: React.FC<{
 
   const allAttachments = [
     ...(message.attachments ?? []),
-    ...(files?.map(
-      ({ id, file, url }) =>
-        ({
-          id,
-          filename: file.name,
-          size: file.size,
-          content_type: file.type,
-          url: url ?? "#",
-          proxy_url: "#",
-        }) satisfies APIAttachment,
-    ) ?? []),
+    ...(files
+      ?.filter((f) => f.embed !== true)
+      ?.map(
+        ({ id, file, url }) =>
+          ({
+            id,
+            filename: file.name,
+            size: file.size,
+            content_type: file.type,
+            url: url ?? "#",
+            proxy_url: "#",
+          }) satisfies APIAttachment,
+      ) ?? []),
   ];
   const fileAttachments = allAttachments.filter(
     (a) =>
@@ -262,6 +264,7 @@ export const Message: React.FC<{
                 <Embed
                   key={`message-preview-embed-${i}`}
                   {...embedData}
+                  files={files}
                   setImageModalData={setImageModalData}
                   cache={cache}
                 />

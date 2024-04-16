@@ -1,5 +1,6 @@
 import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
+import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
@@ -61,7 +62,9 @@ export const EmbedEditor: React.FC<{
   embed: APIEmbed;
   embedIndex: number;
   data: QueryData;
+  files: DraftFile[];
   setData: React.Dispatch<React.SetStateAction<QueryData>>;
+  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   open?: boolean;
   cache?: CacheManager;
 }> = ({
@@ -70,7 +73,9 @@ export const EmbedEditor: React.FC<{
   embed,
   embedIndex: i,
   data,
+  files,
   setData,
+  setFiles,
   open,
   cache,
 }) => {
@@ -94,12 +99,24 @@ export const EmbedEditor: React.FC<{
       partialEmbed.footer = undefined;
     }
 
-    messageEmbeds.splice(i, 1, {
-      ...embed,
-      ...partialEmbed,
-    });
+    const newEmbed = { ...embed, ...partialEmbed };
+    messageEmbeds.splice(i, 1, newEmbed);
 
     setData({ ...data });
+    setFiles([
+      ...files.map((f) => {
+        const uri = `attachment://${f.file.name}`;
+        f.embed =
+          messageEmbeds.filter(
+            (e) =>
+              e.author?.icon_url === uri ||
+              e.image?.url === uri ||
+              e.thumbnail?.url === uri ||
+              e.footer?.icon_url === uri,
+          ).length !== 0;
+        return f;
+      }),
+    ]);
   };
 
   // The first embed in the gallery is the parent that the children will be merged into
@@ -292,11 +309,11 @@ export const EmbedEditor: React.FC<{
                 className="w-full"
                 type="url"
                 value={embed.author?.icon_url ?? ""}
-                onInput={(e) =>
+                onInput={({ currentTarget }) =>
                   updateEmbed({
                     author: {
                       ...(embed.author ?? { name: "" }),
-                      icon_url: e.currentTarget.value,
+                      icon_url: currentTarget.value,
                     },
                   })
                 }
@@ -511,8 +528,8 @@ export const EmbedEditor: React.FC<{
               type="url"
               className="w-full"
               value={embed.image?.url ?? ""}
-              onInput={(e) =>
-                updateEmbed({ image: { url: e.currentTarget.value } })
+              onInput={({ currentTarget }) =>
+                updateEmbed({ image: { url: currentTarget.value } })
               }
             />
           </div>
@@ -543,8 +560,8 @@ export const EmbedEditor: React.FC<{
             type="url"
             className="w-full"
             value={embed.thumbnail?.url ?? ""}
-            onInput={(e) =>
-              updateEmbed({ thumbnail: { url: e.currentTarget.value } })
+            onInput={({ currentTarget }) =>
+              updateEmbed({ thumbnail: { url: currentTarget.value } })
             }
           />
         )}
@@ -578,11 +595,11 @@ export const EmbedEditor: React.FC<{
                 className="w-full"
                 type="url"
                 value={embed.footer?.icon_url ?? ""}
-                onInput={(e) =>
+                onInput={({ currentTarget }) =>
                   updateEmbed({
                     footer: {
                       ...(embed.footer ?? { text: "" }),
-                      icon_url: e.currentTarget.value,
+                      icon_url: currentTarget.value,
                     },
                   })
                 }

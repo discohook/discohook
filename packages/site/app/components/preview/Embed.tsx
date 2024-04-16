@@ -7,6 +7,7 @@ import {
 import moment, { Moment } from "moment";
 import { Trans } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
+import { DraftFile } from "~/routes/_index";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
@@ -22,12 +23,33 @@ const getI18nTimestampFooterKey = (date: Moment) => {
   return "other";
 };
 
+export const resolveAttachmentUri = (
+  uri: string,
+  files?: DraftFile[] | undefined,
+) => {
+  if (uri.startsWith("attachment://")) {
+    const filename = uri.replace(/^attachment:\/\//, "");
+    return files?.find((file) => file.file.name === filename);
+  }
+};
+
+const getImageUri = (uri: string, files?: DraftFile[] | undefined) => {
+  const file = resolveAttachmentUri(uri, files);
+  if (file) {
+    return file.url ?? "";
+  } else if (!uri.startsWith("https://") || !uri.startsWith("http://")) {
+    return "";
+  }
+  return uri;
+};
+
 export const Embed: React.FC<{
   embed: APIEmbed;
   extraImages?: APIEmbedImage[];
+  files?: DraftFile[];
   cache?: CacheManager;
   setImageModalData?: SetImageModalData;
-}> = ({ embed, extraImages, cache, setImageModalData }) => {
+}> = ({ embed, extraImages, files, cache, setImageModalData }) => {
   const fieldLines: APIEmbedField[][] = [];
   for (const field of embed.fields ?? []) {
     const currentLine = fieldLines[fieldLines.length - 1];
@@ -86,7 +108,7 @@ export const Embed: React.FC<{
             {embed.author.icon_url && (
               <img
                 className="h-6 w-6 mr-2 object-contain rounded-full"
-                src={embed.author.icon_url}
+                src={getImageUri(embed.author.icon_url, files)}
                 alt="Author"
               />
             )}
@@ -202,7 +224,7 @@ export const Embed: React.FC<{
                     content_type: image.url.endsWith(".gif")
                       ? "image/gif"
                       : "image/png",
-                    url: image.url,
+                    url: getImageUri(image.url, files),
                   }) as APIAttachment,
               )}
               setImageModalData={setImageModalData}
@@ -242,7 +264,7 @@ export const Embed: React.FC<{
             }}
           >
             <img
-              src={embed.thumbnail.url}
+              src={getImageUri(embed.thumbnail.url, files)}
               className="rounded max-w-[80px] max-h-20"
               alt="Thumbnail"
             />
@@ -255,7 +277,7 @@ export const Embed: React.FC<{
                 {embed.footer.icon_url && (
                   <img
                     className="h-5 w-5 mr-2 object-contain rounded-full"
-                    src={embed.footer.icon_url}
+                    src={getImageUri(embed.footer.icon_url, files)}
                     alt="Footer"
                   />
                 )}

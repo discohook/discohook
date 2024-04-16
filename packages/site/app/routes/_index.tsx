@@ -77,6 +77,7 @@ export interface DraftFile {
   id: string;
   file: File;
   url?: string;
+  embed?: boolean;
 }
 
 export interface HistoryItem {

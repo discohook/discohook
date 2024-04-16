@@ -176,12 +176,15 @@ export const MessageEditor: React.FC<{
             />
           </EmbedEditorSection>
           <EmbedEditorSection name={`Files (${files.length}/10)`}>
-            {files.map(({ id, file }) => (
+            {files.map(({ id, file, embed }) => (
               <div
                 key={`file-${id}`}
                 className="rounded border py-1.5 px-[14px] bg-gray-300 border-gray-200 dark:border-transparent dark:bg-[#292b2f] flex"
               >
-                <CoolIcon icon="File_Blank" className="text-xl my-auto mr-2" />
+                <CoolIcon
+                  icon={embed ? "Window" : "File_Blank"}
+                  className="text-xl my-auto mr-2"
+                />
                 <div className="my-auto truncate">
                   <p className="font-medium">{file.name}</p>
                   {/* <p className="text-sm">{file.size} bytes</p> */}
@@ -258,7 +261,9 @@ export const MessageEditor: React.FC<{
                 embed={embed}
                 embedIndex={ei}
                 data={data}
+                files={files}
                 setData={setData}
+                setFiles={setFiles}
                 cache={cache}
               />
             ))}
