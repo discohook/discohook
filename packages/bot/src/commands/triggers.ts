@@ -38,7 +38,6 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
           ctx.rest,
           guild,
         );
-        console.log(configs);
         if (configs.length !== 0) {
           await ctx.followup.editOriginalMessage({
             content: "This server already has a trigger for that event.",
