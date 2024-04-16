@@ -93,6 +93,29 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     relationName: "User_GuildedUser",
   }),
   updatedTriggers: many(triggers, { relationName: "User_Trigger-updated" }),
+  tokens: many(tokens, { relationName: "User_Token" }),
+}));
+
+export const tokens = pgTable("Token", {
+  id: snowflakePk(),
+  platform: text("platform").$type<"discord" | "guilded">().notNull(),
+  prefix: text("prefix").$type<"user" | "bot">().notNull(),
+  userId: snowflake("userId").references(() => users.id),
+  expiresAt: date("expiresAt").notNull(),
+  lastUsedAt: date("lastUsedAt"),
+  // "Add visitor location headers" needs to be enabled for this
+  country: text("lastUsedCountry"),
+});
+
+export const tokensRelations = relations(tokens, ({ one, many }) => ({
+  user: one(users, {
+    fields: [tokens.userId],
+    references: [users.id],
+    relationName: "User_Token",
+  }),
+  guilds: many(discordGuilds, {
+    relationName: "Token_DiscordGuild",
+  }),
 }));
 
 export const discordUsers = pgTable("DiscordUser", {
@@ -173,6 +196,9 @@ export const discordGuildsRelations = relations(discordGuilds, ({ many }) => ({
   messageLogEntries: many(messageLogEntries, {
     relationName: "DiscordGuild_MessageLogEntry",
   }),
+  tokens: many(tokens, {
+    relationName: "Token_DiscordGuild",
+  }),
 }));
 
 export const discordRoles = pgTable(
@@ -215,7 +241,8 @@ export const discordMembers = pgTable(
     guildId: snowflake("guildId")
       .references(() => discordGuilds.id, { onDelete: "cascade" })
       .notNull(),
-    permissions: text("permissions").default("0"),
+    permissions: text("permissions").default("0").notNull(),
+    owner: boolean("owner").default(false).notNull(),
   },
   (table) => ({
     unq: unique().on(table.userId, table.guildId),

@@ -5,11 +5,10 @@ import {
   RESTGetAPIUserResult,
   Routes,
 } from "discord-api-types/v10";
-import { PermissionsBitField } from "discord-bitflag";
 import { z } from "zod";
-import { refreshAuthToken } from "~/routes/s.$guildId";
-import { discordMembers, getDb } from "~/store.server";
+import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { ResolvableAPIGuildMember } from "~/util/cache/CacheManager";
+import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
@@ -19,15 +18,28 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     userId: snowflakeAsString(),
   });
 
-  let permissions: PermissionsBitField | undefined;
+  const [token, respond] = await authorizeRequest(request, context);
   if (guildId !== "@global") {
-    // You only need to be a member for this route
-    ({ permissions } = await refreshAuthToken(
-      String(guildId),
-      request,
-      context,
-      true,
-    ));
+    const { member: userMember } = await getTokenGuildPermissions(
+      token,
+      guildId,
+      context.env,
+    );
+    if (userMember && userId === token.user.discordId) {
+      // Self-mention and fresh token assignment
+      // biome-ignore lint/style/noNonNullAssertion:
+      const user = userMember.user!;
+      return respond(
+        json({
+          nick: userMember.nick,
+          user: {
+            id: user.id,
+            global_name: user.global_name,
+            username: user.username,
+          },
+        } satisfies ResolvableAPIGuildMember),
+      );
+    }
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
@@ -45,8 +57,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         },
       };
     } catch (e) {
-      console.log(e);
-      throw json({ message: "Failed to fetch user - they may not exist" }, 404);
+      throw respond(
+        json(
+          isDiscordError(e) ? e.rawError : { message: "Failed to fetch user" },
+          404,
+        ),
+      );
     }
   } else {
     try {
@@ -64,30 +80,16 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         },
       };
     } catch (e) {
-      console.log(e);
-      throw json(
-        { message: "Failed to fetch member - they may not exist" },
-        404,
+      throw respond(
+        json(
+          isDiscordError(e)
+            ? e.rawError
+            : { message: "Failed to fetch member" },
+          404,
+        ),
       );
     }
   }
 
-  if (guildId !== "@global") {
-    const db = getDb(context.env.DATABASE_URL);
-    await db
-      .insert(discordMembers)
-      .values({
-        guildId,
-        userId,
-        permissions: permissions?.toString(),
-      })
-      .onConflictDoUpdate({
-        target: [discordMembers.guildId, discordMembers.userId],
-        set: {
-          permissions: permissions?.toString(),
-        },
-      });
-  }
-
-  return member;
+  return respond(json(member));
 };

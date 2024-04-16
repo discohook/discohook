@@ -3,21 +3,14 @@ import { json } from "@remix-run/cloudflare";
 import {
   APIRole,
   RESTGetAPIGuildRolesResult,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
-import { PermissionsBitField } from "discord-bitflag";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
-import { refreshAuthToken } from "~/routes/s.$guildId";
-import {
-  discordRoles,
-  eq,
-  getDb,
-  makeSnowflake
-} from "~/store.server";
-import {
-  ResolvableAPIRole
-} from "~/util/cache/CacheManager";
+import { authorizeRequest } from "~/session.server";
+import { discordRoles, eq, getDb, makeSnowflake } from "~/store.server";
+import { ResolvableAPIRole } from "~/util/cache/CacheManager";
+import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
@@ -27,20 +20,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     roleId: snowflakeAsString(),
   });
 
-  let permissions: PermissionsBitField | undefined;
-  if (guildId !== "@global") {
-    // You only need to be a member for this route
-    ({ permissions } = await refreshAuthToken(
-      String(guildId),
-      request,
-      context,
-      true,
-    ));
-  }
-
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-  const db = getDb(context.env.DATABASE_URL);
+  const [, respond] = await authorizeRequest(request, context);
 
+  const db = getDb(context.env.DATABASE_URL);
   const dbRole = await db.query.discordRoles.findFirst({
     where: eq(discordRoles.id, roleId),
     columns: {
@@ -60,20 +43,21 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     // @ts-expect-error
     // biome-ignore lint/performance/noDelete: Actually remove it from response so it doesn't get cached
     delete dbRole.unicodeEmoji;
-    return {
-      ...dbRole,
-      id: String(dbRole.id),
-      color: dbRole.color ?? 0,
-      managed: dbRole.managed ?? false,
-      mentionable: dbRole.mentionable ?? false,
-      unicode_emoji: unicodeEmoji,
-    } satisfies ResolvableAPIRole;
+    return respond(
+      json({
+        ...dbRole,
+        id: String(dbRole.id),
+        color: dbRole.color ?? 0,
+        managed: dbRole.managed ?? false,
+        mentionable: dbRole.mentionable ?? false,
+        unicode_emoji: unicodeEmoji,
+      } satisfies ResolvableAPIRole),
+    );
   }
 
   if (guildId === "@global") {
-    throw json(
-      { message: "The role could not be found without a guild ID" },
-      404,
+    throw respond(
+      json({ message: "The role could not be found without a guild ID" }, 404),
     );
   }
 
@@ -83,8 +67,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       Routes.guildRoles(String(guildId)),
     )) as RESTGetAPIGuildRolesResult;
   } catch (e) {
-    console.log(e);
-    throw json({ message: "Failed to fetch roles" }, 404);
+    throw respond(
+      json(
+        isDiscordError(e) ? e.rawError : { message: "Failed to fetch roles" },
+        404,
+      ),
+    );
   }
 
   if (roles.length !== 0) {
@@ -123,17 +111,19 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const role = roles.find((r) => r.id === String(roleId));
   if (!role) {
-    throw json({ message: "The role does not exist" }, 404);
+    throw respond(json({ message: "The role does not exist" }, 404));
   }
 
-  return {
-    id: role.id,
-    name: role.name,
-    color: role.color,
-    icon: role.icon,
-    unicode_emoji: role.unicode_emoji,
-    managed: role.managed,
-    mentionable: role.mentionable,
-    position: role.position,
-  } satisfies ResolvableAPIRole;
+  return respond(
+    json({
+      id: role.id,
+      name: role.name,
+      color: role.color,
+      icon: role.icon,
+      unicode_emoji: role.unicode_emoji,
+      managed: role.managed,
+      mentionable: role.mentionable,
+      position: role.position,
+    } satisfies ResolvableAPIRole),
+  );
 };

@@ -6,7 +6,9 @@ import {
   RESTGetAPIChannelResult,
   Routes,
 } from "discord-api-types/v10";
+import { authorizeRequest } from "~/session.server";
 import { ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
@@ -43,6 +45,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { channelId } = zxParseParams(params, {
     channelId: snowflakeAsString(),
   });
+  const [, respond] = await authorizeRequest(request, context);
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   let channel: ResolvableAPIChannel;
@@ -56,9 +59,13 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       type: getChannelIconType(rawChannel),
     };
   } catch (e) {
-    console.log(e);
-    throw json({ message: "Failed to fetch channel - it may not exist" }, 404);
+    throw respond(
+      json(
+        isDiscordError(e) ? e.rawError : { message: "Failed to fetch channel" },
+        404,
+      ),
+    );
   }
 
-  return channel;
+  return respond(json(channel));
 };

@@ -86,6 +86,7 @@ export const getDiscordAuth = (
             guildId: makeSnowflake(guild.id),
             userId: makeSnowflake(j.id),
             permissions: guild.permissions,
+            owner: guild.owner,
           })),
         )
         .onConflictDoUpdate({

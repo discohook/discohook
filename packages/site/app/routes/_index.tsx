@@ -107,7 +107,7 @@ export default function Index() {
     useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
-  const cache = user ? useCache("") : undefined;
+  const cache = user ? useCache() : undefined;
 
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");

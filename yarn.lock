@@ -4255,6 +4255,7 @@ cron-parser@shayypy/cron-parser:
     i18next: "npm:^23.8.2"
     insert-text-at-cursor: "npm:^0.3.0"
     isbot: "npm:^3.6.8"
+    jose: "npm:^5.2.4"
     moment: "npm:^2.30.1"
     react: "npm:^18.2.0"
     react-color: "npm:^2.19.3"
@@ -6610,6 +6611,13 @@ cron-parser@shayypy/cron-parser:
   bin:
     jiti: bin/jiti.js
   checksum: 10c0/7f361219fe6c7a5e440d5f1dba4ab763a5538d2df8708cdc22561cf25ea3e44b837687931fca7cdd8cdd9f567300e90be989dd1321650045012d8f9ed6aab07f
+  languageName: node
+  linkType: hard
+
+"jose@npm:^5.2.4":
+  version: 5.2.4
+  resolution: "jose@npm:5.2.4"
+  checksum: 10c0/e566417f66c36a8e1e9e899c18a9bf31d4e5a29c0e304e695564c3969b0e44594e62c68ed2b0fe2408fb99237973de95fe6a5cdb9c85ad739bd32fb7025232c0
   languageName: node
   linkType: hard
 
@@ -9844,7 +9852,7 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=1b2c80&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=39f3af&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
@@ -9852,7 +9860,7 @@ cron-parser@shayypy/cron-parser:
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/631df652b144a95dd236793f4c129c2e6bece8aefdedcd82d09a1471ff7c6547d717858af2abfb31289207592305454c1daff081cf0dfe2ac8316c04ec0688c6
+  checksum: 10c0/079c15ac8317e7a2097f89668fbcdad621a968e19baeffb54d2c452ef5afca02bb63484072c8a8516b0bd2932943d8908a46a914c330b3cab3ff7db857a223a6
   languageName: node
   linkType: hard
 

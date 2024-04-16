@@ -5,12 +5,11 @@ import {
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
-import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import { PermissionFlags } from "discord-bitflag";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
-import { z } from "zod";
 import { zx } from "zodix";
-import { refreshAuthToken, verifyAuthToken } from "~/routes/s.$guildId";
+import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
@@ -19,36 +18,19 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });
-  const {
-    page,
-    limit,
-    token: userToken,
-  } = zxParseQuery(request, {
+  const { page, limit } = zxParseQuery(request, {
     limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
     page: zx.IntAsString.refine((v) => v >= 0).default("0"),
-    token: z.ostring(),
   });
-  let owner: boolean;
-  let permissions: string;
-  if (userToken) {
-    ({ owner, permissions } = await verifyAuthToken(request, context));
-  } else {
-    const {
-      guild,
-      member,
-      permissions: p,
-      // token: t,
-    } = await refreshAuthToken(String(guildId), request, context, true);
-    owner = guild.owner_id === member.user?.id;
-    permissions = String(p.value);
-  }
-  if (
-    !owner &&
-    !new PermissionsBitField(BigInt(permissions)).has(
-      PermissionFlags.ManageWebhooks,
-    )
-  ) {
-    throw json({ message: "Missing permissions" }, 403);
+
+  const [token, respond] = await authorizeRequest(request, context);
+  const { owner, permissions } = await getTokenGuildPermissions(
+    token,
+    guildId,
+    context.env,
+  );
+  if (!owner && !permissions.has(PermissionFlags.ManageWebhooks)) {
+    throw respond(json({ message: "Missing permissions" }, 403));
   }
 
   const db = getDb(context.env.DATABASE_URL);
@@ -85,7 +67,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       )) as RESTGetAPIGuildWebhooksResult;
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(e.raw, 500);
+        throw respond(json(e.rawError, 500));
       }
     }
     if (freshWebhooks) {
@@ -128,9 +110,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     }
   }
 
-  return guildWebhooks.map((gw) => ({
-    ...gw,
-    canAccessToken:
-      gw.applicationId === context.env.DISCORD_CLIENT_ID || !gw.applicationId,
-  }));
+  return respond(
+    json(
+      guildWebhooks.map((gw) => ({
+        ...gw,
+        canAccessToken:
+          gw.applicationId === context.env.DISCORD_CLIENT_ID ||
+          !gw.applicationId,
+      })),
+    ),
+  );
 };

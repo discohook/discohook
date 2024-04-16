@@ -1,7 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { parseExpression } from "cron-parser";
 import { z } from "zod";
-import { zx } from "zodix";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
   ScheduledRunData,
@@ -9,10 +8,11 @@ import {
   backups,
   eq,
   getDb,
+  makeSnowflake,
 } from "~/store.server";
 import { Env } from "~/types/env";
 import { WEBHOOK_URL_RE } from "~/util/constants";
-import { zxParseQuery } from "~/util/zod";
+import { snowflakeAsString, zxParseQuery } from "~/util/zod";
 
 export class DurableScheduler implements DurableObject {
   constructor(
@@ -22,16 +22,16 @@ export class DurableScheduler implements DurableObject {
 
   async fetch(request: Request) {
     const data = zxParseQuery(request, {
-      id: zx.IntAsString,
+      id: snowflakeAsString(),
       nextRunAt: z.string().datetime(),
     });
-    await this.state.storage.put("backupId", data.id);
+    await this.state.storage.put("backupId", String(data.id));
     await this.state.storage.setAlarm(new Date(data.nextRunAt));
     return new Response(undefined, { status: 204 });
   }
 
   async alarm() {
-    const backupId = await this.state.storage.get<number>("backupId");
+    const backupId = await this.state.storage.get<string>("backupId");
     if (!backupId) {
       console.log("No backupId stored for this durable object.");
       return;
@@ -39,7 +39,7 @@ export class DurableScheduler implements DurableObject {
 
     const db = getDb(this.env.DATABASE_URL);
     const backup = await db.query.backups.findFirst({
-      where: eq(backups.id, backupId),
+      where: eq(backups.id, makeSnowflake(backupId)),
       columns: {
         data: true,
         scheduled: true,
@@ -123,7 +123,7 @@ export class DurableScheduler implements DurableObject {
         nextRunAt,
         scheduled: backup.cron ? true : false,
       })
-      .where(eq(backups.id, backupId));
+      .where(eq(backups.id, makeSnowflake(backupId)));
 
     if (nextRunAt) {
       await this.state.storage.setAlarm(nextRunAt);

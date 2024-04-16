@@ -2,16 +2,11 @@ import { REST } from "@discordjs/rest";
 import {
   MetaFunction,
   SerializeFrom,
-  json,
-  redirect,
+  json
 } from "@remix-run/cloudflare";
 import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
 import {
-  APIGuild,
-  APIGuildMember,
-  ButtonStyle,
-  RESTGetAPIGuildMemberResult,
-  Routes,
+  ButtonStyle
 } from "discord-api-types/v10";
 import {
   BitFlagResolvable,
@@ -19,202 +14,58 @@ import {
   PermissionsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
-import { eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { refreshDiscordOAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { TabHeader, TabsWindow } from "~/components/tabs";
-import { getUser, getUserId } from "~/session.server";
-import { getDb, oauthInfo } from "~/store.server";
+import {
+  authorizeRequest,
+  getGuild,
+  getTokenGuildPermissions
+} from "~/session.server";
 import { cdn } from "~/util/discord";
-import { Context, LoaderArgs } from "~/util/loader";
-import { randomString } from "~/util/text";
-import { zxParseParams, zxParseQuery } from "~/util/zod";
+import { LoaderArgs } from "~/util/loader";
+import { zxParseParams } from "~/util/zod";
 import { loader as ApiGetAuditLogGuild } from "../api/v1/audit-log.$guildId";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import { Cell } from "./donate";
-
-export const authenticateGuildMember = async (
-  guildId: string,
-  request: Request,
-  context: Context,
-  dataOnly = true,
-) => {
-  const user = await getUser(request, context, dataOnly ? false : undefined);
-  if (!user) {
-    throw json({ message: "Must be logged in" }, 401);
-  }
-  if (!user.discordUser) {
-    throw json(
-      { message: "A Discord account must be linked to perform this action" },
-      401,
-    );
-  }
-
-  const db = getDb(context.env.DATABASE_URL);
-  let oauth = await db.query.oauthInfo.findFirst({
-    where: eq(oauthInfo.discordId, user.discordUser.id),
-  });
-  if (oauth) oauth = await refreshDiscordOAuth(db, context.env, oauth);
-  if (!oauth) {
-    if (dataOnly) {
-      throw json(
-        { message: "No OAuth information is available, please log in again" },
-        401,
-      );
-    } else {
-      throw redirect(`/auth/discord?redirect=/s/${guildId}`);
-    }
-  }
-
-  const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-  let guild: APIGuild;
-  try {
-    guild = (await rest.get(Routes.guild(guildId))) as APIGuild;
-    await context.env.KV.put(
-      `cache-guild-${guildId}`,
-      JSON.stringify({
-        id: guild.id,
-        name: guild.name,
-        icon: guild.icon,
-      }),
-      { expirationTtl: 10800 }, // 3 hours
-    );
-  } catch {
-    if (dataOnly) {
-      throw json(
-        { message: "Server does not exist or Discohook Utils is not a member of it" },
-        404,
-      );
-    } else {
-      throw redirect(`/bot?guildId=${guildId}`);
-    }
-  }
-  let member: APIGuildMember;
-  try {
-    member = (await rest.get(Routes.userGuildMember(guildId), {
-      headers: { Authorization: `Bearer ${oauth.accessToken}` },
-      auth: false,
-    })) as RESTGetAPIGuildMemberResult;
-  } catch (e) {
-    console.log(e);
-    throw json(
-      { message: "Server does not exist or you are not a member of it" },
-      404,
-    );
-  }
-
-  const permissions = new PermissionsBitField(
-    member.roles
-      .map((roleId) => {
-        const role = guild.roles.find((r) => r.id === roleId);
-        return role?.permissions ?? "0";
-      })
-      .reduce((prev, cur) => BigInt(cur) | prev, BigInt(0)),
-  );
-
-  return {
-    guild,
-    user,
-    member,
-    permissions,
-  };
-};
-
-export interface AuthTokenData {
-  userId: string;
-  guildId: string;
-  owner: boolean;
-  permissions: string;
-  accessed: number;
-}
-
-// It takes several seconds to fetch all the data that we need to verify
-// permissions for a user, so instead we cache what we actually need and
-// let clients authorize subrequests with just a token
-export const verifyAuthToken = async (request: Request, context: Context) => {
-  const userId = await getUserId(request, context);
-  if (!userId) {
-    throw json({ message: "Must be logged in" }, 401);
-  }
-  const { token } = zxParseQuery(request, { token: z.string() });
-  const key = `auth-token-${token}`;
-  const data = await context.env.KV.get<AuthTokenData>(key, "json");
-  if (!data || data.userId !== String(userId)) {
-    throw json({ message: "Invalid auth token" }, 401);
-  }
-
-  // We have a time limit of 1 hour per token, which shrinks (or is renewed
-  // for a fraction of an hour) whenever the token is used, and it is never
-  // renewed after it's been used 20 times. After the token expires, users
-  // must get a new one by refreshing the page.
-  data.accessed += 1;
-  if (data.accessed <= 20) {
-    await context.env.KV.put(key, JSON.stringify(data), {
-      expirationTtl: Math.max(Math.ceil(3600 / data.accessed), 60),
-    });
-  }
-
-  return data;
-};
-
-export const refreshAuthToken = async (
-  guildId: string,
-  request: Request,
-  context: Context,
-  dataOnly?: boolean,
-) => {
-  const data = await authenticateGuildMember(
-    guildId,
-    request,
-    context,
-    dataOnly,
-  );
-  const auth = {
-    userId: data.user.id.toString(),
-    guildId: data.guild.id,
-    owner: data.guild.owner_id === data.member.user?.id,
-    permissions: String(data.permissions.value),
-    accessed: 1,
-  } as AuthTokenData;
-
-  const token = randomString(100);
-  await context.env.KV.put(`auth-token-${token}`, JSON.stringify(auth), {
-    expirationTtl: 3600,
-  });
-
-  return { ...data, auth, token };
-};
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: z.string().refine((v) => !Number.isNaN(Number(v))),
   });
-  const { guild, user, member, permissions, token } = await refreshAuthToken(
-    guildId,
-    request,
-    context,
-    false,
-  );
-
-  return {
-    guild: {
-      id: guild.id,
-      name: guild.name,
-      icon: guild.icon,
-    },
-    user,
-    member: {
-      owner: member.user?.id === guild.owner_id,
-      permissions: String(permissions.value),
-    },
+  const [token, respond] = await authorizeRequest(request, context);
+  let { owner, permissions, guild } = await getTokenGuildPermissions(
     token,
-  };
+    guildId,
+    context.env,
+  );
+  if (!guild) {
+    guild = await getGuild(
+      guildId,
+      new REST().setToken(context.env.DISCORD_BOT_TOKEN),
+      context.env,
+    );
+  }
+
+  return respond(
+    json({
+      guild: {
+        id: guild.id,
+        name: guild.name,
+        icon: guild.icon,
+      },
+      user: token.user,
+      member: {
+        owner,
+        permissions: permissions.value.toString(),
+      },
+    }),
+  );
 };
 
 export const meta: MetaFunction = ({ data }) => {
@@ -241,7 +92,7 @@ export const meta: MetaFunction = ({ data }) => {
 const tabValues = ["home", "auditLog", "webhooks"] as const;
 
 export default () => {
-  const { guild, user, member, token } = useLoaderData<typeof loader>();
+  const { guild, user, member } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const permissions = new PermissionsBitField(BigInt(member.permissions));
   const has = (...flags: BitFlagResolvable[]) =>
@@ -260,15 +111,13 @@ export default () => {
     switch (tab) {
       case "auditLog": {
         if (!auditLogFetcher.data && auditLogFetcher.state === "idle") {
-          auditLogFetcher.load(`/api/v1/audit-log/${guild.id}?token=${token}`);
+          auditLogFetcher.load(`/api/v1/audit-log/${guild.id}`);
         }
         break;
       }
       case "webhooks": {
         if (!webhooksFetcher.data && webhooksFetcher.state === "idle") {
-          webhooksFetcher.load(
-            `/api/v1/guilds/${guild.id}/webhooks?token=${token}`,
-          );
+          webhooksFetcher.load(`/api/v1/guilds/${guild.id}/webhooks`);
         }
         break;
       }

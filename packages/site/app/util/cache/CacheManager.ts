@@ -24,10 +24,7 @@ type Resolvable =
   | ResolvableAPIEmoji;
 
 class ResourceCacheManagerBase<T extends Resolvable> {
-  constructor(
-    public manager: CacheManager,
-    private token: string,
-  ) {}
+  constructor(public manager: CacheManager) {}
 
   _get(key: ResolutionKey): T | undefined {
     return this.manager.state[key] as T;
@@ -40,9 +37,6 @@ class ResourceCacheManagerBase<T extends Resolvable> {
   async _fetch<RawT = T>(route: ApiRoute): Promise<RawT | null> {
     const response = await fetch(apiUrl(route), {
       method: "GET",
-      headers: {
-        Authorization: `User ${this.token}`,
-      },
     });
     const data = await response.json();
     if (!response.ok) {
@@ -235,18 +229,17 @@ export class CacheManager {
   public emoji: EmojiResourceManager;
 
   constructor(
-    token: string,
     state: Resolutions,
     setState: React.Dispatch<Partial<Resolutions>>,
   ) {
     this.state = state;
     this.setState = setState;
 
-    this.channel = new ChannelResourceManager(this, token);
-    // this.guilds = new GuildResourceManager(token);
-    this.member = new MemberResourceManager(this, token);
-    this.role = new RoleResourceManager(this, token);
-    this.emoji = new EmojiResourceManager(this, token);
+    this.channel = new ChannelResourceManager(this);
+    // this.guilds = new GuildResourceManage();
+    this.member = new MemberResourceManager(this);
+    this.role = new RoleResourceManager(this);
+    this.emoji = new EmojiResourceManager(this);
   }
 
   /**
@@ -316,11 +309,11 @@ export class CacheManager {
   }
 }
 
-export const useCache = (token: string) => {
+export const useCache = () => {
   const [state, setState] = useReducer(
     (d: Resolutions, partialD: Partial<Resolutions>) => ({ ...d, ...partialD }),
     {},
   );
-  const cache = new CacheManager(token, state, setState);
+  const cache = new CacheManager(state, setState);
   return cache;
 };

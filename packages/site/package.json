@@ -35,6 +35,7 @@
     "i18next": "^23.8.2",
     "insert-text-at-cursor": "^0.3.0",
     "isbot": "^3.6.8",
+    "jose": "^5.2.4",
     "moment": "^2.30.1",
     "react": "^18.2.0",
     "react-color": "^2.19.3",

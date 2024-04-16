@@ -1,8 +1,8 @@
 import { json } from "@remix-run/cloudflare";
-import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import { PermissionFlags } from "discord-bitflag";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { zx } from "zodix";
-import { verifyAuthToken } from "~/routes/s.$guildId";
+import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { getDb, messageLogEntries, webhooks } from "~/store.server";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
@@ -15,15 +15,18 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
     page: zx.IntAsString.refine((v) => v >= 0).default("0"),
   });
-  const { owner, permissions } = await verifyAuthToken(request, context);
+
+  const [token, respond] = await authorizeRequest(request, context);
+  const { owner, permissions } = await getTokenGuildPermissions(
+    token,
+    guildId,
+    context.env,
+  );
   if (
     !owner &&
-    !new PermissionsBitField(BigInt(permissions)).has(
-      PermissionFlags.ViewAuditLog,
-      PermissionFlags.ManageGuild,
-    )
+    !permissions.has(PermissionFlags.ViewAuditLog, PermissionFlags.ManageGuild)
   ) {
-    throw json({ message: "Missing permissions" }, 403);
+    throw respond(json({ message: "Missing permissions" }, 403));
   }
 
   const db = getDb(context.env.DATABASE_URL);
@@ -66,5 +69,5 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           },
         });
 
-  return { entries, webhooks: entryWebhooks };
+  return respond(json({ entries, webhooks: entryWebhooks }));
 };

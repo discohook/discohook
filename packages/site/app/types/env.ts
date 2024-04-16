@@ -4,6 +4,7 @@ export interface Env {
   __STATIC_CONTENT: Fetcher;
   // __STATIC_CONTENT_MANIFEST: Object;
   SESSION_SECRET: string;
+  TOKEN_SECRET: string;
   DISCORD_CLIENT_ID: string;
   DISCORD_CLIENT_SECRET: string;
   DISCORD_BOT_TOKEN: string;
