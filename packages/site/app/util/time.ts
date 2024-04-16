@@ -65,7 +65,7 @@ export const relativeTime = (
   t: TFunction<"translation", undefined>,
 ): string => {
   const [relativeFormat, n] = getRelativeDateFormat(date);
-  return t(`timestamp.relative.${relativeFormat}`, { replace: { n } });
+  return t(`timestamp.relative.${relativeFormat}`, { replace: { count: n } });
 };
 
 export const sleep = (ms: number) =>

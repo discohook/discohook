@@ -5,6 +5,7 @@ import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
+import DatePicker from "../DatePicker";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
@@ -585,6 +586,46 @@ export const EmbedEditor: React.FC<{
                     },
                   })
                 }
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <DatePicker
+                label="Date"
+                value={embed.timestamp ? new Date(embed.timestamp) : null}
+                onChange={(opt) =>
+                  updateEmbed({
+                    timestamp: opt ? opt.date.toISOString() : undefined,
+                  })
+                }
+                isClearable
+              />
+              <TextInput
+                label="Time"
+                type="time"
+                className="w-full"
+                disabled={!embed.timestamp}
+                value={
+                  embed.timestamp
+                    ? new Date(embed.timestamp).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false,
+                      })
+                    : ""
+                }
+                onChange={(e) => {
+                  if (embed.timestamp) {
+                    const [hours, minutes, seconds] = e.currentTarget.value
+                      .split(":")
+                      .map(Number);
+                    const timestamp = new Date(embed.timestamp);
+                    timestamp.setHours(hours, minutes, seconds, 0);
+                    updateEmbed({
+                      timestamp: timestamp.toISOString(),
+                    });
+                  }
+                }}
               />
             </div>
           </EmbedEditorSection>

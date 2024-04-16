@@ -77,7 +77,7 @@ export const TimePicker: React.FC<{
                   <CoolIcon icon="Clock" />{" "}
                   <Trans
                     i18nKey={`timestamp.${format}`}
-                    values={{ date: date.toDate(), n }}
+                    values={{ date: date.toDate(), count: n }}
                   />
                 </button>
               );

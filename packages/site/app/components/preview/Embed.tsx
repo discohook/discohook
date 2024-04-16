@@ -4,10 +4,23 @@ import {
   APIEmbedField,
   APIEmbedImage,
 } from "discord-api-types/v10";
+import moment, { Moment } from "moment";
+import { Trans } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
+
+const getI18nTimestampFooterKey = (date: Moment) => {
+  const now = moment();
+  const yesterday = now.clone().subtract(24, "hours");
+  const tomorrow = now.clone().add(24, "hours");
+  const cal = (d: Moment) => d.format("YYYY-MM-DD");
+  if (cal(date) === cal(yesterday)) return "yesterday";
+  else if (cal(date) === cal(now)) return "today";
+  else if (cal(date) === cal(tomorrow)) return "tomorrow";
+  return "other";
+};
 
 export const Embed: React.FC<{
   embed: APIEmbed;
@@ -235,18 +248,35 @@ export const Embed: React.FC<{
             />
           </button>
         )}
-        {embed.footer?.text && (
-          <div className="min-w-0 flex mt-2">
-            {embed.footer.icon_url && (
-              <img
-                className="h-5 w-5 mr-2 object-contain rounded-full"
-                src={embed.footer.icon_url}
-                alt="Footer"
-              />
+        {(embed.footer?.text || embed.timestamp) && (
+          <div className="min-w-0 flex mt-2 font-medium text-xs text-primary-600 dark:text-primary-230">
+            {embed.footer?.text && (
+              <>
+                {embed.footer.icon_url && (
+                  <img
+                    className="h-5 w-5 mr-2 object-contain rounded-full"
+                    src={embed.footer.icon_url}
+                    alt="Footer"
+                  />
+                )}
+                <p className="whitespace-pre-wrap inline-block my-auto">
+                  {embed.footer.text}
+                </p>
+              </>
             )}
-            <p className="font-medium text-xs text-primary-600 dark:text-primary-230 whitespace-pre-wrap inline-block my-auto">
-              {embed.footer.text}
-            </p>
+            {embed.timestamp && (
+              <>
+                {embed.footer?.text && <p className="mx-1">•</p>}
+                <p className="whitespace-pre-wrap inline-block my-auto">
+                  <Trans
+                    i18nKey={`timestamp.footer.${getI18nTimestampFooterKey(
+                      moment(embed.timestamp),
+                    )}`}
+                    values={{ date: new Date(embed.timestamp) }}
+                  />
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>

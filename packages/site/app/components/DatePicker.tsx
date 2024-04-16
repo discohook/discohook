@@ -231,9 +231,10 @@ interface DatePickerProps {
   readonly name?: string;
   readonly required?: boolean;
   readonly range?: string[];
-  readonly value: DateOption | null;
+  readonly value?: DateOption | null;
   readonly onChange: (newValue: DateOption | null) => void;
   readonly isDisabled?: boolean;
+  readonly isClearable?: boolean;
 }
 
 export const generateDateRange = (start: Date, end: Date): string[] => {
@@ -298,19 +299,31 @@ const DatePicker = (props: DatePickerProps) => {
 export default (
   props: Omit<DatePickerProps, "onChange" | "value"> & {
     onChange?: DatePickerProps["onChange"];
+    value?: Date | Moment | null;
   },
 ) => {
   const [value, setValue] = useState<DateOption | null>(
     defaultOptions[0] as DateOption,
   );
 
+  const propValue =
+    props.value === null
+      ? null
+      : props.value
+        ? createOptionForDate(props.value)
+        : value;
+
   return (
     <DatePicker
       {...props}
-      value={value}
+      value={propValue}
       onChange={(newValue) => {
-        setValue(newValue);
-        if (props.onChange) props.onChange(newValue);
+        if (props.value !== undefined) {
+          setValue(newValue);
+        }
+        if (props.onChange) {
+          props.onChange(newValue);
+        }
       }}
     />
   );

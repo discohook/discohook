@@ -681,7 +681,7 @@ const timestampRule = defineRule({
       >
         <Trans
           i18nKey={`timestamp.${format}`}
-          values={{ date: capture.date, n }}
+          values={{ date: capture.date, count: n }}
         />
       </span>
     );
