@@ -1,7 +1,5 @@
 import { z } from "zod";
-import {
-  getDb
-} from "~/store.server";
+import { getDb } from "~/store.server";
 import { Env } from "~/types/env";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";
 

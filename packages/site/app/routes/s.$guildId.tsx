@@ -1,13 +1,7 @@
 import { REST } from "@discordjs/rest";
-import {
-  MetaFunction,
-  SerializeFrom,
-  json
-} from "@remix-run/cloudflare";
+import { MetaFunction, SerializeFrom, json } from "@remix-run/cloudflare";
 import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
-import {
-  ButtonStyle
-} from "discord-api-types/v10";
+import { ButtonStyle } from "discord-api-types/v10";
 import {
   BitFlagResolvable,
   PermissionFlags,
@@ -25,7 +19,7 @@ import { TabHeader, TabsWindow } from "~/components/tabs";
 import {
   authorizeRequest,
   getGuild,
-  getTokenGuildPermissions
+  getTokenGuildPermissions,
 } from "~/session.server";
 import { cdn } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";

@@ -278,7 +278,10 @@ export default function Index() {
             <InfoBox icon="Info" severity="pink">
               You're currently in read-only mode. You can play around in the
               editor, but in order to save a link, you will need to subscribe to{" "}
-              <Link to="/donate" className={twJoin(linkClassName, "dark:brightness-90")}>
+              <Link
+                to="/donate"
+                className={twJoin(linkClassName, "dark:brightness-90")}
+              >
                 Discohook Deluxe
               </Link>
               .
