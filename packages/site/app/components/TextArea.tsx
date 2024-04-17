@@ -86,8 +86,8 @@ export const TextArea = (
             }
           }}
           className={twJoin(
-            "rounded border bg-gray-300 border-gray-200 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 transition",
-            short ? "min-h-[36px] max-h-9 py-1 px-[14px]" : "p-2",
+            "rounded border bg-gray-300 border-gray-200 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 transition resize-y",
+            short ? "min-h-9 py-1 px-[14px]" : "min-h-11 p-2",
             props.className ?? "",
           )}
         />
