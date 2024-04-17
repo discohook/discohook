@@ -1,3 +1,10 @@
+import { Service } from "@cloudflare/workers-types";
+import { WorkerEntrypoint } from "cloudflare:workers";
+
+class CDNService extends WorkerEntrypoint {
+  async upload(blob: Blob) {}
+}
+
 export interface Env {
   KV: KVNamespace;
   SCHEDULER: DurableObjectNamespace;
@@ -17,4 +24,7 @@ export interface Env {
   LEGACY_ORIGIN?: string;
   // my.discohook.app - prettier links for link embeds
   MY_ORIGIN?: string;
+  // cdn.discohook.app - user uploaded content on B2
+  CDN_ORIGIN: string;
+  CDN: Service<CDNService>;
 }

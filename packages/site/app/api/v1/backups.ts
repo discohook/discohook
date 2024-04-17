@@ -1,10 +1,17 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
-import { getUserId } from "~/session.server";
+import { getUser, getUserId } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { jsonAsString, zxParseForm, zxParseQuery } from "~/util/zod";
-import { QueryData, backups, getDb, inArray } from "../../store.server";
+import {
+  QueryData,
+  backups,
+  generateId,
+  getDb,
+  inArray,
+  makeSnowflake,
+} from "../../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const userId = await getUserId(request, context, true);
@@ -77,22 +84,73 @@ export const findMessagesPreviewImageUrl = (
   return previewImageUrl;
 };
 
+type MessageFile = File & { messageIndex: number };
+
 export const action = async ({ request, context }: ActionArgs) => {
-  const userId = await getUserId(request, context, true);
+  const contentLength = Number(request.headers.get("Content-Length"));
+  if (!contentLength || Number.isNaN(contentLength)) {
+    throw json({ message: "Must provide Content-Length header." }, 400);
+  }
+
+  // const formData = await request.clone().formData();
   const { name, data } = await zxParseForm(request, {
     name: z.string().refine((val) => val.length <= 100),
     data: jsonAsString(ZodQueryData),
   });
+  const backupId = generateId();
+
+  // 100 MiB per message
+  const byteLimit = data.messages.length * 104_857_600;
+  if (contentLength > byteLimit) {
+    throw json({
+      message: "Data is too large (max. (100 * message_count) MiB).",
+    });
+  }
+
+  const user = await getUser(request, context, true);
+  // const premium = userIsPremium(user);
+  // if (premium) {
+  //   const files: MessageFile[] = [];
+  //   Array(data.messages.length)
+  //     .fill(undefined)
+  //     .forEach((_, i) => {
+  //       Array(10)
+  //         .fill(undefined)
+  //         .forEach((_, fi) => {
+  //           const file = formData.get(`data.messages[${i}].files[${fi}]`);
+  //           if (file instanceof File) {
+  //             const f = file as MessageFile;
+  //             f.messageIndex = i;
+  //             files.push(f);
+  //           }
+  //         });
+  //     });
+  //   console.log(files);
+
+  //   const uploadData: {
+  //     filename: string;
+  //     url: string;
+  //   }[] = [];
+  //   for (const file of files) {
+  //     const uploaded = await context.env.CDN.upload(
+  //       file,
+  //       `attachments/${backupId}`,
+  //     );
+  //     uploadData.push(uploaded);
+  //   }
+  //   console.log(uploadData);
+  // }
 
   const db = getDb(context.env.DATABASE_URL);
   return (
     await db
       .insert(backups)
       .values({
+        id: makeSnowflake(backupId),
         name,
         data,
         dataVersion: data.version ?? "d2",
-        ownerId: userId,
+        ownerId: user.id,
         previewImageUrl: findMessagesPreviewImageUrl(data.messages),
       })
       .returning({

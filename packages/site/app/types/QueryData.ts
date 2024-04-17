@@ -153,7 +153,7 @@ export const ZodQueryDataTarget: z.ZodType<
 export const ZodQueryData: z.ZodType<QueryData> = z.object({
   version: z.enum(["d2"]).optional(),
   backup_id: z.ostring(),
-  messages: ZodQueryDataMessage.array(),
+  messages: ZodQueryDataMessage.array().max(10),
   components: z.record(z.string(), ZodQueryDataComponent.array()).optional(),
   targets: ZodQueryDataTarget.array().optional(),
 });

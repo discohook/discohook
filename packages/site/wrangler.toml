@@ -1,5 +1,6 @@
-name = "discohook-site"
+##: schema https://github.com/cloudflare/workers-sdk/files/12887590/wrangler.schema.json
 
+name = "discohook-site"
 workers_dev = true
 main = "./build/index.js"
 compatibility_date = "2023-04-20"
@@ -7,6 +8,10 @@ node_compat = true
 
 kv_namespaces = [
   { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" },
+]
+
+services = [
+  { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
 ]
 
 [durable_objects]
@@ -28,3 +33,9 @@ bucket = "./public"
 
 [build]
 command = "npm run build"
+
+[vars]
+DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
+LEGACY_ORIGIN = "https://discohook.org"
+MY_ORIGIN = "https://my.discohook.app"
+CDN_ORIGIN = "https://cdn.discohook.app"

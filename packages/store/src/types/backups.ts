@@ -17,7 +17,7 @@ export type QueryDataVersion = "d2";
 
 export interface QueryData {
   version?: QueryDataVersion;
-  backup_id?: number;
+  backup_id?: string;
   messages: {
     data: {
       author?: {
@@ -84,7 +84,7 @@ export const ZodLinkEmbed = z.object({
 
 export const ZodLinkQueryData = z.object({
   version: ZodLinkQueryDataVersion.optional(),
-  backup_id: z.onumber(),
+  backup_id: z.ostring(),
   embed: z.object({ data: ZodLinkEmbed, redirect_url: z.ostring() }),
 });
 
