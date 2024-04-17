@@ -34,7 +34,7 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
         },
         content: {
           zIndex: 21,
-          padding: "2rem",
+          padding: "0",
           background: "none",
           border: "none",
           maxWidth: "100%",
@@ -50,6 +50,7 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
         <div className="w-6 mx-auto md:my-auto md:ml-0 md:mr-8">
           {images && images.length > 1 && index !== undefined && (
             <button
+              type="button"
               className="my-auto text-gray-100 text-2xl"
               onClick={() => {
                 let siblingIndex = index - 1;
@@ -71,6 +72,7 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
         <div className="w-6 mx-auto md:my-auto md:mr-0 md:ml-8">
           {images && images.length > 1 && index !== undefined && (
             <button
+              type="button"
               className="my-auto text-gray-100 text-2xl"
               onClick={() => {
                 let siblingIndex = index + 1;
