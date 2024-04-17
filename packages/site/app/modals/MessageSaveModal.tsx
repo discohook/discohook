@@ -19,7 +19,7 @@ export const MessageSaveModal = (
   props: ModalProps & {
     targets: Record<string, APIWebhook>;
     data: QueryData;
-    setData: React.Dispatch<React.SetStateAction<QueryData>>;
+    setData: React.Dispatch<QueryData>;
     user?: User | null;
   },
 ) => {

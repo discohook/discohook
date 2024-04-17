@@ -23,7 +23,7 @@ export const SimpleMessageEditor: React.FC<{
   files: DraftFile[];
   discordApplicationId: string;
   index: number;
-  setData: React.Dispatch<React.SetStateAction<QueryData>>;
+  setData: React.Dispatch<QueryData>;
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>

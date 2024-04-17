@@ -13,7 +13,7 @@ export const MessageSetModal = (
     targets: Record<string, APIWebhook>;
     setAddingTarget: (open: boolean) => void;
     data: QueryData;
-    setData: React.Dispatch<React.SetStateAction<QueryData>>;
+    setData: React.Dispatch<QueryData>;
     messageIndex?: number;
   },
 ) => {

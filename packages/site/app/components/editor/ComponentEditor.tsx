@@ -116,7 +116,7 @@ export const ActionRowEditor: React.FC<{
   row: APIActionRowComponent<APIMessageActionRowComponent>;
   rowIndex: number;
   data: QueryData;
-  setData: React.Dispatch<React.SetStateAction<QueryData>>;
+  setData: React.Dispatch<QueryData>;
   setComponents: (value: QueryDataComponent[]) => void;
   emojis?: APIMessageComponentEmoji[];
   open?: boolean;

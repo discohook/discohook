@@ -39,7 +39,7 @@ export const MessageEditor: React.FC<{
   files: DraftFile[];
   discordApplicationId: string;
   index: number;
-  setData: React.Dispatch<React.SetStateAction<QueryData>>;
+  setData: React.Dispatch<QueryData>;
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>
@@ -261,9 +261,7 @@ export const MessageEditor: React.FC<{
                 embed={embed}
                 embedIndex={ei}
                 data={data}
-                files={files}
                 setData={setData}
-                setFiles={setFiles}
                 cache={cache}
               />
             ))}

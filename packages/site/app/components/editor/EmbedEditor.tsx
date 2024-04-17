@@ -1,6 +1,5 @@
 import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
-import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
@@ -62,9 +61,7 @@ export const EmbedEditor: React.FC<{
   embed: APIEmbed;
   embedIndex: number;
   data: QueryData;
-  files: DraftFile[];
-  setData: React.Dispatch<React.SetStateAction<QueryData>>;
-  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  setData: React.Dispatch<QueryData>;
   open?: boolean;
   cache?: CacheManager;
 }> = ({
@@ -73,9 +70,7 @@ export const EmbedEditor: React.FC<{
   embed,
   embedIndex: i,
   data,
-  files,
   setData,
-  setFiles,
   open,
   cache,
 }) => {
@@ -103,20 +98,6 @@ export const EmbedEditor: React.FC<{
     messageEmbeds.splice(i, 1, newEmbed);
 
     setData({ ...data });
-    setFiles([
-      ...files.map((f) => {
-        const uri = `attachment://${f.file.name}`;
-        f.embed =
-          messageEmbeds.filter(
-            (e) =>
-              e.author?.icon_url === uri ||
-              e.image?.url === uri ||
-              e.thumbnail?.url === uri ||
-              e.footer?.icon_url === uri,
-          ).length !== 0;
-        return f;
-      }),
-    ]);
   };
 
   // The first embed in the gallery is the parent that the children will be merged into

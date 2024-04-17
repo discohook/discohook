@@ -119,12 +119,39 @@ export default function Index() {
 
   // Editor state
   const [backupId, setBackupId] = useState<bigint>();
-  const [data, setData] = useState<QueryData>({
-    version: "d2",
-    messages: [],
-    components: {},
-  });
   const [files, setFiles] = useState<DraftFile[]>([]);
+  const [data, setData] = useReducer(
+    (cur: QueryData, d: QueryData) => {
+      const newData = d;
+
+      // Update file preview if any are referenced in embeds
+      setFiles([
+        ...files.map((f) => {
+          const uri = `attachment://${f.file.name}`;
+          f.embed =
+            newData.messages
+              .map((m) => m.data.embeds ?? [])
+              .filter(
+                (embeds) =>
+                  embeds.filter(
+                    (e) =>
+                      e.author?.icon_url === uri ||
+                      e.image?.url === uri ||
+                      e.thumbnail?.url === uri ||
+                      e.footer?.icon_url === uri,
+                  ).length !== 0,
+              ).length !== 0;
+          return f;
+        }),
+      ]);
+      return newData;
+    },
+    {
+      version: "d2",
+      messages: [],
+      components: {},
+    },
+  );
 
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
