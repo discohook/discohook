@@ -40,10 +40,11 @@ Along with some shared packages:
 
 ### Translations
 
-| Thanks to | Language(s) |
-|-----------|-------------|
-| anonymous | Chinese     |
-| mew610    | Arabic      |
+| Thanks to  | Language(s) |
+|------------|-------------|
+| anonymous  | Chinese     |
+| mew610     | Arabic      |
+| maddymeows | Dutch       |
 
 ### Original Project
 
