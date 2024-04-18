@@ -1,7 +1,12 @@
 import { REST } from "@discordjs/rest";
-import { MetaFunction, SerializeFrom, json } from "@remix-run/cloudflare";
+import {
+  MetaFunction,
+  SerializeFrom,
+  json,
+  redirect,
+} from "@remix-run/cloudflare";
 import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
-import { ButtonStyle } from "discord-api-types/v10";
+import { APIGuild, ButtonStyle } from "discord-api-types/v10";
 import {
   BitFlagResolvable,
   PermissionFlags,
@@ -15,16 +20,18 @@ import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { Twemoji } from "~/components/icons/Twemoji";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import {
   authorizeRequest,
   getGuild,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { cdn } from "~/util/discord";
+import { cdn, isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 import { loader as ApiGetAuditLogGuild } from "../api/v1/audit-log.$guildId";
+import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import { Cell } from "./donate";
 
@@ -33,17 +40,30 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     guildId: z.string().refine((v) => !Number.isNaN(Number(v))),
   });
   const [token, respond] = await authorizeRequest(request, context);
-  let { owner, permissions, guild } = await getTokenGuildPermissions(
-    token,
-    guildId,
-    context.env,
-  );
-  if (!guild) {
-    guild = await getGuild(
+  let owner: boolean | undefined;
+  let permissions: PermissionsBitField;
+  let guild: APIGuild | undefined;
+  try {
+    ({ owner, permissions, guild } = await getTokenGuildPermissions(
+      token,
       guildId,
-      new REST().setToken(context.env.DISCORD_BOT_TOKEN),
       context.env,
-    );
+    ));
+    if (!guild) {
+      guild = await getGuild(
+        guildId,
+        new REST().setToken(context.env.DISCORD_BOT_TOKEN),
+        context.env,
+      );
+    }
+  } catch (e) {
+    if (isDiscordError(e)) {
+      if (e.code === 10004) {
+        throw redirect(`/bot?guildId=${guildId}`);
+      }
+      throw respond(json(e, e.status));
+    }
+    throw e;
   }
 
   return respond(
@@ -83,7 +103,7 @@ export const meta: MetaFunction = ({ data }) => {
   return [];
 };
 
-const tabValues = ["home", "auditLog", "webhooks"] as const;
+const tabValues = ["home", "auditLog", "webhooks", "sessions"] as const;
 
 export default () => {
   const { guild, user, member } = useLoaderData<typeof loader>();
@@ -100,6 +120,7 @@ export default () => {
 
   const auditLogFetcher = useFetcher<typeof ApiGetAuditLogGuild>();
   const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
+  const sessionsFetcher = useFetcher<typeof ApiGetGuildSessions>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: A wizard specifies precisely the dependencies he means to.
   useEffect(() => {
     switch (tab) {
@@ -112,6 +133,12 @@ export default () => {
       case "webhooks": {
         if (!webhooksFetcher.data && webhooksFetcher.state === "idle") {
           webhooksFetcher.load(`/api/v1/guilds/${guild.id}/webhooks`);
+        }
+        break;
+      }
+      case "sessions": {
+        if (!sessionsFetcher.data && sessionsFetcher.state === "idle") {
+          sessionsFetcher.load(`/api/v1/guilds/${guild.id}/sessions`);
         }
         break;
       }
@@ -146,6 +173,10 @@ export default () => {
                     label: "Audit Log",
                     value: "auditLog",
                   },
+                  // {
+                  //   label: "Sessions",
+                  //   value: "sessions",
+                  // },
                 ]
               : []),
           ]}
@@ -196,6 +227,10 @@ export default () => {
                       <Cell>Audit Log</Cell>
                       <Cell>View Audit Logs, Manage Server</Cell>
                     </div>
+                    {/* <div className="table-row">
+                      <Cell>Sessions</Cell>
+                      <Cell>View Audit Logs, Manage Server</Cell>
+                    </div> */}
                     {/* <div className="table-row">
                       <Cell className="rounded-bl-lg">Components</Cell>
                       <Cell className="rounded-br-lg">
@@ -352,6 +387,85 @@ export default () => {
                               <CoolIcon icon="External_Link" />
                             </Button>
                           </a>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </div>
+            </div>
+          ) : tab === "sessions" ? (
+            <div>
+              <TabHeader
+                subtitle={
+                  <p>
+                    Below is a list of permission-laden sessions that have
+                    recently been authorized for{" "}
+                    <span className="font-semibold">{guild.name}</span>.
+                    <br />
+                    <br />
+                    If you don't recognize a user, you may want to verify your
+                    permission setup.
+                  </p>
+                }
+              >
+                Sessions
+              </TabHeader>
+              <div className="space-y-2">
+                {sessionsFetcher.data ? (
+                  sessionsFetcher.data.map((session) => {
+                    const createdAt = getDate(session.id);
+                    return (
+                      <div
+                        key={`session-${session.id}`}
+                        className="rounded-lg py-3 px-4 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
+                      >
+                        {/* <img
+                          className="rounded-full my-auto w-10 h-10 mr-2 hidden sm:block"
+                          src={
+                            webhook
+                              ? webhook.avatar
+                                ? cdn.avatar(webhook.id, webhook.avatar, {
+                                    size: 64,
+                                  })
+                                : cdn.defaultAvatar(5)
+                              : cdn.defaultAvatar(5)
+                          }
+                          alt=""
+                        /> */}
+                        <div className="truncate my-auto">
+                          <div className="flex max-w-full">
+                            <p className="font-medium truncate dark:text-[#f9f9f9] text-base">
+                              {session.user?.name ? (
+                                <span className="dark:text-primary-230">
+                                  {session.user.name}
+                                </span>
+                              ) : (
+                                "Unknown"
+                              )}{" "}
+                              {session.auth?.owner && (
+                                <Twemoji emoji="👑" title="Server Owner" />
+                              )}
+                            </p>
+                          </div>
+                          <p className="text-gray-600 dark:text-gray-500 text-xs">
+                            {new Date(createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="ml-auto pl-2 my-auto flex gap-2">
+                          {/* <a
+                            href={`https://discord.com/channels/${guild.id}/${
+                              entry.threadId ?? entry.channelId
+                            }/${entry.messageId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <Button discordstyle={ButtonStyle.Secondary}>
+                              <CoolIcon icon="External_Link" />
+                            </Button>
+                          </a> */}
                         </div>
                       </div>
                     );

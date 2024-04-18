@@ -84,6 +84,15 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /guilds/:id/sessions
+   *
+   * Accepts token auth.
+   */
+  guildSessions(id: string) {
+    return `/guilds/${id}/sessions` as const;
+  },
+
+  /**
    * - GET /guilds/:id/webhooks
    *
    * Accepts token or cookie auth.

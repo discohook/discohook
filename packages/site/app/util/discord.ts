@@ -227,6 +227,9 @@ export const cdn = new CDN();
 interface DiscordError {
   code: number;
   rawError: RESTError;
+  status: number;
+  method: string;
+  url: string;
 }
 
 export const isDiscordError = (error: any): error is DiscordError => {
