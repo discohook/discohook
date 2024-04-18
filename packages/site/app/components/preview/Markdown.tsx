@@ -602,7 +602,7 @@ const codeRule = defineRule({
     if (!match) return;
     return {
       size: match[0].length,
-      content: match[1],
+      content: match[2],
     };
   },
   render(capture) {
