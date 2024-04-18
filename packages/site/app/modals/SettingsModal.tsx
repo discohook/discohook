@@ -1,13 +1,52 @@
+import { type i18n as i18nT } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "~/components/Checkbox";
 import { Radio } from "~/components/Radio";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { Twemoji } from "~/components/icons/Twemoji";
 import { User } from "~/session.server";
-import { useLocalStorage } from "~/util/localstorage";
+import { LocaleCode, Settings, useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
+const LocaleRadio = ({
+  locale,
+  flag,
+  i18n,
+  settings,
+  updateSettings,
+}: {
+  locale: LocaleCode;
+  flag: string;
+  i18n: i18nT;
+  settings: Settings;
+  updateSettings: (data: Partial<Settings>) => void;
+}) => (
+  <Radio
+    name="locale"
+    label={
+      <>
+        <Twemoji
+          className="h-5 align-text-bottom mr-2 saturate-[0.8]"
+          emoji={flag}
+        />
+        {i18n.t(`locales.${locale}`, { lng: locale })}
+      </>
+    }
+    checked={
+      (locale === "en-US" ? !settings.locale : false) ||
+      settings.locale === locale
+    }
+    onChange={(e) => {
+      if (e.currentTarget.checked) {
+        updateSettings({ locale });
+        i18n.changeLanguage(locale);
+      }
+    }}
+  />
+);
+
 export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // const { user } = props;
   const [settings, updateSettings] = useLocalStorage();
 
@@ -106,6 +145,55 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             onChange={(e) =>
               updateSettings({ forceDualPane: e.currentTarget.checked })
             }
+          />
+        </div>
+      </div>
+      <div className="mt-8">
+        <p className="text-sm font-black uppercase dark:text-gray-400">
+          {t("language")}
+        </p>
+        <div className="space-y-2 mt-2">
+          <LocaleRadio
+            locale="ar"
+            flag="🇸🇦"
+            i18n={i18n}
+            settings={settings}
+            updateSettings={updateSettings}
+          />
+          <LocaleRadio
+            locale="zh"
+            flag="🇨🇳"
+            i18n={i18n}
+            settings={settings}
+            updateSettings={updateSettings}
+          />
+          <LocaleRadio
+            locale="nl"
+            flag="🇳🇱"
+            i18n={i18n}
+            settings={settings}
+            updateSettings={updateSettings}
+          />
+          <LocaleRadio
+            locale="en-US"
+            flag="🇺🇸"
+            i18n={i18n}
+            settings={settings}
+            updateSettings={updateSettings}
+          />
+          <LocaleRadio
+            locale="en-GB"
+            flag="🇬🇧"
+            i18n={i18n}
+            settings={settings}
+            updateSettings={updateSettings}
+          />
+          <LocaleRadio
+            locale="fr"
+            flag="🇫🇷"
+            i18n={i18n}
+            settings={settings}
+            updateSettings={updateSettings}
           />
         </div>
       </div>

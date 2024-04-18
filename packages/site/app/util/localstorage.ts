@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 
+export type LocaleCode = "en-US" | "en-GB" | "ar" | "zh" | "fr" | "nl";
+
 export interface Settings {
   theme?: "light" | "dark" | "sync";
   messageDisplay?: "cozy" | "compact";
   compactAvatars?: boolean;
   skinTone?: 0 | 1 | 2 | 3 | 4;
   forceDualPane?: boolean;
+  locale?: LocaleCode;
 }
 
 export const useLocalStorage = (): [

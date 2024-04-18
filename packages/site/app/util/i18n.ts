@@ -49,6 +49,15 @@ export const resources = {
       theme: "Theme",
       messageDisplay: "Message Display",
       editorPanes: "Editor Panes",
+      language: "Language",
+      locales: {
+        ar: "Arabic",
+        zh: "Chinese, China",
+        nl: "Dutch",
+        "en-US": "English, US",
+        "en-GB": "English, UK",
+        fr: "French",
+      },
       webhookUrl: "Webhook URL",
       invalidWebhookUrl:
         "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
@@ -341,6 +350,10 @@ export const resources = {
         "اذا لم يمكنك رؤية الرسالة, تأكد انها لم تمسح من قبل بوت آخر. بعض البوتات الإدارية تعتبر كل رسائل الويبهوك ضارة",
       theme: "السمة",
       messageDisplay: "وضع ظهور الرسائل",
+      language: "اللغة",
+      locales: {
+        ar: "العربية",
+      },
       addTargetModalTitle: "اضافة ويبهوك",
       webhookUrl: "لينك الويبهوك",
       invalidWebhookUrl:
@@ -414,6 +427,13 @@ export const resources = {
       },
     },
   },
+  nl: {
+    translation: {
+      locales: {
+        nl: "Nederlands",
+      },
+    },
+  },
   de: {
     translation: {
       defaultPlaceholder: "Triff eine Auswahl",
@@ -444,6 +464,15 @@ export const resources = {
   },
   fr: {
     translation: {
+      language: "Langue",
+      locales: {
+        ar: "Arabe",
+        zh: "Chinois, Chine",
+        nl: "Néerlandais",
+        "en-US": "Anglais, États-Unis",
+        "en-GB": "Anglais, Royaume-Uni",
+        fr: "Français",
+      },
       settings: "Paramètres",
       help: "Aide",
       name: "Nom",

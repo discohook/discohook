@@ -13,6 +13,7 @@ import {
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import i18n from "i18next";
 import moment from "moment";
+import { useEffect } from "react";
 import { initReactI18next } from "react-i18next";
 import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message";
@@ -55,7 +56,6 @@ export const links: LinksFunction = () => [
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: "en",
   fallbackLng: "en",
   interpolation: {
     escapeValue: false,
@@ -87,7 +87,17 @@ const TailwindThemeScript = () => (
   />
 );
 
+const changeLanguageEffect = () => {
+  const settings = JSON.parse(
+    localStorage.getItem("discohook_settings") ?? "{}",
+  );
+  if (settings.locale) {
+    i18n.changeLanguage(settings.locale);
+  }
+};
+
 export default function App() {
+  useEffect(changeLanguageEffect, []);
   return (
     <html lang="en" className="dark">
       <head>
@@ -108,6 +118,7 @@ export default function App() {
 }
 
 export function ErrorBoundary() {
+  useEffect(changeLanguageEffect, []);
   const error = useRouteError();
   console.error(error);
   return (
