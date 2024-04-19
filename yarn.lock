@@ -9852,7 +9852,7 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=39f3af&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=6ea982&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
@@ -9860,7 +9860,7 @@ cron-parser@shayypy/cron-parser:
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/079c15ac8317e7a2097f89668fbcdad621a968e19baeffb54d2c452ef5afca02bb63484072c8a8516b0bd2932943d8908a46a914c330b3cab3ff7db857a223a6
+  checksum: 10c0/1e85c23e8c7bcf6cb51dc2b91b13fbff8ccee27b97a5aa2a95e6a2544b841925baabd0f2d7147f61d360855d9977ab15fb607a9df7e0463a08110480f3a092af
   languageName: node
   linkType: hard
 

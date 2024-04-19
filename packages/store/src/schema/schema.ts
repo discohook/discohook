@@ -94,6 +94,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   updatedTriggers: many(triggers, { relationName: "User_Trigger-updated" }),
   tokens: many(tokens, { relationName: "User_Token" }),
+  bots: many(customBots, { relationName: "User_CustomBot" }),
 }));
 
 export const tokens = pgTable("Token", {
@@ -502,6 +503,31 @@ export const triggersRelations = relations(triggers, ({ one }) => ({
     fields: [triggers.updatedById],
     references: [users.id],
     relationName: "User_Trigger-updated",
+  }),
+}));
+
+export const customBots = pgTable("CustomBot", {
+  id: snowflakePk(),
+  applicationId: snowflake("applicationId").notNull().unique(),
+  applicationUserId: snowflake("applicationUserId"),
+  icon: text("icon"),
+  publicKey: text("publicKey").notNull(),
+  token: text("token"),
+  name: text("name").notNull(),
+  ownerId: snowflake("ownerId")
+    .notNull()
+    .references(() => users.id),
+  guildId: snowflake("guildId").references(() => discordGuilds.id),
+});
+
+export const customBotsRelations = relations(customBots, ({ one, many }) => ({
+  // discordGuilds: many(discordGuilds, {
+  //   relationName: "DiscordGuild_CustomBot",
+  // }),
+  owner: one(users, {
+    fields: [customBots.ownerId],
+    references: [users.id],
+    relationName: "User_CustomBot",
   }),
 }));
 

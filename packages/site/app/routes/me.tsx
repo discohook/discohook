@@ -1,3 +1,4 @@
+import { REST } from "@discordjs/rest";
 import {
   MetaFunction,
   SerializeFrom,
@@ -11,7 +12,7 @@ import {
   useSearchParams,
   useSubmit,
 } from "@remix-run/react";
-import { ButtonStyle } from "discord-api-types/v10";
+import { APIGuild, APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
 import { Suspense, useEffect, useState } from "react";
@@ -30,9 +31,12 @@ import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
+import { BotCreateModal } from "~/modals/BotCreateModal";
+import { BotEditModal } from "~/modals/BotEditModal";
 import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
-import { cdn } from "~/util/discord";
+import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import { DISCORD_BOT_TOKEN_RE, cdn, isDiscordError } from "~/util/discord";
 import { DeconstructedSnowflake, getId } from "~/util/id";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
@@ -46,11 +50,14 @@ import {
 } from "~/util/zod";
 import {
   QueryDataVersion,
+  customBots,
   backups as dBackups,
   linkBackups as dLinkBackups,
   shareLinks as dShareLinks,
+  discordGuilds,
   discordMembers,
   getDb,
+  makeSnowflake,
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -114,6 +121,22 @@ export const loader = async ({ request, context }: LoaderArgs) => {
         })
       : [])();
 
+  const bots = (async () =>
+    user.discordId
+      ? await db.query.customBots.findMany({
+          where: eq(customBots.ownerId, user.id),
+          columns: {
+            id: true,
+            name: true,
+            applicationId: true,
+            applicationUserId: true,
+            icon: true,
+          },
+          orderBy: desc(customBots.name),
+          limit: 50,
+        })
+      : [])();
+
   return defer({
     user,
     backups,
@@ -121,11 +144,18 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     links,
     memberships,
     importedSettings,
+    bots,
   });
 };
 
 export type LoadedBackup = Awaited<
   SerializeFrom<typeof loader>["backups"]
+>[number];
+
+export type LoadedBot = Awaited<SerializeFrom<typeof loader>["bots"]>[number];
+
+export type MeLoadedMembership = Awaited<
+  SerializeFrom<typeof loader>["memberships"]
 >[number];
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -148,6 +178,31 @@ export const action = async ({ request, context }: ActionArgs) => {
         action: z.literal("IMPORT_BACKUPS"),
         backups: jsonAsString<z.ZodType<DiscohookBackup[]>>(),
       }),
+      z.object({
+        action: z.literal("CREATE_BOT"),
+        applicationId: snowflakeAsString(),
+      }),
+      z.object({
+        action: z.literal("UPDATE_BOT"),
+        botId: snowflakeAsString(),
+        guildId: z
+          .ostring()
+          .refine(
+            (v) =>
+              v && v !== "null"
+                ? snowflakeAsString().safeParse(v).success
+                : true,
+            "Invalid token",
+          )
+          .transform((v) => (v === "" ? undefined : v === "null" ? null : v)),
+        token: z
+          .ostring()
+          .refine(
+            (v) => (v && v !== "null" ? DISCORD_BOT_TOKEN_RE.test(v) : true),
+            "Invalid token",
+          )
+          .transform((v) => (v === "" ? undefined : v === "null" ? null : v)),
+      }),
     ]),
   );
   const userId = await getUserId(request, context, true);
@@ -166,7 +221,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       const key = `share-${link.shareId}`;
       await context.env.KV.delete(key);
       await db.delete(dShareLinks).where(eq(dShareLinks.id, data.linkId));
-      return new Response(null, { status: 204 });
+      break;
     }
     case "DELETE_BACKUP": {
       const backup = await db.query.backups.findFirst({
@@ -178,7 +233,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         throw json({ message: "You do not own this backup." }, 403);
       }
       await db.delete(dBackups).where(eq(dBackups.id, data.backupId));
-      return new Response(null, { status: 204 });
+      break;
     }
     case "DELETE_LINK_BACKUP": {
       const backup = await db.query.linkBackups.findFirst({
@@ -190,7 +245,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         throw json({ message: "You do not own this backup." }, 403);
       }
       await db.delete(dLinkBackups).where(eq(dBackups.id, data.backupId));
-      return new Response(null, { status: 204 });
+      break;
     }
     case "IMPORT_BACKUPS": {
       await db.insert(dBackups).values(
@@ -205,13 +260,182 @@ export const action = async ({ request, context }: ActionArgs) => {
           ownerId: userId,
         })),
       );
-      return new Response(null, { status: 201 });
+      return json({ action: data.action }, 201);
+    }
+    case "CREATE_BOT": {
+      if (String(data.applicationId) === context.env.DISCORD_CLIENT_ID) {
+        throw json(
+          { message: "Cannot create a bot with a blacklisted ID" },
+          400,
+        );
+      }
+      const user = await getUser(request, context);
+      if (!user || !userIsPremium(user)) {
+        throw json(
+          { message: "Must be a Deluxe member to create a bot." },
+          403,
+        );
+      }
+
+      const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+      let application: RESTGetAPIApplicationRpcResult;
+      try {
+        application = (await rest.get(
+          `/applications/${data.applicationId}/rpc`,
+        )) as RESTGetAPIApplicationRpcResult;
+      } catch (e) {
+        if (isDiscordError(e)) {
+          throw json(e.rawError, e.status);
+        }
+        throw e;
+      }
+      let inserted: { id: bigint };
+      try {
+        // How do we verify ownership? Require token?
+        inserted = (
+          await db
+            .insert(customBots)
+            .values({
+              applicationId: makeSnowflake(application.id),
+              icon: application.icon,
+              name: application.name,
+              publicKey: application.verify_key,
+              ownerId: userId,
+            })
+            // .onConflictDoUpdate({
+            //   target: [customBots.applicationId],
+            //   set: {
+            //     icon: application.icon,
+            //     name: application.name,
+            //     // Check if the app has already been linked to our endpoint?
+            //     // ownerId: sql``,
+            //     // Shouldn't change but we update just in case
+            //     publicKey: application.verify_key,
+            //   },
+            // })
+            .returning({
+              id: customBots.id,
+            })
+        )[0];
+      } catch {
+        throw json(
+          {
+            message:
+              "Failed to create the bot. It may already exist. If this is the case, contact support to have it transferred to your account.",
+          },
+          400,
+        );
+      }
+
+      return json({ action: data.action, id: inserted.id }, 201);
+    }
+    case "UPDATE_BOT": {
+      // const user = await getUser(request, context);
+      // if (!user || !userIsPremium(user)) {
+      //   throw json(
+      //     { message: "Must be a Deluxe member to create a bot." },
+      //     403,
+      //   );
+      // }
+      const bot = await db.query.customBots.findFirst({
+        where: eq(customBots.id, BigInt(data.botId)),
+        columns: {
+          applicationId: true,
+          ownerId: true,
+        },
+      });
+      if (!bot || bot.ownerId !== userId) {
+        throw json({ message: "No such bot." }, 404);
+      }
+
+      const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+      let application: RESTGetAPIApplicationRpcResult;
+      try {
+        application = (await rest.get(
+          `/applications/${bot.applicationId}/rpc`,
+        )) as RESTGetAPIApplicationRpcResult;
+      } catch (e) {
+        if (isDiscordError(e)) {
+          throw json(e.rawError, e.status);
+        }
+        throw e;
+      }
+
+      let botUser: APIUser | undefined;
+      if (data.token) {
+        try {
+          botUser = (await rest.get(Routes.user(), {
+            auth: false,
+            headers: {
+              Authorization: `Bot ${data.token}`,
+            },
+          })) as APIUser;
+        } catch (e) {
+          if (isDiscordError(e)) {
+            throw json(e.rawError);
+          }
+          throw json({ message: String(e) });
+        }
+      }
+      if (data.token && data.guildId) {
+        let guild: APIGuild;
+        try {
+          guild = (await rest.get(Routes.guild(String(data.guildId)), {
+            auth: false,
+            headers: {
+              Authorization: `Bot ${data.token}`,
+            },
+          })) as APIGuild;
+        } catch (e) {
+          if (isDiscordError(e)) {
+            throw json(e.rawError);
+          }
+          throw json({ message: String(e) });
+        }
+        await db
+          .insert(discordGuilds)
+          .values({
+            id: makeSnowflake(guild.id),
+            name: guild.name,
+            icon: guild.icon,
+          })
+          .onConflictDoUpdate({
+            target: [discordGuilds.id],
+            set: {
+              name: guild.name,
+              icon: guild.icon,
+            },
+          });
+      }
+
+      const updated = (
+        await db
+          .update(customBots)
+          .set({
+            icon: application.icon,
+            name: application.name,
+            publicKey: application.verify_key,
+            applicationUserId: botUser ? makeSnowflake(botUser.id) : undefined,
+            token: data.token,
+            guildId: data.guildId
+              ? makeSnowflake(data.guildId)
+              : data.guildId === null
+                ? null
+                : undefined,
+          })
+          .where(eq(customBots.id, BigInt(data.botId)))
+          .returning({
+            id: customBots.id,
+          })
+      )[0];
+
+      return json({ action: data.action, id: updated.id }, 200);
     }
     default:
       break;
   }
 
-  return null;
+  return json({ action: data.action }, 204);
 };
 
 export const meta: MetaFunction = () => [{ title: "Your Data - Discohook" }];
@@ -222,13 +446,21 @@ const tabValues = [
   "linkEmbeds",
   "shareLinks",
   "servers",
+  "bots",
   "developer",
 ] as const;
 
 export default function Me() {
   const { t } = useTranslation();
-  const { user, backups, linkBackups, links, memberships, importedSettings } =
-    useLoaderData<typeof loader>();
+  const {
+    user,
+    backups,
+    linkBackups,
+    links,
+    memberships,
+    bots,
+    importedSettings,
+  } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const now = new Date();
@@ -247,6 +479,8 @@ export default function Me() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [editingBackup, setEditingBackup] = useState<LoadedBackup>();
+  const [createBotOpen, setCreateBotOpen] = useState(false);
+  const [editingBot, setEditingBot] = useState<LoadedBot>();
 
   const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
   const [tab, setTab] = useState<(typeof tabValues)[number]>(
@@ -278,6 +512,13 @@ export default function Me() {
         setOpen={() => setEditingBackup(undefined)}
         backup={editingBackup}
       />
+      <BotCreateModal open={createBotOpen} setOpen={setCreateBotOpen} />
+      <BotEditModal
+        open={!!editingBot}
+        setOpen={() => setEditingBot(undefined)}
+        bot={editingBot}
+        memberships={memberships}
+      />
       <Header user={user} />
       <Prose>
         <TabsWindow
@@ -297,6 +538,10 @@ export default function Me() {
               value: "backups",
             },
             {
+              label: t("shareLinks"),
+              value: "shareLinks",
+            },
+            {
               label: (
                 <>
                   <p className="text-xs font-semibold uppercase text-brand-pink">
@@ -308,8 +553,15 @@ export default function Me() {
               value: "linkEmbeds",
             },
             {
-              label: t("shareLinks"),
-              value: "shareLinks",
+              label: (
+                <>
+                  <p className="text-xs font-semibold uppercase text-brand-pink">
+                    {t("deluxe")}
+                  </p>
+                  {t("bots")}
+                </>
+              ),
+              value: "bots",
             },
             {
               label: "Developer",
@@ -833,6 +1085,89 @@ export default function Me() {
                       <p className="text-gray-500">{t("noLinks")}</p>
                     )
                   }
+                </Await>
+              </Suspense>
+            </div>
+          ) : tab === "bots" ? (
+            <div className="w-full h-fit">
+              <div className="flex mb-2">
+                <p className="text-xl font-semibold dark:text-gray-100 my-auto">
+                  {t(tab)}
+                </p>
+                <Button
+                  onClick={() => setCreateBotOpen(true)}
+                  className="mb-auto ml-auto"
+                >
+                  {t("newBot")}
+                </Button>
+              </div>
+              {!userIsPremium(user) && (
+                <InfoBox icon="Handbag" severity="pink">
+                  <Trans
+                    t={t}
+                    i18nKey="botsPremiumNote"
+                    components={[
+                      <Link
+                        to="/donate"
+                        className={twJoin(linkClassName, "dark:brightness-90")}
+                      />,
+                    ]}
+                  />
+                </InfoBox>
+              )}
+              <Suspense
+                fallback={
+                  <div className="animate-pulse flex flex-wrap gap-2">
+                    {Array(10)
+                      .fill(undefined)
+                      .map((_, i) => (
+                        <div
+                          key={`bot-skeleton-${i}`}
+                          className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-[#2B2D31] dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                        >
+                          <div className="rounded-lg h-24 w-24 bg-gray-500/50" />
+                          <div className="w-full flex mt-1">
+                            <div className="rounded-full h-4 w-24 bg-gray-500/50 mx-auto" />
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                }
+              >
+                <Await resolve={bots}>
+                  {(bots) => {
+                    return (
+                      <div className="flex flex-wrap gap-2">
+                        {bots.map((bot) => {
+                          return (
+                            <button
+                              type="button"
+                              key={`bot-${bot.id}`}
+                              className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-[#2B2D31] dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg"
+                              onClick={() => setEditingBot(bot)}
+                            >
+                              <img
+                                src={
+                                  bot.icon
+                                    ? cdn.appIcon(
+                                        String(bot.applicationId),
+                                        bot.icon,
+                                        { size: 128 },
+                                      )
+                                    : cdn.defaultAvatar(5)
+                                }
+                                alt={bot.name}
+                                className="rounded-lg h-24 w-24"
+                              />
+                              <p className="text-center truncate text-sm mt-1">
+                                {bot.name}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  }}
                 </Await>
               </Suspense>
             </div>

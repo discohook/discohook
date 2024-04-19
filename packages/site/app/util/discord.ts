@@ -18,9 +18,13 @@ import {
   RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
+import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 
 export const DISCORD_API = "https://discord.com/api";
 export const DISCORD_API_V = "10";
+
+export const DISCORD_BOT_TOKEN_RE =
+  /^[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}$/;
 
 export const getSnowflakeDate = (snowflake: string) =>
   new Date(Number(DiscordSnowflake.deconstruct(snowflake).timestamp));
@@ -189,6 +193,11 @@ export const getCurrentUserGuilds = async (accessToken: string) => {
   return (await data.json()) as RESTGetAPICurrentUserGuildsResult;
 };
 
+export const getApplicationRpc = async (id: string) => {
+  const data = await discordRequest("GET", `/applications/${id}/rpc`);
+  return (await data.json()) as RESTGetAPIApplicationRpcResult;
+};
+
 class CDN {
   readonly BASE = "https://cdn.discordapp.com";
 
@@ -219,6 +228,10 @@ class CDN {
 
   icon(id: string, iconHash: string, options?: BaseImageURLOptions): string {
     return `${this.BASE}/icons/${id}/${iconHash}${this._withOpts(options)}`;
+  }
+
+  appIcon(id: string, iconHash: string, options?: BaseImageURLOptions): string {
+    return `${this.BASE}/app-icons/${id}/${iconHash}${this._withOpts(options)}`;
   }
 }
 

@@ -148,6 +148,19 @@ export const resources = {
         'other. To reset a field to "Every month/day/weekday," remove all',
         "chosen options.",
       ].join(" "),
+      bots: "Bots",
+      newBot: "New Bot",
+      updateBot: "Update Bot",
+      createBot: {
+        title: "Create Bot",
+        step1: "Visit the <0>Developer Portal</0>",
+        step2: 'Tap "New Application", type a name, then tap "Create"',
+        step3:
+          'In the "General Information" tab (selected by default), tap "Copy" under "Application ID"',
+        step4: "Paste in the box:",
+      },
+      botsPremiumNote:
+        "You've uncovered a Deluxe feature! <0>Read more about custom bots here.</0>",
       havingTrouble: "Having Trouble?",
       troubleshootMessage: [
         "If you press the send button and nothing happens, it may be because",
