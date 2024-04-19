@@ -23,9 +23,9 @@ export const jsonAsString = <T extends z.ZodTypeAny>(schema?: T) =>
 export const snowflakeAsString = () =>
   z
     .string()
-    .min(17)
-    .max(22)
-    .refine((v) => isSnowflake(v))
+    .min(17, "Invalid ID")
+    .max(22, "Invalid ID")
+    .refine((v) => isSnowflake(v), "Invalid ID")
     .transform((v) => BigInt(v));
 
 type ParsedData<T extends ZodRawShape | ZodTypeAny> = T extends ZodTypeAny
