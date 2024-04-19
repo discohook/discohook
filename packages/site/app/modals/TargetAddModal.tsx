@@ -3,12 +3,11 @@ import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
 import { ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
+import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
-import { selectClassNames } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
 import { LoadedMembership } from "~/routes/_index";
@@ -151,43 +150,21 @@ export const TargetAddModal = (
         <div>
           {error}
           <p className="text-sm">Choose a server</p>
-          <AsyncSelect
-            cacheOptions
-            defaultOptions
-            loadOptions={(inputValue) =>
-              (async () =>
-                // biome-ignore lint/style/noNonNullAssertion: Must not be null to arrive at this point
-                (await props.memberships)!
-                  .filter(({ guild }) =>
-                    guild.name.toLowerCase().includes(inputValue.toLowerCase()),
-                  )
-                  .map(({ guild }) => ({
-                    label: (
-                      <>
-                        {guild.icon && (
-                          <img
-                            src={cdn.icon(String(guild.id), guild.icon)}
-                            alt=""
-                            className="rounded-lg h-6 w-6 mr-1.5 inline-block"
-                          />
-                        )}
-                        <span className="align-middle">{guild.name}</span>
-                      </>
-                    ),
-                    value: String(guild.id),
-                  })))()
-            }
-            classNames={selectClassNames}
-            onChange={(raw) => {
-              const opt = raw as { label: string; value: string };
-              if (guildId && opt.value !== guildId) {
+          <AsyncGuildSelect
+            guilds={(async () =>
+              // biome-ignore lint/style/noNonNullAssertion: Must not be null to arrive at this point
+              (await props.memberships!).map(({ guild }) => guild))()}
+            onChange={(guild) => {
+              if (!guild) return;
+
+              if (guildId && String(guild.id) !== guildId) {
                 guildWebhooksFetcher.reset();
               }
               setError(undefined);
               guildWebhooksFetcher.load(
-                apiUrl(BRoutes.guildWebhooks(opt.value)),
+                apiUrl(BRoutes.guildWebhooks(guild.id)),
               );
-              setGuildId(opt.value);
+              setGuildId(String(guild.id));
             }}
           />
           <p className="text-sm">
