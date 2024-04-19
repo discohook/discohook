@@ -92,7 +92,7 @@ export const Message: React.FC<{
         : cdn.defaultAvatar(5)
       : "/logos/discohook.svg");
   const badge =
-    message.author?.badge === null ? null : message.author?.badge ?? "BOT";
+    message.author?.badge === null ? null : message.author?.badge ?? "APP";
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;
