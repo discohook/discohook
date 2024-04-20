@@ -120,9 +120,9 @@ export const BotEditModal = (
                 comfortable doing so, you can still set up your bot to the full
                 extent that is possible without one. When a token is provided,
                 it allows your bot to show up in audit logs, have its own
-                permissions, and generally operate independently of the main bot
-                account (Discohook Utils). For security reasons, your token is
-                never shown to you after you save it here.
+                permissions, and generally operate independently of Discohook
+                Utils. For security reasons, your token is never shown to you
+                after you save it here.
               </p>
             </div>
             <div className="mt-2">
