@@ -99,7 +99,12 @@ const changeLanguageEffect = () => {
 export default function App() {
   useEffect(changeLanguageEffect, []);
   return (
-    <html lang="en" className="dark">
+    <html
+      lang="en"
+      className="dark"
+      dir="ltr"
+      // dir={["ar"].includes(i18n.language) ? "rtl" : "ltr"}
+    >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />

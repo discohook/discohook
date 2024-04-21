@@ -155,6 +155,7 @@ export const Message: React.FC<{
       className={`flex dark:text-primary-230 ${
         showProfile && !forceSeparateAuthor && lastMessage ? "mt-4" : ""
       }`}
+      dir="ltr"
     >
       {messageDisplay !== "compact" && (
         <div className="hidden sm:block w-fit shrink-0">

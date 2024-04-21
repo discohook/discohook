@@ -42,7 +42,7 @@ export const Tab: React.FC<{
       currentValue === value
         ? "bg-slate-200 hover:bg-slate-300 dark:bg-gray-800 dark:hover:bg-gray-700 cursor-default"
         : "hover:bg-slate-200 dark:hover:bg-gray-800"
-    } rounded transition px-4 py-1.5 font-medium w-fit sm:w-full text-left shrink-0 sm:shrink`}
+    } rounded transition px-4 py-1.5 font-medium w-fit sm:w-full ltr:text-left rtl:text-right shrink-0 sm:shrink`}
     onClick={() => setTab(value)}
   >
     {label}
