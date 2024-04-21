@@ -1,4 +1,4 @@
-import { EmbedBuilder, formatEmoji } from "@discordjs/builders";
+import { EmbedBuilder } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
   APIChatInputApplicationCommandInteraction,
@@ -126,8 +126,7 @@ export const formatEmojiCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   const formatting =
     typeof emoji === "object"
-      ? // biome-ignore lint/style/noNonNullAssertion: Only custom emojis are returned this way
-        formatEmoji(emoji.id!, emoji.animated ?? false)
+      ? `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}>`
       : emoji;
 
   return ctx.reply({
