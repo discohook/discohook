@@ -14,7 +14,7 @@ import {
 } from "@remix-run/react";
 import { APIGuild, APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { desc, eq } from "drizzle-orm";
+import { type SQL, desc, eq, isNotNull } from "drizzle-orm";
 import { Suspense, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -123,18 +123,18 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
   const bots = (async () =>
     user.discordId
-      ? await db.query.customBots.findMany({
-          where: eq(customBots.ownerId, user.id),
-          columns: {
-            id: true,
-            name: true,
-            applicationId: true,
-            applicationUserId: true,
-            icon: true,
-          },
-          orderBy: desc(customBots.name),
-          limit: 50,
-        })
+      ? await db
+          .select({
+            id: customBots.id,
+            name: customBots.name,
+            applicationId: customBots.applicationId,
+            applicationUserId: customBots.applicationUserId,
+            icon: customBots.icon,
+            hasToken: isNotNull(customBots.token) as SQL<boolean>,
+          })
+          .from(customBots)
+          .orderBy(desc(customBots.name))
+          .limit(50)
       : [])();
 
   return defer({

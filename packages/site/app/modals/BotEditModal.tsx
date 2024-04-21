@@ -7,6 +7,7 @@ import { AsyncGuildSelect, OptionGuild } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { LoadedBot, MeLoadedMembership } from "~/routes/me";
 import { DISCORD_BOT_TOKEN_RE, cdn } from "~/util/discord";
 import { Modal, ModalProps } from "./Modal";
@@ -104,7 +105,17 @@ export const BotEditModal = (
             <div>
               <TextInput
                 name="token"
-                label="Bot Token"
+                label={
+                  <>
+                    Bot Token{" "}
+                    <CoolIcon
+                      icon={bot.hasToken ? "Check_Big" : "Close_MD"}
+                      className={
+                        bot.hasToken ? "text-green-300" : "text-red-400"
+                      }
+                    />
+                  </>
+                }
                 className="w-full"
                 // pattern={escapeRegex(DISCORD_BOT_TOKEN_RE)}
                 type="password"
@@ -116,13 +127,18 @@ export const BotEditModal = (
                 }}
               />
               <p className="mt-1 text-sm">
-                Providing a bot token is optional, and if you are not
-                comfortable doing so, you can still set up your bot to the full
-                extent that is possible without one. When a token is provided,
-                it allows your bot to show up in audit logs, have its own
-                permissions, and generally operate independently of Discohook
-                Utils. For security reasons, your token is never shown to you
-                after you save it here.
+                {!bot.hasToken && (
+                  <span>
+                    Providing a bot token is optional, and if you are not
+                    comfortable doing so, you can still set up your bot to the
+                    full extent that is possible without one. When a token is
+                    provided, it allows your bot to show up in audit logs, have
+                    its own permissions, and generally operate independently of
+                    Discohook Utils.
+                  </span>
+                )}{" "}
+                For security reasons, your token is never shown to you after you
+                save it here.
               </p>
             </div>
             <div className="mt-2">

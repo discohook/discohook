@@ -1,3 +1,3 @@
 export * from "store";
 
-export { and, eq, inArray, or } from "drizzle-orm";
+export { and, eq, inArray, or, sql } from "drizzle-orm";
