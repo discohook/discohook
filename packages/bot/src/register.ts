@@ -91,6 +91,62 @@ export const allAppCommands: Record<
       ],
       dm_permission: false,
     },
+    format: {
+      name: "format",
+      description: "...",
+      options: [
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "mention",
+          description: "Outputs the mention format for a user or role",
+          options: [
+            {
+              type: ApplicationCommandOptionType.Mentionable,
+              name: "target",
+              description: "The user or role to mention",
+              required: true,
+            },
+          ],
+        },
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "channel",
+          description: "Outputs the mention format for a channel",
+          options: [
+            {
+              type: ApplicationCommandOptionType.Channel,
+              name: "target",
+              description: "The channel to mention",
+              required: true,
+              channel_types: [
+                ChannelType.AnnouncementThread,
+                ChannelType.GuildAnnouncement,
+                ChannelType.GuildForum,
+                ChannelType.GuildMedia,
+                ChannelType.GuildStageVoice,
+                ChannelType.GuildText,
+                ChannelType.GuildVoice,
+                ChannelType.PrivateThread,
+                ChannelType.PublicThread,
+              ],
+            },
+          ],
+        },
+        {
+          type: ApplicationCommandOptionType.Subcommand,
+          name: "emoji",
+          description: "Outputs the usage format for a server emoji",
+          options: [
+            {
+              type: ApplicationCommandOptionType.String,
+              name: "target",
+              description: "The emoji to use",
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
     invite: {
       name: "invite",
       name_localizations: {

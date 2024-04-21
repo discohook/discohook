@@ -7,6 +7,8 @@ import {
   APIApplicationCommandInteractionDataStringOption,
   APIApplicationCommandInteractionDataSubcommandOption,
   APIAttachment,
+  APIGuildInteraction,
+  APIGuildMember,
   APIInteraction,
   APIInteractionDataResolved,
   APIInteractionResponseCallbackData,
@@ -22,6 +24,7 @@ import {
   APIModalSubmitInteraction,
   APIPremiumRequiredInteractionResponse,
   APIRole,
+  APIUser,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   InteractionResponseType,
@@ -275,6 +278,49 @@ export class InteractionContext<
       ApplicationCommandOptionType.Role,
       "roles",
     );
+  }
+
+  getMentionableOption(
+    name: string,
+  ):
+    | (T extends APIGuildInteraction
+        ? APIRole | (APIGuildMember & { user: APIUser })
+        : APIRole | (APIGuildMember & { user: APIUser }) | APIUser)
+    | null;
+  getMentionableOption(
+    name: string,
+  ): (APIRole | (APIGuildMember & { user: APIUser }) | APIUser) | null {
+    const role = this._getResolvableOption<APIRole>(
+      name,
+      ApplicationCommandOptionType.Mentionable,
+      "roles",
+    );
+    if (role) return role;
+
+    const member = this._getResolvableOption<APIGuildMember>(
+      name,
+      ApplicationCommandOptionType.Mentionable,
+      "members",
+    );
+    if (member) {
+      // biome-ignore lint/style/noNonNullAssertion: Required when member is present
+      const user = this._getResolvableOption<APIUser>(
+        name,
+        ApplicationCommandOptionType.Mentionable,
+        "users",
+      )!;
+      return {
+        ...member,
+        user,
+      } as APIGuildMember & { user: APIUser };
+    }
+
+    const user = this._getResolvableOption<APIUser>(
+      name,
+      ApplicationCommandOptionType.Mentionable,
+      "users",
+    );
+    return user;
   }
 
   getModalComponent(

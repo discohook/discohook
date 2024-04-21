@@ -1,6 +1,8 @@
 import {
   APIApplicationCommandAutocompleteInteraction,
   APIApplicationCommandAutocompleteResponse,
+  APIChatInputApplicationCommandDMInteraction,
+  APIChatInputApplicationCommandGuildInteraction,
   APIChatInputApplicationCommandInteraction,
   APIInteraction,
   APIInteractionResponse,
@@ -15,6 +17,11 @@ import {
   addComponentMessageEntry,
 } from "./commands/components/entry.js";
 import { debugMessageCallback } from "./commands/debug.js";
+import {
+  formatChannelCallback,
+  formatEmojiCallback,
+  formatMentionCallback,
+} from "./commands/format.js";
 import { helpAutocomplete, helpEntry } from "./commands/help.js";
 import { inviteCallback } from "./commands/invite.js";
 import {
@@ -39,8 +46,16 @@ export type AppCommandCallbackT<T extends APIInteraction> = (
 ) => Promise<
   APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]
 >;
-export type ChatInputAppCommandCallback =
-  AppCommandCallbackT<APIChatInputApplicationCommandInteraction>;
+export type ChatInputAppCommandCallback<
+  GuildOnly extends boolean = false,
+  DMOnly extends boolean = false,
+> = AppCommandCallbackT<
+  GuildOnly extends true
+    ? APIChatInputApplicationCommandGuildInteraction
+    : DMOnly extends true
+      ? APIChatInputApplicationCommandDMInteraction
+      : APIChatInputApplicationCommandInteraction
+>;
 export type MessageAppCommandCallback<
   T extends
     APIMessageApplicationCommandInteraction = APIMessageApplicationCommandInteraction,
@@ -76,6 +91,13 @@ export const appCommands: Record<
       },
       autocompleteHandlers: {
         add: addComponentMessageAutocomplete,
+      },
+    },
+    format: {
+      handlers: {
+        mention: formatMentionCallback,
+        channel: formatChannelCallback,
+        emoji: formatEmojiCallback,
       },
     },
     invite: {
