@@ -8,7 +8,7 @@ import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
 import { action } from "~/routes/me";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
-import { cdn, getApplicationRpc } from "~/util/discord";
+import { botAppAvatar, getApplicationRpc } from "~/util/discord";
 import { Modal, ModalProps } from "./Modal";
 
 export const BotCreateModal = (props: ModalProps) => {
@@ -91,13 +91,14 @@ export const BotCreateModal = (props: ModalProps) => {
             <>
               <img
                 className="rounded-full my-auto w-8 h-8 mr-3"
-                src={
-                  application.icon
-                    ? cdn.appIcon(application.id, application.icon, {
-                        size: 64,
-                      })
-                    : cdn.defaultAvatar(5)
-                }
+                src={botAppAvatar(
+                  {
+                    applicationId: application.id,
+                    icon: application.icon,
+                    applicationUserId: null,
+                  },
+                  { size: 64 },
+                )}
                 alt={application.name}
               />
               <div className="truncate my-auto">
@@ -124,7 +125,7 @@ export const BotCreateModal = (props: ModalProps) => {
         </div>
         <div className="flex w-full mt-4">
           <Button type="submit" disabled={!application} className="mx-auto">
-            {t("create")}
+            {t("createBot.title")}
           </Button>
         </div>
       </Form>

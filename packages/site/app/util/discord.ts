@@ -237,6 +237,37 @@ class CDN {
 
 export const cdn = new CDN();
 
+export const botAppAvatar = (
+  app: {
+    applicationId: bigint | string;
+    applicationUserId: bigint | string | null;
+    icon?: string | null;
+    avatar?: string | null;
+    discriminator?: string | null;
+  },
+  options?: BaseImageURLOptions,
+) => {
+  if (app.applicationUserId) {
+    if (!app.avatar) {
+      return cdn.defaultAvatar(
+        app.discriminator === "0" || !app.discriminator
+          ? Number((BigInt(app.applicationUserId) >> BigInt(22)) % BigInt(6))
+          : Number(app.discriminator) % 5,
+      );
+    } else {
+      return cdn.avatar(String(app.applicationUserId), app.avatar, options);
+    }
+  }
+  if (app.icon) {
+    return cdn.appIcon(String(app.applicationId), app.icon, options);
+  }
+  // Discord doesn't actually do this, but the alternative is a static value
+  // that usually doesn't match the bot default avatar
+  return cdn.defaultAvatar(
+    Number((BigInt(app.applicationId) >> BigInt(22)) % BigInt(6)),
+  );
+};
+
 interface DiscordError {
   code: number;
   rawError: RESTError;

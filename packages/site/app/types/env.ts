@@ -20,6 +20,8 @@ export interface Env {
   KOFI_WEBHOOK_TOKEN?: string;
   CRYPTO_ALERTS_TOKEN?: string;
   BITCOIN_ADDRESS?: string;
+  // reset possibly-stolen bot tokens
+  GIST_TOKEN?: string;
   // discohook.org - for importing old-style backups
   LEGACY_ORIGIN?: string;
   // my.discohook.app - prettier links for link embeds

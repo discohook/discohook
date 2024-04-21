@@ -513,6 +513,8 @@ export const customBots = pgTable("CustomBot", {
   icon: text("icon"),
   publicKey: text("publicKey").notNull(),
   token: text("token"),
+  discriminator: text("discriminator"),
+  avatar: text("avatar"),
   name: text("name").notNull(),
   ownerId: snowflake("ownerId")
     .notNull()

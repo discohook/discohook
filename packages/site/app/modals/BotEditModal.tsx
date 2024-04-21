@@ -1,39 +1,64 @@
 import { Form, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { AsyncGuildSelect, OptionGuild } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { LoadedBot, MeLoadedMembership } from "~/routes/me";
-import { DISCORD_BOT_TOKEN_RE, cdn } from "~/util/discord";
+import { User } from "~/session.server";
+import { DISCORD_BOT_TOKEN_RE, botAppAvatar } from "~/util/discord";
+import { getUserTag } from "~/util/users";
+import { BotDeleteConfirmModal } from "./BotDeleteConfirmModal";
 import { Modal, ModalProps } from "./Modal";
 
 export const BotEditModal = (
-  props: ModalProps & {
+  props: Omit<ModalProps, "open" | "setOpen"> & {
+    user: User;
     memberships: Promise<MeLoadedMembership[]>;
     bot: LoadedBot | undefined;
+    setBot: React.Dispatch<React.SetStateAction<LoadedBot | undefined>>;
   },
 ) => {
   const { t } = useTranslation();
-  const { bot, memberships } = props;
+  const { bot, setBot, memberships } = props;
   const submit = useSubmit();
   const [error, setError] = useError();
   const [guild, setGuild] = useState<OptionGuild>();
+  const [delConfirm, setDelConfirm] = useState(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const open = !!bot;
+  const setOpen = (_: boolean) => {
+    setBot(undefined);
+    setError(undefined);
+    setGuild(undefined);
+    setDelConfirm(false);
+  };
+
   useEffect(() => {
-    if (!props.open) {
-      setError(undefined);
-      setGuild(undefined);
+    if (open && bot?.guildId) {
+      memberships.then((ships) => {
+        const g = ships.find(
+          (m) => String(m.guild.id) === String(bot.guildId),
+        )?.guild;
+        if (g) {
+          setGuild(g);
+        }
+      });
     }
-  }, [props.open]);
+  }, [open, bot, memberships]);
 
   return (
-    <Modal title={t("updateBot")} {...props}>
+    <Modal title={t("updateBot")} open={open} setOpen={setOpen}>
+      <BotDeleteConfirmModal
+        open={delConfirm}
+        setOpen={setDelConfirm}
+        setParentOpen={setOpen}
+        bot={bot}
+      />
       <Form
         onSubmit={(e) => {
           e.preventDefault();
@@ -45,8 +70,11 @@ export const BotEditModal = (
             setError({ message: "Invalid token" });
             return;
           }
+          if (!form.get("guildId")) {
+            form.set("guildId", "null");
+          }
           submit(form, { method: "PATCH", action: "/me" });
-          props.setOpen(false);
+          setOpen(false);
         }}
       >
         {error}
@@ -55,13 +83,7 @@ export const BotEditModal = (
             <>
               <img
                 className="rounded-full my-auto w-8 h-8 mr-3"
-                src={
-                  bot.icon
-                    ? cdn.appIcon(String(bot.applicationId), bot.icon, {
-                        size: 64,
-                      })
-                    : cdn.defaultAvatar(5)
-                }
+                src={botAppAvatar(bot, { size: 64 })}
                 alt={bot.name}
               />
               <div className="truncate my-auto">
@@ -70,13 +92,6 @@ export const BotEditModal = (
                     {bot.name}
                   </p>
                 </div>
-                {/*
-                Show whether token is linked here
-                <p className="text-gray-600 dark:text-gray-500 text-xs">
-                  {bot.description || (
-                    <span className="italic">No description</span>
-                  )}
-                </p> */}
               </div>
               <a
                 className="block ml-auto my-auto"
@@ -85,9 +100,15 @@ export const BotEditModal = (
                 rel="noreferrer"
               >
                 <Button discordstyle={ButtonStyle.Link} className="text-sm">
-                  Portal
+                  {t("portal")}
                 </Button>
               </a>
+              <Button
+                discordstyle={ButtonStyle.Danger}
+                className="text-sm ml-1"
+                onClick={() => setDelConfirm(true)}
+                emoji={{ name: "🗑️" }}
+              />
             </>
           ) : (
             <>
@@ -103,46 +124,75 @@ export const BotEditModal = (
           <>
             <input name="botId" value={String(bot.id)} readOnly hidden />
             <div>
-              <TextInput
-                name="token"
-                label={
-                  <>
-                    Bot Token{" "}
-                    <CoolIcon
-                      icon={bot.hasToken ? "Check_Big" : "Close_MD"}
-                      className={
-                        bot.hasToken ? "text-green-300" : "text-red-400"
-                      }
+              {bot.hasToken ? (
+                <div>
+                  <p className="text-sm font-medium">
+                    <Trans
+                      t={t}
+                      i18nKey="botTokenCheck"
+                      components={[
+                        <CoolIcon
+                          icon="Check_Big"
+                          className="text-green-300"
+                        />,
+                      ]}
                     />
-                  </>
-                }
-                className="w-full"
-                // pattern={escapeRegex(DISCORD_BOT_TOKEN_RE)}
-                type="password"
-                onBlur={(e) => {
-                  e.currentTarget.type = "password";
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.type = "text";
-                }}
-              />
-              <p className="mt-1 text-sm">
-                {!bot.hasToken && (
-                  <span>
-                    Providing a bot token is optional, and if you are not
-                    comfortable doing so, you can still set up your bot to the
-                    full extent that is possible without one. When a token is
-                    provided, it allows your bot to show up in audit logs, have
-                    its own permissions, and generally operate independently of
-                    Discohook Utils.
-                  </span>
-                )}{" "}
-                For security reasons, your token is never shown to you after you
-                save it here.
-              </p>
+                  </p>
+                  <p>{t("botTokenHiddenNote")}</p>
+                  <Button
+                    className="mt-1 text-sm"
+                    onClick={() => {
+                      submit(
+                        {
+                          action: "UPDATE_BOT",
+                          botId: String(bot.id),
+                          token: "null",
+                        },
+                        {
+                          method: "PATCH",
+                          action: "/me",
+                        },
+                      );
+                      setBot({ ...bot, hasToken: false });
+                    }}
+                  >
+                    {t("botClearToken")}
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <TextInput
+                    name="token"
+                    label={
+                      <Trans
+                        t={t}
+                        i18nKey="botTokenCheck"
+                        components={[
+                          <CoolIcon icon="Close_MD" className="text-red-400" />,
+                        ]}
+                      />
+                    }
+                    className="w-full"
+                    // pattern={escapeRegex(DISCORD_BOT_TOKEN_RE)}
+                    type="password"
+                    onBlur={(e) => {
+                      e.currentTarget.type = "password";
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.type = "text";
+                    }}
+                  />
+                  <p className="mt-1 text-sm">
+                    {t("botNoTokenNote")}{" "}
+                    {t("botTokenOwnerWarning", {
+                      replace: { username: getUserTag(props.user) },
+                    })}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="mt-2">
-              <p className="text-sm">{t("server_one")}</p>
+              <p className="text-sm font-medium">{t("server_one")}</p>
               <AsyncGuildSelect
                 name="guildId"
                 isClearable
@@ -154,6 +204,7 @@ export const BotEditModal = (
                       ),
                     )
                     .map((m) => m.guild))()}
+                value={guild ?? null}
                 onChange={(g) => setGuild(g ?? undefined)}
               />
             </div>

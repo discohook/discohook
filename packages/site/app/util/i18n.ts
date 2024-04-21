@@ -159,8 +159,24 @@ export const resources = {
           'In the "General Information" tab (selected by default), tap "Copy" under "Application ID"',
         step4: "Paste in the box:",
       },
+      portal: "Portal",
+      botTokenCheck: "Bot Token <0/>",
+      botNoTokenNote: [
+        "Providing a bot token is optional. When a token is set, your",
+        "bot can perform actions independently of Discohook Utils.",
+      ].join(" "),
+      botTokenOwnerWarning:
+        "Make sure your current Discord account ({{username}}) is the owner of this bot or on its team, or else the token will be reset as a safeguard.",
+      botTokenHiddenNote:
+        'For security reasons, your token is never shown to you after you save it here. If you have since reset your token, press "Clear Token" and then re-save it.',
       botsPremiumNote:
         "You've uncovered a Deluxe feature! <0>Read more about custom bots here.</0>",
+      botClearToken: "Clear Token",
+      botName: "Bot Name",
+      deleteBot: {
+        title: "Delete Bot",
+        note: "To delete this custom bot, type its name below. This will not delete the linked Discord application.",
+      },
       havingTrouble: "Having Trouble?",
       troubleshootMessage: [
         "If you press the send button and nothing happens, it may be because",
