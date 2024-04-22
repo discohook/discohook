@@ -1,5 +1,31 @@
 import fs from "node:fs/promises";
 
+const pathify = (
+  /** @type {string} */
+  filename,
+) =>
+  filename
+    // Remove file extension
+    .replace(/\.(?:ts|js|md)x?$/, "")
+    // Path separators
+    .replace(/([^[])\.([^\]])/g, "$1/$2")
+    // Config routes require colons instead of dollar signs, for some reason
+    // Doesn't support splat routes but we don't currently have any of those
+    .replace(/([^[])\$([^\]])/g, "$1:$2")
+    // Literal placeholders
+    .replace(/\[(.+)\]/, "$1");
+
+const getRouteFilenames = async (
+  /** @type {string} */
+  dir,
+) => {
+  return (await fs.readdir(dir)).filter(
+    (f) =>
+      [".ts", ".tsx", ".js", ".jsx", ".mdx"].filter((e) => f.endsWith(e))
+        .length !== 0,
+  );
+};
+
 /** @type {import('@remix-run/dev').AppConfig} */
 export default {
   ignoredRouteFiles: ["**/.*"],
@@ -14,24 +40,10 @@ export default {
   serverModuleFormat: "esm",
   serverPlatform: "neutral",
   routes: async (defineRoutes) => {
-    const filesV1 = (await fs.readdir("./app/api/v1")).filter(
-      (f) =>
-        [".ts", ".tsx", ".js", ".jsx"].filter((e) => f.endsWith(e)).length !==
-        0,
-    );
+    const filesV1 = await getRouteFilenames("./app/api/v1");
     return defineRoutes((route) => {
       for (const file of filesV1) {
-        const path = file
-          // Remove file extension
-          .replace(/\.(?:t|j)sx?$/, "")
-          // Path separators
-          .replace(/([^[])\.([^\]])/g, "$1/$2")
-          // Config routes require colons instead of dollar signs, for some reason
-          // Doesn't support splat routes but we don't currently have any of those
-          .replace(/([^[])\$([^\]])/g, "$1:$2")
-          // Literal placeholders
-          .replace(/\[(.+)\]/, "$1");
-        route(`/api/v1/${path}`, `api/v1/${file}`);
+        route(`/api/v1/${pathify(file)}`, `api/v1/${file}`);
       }
     });
   },
