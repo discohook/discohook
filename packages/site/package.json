@@ -26,7 +26,7 @@
     "@types/showdown": "^2.0.6",
     "chrono-node": "^2.7.5",
     "cron-parser": "shayypy/cron-parser",
-    "discord-api-types": "^0.37.66",
+    "discord-api-types": "^0.37.80",
     "discord-bitflag": "^1.0.1",
     "discord-snowflake": "^2.0.0",
     "emoji-mart": "^5.5.2",

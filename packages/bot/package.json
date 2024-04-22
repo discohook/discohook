@@ -21,7 +21,7 @@
     "@discordjs/formatters": "^0.3.3",
     "@discordjs/rest": "^2.1.0",
     "dedent-js": "^1.0.1",
-    "discord-api-types": "^0.37.63",
+    "discord-api-types": "^0.37.80",
     "discord-bitflag": "^1.0.1",
     "discord-verify": "^1.2.0",
     "itty-router": "^4.0.13",

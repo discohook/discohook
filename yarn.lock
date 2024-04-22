@@ -4246,7 +4246,7 @@ cron-parser@shayypy/cron-parser:
     "@types/showdown": "npm:^2.0.6"
     chrono-node: "npm:^2.7.5"
     cron-parser: shayypy/cron-parser
-    discord-api-types: "npm:^0.37.66"
+    discord-api-types: "npm:^0.37.80"
     discord-bitflag: "npm:^1.0.1"
     discord-snowflake: "npm:^2.0.0"
     emoji-mart: "npm:^5.5.2"
@@ -4292,7 +4292,7 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"discord-api-types@npm:^0.37.63, discord-api-types@npm:^0.37.66":
+"discord-api-types@npm:^0.37.63":
   version: 0.37.66
   resolution: "discord-api-types@npm:0.37.66"
   checksum: 10c0/4f03cf302a986106a17f3a3755c47121cd504cf494e7dcad201f84568604e3b3f17575e71349252eec546c579a0e8fcaabd7ef2b9c2d007152d8469a65db8060
@@ -4303,6 +4303,13 @@ cron-parser@shayypy/cron-parser:
   version: 0.37.67
   resolution: "discord-api-types@npm:0.37.67"
   checksum: 10c0/b003ff4c0c82814f2dc3450d6765d470111c001d6f1eb1ec29f2d99c43590adeef1d400c0247f7c5c9044a3c93027d1d6409454401f091e4434dfa1408723545
+  languageName: node
+  linkType: hard
+
+"discord-api-types@npm:^0.37.80":
+  version: 0.37.80
+  resolution: "discord-api-types@npm:0.37.80"
+  checksum: 10c0/2416d70014729798c4860e314db70f678ea4bfc9655cc574959b9a8362cc5c8e67392ccdfdad9fe85f40a029f0f195a9a6e47776134e4a5284f0de5e8b4d5bd6
   languageName: node
   linkType: hard
 
