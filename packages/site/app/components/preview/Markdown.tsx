@@ -978,22 +978,14 @@ function getRules(type: MarkdownFeatures) {
   ].filter((v): v is NonNullable<typeof v> => Boolean(v));
 }
 
-const parseFullMarkdown = createMarkdownParser(getRules("full"));
-const parseTitleMarkdown = createMarkdownParser(getRules("title"));
-
-const parsers = {
-  full: parseFullMarkdown,
-  title: parseTitleMarkdown,
-};
-
-export type MarkdownFeatures = keyof typeof parsers;
+export type MarkdownFeatures = "full" | "title";
 
 export const Markdown: React.FC<{
   content: string;
   features?: MarkdownFeatures;
   cache?: CacheManager;
 }> = ({ content, features, cache }) => {
-  const parse = parsers[features ?? "full"];
+  const parse = createMarkdownParser(getRules(features ?? "full"));
   const result = parse(content);
 
   const resolver = {
