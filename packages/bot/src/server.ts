@@ -17,7 +17,7 @@ import {
 } from "discord-api-types/v10";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
-import { Router } from "itty-router";
+import { IRequest, Router } from "itty-router";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { DurableStoredComponent } from "store/src/durable/components.js";
 import {
@@ -60,7 +60,11 @@ router.get("/", (_, env: Env) => {
   return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
 });
 
-router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
+const handleInteraction = async (
+  request: IRequest,
+  env: Env,
+  eCtx: ExecutionContext,
+) => {
   const { isValid, interaction } = await server.verifyDiscordRequest(
     request,
     env,
@@ -697,7 +701,41 @@ router.post("/", async (request, env: Env, eCtx: ExecutionContext) => {
 
   console.error("Unknown interaction type");
   return respond({ error: "Unknown interaction type" });
-});
+};
+
+router.post("/", handleInteraction);
+
+interface KVCustomBot {
+  applicationId: string;
+  publicKey: string;
+  token: string | null;
+}
+
+router.post(
+  "/custom/:botId",
+  async (request, env: Env, eCtx: ExecutionContext) => {
+    // is a durable object faster?
+    const config = await env.KV.get<KVCustomBot>(
+      `custom-bot-${request.params.botId}`,
+      "json",
+    );
+    if (!config) {
+      return new Response("Unknown bot ID", { status: 404 });
+    }
+    return await handleInteraction(
+      request,
+      {
+        ...env,
+        // This might cause some confusion if the custom
+        // bot's token does not match the ID
+        DISCORD_APPLICATION_ID: config.applicationId,
+        DISCORD_TOKEN: config.token ?? env.DISCORD_TOKEN,
+        DISCORD_PUBLIC_KEY: config.publicKey,
+      },
+      eCtx,
+    );
+  },
+);
 
 router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
   const auth = request.headers.get("Authorization");
