@@ -16,7 +16,6 @@
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "eslint": "^8.54.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
