@@ -30,6 +30,7 @@
     "discord-bitflag": "^1.0.1",
     "discord-snowflake": "^2.0.0",
     "emoji-mart": "^5.5.2",
+    "front-matter": "^4.0.2",
     "he": "^1.2.0",
     "highlight.js": "^11.9.0",
     "i18next": "^23.8.2",

@@ -537,6 +537,42 @@ const maskedLinkRule = defineRule({
   },
 });
 
+// For blog-type posts; not actually used in Discord previews
+const maskedImageLinkRule = defineRule({
+  // Exact same as maskedLinkRule pattern except with a prefixing `!`
+  // Considering the complexity of this regex it would be desirable to reduce this
+  capture(source) {
+    const match =
+      /^\[((?:\[[^\]]*\]|[^[\]]|\](?=[^[]*\]))*)\]\(\s*<?((?:\([^)]*\)|[^\s\\]|\\.)*?)>?(?:\s+['"](.*?)['"])?\s*\)/su.exec(
+        source,
+      );
+    if (!match) return;
+    try {
+      new URL(match[2]);
+    } catch {
+      return;
+    }
+
+    return {
+      size: match[0].length,
+      content: match[1],
+      url: new URL(match[2]).href,
+      title: match[3],
+    };
+  },
+  render(capture) {
+    return (
+      <img
+        src={capture.url}
+        title={capture.title}
+        className="rounded-lg"
+        rel="noreferrer noopener nofollow ugc"
+        alt={capture.content || capture.title}
+      />
+    );
+  },
+});
+
 const emphasisRule = defineRule({
   capture(source, _, parse) {
     const match =
@@ -947,17 +983,19 @@ const textRule = defineRule({
 });
 
 function getRules(type: MarkdownFeatures) {
+  const full = ["full", "blog"].includes(type);
   return [
-    type === "full" ? headingRule : undefined,
-    type === "full" ? codeBlockRule : undefined,
-    type === "full" ? blockQuoteRule : undefined,
-    type === "full" ? listRule : undefined,
-    type === "full" ? paragraphRule : undefined,
+    full ? headingRule : undefined,
+    full ? codeBlockRule : undefined,
+    full ? blockQuoteRule : undefined,
+    full ? listRule : undefined,
+    full ? paragraphRule : undefined,
     escapeRule,
-    type === "full" ? referenceRule : undefined,
+    full ? referenceRule : undefined,
     linkRule,
     autoLinkRule,
     maskedLinkRule,
+    type === "blog" ? maskedImageLinkRule : undefined,
     emphasisRule,
     strongRule,
     underlineRule,
@@ -965,20 +1003,20 @@ function getRules(type: MarkdownFeatures) {
     codeRule,
     breakRule,
     spoilerRule,
-    type === "full" ? timestampRule : undefined,
-    type === "full" ? globalMentionRule : undefined,
-    type === "full" ? guildSectionMentionRule : undefined,
-    type === "full" ? channelMentionRule : undefined,
-    type === "full" ? memberMentionRule : undefined,
-    type === "full" ? roleMentionRule : undefined,
-    type === "full" ? commandMentionRule : undefined,
+    full ? timestampRule : undefined,
+    full ? globalMentionRule : undefined,
+    full ? guildSectionMentionRule : undefined,
+    full ? channelMentionRule : undefined,
+    full ? memberMentionRule : undefined,
+    full ? roleMentionRule : undefined,
+    full ? commandMentionRule : undefined,
     customEmojiRule,
     unicodeEmojiRule,
     textRule,
   ].filter((v): v is NonNullable<typeof v> => Boolean(v));
 }
 
-export type MarkdownFeatures = "full" | "title";
+export type MarkdownFeatures = "title" | "full" | "blog";
 
 export const Markdown: React.FC<{
   content: string;
