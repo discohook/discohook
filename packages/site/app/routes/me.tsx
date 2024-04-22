@@ -148,7 +148,9 @@ export const loader = async ({ request, context }: LoaderArgs) => {
             hasToken: isNotNull(customBots.token) as SQL<boolean>,
             // This is a little wasteful insofar as saving a few transit bytes by
             // constructing on the client instead, but this is a lot more convenient
-            url: sql<string>`${context.env.BOTS_ORIGIN}::text || '/custom/' || ${customBots.id}::text`,
+            url: context.env.BOTS_ORIGIN
+              ? sql<string>`${context.env.BOTS_ORIGIN}::text || '/custom/' || ${customBots.id}::text`
+              : sql<null>`NULL`,
           })
           .from(customBots)
           .orderBy(desc(customBots.name))

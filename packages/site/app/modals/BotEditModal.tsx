@@ -209,24 +209,26 @@ export const BotEditModal = (
                 onChange={(g) => setGuild(g ?? undefined)}
               />
             </div>
-            <div className="mt-2 flex">
-              <div className="grow">
-                <TextInput
-                  label={t("botInteractionUrl")}
-                  className="w-full"
-                  value={bot.url}
-                  readOnly
-                />
+            {bot.url && (
+              <div className="mt-2 flex">
+                <div className="grow">
+                  <TextInput
+                    label={t("botInteractionUrl")}
+                    className="w-full"
+                    value={bot.url}
+                    readOnly
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    if (bot.url) copyText(bot.url);
+                  }}
+                  className="ml-2 mt-auto"
+                >
+                  {t("copy")}
+                </Button>
               </div>
-              <Button
-                onClick={() => {
-                  copyText(bot.url);
-                }}
-                className="ml-2 mt-auto"
-              >
-                {t("copy")}
-              </Button>
-            </div>
+            )}
           </>
         )}
         <div className="flex w-full mt-4">
