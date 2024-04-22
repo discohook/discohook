@@ -172,6 +172,7 @@ export const resources = {
       botsPremiumNote:
         "You've uncovered a Deluxe feature! <0>Read more about custom bots here.</0>",
       botClearToken: "Clear Token",
+      botInteractionUrl: "Interactions Endpoint URL",
       botName: "Bot Name",
       deleteBot: {
         title: "Delete Bot",

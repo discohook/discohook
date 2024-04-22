@@ -69,6 +69,7 @@ import {
   discordMembers,
   getDb,
   makeSnowflake,
+  sql,
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -145,6 +146,9 @@ export const loader = async ({ request, context }: LoaderArgs) => {
             discriminator: customBots.discriminator,
             guildId: customBots.guildId,
             hasToken: isNotNull(customBots.token) as SQL<boolean>,
+            // This is a little wasteful insofar as saving a few transit bytes by
+            // constructing on the client instead, but this is a lot more convenient
+            url: sql<string>`${context.env.BOTS_ORIGIN}::text || '/custom/' || ${customBots.id}::text`,
           })
           .from(customBots)
           .orderBy(desc(customBots.name))
@@ -171,6 +175,12 @@ export type LoadedBot = Awaited<SerializeFrom<typeof loader>["bots"]>[number];
 export type MeLoadedMembership = Awaited<
   SerializeFrom<typeof loader>["memberships"]
 >[number];
+
+interface KVCustomBot {
+  applicationId: string;
+  publicKey: string;
+  token: string | null;
+}
 
 export const action = async ({ request, context }: ActionArgs) => {
   const data = await zxParseForm(
@@ -344,6 +354,14 @@ export const action = async ({ request, context }: ActionArgs) => {
           400,
         );
       }
+      await context.env.KV.put(
+        `custom-bot-${inserted.id}`,
+        JSON.stringify({
+          applicationId: application.id,
+          publicKey: application.verify_key,
+          token: null,
+        } satisfies KVCustomBot),
+      );
 
       return json({ action: data.action, id: inserted.id }, 201);
     }
@@ -505,8 +523,17 @@ export const action = async ({ request, context }: ActionArgs) => {
           .where(eq(customBots.id, BigInt(data.botId)))
           .returning({
             id: customBots.id,
+            token: customBots.token,
           })
       )[0];
+      await context.env.KV.put(
+        `custom-bot-${data.botId}`,
+        JSON.stringify({
+          applicationId: application.id,
+          publicKey: application.verify_key,
+          token: updated.token,
+        } satisfies KVCustomBot),
+      );
 
       return json({ action: data.action, id: updated.id }, 200);
     }
@@ -521,6 +548,9 @@ export const action = async ({ request, context }: ActionArgs) => {
       if (!bot || bot.ownerId !== userId) {
         throw json({ message: "No such bot" }, 404);
       }
+      try {
+        await context.env.KV.delete(`custom-bot-${data.botId}`);
+      } catch {}
       await db.delete(customBots).where(eq(customBots.id, data.botId));
       break;
     }

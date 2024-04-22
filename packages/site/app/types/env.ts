@@ -29,4 +29,6 @@ export interface Env {
   // cdn.discohook.app - user uploaded content on B2
   CDN_ORIGIN: string;
   CDN: Service<CDNService>;
+  // bots.discohook.app - custom bots
+  BOTS_ORIGIN?: string;
 }

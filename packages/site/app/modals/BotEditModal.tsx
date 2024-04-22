@@ -11,6 +11,7 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { LoadedBot, MeLoadedMembership } from "~/routes/me";
 import { User } from "~/session.server";
 import { DISCORD_BOT_TOKEN_RE, botAppAvatar } from "~/util/discord";
+import { copyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
 import { BotDeleteConfirmModal } from "./BotDeleteConfirmModal";
 import { Modal, ModalProps } from "./Modal";
@@ -207,6 +208,24 @@ export const BotEditModal = (
                 value={guild ?? null}
                 onChange={(g) => setGuild(g ?? undefined)}
               />
+            </div>
+            <div className="mt-2 flex">
+              <div className="grow">
+                <TextInput
+                  label={t("botInteractionUrl")}
+                  className="w-full"
+                  value={bot.url}
+                  readOnly
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  copyText(bot.url);
+                }}
+                className="ml-2 mt-auto"
+              >
+                {t("copy")}
+              </Button>
             </div>
           </>
         )}
