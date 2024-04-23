@@ -209,6 +209,14 @@ export const resources = {
       // Preview
       defaultPlaceholder: "Make a selection",
       todayAt: "Today at {{time}}",
+      mention: {
+        unknown: "unknown",
+        unknownUser: "unknown-user",
+        deletedRole: "deleted-role",
+        guide: "Server Guide",
+        browse: "Browse Channels",
+        customize: "Channels & Roles",
+      },
       timestamp: {
         time: "{{ date, h:mm a }}",
         time_verbose: "{{ date, h:mm:ss A }}",
@@ -461,6 +469,13 @@ export const resources = {
     translation: {
       locales: {
         nl: "Nederlands",
+      },
+      mention: {
+        unknown: "onbekend",
+        unknownUser: "onbekende-gebruiker",
+        guide: "Servergids",
+        browse: "Kanalen browsen",
+        customize: "Kanalen en rollen",
       },
       timestamp: {
         time: "{{ date, HH:mm }}",

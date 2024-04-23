@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import {
   CacheManager,
@@ -43,12 +44,13 @@ export const MentionsPicker: React.FC<{
   className?: string;
   cache?: CacheManager;
 }> = ({ id, cache, className, onMentionClick }) => {
+  const { t } = useTranslation();
   const state = {
     // Three iterations here, gross, maybe reduce in the future
     channel: [
-      { id: "guide", name: "Server Guide", type: "guide" },
-      { id: "browse", name: "Browse Channels", type: "browse" },
-      { id: "customize", name: "Channels & Roles", type: "browse" },
+      { id: "guide", name: t("mention.guide"), type: "guide" },
+      { id: "browse", name: t("mention.browse"), type: "browse" },
+      { id: "customize", name: t("mention.customize"), type: "browse" },
       ...(cache
         ? (Object.entries(cache.state)
             .filter(

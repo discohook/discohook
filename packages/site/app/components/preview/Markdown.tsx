@@ -1,8 +1,9 @@
 // This file is a fork of @maddymeow's work on Discohook (AGPL 3.0) - thank you
 // https://github.com/discohook/site
 
+import { TFunction } from "i18next";
 import { useEffect } from "react";
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import {
   CacheManager,
@@ -55,6 +56,7 @@ type Rule<
     capture: Capture,
     render: Renderer,
     data: { [Key in keyof Data]?: Resolutions[Data[keyof Data]] | null },
+    t?: TFunction,
   ): Renderable;
 };
 
@@ -128,6 +130,7 @@ function createMarkdownParser(rules: Rule[]) {
 function renderMarkdownNodes(
   nodes: MarkdownNode[],
   data: Resolutions | undefined,
+  t?: TFunction,
 ) {
   const elements: (JSX.Element | string)[] = [];
 
@@ -142,6 +145,7 @@ function renderMarkdownNodes(
             }),
           )
         : {},
+      t,
     );
 
     let last = elements[elements.length - 1];
@@ -425,7 +429,7 @@ const referenceRule = defineRule({
       channel: `channel:${capture.channel}`,
     };
   },
-  render(_, __, data) {
+  render(_, __, data, t) {
     return (
       <span className={actionableMentionStyle}>
         {
@@ -440,16 +444,24 @@ const referenceRule = defineRule({
                 className="text-[calc(var(--font-size)*0.6)] mx-0.5"
               />
               {channelIcons.post()}
-              {data.channel.name ?? <span className="italic">Unknown</span>}
+              {data.channel.name ?? (
+                <span className="italic">
+                  <Trans t={t} i18nKey="mention.unknown" />
+                </span>
+              )}
             </>
           ) : data.channel ? (
             <>
               {channelIcons[data.channel.type]()}
-              {data.channel.name ?? <span className="italic">Unknown</span>}
+              {data.channel.name ?? (
+                <span className="italic">
+                  <Trans t={t} i18nKey="mention.unknown" />
+                </span>
+              )}
               {/*
-              Why is the chevron so tiny in the Discord client? My reproduction
-              is too big, I felt weird making it smaller
-            */}
+                Why is the chevron so tiny in the Discord client? My reproduction
+                is too big, I felt weird making it smaller
+              */}
               <CoolIcon
                 icon="Chevron_Right"
                 className="text-[calc(var(--font-size)*0.6)] mx-0.5"
@@ -459,7 +471,9 @@ const referenceRule = defineRule({
           ) : (
             <>
               {channelIcons.text()}
-              <span className="italic">unknown</span>
+              <span className="italic">
+                <Trans t={t} i18nKey="mention.unknown" />
+              </span>
             </>
           )
         }
@@ -746,7 +760,7 @@ const timestampRule = defineRule({
         timestampFormats[(match[2] as keyof typeof timestampFormats) ?? "f"],
     };
   },
-  render(capture) {
+  render(capture, _, __, t) {
     const [relativeFormat, n] = getRelativeDateFormat(capture.date);
     const format =
       capture.format === "relative"
@@ -759,6 +773,7 @@ const timestampRule = defineRule({
         title={capture.date.toLocaleString()}
       >
         <Trans
+          t={t}
           i18nKey={`timestamp.${format}`}
           values={{ date: capture.date, count: n }}
         />
@@ -823,24 +838,16 @@ const guildSectionMentionRule = defineRule({
       id: match[1],
     };
   },
-  render(capture) {
+  render(capture, _, __, t) {
     const type =
       capture.id === "customize"
         ? "browse"
         : (capture.id as "guide" | "browse");
 
-    // TODO integrate i18n
-    const name =
-      capture.id === "guide"
-        ? "Server Guide"
-        : capture.id === "browse"
-          ? "Browse Channels"
-          : "Channels & Roles";
-
     return (
       <span className={actionableMentionStyle}>
         {channelIcons[type]()}
-        {name}
+        <Trans t={t} i18nKey={`mention.${capture.id}`} />
       </span>
     );
   },
@@ -860,7 +867,7 @@ const channelMentionRule = defineRule({
       channel: `channel:${capture.id}`,
     };
   },
-  render(_capture, _, data) {
+  render(_capture, _, data, t) {
     if (data.channel === undefined) {
       <span className={actionableMentionStyle}>
         {channelIcons.text()}channel
@@ -870,7 +877,11 @@ const channelMentionRule = defineRule({
     return (
       <span className={actionableMentionStyle}>
         {channelIcons[data.channel?.type ?? "text"]()}
-        {data.channel?.name ?? <span className="italic">Unknown</span>}
+        {data.channel?.name ?? (
+          <span className="italic">
+            <Trans t={t} i18nKey="mention.unknown" />
+          </span>
+        )}
       </span>
     );
   },
@@ -890,20 +901,24 @@ const memberMentionRule = defineRule({
       member: `member:@global-${capture.id}`,
     };
   },
-  render(capture, _, data) {
+  render(capture, _, data, t) {
     if (data.member === undefined) {
       <span className={actionableMentionStyle}>@member</span>;
     }
 
     return (
       <span className={actionableMentionStyle}>
-        {data.member
-          ? `@${
-              data.member.nick ??
-              data.member.user.global_name ??
-              data.member.user.username
-            }`
-          : `<@${capture.id}>`}
+        {data.member ? (
+          `@${
+            data.member.nick ??
+            data.member.user.global_name ??
+            data.member.user.username
+          }`
+        ) : (
+          <span>
+            @<Trans t={t} i18nKey="mention.unknownUser" />
+          </span>
+        )}
       </span>
     );
   },
@@ -923,11 +938,15 @@ const roleMentionRule = defineRule({
       role: `role:${capture.id}`,
     };
   },
-  render(capture, _, data) {
+  render(capture, _, data, t) {
     if (data.role === undefined) {
       return <span className={mentionStyle}>@role</span>;
     } else if (!data.role) {
-      return "@deleted-role";
+      return (
+        <span>
+          @<Trans t={t} i18nKey="mention.deletedRole" />
+        </span>
+      );
     }
 
     const [red, green, blue] = getRgbComponents(data.role.color);
@@ -1132,6 +1151,7 @@ export const Markdown: React.FC<{
   features?: FeatureConfig;
   cache?: CacheManager;
 }> = ({ content, features, cache }) => {
+  const { t } = useTranslation();
   const parse = createMarkdownParser(getRules(features ?? "full"));
   const result = parse(content);
 
@@ -1145,5 +1165,5 @@ export const Markdown: React.FC<{
     }
   }, [result, cache]);
 
-  return <div>{renderMarkdownNodes(result.nodes, resolver.resolved)}</div>;
+  return <div>{renderMarkdownNodes(result.nodes, resolver.resolved, t)}</div>;
 };
