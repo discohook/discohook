@@ -19,6 +19,7 @@ import {
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
+import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 import {
   BrowseChannelIcon,
@@ -416,10 +417,52 @@ const referenceRule = defineRule({
       message: match[4],
     };
   },
-  render(capture) {
+  data(capture) {
+    // TODO ignore when `guild` is @me
+    return {
+      // We could also resolve guild here, but that's only necessary
+      // for cross-guild message references
+      channel: `channel:${capture.channel}`,
+    };
+  },
+  render(_, __, data) {
     return (
       <span className={actionableMentionStyle}>
-        {capture.message ?? capture.channel}
+        {
+          // Links to messages in forum posts are slightly different (they include
+          // the parent title) but that exact functionality is unfeasible here
+          data.channel?.type === "post" ? (
+            <>
+              {channelIcons.forum()}
+              forum
+              <CoolIcon
+                icon="Chevron_Right"
+                className="text-[calc(var(--font-size)*0.6)] mx-0.5"
+              />
+              {channelIcons.post()}
+              {data.channel.name ?? <span className="italic">Unknown</span>}
+            </>
+          ) : data.channel ? (
+            <>
+              {channelIcons[data.channel.type]()}
+              {data.channel.name ?? <span className="italic">Unknown</span>}
+              {/*
+              Why is the chevron so tiny in the Discord client? My reproduction
+              is too big, I felt weird making it smaller
+            */}
+              <CoolIcon
+                icon="Chevron_Right"
+                className="text-[calc(var(--font-size)*0.6)] mx-0.5"
+              />
+              {channelIcons.post()}
+            </>
+          ) : (
+            <>
+              {channelIcons.text()}
+              <span className="italic">unknown</span>
+            </>
+          )
+        }
       </span>
     );
   },
