@@ -132,7 +132,7 @@ export const MessageEditor: React.FC<{
         <TextArea
           label="Content"
           className="w-full h-40"
-          value={message.data.content ?? undefined}
+          value={message.data.content ?? ""}
           maxLength={2000}
           freelength
           markdown="full"
