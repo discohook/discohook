@@ -149,7 +149,13 @@ export const Embed: React.FC<{
           </div>
         )}
         {embed.description && (
-          <div className="text-sm font-normal mt-2 inline-block whitespace-pre-line">
+          <div
+            className="text-sm font-normal mt-2 inline-block whitespace-pre-line"
+            style={{
+              // @ts-expect-error
+              "--font-size": "1rem",
+            }}
+          >
             <Markdown
               content={embed.description}
               features="full"
@@ -200,7 +206,13 @@ export const Embed: React.FC<{
                           cache={cache}
                         />
                       </div>
-                      <div className="font-normal">
+                      <div
+                        className="font-normal"
+                        style={{
+                          // @ts-expect-error
+                          "--font-size": "1rem",
+                        }}
+                      >
                         <Markdown
                           content={field.value}
                           features="full"
