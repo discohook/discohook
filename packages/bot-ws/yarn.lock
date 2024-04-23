@@ -203,7 +203,7 @@ __metadata:
   dependencies:
     "@discordjs/rest": "npm:^2.2.0"
     "@discordjs/ws": "npm:^1.0.2"
-    discord-api-types: "npm:^0.37.80"
+    discord-api-types: "npm:^0.37.81"
     dotenv: "npm:^16.3.1"
     ts-node: "npm:^10.9.1"
     typescript: "npm:^5.2.2"
@@ -217,10 +217,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"discord-api-types@npm:^0.37.80":
-  version: 0.37.80
-  resolution: "discord-api-types@npm:0.37.80"
-  checksum: 10c0/2416d70014729798c4860e314db70f678ea4bfc9655cc574959b9a8362cc5c8e67392ccdfdad9fe85f40a029f0f195a9a6e47776134e4a5284f0de5e8b4d5bd6
+"discord-api-types@npm:^0.37.81":
+  version: 0.37.81
+  resolution: "discord-api-types@npm:0.37.81"
+  checksum: 10c0/240f6158a248b23467edb239d983f11597c051619995ba8002c1e52c2005c9ed1c739a00d2bdcdadbcb3cdc499487a6391a7625f83ef1566fd0dcf7d1eb00188
   languageName: node
   linkType: hard
 

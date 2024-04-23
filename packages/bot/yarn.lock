@@ -1346,7 +1346,7 @@ __metadata:
     c8: "npm:^8.0.0"
     chai: "npm:^4.3.7"
     dedent-js: "npm:^1.0.1"
-    discord-api-types: "npm:^0.37.80"
+    discord-api-types: "npm:^0.37.81"
     discord-bitflag: "npm:^1.0.1"
     discord-verify: "npm:^1.2.0"
     dotenv: "npm:^16.0.3"
@@ -1375,10 +1375,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"discord-api-types@npm:^0.37.80":
-  version: 0.37.80
-  resolution: "discord-api-types@npm:0.37.80"
-  checksum: 10c0/2416d70014729798c4860e314db70f678ea4bfc9655cc574959b9a8362cc5c8e67392ccdfdad9fe85f40a029f0f195a9a6e47776134e4a5284f0de5e8b4d5bd6
+"discord-api-types@npm:^0.37.81":
+  version: 0.37.81
+  resolution: "discord-api-types@npm:0.37.81"
+  checksum: 10c0/240f6158a248b23467edb239d983f11597c051619995ba8002c1e52c2005c9ed1c739a00d2bdcdadbcb3cdc499487a6391a7625f83ef1566fd0dcf7d1eb00188
   languageName: node
   linkType: hard
 
@@ -3222,7 +3222,7 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=92a2a2&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=73f4b5&locator=discohook-bot%40workspace%3A."
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
@@ -3230,7 +3230,7 @@ __metadata:
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/f1cf366083220b8a5def2dfc1d37c0f41e4e1b1c0f033e53b42752f739a01c4d1429e1b623166c49e0db661c71a833d619c7c80d334ce5b6cf356d5d5621e3b3
+  checksum: 10c0/51b0b5cdef146c2cc934db41a0b0940c20d5e534d15c301b365271d4d01a2af76c5e5d35f78cb9ce12cffc8d6339cafb41816b46959f40d1812b2b14c2b1b1c9
   languageName: node
   linkType: hard
 
