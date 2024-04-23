@@ -202,10 +202,7 @@ export const Embed: React.FC<{
                       <div className="font-semibold mb-px">
                         <Markdown
                           content={field.name}
-                          features={{
-                            extend: "full",
-                            headings: false,
-                          }}
+                          features="title"
                           cache={cache}
                         />
                       </div>
