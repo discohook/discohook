@@ -824,23 +824,23 @@ const guildSectionMentionRule = defineRule({
     };
   },
   render(capture) {
-    const data = {
-      type:
-        capture.id === "customize"
-          ? "browse"
-          : (capture.id as "guide" | "browse"),
-      // TODO integrate i18n
-      name:
-        capture.id === "guide"
-          ? "Server Guide"
-          : capture.id === "browse"
-            ? "Browse Channels"
-            : "Channels & Roles",
-    };
+    const type =
+      capture.id === "customize"
+        ? "browse"
+        : (capture.id as "guide" | "browse");
+
+    // TODO integrate i18n
+    const name =
+      capture.id === "guide"
+        ? "Server Guide"
+        : capture.id === "browse"
+          ? "Browse Channels"
+          : "Channels & Roles";
+
     return (
       <span className={actionableMentionStyle}>
-        {channelIcons[data.type]()}
-        {data.name}
+        {channelIcons[type]()}
+        {name}
       </span>
     );
   },
