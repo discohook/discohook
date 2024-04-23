@@ -107,7 +107,11 @@ export default function GuidePage() {
             "--font-size": "1rem",
           }}
         >
-          <Markdown content={content} features="blog" cache={cache} />
+          <Markdown
+            content={content}
+            features={{ extend: "full", maskedImageLinks: true }}
+            cache={cache}
+          />
         </div>
       </Prose>
     </div>

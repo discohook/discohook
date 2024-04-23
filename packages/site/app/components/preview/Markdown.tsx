@@ -982,45 +982,107 @@ const textRule = defineRule({
   },
 });
 
-function getRules(type: MarkdownFeatures) {
-  const full = ["full", "blog"].includes(type);
-  return [
-    full ? headingRule : undefined,
-    full ? codeBlockRule : undefined,
-    full ? blockQuoteRule : undefined,
-    full ? listRule : undefined,
-    full ? paragraphRule : undefined,
-    escapeRule,
-    full ? referenceRule : undefined,
-    linkRule,
-    autoLinkRule,
-    maskedLinkRule,
-    type === "blog" ? maskedImageLinkRule : undefined,
-    emphasisRule,
-    strongRule,
-    underlineRule,
-    strikethroughRule,
-    codeRule,
-    breakRule,
-    spoilerRule,
-    full ? timestampRule : undefined,
-    full ? globalMentionRule : undefined,
-    full ? guildSectionMentionRule : undefined,
-    full ? channelMentionRule : undefined,
-    full ? memberMentionRule : undefined,
-    full ? roleMentionRule : undefined,
-    full ? commandMentionRule : undefined,
-    customEmojiRule,
-    unicodeEmojiRule,
-    textRule,
-  ].filter((v): v is NonNullable<typeof v> => Boolean(v));
-}
+type RuleOptionKey =
+  | "headings"
+  | "codeBlocks"
+  | "inlineCode"
+  | "blockQuotes"
+  | "lists"
+  | "paragraphs"
+  | "escapes"
+  | "references"
+  | "links"
+  | "autoLinks"
+  | "maskedLinks"
+  | "maskedImageLinks"
+  | "italic"
+  | "bold"
+  | "underline"
+  | "strikethrough"
+  | "breaks"
+  | "spoilers"
+  | "timestamps"
+  | "globalMentions"
+  | "guildSectionMentions"
+  | "channelMentions"
+  | "memberMentions"
+  | "roleMentions"
+  | "commandMentions"
+  | "customEmojis"
+  | "unicodeEmojis"
+  | "text";
 
-export type MarkdownFeatures = "title" | "full" | "blog";
+export const ruleOptions: Record<
+  RuleOptionKey,
+  { rule: Rule; title?: boolean; full?: boolean }
+> = {
+  headings: { rule: headingRule, full: true },
+  codeBlocks: { rule: codeBlockRule, full: true },
+  inlineCode: { rule: codeRule, full: true },
+  blockQuotes: { rule: blockQuoteRule, full: true },
+  lists: { rule: listRule, full: true },
+  paragraphs: { rule: paragraphRule, title: true, full: true },
+  escapes: { rule: escapeRule, title: true, full: true },
+  references: { rule: referenceRule, full: true },
+  links: { rule: linkRule, title: true, full: true },
+  autoLinks: { rule: autoLinkRule, title: true, full: true },
+  maskedLinks: { rule: maskedLinkRule, title: true, full: true },
+  maskedImageLinks: { rule: maskedImageLinkRule },
+  italic: { rule: emphasisRule, title: true, full: true },
+  bold: { rule: strongRule, title: true, full: true },
+  underline: { rule: underlineRule, title: true, full: true },
+  strikethrough: { rule: strikethroughRule, title: true, full: true },
+  breaks: { rule: breakRule, title: true, full: true },
+  spoilers: { rule: spoilerRule, title: true, full: true },
+  timestamps: { rule: timestampRule, full: true },
+  globalMentions: { rule: globalMentionRule, full: true },
+  guildSectionMentions: { rule: guildSectionMentionRule, full: true },
+  channelMentions: { rule: channelMentionRule, full: true },
+  memberMentions: { rule: memberMentionRule, full: true },
+  roleMentions: { rule: roleMentionRule, full: true },
+  commandMentions: { rule: commandMentionRule, full: true },
+  customEmojis: { rule: customEmojiRule, title: true, full: true },
+  unicodeEmojis: { rule: unicodeEmojiRule, title: true, full: true },
+  text: { rule: textRule, title: true, full: true },
+};
+
+export type MarkdownFeatures = "title" | "full";
+
+export type FeatureConfig =
+  | MarkdownFeatures
+  | (Partial<Record<RuleOptionKey, boolean>> & { extend?: MarkdownFeatures });
+
+const extendable: Record<MarkdownFeatures, RuleOptionKey[]> = {
+  full: Object.entries(ruleOptions)
+    .filter((pair) => pair[1].full)
+    .map((pair) => pair[0] as RuleOptionKey),
+  title: Object.entries(ruleOptions)
+    .filter((pair) => pair[1].title)
+    .map((pair) => pair[0] as RuleOptionKey),
+};
+
+function getRules(features: FeatureConfig) {
+  let rules: Rule[];
+  if (typeof features === "string") {
+    rules = extendable[features].map((key) => ruleOptions[key].rule);
+  } else {
+    const enabledKeys = features.extend
+      ? extendable[features.extend].filter((key) => features[key] !== false)
+      : Object.entries(features)
+          .filter((pair) => pair[1])
+          .map((pair) => pair[0]);
+
+    rules = Object.entries(ruleOptions)
+      .filter((pair) => enabledKeys.includes(pair[0]))
+      .map((pair) => pair[1].rule);
+  }
+
+  return rules;
+}
 
 export const Markdown: React.FC<{
   content: string;
-  features?: MarkdownFeatures;
+  features?: FeatureConfig;
   cache?: CacheManager;
 }> = ({ content, features, cache }) => {
   const parse = createMarkdownParser(getRules(features ?? "full"));
