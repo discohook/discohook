@@ -343,6 +343,11 @@ export const resources = {
       resetEditorWarning: "点击以确认",
       resetFinished: "重置完成",
       todayAt: "今天 {{time}}",
+      mention: {
+        guide: "服务器指南",
+        browse: "浏览频道",
+        customize: "频道和身份组",
+      },
     },
   },
   ar: {
