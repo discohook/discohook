@@ -1,0 +1,39 @@
+{
+  "commands": {
+    "invite": {
+      "name": "ajouter"
+    },
+    "webhooks": {
+      "description": "Webhooks beheren",
+      "options": {
+        "create": {
+          "name": "créer",
+          "description": "Créer un webhook",
+          "options": {
+            "name": {
+              "name": "nom",
+              "description": "Le nom du webhook"
+            },
+            "channel": {
+              "name": "salon",
+              "description": "Le canal dans lequel créer le webhook"
+            }
+          }
+        },
+        "delete": {
+          "name": "supprimer",
+          "description": "Supprimer un webhook"
+        },
+        "info": {
+          "description": "Verkrijg informatie over een webhook",
+          "options": {
+            "show-url": {
+              "name": "toon-url",
+              "description": "Of je de \"Verkrijg URL\" stap over wilt slaan. Dit maakt het bericht verborgen."
+            }
+          }
+        }
+      }
+    }
+  }
+}

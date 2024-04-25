@@ -1,0 +1,152 @@
+{
+  "commands": {
+    "_options": {
+      "webhook": {
+        "description": "The target webhook"
+      },
+      "filter-channel": {
+        "description": "The channel to filter autocomplete results with"
+      }
+    },
+    "buttons": {
+      "description": "Add, remove, and manage buttons",
+      "options": {
+        "add": {
+          "description": "Add a button",
+          "options": {
+            "message": {
+              "description": "Add a button to this message. A message link is also accepted here"
+            },
+            "channel": {
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        }
+      }
+    },
+    "triggers": {
+      "description": "Set up triggers to respond to events in your server",
+      "options": {
+        "add": {
+          "description": "Add a new trigger",
+          "options": {
+            "name": {
+              "description": "The name of the trigger"
+            },
+            "event": {
+              "description": "The event that will set off the trigger",
+              "choices": {
+                "0": "Member Join",
+                "1": "Member Remove"
+              }
+            }
+          }
+        },
+        "view": {
+          "description": "View & manage a trigger",
+          "options": {
+            "name": {
+              "description": "The name of the trigger"
+            }
+          }
+        }
+      }
+    },
+    "webhooks": {
+      "description": "Manage webhooks",
+      "options": {
+        "create": {
+          "description": "Create a webhook",
+          "options": {
+            "name": {
+              "description": "The webhook's name"
+            },
+            "avatar": {
+              "description": "The webhook's avatar"
+            },
+            "channel": {
+              "description": "The channel to create the webhook in"
+            },
+            "show-url": {
+              "description": "Only enable this if you need the URL for an external application"
+            }
+          }
+        },
+        "delete": {
+          "description": "Delete a webhook"
+        },
+        "info": {
+          "description": "Get info on a webhook",
+          "options": {
+            "show-url": {
+              "description": "Whether to skip the \"Get URL\" step. This makes the message hidden"
+            }
+          }
+        }
+      }
+    },
+    "welcomer": {
+      "description": "Welcomer functionality has been moved to /triggers!"
+    },
+    "help": {
+      "description": "Get help with various topics",
+      "options": {
+        "tag": {
+          "description": "The tag to get help for"
+        }
+      }
+    },
+    "reaction-role": {
+      "options": {
+        "create": {
+          "description": "Create a new reaction role",
+          "options": {
+            "message": {
+              "description": "The message to create the reaction on. A message link is also accepted here"
+            },
+            "emoji": {
+              "description": "The emoji that the reaction should show. For external emojis, react before the bot"
+            },
+            "role": {
+              "description": "The role that should be assigned/removed when the reaction is clicked"
+            },
+            "channel": {
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        },
+        "delete": {
+          "description": "Delete a reaction role from a message",
+          "options": {
+            "message": {
+              "description": "The message to delete the reaction role from. A message link is also accepted here"
+            },
+            "emoji": {
+              "description": "The emoji that the reaction shows. Omit this parameter to view a deletion menu"
+            },
+            "channel": {
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        }
+      }
+    },
+    "_ctx": {
+      "components": {
+        "name": "Buttons & Components"
+      },
+      "edit": {
+        "name": "Quick Edit"
+      },
+      "restore": {
+        "name": "Restore"
+      },
+      "webhook": {
+        "name": "Webhook Info"
+      },
+      "debug": {
+        "name": "Debug"
+      }
+    }
+  }
+}

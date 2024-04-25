@@ -1,12 +1,26 @@
-import { ApplicationCommandOptionChannelTypesMixin } from "@discordjs/builders";
 import {
-  ApplicationCommandOptionType,
+  ContextMenuCommandBuilder,
+  SlashCommandAttachmentOption,
+  SlashCommandBooleanOption,
+  SlashCommandBuilder,
+  SlashCommandChannelOption,
+  SlashCommandIntegerOption,
+  SlashCommandMentionableOption,
+  SlashCommandRoleOption,
+  SlashCommandStringOption,
+  SlashCommandSubcommandBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
+  ToAPIApplicationCommandOptions,
+} from "@discordjs/builders";
+import {
   ApplicationCommandType,
   ChannelType,
-  RESTPostAPIApplicationCommandsJSONBody,
+  LocaleString,
+  LocalizationMap,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
+import fs from "fs/promises";
 import process from "node:process";
 import { TriggerEvent } from "store/src/types";
 
@@ -26,7 +40,7 @@ const webhookChannelTypes = [
   ChannelType.PublicThread,
   ChannelType.PrivateThread,
   ChannelType.AnnouncementThread,
-] as ApplicationCommandOptionChannelTypesMixin["channel_types"];
+] as const;
 
 const messageChannelTypes = [
   ChannelType.GuildAnnouncement,
@@ -35,411 +49,7 @@ const messageChannelTypes = [
   ChannelType.PublicThread,
   ChannelType.PrivateThread,
   ChannelType.AnnouncementThread,
-] as ApplicationCommandOptionChannelTypesMixin["channel_types"];
-
-const webhookAutocompleteOption = {
-  type: ApplicationCommandOptionType.String,
-  name: "webhook",
-  description: "The target webhook",
-  autocomplete: true,
-  required: true,
-} as const;
-
-const webhookFilterAutocompleteOption = {
-  type: ApplicationCommandOptionType.Channel,
-  name: "filter-channel",
-  description: "The channel to filter autocomplete results with",
-  required: false,
-  channel_types: webhookChannelTypes,
-} as const;
-
-export const allAppCommands: Record<
-  ApplicationCommandType,
-  Record<string, RESTPostAPIApplicationCommandsJSONBody>
-> = {
-  [ApplicationCommandType.ChatInput]: {
-    buttons: {
-      name: "buttons",
-      description: "Add, remove, and manage buttons",
-      default_member_permissions: String(
-        PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
-      ),
-      options: [
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "add",
-          description: "Add a button",
-          options: [
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "message",
-              description:
-                "Add a button to this message. A message link is also accepted here",
-              required: true,
-              autocomplete: true,
-            },
-            {
-              type: ApplicationCommandOptionType.Channel,
-              name: "channel",
-              description:
-                "The channel that the message is in, for autocomplete results",
-              required: false,
-              channel_types: webhookChannelTypes,
-            },
-          ],
-        },
-      ],
-      dm_permission: false,
-    },
-    format: {
-      name: "format",
-      description: "...",
-      options: [
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "mention",
-          description: "Outputs the mention format for a user or role",
-          options: [
-            {
-              type: ApplicationCommandOptionType.Mentionable,
-              name: "target",
-              description: "The user or role to mention",
-              required: true,
-            },
-          ],
-        },
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "channel",
-          description: "Outputs the mention format for a channel",
-          options: [
-            {
-              type: ApplicationCommandOptionType.Channel,
-              name: "target",
-              description: "The channel to mention",
-              required: true,
-              channel_types: [
-                ChannelType.AnnouncementThread,
-                ChannelType.GuildAnnouncement,
-                ChannelType.GuildForum,
-                ChannelType.GuildMedia,
-                ChannelType.GuildStageVoice,
-                ChannelType.GuildText,
-                ChannelType.GuildVoice,
-                ChannelType.PrivateThread,
-                ChannelType.PublicThread,
-              ],
-            },
-          ],
-        },
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "emoji",
-          description: "Outputs the usage format for a server emoji",
-          options: [
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "target",
-              description: "The emoji to use",
-              required: true,
-            },
-          ],
-        },
-      ],
-    },
-    invite: {
-      name: "invite",
-      name_localizations: {
-        fr: "ajouter",
-      },
-      description: "Invite URL for this bot",
-    },
-    triggers: {
-      name: "triggers",
-      description: "Set up triggers to respond to events in your server",
-      dm_permission: false,
-      default_member_permissions: String(PermissionFlags.ManageGuild),
-      options: [
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "add",
-          description: "Add a new trigger",
-          options: [
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "name",
-              description: "The name of the trigger",
-              max_length: 100,
-              required: true,
-            },
-            {
-              type: ApplicationCommandOptionType.Integer,
-              name: "event",
-              description: "The event that will set off the trigger",
-              choices: [
-                {
-                  name: "Member Join",
-                  value: TriggerEvent.MemberAdd,
-                },
-                {
-                  name: "Member Remove",
-                  value: TriggerEvent.MemberRemove,
-                },
-              ] as { name: string; value: TriggerEvent }[],
-              required: true,
-            },
-          ],
-        },
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "view",
-          description: "View & manage a trigger",
-          options: [
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "name",
-              description: "The name of the trigger",
-              max_length: 100,
-              required: true,
-              autocomplete: true,
-            },
-          ],
-        },
-      ],
-    },
-    webhook: {
-      name: "webhook",
-      description: "Manage webhooks",
-      default_member_permissions: String(PermissionFlags.ManageWebhooks),
-      options: [
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "create",
-          name_localizations: {
-            fr: "créer",
-          },
-          description: "Create a webhook",
-          description_localizations: {
-            fr: "Créer un webhook",
-          },
-          options: [
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "name",
-              name_localizations: {
-                fr: "nom",
-              },
-              description: "The webhook's name",
-              description_localizations: {
-                fr: "Le nom du webhook",
-              },
-              required: true,
-            },
-            {
-              type: ApplicationCommandOptionType.Attachment,
-              name: "avatar",
-              description: "The webhook's avatar",
-              required: false,
-            },
-            {
-              type: ApplicationCommandOptionType.Channel,
-              name: "channel",
-              name_localizations: {
-                fr: "salon",
-              },
-              description: "The channel to create the webhook in",
-              description_localizations: {
-                fr: "Le canal dans lequel créer le webhook",
-              },
-              required: false,
-              channel_types: webhookChannelTypes,
-            },
-            {
-              type: ApplicationCommandOptionType.Boolean,
-              name: "show-url",
-              description:
-                "Only enable this if you need the URL for an external application",
-              required: false,
-            },
-          ],
-        },
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "delete",
-          name_localizations: {
-            fr: "supprimer",
-          },
-          description: "Delete a webhook",
-          description_localizations: {
-            fr: "Supprimer un webhook",
-          },
-          options: [webhookAutocompleteOption, webhookFilterAutocompleteOption],
-        },
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "info",
-          description: "Get info on a webhook",
-          options: [
-            webhookAutocompleteOption,
-            webhookFilterAutocompleteOption,
-            {
-              type: ApplicationCommandOptionType.Boolean,
-              name: "show-url",
-              description:
-                'Whether to skip the "Get URL" step. This makes the message hidden',
-              required: false,
-            },
-          ],
-        },
-      ],
-      dm_permission: false,
-    },
-    welcomer: {
-      name: "welcomer",
-      description: "Welcomer functionality has been moved to /triggers!",
-      dm_permission: false,
-    },
-    help: {
-      name: "help",
-      description: "Get help with various topics",
-      options: [
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "tag",
-          description: "The tag to get help for",
-          autocomplete: true,
-          required: true,
-        },
-      ],
-    },
-    "reaction-role": {
-      name: "reaction-role",
-      description: "...",
-      dm_permission: false,
-      default_member_permissions: String(
-        PermissionFlags.ManageRoles | PermissionFlags.AddReactions,
-      ),
-      options: [
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "create",
-          description: "Create a new reaction role",
-          options: [
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "message",
-              description:
-                "The message to create the reaction on. A message link is also accepted here",
-              required: true,
-              autocomplete: true,
-            },
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "emoji",
-              description:
-                "The emoji that the reaction should show. For external emojis, react before the bot",
-              required: true,
-              autocomplete: true,
-            },
-            {
-              type: ApplicationCommandOptionType.Role,
-              name: "role",
-              description:
-                "The role that should be assigned/removed when the reaction is clicked",
-              required: true,
-            },
-            {
-              type: ApplicationCommandOptionType.Channel,
-              name: "channel",
-              description:
-                "The channel that the message is in, for autocomplete results",
-              required: false,
-              channel_types: messageChannelTypes,
-            },
-          ],
-        },
-        {
-          type: ApplicationCommandOptionType.Subcommand,
-          name: "delete",
-          description: "Delete a reaction role from a message",
-          options: [
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "message",
-              description:
-                "The message to delete the reaction role from. A message link is also accepted here",
-              required: true,
-              autocomplete: true,
-            },
-            {
-              type: ApplicationCommandOptionType.String,
-              name: "emoji",
-              description:
-                "The emoji that the reaction shows. Omit this parameter to view a deletion menu",
-              required: false,
-              autocomplete: true,
-            },
-            {
-              type: ApplicationCommandOptionType.Channel,
-              name: "channel",
-              description:
-                "The channel that the message is in, for autocomplete results",
-              required: false,
-              channel_types: messageChannelTypes,
-            },
-          ],
-        },
-      ],
-    },
-  },
-  [ApplicationCommandType.Message]: {
-    "buttons & components": {
-      // Add, remove, edit, relocate within msg, move all buttons to diff message
-      type: ApplicationCommandType.Message,
-      name: "Buttons & Components",
-      default_member_permissions: String(
-        PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
-      ),
-      dm_permission: false,
-      // description: "Add, remove, and manage buttons",
-    },
-    "quick edit": {
-      type: ApplicationCommandType.Message,
-      name: "Quick Edit",
-      default_member_permissions: String(PermissionFlags.ManageMessages),
-      dm_permission: false,
-      // description: "Quickly edit a webhook message",
-    },
-    restore: {
-      type: ApplicationCommandType.Message,
-      name: "Restore",
-      default_member_permissions: String(PermissionFlags.ViewChannel),
-      dm_permission: false,
-      // description: "Copy a message into Discohook",
-    },
-    // repeat: {
-    //   name: "Repeat",
-    //   dm_permission: false,
-    //   description: "Send an identical copy of the message in the same channel or a different one",
-    //   handlers: {
-    //   },
-    // },
-    "webhook info": {
-      type: ApplicationCommandType.Message,
-      name: "Webhook Info",
-      default_member_permissions: String(PermissionFlags.ViewChannel),
-      dm_permission: false,
-      // description: "Show information about the webhook that sent a message",
-    },
-    debug: {
-      type: ApplicationCommandType.Message,
-      name: "Debug",
-      default_member_permissions: String(PermissionFlags.ManageMessages),
-      dm_permission: false,
-    },
-  },
-  [ApplicationCommandType.User]: {},
-};
+] as const;
 
 const token = process.env.DISCORD_TOKEN;
 const applicationId = process.env.DISCORD_APPLICATION_ID;
@@ -459,41 +69,469 @@ if (!applicationId) {
  */
 const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
 
-const payload = [];
-for (const [type, commands] of Object.entries(allAppCommands)) {
-  for (const command of Object.values(commands)) {
-    const c = {
-      type: Number(type),
-      ...command,
-      handlers: {},
+async function loadLocalization(lang: string) {
+  return (
+    JSON.parse(await fs.readFile(`./src/i18n/${lang}.json`, "utf8")).commands ??
+    {}
+  );
+}
+
+function localizeProp(
+  languages: Partial<Record<LocaleString, any>>,
+  key: string,
+  maxLength?: number,
+) {
+  const drill = key.split(".");
+  return Object.fromEntries(
+    Object.keys(languages)
+      .map((lang) => {
+        let final: string | Record<string, any> | undefined;
+        for (const drillKey of drill) {
+          if (final) {
+            if (typeof final !== "string") {
+              final = final[drillKey];
+            }
+            if (typeof final === "string") {
+              return [lang, final.slice(0, maxLength)];
+            }
+          } else {
+            final = languages[lang as LocaleString]?.[drillKey];
+            if (!final) {
+              return [lang, undefined];
+            }
+          }
+        }
+
+        return [lang, undefined];
+      })
+      .filter((pair) => Boolean(pair[1])),
+  ) as LocalizationMap;
+}
+
+async function main() {
+  const languages = {
+    nl: await loadLocalization("nl"),
+    fr: await loadLocalization("fr"),
+    // "zh-CN": await loadLocalization("zh-CN"),
+  };
+  const english = { "en-US": await loadLocalization("en") };
+
+  const localize = (key: string) => {
+    const ized = localizeProp(languages, key);
+    if (Object.keys(ized).length === 0) return null;
+    return ized;
+  };
+  const getEnglish = (key: string) =>
+    localizeProp(english, key)["en-US"] ?? "...";
+
+  const addLocalizations = (
+    command:
+      | SlashCommandBuilder
+      | SlashCommandSubcommandsOnlyBuilder
+      | Omit<SlashCommandBuilder, "addSubcommandGroup" | "addSubcommand">,
+  ) => {
+    const n = command.name;
+    command.setDescription(getEnglish(`${n}.description`));
+    command.setNameLocalizations(localize(`${n}.name`));
+    command.setDescriptionLocalizations(localize(`${n}.description`));
+    const doOpts = <
+      T extends ReturnType<ToAPIApplicationCommandOptions["toJSON"]>[],
+    >(
+      opts: T,
+      path: string,
+      splice: (index: number, newOpt: T[number]) => void,
+    ) => {
+      let i = -1;
+      for (const option of opts) {
+        i += 1;
+        option.description = getEnglish(
+          `${path}.options.${option.name}.description`,
+        );
+        option.name_localizations = {
+          ...localize(`${path}.options.${option.name}.name`),
+          ...option.name_localizations,
+        };
+        option.description_localizations = {
+          ...localize(`${path}.options.${option.name}.description`),
+          ...option.description_localizations,
+        };
+        if ("options" in option && option.options) {
+          doOpts(
+            option.options,
+            `${path}.options.${option.name}`,
+            (ind, opt) => {
+              // @ts-expect-error
+              option.options?.splice(ind, 1, opt);
+            },
+          );
+        }
+
+        splice(i, option);
+      }
     };
-    payload.push(c);
-  }
-}
+    // They don't give you the full builders /shrug
+    doOpts(
+      command.options.map((o) => o.toJSON()),
+      n,
+      (index, option) => {
+        command.options.splice(index, 1, {
+          toJSON: () => option,
+        });
+      },
+    );
+    return command;
+  };
 
-const response = await fetch(url, {
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bot ${token}`,
-  },
-  method: "PUT",
-  body: JSON.stringify(payload),
-});
+  const webhookAutocompleteOption = new SlashCommandStringOption()
+    .setName("webhook")
+    .setDescription(getEnglish("_options.webhook.description"))
+    .setNameLocalizations(localize("_options.webhook.name"))
+    .setDescriptionLocalizations(localize("_options.webhook.description"))
+    .setRequired(true)
+    .setAutocomplete(true);
 
-if (response.ok) {
-  console.log("Registered all commands");
-  const data = await response.json();
-  console.log(JSON.stringify(data, null, 2));
-} else {
-  console.error("Error registering commands");
-  let errorText = `Error registering commands \n ${response.url}: ${response.status} ${response.statusText}`;
-  try {
-    const error = await response.text();
-    if (error) {
-      errorText = `${errorText} \n\n ${error}`;
+  const webhookFilterAutocompleteOption = new SlashCommandChannelOption()
+    .setName("filter-channel")
+    .setDescription(getEnglish("_options.filter-channel.description"))
+    .setNameLocalizations(localize("_options.filter-channel.name"))
+    .setDescriptionLocalizations(
+      localize("_options.filter-channel.description"),
+    )
+    .setRequired(false)
+    .addChannelTypes(...webhookChannelTypes);
+
+  const allAppCommands = [
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("buttons")
+        .setDescription("...")
+        .setDefaultMemberPermissions(
+          PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
+        )
+        .setDMPermission(false)
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("add")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("message")
+                .setDescription("...")
+                .setRequired(true)
+                .setAutocomplete(true),
+            )
+            .addChannelOption(
+              new SlashCommandChannelOption()
+                .setName("channel")
+                .setDescription("...")
+                .setRequired(false)
+                .addChannelTypes(...webhookChannelTypes),
+            ),
+        ),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("format")
+        .setDescription("...")
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("mention")
+            .setDescription("...")
+            .addMentionableOption(
+              new SlashCommandMentionableOption()
+                .setName("target")
+                .setDescription("...")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("channel")
+            .setDescription("...")
+            .addChannelOption(
+              new SlashCommandChannelOption()
+                .setName("target")
+                .setDescription("...")
+                .setRequired(true)
+                .addChannelTypes(
+                  ChannelType.AnnouncementThread,
+                  ChannelType.GuildAnnouncement,
+                  ChannelType.GuildForum,
+                  ChannelType.GuildMedia,
+                  ChannelType.GuildStageVoice,
+                  ChannelType.GuildText,
+                  ChannelType.GuildVoice,
+                  ChannelType.PrivateThread,
+                  ChannelType.PublicThread,
+                ),
+            ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("emoji")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("target")
+                .setDescription("...")
+                .setRequired(true),
+            ),
+        ),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder().setName("invite").setDescription("..."),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("triggers")
+        .setDescription("...")
+        .setDMPermission(false)
+        .setDefaultMemberPermissions(PermissionFlags.ManageGuild)
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("add")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("name")
+                .setDescription("...")
+                .setMaxLength(100)
+                .setRequired(true),
+            )
+            .addIntegerOption(
+              new SlashCommandIntegerOption()
+                .setName("event")
+                .setDescription("...")
+                .setChoices(
+                  {
+                    name: getEnglish("triggers.options.add.event.choices.0"),
+                    name_localizations: localize(
+                      "triggers.options.add.event.choices.0",
+                    ),
+                    value: TriggerEvent.MemberAdd,
+                  },
+                  {
+                    name: getEnglish("triggers.options.add.event.choices.1"),
+                    name_localizations: localize(
+                      "triggers.options.add.event.choices.1",
+                    ),
+                    value: TriggerEvent.MemberRemove,
+                  },
+                )
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("view")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("name")
+                .setDescription("...")
+                .setMaxLength(100)
+                .setRequired(true)
+                .setAutocomplete(true),
+            ),
+        ),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("webhook")
+        .setDescription("...")
+        .setDMPermission(false)
+        .setDefaultMemberPermissions(PermissionFlags.ManageWebhooks)
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("create")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("name")
+                .setDescription("...")
+                .setRequired(true)
+                .setMaxLength(80),
+            )
+            .addAttachmentOption(
+              new SlashCommandAttachmentOption()
+                .setName("avatar")
+                .setDescription("..."),
+            )
+            .addChannelOption(
+              new SlashCommandChannelOption()
+                .setName("channel")
+                .setDescription("...")
+                .addChannelTypes(...webhookChannelTypes),
+            )
+            .addBooleanOption(
+              new SlashCommandBooleanOption()
+                .setName("show-url")
+                .setDescription("..."),
+            ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("delete")
+            .setDescription("...")
+            .addStringOption(webhookAutocompleteOption)
+            .addChannelOption(webhookFilterAutocompleteOption),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("info")
+            .setDescription("...")
+            .addStringOption(webhookAutocompleteOption)
+            .addChannelOption(webhookFilterAutocompleteOption)
+            .addBooleanOption(
+              new SlashCommandBooleanOption()
+                .setName("show-url")
+                .setDescription("..."),
+            ),
+        ),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("welcomer")
+        .setDMPermission(false)
+        .setDescription("..."),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("help")
+        .setDescription("...")
+        .addStringOption(
+          new SlashCommandStringOption()
+            .setName("tag")
+            .setDescription("...")
+            .setAutocomplete(true)
+            .setRequired(true),
+        ),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("reaction-role")
+        .setDescription("...")
+        .setDefaultMemberPermissions(
+          PermissionFlags.ManageRoles | PermissionFlags.AddReactions,
+        )
+        .setDMPermission(false)
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("create")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("message")
+                .setDescription("...")
+                .setRequired(true)
+                .setAutocomplete(true),
+            )
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("emoji")
+                .setDescription("...")
+                .setRequired(true)
+                .setAutocomplete(true),
+            )
+            .addRoleOption(
+              new SlashCommandRoleOption()
+                .setName("role")
+                .setRequired(true)
+                .setDescription("..."),
+            )
+            .addChannelOption(
+              new SlashCommandChannelOption()
+                .setName("channel")
+                .setDescription("...")
+                .addChannelTypes(...messageChannelTypes),
+            ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("delete")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("message")
+                .setDescription("...")
+                .setRequired(true)
+                .setAutocomplete(true),
+            )
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("emoji")
+                .setDescription("...")
+                .setAutocomplete(true),
+            )
+            .addChannelOption(
+              new SlashCommandChannelOption()
+                .setName("channel")
+                .setDescription("...")
+                .addChannelTypes(...messageChannelTypes),
+            ),
+        ),
+    ),
+    new ContextMenuCommandBuilder()
+      .setType(ApplicationCommandType.Message)
+      .setName(getEnglish("_ctx.components.name"))
+      .setNameLocalizations(localize("_ctx.components.name"))
+      .setDMPermission(false)
+      .setDefaultMemberPermissions(
+        PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
+      ),
+    new ContextMenuCommandBuilder()
+      .setType(ApplicationCommandType.Message)
+      .setName(getEnglish("_ctx.edit.name"))
+      .setNameLocalizations(localize("_ctx.edit.name"))
+      .setDMPermission(false)
+      .setDefaultMemberPermissions(PermissionFlags.ManageMessages),
+    new ContextMenuCommandBuilder()
+      .setType(ApplicationCommandType.Message)
+      .setName(getEnglish("_ctx.restore.name"))
+      .setNameLocalizations(localize("_ctx.restore.name"))
+      .setDMPermission(false)
+      .setDefaultMemberPermissions(PermissionFlags.ViewChannel),
+    new ContextMenuCommandBuilder()
+      .setType(ApplicationCommandType.Message)
+      .setName(getEnglish("_ctx.webhook.name"))
+      .setNameLocalizations(localize("_ctx.webhook.name"))
+      .setDMPermission(false)
+      .setDefaultMemberPermissions(PermissionFlags.ViewChannel),
+    new ContextMenuCommandBuilder()
+      .setType(ApplicationCommandType.Message)
+      .setName(getEnglish("_ctx.debug.name"))
+      .setNameLocalizations(localize("_ctx.debug.name"))
+      .setDMPermission(false)
+      .setDefaultMemberPermissions(PermissionFlags.ManageMessages),
+  ];
+
+  const payload = allAppCommands.map((c) => c.toJSON());
+  const response = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bot ${token}`,
+    },
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+
+  if (response.ok) {
+    console.log("Registered all commands");
+    const data = await response.json();
+    console.log(JSON.stringify(data, null, 2));
+  } else {
+    console.error("Error registering commands");
+    let errorText = `Error registering commands \n ${response.url}: ${response.status} ${response.statusText}`;
+    try {
+      const error = await response.text();
+      if (error) {
+        errorText = `${errorText} \n\n ${error}`;
+      }
+    } catch (err) {
+      console.error("Error reading body from request:", err);
     }
-  } catch (err) {
-    console.error("Error reading body from request:", err);
+    console.error(errorText);
   }
-  console.error(errorText);
 }
+
+await main();
