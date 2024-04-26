@@ -147,7 +147,7 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
           maxLength={100}
           required
         />
-        <p className="font-medium text-sm mt-4">Scheduling</p>
+        <p className="font-medium text-sm mt-4">{t("scheduling")}</p>
         <Checkbox
           label={t("scheduleBackup")}
           checked={scheduled}
@@ -169,7 +169,9 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
           {repeating ? (
             <>
               <p className="font-medium text-sm">
-                Repeating Schedule - {cronToEnglish(cron)}
+                {t("repeatingSchedule", {
+                  replace: { description: cronToEnglish(cron) },
+                })}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <StringSelect
