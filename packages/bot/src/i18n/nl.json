@@ -165,7 +165,44 @@
             },
             "restore": {
                 "name": "Herstel"
+            },
+            "webhook": {
+                "name": "Webhook Info"
+            },
+            "debug": {
+                "name": "Debug"
             }
+        },
+        "triggers": {
+            "description": "Stel triggers in om te reageren op gebeurtenissen in je server",
+            "options": {
+                "add": {
+                    "description": "Voeg een nieuwe trigger toe",
+                    "options": {
+                        "name": {
+                            "description": "De naam van de trigger"
+                        },
+                        "event": {
+                            "description": "De gebeurtenis die de trigger zou activeren",
+                            "choices": {
+                                "0": "Iemand wordt lid van de server",
+                                "1": "Iemand verlaat de server"
+                            }
+                        }
+                    }
+                },
+                "view": {
+                    "description": "Bekijk en beheer een trigger",
+                    "options": {
+                        "name": {
+                            "description": "De naam van de trigger"
+                        }
+                    }
+                }
+            }
+        },
+        "welcomer": {
+            "description": "Welkomstberichten zijn verhuisd naar /triggers!"
         }
     }
 }
