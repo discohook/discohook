@@ -151,6 +151,7 @@
     "title": "Delete Bot",
     "note": "To delete this custom bot, type its name below. This will not delete the linked Discord application."
   },
+  "information": "Information",
   "havingTrouble": "Having Trouble?",
   "troubleshootMessage": "If you press the send button and nothing happens, it may be because your browser is blocking connections to Discord, which is not uncommon for privacy-focused extensions like Privacy Badger. Try disabling privacy extensions or entering incognito/private mode.",
 

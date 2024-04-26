@@ -20,7 +20,7 @@ import {
   TeamMemberRole,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { type SQL, desc, eq, isNotNull } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { Suspense, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -38,7 +38,6 @@ import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { BotCreateModal } from "~/modals/BotCreateModal";
-import { BotEditModal } from "~/modals/BotEditModal";
 import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
@@ -68,8 +67,7 @@ import {
   discordGuilds,
   discordMembers,
   getDb,
-  makeSnowflake,
-  sql,
+  makeSnowflake
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -144,13 +142,6 @@ export const loader = async ({ request, context }: LoaderArgs) => {
             icon: customBots.icon,
             avatar: customBots.avatar,
             discriminator: customBots.discriminator,
-            guildId: customBots.guildId,
-            hasToken: isNotNull(customBots.token) as SQL<boolean>,
-            // This is a little wasteful insofar as saving a few transit bytes by
-            // constructing on the client instead, but this is a lot more convenient
-            url: context.env.BOTS_ORIGIN
-              ? sql<string>`${context.env.BOTS_ORIGIN}::text || '/custom/' || ${customBots.id}::text`
-              : sql<null>`NULL`,
           })
           .from(customBots)
           .orderBy(desc(customBots.name))
@@ -605,7 +596,6 @@ export default function Me() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [editingBackup, setEditingBackup] = useState<LoadedBackup>();
   const [createBotOpen, setCreateBotOpen] = useState(false);
-  const [editingBot, setEditingBot] = useState<LoadedBot>();
 
   const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
   const [tab, setTab] = useState<(typeof tabValues)[number]>(
@@ -638,12 +628,6 @@ export default function Me() {
         backup={editingBackup}
       />
       <BotCreateModal open={createBotOpen} setOpen={setCreateBotOpen} />
-      <BotEditModal
-        user={user}
-        bot={editingBot}
-        setBot={setEditingBot}
-        memberships={memberships}
-      />
       <Header user={user} />
       <Prose>
         <TabsWindow
@@ -1266,11 +1250,10 @@ export default function Me() {
                       <div className="flex flex-wrap gap-2">
                         {bots.map((bot) => {
                           return (
-                            <button
-                              type="button"
+                            <Link
                               key={`bot-${bot.id}`}
                               className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-[#2B2D31] dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg"
-                              onClick={() => setEditingBot(bot)}
+                              to={`/me/bots/${bot.id}`}
                             >
                               <img
                                 src={botAppAvatar(bot, { size: 128 })}
@@ -1280,7 +1263,7 @@ export default function Me() {
                               <p className="text-center font-medium truncate text-sm mt-1">
                                 {bot.name}
                               </p>
-                            </button>
+                            </Link>
                           );
                         })}
                       </div>

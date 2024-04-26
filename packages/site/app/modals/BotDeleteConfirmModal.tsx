@@ -11,7 +11,6 @@ import { Modal, ModalProps } from "./Modal";
 export const BotDeleteConfirmModal = (
   props: ModalProps & {
     bot: LoadedBot | undefined;
-    setParentOpen: (state: boolean) => void;
   },
 ) => {
   const { t } = useTranslation();
@@ -21,14 +20,14 @@ export const BotDeleteConfirmModal = (
   return (
     <Modal title={t("deleteBot.title")} {...props}>
       <Form
-        action="/me"
+        action="/me?t=bots"
         method="DELETE"
+        navigate
         onSubmit={(e) => {
           if (!matches) {
             e.preventDefault();
             return;
           }
-          props.setParentOpen(false);
           setMatches(false);
         }}
       >
