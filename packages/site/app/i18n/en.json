@@ -8,8 +8,7 @@
   "edit": "Edit",
   "delete": "Delete",
   "editBackupTitle": "Edit Backup Details",
-  "editBackupMessages":
-    "To edit the messages in a backup, click the <0/> button.",
+  "editBackupMessages": "To edit the messages in a backup, click the <0/> button.",
   "saveMessageTitle": "Save Message",
   "temporaryShareUrl": "Temporary Share URL",
   "shareExpired": "Invalid Share Link",
@@ -39,8 +38,7 @@
   "channelId": "Channel ID: <0/>",
   "guildId": "Server ID: <0/>",
   "createdAt": "Created at: {{createdAt}}",
-  "successResultTroubleshoot":
-    "If you cannot see the message, make sure it wasn't deleted by another bot. Some moderation bots consider all webhook messages to be spam by default.",
+  "successResultTroubleshoot": "If you cannot see the message, make sure it wasn't deleted by another bot. Some moderation bots consider all webhook messages to be spam by default.",
   "theme": "Theme",
   "messageDisplay": "Message Display",
   "editorPanes": "Editor Panes",
@@ -54,22 +52,17 @@
     "fr": "French"
   },
   "webhookUrl": "Webhook URL",
-  "invalidWebhookUrl":
-    "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
+  "invalidWebhookUrl": "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
   "createdAtBy": "Created {{createdAt}} by {{username}}",
   "someone": "someone",
   "addWebhook": "Add Webhook",
   "createWebhook": "Create Webhook",
   "editWebhook": "Edit Webhook",
   "createdByDiscohook": "This webhook is owned by Discohook",
-  "selectWebhookGuildNote":
-    "Select a server that Discohook Utils is in to view its webhooks, or create a new webhook in any of your servers by clicking the button below.",
-  "selectWebhookGuildNoWebhooks":
-    "The server you selected has no webhooks that Discohook Utils could access. Try creating a new one with the button below.",
-  "selectWebhookGuildMissing":
-    "Not seeing a server you have permissions in? <0>Try logging in again</0>",
-  "selectWebhookGuildManual":
-    "You may also <0>input a webhook URL manually</0> (advanced)",
+  "selectWebhookGuildNote": "Select a server that Discohook Utils is in to view its webhooks, or create a new webhook in any of your servers by clicking the button below.",
+  "selectWebhookGuildNoWebhooks": "The server you selected has no webhooks that Discohook Utils could access. Try creating a new one with the button below.",
+  "selectWebhookGuildMissing": "Not seeing a server you have permissions in? <0>Try logging in again</0>",
+  "selectWebhookGuildManual": "You may also <0>input a webhook URL manually</0> (advanced)",
   "editor": "Editor",
   "preview": "Preview",
   "previewAll": "Preview All",
@@ -80,10 +73,8 @@
   "use": "Use",
   "embedExample": "Example",
   "previewInfo": "Preview Info",
-  "editingBackupNote":
-    "You're editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the \"Save Message\" button.",
-  "editingLinkBackupNote":
-    "You're editing a backup, so your work is saved periodically while you edit.",
+  "editingBackupNote": "You're editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the \"Save Message\" button.",
+  "editingLinkBackupNote": "You're editing a backup, so your work is saved periodically while you edit.",
   "channel": "Channel",
   "webhookChannelMentionAndThreads": "<#{{0}}> (and its threads)",
   "cannotChangeChannel": "Webhook channel must be set inside Discord.",
@@ -100,21 +91,18 @@
   "importBackups": "Import Backups",
   "export": "Export",
   "exportBackups": "Export Backups",
-  "exportBackupsNote":
-    "This menu is for exporting backup files to your computer. This is not really necessary, but it's a great way to copy your messages offline or for use with other bots. Your schedule setup, if any, will only be exported for repeating schedules.",
+  "exportBackupsNote": "This menu is for exporting backup files to your computer. This is not really necessary, but it's a great way to copy your messages offline or for use with other bots. Your schedule setup, if any, will only be exported for repeating schedules.",
   "version": "Version: {{version}}",
   "shareLinks": "Share Links",
   "noLinks": "You haven't created any share links.",
   "id": "ID: {{id}}",
-  "noShareLinkData":
-    "Share link data is not kept after expiration. If you need to permanently store a message, use <backups>Backups</backups> instead.",
+  "noShareLinkData": "Share link data is not kept after expiration. If you need to permanently store a message, use <backups>Backups</backups> instead.",
   "subscribedSince": "Subscribed Since",
   "notSubscribed": "Not subscribed",
   "firstSubscribed": "First Subscribed",
   "never": "Never",
   "joinedDiscohook": "Joined Discohook",
-  "linkEmbedsPremiumNote":
-    "You've uncovered a Deluxe feature! <0>Read more about link embeds here.</0>",
+  "linkEmbedsPremiumNote": "You've uncovered a Deluxe feature! <0>Read more about link embeds here.</0>",
   "donate": "Donate",
   "deluxe": "Deluxe",
   "lifetime": "Lifetime",
@@ -124,10 +112,11 @@
   "server_other": "Servers",
   "noServers": "You don't appear to share any servers with Discohook Utils.",
   "inviteBot": "Invite Bot",
-  "schedule": "Schedule",
-  "scheduleSendAll": "Schedule All",
+  "addToServer": "Add to Server",
+  "scheduling": "Scheduling",
   "scheduleBackup": "Schedule this backup",
   "repeating": "Repeating",
+  "repeatingSchedule": "Repeating Schedule - {{description}}",
   "day": "Day",
   "time": "Time ({{timezone}})",
   "month": "Month",
@@ -146,19 +135,15 @@
     "title": "Create Bot",
     "step1": "Visit the <0>Developer Portal</0>",
     "step2": "Tap \"New Application\", type a name, then tap \"Create\"",
-    "step3":
-      "In the \"General Information\" tab (selected by default), tap \"Copy\" under \"Application ID\"",
+    "step3": "In the \"General Information\" tab (selected by default), tap \"Copy\" under \"Application ID\"",
     "step4": "Paste in the box:"
   },
   "portal": "Portal",
   "botTokenCheck": "Bot Token <0/>",
   "botNoTokenNote": "Providing a bot token is optional. When a token is set, your bot can perform actions independently of Discohook Utils.",
-  "botTokenOwnerWarning":
-    "Make sure your current Discord account ({{username}}) is the owner of this bot or on its team, or else the token will be reset as a safeguard.",
-  "botTokenHiddenNote":
-    "For security reasons, your token is never shown to you after you save it here. If you have since reset your token, press \"Clear Token\" and then re-save it.",
-  "botsPremiumNote":
-    "You've uncovered a Deluxe feature! <0>Read more about custom bots here.</0>",
+  "botTokenOwnerWarning": "Make sure your current Discord account ({{username}}) is the owner of this bot or on its team, or else the token will be reset as a safeguard.",
+  "botTokenHiddenNote": "For security reasons, your token is never shown to you after you save it here. If you have since reset your token, press \"Clear Token\" and then re-save it.",
+  "botsPremiumNote": "You've uncovered a Deluxe feature! <0>Read more about custom bots here.</0>",
   "botClearToken": "Clear Token",
   "botInteractionUrl": "Interactions Endpoint URL",
   "botName": "Bot Name",
@@ -174,12 +159,10 @@
   "urlEmpty": "Link button must have a URL",
   "optionsEmpty": "Must contain at least one select option",
   "embedEmpty": "Must contain text or an image",
-  "embedsTooLarge":
-    "Embeds must contain at most 6000 characters total (currently {{count}} too many)",
+  "embedsTooLarge": "Embeds must contain at most 6000 characters total (currently {{count}} too many)",
   "history": "History",
   "noHistory": "This editor session has no history recorded.",
-  "historyDescription":
-    "This is cleared whenever the editor is loaded. If you need to store messages persistently, use the \"Save Message\" button.",
+  "historyDescription": "This is cleared whenever the editor is loaded. If you need to store messages persistently, use the \"Save Message\" button.",
   "resetEditor": "Reset Editor",
   "resetEditorWarning": "Click to confirm",
   "resetFinished": "Reset Finished",
