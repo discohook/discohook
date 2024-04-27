@@ -336,6 +336,15 @@ export default function CustomBot() {
           setTab={setTab as (v: string) => void}
           data={[
             {
+              label: (
+                <>
+                  <CoolIcon icon="Arrow_Left_MD" /> {t("backToBots")}
+                </>
+              ),
+              value: "back",
+              onClick: () => navigate("/me?t=bots"),
+            },
+            {
               label: t("information"),
               value: "information",
             },

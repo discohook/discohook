@@ -2,11 +2,17 @@ import React from "react";
 
 type SetTab = (value: string) => void;
 
+type CustomOnTabClick = (
+  e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  setTab: SetTab,
+) => void;
+
 export const TabsWindow: React.FC<
   React.PropsWithChildren<{
     data: {
       label: React.ReactNode;
       value: string;
+      onClick?: CustomOnTabClick;
     }[];
     tab: string;
     setTab: SetTab;
@@ -18,8 +24,7 @@ export const TabsWindow: React.FC<
         {data.map((t) => (
           <Tab
             key={`tab-${t.value}`}
-            label={t.label}
-            value={t.value}
+            {...t}
             currentValue={tab}
             setTab={setTab}
           />
@@ -33,9 +38,10 @@ export const TabsWindow: React.FC<
 export const Tab: React.FC<{
   label: React.ReactNode;
   value: string;
+  onClick?: CustomOnTabClick;
   setTab: SetTab;
   currentValue: string;
-}> = ({ label, value, setTab, currentValue }) => (
+}> = ({ label, value, onClick, setTab, currentValue }) => (
   <button
     type="button"
     className={`${
@@ -43,7 +49,13 @@ export const Tab: React.FC<{
         ? "bg-slate-200 hover:bg-slate-300 dark:bg-gray-800 dark:hover:bg-gray-700 cursor-default"
         : "hover:bg-slate-200 dark:hover:bg-gray-800"
     } rounded transition px-4 py-1.5 font-medium w-fit sm:w-full ltr:text-left rtl:text-right shrink-0 sm:shrink`}
-    onClick={() => setTab(value)}
+    onClick={(e) => {
+      if (onClick) {
+        onClick(e, setTab);
+      } else {
+        setTab(value);
+      }
+    }}
   >
     {label}
   </button>
