@@ -1,10 +1,18 @@
+import { REST } from "@discordjs/rest";
 import { defer, json } from "@remix-run/cloudflare";
-import { Form, useLoaderData, useSubmit } from "@remix-run/react";
-import { ButtonStyle } from "discord-api-types/v10";
+import { Form, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import {
+  APIGuild,
+  ButtonStyle,
+  RESTGetAPIOAuth2CurrentApplicationResult,
+  Routes,
+  TeamMemberRole,
+} from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { type SQL, isNotNull } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { z } from "zod";
 import { AsyncGuildSelect, OptionGuild } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
@@ -15,12 +23,26 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BotDeleteConfirmModal } from "~/modals/BotDeleteConfirmModal";
 import { getUser } from "~/session.server";
-import { customBots, discordMembers, eq, getDb, sql } from "~/store.server";
-import { DISCORD_BOT_TOKEN_RE, botAppAvatar } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
+import {
+  customBots,
+  discordGuilds,
+  discordMembers,
+  eq,
+  getDb,
+  makeSnowflake,
+  sql,
+} from "~/store.server";
+import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import {
+  DISCORD_BOT_TOKEN_RE,
+  botAppAvatar,
+  isDiscordError,
+} from "~/util/discord";
+import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
-import { snowflakeAsString, zxParseParams } from "~/util/zod";
+import { snowflakeAsString, zxParseForm, zxParseParams } from "~/util/zod";
+import { KVCustomBot } from "./me";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
@@ -66,12 +88,225 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   return defer({ user, bot, memberships });
 };
 
+export const action = async ({ request, context, params }: ActionArgs) => {
+  const { id: botId } = zxParseParams(params, { id: snowflakeAsString() });
+  const user = await getUser(request, context, true);
+  const db = getDb(context.env.DATABASE_URL);
+
+  if (request.method === "PATCH") {
+    const { guildId, token } = await zxParseForm(request, {
+      guildId: z
+        .ostring()
+        .refine(
+          (v) =>
+            v && v !== "null" ? snowflakeAsString().safeParse(v).success : true,
+          "Invalid token",
+        )
+        .transform((v) => (v === "" ? undefined : v === "null" ? null : v)),
+      token: z
+        .ostring()
+        .refine(
+          (v) => (v && v !== "null" ? DISCORD_BOT_TOKEN_RE.test(v) : true),
+          "Invalid token",
+        )
+        .transform((v) => (v === "" ? undefined : v === "null" ? null : v)),
+    });
+
+    const bot = await db.query.customBots.findFirst({
+      where: eq(customBots.id, botId),
+      columns: {
+        applicationId: true,
+        ownerId: true,
+      },
+    });
+    if (!bot || bot.ownerId !== BigInt(user.id)) {
+      throw json({ message: "Unknown Bot" }, 404);
+    }
+
+    const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+    let application:
+      | RESTGetAPIOAuth2CurrentApplicationResult
+      | RESTGetAPIApplicationRpcResult;
+    let appUser: RESTGetAPIOAuth2CurrentApplicationResult["bot"] | undefined;
+    try {
+      if (token) {
+        application = (await rest.get(Routes.currentApplication(), {
+          auth: false,
+          headers: {
+            Authorization: `Bot ${token}`,
+          },
+        })) as RESTGetAPIOAuth2CurrentApplicationResult;
+        appUser = application.bot;
+        if (
+          user.discordId &&
+          !(
+            // User is the sole app owner
+            (
+              (application.owner &&
+                application.owner.id === String(user.discordId)) ||
+              // or
+              (application.team &&
+                // User owns the team, or
+                (application.team.owner_user_id === String(user.discordId) ||
+                  // User is a developer-or-higher team member
+                  application.team.members
+                    .filter((m) => m.role !== TeamMemberRole.ReadOnly)
+                    .map((m) => m.user.id)
+                    .includes(String(user.discordId))))
+            )
+          )
+        ) {
+          let reset = false;
+          if (context.env.GIST_TOKEN) {
+            const response = await fetch("https://api.github.com/gists", {
+              method: "POST",
+              body: JSON.stringify({
+                files: {
+                  "token.md": {
+                    content: [
+                      "Someone used your bot token on Discohook. If this",
+                      "was one of your team members, make sure their account",
+                      "is ranked **Developer** or higher (not read-only).",
+                      "A token may only be set for a custom bot if it can",
+                      "already be accessed by that user through Discord.",
+                      "\n\n",
+                      `Token: ${token}\n`,
+                      `Username: ${
+                        user.discordUser ? getUserTag(user) : "unknown"
+                      }`,
+                    ].join(" "),
+                  },
+                },
+                public: true,
+              }),
+              headers: {
+                Authorization: `Bearer ${context.env.GIST_TOKEN}`,
+                // "Content-Type": "application/json",
+                Accept: "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": "Discohook",
+              },
+            });
+            reset = response.ok;
+          }
+          throw json(
+            {
+              message: reset
+                ? "You do not own this token. It has been reset and the owner has been notified"
+                : "Invalid token",
+            },
+            400,
+          );
+        }
+        if (application.id !== String(bot.applicationId)) {
+          throw json({ message: "Token does not match application" }, 400);
+        }
+      } else {
+        application = (await rest.get(
+          `/applications/${bot.applicationId}/rpc`,
+        )) as RESTGetAPIApplicationRpcResult;
+      }
+    } catch (e) {
+      if (isDiscordError(e)) {
+        throw json(e.rawError, e.status);
+      }
+      throw e;
+    }
+
+    if (guildId) {
+      // I would rather use app.guild_id (from Discord) but I think it is
+      // only available for verified (app discovery) applications
+      let guild: APIGuild;
+      try {
+        guild = (await rest.get(Routes.guild(String(guildId)), {
+          auth: false,
+          headers: {
+            Authorization: `Bot ${token ?? context.env.DISCORD_BOT_TOKEN}`,
+          },
+        })) as APIGuild;
+      } catch (e) {
+        if (isDiscordError(e)) {
+          throw json(e.rawError);
+        }
+        throw json({ message: String(e) });
+      }
+      await db
+        .insert(discordGuilds)
+        .values({
+          id: makeSnowflake(guild.id),
+          name: guild.name,
+          icon: guild.icon,
+        })
+        .onConflictDoUpdate({
+          target: [discordGuilds.id],
+          set: {
+            name: guild.name,
+            icon: guild.icon,
+          },
+        });
+    }
+
+    const updated = (
+      await db
+        .update(customBots)
+        .set({
+          icon: application.icon,
+          name: application.name,
+          publicKey: application.verify_key,
+          applicationUserId: appUser ? makeSnowflake(appUser.id) : undefined,
+          discriminator: appUser ? appUser.discriminator : undefined,
+          avatar: appUser ? appUser.avatar : undefined,
+          token: token,
+          guildId: guildId
+            ? makeSnowflake(guildId)
+            : guildId === null
+              ? null
+              : undefined,
+        })
+        .where(eq(customBots.id, botId))
+        .returning({
+          id: customBots.id,
+          token: customBots.token,
+        })
+    )[0];
+    await context.env.KV.put(
+      `custom-bot-${botId}`,
+      JSON.stringify({
+        applicationId: application.id,
+        publicKey: application.verify_key,
+        token: updated.token,
+      } satisfies KVCustomBot),
+    );
+
+    return json({ id: updated.id }, 200);
+  } else if (request.method === "DELETE") {
+    const bot = await db.query.customBots.findFirst({
+      where: eq(customBots.id, botId),
+      columns: {
+        applicationId: true,
+        ownerId: true,
+      },
+    });
+    if (!bot || bot.ownerId !== BigInt(user.id)) {
+      throw json({ message: "Unknown Bot" }, 404);
+    }
+    try {
+      await context.env.KV.delete(`custom-bot-${botId}`);
+    } catch {}
+    await db.delete(customBots).where(eq(customBots.id, botId));
+    throw new Response(null, { status: 204 });
+  }
+
+  throw new Response("Method Not Allowed", { status: 405 });
+};
+
 const tabValues = ["information"] as const;
 
 export default function CustomBot() {
   const { user, bot, memberships } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const submit = useSubmit();
+  const navigate = useNavigate();
 
   const [tab, setTab] = useState<(typeof tabValues)[number]>("information");
   const [deleting, setDeleting] = useState(false);
@@ -127,7 +362,6 @@ export default function CustomBot() {
                   }
                   submit(form, {
                     method: "PATCH",
-                    action: "/me",
                     navigate: false,
                   });
                 }}
@@ -213,7 +447,6 @@ export default function CustomBot() {
                                 },
                                 {
                                   method: "PATCH",
-                                  action: "/me",
                                   navigate: false,
                                 },
                               );

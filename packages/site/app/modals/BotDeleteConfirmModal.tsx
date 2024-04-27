@@ -20,9 +20,9 @@ export const BotDeleteConfirmModal = (
   return (
     <Modal title={t("deleteBot.title")} {...props}>
       <Form
-        action="/me?t=bots"
+        action={`/me/bots/${bot?.id}`}
         method="DELETE"
-        navigate
+        replace
         onSubmit={(e) => {
           if (!matches) {
             e.preventDefault();

@@ -13,11 +13,7 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import {
-  APIGuild,
-  ButtonStyle,
-  RESTGetAPIOAuth2CurrentApplicationResult,
-  Routes,
-  TeamMemberRole,
+  ButtonStyle
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
@@ -42,10 +38,9 @@ import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import {
-  DISCORD_BOT_TOKEN_RE,
   botAppAvatar,
   cdn,
-  isDiscordError,
+  isDiscordError
 } from "~/util/discord";
 import { DeconstructedSnowflake, getId } from "~/util/id";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -64,7 +59,6 @@ import {
   backups as dBackups,
   linkBackups as dLinkBackups,
   shareLinks as dShareLinks,
-  discordGuilds,
   discordMembers,
   getDb,
   makeSnowflake
@@ -169,7 +163,7 @@ export type MeLoadedMembership = Awaited<
   SerializeFrom<typeof loader>["memberships"]
 >[number];
 
-interface KVCustomBot {
+export interface KVCustomBot {
   applicationId: string;
   publicKey: string;
   token: string | null;
@@ -198,31 +192,6 @@ export const action = async ({ request, context }: ActionArgs) => {
       z.object({
         action: z.literal("CREATE_BOT"),
         applicationId: snowflakeAsString(),
-      }),
-      z.object({
-        action: z.literal("UPDATE_BOT"),
-        botId: snowflakeAsString(),
-        guildId: z
-          .ostring()
-          .refine(
-            (v) =>
-              v && v !== "null"
-                ? snowflakeAsString().safeParse(v).success
-                : true,
-            "Invalid token",
-          )
-          .transform((v) => (v === "" ? undefined : v === "null" ? null : v)),
-        token: z
-          .ostring()
-          .refine(
-            (v) => (v && v !== "null" ? DISCORD_BOT_TOKEN_RE.test(v) : true),
-            "Invalid token",
-          )
-          .transform((v) => (v === "" ? undefined : v === "null" ? null : v)),
-      }),
-      z.object({
-        action: z.literal("DELETE_BOT"),
-        botId: snowflakeAsString(),
       }),
     ]),
   );
@@ -357,195 +326,6 @@ export const action = async ({ request, context }: ActionArgs) => {
       );
 
       return json({ action: data.action, id: inserted.id }, 201);
-    }
-    case "UPDATE_BOT": {
-      const bot = await db.query.customBots.findFirst({
-        where: eq(customBots.id, data.botId),
-        columns: {
-          applicationId: true,
-          ownerId: true,
-        },
-      });
-      if (!bot || bot.ownerId !== userId) {
-        throw json({ message: "No such bot" }, 404);
-      }
-      const user = await getUser(request, context, true);
-
-      const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-      let application:
-        | RESTGetAPIOAuth2CurrentApplicationResult
-        | RESTGetAPIApplicationRpcResult;
-      let appUser: RESTGetAPIOAuth2CurrentApplicationResult["bot"] | undefined;
-      try {
-        if (data.token) {
-          application = (await rest.get(Routes.currentApplication(), {
-            auth: false,
-            headers: {
-              Authorization: `Bot ${data.token}`,
-            },
-          })) as RESTGetAPIOAuth2CurrentApplicationResult;
-          appUser = application.bot;
-          if (
-            user.discordId &&
-            !(
-              // User is the sole app owner
-              (
-                (application.owner &&
-                  application.owner.id === String(user.discordId)) ||
-                // or
-                (application.team &&
-                  // User owns the team, or
-                  (application.team.owner_user_id === String(user.discordId) ||
-                    // User is a developer-or-higher team member
-                    application.team.members
-                      .filter((m) => m.role !== TeamMemberRole.ReadOnly)
-                      .map((m) => m.user.id)
-                      .includes(String(user.discordId))))
-              )
-            )
-          ) {
-            let reset = false;
-            if (context.env.GIST_TOKEN) {
-              const response = await fetch("https://api.github.com/gists", {
-                method: "POST",
-                body: JSON.stringify({
-                  files: {
-                    "token.md": {
-                      content: [
-                        "Someone used your bot token on Discohook. If this",
-                        "was one of your team members, make sure their account",
-                        "is ranked **Developer** or higher (not read-only).",
-                        "A token may only be set for a custom bot if it can",
-                        "already be accessed by that user through Discord.",
-                        "\n\n",
-                        `Token: ${data.token}\n`,
-                        `Username: ${
-                          user.discordUser ? getUserTag(user) : "unknown"
-                        }`,
-                      ].join(" "),
-                    },
-                  },
-                  public: true,
-                }),
-                headers: {
-                  Authorization: `Bearer ${context.env.GIST_TOKEN}`,
-                  // "Content-Type": "application/json",
-                  Accept: "application/vnd.github+json",
-                  "X-GitHub-Api-Version": "2022-11-28",
-                  "User-Agent": "Discohook",
-                },
-              });
-              reset = response.ok;
-            }
-            throw json(
-              {
-                message: reset
-                  ? "You do not own this token. It has been reset and the owner has been notified"
-                  : "Invalid token",
-              },
-              400,
-            );
-          }
-          if (application.id !== String(bot.applicationId)) {
-            throw json({ message: "Token does not match application" }, 400);
-          }
-        } else {
-          application = (await rest.get(
-            `/applications/${bot.applicationId}/rpc`,
-          )) as RESTGetAPIApplicationRpcResult;
-        }
-      } catch (e) {
-        if (isDiscordError(e)) {
-          throw json(e.rawError, e.status);
-        }
-        throw e;
-      }
-
-      if (data.guildId) {
-        // I would rather use app.guild_id (from Discord) but I think it is
-        // only available for verified (app discovery) applications
-        let guild: APIGuild;
-        try {
-          guild = (await rest.get(Routes.guild(String(data.guildId)), {
-            auth: false,
-            headers: {
-              Authorization: `Bot ${
-                data.token ?? context.env.DISCORD_BOT_TOKEN
-              }`,
-            },
-          })) as APIGuild;
-        } catch (e) {
-          if (isDiscordError(e)) {
-            throw json(e.rawError);
-          }
-          throw json({ message: String(e) });
-        }
-        await db
-          .insert(discordGuilds)
-          .values({
-            id: makeSnowflake(guild.id),
-            name: guild.name,
-            icon: guild.icon,
-          })
-          .onConflictDoUpdate({
-            target: [discordGuilds.id],
-            set: {
-              name: guild.name,
-              icon: guild.icon,
-            },
-          });
-      }
-
-      const updated = (
-        await db
-          .update(customBots)
-          .set({
-            icon: application.icon,
-            name: application.name,
-            publicKey: application.verify_key,
-            applicationUserId: appUser ? makeSnowflake(appUser.id) : undefined,
-            discriminator: appUser ? appUser.discriminator : undefined,
-            avatar: appUser ? appUser.avatar : undefined,
-            token: data.token,
-            guildId: data.guildId
-              ? makeSnowflake(data.guildId)
-              : data.guildId === null
-                ? null
-                : undefined,
-          })
-          .where(eq(customBots.id, BigInt(data.botId)))
-          .returning({
-            id: customBots.id,
-            token: customBots.token,
-          })
-      )[0];
-      await context.env.KV.put(
-        `custom-bot-${data.botId}`,
-        JSON.stringify({
-          applicationId: application.id,
-          publicKey: application.verify_key,
-          token: updated.token,
-        } satisfies KVCustomBot),
-      );
-
-      return json({ action: data.action, id: updated.id }, 200);
-    }
-    case "DELETE_BOT": {
-      const bot = await db.query.customBots.findFirst({
-        where: eq(customBots.id, data.botId),
-        columns: {
-          applicationId: true,
-          ownerId: true,
-        },
-      });
-      if (!bot || bot.ownerId !== userId) {
-        throw json({ message: "No such bot" }, 404);
-      }
-      try {
-        await context.env.KV.delete(`custom-bot-${data.botId}`);
-      } catch {}
-      await db.delete(customBots).where(eq(customBots.id, data.botId));
-      break;
     }
     default:
       break;
