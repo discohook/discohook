@@ -177,6 +177,10 @@
 
   "defaultPlaceholder": "Make a selection",
   "todayAt": "Today at {{time}}",
+  "badge": {
+    "app": "APP",
+    "server": "SERVER"
+  },
   "mention": {
     "unknown": "unknown",
     "unknownUser": "unknown-user",

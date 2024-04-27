@@ -4,7 +4,7 @@ import {
   APIEmbedImage,
   APIWebhook,
 } from "discord-api-types/v10";
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
@@ -79,6 +79,7 @@ export const Message: React.FC<{
   setImageModalData,
   forceSeparateAuthor,
 }) => {
+  const { t } = useTranslation();
   const webhook = webhooks
     ? webhooks.find((w) => w.application_id === discordApplicationId) ??
       webhooks[0]
@@ -92,7 +93,9 @@ export const Message: React.FC<{
         : cdn.defaultAvatar(5)
       : "/logos/discohook.svg");
   const badge =
-    message.author?.badge === null ? null : message.author?.badge ?? "APP";
+    message.author?.badge === null
+      ? null
+      : message.author?.badge ?? t("badge.app");
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;
