@@ -3,6 +3,7 @@ import {
   APIAttachment,
   APIEmbed,
   APIMessageActionRowComponent,
+  UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { StorableComponent } from "~/store.server";
@@ -29,6 +30,7 @@ export interface QueryData {
         name?: string;
         icon_url?: string;
         badge?: string | null;
+        flags?: UserFlags;
       };
       content?: string | null;
       embeds?: APIEmbed[] | null;

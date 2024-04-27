@@ -4,6 +4,7 @@ import {
   APIEmbedImage,
   APIWebhook,
 } from "discord-api-types/v10";
+import { UserFlags, UserFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
@@ -11,6 +12,7 @@ import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
+import { Svg } from "../icons/Svg";
 import { MessageComponents } from "./Components";
 import { Embed } from "./Embed";
 import { FileAttachment } from "./FileAttachment";
@@ -96,6 +98,9 @@ export const Message: React.FC<{
     message.author?.badge === null
       ? null
       : message.author?.badge ?? t("badge.app");
+  const isVerified =
+    message.author?.flags &&
+    new UserFlagsBitField(message.author.flags).has(UserFlags.VerifiedBot);
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;
@@ -181,6 +186,20 @@ export const Message: React.FC<{
             </span>
             {badge && (
               <span className="font-medium ml-1 mt-[0.75px] text-[10px] rounded px-1.5 py-px bg-blurple text-white items-center inline-flex h-4">
+                {isVerified && (
+                  <Svg
+                    width={16}
+                    height={16}
+                    className="w-[0.9375rem] h-[0.9375rem] -ml-1 inline-block"
+                  >
+                    <path
+                      fill="currentColor"
+                      fillRule="evenodd"
+                      d="M18.7 7.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4l3.3 3.29 7.3-7.3a1 1 0 0 1 1.4 0Z"
+                      clipRule="evenodd"
+                    />
+                  </Svg>
+                )}
                 {badge}
               </span>
             )}
