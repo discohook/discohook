@@ -46,7 +46,7 @@ export const getUserTag = (user: User): string =>
     ? user.discordUser.discriminator === "0"
       ? user.discordUser.name
       : `${user.discordUser.name}#${user.discordUser.discriminator}`
-    : user.name;
+    : user.guildedUser?.name ?? user.name;
 
 export const getUserAvatar = (
   user: {
@@ -54,6 +54,9 @@ export const getUserAvatar = (
       id: bigint;
       discriminator: string | null;
       avatar: string | null;
+    } | null;
+    guildedUser?: {
+      avatarUrl: string | null;
     } | null;
   },
   options?: ImageURLOptions,
@@ -70,4 +73,7 @@ export const getUserAvatar = (
             ? Number((user.discordUser.id >> BigInt(22)) % BigInt(6))
             : Number(user.discordUser.discriminator) % 5,
         )
-    : cdn.defaultAvatar(0);
+    : user.guildedUser
+      ? user.guildedUser.avatarUrl ??
+        "https://img.gilcdn.com/asset/DefaultUserAvatars/profile_1.png"
+      : cdn.defaultAvatar(0);

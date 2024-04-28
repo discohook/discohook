@@ -28,7 +28,8 @@ import { base64Encode } from "./util/text";
 
 export type UserAuth = {
   id: string;
-  authType: "discord";
+  discordId?: string;
+  guildedId?: string;
 };
 
 export const getDiscordAuth = (
@@ -96,7 +97,7 @@ export const getDiscordAuth = (
 
       return {
         id: String(user.id),
-        authType: "discord",
+        discordId: j.id,
       };
     },
   );
@@ -105,7 +106,7 @@ export const getDiscordAuth = (
   return discordAuth;
 };
 
-type OauthInfo = NonNullable<
+export type OauthInfo = NonNullable<
   Awaited<ReturnType<DBWithSchema["query"]["oauthInfo"]["findFirst"]>>
 >;
 

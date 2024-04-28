@@ -104,10 +104,11 @@ export const upsertDiscordUser = async (
       subscriptionExpiresAt: true,
       lifetime: true,
       discordId: true,
+      guildedId: true,
     },
     with: {
       discordUser: true,
-      // guildedUser: true,
+      guildedUser: true,
     },
   });
   if (!dbUser) {
@@ -126,6 +127,101 @@ export const upsertDiscordUser = async (
       })
       .onConflictDoUpdate({
         target: schema.oauthInfo.discordId,
+        set: {
+          accessToken: oauth.accessToken,
+          refreshToken: oauth.refreshToken,
+          expiresAt: oauth.expiresAt,
+          /*
+            This could technically be not accurate.
+            When you authorize an application, all scopes are added to those
+            that you have already granted, but this implementation resets the
+            array with only the new scopes. This shouldn't actually be an
+            issue in most normal cases.
+          */
+          scope: oauth.scope,
+        },
+      });
+  }
+
+  return dbUser;
+};
+
+export const upsertGuildedUser = async (
+  db: DBWithSchema,
+  user: {
+    id: string;
+    name: string;
+    avatar?: string | null;
+  },
+  oauth?: {
+    accessToken: string;
+    refreshToken?: string;
+    scope: string[];
+    expiresAt: Date;
+  },
+) => {
+  await db
+    .insert(schema.guildedUsers)
+    .values({
+      id: user.id,
+      name: user.name,
+      avatarUrl: user.avatar,
+    })
+    .onConflictDoUpdate({
+      target: schema.guildedUsers.id,
+      set: {
+        name: user.name,
+        avatarUrl: user.avatar,
+      },
+    });
+
+  const { id } = (
+    await db
+      .insert(schema.users)
+      .values({
+        guildedId: user.id,
+        name: user.name,
+      })
+      .onConflictDoUpdate({
+        target: schema.users.guildedId,
+        set: { name: user.name },
+      })
+      .returning({ id: schema.users.id })
+  )[0];
+
+  const dbUser = await db.query.users.findFirst({
+    where: eq(schema.users.id, id),
+    columns: {
+      id: true,
+      name: true,
+      firstSubscribed: true,
+      subscribedSince: true,
+      subscriptionExpiresAt: true,
+      lifetime: true,
+      discordId: true,
+      guildedId: true,
+    },
+    with: {
+      discordUser: true,
+      guildedUser: true,
+    },
+  });
+  if (!dbUser) {
+    throw Error(`Upserted user with ID ${user.id} was mysteriously not found.`);
+  }
+
+  if (oauth) {
+    await db
+      .insert(schema.oauthInfo)
+      .values({
+        guildedId: dbUser.guildedId,
+        accessToken: oauth.accessToken,
+        refreshToken: oauth.refreshToken,
+        expiresAt: oauth.expiresAt,
+        scope: oauth.scope,
+      })
+      .onConflictDoUpdate({
+        target: schema.oauthInfo.guildedId,
         set: {
           accessToken: oauth.accessToken,
           refreshToken: oauth.refreshToken,

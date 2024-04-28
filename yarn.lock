@@ -4174,6 +4174,7 @@ cron-parser@shayypy/cron-parser:
     react-modal: "npm:^3.16.1"
     react-select: "npm:^5.8.0"
     remix-auth-discord: "npm:^1.3.2"
+    remix-auth-guilded: GuildedAPI/remix-auth-guilded
     robots-parser: "npm:^3.0.1"
     tailwind-merge: "npm:^2.2.0"
     tailwindcss: "npm:^3.3.6"
@@ -8979,6 +8980,18 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
+remix-auth-guilded@GuildedAPI/remix-auth-guilded:
+  version: 1.0.0
+  resolution: "remix-auth-guilded@https://github.com/GuildedAPI/remix-auth-guilded.git#commit=ac767841f494d1d97458f66f3d3b990878458b56"
+  dependencies:
+    remix-auth: "npm:^3.0.0"
+    remix-auth-oauth2: "npm:^1.11.2"
+  peerDependencies:
+    "@remix-run/server-runtime": ^1.0.0
+  checksum: 10c0/2f9cecaca2b6981b1ed3817a44df2d29beb8bdb77505205fcddd9d1ab81b761364fcde8afd3eadf8e6cce3c46a2b91f0734d7f55b536ff8f833a924b012b0625
+  languageName: node
+  linkType: hard
+
 "remix-auth-oauth2@npm:^1.11.0":
   version: 1.11.1
   resolution: "remix-auth-oauth2@npm:1.11.1"
@@ -8991,7 +9004,20 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"remix-auth@npm:^3.6.0":
+"remix-auth-oauth2@npm:^1.11.2":
+  version: 1.11.2
+  resolution: "remix-auth-oauth2@npm:1.11.2"
+  dependencies:
+    debug: "npm:^4.3.4"
+    uuid: "npm:^9.0.1"
+  peerDependencies:
+    "@remix-run/server-runtime": ^1.0.0 || ^2.0.0
+    remix-auth: ^3.6.0
+  checksum: 10c0/382cfcc05d4261d98f34b4d1af79f4b526718b2ff4713c374f4a811f08340b52903458b06d98266de40ab5b786326004417d48a05f38f8a10058ee5f0c2066f5
+  languageName: node
+  linkType: hard
+
+"remix-auth@npm:^3.0.0, remix-auth@npm:^3.6.0":
   version: 3.6.0
   resolution: "remix-auth@npm:3.6.0"
   dependencies:
@@ -9545,7 +9571,7 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=73f4b5&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=97a1d2&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
@@ -9553,7 +9579,7 @@ cron-parser@shayypy/cron-parser:
     drizzle-orm: "npm:^0.29.3"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/51b0b5cdef146c2cc934db41a0b0940c20d5e534d15c301b365271d4d01a2af76c5e5d35f78cb9ce12cffc8d6339cafb41816b46959f40d1812b2b14c2b1b1c9
+  checksum: 10c0/b4b01f1729667cead873e4897ca53e2fea25ad157b3af720e9d341fd1c1818d3b13a68bea5994f169bb174c36939c798c4f1e16165ab98366b751f213febd573
   languageName: node
   linkType: hard
 
@@ -10374,6 +10400,15 @@ cron-parser@shayypy/cron-parser:
   bin:
     uuid: dist/bin/uuid
   checksum: 10c0/bcbb807a917d374a49f475fae2e87fdca7da5e5530820ef53f65ba1d12131bd81a92ecf259cc7ce317cbe0f289e7d79fdfebcef9bfa3087c8c8a2fa304c9be54
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^9.0.1":
+  version: 9.0.1
+  resolution: "uuid@npm:9.0.1"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 10c0/1607dd32ac7fc22f2d8f77051e6a64845c9bce5cd3dd8aa0070c074ec73e666a1f63c7b4e0f4bf2bc8b9d59dc85a15e17807446d9d2b17c8485fbc2147b27f9b
   languageName: node
   linkType: hard
 

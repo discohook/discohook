@@ -135,6 +135,7 @@ export async function getUser(
       subscriptionExpiresAt: true,
       lifetime: true,
       discordId: true,
+      guildedId: true,
     },
     with: {
       discordUser: {
@@ -144,6 +145,13 @@ export async function getUser(
           globalName: true,
           discriminator: true,
           avatar: true,
+        },
+      },
+      guildedUser: {
+        columns: {
+          id: true,
+          name: true,
+          avatarUrl: true,
         },
       },
     },
@@ -165,23 +173,12 @@ export async function getUser(
 }
 
 const createToken = async (env: Env, origin: string, userId: bigint) => {
-  // const keyPair = await crypto.subtle.generateKey(
-  //   {
-  //     name: "RSASSA-PKCS1-v1_5",
-  //     modulusLength: 4096,
-  //     publicExponent: new Uint8Array([1, 0, 1]),
-  //     hash: "SHA-256",
-  //   },
-  //   true,
-  //   ["sign", "verify"],
-  // );
   const secretKey = Uint8Array.from(
     env.TOKEN_SECRET.split("").map((x) => x.charCodeAt(0)),
   );
 
   const now = new Date();
   // Tokens last for 1 week but permissions are stored per token-guild and last 6 hours.
-  //
   const expiresAt = new Date(now.getTime() + 604_800_000);
   const id = generateId(now);
   const token = await new SignJWT({ uid: String(userId), scp: "user" })
