@@ -274,5 +274,14 @@
     "nEmbed_few": "{{count}} رسائل مضمنة",
     "nEmbed_many": "{{count}} رسالة مضمنة",
     "nEmbed_other": "{{count}} رسالة مضمنة",
-    "botInteractionUrl": "رابط وصول التفاعلات"
+    "botInteractionUrl": "رابط وصول التفاعلات",
+    "badge": {
+        "app": "برنامج",
+        "server": "سيرفر"
+    },
+    "addToServer": "اضافة الى السيرفر",
+    "scheduling": "الجدولة",
+    "repeatingSchedule": "سيتم تكرار الجدولة - {{description}}",
+    "backToBots": "الرجوع الى البوتات",
+    "information": "معلومات"
 }
