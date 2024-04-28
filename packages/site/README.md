@@ -24,14 +24,12 @@ Your request must be in total fewer than 24.5 MiB as indicated by the `Content-L
 |--------|----------------------------------------------------|---------------------|
 | data   | [QueryData](/packages/site/app/types/QueryData.ts) | no                  |
 | ttl    | integer (seconds), `300000` <= n <= `2419200000`   | default `604800000` |
-<!-- | origin | string (origin of a whitelisted instance)          | yes                 | -->
 
 ##### Response Body (JSON)
 
 | Key     | Type             |
 |---------|------------------|
 | id      | string           |
-<!-- | origin  | string           | -->
 | url     | string (url)     |
 | expires | string (ISO8601) |
 
