@@ -101,7 +101,9 @@ export const tokens = pgTable("Token", {
   id: snowflakePk(),
   platform: text("platform").$type<"discord" | "guilded">().notNull(),
   prefix: text("prefix").$type<"user" | "bot">().notNull(),
-  userId: snowflake("userId").references(() => users.id),
+  userId: snowflake("userId").references(() => users.id, {
+    onDelete: "set null",
+  }),
   expiresAt: date("expiresAt").notNull(),
   lastUsedAt: date("lastUsedAt"),
   // "Add visitor location headers" needs to be enabled for this
@@ -178,6 +180,7 @@ export const oauthInfoRelations = relations(oauthInfo, ({ one }) => ({
     references: [guildedUsers.id],
     relationName: "GuildedUser_OAuthInfo",
   }),
+  customBot: one(customBots, {
     fields: [oauthInfo.botId],
     references: [customBots.id],
     relationName: "OAuthInfo_CustomBot",
