@@ -35,7 +35,7 @@ export const BotDeleteConfirmModal = (
           {bot ? (
             <>
               <img
-                className="rounded-full my-auto w-8 h-8 mr-3"
+                className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
                 src={botAppAvatar(bot, { size: 64 })}
                 alt={bot.name}
               />

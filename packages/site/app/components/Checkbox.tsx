@@ -1,3 +1,4 @@
+import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 
 export const Checkbox = (
@@ -29,11 +30,13 @@ const ConditionalBox: React.FC<{ check?: boolean; className?: string }> = ({
   className,
 }) => (
   <div
-    className={`rounded border h-5 w-5 bg-gray-300 border-gray-200 group-hover/checkbox:bg-gray-400 peer-focus:border-blurple-500 dark:border-gray-600 dark:group-hover/checkbox:bg-gray-600 dark:bg-gray-700 transition-all mr-1 ${
+    className={twJoin(
+      "rounded border h-5 w-5 bg-gray-300 border-gray-200 group-hover/checkbox:bg-gray-400 peer-focus:border-blurple-500 dark:border-gray-600 dark:group-hover/checkbox:bg-gray-600 dark:bg-gray-700 transition-all ltr:mr-1 rtl:ml-1",
       check
         ? "hidden peer-checked:inline-flex"
-        : "inline-flex peer-checked:hidden"
-    } ${className ?? ""}`}
+        : "inline-flex peer-checked:hidden",
+      className,
+    )}
   >
     {check && <CoolIcon icon="Check" className="m-auto mr-[2px] transition" />}
   </div>

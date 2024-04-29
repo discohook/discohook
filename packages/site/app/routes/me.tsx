@@ -12,9 +12,7 @@ import {
   useSearchParams,
   useSubmit,
 } from "@remix-run/react";
-import {
-  ButtonStyle
-} from "discord-api-types/v10";
+import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
 import { Suspense, useEffect, useState } from "react";
@@ -37,11 +35,7 @@ import { BotCreateModal } from "~/modals/BotCreateModal";
 import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
-import {
-  botAppAvatar,
-  cdn,
-  isDiscordError
-} from "~/util/discord";
+import { botAppAvatar, cdn, isDiscordError } from "~/util/discord";
 import { DeconstructedSnowflake, getId } from "~/util/id";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
@@ -61,7 +55,7 @@ import {
   shareLinks as dShareLinks,
   discordMembers,
   getDb,
-  makeSnowflake
+  makeSnowflake,
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -464,7 +458,7 @@ export default function Me() {
               <div className="w-full rounded-lg bg-gray-200 dark:bg-gray-900 shadow-md p-4">
                 <div className="flex">
                   <img
-                    className="rounded-full mr-4 h-[4.5rem] w-[4.5rem]"
+                    className="rounded-full ltr:mr-4 rtl:ml-4 h-[4.5rem] w-[4.5rem]"
                     src={getUserAvatar(user, { size: 128 })}
                     alt={user.name}
                   />
@@ -552,7 +546,7 @@ export default function Me() {
                 <p className="text-xl font-semibold dark:text-gray-100 my-auto">
                   {t("server_other")}
                 </p>
-                <Link to="/bot" className="ml-auto my-auto">
+                <Link to="/bot" className="ltr:ml-auto rtl:mr-auto my-auto">
                   <Button discordstyle={ButtonStyle.Link}>
                     {t("inviteBot")}
                   </Button>
@@ -589,21 +583,29 @@ export default function Me() {
                                 key={`guild-${guild.id}`}
                                 className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
                               >
-                                <div
-                                  style={{
-                                    backgroundImage: `url(${
-                                      guild.icon
-                                        ? cdn.icon(
-                                            String(guild.id),
-                                            guild.icon,
-                                            {
-                                              size: 64,
-                                            },
-                                          )
-                                        : cdn.defaultAvatar(5)
-                                    })`,
-                                  }}
-                                  className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                                <img
+                                  alt={guild.name}
+                                  src={
+                                    guild.icon
+                                      ? cdn.icon(String(guild.id), guild.icon, {
+                                          size: 64,
+                                        })
+                                      : cdn.defaultAvatar(5)
+                                  }
+                                  srcSet={
+                                    guild.icon
+                                      ? `${cdn.icon(
+                                          String(guild.id),
+                                          guild.icon,
+                                          { size: 64 },
+                                        )}, ${cdn.icon(
+                                          String(guild.id),
+                                          guild.icon,
+                                          { size: 128 },
+                                        )} 2x`
+                                      : ""
+                                  }
+                                  className="w-10 my-auto rounded-lg aspect-square ltr:mr-2 rtl:ml-2 hidden sm:block"
                                 />
                                 <div className="truncate my-auto">
                                   <div className="flex max-w-full">
@@ -612,12 +614,15 @@ export default function Me() {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="ml-auto pl-2 my-auto flex gap-2">
+                                <div className="ltr:ml-auto rtl:mr-auto pl-2 my-auto flex gap-2">
                                   <Link to={`/s/${guild.id}`}>
                                     <Button
                                       discordstyle={ButtonStyle.Secondary}
                                     >
-                                      <CoolIcon icon="Chevron_Right" />
+                                      <CoolIcon
+                                        icon="Chevron_Right"
+                                        rtl="Chevron_Left"
+                                      />
                                     </Button>
                                   </Link>
                                 </div>
@@ -639,13 +644,13 @@ export default function Me() {
                   {t(tab)}
                 </p>
                 <Button
-                  className="ml-auto my-auto"
+                  className="ltr:ml-auto rtl:mr-auto my-auto"
                   onClick={() => setImportModalOpen(true)}
                 >
                   {t("import")}
                 </Button>
                 <Button
-                  className="ml-2 my-auto"
+                  className="ltr:ml-2 rtl:mr-2 my-auto"
                   onClick={() => setExportModalOpen(true)}
                 >
                   {t("export")}
@@ -808,7 +813,7 @@ export default function Me() {
                                   style={{
                                     backgroundImage: `url(${backup.previewImageUrl})`,
                                   }}
-                                  className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                                  className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square ltr:mr-2 rtl:ml-2 hidden sm:block"
                                 />
                               )}
                               <div className="truncate my-auto">
@@ -827,7 +832,7 @@ export default function Me() {
                                   {t("id", { replace: { id: backup.code } })}
                                 </p>
                               </div>
-                              <div className="ml-auto pl-2 my-auto flex gap-2">
+                              <div className="ltr:ml-auto rtl:mr-auto pl-2 my-auto flex gap-2">
                                 <Link
                                   to={`/link/${backup.code}`}
                                   target="_blank"
@@ -900,24 +905,28 @@ export default function Me() {
                             >
                               <div className="truncate shrink-0">
                                 <p className="font-medium">
-                                  {created.toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                    year:
-                                      now.getFullYear() ===
-                                      created.getFullYear()
-                                        ? undefined
-                                        : "numeric",
-                                  })}
+                                  {
+                                    // TODO this should be i18n'd so that the flow of time makes sense in RTL
+                                    created.toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                      year:
+                                        now.getFullYear() ===
+                                        created.getFullYear()
+                                          ? undefined
+                                          : "numeric",
+                                    })
+                                  }
                                   <span
-                                    className={`ml-1 ${
+                                    className={twJoin(
+                                      "ml-1",
                                       expires < now
                                         ? "text-rose-400"
                                         : expires.getTime() - now.getTime() <=
                                             86400000
                                           ? "text-yellow-500 dark:text-yellow-400"
-                                          : "text-gray-600 dark:text-gray-500"
-                                    }`}
+                                          : "text-gray-600 dark:text-gray-500",
+                                    )}
                                   >
                                     -{" "}
                                     {expires.toLocaleDateString(undefined, {
@@ -935,7 +944,7 @@ export default function Me() {
                                   {t("id", { replace: { id: link.shareId } })}
                                 </p>
                               </div>
-                              <div className="ml-auto pl-2 my-auto flex gap-2">
+                              <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2">
                                 {expires > now && (
                                   <Link
                                     to={`/?share=${link.shareId}`}
@@ -985,7 +994,7 @@ export default function Me() {
                 </p>
                 <Button
                   onClick={() => setCreateBotOpen(true)}
-                  className="mb-auto ml-auto"
+                  className="mb-auto ltr:ml-auto rtl:mr-auto"
                   disabled={!userIsPremium(user)}
                 >
                   {t("newBot")}

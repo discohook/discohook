@@ -194,7 +194,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
               }),
               headers: {
                 Authorization: `Bearer ${context.env.GIST_TOKEN}`,
-                // "Content-Type": "application/json",
                 Accept: "application/vnd.github+json",
                 "X-GitHub-Api-Version": "2022-11-28",
                 "User-Agent": "Discohook",
@@ -378,7 +377,8 @@ export default function CustomBot() {
             {
               label: (
                 <>
-                  <CoolIcon icon="Arrow_Left_MD" /> {t("backToBots")}
+                  <CoolIcon icon="Arrow_Left_MD" rtl="Arrow_Right_MD" />{" "}
+                  {t("backToBots")}
                 </>
               ),
               value: "back",
@@ -422,7 +422,7 @@ export default function CustomBot() {
                 {error}
                 <div className="mb-4 rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex">
                   <img
-                    className="rounded-full my-auto w-8 h-8 mr-3"
+                    className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
                     src={botAppAvatar(bot, { size: 64 })}
                     alt={bot.name}
                   />
@@ -434,7 +434,7 @@ export default function CustomBot() {
                     </div>
                   </div>
                   <a
-                    className="block ml-auto my-auto"
+                    className="block ltr:ml-auto rtl:mr-auto my-auto"
                     href={`https://discord.com/developers/applications/${bot.applicationId}/information`}
                     target="_blank"
                     rel="noreferrer"
@@ -445,7 +445,7 @@ export default function CustomBot() {
                   </a>
                   <Button
                     discordstyle={ButtonStyle.Danger}
-                    className="text-sm ml-1"
+                    className="text-sm ltr:ml-1 rtl:mr-1"
                     onClick={() => setDeleting(true)}
                     emoji={{ name: "🗑️" }}
                   />

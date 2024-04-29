@@ -1,3 +1,4 @@
+import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 
 export const Radio = (
@@ -30,10 +31,12 @@ const ConditionalBox: React.FC<{ check?: boolean; className?: string }> = ({
 }) => (
   <CoolIcon
     icon={check ? "Radio_Fill" : "Radio_Unchecked"}
-    className={`text-2xl my-auto mr-2 ${
+    className={twJoin(
+      "text-2xl my-auto ltr:mr-2 rtl:ml-2",
       check
         ? "hidden peer-checked:inline-flex"
-        : "inline-flex peer-checked:hidden"
-    } ${className ?? ""}`}
+        : "inline-flex peer-checked:hidden",
+      className,
+    )}
   />
 );

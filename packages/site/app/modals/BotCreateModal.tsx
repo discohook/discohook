@@ -63,7 +63,7 @@ export const BotCreateModal = (props: ModalProps) => {
           </ul>
           <TextInput
             name="applicationId"
-            label="Application ID"
+            label={t("applicationId")}
             className="w-full"
             pattern="^\d{17,22}$"
             onChange={async ({ currentTarget }) => {
@@ -90,7 +90,7 @@ export const BotCreateModal = (props: ModalProps) => {
           {application ? (
             <>
               <img
-                className="rounded-full my-auto w-8 h-8 mr-3"
+                className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
                 src={botAppAvatar(
                   {
                     applicationId: application.id,
@@ -109,14 +109,14 @@ export const BotCreateModal = (props: ModalProps) => {
                 </div>
                 <p className="text-gray-600 dark:text-gray-500 text-xs">
                   {application.description || (
-                    <span className="italic">No description</span>
+                    <span className="italic">{t("noDescription")}</span>
                   )}
                 </p>
               </div>
             </>
           ) : (
             <>
-              <div className="rounded-full my-auto w-8 h-8 mr-3 bg-gray-400 dark:bg-gray-600" />
+              <div className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3 bg-gray-400 dark:bg-gray-600" />
               <div className="my-auto">
                 <div className="rounded-full truncate bg-gray-400 dark:bg-gray-600 w-36 h-4" />
               </div>

@@ -37,7 +37,7 @@ export const Button = (
         (props.emoji.id ? (
           <div
             className={`aspect-square h-[22px] my-auto ${
-              props.children ? "mr-1" : "mx-auto"
+              props.children ? "ltr:mr-1 rtl:ml-1" : "mx-auto"
             }`}
           >
             <img
@@ -50,7 +50,7 @@ export const Button = (
             />
           </div>
         ) : (
-          <div className="mr-1 aspect-square my-auto h-7 flex">
+          <div className="ltr:mr-1 rtl:ml-1 aspect-square my-auto h-7 flex">
             <div className="m-auto">
               <Twemoji
                 // biome-ignore lint/style/noNonNullAssertion: Must have name if not an ID
@@ -62,7 +62,10 @@ export const Button = (
         ))}
       <div className={props.emoji ? "my-auto" : "m-auto"}>{props.children}</div>
       {props.discordstyle === ButtonStyle.Link && (
-        <CoolIcon icon="External_Link" className="ml-1.5 my-auto" />
+        <CoolIcon
+          icon="External_Link"
+          className="ltr:ml-1.5 rtl:mr-1.5 my-auto"
+        />
       )}
     </button>
   );

@@ -1,6 +1,6 @@
 import { ButtonStyle } from "discord-api-types/v10";
 import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
@@ -45,13 +45,14 @@ export const HistoryModal = <
   return (
     <Modal title={t("history")} {...props}>
       <div className="flex mb-4">
-        <p className="mr-2">
-          Here you can view and manage the past 15 autosaved instances of editor
-          history (or 30 with Deluxe). Pressing "{t("resetEditor")}" will reset
-          everything in the left pane, but it will not wipe history (until it is
-          overwritten by your new changes). Just remember that history is{" "}
-          <span className="font-bold">not persisted</span> when you reload the
-          page.
+        <p className="ltr:mr-2 rtl:ml-2">
+          <Trans
+            t={t}
+            i18nKey="historyNote"
+            components={{
+              bold: <span className="font-bold" />,
+            }}
+          />
         </p>
         <Button
           className="ml-auto shrink-0"

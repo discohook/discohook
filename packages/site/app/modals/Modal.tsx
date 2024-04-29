@@ -57,7 +57,7 @@ export const ModalCloseButton: React.FC<Pick<ModalProps, "setOpen">> = ({
 }) => (
   <button
     type="button"
-    className="ml-auto mb-auto"
+    className="ltr:ml-auto rtl:mr-auto mb-auto"
     onClick={() => setOpen(false)}
   >
     <CoolIcon

@@ -67,7 +67,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
       {user ? (
         <Link
           to="/me"
-          className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
+          className="flex my-auto ltr:-mx-2 rtl:mr-2 rtl:-ml-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
           target={isEditorPage ? "_blank" : undefined}
         >
           <img
@@ -75,13 +75,13 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
             src={getUserAvatar(user, { size: 64 })}
             alt={user.name}
           />
-          <p className="ml-1.5 text-base font-medium hidden sm:block my-auto">
+          <p className="ltr:ml-1.5 rtl:mr-1.5 text-base font-medium hidden sm:block my-auto">
             {user.discordUser?.globalName ?? getUserTag(user)}
           </p>
           {premiumDetails?.active && (
             <p
               className={twJoin(
-                "ml-2 text-xs font-semibold hidden sm:block my-auto rounded py-px px-2 text-black uppercase",
+                "ltr:ml-2 rtl:mr-2 text-xs font-semibold hidden sm:block my-auto rounded py-px px-2 text-black uppercase",
                 premiumDetails.grace ? "bg-yellow-400" : "bg-brand-pink",
               )}
             >
@@ -96,7 +96,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
       ) : (
         <Link
           to="/auth/discord"
-          className="flex my-auto -mx-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
+          className="flex my-auto ltr:-mx-2 rtl:mr-2 rtl:-ml-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
           target={isEditorPage ? "_blank" : undefined}
         >
           <CoolIcon
@@ -104,21 +104,21 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
             className="text-[28px] text-blurple dark:text-blurple-400 rotate-180"
             title={t("logIn")}
           />
-          <p className="ml-1.5 text-base font-medium hidden sm:block my-auto">
+          <p className="ltr:ml-1.5 rtl:mr-1.5 text-base font-medium hidden sm:block my-auto">
             {t("logIn")}
           </p>
         </Link>
       )}
-      <div className="grow flex overflow-x-auto ml-6">
+      <div className="grow flex overflow-x-auto ltr:ml-6 rtl:mr-6">
         <Button
-          className="my-auto mr-2 shrink-0"
+          className="my-auto ltr:mr-2 rtl:ml-2 shrink-0"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setSettingsOpen(true)}
         >
           {t("settings")}
         </Button>
         <Button
-          className="my-auto ml-auto shrink-0"
+          className="my-auto ltr:ml-auto rtl:mr-auto shrink-0"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setHelpOpen(true)}
         >

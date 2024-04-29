@@ -93,18 +93,17 @@ const changeLanguageEffect = () => {
   );
   if (settings.locale) {
     i18n.changeLanguage(settings.locale);
+    const html = document.querySelector("html");
+    if (html) {
+      html.dir = ["ar"].includes(settings.locale) ? "rtl" : "ltr";
+    }
   }
 };
 
 export default function App() {
   useEffect(changeLanguageEffect, []);
   return (
-    <html
-      lang="en"
-      className="dark"
-      dir="ltr"
-      // dir={["ar"].includes(i18n.language) ? "rtl" : "ltr"}
-    >
+    <html lang="en" className="dark" dir="ltr">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />

@@ -1,5 +1,6 @@
 import { type i18n as i18nT } from "i18next";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
 import { Radio } from "~/components/Radio";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -26,7 +27,7 @@ const LocaleRadio = ({
     label={
       <>
         <Twemoji
-          className="h-5 align-text-bottom mr-2 saturate-[0.8]"
+          className="h-5 align-text-bottom ltr:mr-2 rtl:ml-2 saturate-[0.8]"
           emoji={flag}
         />
         {i18n.t(`locales.${locale}`, { lng: locale })}
@@ -40,6 +41,10 @@ const LocaleRadio = ({
       if (e.currentTarget.checked) {
         updateSettings({ locale });
         i18n.changeLanguage(locale);
+        const html = document.querySelector("html");
+        if (html) {
+          html.dir = ["ar"].includes(locale) ? "rtl" : "ltr";
+        }
       }
     }}
   />
@@ -56,7 +61,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         <p className="text-sm font-black uppercase dark:text-gray-400">
           {t("theme")}
         </p>
-        <div className="flex space-x-6 mt-2 overflow-x-auto">
+        <div className="flex mt-2 overflow-x-auto">
           <ThemeRadio
             bg="bg-white"
             checked={settings.theme === "light"}
@@ -105,7 +110,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         <div className="space-y-2 mt-2">
           <Radio
             name="display"
-            label="Cozy"
+            label={t("cozy")}
             checked={
               !settings.messageDisplay || settings.messageDisplay === "cozy"
             }
@@ -117,7 +122,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           />
           <Radio
             name="display"
-            label="Compact"
+            label={t("compact")}
             checked={settings.messageDisplay === "compact"}
             onChange={(e) => {
               if (e.currentTarget.checked) {
@@ -126,7 +131,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             }}
           />
           <Checkbox
-            label="Show avatars in Compact mode"
+            label={t("compactAvatars")}
             checked={settings.compactAvatars === true}
             onChange={(e) =>
               updateSettings({ compactAvatars: e.currentTarget.checked })
@@ -140,7 +145,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         </p>
         <div className="space-y-2 mt-2">
           <Checkbox
-            label="Always use dual-pane editor"
+            label={t("forceDualPane")}
             checked={settings.forceDualPane === true}
             onChange={(e) =>
               updateSettings({ forceDualPane: e.currentTarget.checked })
@@ -218,7 +223,10 @@ const ThemeRadio: React.FC<
       hidden
     />
     <div
-      className={`rounded-full flex ${bg} h-[60px] w-[60px] cursor-pointer peer-checked:cursor-default border border-black/50 dark:border-gray-50/50 peer-checked:border-2 peer-checked:border-blurple`}
+      className={twJoin(
+        "rounded-full flex h-[60px] w-[60px] cursor-pointer peer-checked:cursor-default border border-black/50 dark:border-gray-50/50 peer-checked:border-2 peer-checked:border-blurple ltr:mr-6 rtl:ml-6",
+        bg,
+      )}
     >
       {children}
     </div>

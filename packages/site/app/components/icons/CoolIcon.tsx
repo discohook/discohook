@@ -1,3 +1,5 @@
+import { twJoin } from "tailwind-merge";
+
 export type CoolIconsGlyph =
   | "Add_Column"
   | "Add_Minus_Square"
@@ -444,8 +446,21 @@ export type CoolIconsGlyph =
 
 export const CoolIcon: React.FC<{
   icon: CoolIconsGlyph;
+  rtl?: CoolIconsGlyph;
   title?: string;
   className?: string;
-}> = ({ icon, title, className }) => (
-  <i title={title} className={`ci-${icon} ${className ?? ""}`.trim()} />
-);
+}> = ({ icon, rtl, title, className }) =>
+  rtl ? (
+    <>
+      <i
+        title={title}
+        className={twJoin("ltr:inline rtl:hidden", `ci-${icon}`, className)}
+      />
+      <i
+        title={title}
+        className={twJoin("rtl:inline ltr:hidden", `ci-${rtl}`, className)}
+      />
+    </>
+  ) : (
+    <i title={title} className={twJoin(`ci-${icon}`, className)} />
+  );
