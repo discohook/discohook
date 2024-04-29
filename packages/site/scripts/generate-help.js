@@ -96,6 +96,6 @@ const data = {
 };
 
 await writeFile(
-  new URL("../public/help.json", import.meta.url).pathname,
+  new URL("../public/help/en.json", import.meta.url).pathname,
   JSON.stringify(data),
 );
