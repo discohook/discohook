@@ -7,6 +7,7 @@ export type IconFC = (props: IconFCProps) => JSX.Element;
 type SvgProps = React.PropsWithChildren & {
   width?: number;
   height?: number;
+  viewBox?: string;
   className?: string;
 };
 

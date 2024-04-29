@@ -14,6 +14,7 @@ import { User } from "~/session.server";
 import { getUserAvatar, getUserPremiumDetails, getUserTag } from "~/util/users";
 import { Button } from "./Button";
 import { CoolIcon } from "./icons/CoolIcon";
+import { Logo } from "./icons/Logo";
 
 export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
   const { t } = useTranslation();
@@ -26,14 +27,9 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
 
   const premiumDetails = user ? getUserPremiumDetails(user) : undefined;
   const logo = (
-    <div
-      style={{
-        backgroundImage: `url('/logos/icon${
-          user && premiumDetails?.active ? "-pink" : ""
-        }.svg')`,
-      }}
-      className="h-9 w-9 my-auto mr-4 bg-cover bg-center"
-    />
+    <div className="h-8 w-8 my-auto mr-4">
+      <Logo pink={premiumDetails?.active} />
+    </div>
   );
 
   const editorPaths = ["/link", "/simple"];
