@@ -159,6 +159,7 @@ export const oauthInfo = pgTable("OAuthInfo", {
   id: snowflakePk(),
   discordId: snowflake("discordId").unique(),
   guildedId: text("guildedId").unique(),
+  botId: snowflake("botId").unique(),
 
   accessToken: text("accessToken").notNull(),
   refreshToken: text("refreshToken"),
@@ -176,6 +177,10 @@ export const oauthInfoRelations = relations(oauthInfo, ({ one }) => ({
     fields: [oauthInfo.guildedId],
     references: [guildedUsers.id],
     relationName: "GuildedUser_OAuthInfo",
+  }),
+    fields: [oauthInfo.botId],
+    references: [customBots.id],
+    relationName: "OAuthInfo_CustomBot",
   }),
 }));
 
@@ -512,13 +517,14 @@ export const customBots = pgTable("CustomBot", {
   applicationUserId: snowflake("applicationUserId"),
   icon: text("icon"),
   publicKey: text("publicKey").notNull(),
+  clientSecret: text("clientSecret"),
   token: text("token"),
   discriminator: text("discriminator"),
   avatar: text("avatar"),
   name: text("name").notNull(),
   ownerId: snowflake("ownerId")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   guildId: snowflake("guildId").references(() => discordGuilds.id),
 });
 
@@ -530,6 +536,11 @@ export const customBotsRelations = relations(customBots, ({ one, many }) => ({
     fields: [customBots.ownerId],
     references: [users.id],
     relationName: "User_CustomBot",
+  }),
+  oauthInfo: one(oauthInfo, {
+    fields: [customBots.id],
+    references: [oauthInfo.botId],
+    relationName: "GuildedUser_OAuthInfo",
   }),
 }));
 

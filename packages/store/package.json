@@ -11,14 +11,14 @@
     "@theinternetfolks/snowflake": "shayypy/snowflake",
     "discord-api-types": "^0.37.67",
     "discord-snowflake": "^2.0.0",
-    "drizzle-orm": "^0.29.3",
+    "drizzle-orm": "^0.30.9",
     "json-bigint": "^1.0.0",
     "postgres": "^3.4.3"
   },
   "devDependencies": {
     "@discordjs/rest": "^2.2.0",
     "@types/json-bigint": "^1.0.4",
-    "drizzle-kit": "^0.20.13",
+    "drizzle-kit": "^0.20.17",
     "typescript": "^5.3.3"
   }
 }

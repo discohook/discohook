@@ -760,15 +760,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@drizzle-team/studio@npm:^0.0.39":
-  version: 0.0.39
-  resolution: "@drizzle-team/studio@npm:0.0.39"
-  dependencies:
-    superjson: "npm:^2.2.1"
-  checksum: 10c0/9e37a31261fa8f6224238dc4f8249199bec8a3f7638da1044beae487cbceb5432bfcc350a13a325c45d75eb05b36713b984d2da14fdf1d608eb9f16576fd9294
-  languageName: node
-  linkType: hard
-
 "@emoji-mart/data@npm:^1.1.2":
   version: 1.1.2
   resolution: "@emoji-mart/data@npm:1.1.2"
@@ -1741,6 +1732,23 @@ __metadata:
   version: 0.1.6
   resolution: "@floating-ui/utils@npm:0.1.6"
   checksum: 10c0/0a089db0e0526b89e83cb0a773a903517db5c9067cd473febfd8fa91a3a2ccbc3a835234796c1bb528def21dbb67be50e28d9c473cb58a6d90679d7e549b9c0c
+  languageName: node
+  linkType: hard
+
+"@hono/node-server@npm:^1.9.0":
+  version: 1.11.1
+  resolution: "@hono/node-server@npm:1.11.1"
+  checksum: 10c0/87ad10b0e79c5434935cd83172d1923eb04c7ac1853e79b60303cae983876fc3c736e1826b824b34adae7a3e7289c99d764ecefe13b650f81b1f9d5baea3ed4a
+  languageName: node
+  linkType: hard
+
+"@hono/zod-validator@npm:^0.2.0":
+  version: 0.2.1
+  resolution: "@hono/zod-validator@npm:0.2.1"
+  peerDependencies:
+    hono: ">=3.9.0"
+    zod: ^3.19.1
+  checksum: 10c0/de399abc8ab26552111c745ae0ecad714af549e79b0412c2285d057bde72b434b09b8f9b65940d3a4b2dd82dcfb52e1601ac505effb410e4439e9c8835a99d7d
   languageName: node
   linkType: hard
 
@@ -4190,7 +4198,7 @@ cron-parser@shayypy/cron-parser:
   resolution: "discohook@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^1.5.1"
-    drizzle-kit: "npm:^0.20.14"
+    drizzle-kit: "npm:^0.20.17"
     ngrok: "npm:^5.0.0-beta.2"
   languageName: unknown
   linkType: soft
@@ -4281,12 +4289,13 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"drizzle-kit@npm:^0.20.13":
-  version: 0.20.13
-  resolution: "drizzle-kit@npm:0.20.13"
+"drizzle-kit@npm:^0.20.17":
+  version: 0.20.17
+  resolution: "drizzle-kit@npm:0.20.17"
   dependencies:
-    "@drizzle-team/studio": "npm:^0.0.39"
     "@esbuild-kit/esm-loader": "npm:^2.5.5"
+    "@hono/node-server": "npm:^1.9.0"
+    "@hono/zod-validator": "npm:^0.2.0"
     camelcase: "npm:^7.0.1"
     chalk: "npm:^5.2.0"
     commander: "npm:^9.4.1"
@@ -4295,55 +4304,36 @@ cron-parser@shayypy/cron-parser:
     esbuild-register: "npm:^3.5.0"
     glob: "npm:^8.1.0"
     hanji: "npm:^0.0.5"
+    hono: "npm:^4.1.4"
     json-diff: "npm:0.9.0"
     minimatch: "npm:^7.4.3"
     semver: "npm:^7.5.4"
+    superjson: "npm:^2.2.1"
     zod: "npm:^3.20.2"
   bin:
     drizzle-kit: bin.cjs
-  checksum: 10c0/33cf597cf1817fe26452e330b0acc3d1210f28b95aacd21b602ff2ca93ca4576f4601d5c73d5e0b6008cef133cf5a185158691a898b3c932f6afeeb3fcc67723
+  checksum: 10c0/050c8f6414a6ec250c0ac2734415d6c9221a5bf21a968be2733cc688e0c1a39ecb59f9ea0d81ba7036733c9c6249075e9b493315cfcf47b512ef9bd70f6c1f52
   languageName: node
   linkType: hard
 
-"drizzle-kit@npm:^0.20.14":
-  version: 0.20.14
-  resolution: "drizzle-kit@npm:0.20.14"
-  dependencies:
-    "@drizzle-team/studio": "npm:^0.0.39"
-    "@esbuild-kit/esm-loader": "npm:^2.5.5"
-    camelcase: "npm:^7.0.1"
-    chalk: "npm:^5.2.0"
-    commander: "npm:^9.4.1"
-    env-paths: "npm:^3.0.0"
-    esbuild: "npm:^0.19.7"
-    esbuild-register: "npm:^3.5.0"
-    glob: "npm:^8.1.0"
-    hanji: "npm:^0.0.5"
-    json-diff: "npm:0.9.0"
-    minimatch: "npm:^7.4.3"
-    semver: "npm:^7.5.4"
-    zod: "npm:^3.20.2"
-  bin:
-    drizzle-kit: bin.cjs
-  checksum: 10c0/fee5b2ff61eaf648a6fb3edacd2b3091bd40fd75dcad6b3e43a88104ed48f1264c1860ceb2ef13ab5e55207f6a22c772b992bcd6d9680d0bf86d456399c8dd75
-  languageName: node
-  linkType: hard
-
-"drizzle-orm@npm:^0.29.3":
-  version: 0.29.3
-  resolution: "drizzle-orm@npm:0.29.3"
+"drizzle-orm@npm:^0.30.9":
+  version: 0.30.9
+  resolution: "drizzle-orm@npm:0.30.9"
   peerDependencies:
     "@aws-sdk/client-rds-data": ">=3"
     "@cloudflare/workers-types": ">=3"
+    "@electric-sql/pglite": ">=0.1.1"
     "@libsql/client": "*"
     "@neondatabase/serverless": ">=0.1"
+    "@op-engineering/op-sqlite": ">=2"
     "@opentelemetry/api": ^1.4.1
     "@planetscale/database": ">=1"
     "@types/better-sqlite3": "*"
     "@types/pg": "*"
     "@types/react": ">=18"
     "@types/sql.js": "*"
-    "@vercel/postgres": "*"
+    "@vercel/postgres": ">=0.8.0"
+    "@xata.io/client": "*"
     better-sqlite3: ">=7"
     bun-types: "*"
     expo-sqlite: ">=13.2.0"
@@ -4360,9 +4350,13 @@ cron-parser@shayypy/cron-parser:
       optional: true
     "@cloudflare/workers-types":
       optional: true
+    "@electric-sql/pglite":
+      optional: true
     "@libsql/client":
       optional: true
     "@neondatabase/serverless":
+      optional: true
+    "@op-engineering/op-sqlite":
       optional: true
     "@opentelemetry/api":
       optional: true
@@ -4377,6 +4371,8 @@ cron-parser@shayypy/cron-parser:
     "@types/sql.js":
       optional: true
     "@vercel/postgres":
+      optional: true
+    "@xata.io/client":
       optional: true
     better-sqlite3:
       optional: true
@@ -4400,7 +4396,7 @@ cron-parser@shayypy/cron-parser:
       optional: true
     sqlite3:
       optional: true
-  checksum: 10c0/a5a53e4599981f256e10bd0e6e4724f14ffe7c9f6bef963c5cc9d00c8379c2367324ae0c67abc52a319704fedba796a5583dac3d36fac0de19585f87844d3611
+  checksum: 10c0/fe1d3c591413d7c9c7f5c86a52acd5ef5de656eb0c9aa664bc4fb7f48ec8d50d33bfd4c78b51c0b2f56a39b4e8ce8e967b97ef4c805f099c5dea4453f7d7bba7
   languageName: node
   linkType: hard
 
@@ -5821,6 +5817,13 @@ cron-parser@shayypy/cron-parser:
   dependencies:
     react-is: "npm:^16.7.0"
   checksum: 10c0/fe0889169e845d738b59b64badf5e55fa3cf20454f9203d1eb088df322d49d4318df774828e789898dcb280e8a5521bb59b3203385662ca5e9218a6ca5820e74
+  languageName: node
+  linkType: hard
+
+"hono@npm:^4.1.4":
+  version: 4.2.8
+  resolution: "hono@npm:4.2.8"
+  checksum: 10c0/3efe06f9b0261c698ccb60cde3f0f082c9f15eeca8019189c9345a920da58359628726fa23d33a313a18292246fa3c1ca8b8080f3490a1521107ae1827b4f7d6
   languageName: node
   linkType: hard
 
@@ -9571,15 +9574,15 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=97a1d2&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=78c9d6&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
-    drizzle-orm: "npm:^0.29.3"
+    drizzle-orm: "npm:^0.30.9"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/b4b01f1729667cead873e4897ca53e2fea25ad157b3af720e9d341fd1c1818d3b13a68bea5994f169bb174c36939c798c4f1e16165ab98366b751f213febd573
+  checksum: 10c0/ba3847157c7d1c1afc55442de65229f4bf2069346bc7d7a64407b30e6c7d17e4b42721f685a3f1df7d532797dd2927de06562de6a8beaadf65536234dce175db
   languageName: node
   linkType: hard
 
@@ -9592,8 +9595,8 @@ cron-parser@shayypy/cron-parser:
     "@types/json-bigint": "npm:^1.0.4"
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
-    drizzle-kit: "npm:^0.20.13"
-    drizzle-orm: "npm:^0.29.3"
+    drizzle-kit: "npm:^0.20.17"
+    drizzle-orm: "npm:^0.30.9"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     typescript: "npm:^5.3.3"
