@@ -1,9 +1,8 @@
 {
-  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnPaste": false, // required
   "editor.formatOnType": false, // required
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
     "source.organizeImports": "explicit"
   },
   "files.autoSave": "off",
@@ -13,8 +12,6 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "eslint.onIgnoredFiles": "off",
-  "eslint.run": "onType",
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
