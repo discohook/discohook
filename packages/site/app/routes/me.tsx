@@ -19,6 +19,7 @@ import { Suspense, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { z } from "zod";
+import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
@@ -172,6 +173,13 @@ export const action = async ({ request, context }: ActionArgs) => {
         linkId: snowflakeAsString(),
       }),
       z.object({
+        action: z.literal("REFRESH_SHARE_LINK"),
+        linkId: snowflakeAsString(),
+        ttl: zx.IntAsString.optional()
+          .default("604800000")
+          .refine((val) => val >= 300000 && val <= 2419200000),
+      }),
+      z.object({
         action: z.literal("DELETE_BACKUP"),
         backupId: snowflakeAsString(),
       }),
@@ -206,6 +214,51 @@ export const action = async ({ request, context }: ActionArgs) => {
       await context.env.KV.delete(key);
       await db.delete(dShareLinks).where(eq(dShareLinks.id, data.linkId));
       break;
+    }
+    case "REFRESH_SHARE_LINK": {
+      const user = await getUser(request, context);
+      if (!user || !userIsPremium(user)) {
+        throw json(
+          { message: "Must be a Deluxe member to perform this action" },
+          403,
+        );
+      }
+
+      const db = getDb(context.env.DATABASE_URL);
+      const share = await db.query.shareLinks.findFirst({
+        where: eq(dShareLinks.id, data.linkId),
+        columns: {
+          shareId: true,
+          userId: true,
+        },
+      });
+      if (!share || share.userId !== userId) {
+        throw json({ message: "Unknown Share Link" }, 404);
+      }
+
+      const key = `share-${share.shareId}`;
+      const current = await context.env.KV.get(key);
+      if (!current) {
+        throw json({ message: "Share link is already expired" }, 400);
+      }
+
+      const expires = new Date(new Date().getTime() + data.ttl);
+      await context.env.KV.put(key, current, {
+        expirationTtl: data.ttl / 1000,
+        metadata: {
+          expiresAt: expires.toISOString(),
+        },
+      });
+      await db
+        .update(dShareLinks)
+        .set({ expiresAt: expires })
+        .where(eq(dShareLinks.id, data.linkId));
+
+      return {
+        id: share.shareId,
+        url: `${new URL(request.url).origin}/?share=${share.shareId}`,
+        expires,
+      };
     }
     case "DELETE_BACKUP": {
       const backup = await db.query.backups.findFirst({
@@ -256,7 +309,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       const user = await getUser(request, context);
       if (!user || !userIsPremium(user)) {
         throw json(
-          { message: "Must be a Deluxe member to create a bot." },
+          { message: "Must be a Deluxe member to perform this action" },
           403,
         );
       }
@@ -901,9 +954,9 @@ export default function Me() {
                           return (
                             <div
                               key={`share-link-${link.id}`}
-                              className="rounded p-4 bg-gray-100 dark:bg-gray-900 flex"
+                              className="rounded p-4 bg-gray-100 dark:bg-gray-900 flex flex-wrap sm:flex-nowrap"
                             >
-                              <div className="truncate shrink-0">
+                              <div className="truncate shrink-0 w-full sm:w-fit">
                                 <p className="font-medium">
                                   {
                                     // TODO this should be i18n'd so that the flow of time makes sense in RTL
@@ -944,6 +997,7 @@ export default function Me() {
                                   {t("id", { replace: { id: link.shareId } })}
                                 </p>
                               </div>
+                              <hr className="sm:hidden my-1" />
                               <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2">
                                 {expires > now && (
                                   <Link
@@ -957,6 +1011,25 @@ export default function Me() {
                                     </Button>
                                   </Link>
                                 )}
+                                <Button
+                                  discordstyle={ButtonStyle.Primary}
+                                  disabled={!userIsPremium(user)}
+                                  title={t("refreshShareLink")}
+                                  onClick={() => {
+                                    submit(
+                                      {
+                                        action: "REFRESH_SHARE_LINK",
+                                        linkId: String(link.id),
+                                      },
+                                      {
+                                        method: "POST",
+                                        replace: true,
+                                      },
+                                    );
+                                  }}
+                                >
+                                  <CoolIcon icon="Redo" />
+                                </Button>
                                 <Button
                                   discordstyle={ButtonStyle.Danger}
                                   onClick={() => {
