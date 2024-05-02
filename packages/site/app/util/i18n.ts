@@ -1,58 +1,35 @@
 import { Resource } from "i18next";
 
-import arabic from "../i18n/ar.json";
-import britishEnglish from "../i18n/en-GB.json";
-import english from "../i18n/en.json";
-import french from "../i18n/fr.json";
-import dutch from "../i18n/nl.json";
-import chinese from "../i18n/zh.json";
-
 export const resources = {
   en: {
-    translation: english,
+    translation: require("../i18n/en.json"),
   },
   "en-GB": {
-    translation: britishEnglish,
+    translation: require("../i18n/en-GB.json"),
   },
   zh: {
-    translation: chinese,
+    translation: require("../i18n/zh.json"),
   },
   ar: {
-    translation: arabic,
+    translation: require("../i18n/ar.json"),
   },
   nl: {
-    translation: dutch,
+    translation: require("../i18n/nl.json"),
   },
   de: {
-    translation: {
-      defaultPlaceholder: "Triff eine Auswahl",
-      donate: "Spenden",
-      todayAt: "heute um {{time}} Uhr",
-    },
+    translation: require("../i18n/de.json"),
   },
   it: {
-    translation: {
-      defaultPlaceholder: "Seleziona",
-    },
+    translation: require("../i18n/it.json"),
   },
   es: {
-    translation: {
-      defaultPlaceholder: "Haz una selección",
-      todayAt: "hoy a las {{time}}",
-    },
+    translation: require("../i18n/es.json"),
   },
-  se: {
-    translation: {
-      defaultPlaceholder: "Gör ett val",
-    },
-  },
-  ne: {
-    translation: {
-      defaultPlaceholder: "Maak een selectie",
-    },
+  sv: {
+    translation: require("../i18n/sv.json"),
   },
   fr: {
-    translation: french,
+    translation: require("../i18n/fr.json"),
   },
 } satisfies Resource;
 
