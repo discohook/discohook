@@ -1,14 +1,14 @@
-import { Form } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { APIWebhook, RESTPatchAPIWebhookJSONBody } from "discord-api-types/v10";
 import { useEffect, useReducer } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Markdown } from "~/components/preview/Markdown";
+import { Markdown, linkClassName } from "~/components/preview/Markdown";
 import { User } from "~/session.server";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import { cdn, modifyWebhook } from "~/util/discord";
@@ -200,7 +200,19 @@ export const WebhookEditModal = (
                       features="full"
                       cache={cache}
                     />
-                    <p>{t("cannotChangeChannel")}</p>
+                    <p>
+                      <Trans
+                        t={t}
+                        i18nKey="cannotChangeChannel"
+                        components={[
+                          <Link
+                            to={`/s/${webhook.guild_id}?t=webhooks`}
+                            className={linkClassName}
+                            target="_blank"
+                          />,
+                        ]}
+                      />
+                    </p>
                   </div>
                 ) : (
                   <p>ID: {webhook?.channel_id}</p>
