@@ -16,6 +16,7 @@ import { getDate } from "discord-snowflake";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
@@ -126,26 +127,34 @@ export default () => {
     switch (tab) {
       case "auditLog": {
         if (!auditLogFetcher.data && auditLogFetcher.state === "idle") {
-          auditLogFetcher.load(`/api/v1/audit-log/${guild.id}`);
+          auditLogFetcher.load(apiUrl(BRoutes.guildAuditLog(guild.id)));
         }
         break;
       }
       case "webhooks": {
         if (!webhooksFetcher.data && webhooksFetcher.state === "idle") {
-          webhooksFetcher.load(`/api/v1/guilds/${guild.id}/webhooks`);
+          webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
         }
         break;
       }
       case "sessions": {
         if (!sessionsFetcher.data && sessionsFetcher.state === "idle") {
-          sessionsFetcher.load(`/api/v1/guilds/${guild.id}/sessions`);
+          sessionsFetcher.load(apiUrl(BRoutes.guildSessions(guild.id)));
         }
         break;
       }
       default:
         break;
     }
-  }, [tab, auditLogFetcher.data, auditLogFetcher.state]);
+  }, [
+    tab,
+    auditLogFetcher.data,
+    auditLogFetcher.state,
+    webhooksFetcher.data,
+    webhooksFetcher.state,
+    sessionsFetcher.data,
+    sessionsFetcher.state,
+  ]);
 
   return (
     <div>

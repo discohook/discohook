@@ -39,6 +39,15 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /audit-log/:id
+   *
+   * Accepts token auth.
+   */
+  guildAuditLog(id: string) {
+    return `/audit-log/${id}` as const;
+  },
+
+  /**
    * - GET /guilds/:id/cacheable
    *
    * Accepts token auth.
