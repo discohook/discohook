@@ -79,7 +79,7 @@ export const getWebhookUrlEmbed = (
     });
   }
 
-  const url = `https://discord.com/api/v10/${Routes.webhook(
+  const url = `https://discord.com/api/v10${Routes.webhook(
     webhook.id,
     webhook.token,
   )}`;
