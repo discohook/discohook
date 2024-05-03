@@ -111,6 +111,16 @@ export const BRoutes = {
   },
 
   /**
+   * - PATCH /guilds/:id/webhooks/:webhookId
+   * - DELETE /guilds/:id/webhooks/:webhookId
+   *
+   * Accepts token or cookie auth.
+   */
+  guildWebhook(guildId: bigint | string, id: bigint | string) {
+    return `/guilds/${String(guildId)}/webhooks/${String(id)}` as const;
+  },
+
+  /**
    * - GET /guilds/:guildId/webhooks/:webhookId/token
    *
    * Accepts token or cookie auth.

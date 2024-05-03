@@ -23,6 +23,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -36,11 +37,12 @@ import {
 } from "~/session.server";
 import { ResolvableAPIChannel, useCache } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
+import { LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 import { loader as ApiGetAuditLogGuild } from "../api/v1/audit-log.$guildId";
 import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
+import { action as ApiPatchGuildWebhook } from "../api/v1/guilds.$guildId.webhooks.$webhookId";
 import { Cell } from "./donate";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
@@ -118,6 +120,7 @@ export default () => {
   const { guild, user, member, discordApplicationId } =
     useLoaderData<typeof loader>();
   const { t } = useTranslation();
+  const [error, setError] = useError(t);
   const permissions = new PermissionsBitField(BigInt(member.permissions));
   const has = (...flags: BitFlagResolvable[]) =>
     member.owner ? true : permissions.has(...flags);
@@ -137,6 +140,9 @@ export default () => {
 
   const auditLogFetcher = useFetcher<typeof ApiGetAuditLogGuild>();
   const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
+  const guildWebhookFetcher = useSafeFetcher<typeof ApiPatchGuildWebhook>({
+    onError: () => {},
+  });
   const sessionsFetcher = useFetcher<typeof ApiGetGuildSessions>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: A wizard specifies precisely the dependencies he means to.
   useEffect(() => {
@@ -172,6 +178,17 @@ export default () => {
     sessionsFetcher.state,
   ]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  useEffect(() => {
+    if (
+      openWebhookId &&
+      guildWebhookFetcher.state === "idle" &&
+      guildWebhookFetcher.data
+    ) {
+      webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
+    }
+  }, [guildWebhookFetcher.state, guildWebhookFetcher.data]);
+
   return (
     <div>
       <WebhookEditModal
@@ -191,7 +208,14 @@ export default () => {
             : [],
         )}
         updateTargets={() => {}}
-        submit={() => {}}
+        submit={(payload) => {
+          if (!openWebhookId) return;
+          guildWebhookFetcher.submit(payload, {
+            method: "PATCH",
+            action: apiUrl(BRoutes.guildWebhook(guild.id, openWebhookId)),
+          });
+          // webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
+        }}
         channels={Object.entries(cache.state)
           .filter(([k, v]) => !!v && k.startsWith("channel:"))
           .map(([_, v]) => v as ResolvableAPIChannel)}
@@ -203,6 +227,7 @@ export default () => {
       />
       <Header user={user} />
       <Prose>
+        {error}
         <TabsWindow
           tab={tab}
           setTab={setTab as (v: string) => void}
