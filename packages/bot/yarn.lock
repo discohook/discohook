@@ -1414,21 +1414,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"drizzle-orm@npm:^0.29.3":
-  version: 0.29.5
-  resolution: "drizzle-orm@npm:0.29.5"
+"drizzle-orm@npm:^0.30.9":
+  version: 0.30.10
+  resolution: "drizzle-orm@npm:0.30.10"
   peerDependencies:
     "@aws-sdk/client-rds-data": ">=3"
     "@cloudflare/workers-types": ">=3"
+    "@electric-sql/pglite": ">=0.1.1"
     "@libsql/client": "*"
     "@neondatabase/serverless": ">=0.1"
+    "@op-engineering/op-sqlite": ">=2"
     "@opentelemetry/api": ^1.4.1
     "@planetscale/database": ">=1"
     "@types/better-sqlite3": "*"
     "@types/pg": "*"
     "@types/react": ">=18"
     "@types/sql.js": "*"
-    "@vercel/postgres": "*"
+    "@vercel/postgres": ">=0.8.0"
+    "@xata.io/client": "*"
     better-sqlite3: ">=7"
     bun-types: "*"
     expo-sqlite: ">=13.2.0"
@@ -1445,9 +1448,13 @@ __metadata:
       optional: true
     "@cloudflare/workers-types":
       optional: true
+    "@electric-sql/pglite":
+      optional: true
     "@libsql/client":
       optional: true
     "@neondatabase/serverless":
+      optional: true
+    "@op-engineering/op-sqlite":
       optional: true
     "@opentelemetry/api":
       optional: true
@@ -1462,6 +1469,8 @@ __metadata:
     "@types/sql.js":
       optional: true
     "@vercel/postgres":
+      optional: true
+    "@xata.io/client":
       optional: true
     better-sqlite3:
       optional: true
@@ -1485,7 +1494,7 @@ __metadata:
       optional: true
     sqlite3:
       optional: true
-  checksum: 10c0/187771340951bb154d2e101a4ffa288dd2d127fecc12ebfd494170076121b73456b9fd13b5a0b69ffcce388d288e664b1c9347d7fb5f4ee64894be2a2429d885
+  checksum: 10c0/d6ceedbe6b9c6e5908cd242a939b0de4c909344da8616bdf4474fa7a2bc1a659453c5530a275bd66c1b762d08b08a689175f38212575e24b2fbde2e000f83ff9
   languageName: node
   linkType: hard
 
@@ -3222,15 +3231,15 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=73f4b5&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=3d7d38&locator=discohook-bot%40workspace%3A."
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
-    drizzle-orm: "npm:^0.29.3"
+    drizzle-orm: "npm:^0.30.9"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/51b0b5cdef146c2cc934db41a0b0940c20d5e534d15c301b365271d4d01a2af76c5e5d35f78cb9ce12cffc8d6339cafb41816b46959f40d1812b2b14c2b1b1c9
+  checksum: 10c0/9f526b4c74b977a2ddf4b78554298f996a9b953a41ccc8c5088c64f63c814ba96a006d09da18db4e115cde59743ed9f3a4fc04126064bc5701cf306feb66dc43
   languageName: node
   linkType: hard
 
