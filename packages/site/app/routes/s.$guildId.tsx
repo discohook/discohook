@@ -6,7 +6,12 @@ import {
   redirect,
 } from "@remix-run/cloudflare";
 import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
-import { APIGuild, ButtonStyle } from "discord-api-types/v10";
+import {
+  APIGuild,
+  APIWebhook,
+  ButtonStyle,
+  WebhookType,
+} from "discord-api-types/v10";
 import {
   BitFlagResolvable,
   PermissionFlags,
@@ -23,12 +28,14 @@ import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { TabHeader, TabsWindow } from "~/components/tabs";
+import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import {
   authorizeRequest,
   getGuild,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { cdn, isDiscordError } from "~/util/discord";
+import { ResolvableAPIChannel, useCache } from "~/util/cache/CacheManager";
+import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 import { loader as ApiGetAuditLogGuild } from "../api/v1/audit-log.$guildId";
@@ -79,6 +86,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         owner,
         permissions: permissions.value.toString(),
       },
+      discordApplicationId: context.env.DISCORD_CLIENT_ID,
     }),
   );
 };
@@ -107,17 +115,25 @@ export const meta: MetaFunction = ({ data }) => {
 const tabValues = ["home", "auditLog", "webhooks", "sessions"] as const;
 
 export default () => {
-  const { guild, user, member } = useLoaderData<typeof loader>();
+  const { guild, user, member, discordApplicationId } =
+    useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const permissions = new PermissionsBitField(BigInt(member.permissions));
   const has = (...flags: BitFlagResolvable[]) =>
     member.owner ? true : permissions.has(...flags);
+
+  const cache = useCache();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    cache.channel.fetchMany(guild.id);
+  }, [guild]);
 
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
   const [tab, setTab] = useState<(typeof tabValues)[number]>(
     defaultTab && tabValues.includes(defaultTab) ? defaultTab : tabValues[0],
   );
+  const [openWebhookId, setOpenWebhookId] = useState<string>();
 
   const auditLogFetcher = useFetcher<typeof ApiGetAuditLogGuild>();
   const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
@@ -158,6 +174,33 @@ export default () => {
 
   return (
     <div>
+      <WebhookEditModal
+        targets={Object.fromEntries(
+          webhooksFetcher.data
+            ? webhooksFetcher.data.map((webhook) => [
+                webhook.id,
+                {
+                  type: WebhookType.Incoming,
+                  application_id: webhook.applicationId,
+                  id: webhook.id,
+                  name: webhook.name,
+                  avatar: webhook.avatar,
+                  channel_id: webhook.channelId,
+                } satisfies APIWebhook,
+              ])
+            : [],
+        )}
+        updateTargets={() => {}}
+        submit={() => {}}
+        channels={Object.entries(cache.state)
+          .filter(([k, v]) => !!v && k.startsWith("channel:"))
+          .map(([_, v]) => v as ResolvableAPIChannel)}
+        webhookId={openWebhookId}
+        open={!!openWebhookId}
+        setOpen={() => setOpenWebhookId(undefined)}
+        user={user}
+        cache={cache}
+      />
       <Header user={user} />
       <Prose>
         <TabsWindow
@@ -165,13 +208,13 @@ export default () => {
           setTab={setTab as (v: string) => void}
           data={[
             {
-              label: "Home",
+              label: t("home"),
               value: "home",
             },
             ...(has(PermissionFlags.ManageWebhooks)
               ? [
                   {
-                    label: "Webhooks",
+                    label: t("webhooks"),
                     value: "webhooks",
                   },
                 ]
@@ -179,11 +222,11 @@ export default () => {
             ...(has(PermissionFlags.ViewAuditLog, PermissionFlags.ManageGuild)
               ? [
                   {
-                    label: "Audit Log",
+                    label: t("auditLog"),
                     value: "auditLog",
                   },
                   // {
-                  //   label: "Sessions",
+                  //   label: t("sessions"),
                   //   value: "sessions",
                   // },
                 ]
@@ -192,16 +235,16 @@ export default () => {
         >
           {tab === "home" ? (
             <div>
-              <TabHeader>Home</TabHeader>
+              <TabHeader>{t("home")}</TabHeader>
               <div className="space-y-2">
                 <div className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex">
                   <img
-                    className="rounded-lg h-12 w-12 mr-4"
-                    src={
+                    {...cdnImgAttributes(64, (size) =>
                       guild.icon
-                        ? cdn.icon(guild.id, guild.icon, { size: 64 })
-                        : cdn.defaultAvatar(0)
-                    }
+                        ? cdn.icon(guild.id, guild.icon, { size })
+                        : cdn.defaultAvatar(0),
+                    )}
+                    className="rounded-lg h-12 w-12 ltr:mr-4 rtl:ml-4"
                     alt={guild.name}
                   />
                   <div className="-mt-2">
@@ -217,24 +260,32 @@ export default () => {
                 <div className="rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table w-full">
                   <div className="table-header-group">
                     <div className="table-row">
-                      <Cell className="font-semibold rounded-tl-lg">Tab</Cell>
+                      <Cell className="font-semibold rounded-tl-lg">
+                        {t("tab")}
+                      </Cell>
                       <Cell className="font-semibold rounded-tr-lg">
-                        Permissions
+                        {t("permissions")}
                       </Cell>
                     </div>
                   </div>
                   <div className="table-row-group">
                     <div className="table-row">
-                      <Cell>Home</Cell>
-                      <Cell>Just be a member</Cell>
+                      <Cell>{t("home")}</Cell>
+                      <Cell>{t("justBeAMember")}</Cell>
                     </div>
                     <div className="table-row">
-                      <Cell>Webhooks</Cell>
-                      <Cell>Manage Webhooks</Cell>
+                      <Cell>{t("webhooks")}</Cell>
+                      <Cell>{t("permission.ManageWebhooks")}</Cell>
                     </div>
                     <div className="table-row">
-                      <Cell>Audit Log</Cell>
-                      <Cell>View Audit Logs, Manage Server</Cell>
+                      <Cell>{t("auditLog")}</Cell>
+                      <Cell>
+                        {new Intl.ListFormat().format(
+                          ["ViewAuditLog", "ManageGuild"].map((p) =>
+                            t(`permission.${p}`),
+                          ),
+                        )}
+                      </Cell>
                     </div>
                     {/* <div className="table-row">
                       <Cell>Sessions</Cell>
@@ -252,53 +303,93 @@ export default () => {
             </div>
           ) : tab === "webhooks" ? (
             <div>
-              <TabHeader>Webhooks</TabHeader>
+              <TabHeader>{t("webhooks")}</TabHeader>
               <div className="space-y-2">
-                {webhooksFetcher.data ? (
-                  webhooksFetcher.data.map((webhook) => {
-                    const createdAt = getDate(webhook.id as `${bigint}`);
-                    return (
-                      <div
-                        key={`webhook-${webhook.id}`}
-                        className="rounded-lg p-4 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
-                      >
-                        <img
-                          className="rounded-full my-auto w-10 h-10 mr-4"
-                          src={
-                            webhook.avatar
-                              ? cdn.avatar(webhook.id, webhook.avatar, {
-                                  size: 64,
-                                })
-                              : cdn.defaultAvatar(5)
-                          }
-                          alt={webhook.name}
-                        />
-                        <div className="truncate my-auto">
-                          <div className="flex max-w-full">
-                            <p className="font-semibold truncate dark:text-primary-230 text-lg">
-                              {webhook.name}
-                            </p>
+                {webhooksFetcher.data
+                  ? webhooksFetcher.data.map((webhook) => {
+                      const createdAt = getDate(webhook.id as `${bigint}`);
+                      const open = openWebhookId === webhook.id;
+                      return (
+                        <div
+                          key={`webhook-${webhook.id}`}
+                          className="rounded-lg bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22]"
+                        >
+                          <button
+                            type="button"
+                            className="p-4 flex w-full ltr:text-left rtl:text-right"
+                            onClick={() =>
+                              setOpenWebhookId(open ? undefined : webhook.id)
+                            }
+                          >
+                            <img
+                              {...cdnImgAttributes(64, (size) =>
+                                webhook.avatar
+                                  ? cdn.avatar(webhook.id, webhook.avatar, {
+                                      size,
+                                    })
+                                  : cdn.defaultAvatar(5),
+                              )}
+                              className="rounded-full my-auto w-10 h-10 ltr:mr-4 rtl:ml-4"
+                              alt={webhook.name}
+                            />
+                            <div className="truncate my-auto">
+                              <div className="flex max-w-full">
+                                <p className="font-semibold truncate dark:text-primary-230 text-lg">
+                                  <span className="align-baseline">
+                                    {webhook.name}
+                                  </span>
+                                  {webhook.applicationId ===
+                                    discordApplicationId && (
+                                    <span
+                                      className="ltr::ml-1 rtl:mr-1 inline-block"
+                                      title={t("createdByDiscohook")}
+                                    >
+                                      <CoolIcon
+                                        icon="Circle_Check"
+                                        className="text-blurple-500 dark:text-blurple-400"
+                                      />
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-500 text-xs">
+                                <CoolIcon icon="Clock" />{" "}
+                                {t(webhook.user ? "createdAtBy" : "createdAt", {
+                                  replace: {
+                                    createdAt,
+                                    username: webhook.user?.name ?? "unknown",
+                                  },
+                                })}
+                              </p>
+                            </div>
+                            <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2 text-xl">
+                              <CoolIcon
+                                icon={open ? "Chevron_Down" : "Chevron_Right"}
+                                rtl={open ? "Chevron_Down" : "Chevron_Left"}
+                              />
+                            </div>
+                          </button>
+                        </div>
+                      );
+                    })
+                  : Array(10)
+                      .fill(undefined)
+                      .map((_, i) => (
+                        <div
+                          key={`webhook-skeleton-${i}`}
+                          className="rounded-lg p-4 bg-gray-100 dark:bg-[#1E1F22]/50 flex animate-pulse"
+                          // Not sure if I like the fading look more than the uniform pulse
+                          // style={{
+                          //   opacity: 1 - i / a.length,
+                          // }}
+                        >
+                          <div className="bg-gray-400 dark:bg-gray-500 rounded-full my-auto w-10 h-10 ltr:mr-4 rtl:ml-4" />
+                          <div className="my-auto">
+                            <div className="bg-gray-400 dark:bg-gray-500 rounded-full h-4 w-20" />
+                            <div className="bg-gray-400 dark:bg-gray-500 rounded-full h-3 w-28 mt-0.5" />
                           </div>
-                          <p className="text-gray-600 dark:text-gray-500 text-xs">
-                            {t("createdAtBy", {
-                              replace: {
-                                createdAt: new Date(
-                                  createdAt,
-                                ).toLocaleDateString(),
-                                username: webhook.user?.name ?? "unknown",
-                              },
-                            })}
-                          </p>
                         </div>
-                        <div className="ml-auto pl-2 my-auto flex gap-2">
-                          <CoolIcon icon="Chevron_Right" />
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p>Loading...</p>
-                )}
+                      ))}
               </div>
             </div>
           ) : tab === "auditLog" ? (

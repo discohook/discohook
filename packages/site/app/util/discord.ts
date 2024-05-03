@@ -237,6 +237,45 @@ class CDN {
 
 export const cdn = new CDN();
 
+export const cdnImgAttributes = (
+  base: BaseImageURLOptions["size"],
+  generate: (size?: BaseImageURLOptions["size"]) => string | undefined,
+) => {
+  if (generate()) {
+    return {
+      src: generate(base),
+      // srcSet: `${generate(
+      //   base
+      //     ? (Math.min(base * 2, 4096) as BaseImageURLOptions["size"])
+      //     : undefined,
+      // )} 2x`,
+
+      // Is this really necessary?
+      srcSet: base
+        ? `
+          ${generate(16)} ${16 / base}x,
+          ${generate(32)} ${32 / base}x,
+          ${generate(64)} ${64 / base}x,
+          ${generate(128)} ${128 / base}x,
+          ${generate(256)} ${256 / base}x,
+          ${generate(512)} ${512 / base}x,
+          ${generate(1024)} ${1024 / base}x,
+          ${generate(2048)} ${2048 / base}x
+        `.trim()
+        : "",
+      // srcSet: `
+      //   ${generate(16)} 16w,
+      //   ${generate(128)} 128w,
+      //   ${generate(256)} 256w,
+      //   ${generate(1024)} 1024w,
+      //   ${generate(2048)} 2048w
+      // `.trim(),
+      // sizes: `
+      // `.trim()
+    };
+  }
+};
+
 export const botAppAvatar = (
   app: {
     applicationId: bigint | string;
