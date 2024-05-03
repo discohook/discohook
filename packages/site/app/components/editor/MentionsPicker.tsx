@@ -30,10 +30,7 @@ export const CategoryIconButton: React.FC<{
       {categoryId === "channel" ? (
         <TextChannelIcon />
       ) : categoryId === "role" ? (
-        <Svg
-          width={24}
-          height={24}
-        >
+        <Svg width={24} height={24}>
           <path
             fill="currentColor"
             fillRule="evenodd"

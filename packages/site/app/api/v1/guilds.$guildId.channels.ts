@@ -5,13 +5,8 @@ import {
   RESTGetAPIGuildChannelsResult,
   Routes,
 } from "discord-api-types/v10";
-import {
-  authorizeRequest,
-  getTokenGuildPermissions
-} from "~/session.server";
-import {
-  ResolvableAPIChannel
-} from "~/util/cache/CacheManager";
+import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
+import { ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 import { getChannelIconType } from "./channels.$channelId";
