@@ -11,6 +11,7 @@ import { twJoin } from "tailwind-merge";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
 import { User } from "~/session.server";
+import { cdnImgAttributes } from "~/util/discord";
 import { getUserAvatar, getUserPremiumDetails, getUserTag } from "~/util/users";
 import { Button } from "./Button";
 import { CoolIcon } from "./icons/CoolIcon";
@@ -71,8 +72,8 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
           target={isEditorPage ? "_blank" : undefined}
         >
           <img
+            {...cdnImgAttributes(64, (size) => getUserAvatar(user, { size }))}
             className="rounded-full h-7 w-7"
-            src={getUserAvatar(user, { size: 64 })}
             alt={user.name}
           />
           <p className="ltr:ml-1.5 rtl:mr-1.5 text-base font-medium hidden sm:block my-auto">
