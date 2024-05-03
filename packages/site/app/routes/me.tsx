@@ -36,7 +36,12 @@ import { BotCreateModal } from "~/modals/BotCreateModal";
 import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
-import { botAppAvatar, cdn, isDiscordError } from "~/util/discord";
+import {
+  botAppAvatar,
+  cdn,
+  cdnImgAttributes,
+  isDiscordError
+} from "~/util/discord";
 import { DeconstructedSnowflake, getId } from "~/util/id";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
@@ -637,28 +642,15 @@ export default function Me() {
                                 className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
                               >
                                 <img
-                                  alt={guild.name}
-                                  src={
+                                  {...cdnImgAttributes(64, (size) =>
                                     guild.icon
                                       ? cdn.icon(String(guild.id), guild.icon, {
-                                          size: 64,
+                                          size,
                                         })
-                                      : cdn.defaultAvatar(5)
-                                  }
-                                  srcSet={
-                                    guild.icon
-                                      ? `${cdn.icon(
-                                          String(guild.id),
-                                          guild.icon,
-                                          { size: 64 },
-                                        )}, ${cdn.icon(
-                                          String(guild.id),
-                                          guild.icon,
-                                          { size: 128 },
-                                        )} 2x`
-                                      : ""
-                                  }
+                                      : cdn.defaultAvatar(5),
+                                  )}
                                   className="w-10 my-auto rounded-lg aspect-square ltr:mr-2 rtl:ml-2 hidden sm:block"
+                                  alt={guild.name}
                                 />
                                 <div className="truncate my-auto">
                                   <div className="flex max-w-full">
