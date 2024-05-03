@@ -470,16 +470,12 @@ export default () => {
                           />
                         )} */}
                         <img
+                          {...cdnImgAttributes(64, (size) =>
+                            webhook?.avatar
+                              ? cdn.avatar(webhook.id, webhook.avatar, { size })
+                              : cdn.defaultAvatar(5),
+                          )}
                           className="rounded-full my-auto w-10 h-10 mr-2 hidden sm:block"
-                          src={
-                            webhook
-                              ? webhook.avatar
-                                ? cdn.avatar(webhook.id, webhook.avatar, {
-                                    size: 64,
-                                  })
-                                : cdn.defaultAvatar(5)
-                              : cdn.defaultAvatar(5)
-                          }
                           alt="Instigator"
                         />
                         <div className="truncate my-auto">
