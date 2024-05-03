@@ -19,7 +19,7 @@ import {
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
@@ -250,10 +250,14 @@ export default () => {
                   <div className="-mt-2">
                     <p className="text-xl font-semibold">{guild.name}</p>
                     <p>
-                      Welcome to the homepage. Depending on your permissions in
-                      this server, you will be able to access various tabs in
-                      the <span className="inline sm:hidden">top bar</span>
-                      <span className="hidden sm:inline">sidebar</span>.
+                      <Trans
+                        t={t}
+                        i18nKey="homeWelcome"
+                        components={{
+                          narrow: <span className="inline sm:hidden" />,
+                          wide: <span className="hidden sm:inline" />,
+                        }}
+                      />
                     </p>
                   </div>
                 </div>
@@ -397,20 +401,16 @@ export default () => {
               <TabHeader
                 subtitle={
                   <p>
-                    Below is a list of actions that have been taken through
-                    Discohook for{" "}
-                    <span className="font-semibold">{guild.name}</span>. Some
-                    expected entries may not be present--for example if a
-                    webhook URL was leaked, it's not likely that the attacker
-                    would use Discohook.
-                    <br />
-                    <br />
-                    If you don't recognize a user, you may want to delete the
-                    webhook.
+                    <Trans
+                      t={t}
+                      i18nKey="auditLogSubtitle"
+                      components={[<span className="font-semibold" />]}
+                      values={{ guild }}
+                    />
                   </p>
                 }
               >
-                Audit Log
+                {t("auditLog")}
               </TabHeader>
               <div className="space-y-2">
                 {auditLogFetcher.data ? (
