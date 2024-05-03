@@ -341,7 +341,7 @@ export default () => {
                                   {webhook.applicationId ===
                                     discordApplicationId && (
                                     <span
-                                      className="ltr::ml-1 rtl:mr-1 inline-block"
+                                      className="ltr:ml-1 rtl:mr-1 inline-block"
                                       title={t("createdByDiscohook")}
                                     >
                                       <CoolIcon
