@@ -42,6 +42,7 @@
   "channelId": "Channel ID: <0/>",
   "guildId": "Server ID: <0/>",
   "createdAt": "Created on {{ createdAt, MMM D, YYYY }}",
+  "createdAtTime": "Created {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
   "successResultTroubleshoot": "If you cannot see the message, make sure it wasn't deleted by another bot. Some moderation bots consider all webhook messages to be spam by default.",
   "theme": "Theme",
   "messageDisplay": "Message Display",

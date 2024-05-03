@@ -253,9 +253,7 @@ export const TargetAddModal = (
                         <p className="text-gray-600 dark:text-gray-500 text-xs">
                           {t(gWebhook.user ? "createdAtBy" : "createdAt", {
                             replace: {
-                              createdAt: new Date(
-                                createdAt,
-                              ).toLocaleDateString(),
+                              createdAt: new Date(createdAt),
                               username: gWebhook.user?.name,
                             },
                           })}

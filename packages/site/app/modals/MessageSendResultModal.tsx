@@ -43,11 +43,9 @@ export const MessageSendResultModal = (
                     components={[<span>{result.data.channel_id}</span>]}
                   />
                   <br />
-                  {t("createdAt", {
+                  {t("createdAtTime", {
                     replace: {
-                      createdAt: getSnowflakeDate(
-                        result.data.id,
-                      ).toLocaleString(),
+                      createdAt: getSnowflakeDate(result.data.id),
                     },
                   })}
                 </p>

@@ -40,7 +40,7 @@ import {
   botAppAvatar,
   cdn,
   cdnImgAttributes,
-  isDiscordError
+  isDiscordError,
 } from "~/util/discord";
 import { DeconstructedSnowflake, getId } from "~/util/id";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -768,12 +768,7 @@ export default function Me() {
                                       {createdAt.toLocaleDateString()}
                                     </>
                                   ) : (
-                                    t("createdAt", {
-                                      replace: {
-                                        createdAt:
-                                          createdAt.toLocaleDateString(),
-                                      },
-                                    })
+                                    t("createdAt", { replace: { createdAt } })
                                   )}
                                 </p>
                               </div>
