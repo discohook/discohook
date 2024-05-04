@@ -1,4 +1,4 @@
 {
-  "defaultPlaceholder": "Haz una selección",
-  "todayAt": "hoy a las {{time}}"
+    "defaultPlaceholder": "Haz una selección",
+    "todayAt": "hoy a las {{time}}"
 }
