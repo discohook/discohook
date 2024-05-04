@@ -76,8 +76,8 @@ export const MentionsPicker: React.FC<{
       ...(cache ? cache.channel.getAll() : []),
     ],
     role: [
-      { id: "@everyone", name: "everyone", color: 0x5865f2 },
-      { id: "@here", name: "here", color: 0x5865f2 },
+      { id: "@everyone", name: "everyone", color: 0 },
+      { id: "@here", name: "here", color: 0 },
       ...(cache ? cache.role.getAll() : []),
     ],
     member: cache ? cache.member.getAll() : [],
