@@ -319,16 +319,15 @@ export const MessageEditor: React.FC<{
         )}
         <div className="flex">
           <Button
-            className="mr-2 shrink"
+            className="ltr:mr-2 rtl:ml-2 shrink"
             onClick={() => setSettingMessageIndex(i)}
           >
-            <span className="hidden sm:inline">
-              {message.reference ? "Change Reference" : "Set Reference"}
+            <span>
+              {t(message.reference ? "changeReference" : "setReference")}
             </span>
-            <span className="sm:hidden">Reference</span>
           </Button>
           <Button
-            className="ml-auto shrink"
+            className="ltr:ml-auto rtl:mr-auto shrink"
             onClick={() => {
               message.data.embeds = message.data.embeds
                 ? [...message.data.embeds, {}]
@@ -341,7 +340,7 @@ export const MessageEditor: React.FC<{
             <span className="sm:hidden">Embed</span>
           </Button>
           <Button
-            className="ml-2 shrink"
+            className="ltr:ml-2 rtl:mr-2 shrink"
             onClick={() => {
               const emptyRow = { type: 1, components: [] };
               message.data.components = message.data.components
@@ -353,15 +352,12 @@ export const MessageEditor: React.FC<{
               !!message.data.components && message.data.components.length >= 5
             }
           >
-            <span className="hidden sm:inline">
-              {message.data.components && message.data.components.length >= 1
-                ? "Add Row"
-                : "Add Components"}
-            </span>
-            <span className="sm:hidden">
-              {message.data.components && message.data.components.length >= 1
-                ? "Row"
-                : "Components"}
+            <span>
+              {t(
+                message.data.components && message.data.components.length >= 1
+                  ? "addRow"
+                  : "addComponents",
+              )}
             </span>
           </Button>
         </div>

@@ -230,6 +230,7 @@
   "troubleshootMessage": "If you press the send button and nothing happens, it may be because your browser is blocking connections to Discord, which is not uncommon for privacy-focused extensions like Privacy Badger. Try disabling privacy extensions or entering incognito/private mode.",
 
   "setReference": "Set Reference",
+  "changeReference": "Change Reference",
   "addEmbed": "Add Embed",
   "addRow": "Add Row",
   "components": "Components",
