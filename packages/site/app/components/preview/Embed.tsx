@@ -268,10 +268,7 @@ export const Embed: React.FC<{
               if (setImageModalData) {
                 setImageModalData({
                   images: [
-                    {
-                      // biome-ignore lint/style/noNonNullAssertion: Checked above
-                      url: embed.thumbnail!.url,
-                    },
+                    { url: getImageUri(embed.thumbnail?.url ?? "", files) },
                   ],
                   startIndex: 0,
                 });
