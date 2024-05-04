@@ -1,24 +1,24 @@
 {
-  "language": "Langue",
-  "locales": {
-    "ar": "Arabe",
-    "zh": "Chinois, Chine",
-    "nl": "Néerlandais",
-    "en-US": "Anglais, États-Unis",
-    "en-GB": "Anglais, Royaume-Uni",
-    "fr": "Français"
-  },
-  "settings": "Paramètres",
-  "help": "Aide",
-  "name": "Nom",
-  "save": "Enregistrer",
-  "embedExample": "Exemple",
-  "editBackupTitle": "Modifier les détails de la sauvegarde",
-  "editBackupMessages": "Pour modifier les messages d'une sauvegarde, cliquez sur le bouton <0/>.",
-  "resetAvatar": "Supprimer",
-  "donate": "Faire un don",
-  "defaultPlaceholder": "Fais un choix",
-  "todayAt": "Aujourd’hui à {{time}}",
-  "logIn": "S'identifier",
-  "logOut": "Se déconnecter"
+    "language": "Langue",
+    "locales": {
+        "ar": "Arabe",
+        "zh": "Chinois, Chine",
+        "nl": "Néerlandais",
+        "en-US": "Anglais, États-Unis",
+        "en-GB": "Anglais, Royaume-Uni",
+        "fr": "Français"
+    },
+    "settings": "Paramètres",
+    "help": "Aide",
+    "name": "Nom",
+    "save": "Enregistrer",
+    "embedExample": "Exemple",
+    "editBackupTitle": "Modifier les détails de la sauvegarde",
+    "editBackupMessages": "Pour modifier les messages d'une sauvegarde, cliquez sur le bouton <0/>.",
+    "resetAvatar": "Supprimer",
+    "donate": "Faire un don",
+    "defaultPlaceholder": "Fais un choix",
+    "todayAt": "Aujourd’hui à {{time}}",
+    "logIn": "S'identifier",
+    "logOut": "Se déconnecter"
 }
