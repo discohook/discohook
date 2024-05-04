@@ -249,7 +249,7 @@
   "historyRemove": "Remove from history",
 
   "defaultPlaceholder": "Make a selection",
-  "todayAt": "Today at {{time}}",
+  "todayAt": "Today at {{ date, h:mm A }}",
   "badge": {
     "app": "APP",
     "server": "SERVER"

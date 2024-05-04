@@ -5,7 +5,7 @@ import {
   APIWebhook,
 } from "discord-api-types/v10";
 import { UserFlags, UserFlagsBitField } from "discord-bitflag";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
@@ -204,15 +204,7 @@ export const Message: React.FC<{
               </span>
             )}
             <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-              <Trans
-                i18nKey="todayAt"
-                values={{
-                  time: (date ?? new Date()).toLocaleTimeString(undefined, {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  }),
-                }}
-              />
+              {t("todayAt", { replace: { date: date ?? new Date() } })}
             </span>
           </p>
         )}
