@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { cdn } from "~/util/discord";
 import { Button } from "../Button";
 import { CoolIcon } from "../icons/CoolIcon";
+import { Twemoji } from "../icons/Twemoji";
 import { AuthorType } from "./Message";
 
 type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
@@ -99,6 +100,11 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
                   src={cdn.emoji(option.emoji.id)}
                   className="w-[22px] h-[22px] mr-2 my-auto shrink-0"
                   alt={option.emoji.name}
+                />
+              ) : option.emoji?.name ? (
+                <Twemoji
+                  emoji={option.emoji.name}
+                  className="w-[22px] h-[22px] mr-2 my-auto shrink-0 align-middle"
                 />
               ) : (
                 shouldLeftPad && <div className="w-[22px] mr-2 shrink-0" />

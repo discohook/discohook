@@ -6,7 +6,6 @@ import {
   APIMentionableSelectComponent,
   APIMessageActionRowComponent,
   APIMessageComponent,
-  APIMessageComponentEmoji,
   APIRoleSelectComponent,
   APISelectMenuOption,
   APIStringSelectComponent,
@@ -120,7 +119,6 @@ export const ActionRowEditor: React.FC<{
   setData: React.Dispatch<QueryData>;
   setComponents: (value: QueryDataComponent[]) => void;
   cache?: CacheManager;
-  emojis?: APIMessageComponentEmoji[];
   open?: boolean;
 }> = ({
   message,
@@ -130,7 +128,6 @@ export const ActionRowEditor: React.FC<{
   setData,
   setComponents,
   cache,
-  emojis,
   open,
 }) => {
   const { t } = useTranslation();
@@ -182,13 +179,14 @@ export const ActionRowEditor: React.FC<{
             }
             onClick={() => {
               message.data.components?.splice(i + 1, 0, structuredClone(row));
-              const copied =
+              const copied = (
                 data.components?.[mi].filter((c) =>
                   row.components
                     .filter((rc) => "custom_id" in rc)
                     .map((rc) => rc.custom_id)
                     .includes(`p_${c.id}`),
-                ) ?? [];
+                ) ?? []
+              ).map((d) => structuredClone(d));
               // This also calls setData
               setComponents([...(data.components?.[mi] ?? []), ...copied]);
             }}
@@ -267,7 +265,7 @@ export const ActionRowEditor: React.FC<{
                       </p>
                       <PopoutEmojiPicker
                         emoji={component.emoji}
-                        emojis={emojis}
+                        emojis={cache ? cache.emoji.getAll() : []}
                         setEmoji={(emoji) => {
                           component.emoji = emoji;
                           setData({ ...data });
@@ -411,6 +409,19 @@ export const ActionRowEditor: React.FC<{
                               update={() => setData({ ...data })}
                             >
                               <div className="flex">
+                                <div className="ltr:mr-2 rtl:ml-2 mt-auto">
+                                  <p className="text-sm cursor-default font-medium">
+                                    Emoji
+                                  </p>
+                                  <PopoutEmojiPicker
+                                    emoji={option.emoji}
+                                    emojis={cache ? cache.emoji.getAll() : []}
+                                    setEmoji={(emoji) => {
+                                      option.emoji = emoji;
+                                      setData({ ...data });
+                                    }}
+                                  />
+                                </div>
                                 <div className="grow">
                                   <TextInput
                                     label="Label"
@@ -435,13 +446,6 @@ export const ActionRowEditor: React.FC<{
                                   />
                                 </div>
                               </div>
-                              <PopoutEmojiPicker
-                                emoji={option.emoji}
-                                setEmoji={(emoji) => {
-                                  option.emoji = emoji;
-                                  setData({ ...data });
-                                }}
-                              />
                               <TextInput
                                 label="Description"
                                 className="w-full"
@@ -520,7 +524,7 @@ export const ActionRowEditor: React.FC<{
         name="component-type"
         options={[
           {
-            label: t("button"),
+            label: t("component.2"),
             value: "button",
             isDisabled: getRowWidth(row) >= 5,
           },
@@ -530,27 +534,27 @@ export const ActionRowEditor: React.FC<{
             isDisabled: getRowWidth(row) >= 5,
           },
           {
-            label: t("stringSelectMenu"),
+            label: t("component.3"),
             value: "string-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: t("userSelectMenu"),
+            label: t("component.5"),
             value: "user-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: t("roleSelectMenu"),
+            label: t("component.6"),
             value: "role-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: t("mentionableSelectMenu"),
+            label: t("component.7"),
             value: "mentionable-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: t("channelSelectMenu"),
+            label: t("component.8"),
             value: "channel-select",
             isDisabled: getRowWidth(row) > 0,
           },
@@ -660,6 +664,7 @@ export const IndividualComponentEditor: React.FC<
   open,
   children,
 }) => {
+  const { t } = useTranslation();
   const previewText = getComponentText(component);
   return (
     <details className="group/component pb-2 -my-1" open={open}>
@@ -668,27 +673,10 @@ export const IndividualComponentEditor: React.FC<
           icon="Chevron_Right"
           className="group-open/component:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
-        <span className="shrink-0">
-          {component.type === ComponentType.Button ? (
-            `Button ${index + 1}`
-          ) : (
-            <>
-              {`${
-                component.type === ComponentType.UserSelect
-                  ? "User"
-                  : component.type === ComponentType.RoleSelect
-                    ? "Role"
-                    : component.type === ComponentType.MentionableSelect
-                      ? "User & Role"
-                      : component.type === ComponentType.ChannelSelect
-                        ? "Channel"
-                        : ""
-              } `}
-              Select Menu
-            </>
-          )}
+        <span className="truncate">
+          {t(`component.${component.type}`)} {component.type === 2 && index + 1}
+          {previewText && ` - ${previewText}`}
         </span>
-        {previewText && <span className="truncate ml-1">- {previewText}</span>}
         <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"

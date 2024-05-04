@@ -3,7 +3,7 @@ export interface IconFCProps {
   style?: React.CSSProperties;
 }
 
-export type IconFC = (props: IconFCProps) => JSX.Element;
+export type IconFC = (props?: IconFCProps) => JSX.Element;
 
 type SvgProps = React.PropsWithChildren & {
   width?: number;

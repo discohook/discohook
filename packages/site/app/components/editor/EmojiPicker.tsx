@@ -11,7 +11,19 @@ import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import { TextInput } from "../TextInput";
+import { CoolIcon } from "../icons/CoolIcon";
+import { IconFC, IconFCProps } from "../icons/Svg";
 import { Twemoji } from "../icons/Twemoji";
+import {
+  EmojiIconActivities,
+  EmojiIconFlags,
+  EmojiIconFood,
+  EmojiIconNature,
+  EmojiIconObjects,
+  EmojiIconPeople,
+  EmojiIconSymbols,
+  EmojiIconTravel,
+} from "../icons/emoji";
 
 // Dec x 2023
 // We were originally using emoji-mart since it seemed more fit for our
@@ -34,25 +46,33 @@ export interface PickerProps {
   className?: string;
 }
 
-const categoryToEmoji: Record<string, string> = {
-  favorites: "⭐",
-  recents: "🔁",
-  custom: "📝",
-  people: "🙂",
-  nature: "🍂",
-  foods: "🍞",
-  activity: "🎮",
-  places: "🚲",
-  objects: "🛋",
-  symbols: "♥",
-  flags: "🏴",
+const categoryToIcon: Record<string, IconFC> = {
+  favorites: (props?: IconFCProps) => (
+    <CoolIcon icon="Star" className={props?.className} />
+  ),
+  recents: (props?: IconFCProps) => (
+    <CoolIcon icon="Clock" className={props?.className} />
+  ),
+  custom: (props?: IconFCProps) => (
+    <CoolIcon
+      icon="Paperclip_Attechment_Horizontal"
+      className={props?.className}
+    />
+  ),
+  people: EmojiIconPeople,
+  nature: EmojiIconNature,
+  foods: EmojiIconFood,
+  activity: EmojiIconActivities,
+  places: EmojiIconTravel,
+  objects: EmojiIconObjects,
+  symbols: EmojiIconSymbols,
+  flags: EmojiIconFlags,
 };
 
 export const CategoryIconButton: React.FC<{
   categoryId: string;
   id: string;
 }> = ({ categoryId, id }) => {
-  const emoji = categoryToEmoji[categoryId];
   return (
     <button
       type="button"
@@ -64,7 +84,7 @@ export const CategoryIconButton: React.FC<{
         }
       }}
     >
-      <Twemoji emoji={emoji} className="h-5 grayscale" />
+      {categoryToIcon[categoryId]()}
     </button>
   );
 };
@@ -282,10 +302,9 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                         id={`${id}-${category.id}`}
                         className="uppercase text-xs font-semibold pt-1 mb-1 ml-1 flex"
                       >
-                        <Twemoji
-                          emoji={categoryToEmoji[category.id]}
-                          className="my-auto mr-1.5 grayscale"
-                        />
+                        {categoryToIcon[category.id]({
+                          className: "my-auto ltr:mr-1.5 rtl:ml-1.5",
+                        })}
                         <p className="my-auto">{category.id}</p>
                       </div>
                       <div className="flex gap-px flex-wrap">
