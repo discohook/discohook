@@ -1,5 +1,6 @@
 export interface IconFCProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export type IconFC = (props: IconFCProps) => JSX.Element;

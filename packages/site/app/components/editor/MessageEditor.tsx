@@ -1,5 +1,5 @@
 import { APIWebhook } from "discord-api-types/v10";
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { DraftFile } from "~/routes/_index";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
@@ -57,13 +57,14 @@ export const MessageEditor: React.FC<{
   webhooks,
   cache,
 }) => {
+  const { t } = useTranslation();
   const message = data.messages[i];
   const embedsLength =
     message.data.embeds && message.data.embeds.length > 0
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
       : 0;
   const previewText = getMessageText(message.data);
-  const components = data.components?.[i];
+  // const components = data.components?.[i];
 
   const authorTypes = webhooks
     ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
@@ -81,7 +82,9 @@ export const MessageEditor: React.FC<{
           className="group-open/message:rotate-90 mr-2 my-auto transition-transform"
         />
         <span className="shrink-0">Message {i + 1}</span>
-        {previewText && <span className="truncate ltr:ml-1 rtl:mr-1">- {previewText}</span>}
+        {previewText && (
+          <span className="truncate ltr:ml-1 rtl:mr-1">- {previewText}</span>
+        )}
         <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"
@@ -270,31 +273,16 @@ export const MessageEditor: React.FC<{
         {message.data.components && message.data.components.length > 0 && (
           <>
             <p className="mt-1 text-lg font-semibold cursor-default select-none">
-              Components
+              {t("components")}
             </p>
             {!possiblyActionable && (
               <InfoBox icon="Info" collapsible open>
-                {!webhooks || webhooks?.length === 0 ? (
-                  <>
-                    Component availability is dependent on the type of webhook
-                    that you send a message with. For link buttons, the webhook
-                    must be owned by a bot, but to send other buttons and select
-                    menus, the webhook must be owned by the Discohook
-                    application (this website/its bot). Add a webhook for more
-                    information.
-                  </>
-                ) : possiblyApplication ? (
-                  <>
-                    One or more of your webhooks are owned by an application,
-                    but not Discohook, so you can only add link buttons. Add a
-                    webhook owned by the Discohook bot to be able to use more
-                    types of components.
-                  </>
-                ) : (
-                  <>
-                    None of your webhooks are compatibile with components. Add a
-                    webhook owned by the Discohook bot.
-                  </>
+                {t(
+                  !webhooks || webhooks?.length === 0
+                    ? "componentsNoWebhook"
+                    : possiblyApplication
+                      ? "componentsPossibleWebhook"
+                      : "componentsNoUsableWebhook",
                 )}
               </InfoBox>
             )}
@@ -316,6 +304,7 @@ export const MessageEditor: React.FC<{
                         },
                       });
                     }}
+                    cache={cache}
                     open
                   />
                   {message.data.components &&

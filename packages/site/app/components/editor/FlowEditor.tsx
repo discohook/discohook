@@ -1,5 +1,6 @@
 import { ChannelType } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import {
   Flow,
   FlowAction,
@@ -7,11 +8,14 @@ import {
   FlowActionSetVariableType,
   FlowActionType,
 } from "~/store.server";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { Button } from "../Button";
 import { InfoBox } from "../InfoBox";
+import { RoleSelect } from "../RoleSelect";
 import { StringSelect } from "../StringSelect";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { mentionStyle } from "../preview/Markdown";
 
 type FlowWithPartials = Flow & {
   actions: (Partial<FlowAction> & Pick<FlowAction, "type">)[];
@@ -20,19 +24,10 @@ type FlowWithPartials = Flow & {
 export const FlowEditor: React.FC<{
   flow: Flow;
   setFlow: (flow: Flow) => void;
-}> = ({ flow, setFlow }) => {
+  cache?: CacheManager;
+}> = ({ flow, setFlow, cache }) => {
   return (
     <div className="space-y-2 sm:ml-2">
-      {/* <TextInput
-        label="Name"
-        className="w-full h-40"
-        value={flow.name}
-        maxLength={100}
-        required
-        onInput={(e) => {
-          setFlow({ ...flow, name: e.currentTarget.value });
-        }}
-      /> */}
       {flow.actions.length > 0 && (
         <div className="mt-1 space-y-1">
           {flow.actions.length === 10 && (
@@ -53,6 +48,7 @@ export const FlowEditor: React.FC<{
               update={() => {
                 setFlow(structuredClone(flow));
               }}
+              cache={cache}
             />
           ))}
         </div>
@@ -70,44 +66,9 @@ export const FlowEditor: React.FC<{
   );
 };
 
-export const actionTypeToVerbName: Record<FlowActionType, string> = {
-  0: "Do nothing",
-  1: "Wait for X seconds",
-  2: "Check",
-  3: "Add role",
-  4: "Remove role",
-  5: "Toggle role",
-  6: "Send message",
-  7: "Send webhook message",
-  8: "Create thread",
-  9: "Set variable",
-  10: "Delete message",
-};
-
-const getActionText = (action: FlowAction) => {
-  const prefix = actionTypeToVerbName[action.type];
-  if (!prefix) return undefined;
-
-  switch (action.type) {
-    case 1:
-      return `Wait for ${action.seconds} seconds`;
-    case 8:
-      if (action.name) {
-        return `${prefix} named "${action.name}"`;
-      }
-      break;
-    case 9:
-      if (action.name) {
-        return `${prefix} ${action.name}`;
-      }
-      break;
-    default:
-      break;
-  }
-  return prefix;
-};
-
-// FlowActionType[action.type].replace(/([A-Z])/g, (x) => ` ${x}`).trim();
+export const actionTypes = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+] satisfies FlowActionType[];
 
 const threadTypeOptions = [
   {
@@ -165,12 +126,16 @@ export const FlowActionEditor: React.FC<{
   action: FlowAction;
   actionIndex: number;
   update: () => void;
+  cache?: CacheManager;
   open?: boolean;
-}> = ({ flow, action, actionIndex: i, update, open }) => {
+}> = ({ flow, action, actionIndex: i, update, cache, open }) => {
   const { t } = useTranslation();
 
   const localIndexMax = 9;
-  const previewText = getActionText(action);
+  const previewText = t(`actionDescription.${action.type}`, {
+    replace: { action },
+    defaultValue: t(`actionType.${action.type}`),
+  });
   const errors = []; // getActionErrors(embed);
 
   return (
@@ -247,34 +212,30 @@ export const FlowActionEditor: React.FC<{
             </InfoBox>
           </div>
         )}
-        <div>
+        <div className="space-y-1">
           {action.type === 0 ? (
             <StringSelect
               name="type"
-              label="Action Type"
-              options={Object.entries(actionTypeToVerbName)
-                .filter(([v]) => v !== "2")
-                .map(([value, label]) => ({ label, value }))}
+              label={t("actionTypeText")}
+              options={actionTypes
+                .filter((v) => v !== 2)
+                .map((value) => ({ label: t(`actionType.${value}`), value }))}
               defaultValue={{
-                label: actionTypeToVerbName[0],
-                value: "0",
+                label: t("actionType.0"),
+                value: 0,
               }}
               onChange={(opt) => {
-                const v = Number((opt as { value: string }).value);
+                const { value } = opt as { value: number };
                 flow.actions.splice(i, 1, {
-                  type: v,
-                  ...(v === 1
-                    ? {
-                        seconds: 1,
-                      }
-                    : {}),
+                  type: value,
+                  ...(value === 1 ? { seconds: 1 } : {}),
                 });
                 update();
               }}
             />
           ) : action.type === 1 ? (
             <TextInput
-              label="Seconds"
+              label={t("seconds")}
               type="number"
               defaultValue={1}
               min={1}
@@ -292,7 +253,23 @@ export const FlowActionEditor: React.FC<{
             />
           ) : action.type === 3 || action.type === 4 || action.type === 5 ? (
             <>
-              <StringSelect name="roleId" label="Role" options={[]} />
+              {!cache ||
+                (cache.role.getAll().length === 0 && (
+                  <InfoBox severity="yellow" icon="Info">
+                    {t("noRolesNote")}
+                  </InfoBox>
+                ))}
+              <p className="text-sm font-medium select-none">{t("role")}</p>
+              <RoleSelect
+                name="roleId"
+                roles={
+                  cache
+                    ? cache.role
+                        .getAll()
+                        .sort((a, b) => b.position - a.position)
+                    : []
+                }
+              />
               {/* <TextArea label="Reason" maxLength={512} className="w-full" /> */}
             </>
           ) : action.type === 6 ? (
@@ -300,7 +277,7 @@ export const FlowActionEditor: React.FC<{
               <StringSelect name="backupId" label="Backup" options={[]} />
               <StringSelect
                 name="backupMessageIndex"
-                label="Message"
+                label={t("message")}
                 options={[]}
               />
               {/* <MessageFlagSelect /> */}
@@ -311,7 +288,7 @@ export const FlowActionEditor: React.FC<{
               <StringSelect name="backupId" label="Backup" options={[]} />
               <StringSelect
                 name="backupMessageIndex"
-                label="Message"
+                label={t("message")}
                 options={[]}
               />
               {/* <MessageFlagSelect /> */}
@@ -372,10 +349,11 @@ export const FlowActionEditor: React.FC<{
             <>
               <StringSelect
                 name="varType"
-                label="Type"
+                label={t("type")}
                 options={varTypeOptions}
-                defaultValue={varTypeOptions.find((o) => o.value === 0)}
-                value={varTypeOptions.find((o) => o.value === action.varType)}
+                value={varTypeOptions.find(
+                  (o) => o.value === action.varType ?? 0,
+                )}
                 onChange={(opt) => {
                   action.varType = opt
                     ? (opt as { value: FlowActionSetVariableType }).value
@@ -385,7 +363,7 @@ export const FlowActionEditor: React.FC<{
               />
               <TextInput
                 name="name"
-                label="Name"
+                label={t("name")}
                 className="w-full"
                 maxLength={100}
                 value={action.name}
@@ -396,13 +374,13 @@ export const FlowActionEditor: React.FC<{
               />
               <TextInput
                 name="value"
-                label="Value"
+                label={t(action.varType === 1 ? "valueFromReturn" : "value")}
                 className="w-full"
-                maxLength={500}
+                maxLength={action.varType === 1 ? 30 : 500}
                 value={String(action.value ?? "")}
                 onChange={({ currentTarget }) => {
                   const v = currentTarget.value;
-                  if (["true", "false"].includes(v)) {
+                  if (["true", "false"].includes(v) && action.varType !== 1) {
                     action.value = v === "true";
                   } else {
                     action.value = currentTarget.value;
@@ -413,8 +391,14 @@ export const FlowActionEditor: React.FC<{
             </>
           ) : action.type === 10 ? (
             <>
-              <p>
-                A message with the ID of <code>messageId</code> will be deleted.
+              <p className="text-sm">
+                <Trans
+                  t={t}
+                  i18nKey="deleteMessageIdNote"
+                  components={[
+                    <span className={twJoin(mentionStyle, "font-code")} />,
+                  ]}
+                />
               </p>
             </>
           ) : (

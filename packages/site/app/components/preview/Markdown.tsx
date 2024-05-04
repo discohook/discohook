@@ -214,6 +214,9 @@ const headingRule = defineRule({
   },
 });
 
+export const codeBlockStyle =
+  "block overflow-x-auto whitespace-pre-wrap rounded border border-primary-200 bg-primary-130 p-[0.5em] indent-0 font-code text-[calc(var(--font-size)*0.875)] leading-[calc(var(--font-size)*1.125)] text-primary-600 dark:border-primary-700 dark:bg-primary-630 dark:text-primary-230 [[data-embed]_&]:border-none [[data-embed]_&]:bg-primary-200 dark:[[data-embed]_&]:bg-primary-700";
+
 const codeBlockRule = defineRule({
   capture(source) {
     // biome-ignore lint/correctness/noEmptyCharacterClassInRegex: Match anything, incl newline
@@ -227,20 +230,16 @@ const codeBlockRule = defineRule({
   },
   render(capture) {
     const html = highlightCode(capture.content, capture.language);
-
-    const codeStyle =
-      "block overflow-x-auto whitespace-pre-wrap rounded border border-primary-200 bg-primary-130 p-[0.5em] indent-0 font-code text-[calc(var(--font-size)*0.875)] leading-[calc(var(--font-size)*1.125)] text-primary-600 dark:border-primary-700 dark:bg-primary-630 dark:text-primary-230 [[data-embed]_&]:border-none [[data-embed]_&]:bg-primary-200 dark:[[data-embed]_&]:bg-primary-700";
-
     return (
       <pre className="mt-[6px] max-w-[90%] bg-clip-border">
         {html ? (
           <code
-            className={codeStyle}
+            className={codeBlockStyle}
             // biome-ignore lint/security/noDangerouslySetInnerHtml: highlightCode generates HTML w/ highlight.js
             dangerouslySetInnerHTML={{ __html: html.value }}
           />
         ) : (
-          <code className={codeStyle}>{capture.content}</code>
+          <code className={codeBlockStyle}>{capture.content}</code>
         )}
       </pre>
     );
@@ -395,7 +394,7 @@ const escapeRule = defineRule({
   },
 });
 
-const mentionStyle =
+export const mentionStyle =
   "rounded-[3px] bg-blurple/[0.15] px-[2px] font-medium text-blurple [unicode-bidi:plaintext] dark:bg-blurple/30 dark:text-blurple-260 transition-colors transition-[50ms]";
 const actionableMentionStyle = twMerge(
   mentionStyle,
@@ -689,6 +688,9 @@ const strikethroughRule = defineRule({
   },
 });
 
+export const codeStyle =
+  "my-[-0.2em] size-auto whitespace-pre-wrap rounded-[3px] bg-primary-130 p-[0.2em] indent-0 font-code text-[length:0.85em] leading-[calc(var(--font-size)*1.125)] dark:bg-primary-630";
+
 const codeRule = defineRule({
   capture(source) {
     const match = /^(`+)(.*?[^`])\1(?!`)/su.exec(source);
@@ -699,11 +701,7 @@ const codeRule = defineRule({
     };
   },
   render(capture) {
-    return (
-      <code className="my-[-0.2em] size-auto whitespace-pre-wrap rounded-[3px] bg-primary-130 p-[0.2em] indent-0 font-code text-[length:0.85em] leading-[calc(var(--font-size)*1.125)] dark:bg-primary-630">
-        {capture.content}
-      </code>
-    );
+    return <code className={codeStyle}>{capture.content}</code>;
   },
 });
 

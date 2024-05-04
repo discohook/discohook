@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Flow } from "~/store.server";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
@@ -118,6 +119,7 @@ export const ActionRowEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   setComponents: (value: QueryDataComponent[]) => void;
+  cache?: CacheManager;
   emojis?: APIMessageComponentEmoji[];
   open?: boolean;
 }> = ({
@@ -127,6 +129,7 @@ export const ActionRowEditor: React.FC<{
   data,
   setData,
   setComponents,
+  cache,
   emojis,
   open,
 }) => {
@@ -258,7 +261,7 @@ export const ActionRowEditor: React.FC<{
               {component.type === ComponentType.Button ? (
                 <>
                   <div className="flex">
-                    <div className="mr-2 mt-auto">
+                    <div className="ltr:mr-2 rtl:ml-2 mt-auto">
                       <p className="text-sm cursor-default font-medium">
                         Emoji
                       </p>
@@ -504,6 +507,7 @@ export const ActionRowEditor: React.FC<{
                           }
                           setComponents([...(qdComponents ?? [])]);
                         }}
+                        cache={cache}
                       />
                     )}
                   </div>
@@ -516,37 +520,37 @@ export const ActionRowEditor: React.FC<{
         name="component-type"
         options={[
           {
-            label: "Button",
+            label: t("button"),
             value: "button",
             isDisabled: getRowWidth(row) >= 5,
           },
           {
-            label: "Link Button",
+            label: t("linkButton"),
             value: "link-button",
             isDisabled: getRowWidth(row) >= 5,
           },
           {
-            label: "String Select Menu",
+            label: t("stringSelectMenu"),
             value: "string-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: "User Select Menu",
+            label: t("userSelectMenu"),
             value: "user-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: "Role Select Menu",
+            label: t("roleSelectMenu"),
             value: "role-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: "User & Role Select Menu",
+            label: t("mentionableSelectMenu"),
             value: "mentionable-select",
             isDisabled: getRowWidth(row) > 0,
           },
           {
-            label: "Channel Select Menu",
+            label: t("channelSelectMenu"),
             value: "channel-select",
             isDisabled: getRowWidth(row) > 0,
           },
