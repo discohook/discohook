@@ -73,32 +73,14 @@ export const MentionsPicker: React.FC<{
       { id: "guide", name: t("mention.guide"), type: "guide" },
       { id: "browse", name: t("mention.browse"), type: "browse" },
       { id: "customize", name: t("mention.customize"), type: "browse" },
-      ...(cache
-        ? (Object.entries(cache.state)
-            .filter(
-              (entry) => entry[0].startsWith("channel:") && Boolean(entry[1]),
-            )
-            .map((entry) => entry[1]) as ResolvableAPIChannel[])
-        : []),
+      ...(cache ? cache.channel.getAll() : []),
     ],
     role: [
       { id: "@everyone", name: "everyone", color: 0x5865f2 },
       { id: "@here", name: "here", color: 0x5865f2 },
-      ...(cache
-        ? (Object.entries(cache.state)
-            .filter(
-              (entry) => entry[0].startsWith("role:") && Boolean(entry[1]),
-            )
-            .map((entry) => entry[1]) as ResolvableAPIRole[])
-        : []),
+      ...(cache ? cache.role.getAll() : []),
     ],
-    member: cache
-      ? (Object.entries(cache.state)
-          .filter(
-            (entry) => entry[0].startsWith("member:") && Boolean(entry[1]),
-          )
-          .map((entry) => entry[1]) as ResolvableAPIGuildMember[])
-      : [],
+    member: cache ? cache.member.getAll() : [],
   };
   const categories = Object.keys(state) as (keyof typeof state)[];
 

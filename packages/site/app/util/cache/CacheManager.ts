@@ -30,6 +30,17 @@ class ResourceCacheManagerBase<T extends Resolvable> {
     return this.manager.state[key] as T;
   }
 
+  _getAll(prefix: string, filter?: (instance: T) => boolean) {
+    return Object.entries(this.manager.state)
+      .filter(
+        (p): p is [ResolutionKey, T] =>
+          !!p[1] &&
+          p[0].startsWith(prefix) &&
+          (filter ? filter(p[1] as T) : true),
+      )
+      .map(([, v]) => v);
+  }
+
   _put(key: ResolutionKey, resource: T | null) {
     this.manager.setState({ [key]: resource } as Resolutions);
   }
@@ -88,6 +99,10 @@ export type ResolvableAPIEmoji = {
 class ChannelResourceManager extends ResourceCacheManagerBase<ResolvableAPIChannel> {
   get(id: string) {
     return this._get(`channel:${id}`);
+  }
+
+  getAll(filter?: (instance: ResolvableAPIChannel) => boolean) {
+    return this._getAll("channel:", filter);
   }
 
   async fetch(id: string) {
@@ -154,6 +169,10 @@ class MemberResourceManager extends ResourceCacheManagerBase<ResolvableAPIGuildM
     }
   }
 
+  getAll(filter?: (instance: ResolvableAPIGuildMember) => boolean) {
+    return this._getAll("member:", filter);
+  }
+
   async fetch(guildId: string, userId: string) {
     const resource = await this._fetch(BRoutes.guildMember(guildId, userId));
     this._put(`member:${guildId}-${userId}`, resource);
@@ -164,6 +183,10 @@ class MemberResourceManager extends ResourceCacheManagerBase<ResolvableAPIGuildM
 class RoleResourceManager extends ResourceCacheManagerBase<ResolvableAPIRole> {
   get(id: string) {
     return this._get(`role:${id}`);
+  }
+
+  getAll(filter?: (instance: ResolvableAPIRole) => boolean) {
+    return this._getAll("role:", filter);
   }
 
   async fetch(guildId: string, roleId: string) {
@@ -190,6 +213,10 @@ class RoleResourceManager extends ResourceCacheManagerBase<ResolvableAPIRole> {
 class EmojiResourceManager extends ResourceCacheManagerBase<ResolvableAPIEmoji> {
   get(id: string) {
     return this._get(`emoji:${id}`);
+  }
+
+  getAll(filter?: (instance: ResolvableAPIEmoji) => boolean) {
+    return this._getAll("emoji:", filter);
   }
 
   // async fetch(id: string) {

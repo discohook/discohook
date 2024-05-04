@@ -35,7 +35,7 @@ import {
   getGuild,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { ResolvableAPIChannel, useCache } from "~/util/cache/CacheManager";
+import { useCache } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
@@ -216,9 +216,7 @@ export default () => {
           });
           // webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
         }}
-        channels={Object.entries(cache.state)
-          .filter(([k, v]) => !!v && k.startsWith("channel:"))
-          .map(([_, v]) => v as ResolvableAPIChannel)}
+        channels={cache.channel.getAll()}
         webhookId={openWebhookId}
         open={!!openWebhookId}
         setOpen={() => setOpenWebhookId(undefined)}
