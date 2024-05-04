@@ -254,6 +254,10 @@
     "app": "APP",
     "server": "SERVER"
   },
+  "roles": "Roles",
+  "channels": "Channels",
+  "members": "Members",
+  "noCacheNote": "There's no data here. Add a webhook or insert mentions manually to populate this menu.",
   "mention": {
     "unknown": "unknown",
     "unknownUser": "unknown-user",

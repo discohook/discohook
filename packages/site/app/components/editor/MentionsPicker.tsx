@@ -115,6 +115,11 @@ export const MentionsPicker: React.FC<{
                   <p className="my-auto">{t(`${categoryId}s`)}</p>
                 </div>
                 <div className="flex flex-col gap-px">
+                  {state[categoryId].length === 0 && (
+                    <p className="text-sm ltr:ml-1 rtl:mr-1">
+                      {t("noCacheNote")}
+                    </p>
+                  )}
                   {state[categoryId as keyof typeof state].map((resource) => {
                     let mentionId: string | undefined;
                     let label: React.ReactNode | undefined;
