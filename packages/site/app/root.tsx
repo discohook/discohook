@@ -13,7 +13,7 @@ import {
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import i18n from "i18next";
 import moment from "moment";
-import { useEffect } from "react";
+import { Suspense, lazy, memo, useEffect } from "react";
 import { initReactI18next } from "react-i18next";
 import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message";
@@ -100,6 +100,12 @@ const changeLanguageEffect = () => {
   }
 };
 
+const MemoizedOutlet = memo(
+  lazy(async () => {
+    return { default: Outlet };
+  }),
+);
+
 export default function App() {
   useEffect(changeLanguageEffect, []);
   return (
@@ -112,7 +118,19 @@ export default function App() {
         <TailwindThemeScript />
       </head>
       <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="h-screen w-full flex">
+              <img
+                src="/logos/icon.svg"
+                alt="Discohook"
+                className="h-32 animate-pulse m-auto"
+              />
+            </div>
+          }
+        >
+          <MemoizedOutlet />
+        </Suspense>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
