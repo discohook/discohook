@@ -214,16 +214,16 @@ export const MessageSendModal = (
                       }`}
                     />
                   )}
-                  <div className="my-auto grow text-left mr-2 truncate">
+                  <div className="my-auto grow text-left ltr:mr-2 rtl:ml-2 truncate">
                     <p className="font-semibold text-base truncate">
                       Message {i + 1}
                       {!!previewText && (
-                        <span className="truncate ml-1">- {previewText}</span>
+                        <span className="truncate ltr:ml-1 rtl:mr-1">- {previewText}</span>
                       )}
                     </p>
                     {messages[i]?.result?.status === "error" && (
                       <p className="text-rose-500 text-sm leading-none">
-                        <CoolIcon icon="Circle_Warning" className="mr-1" />
+                        <CoolIcon icon="Circle_Warning" className="ltr:mr-1 rtl:ml-1" />
                         {(messages[i].result?.data as DiscordErrorData).message}
                       </p>
                     )}
@@ -239,7 +239,7 @@ export const MessageSendModal = (
                     }
                     hidden
                   />
-                  <div className="ml-auto my-auto space-x-2 text-2xl text-blurple dark:text-blurple-400">
+                  <div className="ltr:ml-auto rtl:mr-auto my-auto space-x-2 rtl:space-x-reverse text-2xl text-blurple dark:text-blurple-400">
                     {message.reference && (
                       <CoolIcon
                         title={t("willBeEdited")}
@@ -328,7 +328,7 @@ export const MessageSendModal = (
         )}
       </div>
       <div className="flex mt-4">
-        <div className="mx-auto space-x-2">
+        <div className="mx-auto space-x-2 rtl:space-x-reverse">
           <Button
             disabled={
               countSelected(selectedWebhooks) === 0 ||

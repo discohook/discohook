@@ -153,7 +153,7 @@ export const MessageSetModal = (
         )}
       </div>
       <div className="flex mt-4">
-        <div className="mx-auto space-x-2">
+        <div className="mx-auto space-x-2 rtl:space-x-reverse">
           <Button
             disabled={!messageLink}
             onClick={() => {

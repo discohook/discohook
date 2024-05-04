@@ -370,7 +370,7 @@ export default function Index() {
           ]}
         >
           <div className="">
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 rtl:space-x-reverse">
               <Button
                 className=""
                 onClick={() => setTab("editor")}

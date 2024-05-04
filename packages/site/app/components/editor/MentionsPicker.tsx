@@ -128,13 +128,9 @@ export const MentionsPicker: React.FC<{
               >
                 <div
                   id={`${id}-${categoryId}`}
-                  className="uppercase text-xs font-semibold pt-1 mb-1 ml-1 flex"
+                  className="uppercase text-xs font-semibold pt-1 mb-1 ltr:ml-1 rtl:mr-1 flex"
                 >
-                  {/* <Twemoji
-                      emoji={categoryToEmoji[categoryId]}
-                      className="my-auto mr-1.5 grayscale"
-                    /> */}
-                  <p className="my-auto">{categoryId}s</p>
+                  <p className="my-auto">{t(`${categoryId}s`)}</p>
                 </div>
                 <div className="flex flex-col gap-px">
                   {state[categoryId as keyof typeof state].map((resource) => {
@@ -151,7 +147,7 @@ export const MentionsPicker: React.FC<{
                         scope = "special";
                       }
                       icon = channelIcons[channel.type]?.({
-                        className: "ml-1 -mr-0.5 h-5 w-5",
+                        className: "ltr:ml-1 rtl:mr-1 -mr-0.5 h-5 w-5",
                       });
                     } else if (categoryId === "member") {
                       const member = resource as ResolvableAPIGuildMember;
@@ -164,7 +160,10 @@ export const MentionsPicker: React.FC<{
                         sublabel = member.user.username;
                       }
                       icon = (
-                        <CoolIcon icon="Mention" className="text-xl ml-1" />
+                        <CoolIcon
+                          icon="Mention"
+                          className="text-xl ltr:ml-1 rtl:mr-1"
+                        />
                       );
                     } else if (categoryId === "role") {
                       const role = resource as ResolvableAPIRole;
@@ -192,10 +191,10 @@ export const MentionsPicker: React.FC<{
                         }}
                         className="rounded p-0.5 flex hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                       >
-                        <div className="mr-1.5">{icon}</div>
+                        <div className="ltr:mr-1.5 rtl:ml-1.5">{icon}</div>
                         <p className="my-auto truncate">{label}</p>
                         {sublabel && (
-                          <p className="my-auto ml-auto mr-1 text-sm truncate text-primary-400 dark:text-gray-500">
+                          <p className="my-auto ltr:ml-auto ltr:mr-1 rtl:mr-auto rtl:ml-1 text-sm truncate text-primary-400 dark:text-gray-500">
                             {sublabel}
                           </p>
                         )}
@@ -206,35 +205,6 @@ export const MentionsPicker: React.FC<{
               </div>
             ))}
           </div>
-          {/*hoverEmoji && (
-            <div className="sticky bottom-0 left-0 w-full bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
-              {hoverEmoji.keywords.includes("discord") ? (
-                <img
-                  loading="lazy"
-                  src={cdn.emoji(
-                    hoverEmoji.skin.native,
-                    hoverEmoji.keywords.includes("animated") ? "gif" : "webp",
-                  )}
-                  alt={hoverEmoji.name}
-                  className="h-7 my-auto shrink-0 !align-bottom"
-                />
-              ) : (
-                <Twemoji
-                  emoji={hoverEmoji.skin.native}
-                  className="h-7 my-auto shrink-0 !align-bottom"
-                  title={hoverEmoji.id}
-                  loading="lazy"
-                />
-              )}
-              <p className="ml-2 text-base font-semibold my-auto truncate">
-                :
-                {hoverEmoji.keywords.includes("discord")
-                  ? hoverEmoji.name
-                  : hoverEmoji.id}
-                :
-              </p>
-            </div>
-              )*/}
         </div>
       </div>
     </div>

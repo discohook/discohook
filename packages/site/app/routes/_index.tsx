@@ -509,7 +509,7 @@ export default function Index() {
                     </p>
                   </div>
                 </div>
-                <div className="ml-auto space-x-2 my-auto shrink-0 text-xl">
+                <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
                   <button
                     type="button"
                     title={t("editResource", { replace: [webhook.name] })}
@@ -531,7 +531,7 @@ export default function Index() {
               </div>
             );
           })}
-          <div className="flex">
+          <div className="flex space-x-2 rtl:space-x-reverse">
             <Button
               onClick={() => setSendingMessages(true)}
               disabled={data.messages.length === 0}
@@ -539,7 +539,6 @@ export default function Index() {
               {t("send")}
             </Button>
             <Button
-              className="ml-2"
               onClick={() => setSharing(true)}
               discordstyle={ButtonStyle.Secondary}
               disabled={data.messages.length === 0}
@@ -547,7 +546,6 @@ export default function Index() {
               {t("saveMessage")}
             </Button>
             <Button
-              className="ml-2"
               onClick={() => setShowHistory(true)}
               discordstyle={ButtonStyle.Secondary}
             >

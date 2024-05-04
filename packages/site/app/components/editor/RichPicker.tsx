@@ -35,7 +35,7 @@ export const PopoutRichPicker: React.FC<
         {children}
       </summary>
       <div className="absolute z-20 right-0 bg-gray-300 dark:bg-gray-800 border border-black/5 rounded shadow-md w-[385px]">
-        <div className="font-semibold space-x-1 px-2 pt-2 text-sm">
+        <div className="font-semibold space-x-1 rtl:space-x-reverse px-2 pt-2 text-sm">
           <button
             type="button"
             className={twJoin(

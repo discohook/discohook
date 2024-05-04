@@ -81,8 +81,8 @@ export const MessageEditor: React.FC<{
           className="group-open/message:rotate-90 mr-2 my-auto transition-transform"
         />
         <span className="shrink-0">Message {i + 1}</span>
-        {previewText && <span className="truncate ml-1">- {previewText}</span>}
-        <div className="ml-auto space-x-2 my-auto shrink-0">
+        {previewText && <span className="truncate ltr:ml-1 rtl:mr-1">- {previewText}</span>}
+        <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"
             className={i === 0 ? "hidden" : ""}

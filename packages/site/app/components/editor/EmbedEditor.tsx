@@ -131,32 +131,37 @@ export const EmbedEditor: React.FC<{
       <summary className="group-open/embed:mb-2 py-1 px-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/embed:rotate-90 mr-2 my-auto transition-transform"
+          rtl="Chevron_Left"
+          className="ltr:group-open/embed:rotate-90 rtl:group-open/embed:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
         {errors.length > 0 && (
           <CoolIcon
             icon="Circle_Warning"
-            className="my-auto text-rose-600 dark:text-rose-400 mr-1.5"
+            className="my-auto text-rose-600 dark:text-rose-400 ltr:mr-1.5 rtl:ml-1.5"
           />
         )}
         {isChild ? (
           <>
             <span className="shrink-0">Gallery Image {localIndex + 2}</span>
             {embed.image?.url && (
-              <span className="truncate ml-1"> - {embed.image.url}</span>
+              <span className="truncate ltr:ml-1 rtl:mr-1">
+                - {embed.image.url}
+              </span>
             )}
           </>
         ) : (
           <>
             <span className="shrink-0">Embed {i + 1}</span>
             {previewText ? (
-              <span className="truncate ml-1">- {previewText}</span>
+              <span className="truncate ltr:ml-1 rtl:mr-1">
+                - {previewText}
+              </span>
             ) : (
               ""
             )}
           </>
         )}
-        <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
+        <div className="ltr:ml-auto rtl:mr-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           {!isChild && (
             // Was having issues with this, may re-introduce later
             // For now users just have to manually move gallery items
@@ -219,7 +224,7 @@ export const EmbedEditor: React.FC<{
             <div className="flex">
               <div className="grow">
                 <TextArea
-                  label="Name"
+                  label={t("name")}
                   className="w-full"
                   maxLength={256}
                   value={embed.author?.name ?? ""}
@@ -270,7 +275,7 @@ export const EmbedEditor: React.FC<{
                     />
                   </div>
                   <Button
-                    className="ml-2 mt-auto shrink-0"
+                    className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
                     onClick={() =>
                       updateEmbed({
                         author: {
@@ -326,7 +331,7 @@ export const EmbedEditor: React.FC<{
               </div>
               {embed.url === undefined && (
                 <Button
-                  className="ml-2 mt-auto shrink-0"
+                  className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
                   onClick={() =>
                     updateEmbed({
                       url: `${location.origin}#default-${randomString(8)}`,
@@ -363,7 +368,7 @@ export const EmbedEditor: React.FC<{
               </div>
               <Button
                 disabled={isChild}
-                className="ml-2 mt-auto shrink-0"
+                className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
                 onClick={() => {
                   embed.url = undefined;
                   message.data.embeds = messageEmbeds.filter(
@@ -391,7 +396,7 @@ export const EmbedEditor: React.FC<{
                   </p>
                 </div>
                 <div
-                  className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
+                  className="h-9 w-9 mt-auto rounded ltr:ml-2 rtl:mr-2 bg-gray-500"
                   style={{
                     backgroundColor: embed.color
                       ? `#${embed.color.toString(16)}`
@@ -434,7 +439,7 @@ export const EmbedEditor: React.FC<{
         <>
           <EmbedEditorSection name="Fields" open={open}>
             {embed.fields && (
-              <div className="ml-2 md:ml-4 transition-[margin-left]">
+              <div className="ltr:ml-2 ltr:md:ml-4 rtl:mr-2 rtl:md:mr-4 ltr:transition-[margin-left] rtl:transition-[margin-right]">
                 {embed.fields.map((field, fi) => (
                   <EmbedFieldEditorSection
                     key={`edit-message-${mi}-embed-${i}-field-${fi}`}
@@ -447,7 +452,7 @@ export const EmbedEditor: React.FC<{
                     <div className="flex">
                       <div className="grow">
                         <TextArea
-                          label="Name"
+                          label={t("name")}
                           value={field.name}
                           maxLength={256}
                           className="w-full"
@@ -460,7 +465,7 @@ export const EmbedEditor: React.FC<{
                           }}
                         />
                       </div>
-                      <div className="ml-2 my-auto">
+                      <div className="ltr:ml-2 rtl:mr-2 my-auto">
                         <Checkbox
                           label="Inline"
                           checked={field.inline ?? false}
@@ -516,7 +521,7 @@ export const EmbedEditor: React.FC<{
           </div>
           {!galleryChildren.includes(embed) && (
             <Button
-              className="ml-2 mt-auto shrink-0"
+              className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
               disabled={
                 !embed.image?.url ||
                 messageEmbeds.length >= 10 ||
@@ -641,7 +646,8 @@ export const EmbedEditorSection: React.FC<
       <summary className="group-open/section:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/section:rotate-90 mr-2 my-auto transition-transform"
+          rtl="Chevron_Left"
+          className="ltr:group-open/section:rotate-90 rtl:group-open/section:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
         {name}
       </summary>
@@ -666,11 +672,14 @@ export const EmbedFieldEditorSection: React.FC<
       <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/field:rotate-90 mr-2 my-auto transition-transform"
+          rtl="Chevron_Left"
+          className="ltr:group-open/field:rotate-90 rtl:group-open/field:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
         <span className="shrink-0">Field {index + 1}</span>
-        {previewText && <span className="truncate ml-1">- {previewText}</span>}
-        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+        {previewText && (
+          <span className="truncate ltr:ml-1 rtl:mr-1">- {previewText}</span>
+        )}
+        <div className="ml-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"
             className={index === 0 ? "hidden" : ""}

@@ -138,10 +138,10 @@ export const ActionRowEditor: React.FC<{
       <summary className="group-open/action-row:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/action-row:rotate-90 mr-2 my-auto transition-transform"
+          className="group-open/action-row:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
         Row {i + 1}
-        <div className="ml-auto text-xl space-x-2.5 my-auto shrink-0">
+        <div className="ltr:ml-auto rtl:mr-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"
             className={i === 0 ? "hidden" : ""}
@@ -218,7 +218,7 @@ export const ActionRowEditor: React.FC<{
           </InfoBox>
         </div>
       )}
-      <div className="ml-1 md:ml-2">
+      <div className="ml-1 ltr:md:ml-2 rtl:md:mr-2">
         {row.components.map((component, ci) => {
           const qdComponents = data.components?.[mi] ?? [];
           const qComponent = qdComponents.find(
@@ -283,7 +283,7 @@ export const ActionRowEditor: React.FC<{
                         maxLength={80}
                       />
                     </div>
-                    <div className="ml-2 my-auto">
+                    <div className="ltr:ml-2 rtl:mr-2 my-auto">
                       <Checkbox
                         label="Disabled"
                         checked={component.disabled ?? false}
@@ -385,7 +385,7 @@ export const ActionRowEditor: React.FC<{
                           }}
                         />
                       </div>
-                      <div className="ml-2 my-auto">
+                      <div className="ltr:ml-2 rtl:mr-2 my-auto">
                         <Checkbox
                           label="Disabled"
                           checked={component.disabled ?? false}
@@ -421,7 +421,7 @@ export const ActionRowEditor: React.FC<{
                                     required
                                   />
                                 </div>
-                                <div className="ml-2 my-auto">
+                                <div className="ltr:ml-2 rtl:mr-2 my-auto">
                                   <Checkbox
                                     label="Default"
                                     checked={option.default ?? false}
@@ -662,7 +662,7 @@ export const IndividualComponentEditor: React.FC<
       <summary className="group-open/component:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/component:rotate-90 mr-2 my-auto transition-transform"
+          className="group-open/component:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
         <span className="shrink-0">
           {component.type === ComponentType.Button ? (
@@ -685,7 +685,7 @@ export const IndividualComponentEditor: React.FC<
           )}
         </span>
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
-        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+        <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"
             className={index === 0 ? "hidden" : ""}
@@ -755,11 +755,11 @@ export const SelectMenuOptionsSection: React.FC<
       <summary className="group-open/select-option:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/select-option:rotate-90 mr-2 my-auto transition-transform"
+          className="group-open/select-option:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
         <span className="shrink-0">Option {index + 1}</span>
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
-        <div className="ml-auto text-lg space-x-2.5 my-auto shrink-0">
+        <div className="ml-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"
             className={index === 0 ? "hidden" : ""}
