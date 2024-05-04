@@ -1,5 +1,5 @@
 {
-  "defaultPlaceholder": "Triff eine Auswahl",
-  "donate": "Spenden",
-  "todayAt": "heute um {{time}} Uhr"
+    "defaultPlaceholder": "Triff eine Auswahl",
+    "donate": "Spenden",
+    "todayAt": "heute um {{time}} Uhr"
 }
