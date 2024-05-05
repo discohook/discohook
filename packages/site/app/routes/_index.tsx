@@ -102,6 +102,18 @@ export const safePushState = (data: any, url?: string | URL | null): void => {
   }
 };
 
+export const getQdMessageId = (message: QueryData["messages"][number]) => {
+  // Technically not a unique prop right now
+  // if (message.reference) {
+  //   const match = message.reference.match(MESSAGE_REF_RE);
+  //   if (match) return match[3];
+  // }
+  if (message._id) return message._id;
+  const id = randomString(10);
+  message._id = id;
+  return id;
+};
+
 export default function Index() {
   const { t } = useTranslation();
   const { user, memberships, discordApplicationId } =
@@ -119,31 +131,32 @@ export default function Index() {
 
   // Editor state
   const [backupId, setBackupId] = useState<bigint>();
-  const [files, setFiles] = useState<DraftFile[]>([]);
+  const [files, setFiles] = useState<Record<string, DraftFile[]>>({});
   const [data, setData] = useReducer(
     (cur: QueryData, d: QueryData) => {
       const newData = d;
 
       // Update file preview if any are referenced in embeds
-      setFiles([
-        ...files.map((f) => {
-          const uri = `attachment://${f.file.name}`;
-          f.embed =
-            newData.messages
-              .map((m) => m.data.embeds ?? [])
-              .filter(
-                (embeds) =>
-                  embeds.filter(
-                    (e) =>
-                      e.author?.icon_url === uri ||
-                      e.image?.url === uri ||
-                      e.thumbnail?.url === uri ||
-                      e.footer?.icon_url === uri,
-                  ).length !== 0,
-              ).length !== 0;
-          return f;
-        }),
-      ]);
+      setFiles(
+        Object.fromEntries(
+          newData.messages.map((d) => [
+            getQdMessageId(d),
+            files[getQdMessageId(d)]?.map((f) => {
+              const uri = `attachment://${f.file.name}`;
+              f.embed =
+                !!d.data.embeds &&
+                d.data.embeds?.filter(
+                  (e) =>
+                    e.author?.icon_url === uri ||
+                    e.image?.url === uri ||
+                    e.thumbnail?.url === uri ||
+                    e.footer?.icon_url === uri,
+                ).length !== 0;
+              return f;
+            }) ?? [],
+          ]),
+        ),
+      );
       return newData;
     },
     {
@@ -552,24 +565,29 @@ export default function Index() {
               {t("history")}
             </Button>
           </div>
-          {data.messages.map((_, i) => (
-            <div key={`edit-message-${i}`}>
-              <MessageEditor
-                index={i}
-                data={data}
-                files={files}
-                discordApplicationId={discordApplicationId}
-                setData={setData}
-                setFiles={setFiles}
-                setSettingMessageIndex={setSettingMessageIndex}
-                webhooks={Object.values(targets)}
-                cache={cache}
-              />
-              {i < data.messages.length - 1 && (
-                <hr className="border border-gray-500/20 mt-4" />
-              )}
-            </div>
-          ))}
+          {data.messages.map((d, i) => {
+            const id = getQdMessageId(d);
+            return (
+              <div key={`edit-message-${id}`}>
+                <MessageEditor
+                  index={i}
+                  data={data}
+                  files={files[id] ?? []}
+                  discordApplicationId={discordApplicationId}
+                  setData={setData}
+                  setFiles={(newF) =>
+                    setFiles({ ...files, [id]: newF as DraftFile[] })
+                  }
+                  setSettingMessageIndex={setSettingMessageIndex}
+                  webhooks={Object.values(targets)}
+                  cache={cache}
+                />
+                {i < data.messages.length - 1 && (
+                  <hr className="border border-gray-500/20 mt-4" />
+                )}
+              </div>
+            );
+          })}
           <Button
             className="mt-4 w-full"
             disabled={data.messages.length >= 10}
@@ -601,21 +619,24 @@ export default function Index() {
               </Button>
               <hr className="border border-gray-400 dark:border-gray-600 my-4" />
             </div>
-            {data.messages.map((message, i) => (
-              <Message
-                key={`preview-message-${i}`}
-                message={message.data}
-                cache={cache}
-                discordApplicationId={discordApplicationId}
-                webhooks={Object.values(targets)}
-                index={i}
-                data={data}
-                files={files}
-                setImageModalData={setImageModalData}
-                messageDisplay={settings.messageDisplay}
-                compactAvatars={settings.compactAvatars}
-              />
-            ))}
+            {data.messages.map((message, i) => {
+              const id = getQdMessageId(message);
+              return (
+                <Message
+                  key={`preview-message-${id}`}
+                  message={message.data}
+                  cache={cache}
+                  discordApplicationId={discordApplicationId}
+                  webhooks={Object.values(targets)}
+                  index={i}
+                  data={data}
+                  files={files[id]}
+                  setImageModalData={setImageModalData}
+                  messageDisplay={settings.messageDisplay}
+                  compactAvatars={settings.compactAvatars}
+                />
+              );
+            })}
           </div>
           <div className="grid gap-2 grid-cols-3 mt-auto px-4 py-2 bg-slate-50 dark:bg-[#1E1F22]">
             <Button

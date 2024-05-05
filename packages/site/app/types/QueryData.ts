@@ -7,6 +7,7 @@ import {
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { StorableComponent } from "~/store.server";
+import { randomString } from "~/util/text";
 
 /** The version of the query data, defaults to `d2`
  *
@@ -25,6 +26,7 @@ export interface QueryData {
   version?: QueryDataVersion;
   backup_id?: string;
   messages: {
+    _id?: string;
     data: {
       author?: {
         name?: string;
@@ -98,6 +100,7 @@ export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
 
 export const ZodQueryDataMessage: z.ZodType<QueryData["messages"][number]> =
   z.object({
+    _id: z.string().default(() => randomString(10)),
     data: z.object({
       author: z
         .object({

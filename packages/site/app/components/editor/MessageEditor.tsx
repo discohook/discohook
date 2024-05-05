@@ -207,7 +207,7 @@ export const MessageEditor: React.FC<{
               </div>
             ))}
             <input
-              id="files"
+              id={`files-${i}`}
               type="file"
               hidden
               multiple
@@ -236,8 +236,9 @@ export const MessageEditor: React.FC<{
             />
             <Button
               onClick={() => {
-                const input =
-                  document.querySelector<HTMLInputElement>("input#files");
+                const input = document.querySelector<HTMLInputElement>(
+                  `input#files-${i}`,
+                );
                 // Shouldn't happen
                 if (!input) return;
                 input.click();
