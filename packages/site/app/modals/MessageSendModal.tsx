@@ -9,6 +9,7 @@ import { getMessageText } from "~/components/editor/MessageEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
 import { action as ApiAuditLogAction } from "../api/v1/audit-log";
@@ -90,10 +91,11 @@ export const MessageSendModal = (
     setAddingTarget: (open: boolean) => void;
     data: QueryData;
     files?: Record<string, DraftFile[]>;
+    cache?: CacheManager;
   },
 ) => {
   const { t } = useTranslation();
-  const { targets, setAddingTarget, data, files } = props;
+  const { targets, setAddingTarget, data, files, cache } = props;
 
   const auditLogFetcher = useFetcher<typeof ApiAuditLogAction>();
   // const backupFetcher = useFetcher<typeof ApiBackupsAction>();
@@ -302,9 +304,15 @@ export const MessageSendModal = (
                   <p className="font-semibold text-base truncate">
                     {target.name ?? "Webhook"}
                   </p>
-                  <p className="text-sm leading-none truncate">
-                    Channel ID {target.channel_id}
-                  </p>
+                  {cache && (
+                    <p className="text-sm leading-none">
+                      #
+                      {cache.resolve({
+                        scope: "channel",
+                        key: target.channel_id,
+                      })?.name ?? t("mention.unknown")}
+                    </p>
+                  )}
                 </div>
                 <input
                   type="checkbox"

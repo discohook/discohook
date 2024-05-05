@@ -392,6 +392,7 @@ export default function Index() {
         targets={targets}
         data={data}
         files={files}
+        cache={cache}
       />
       <WebhookEditModal
         open={editingWebhook !== undefined}
