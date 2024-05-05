@@ -18,6 +18,7 @@ import {
   RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
+import { DraftFile } from "~/routes/_index";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 
 export const DISCORD_API = "https://discord.com/api";
@@ -34,15 +35,43 @@ export const discordRequest = async (
   route: `/${string}`,
   options?: {
     query?: URLSearchParams;
+    files?: DraftFile[];
     init?: Omit<RequestInit, "method">;
   },
 ) => {
   const search = options?.query ? `?${options.query.toString()}` : "";
   const init = options?.init ?? {};
+  const headers = init.headers ? new Headers(init.headers) : new Headers();
+
+  let body = undefined;
+  if (options?.files && options?.files.length !== 0) {
+    // Browser must set this header on its own along with `boundary`
+    headers.delete("Content-Type");
+
+    body = new FormData();
+    const payload = options.init?.body
+      ? JSON.parse(options.init?.body?.toString())
+      : {};
+    // payload.attachments = payload.attachments ?? [];
+    // options.files.forEach(({ description }, id) =>
+    //   payload.attachments?.push({ id, description }),
+    // );
+    body.set("payload_json", JSON.stringify(payload));
+
+    let i = 0;
+    for (const { file } of options.files) {
+      body.append(`file[${i}]`, file, file.name);
+      i += 1;
+    }
+  } else {
+    body = init.body;
+  }
 
   return await fetch(`${DISCORD_API}/v${DISCORD_API_V}${route}${search}`, {
     method,
     ...init,
+    headers,
+    body,
   });
 };
 
@@ -72,7 +101,7 @@ export const executeWebhook = async (
   webhookId: string,
   webhookToken: string,
   payload: RESTPostAPIWebhookWithTokenJSONBody,
-  files?: RawFile[],
+  files?: DraftFile[],
   threadId?: string,
   rest?: REST,
 ) => {
@@ -82,9 +111,20 @@ export const executeWebhook = async (
   }
 
   if (rest) {
+    const rawFiles: RawFile[] = [];
+    if (files) {
+      for (const { file } of files) {
+        rawFiles.push({
+          name: file.name,
+          contentType: file.type,
+          data: Buffer.from(await file.arrayBuffer()),
+        });
+      }
+    }
+
     return (await rest.post(Routes.webhook(webhookId, webhookToken), {
       body: payload,
-      files,
+      files: rawFiles.length === 0 ? undefined : rawFiles,
     })) as RESTPostAPIWebhookWithTokenWaitResult;
   }
 
@@ -93,6 +133,7 @@ export const executeWebhook = async (
     `/webhooks/${webhookId}/${webhookToken}`,
     {
       query,
+      files,
       init: {
         body: JSON.stringify(payload),
         headers: {
@@ -101,7 +142,6 @@ export const executeWebhook = async (
               ? "multipart/form-data"
               : "application/json",
         },
-        // files,
       },
     },
   );
@@ -114,7 +154,7 @@ export const updateWebhookMessage = async (
   webhookToken: string,
   messageId: string,
   payload: RESTPatchAPIWebhookWithTokenMessageJSONBody,
-  files?: RawFile[],
+  files?: DraftFile[],
   threadId?: string,
   rest?: REST,
 ) => {
@@ -124,11 +164,22 @@ export const updateWebhookMessage = async (
   }
 
   if (rest) {
+    const rawFiles: RawFile[] = [];
+    if (files) {
+      for (const { file } of files) {
+        rawFiles.push({
+          name: file.name,
+          contentType: file.type,
+          data: Buffer.from(await file.arrayBuffer()),
+        });
+      }
+    }
+
     return (await rest.patch(
       Routes.webhookMessage(webhookId, webhookToken, messageId),
       {
         body: payload,
-        files,
+        files: rawFiles.length === 0 ? undefined : rawFiles,
       },
     )) as RESTPatchAPIWebhookWithTokenMessageResult;
   }
@@ -138,9 +189,9 @@ export const updateWebhookMessage = async (
     `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
     {
       query,
+      files,
       init: {
         body: JSON.stringify(payload),
-        // files,
         headers: {
           "Content-Type":
             files && files.length > 0

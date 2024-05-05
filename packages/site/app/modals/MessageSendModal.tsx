@@ -7,6 +7,7 @@ import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { getMessageText } from "~/components/editor/MessageEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
@@ -31,6 +32,7 @@ export type SubmitMessageResult =
 export const submitMessage = async (
   target: Pick<APIWebhook, "id" | "token">,
   message: QueryData["messages"][number],
+  files?: DraftFile[],
   rest?: REST,
 ): Promise<SubmitMessageResult> => {
   const token = target.token;
@@ -57,7 +59,7 @@ export const submitMessage = async (
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
       },
-      undefined,
+      files,
       undefined,
       rest,
     );
@@ -71,7 +73,7 @@ export const submitMessage = async (
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
       },
-      undefined,
+      files,
       undefined,
       rest,
     );
@@ -87,10 +89,11 @@ export const MessageSendModal = (
     targets: Record<string, APIWebhook>;
     setAddingTarget: (open: boolean) => void;
     data: QueryData;
+    files?: Record<string, DraftFile[]>;
   },
 ) => {
   const { t } = useTranslation();
-  const { targets, setAddingTarget, data } = props;
+  const { targets, setAddingTarget, data, files } = props;
 
   const auditLogFetcher = useFetcher<typeof ApiAuditLogAction>();
   // const backupFetcher = useFetcher<typeof ApiBackupsAction>();
@@ -218,12 +221,17 @@ export const MessageSendModal = (
                     <p className="font-semibold text-base truncate">
                       Message {i + 1}
                       {!!previewText && (
-                        <span className="truncate ltr:ml-1 rtl:mr-1">- {previewText}</span>
+                        <span className="truncate ltr:ml-1 rtl:mr-1">
+                          - {previewText}
+                        </span>
                       )}
                     </p>
                     {messages[i]?.result?.status === "error" && (
                       <p className="text-rose-500 text-sm leading-none">
-                        <CoolIcon icon="Circle_Warning" className="ltr:mr-1 rtl:ml-1" />
+                        <CoolIcon
+                          icon="Circle_Warning"
+                          className="ltr:mr-1 rtl:ml-1"
+                        />
                         {(messages[i].result?.data as DiscordErrorData).message}
                       </p>
                     )}
@@ -365,7 +373,11 @@ export const MessageSendModal = (
                     continue;
                   }
 
-                  const result = await submitMessage(webhook, message);
+                  const result = await submitMessage(
+                    webhook,
+                    message,
+                    files?.[getQdMessageId(message)],
+                  );
                   if (result.status === "success") {
                     auditLogFetcher.submit(
                       {

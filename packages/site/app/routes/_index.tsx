@@ -76,6 +76,7 @@ export type LoadedMembership = Awaited<
 export interface DraftFile {
   id: string;
   file: File;
+  description?: string;
   url?: string;
   embed?: boolean;
 }
@@ -389,6 +390,7 @@ export default function Index() {
         setAddingTarget={setAddingTarget}
         targets={targets}
         data={data}
+        files={files}
       />
       <WebhookEditModal
         open={editingWebhook !== undefined}
