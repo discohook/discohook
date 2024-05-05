@@ -4,15 +4,15 @@ import { Svg } from "./Svg";
 export const Logo = (props: { pink?: boolean }) => (
   <Svg width={32} height={32} viewBox="8 8 16 16">
     <g
-      clip-path="url(#clip0_0_1)"
+      clipPath="url(#clip0_0_1)"
       className={twJoin(
         props.pink ? "text-[#8195FF]" : "text-[#6D6F78]",
         "dark:!text-[#DEF1FF]",
       )}
     >
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M17.4 12C17.1791 12 17 11.8209 17 11.6C17 10.7163 17.7163 10 18.6 10H19C20.1046 10 21 10.8954 21 12V14.191C21 14.5627 20.6088 14.8044 20.2764 14.6382L20.1056 14.5528C19.428 14.214 19 13.5215 19 12.7639V12H17.4ZM17.6 20C17.8209 20 18 19.8209 18 19.6C18 18.7163 17.2837 18 16.4 18H16C14.3431 18 13 16.6569 13 15V12.4C13 12.1791 12.8209 12 12.6 12C11.7163 12 11 12.7163 11 13.6V15C11 17.7614 13.2386 20 16 20H17.6Z"
         fill="currentColor"
       />
