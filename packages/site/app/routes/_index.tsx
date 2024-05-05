@@ -383,6 +383,7 @@ export default function Index() {
         data={data}
         setData={setData}
         messageIndex={settingMessageIndex}
+        cache={cache}
       />
       <MessageSendModal
         open={sendingMessages}
@@ -523,6 +524,15 @@ export default function Index() {
                       )}
                     </p>
                   </div>
+                  {/* {cache && (
+                    <p className="text-xs text-primary-400">
+                      #
+                      {cache.resolve({
+                        scope: "channel",
+                        key: webhook.channel_id,
+                      })?.name ?? t("mention.unknown")}
+                    </p>
+                  )} */}
                 </div>
                 <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
                   <button

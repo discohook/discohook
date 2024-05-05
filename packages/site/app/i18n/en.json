@@ -229,6 +229,14 @@
   "havingTrouble": "Having Trouble?",
   "troubleshootMessage": "If you press the send button and nothing happens, it may be because your browser is blocking connections to Discord, which is not uncommon for privacy-focused extensions like Privacy Badger. Try disabling privacy extensions or entering incognito/private mode.",
 
+  "setMessageReference": "Set Message Reference",
+  "messageLink": "Message Link",
+  "webhook": "Webhook",
+  "referenceNoWebhooks": "You haven't added any webhooks that match the message link you provided. To overwrite or edit, you will need to add the correct webhook.",
+  "invalidMessageLink": "Invalid message link. They start with https://discord.com/channels/... and have three sets of numbers.",
+  "overwriteMessage": "Overwrite Message",
+  "removeReference": "Remove Reference",
+
   "setReference": "Set Reference",
   "changeReference": "Change Reference",
   "addEmbed": "Add Embed",

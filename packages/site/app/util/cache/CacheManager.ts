@@ -277,10 +277,29 @@ export class CacheManager {
     this.setState(Object.fromEntries(entries) as Resolutions);
   }
 
-  // resolve(request: { scope: "channels"; key: string }): ResolvableAPIChannel;
-  // resolve(request: { scope: "members"; key: string }): ResolvableAPIGuildMember;
-  // resolve(request: { scope: "roles"; key: string }): ResolvableAPIRole;
-  resolve(request: { scope: ResolutionScope; key: string }) {
+  resolve(request: { scope: "channel"; key: string }):
+    | ResolvableAPIChannel
+    | null
+    | undefined;
+  resolve(request: { scope: "member"; key: string }):
+    | ResolvableAPIGuildMember
+    | null
+    | undefined;
+  resolve(request: { scope: "role"; key: string }):
+    | ResolvableAPIRole
+    | null
+    | undefined;
+  resolve(request: { scope: "emoji"; key: string }):
+    | ResolvableAPIEmoji
+    | null
+    | undefined;
+  resolve(request: { scope: ResolutionScope; key: string }):
+    | ResolvableAPIChannel
+    | ResolvableAPIGuildMember
+    | ResolvableAPIRole
+    | ResolvableAPIEmoji
+    | null
+    | undefined {
     const cached = this.state[`${request.scope}:${request.key}`];
     if (cached) {
       return cached;
@@ -330,7 +349,8 @@ export class CacheManager {
     // TODO: At some point, bind a guild somewhere and use fetchMany to reduce requests
     for (const [scope, keys] of Object.entries(byScope)) {
       for (const key of keys) {
-        this.resolve({ scope: scope as ResolutionScope, key });
+        // @ts-expect-error
+        this.resolve({ scope, key });
       }
     }
   }
