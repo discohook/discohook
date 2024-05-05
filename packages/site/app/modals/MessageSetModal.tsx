@@ -48,6 +48,7 @@ export const MessageSetModal = (
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (message) {
       if (message.data.webhook_id) {
@@ -175,13 +176,20 @@ export const MessageSetModal = (
             disabled={!messageLink || !webhook}
             discordstyle={ButtonStyle.Secondary}
             onClick={async () => {
+              setError(undefined);
               if (messageLink && webhook) {
                 if (messageLink[0] && webhook.guild_id !== messageLink[0]) {
                   setError("Webhook server ID does not match message link.");
+                  return;
                 }
+                if (!webhook.token) {
+                  setError("Webhook had no token.");
+                  return;
+                }
+
                 let msg = await getWebhookMessage(
                   webhook.id,
-                  webhook.token!,
+                  webhook.token,
                   messageLink[2],
                 );
                 if ("code" in msg && msg.code === 10008 && messageLink[1]) {
@@ -190,7 +198,7 @@ export const MessageSetModal = (
                   );
                   msg = await getWebhookMessage(
                     webhook.id,
-                    webhook.token!,
+                    webhook.token,
                     messageLink[2],
                     messageLink[1],
                   );
