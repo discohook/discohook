@@ -153,7 +153,7 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     <div className="w-full">
       <GalleryItem
         className="rounded-lg max-w-full max-h-[350px]"
-        itemClassName="rounded-lg"
+        itemClassName="rounded-lg max-h-inherit"
         {...d}
         index={0}
       />
@@ -293,8 +293,8 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
   7: (d) => (
     <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-full">
       <GalleryItem
-        className="rounded rounded-t-lg w-full object-center h-[250px]"
-        itemClassName="rounded rounded-t-lg"
+        className="rounded rounded-t-lg w-full object-center max-h-[250px]"
+        itemClassName="rounded rounded-t-lg max-h-inherit w-full"
         {...d}
         index={0}
       />
@@ -376,8 +376,8 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
   10: (d) => (
     <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-full">
       <GalleryItem
-        className="rounded rounded-t-lg w-full object-center h-[250px]"
-        itemClassName="rounded rounded-t-lg"
+        className="rounded rounded-t-lg w-full object-center max-h-[250px]"
+        itemClassName="rounded rounded-t-lg max-h-inherit w-full"
         {...d}
         index={0}
       />

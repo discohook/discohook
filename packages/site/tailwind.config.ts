@@ -24,6 +24,9 @@ export default {
       ],
     },
     extend: {
+      spacing: {
+        inherit: "inherit",
+      },
       colors: {
         brand: {
           blue: "#58B9FF",
