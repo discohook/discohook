@@ -291,7 +291,10 @@
   "role": "Role",
   "noRolesNote": "No roles available. While logged in, add a webhook or manually insert mentions in the message to populate this list.",
   "seconds": "Seconds",
-  "deleteMessageIdNote": "A message with the ID of <0>messageId</0> will be deleted (specify a variable).",
+  "deleteMessageIdNote": {
+    "true": "<0/> Variable <1>messageId</1> is set as <1>{{value}}</1>.",
+    "false": "<0/> Variable <1>messageId</1> is not set."
+  },
   "type": "Type",
   "value": "Value",
   "valueFromReturn": "Attribute of previous return",

@@ -10,6 +10,7 @@ import {
   Flow,
   FlowAction,
   FlowActionCreateThread,
+  FlowActionSetVariable,
   FlowActionSetVariableType,
   FlowActionType,
 } from "~/store.server";
@@ -642,17 +643,38 @@ const FlowActionEditor: React.FC<{
               />
             </>
           ) : action.type === 10 ? (
-            <>
-              <p className="text-sm">
-                <Trans
-                  t={t}
-                  i18nKey="deleteMessageIdNote"
-                  components={[
-                    <span className={twJoin(mentionStyle, "font-code")} />,
-                  ]}
-                />
-              </p>
-            </>
+            (() => {
+              const varAction = flow.actions.find(
+                (a, subI): a is FlowActionSetVariable => {
+                  return subI < i && a.type === 9 && a.name === "messageId";
+                },
+              );
+              return (
+                <p className="text-sm">
+                  <Trans
+                    t={t}
+                    i18nKey={`deleteMessageIdNote.${!!varAction}`}
+                    components={[
+                      varAction ? (
+                        <CoolIcon
+                          icon="Circle_Check"
+                          className="text-green-400"
+                        />
+                      ) : (
+                        <CoolIcon
+                          icon="Close_Circle"
+                          className="text-red-400"
+                        />
+                      ),
+                      <span className={twJoin(mentionStyle, "font-code")} />,
+                    ]}
+                    values={{
+                      value: varAction?.value,
+                    }}
+                  />
+                </p>
+              );
+            })()
           ) : (
             <></>
           )}
