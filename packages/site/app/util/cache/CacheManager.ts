@@ -356,11 +356,14 @@ export class CacheManager {
   }
 }
 
-export const useCache = () => {
+export const useCache = (user?: any) => {
   const [state, setState] = useReducer(
     (d: Resolutions, partialD: Partial<Resolutions>) => ({ ...d, ...partialD }),
     {},
   );
-  const cache = new CacheManager(state, setState);
-  return cache;
+  if (user) {
+    const cache = new CacheManager(state, setState);
+    return cache;
+  }
+  return undefined;
 };
