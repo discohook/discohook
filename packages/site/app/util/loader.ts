@@ -71,6 +71,30 @@ export const useSafeFetcher = <TData = any>({
           throw e;
         });
     }) as (href: string) => void,
+    loadAsync: (async (href) => {
+      setState("loading");
+      try {
+        const response = await fetch(href, { method: "GET" });
+        const raw = await response.json();
+        if (!response.ok) {
+          if (onError) {
+            onError({
+              status: response.status,
+              message: getZodErrorMessage(raw),
+            });
+          }
+          setState("idle");
+          return;
+        }
+        const responseData = raw as SerializeFrom<TData>;
+        setData(responseData);
+        setState("idle");
+        return responseData;
+      } catch (e) {
+        setState("idle");
+        throw e;
+      }
+    }) as (href: string) => Promise<SerializeFrom<TData>>,
     submit: ((target, options) => {
       setState("submitting");
       const contentType =
@@ -128,3 +152,5 @@ export const useSafeFetcher = <TData = any>({
     },
   };
 };
+
+export type SafeFetcher<TData = any> = ReturnType<typeof useSafeFetcher<TData>>;
