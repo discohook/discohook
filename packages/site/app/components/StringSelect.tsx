@@ -19,6 +19,7 @@ export const selectClassNames: ClassNamesConfig<
   menu: () => "!rounded dark:!bg-[#2b2d31]",
   option: () =>
     "!rounded dark:!bg-[#2b2d31] dark:hover:!bg-[#36373d] !font-semibold !text-sm",
+  menuPortal: () => "!z-30",
 };
 
 export const StringSelect: React.FC<StringSelectProps> = (props) => {
@@ -27,6 +28,8 @@ export const StringSelect: React.FC<StringSelectProps> = (props) => {
     <label className="block">
       {props.label && <p className="text-sm">{props.label}</p>}
       <Select
+        menuPlacement="auto"
+        menuPosition="absolute"
         {...props}
         placeholder={props.placeholder ?? t("defaultPlaceholder")}
         classNames={{
