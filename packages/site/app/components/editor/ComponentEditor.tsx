@@ -383,12 +383,12 @@ export const ActionRowEditor: React.FC<{
 
                             setEditingFlow({
                               flow,
-                              setFlow: (flow) => {
+                              setFlow: (newFlow) => {
                                 if (
                                   qComponent?.data &&
                                   "flow" in qComponent.data
                                 ) {
-                                  qComponent.data.flow = flow;
+                                  qComponent.data.flow = newFlow;
                                 }
                                 setComponents([...(qdComponents ?? [])]);
                               },
