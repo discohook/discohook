@@ -24,12 +24,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     method: "GET",
   });
   if (!response.ok) {
-    throw response;
+    throw json({ message: response.statusText }, response.status);
   }
 
   const raw = await response.text();
   const parsed = matter(raw);
-  console.log(parsed.attributes);
   const zparsed = await z
     .object({
       title: z.string(),
