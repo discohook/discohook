@@ -51,7 +51,6 @@ export const FlowEditModal = (
   const backupsFetcher = useSafeFetcher<typeof ApiGetUserBackups>({
     onError: (e) => setError({ message: e.message }),
   });
-  // FetcherSelect that is basically just async select but it turns a fetcher into promise-based
 
   return (
     <Modal title={t("editFlow")} {...props}>
