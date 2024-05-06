@@ -15,7 +15,7 @@ import {
 import { PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { eq } from "drizzle-orm";
-import { SignJWT, jwtVerify } from "jose";
+import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { getDiscordUserOAuth } from "./auth-discord.server";
 import {
   discordMembers,
@@ -287,13 +287,7 @@ export async function authorizeRequest(
   const storage = getTokenStorage(context);
   const session = await storage.getSession(request.headers.get("Cookie"));
 
-  if (!auth) {
-    auth = session.get("Authorization");
-  }
-  if (!auth) {
-    if (options?.requireToken) {
-      throw json({ message: "Must provide proper authorization" }, 401);
-    }
+  const serveNewToken = async () => {
     const user = await getUser(request, context, true);
     const token = await regenerateToken(context.env, context.origin, user.id);
     const countryCode = request.headers.get("CF-IPCountry") ?? undefined;
@@ -321,18 +315,39 @@ export async function authorizeRequest(
         response.headers.set("Set-Cookie", committed);
         return response;
       },
+    ] satisfies [
+      token: Jsonify<TokenWithUser>,
+      respond: <T extends Response>(response: T) => T,
     ];
+  };
+
+  if (!auth) {
+    auth = session.get("Authorization");
+  }
+  if (!auth) {
+    if (options?.requireToken) {
+      throw json({ message: "Must provide proper authorization" }, 401);
+    }
+    return await serveNewToken();
   } else {
     const [prefix, tokenValue] = auth.split(" ");
     if (!["user", "bot"].includes(prefix.toLowerCase())) {
       throw json({ message: "Invalid token prefix" }, 401);
     }
 
-    const { payload } = await verifyToken(
-      tokenValue,
-      context.env,
-      context.origin,
-    );
+    let payload: JWTPayload;
+    try {
+      ({ payload } = await verifyToken(
+        tokenValue,
+        context.env,
+        context.origin,
+      ));
+    } catch (e) {
+      if (e instanceof Response && !options?.requireToken) {
+        return await serveNewToken();
+      }
+      throw e;
+    }
     if (payload.scp !== prefix.toLowerCase()) {
       // TMI?
       // throw json(
@@ -379,6 +394,9 @@ export async function authorizeRequest(
       },
     });
     if (!token || !token.user) {
+      if (!options?.requireToken) {
+        return await serveNewToken();
+      }
       throw json(
         { message: "User or token data missing, obtain a new token" },
         401,
