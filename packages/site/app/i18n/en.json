@@ -289,7 +289,7 @@
     "9": "Set variable \"{{ action.name }}\""
   },
   "role": "Role",
-  "noRolesNote": "No roles available. While logged in, add a webhook or manually insert mentions in the message to populate this list.",
+  "noMentionsActionNote": "No data is available for this list. While logged in, add a webhook or manually insert mentions in the message to populate it.",
   "seconds": "Seconds",
   "deleteMessageIdNote": {
     "true": "<0/> Variable <1>messageId</1> is set as <1>{{value}}</1>.",

@@ -359,7 +359,7 @@ const FlowActionEditor: React.FC<{
             <>
               {(!cache || roles.length === 0) && (
                 <InfoBox severity="yellow" icon="Info">
-                  {t("noRolesNote")}
+                  {t("noMentionsActionNote")}
                 </InfoBox>
               )}
               <p className="text-sm font-medium select-none">{t("role")}</p>
@@ -520,7 +520,7 @@ const FlowActionEditor: React.FC<{
                 <>
                   {(!cache || channels.length === 0) && (
                     <InfoBox severity="yellow" icon="Info">
-                      {t("noRolesNote")}
+                      {t("noMentionsActionNote")}
                     </InfoBox>
                   )}
                   <div>
