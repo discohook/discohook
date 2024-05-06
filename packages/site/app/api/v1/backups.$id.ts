@@ -1,5 +1,5 @@
 import { json } from "@remix-run/cloudflare";
-import { parseExpression } from "cron-parser";
+import { CronExpression, parseExpression } from "cron-parser";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
@@ -9,6 +9,7 @@ import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import {
   snowflakeAsString,
+  zxParseForm,
   zxParseJson,
   zxParseParams,
   zxParseQuery,
@@ -52,9 +53,18 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 export const action = async ({ request, params, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { name, data, scheduleAt, cron, timezone } = await zxParseJson(
-    request,
-    {
+  let parsed: {
+    name?: string;
+    data?: QueryData;
+    scheduleAt?: Date | null;
+    cron?: CronExpression<false> | null;
+    timezone?: string;
+  };
+  // We use JSON for editing backup schedules because it's simpler to work
+  // with nullish values that way. But the Remix philosophy still "defaults"
+  // to form data, so we support it for other locations.
+  if (request.headers.get("Content-Type")?.startsWith("application/json")) {
+    parsed = await zxParseJson(request, {
       name: z
         .ostring()
         .refine((val) => (val !== undefined ? val.length <= 100 : true)),
@@ -88,8 +98,16 @@ export const action = async ({ request, params, context }: ActionArgs) => {
         .nullable()
         .optional(),
       timezone: z.ostring(),
-    },
-  );
+    });
+  } else {
+    parsed = await zxParseForm(request, {
+      name: z
+        .ostring()
+        .refine((val) => (val !== undefined ? val.length <= 100 : true)),
+      data: ZodQueryData.optional(),
+    });
+  }
+  const { name, data, scheduleAt, cron, timezone } = parsed;
 
   const db = getDb(context.env.DATABASE_URL);
   const backup = await db.query.backups.findFirst({
