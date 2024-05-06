@@ -140,7 +140,7 @@ export interface FlowActionToggleRole extends FlowActionBase {
 export interface FlowActionSendMessage extends FlowActionBase {
   type: FlowActionType.SendMessage;
   backupId: string;
-  backupMessageIndex?: number;
+  backupMessageIndex?: number | null;
   response?: boolean;
   flags?: MessageFlags;
 }
@@ -149,7 +149,7 @@ export interface FlowActionSendWebhookMessage extends FlowActionBase {
   type: FlowActionType.SendWebhookMessage;
   webhookId: string;
   backupId: string;
-  backupMessageIndex?: number;
+  backupMessageIndex?: number | null;
   flags?: MessageFlags;
 }
 

@@ -5,10 +5,12 @@ import { Trans, useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
+import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
+import { useSafeFetcher } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { relativeTime } from "~/util/time";
 import { action as backupCreateAction } from "../api/v1/backups";
@@ -25,6 +27,7 @@ export const MessageSaveModal = (
 ) => {
   const { t } = useTranslation();
   const { targets, data, setData, user } = props;
+  const [error, setError] = useError(t);
 
   const [includeTargets, setIncludeTargets] = useState(false);
   const dataWithTargets = useCallback(
@@ -38,7 +41,9 @@ export const MessageSaveModal = (
   );
 
   const shareFetcher = useFetcher<typeof shareCreateAction>();
-  const backupFetcher = useFetcher<typeof backupCreateAction>();
+  const backupFetcher = useSafeFetcher<typeof backupCreateAction>({
+    onError: setError,
+  });
 
   const generateShareData = useCallback(
     (options?: { includeTargets_?: boolean }) => {
@@ -62,13 +67,14 @@ export const MessageSaveModal = (
     if (props.open && user && data.backup_id !== undefined && !backup) {
       backupFetcher.load(apiUrl(BRoutes.backups(data.backup_id)));
     }
-    if (props.open && backup && typeof data.backup_id !== "number") {
-      setData({ ...data, backup_id: backup.id });
+    if (props.open && backup && typeof data.backup_id !== "string") {
+      setData({ ...data, backup_id: backup.id.toString() });
     }
   }, [props.open, data.backup_id, backup]);
 
   return (
     <Modal title={t("saveMessageTitle")} {...props}>
+      {error}
       <div className="flex">
         <div className="grow">
           <TextInput
@@ -151,9 +157,7 @@ export const MessageSaveModal = (
                 onClick={() => {
                   if (backup) {
                     backupFetcher.submit(
-                      {
-                        data: JSON.stringify(dataWithTargets()),
-                      },
+                      { data: dataWithTargets() },
                       {
                         action: apiUrl(BRoutes.backups(backup.id)),
                         method: "PATCH",

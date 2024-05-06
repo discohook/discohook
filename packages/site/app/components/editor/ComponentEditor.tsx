@@ -14,11 +14,13 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import { EditingFlowData } from "~/modals/FlowEditModal";
 import { Flow } from "~/store.server";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
@@ -27,7 +29,6 @@ import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { linkClassName } from "../preview/Markdown";
 import { PopoutEmojiPicker } from "./EmojiPicker";
-import { FlowEditor } from "./FlowEditor";
 
 export const getComponentText = (
   component: APIMessageComponent,
@@ -118,6 +119,9 @@ export const ActionRowEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   setComponents: (value: QueryDataComponent[]) => void;
+  setEditingFlow: React.Dispatch<
+    React.SetStateAction<EditingFlowData | undefined>
+  >;
   cache?: CacheManager;
   open?: boolean;
 }> = ({
@@ -127,6 +131,7 @@ export const ActionRowEditor: React.FC<{
   data,
   setData,
   setComponents,
+  setEditingFlow,
   cache,
   open,
 }) => {
@@ -328,37 +333,71 @@ export const ActionRowEditor: React.FC<{
                           />
                         ))}
                       </div>
-                      {!qComponent && (
-                        <div className="mt-1">
-                          <Button
-                            onClick={async () => {
+                      <div className="mt-1">
+                        <p className="text-sm font-medium cursor-default">
+                          <Trans
+                            t={t}
+                            i18nKey="flowLink"
+                            components={[
+                              <Link
+                                to="/guide/getting-started/flows"
+                                target="_blank"
+                                className={twJoin(
+                                  linkClassName,
+                                  "cursor-pointer",
+                                )}
+                              />,
+                            ]}
+                          />
+                        </p>
+                        <Button
+                          onClick={async () => {
+                            let flow: Flow;
+                            if (qComponent) {
+                              if (qComponent.data.flow) {
+                                flow = qComponent.data.flow as Flow;
+                              } else {
+                                // setEditingFlow(qComponent.data.flows)
+                                return;
+                              }
+                            } else {
                               // We just need a unique ID for state. We don't
                               // generate a snowflake here because it would be
                               // confusing. These IDs are replaced later by the
                               // server.
-                              const newId = String(
-                                Math.floor(Math.random() * 100000000000),
-                              );
+                              const newId = randomString(10);
                               component.custom_id = `p_${newId}`;
+                              flow = {
+                                name: "Flow",
+                                actions: [{ type: 0 }],
+                              };
                               setComponents([
                                 ...qdComponents,
                                 {
                                   id: newId,
-                                  data: {
-                                    flow: {
-                                      name: "Flow",
-                                      actions: [{ type: 0 }],
-                                    },
-                                  },
+                                  data: { flow },
                                   draft: true,
                                 },
                               ]);
-                            }}
-                          >
-                            Add Flow
-                          </Button>
-                        </div>
-                      )}
+                            }
+
+                            setEditingFlow({
+                              flow,
+                              setFlow: (flow) => {
+                                if (
+                                  qComponent?.data &&
+                                  "flow" in qComponent.data
+                                ) {
+                                  qComponent.data.flow = flow;
+                                }
+                                setComponents([...(qdComponents ?? [])]);
+                              },
+                            });
+                          }}
+                        >
+                          {t(qComponent ? "editFlow" : "addFlow")}
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </>
@@ -481,41 +520,13 @@ export const ActionRowEditor: React.FC<{
                             setData({ ...data });
                           }}
                         >
-                          Add Option
+                          {t("addOption")}
                         </Button>
                       </>
                     )}
                   </>
                 )
               )}
-              {qComponent &&
-                !!(qComponent.data.flow || qComponent.data.flows) && (
-                  <div>
-                    <p className="text-sm font-medium cursor-default">
-                      Flow (
-                      <Link
-                        to="/flows"
-                        target="_blank"
-                        className={twJoin(linkClassName, "cursor-pointer")}
-                      >
-                        what's a flow?
-                      </Link>
-                      )
-                    </p>
-                    {!!qComponent.data.flow && (
-                      <FlowEditor
-                        flow={qComponent.data.flow as Flow}
-                        setFlow={(flow) => {
-                          if ("flow" in qComponent.data) {
-                            qComponent.data.flow = flow;
-                          }
-                          setComponents([...(qdComponents ?? [])]);
-                        }}
-                        cache={cache}
-                      />
-                    )}
-                  </div>
-                )}
             </IndividualComponentEditor>
           );
         })}

@@ -27,7 +27,7 @@ export const FlowEditor: React.FC<{
   cache?: CacheManager;
 }> = ({ flow, setFlow, cache }) => {
   return (
-    <div className="space-y-2 sm:ml-2">
+    <div className="space-y-2 ltr:sm:ml-2 rtl:sm:mr-2">
       {flow.actions.length > 0 && (
         <div className="mt-1 space-y-1">
           {flow.actions.length === 10 && (

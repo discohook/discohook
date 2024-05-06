@@ -17,6 +17,7 @@ import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import { ExampleModal } from "~/modals/ExampleModal";
+import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { MessageSaveModal } from "~/modals/MessageSaveModal";
@@ -166,6 +167,7 @@ export default function Index() {
       components: {},
     },
   );
+  const [editingFlow, setEditingFlow] = useState<EditingFlowData>();
 
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
@@ -313,10 +315,8 @@ export default function Index() {
           console.log("Saving backup", backupId);
           fetch(apiUrl(BRoutes.backups(backupId)), {
             method: "PATCH",
-            body: new URLSearchParams({
-              data: JSON.stringify(data),
-            }),
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: JSON.stringify({ data }),
+            headers: { "Content-Type": "application/json" },
           });
         }
       }
@@ -375,6 +375,12 @@ export default function Index() {
         setOpen={setShowDisclaimer}
       />
       <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
+      <FlowEditModal
+        open={!!editingFlow}
+        setOpen={() => setEditingFlow(undefined)}
+        {...editingFlow}
+        cache={cache}
+      />
       <MessageSetModal
         open={settingMessageIndex !== undefined}
         setOpen={() => setSettingMessageIndex(undefined)}
@@ -593,6 +599,7 @@ export default function Index() {
                   }
                   setSettingMessageIndex={setSettingMessageIndex}
                   webhooks={Object.values(targets)}
+                  setEditingFlow={setEditingFlow}
                   cache={cache}
                 />
                 {i < data.messages.length - 1 && (
