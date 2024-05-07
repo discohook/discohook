@@ -17,8 +17,8 @@ import {
 import { CacheManager } from "~/util/cache/CacheManager";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
 import {
-  loader as ApiGetUserBackups,
   PartialBackupsWithMessages,
+  loader as ApiGetUserBackups,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -203,7 +203,7 @@ const BackupSelect = ({
       isClearable={false}
       name="backupId"
       required
-      value={value ? getBackupSelectOption(value) : null}
+      value={value ? getBackupSelectOption(value) : ""}
       loadOptions={(inputValue) =>
         (async () => {
           const data =
@@ -324,9 +324,9 @@ const FlowActionEditor: React.FC<{
               options={actionTypes
                 .filter((v) => v !== 2)
                 .map((value) => ({ label: t(`actionType.${value}`), value }))}
-              defaultValue={{
-                label: t("actionType.0"),
-                value: 0,
+              value={{
+                label: t(`actionType.${action.type}`),
+                value: action.type,
               }}
               menuPortalTarget={document.body}
               onChange={(opt) => {
@@ -497,7 +497,7 @@ const FlowActionEditor: React.FC<{
                     value={
                       messageOptions.find(
                         (o) => o.value === action.backupMessageIndex,
-                      ) ?? null
+                      ) ?? ""
                     }
                     onChange={(raw) => {
                       const opt = raw as {
@@ -559,9 +559,11 @@ const FlowActionEditor: React.FC<{
                       label={t("type")}
                       required
                       options={threadTypeOptions}
-                      value={threadTypeOptions.find(
-                        (o) => o.value === action.threadType,
-                      )}
+                      value={
+                        threadTypeOptions.find(
+                          (o) => o.value === action.threadType,
+                        ) ?? ""
+                      }
                       onChange={(raw) => {
                         const opt = raw as {
                           value: (typeof action)["threadType"];
@@ -575,9 +577,11 @@ const FlowActionEditor: React.FC<{
                     name="autoArchiveDuration"
                     label={t("autoArchiveDuration")}
                     options={threadAutoArchiveOptions}
-                    value={threadAutoArchiveOptions.find(
-                      (o) => o.value === action.autoArchiveDuration,
-                    )}
+                    value={
+                      threadAutoArchiveOptions.find(
+                        (o) => o.value === action.autoArchiveDuration,
+                      ) ?? ""
+                    }
                     onChange={(raw) => {
                       const opt = raw as {
                         value: (typeof action)["autoArchiveDuration"];
