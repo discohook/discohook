@@ -9,11 +9,11 @@ This is a complete rewrite of the [original Discohook project](https://github.co
 - Extended Markdown support: headers, lists, timestamps, mentions, message links
 - Cloud backups
 - Message logs
-- Editor history
 - Button/select editor
-- Localization
-- Reordering messages
+- [Localization](https://translate.shay.cat/engage/discohook/)
 - Scheduled messages
+- Reordering messages
+- Editor history
 - Attachment URI support
 <!-- - Mobile-specific preview toggle for ironing out Discord inconsistencies -->
 <!-- - Custom bots -->
