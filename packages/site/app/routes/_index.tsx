@@ -122,7 +122,7 @@ export default function Index() {
     useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
-  const cache = useCache(user);
+  const cache = useCache(!user);
 
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");

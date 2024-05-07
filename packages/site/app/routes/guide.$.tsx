@@ -93,7 +93,7 @@ export const meta: MetaFunction = ({ data }) => {
 // I'm aware of MDX but I didn't think it really fit my needs
 export default function GuidePage() {
   const { user, content } = useLoaderData<typeof loader>();
-  const cache = user ? useCache() : undefined;
+  const cache = useCache(!user);
 
   return (
     <div>

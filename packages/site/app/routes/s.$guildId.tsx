@@ -125,7 +125,7 @@ export default () => {
   const has = (...flags: BitFlagResolvable[]) =>
     member.owner ? true : permissions.has(...flags);
 
-  const cache = useCache();
+  const cache = useCache(!user);
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     cache.channel.fetchMany(guild.id);

@@ -356,14 +356,15 @@ export class CacheManager {
   }
 }
 
-export const useCache = (user?: any) => {
+export const useCache = <T extends boolean>(
+  invalid?: T,
+): T extends true ? undefined : CacheManager => {
   const [state, setState] = useReducer(
     (d: Resolutions, partialD: Partial<Resolutions>) => ({ ...d, ...partialD }),
     {},
   );
-  if (user) {
-    const cache = new CacheManager(state, setState);
-    return cache;
-  }
-  return undefined;
+  const cache = new CacheManager(state, setState);
+  return (invalid ? undefined : cache) as T extends true
+    ? undefined
+    : CacheManager;
 };
