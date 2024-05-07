@@ -450,7 +450,7 @@ export const ActionRowEditor: React.FC<{
                               <div className="flex">
                                 <div className="ltr:mr-2 rtl:ml-2 mt-auto">
                                   <p className="text-sm cursor-default font-medium">
-                                    Emoji
+                                    {t("emoji")}
                                   </p>
                                   <PopoutEmojiPicker
                                     emoji={option.emoji}
@@ -463,7 +463,7 @@ export const ActionRowEditor: React.FC<{
                                 </div>
                                 <div className="grow">
                                   <TextInput
-                                    label="Label"
+                                    label={t("label")}
                                     className="w-full"
                                     value={option.label ?? ""}
                                     maxLength={100}
@@ -476,7 +476,7 @@ export const ActionRowEditor: React.FC<{
                                 </div>
                                 <div className="ltr:ml-2 rtl:mr-2 my-auto">
                                   <Checkbox
-                                    label="Default"
+                                    label={t("default")}
                                     checked={option.default ?? false}
                                     onChange={(e) => {
                                       option.default = e.currentTarget.checked;
@@ -486,7 +486,7 @@ export const ActionRowEditor: React.FC<{
                                 </div>
                               </div>
                               <TextInput
-                                label="Description"
+                                label={t("description")}
                                 className="w-full"
                                 value={option.description ?? ""}
                                 maxLength={100}
@@ -632,7 +632,7 @@ export const ActionRowEditor: React.FC<{
           setData({ ...data });
         }}
       >
-        Add Component
+        {t("addComponent")}
       </ButtonSelect>
     </details>
   );
