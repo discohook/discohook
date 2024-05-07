@@ -291,6 +291,7 @@ export const Message: React.FC<{
               <MessageComponents
                 components={message.components}
                 authorType={authorType}
+                cache={cache}
               />
             </div>
           )}

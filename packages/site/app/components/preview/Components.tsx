@@ -7,16 +7,26 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
-import { cdn } from "~/util/discord";
+import {
+  CacheManager,
+  ResolvableAPIChannel,
+  ResolvableAPIGuildMember,
+  ResolvableAPIRole,
+} from "~/util/cache/CacheManager";
+import { cdn, cdnImgAttributes } from "~/util/discord";
+import { getUserAvatar } from "~/util/users";
 import { Button } from "../Button";
 import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
+import { RoleShield } from "../icons/role";
+import { channelIcons } from "./Markdown";
 import { AuthorType } from "./Message";
 
 type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
   data: T;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
   authorType?: AuthorType;
+  cache?: CacheManager;
 }>;
 
 export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
@@ -50,10 +60,91 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
   );
 };
 
+const PreviewSelectOption: React.FC<{
+  label: string;
+  description?: string;
+  icon?: React.ReactNode;
+}> = ({ label, description, icon }) => {
+  return (
+    <div className="flex last:rounded-b hover:bg-[#e0e1e5] hover:dark:bg-[#36373d] w-full p-2 cursor-pointer">
+      {icon}
+      <div className="truncate text-sm font-medium my-auto">
+        <p className="truncate leading-[18px]">{label}</p>
+        {description && (
+          <p className="truncate text-[#4e5058] dark:text-[#b5bac1] leading-[18px]">
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const PreviewMemberSelectOption: React.FC<{
+  member: ResolvableAPIGuildMember;
+}> = ({ member }) => (
+  <PreviewSelectOption
+    label={member.nick ?? member.user.global_name ?? member.user.username}
+    icon={
+      <img
+        src={getUserAvatar({
+          discordUser: {
+            id: BigInt(member.user.id),
+            discriminator: null,
+            avatar: null,
+          },
+        })}
+        className="w-[22px] h-[22px] mr-2 my-auto shrink-0 rounded-full"
+        alt=""
+      />
+    }
+  />
+);
+
+const PreviewRoleSelectOption: React.FC<{
+  role: ResolvableAPIRole;
+}> = ({ role }) => (
+  <PreviewSelectOption
+    label={role.name}
+    icon={
+      role.icon ? (
+        <img
+          {...cdnImgAttributes(32, (size) =>
+            // biome-ignore lint/style/noNonNullAssertion: Conditional render
+            cdn.roleIcon(role.id, role.icon!, { size }),
+          )}
+          className="w-[22px] h-[22px] mr-2 my-auto shrink-0 rounded-full"
+          alt={role.name}
+        />
+      ) : role.unicode_emoji ? (
+        <Twemoji
+          emoji={role.unicode_emoji}
+          className="w-[22px] h-[22px] mr-2 my-auto shrink-0 align-middle"
+        />
+      ) : (
+        <RoleShield
+          style={{ color: `#${role.color.toString(16)}` }}
+          className="mr-2"
+        />
+      )
+    }
+  />
+);
+
+const PreviewChannelSelectOption: React.FC<{
+  channel: ResolvableAPIChannel;
+}> = ({ channel }) => (
+  <PreviewSelectOption
+    label={channel.name ?? ""}
+    icon={channelIcons[channel.type]({ className: "mr-2" })}
+  />
+);
+
 export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
   data,
   onClick,
   authorType,
+  cache,
 }) => {
   const { t } = useTranslation();
   const shouldLeftPad =
@@ -88,39 +179,78 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
           />
         </div>
       </button>
-      {data.type === ComponentType.StringSelect && (
-        <div className="hidden peer-data-[open=true]/select:block absolute left-0 w-full bg-[#f2f3f5] dark:bg-[#2b2d31] rounded-b border border-[#e3e5e8] dark:border-[#1e1f22] overflow-y-auto max-h-64">
-          {data.options.map((option, oi) => (
-            <div
-              key={`preview-select-option-${oi}-${option.value}`}
-              className="flex last:rounded-b hover:bg-[#e0e1e5] hover:dark:bg-[#36373d] w-full p-2 cursor-pointer"
-            >
-              {option.emoji?.id ? (
-                <img
-                  src={cdn.emoji(option.emoji.id)}
-                  className="w-[22px] h-[22px] mr-2 my-auto shrink-0"
-                  alt={option.emoji.name}
-                />
-              ) : option.emoji?.name ? (
-                <Twemoji
-                  emoji={option.emoji.name}
-                  className="w-[22px] h-[22px] mr-2 my-auto shrink-0 align-middle"
-                />
-              ) : (
-                shouldLeftPad && <div className="w-[22px] mr-2 shrink-0" />
-              )}
-              <div className="truncate text-sm font-medium my-auto">
-                <p className="truncate leading-[18px]">{option.label}</p>
-                {option.description && (
-                  <p className="truncate text-[#4e5058] dark:text-[#b5bac1] leading-[18px]">
-                    {option.description}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="hidden peer-data-[open=true]/select:block absolute left-0 w-full bg-[#f2f3f5] dark:bg-[#2b2d31] rounded-b border border-[#e3e5e8] dark:border-[#1e1f22] overflow-y-auto max-h-64">
+        {data.type === ComponentType.StringSelect
+          ? data.options.map((option, oi) => (
+              <PreviewSelectOption
+                key={`preview-select-option-${oi}-${option.value}`}
+                label={option.label}
+                description={option.description}
+                icon={
+                  option.emoji?.id ? (
+                    <img
+                      src={cdn.emoji(option.emoji.id)}
+                      className="w-[22px] h-[22px] mr-2 my-auto shrink-0"
+                      alt={option.emoji.name}
+                    />
+                  ) : option.emoji?.name ? (
+                    <Twemoji
+                      emoji={option.emoji.name}
+                      className="w-[22px] h-[22px] mr-2 my-auto shrink-0 align-middle"
+                    />
+                  ) : shouldLeftPad ? (
+                    <div className="w-[22px] mr-2 shrink-0" />
+                  ) : undefined
+                }
+              />
+            ))
+          : cache &&
+            (data.type === ComponentType.UserSelect ? (
+              cache.member
+                .getAll()
+                .map((member) => (
+                  <PreviewMemberSelectOption
+                    key={`preview-select-${data.type}-option-${member.user.id}`}
+                    member={member}
+                  />
+                ))
+            ) : data.type === ComponentType.RoleSelect ? (
+              cache.role
+                .getAll()
+                .map((role) => (
+                  <PreviewRoleSelectOption
+                    key={`preview-select-${data.type}-option-${role.id}`}
+                    role={role}
+                  />
+                ))
+            ) : data.type === ComponentType.MentionableSelect ? (
+              <>
+                {cache.role.getAll().map((role) => (
+                  <PreviewRoleSelectOption
+                    key={`preview-select-${data.type}-option-${role.id}-role`}
+                    role={role}
+                  />
+                ))}
+                {cache.member.getAll().map((member) => (
+                  <PreviewMemberSelectOption
+                    key={`preview-select-${data.type}-option-${member.user.id}-user`}
+                    member={member}
+                  />
+                ))}
+              </>
+            ) : data.type === ComponentType.ChannelSelect ? (
+              cache.channel
+                .getAll()
+                .map((channel) => (
+                  <PreviewChannelSelectOption
+                    key={`preview-select-${data.type}-option-${channel.id}`}
+                    channel={channel}
+                  />
+                ))
+            ) : (
+              <></>
+            ))}
+      </div>
     </div>
   );
 };
@@ -137,7 +267,8 @@ const previewComponentMap = {
 export const MessageComponents: React.FC<{
   components: NonNullable<APIMessage["components"]>;
   authorType?: AuthorType;
-}> = ({ components, authorType }) => {
+  cache?: CacheManager;
+}> = ({ components, authorType, cache }) => {
   return (
     <div className="grid gap-1 py-[0.125rem]">
       {components.map((row, i) => (
@@ -150,10 +281,12 @@ export const MessageComponents: React.FC<{
                   key={`action-row-${i}-component-${ci}`}
                   className="contents"
                 >
-                  {
+                  {fc({
                     // @ts-ignore
-                    fc({ data: component, authorType })
-                  }
+                    data: component,
+                    authorType,
+                    cache,
+                  })}
                 </div>
               );
             }

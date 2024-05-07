@@ -284,6 +284,10 @@ class CDN {
   appIcon(id: string, iconHash: string, options?: BaseImageURLOptions): string {
     return `${this.BASE}/app-icons/${id}/${iconHash}${this._withOpts(options)}`;
   }
+
+  roleIcon(id: string, iconHash: string, options?: BaseImageURLOptions): string {
+    return `${this.BASE}/role-icons/${id}/${iconHash}${this._withOpts(options)}`;
+  }
 }
 
 export const cdn = new CDN();
