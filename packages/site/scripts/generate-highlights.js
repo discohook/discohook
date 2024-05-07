@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // @ts-check
 
-import hljs from "highlight.js";
 import { writeFile } from "node:fs/promises";
+import hljs from "highlight.js";
 
 /** @typedef {import("highlight.js").Mode} Mode */
 

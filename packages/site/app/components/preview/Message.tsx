@@ -6,6 +6,7 @@ import {
 } from "discord-api-types/v10";
 import { UserFlags, UserFlagsBitField } from "discord-bitflag";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
@@ -160,9 +161,10 @@ export const Message: React.FC<{
 
   return (
     <div
-      className={`flex dark:text-primary-230 ${
-        showProfile && !forceSeparateAuthor && lastMessage ? "mt-4" : ""
-      }`}
+      className={twJoin(
+        "flex dark:text-primary-230",
+        showProfile && !forceSeparateAuthor && lastMessage ? "mt-4" : "",
+      )}
       dir="ltr"
     >
       {messageDisplay !== "compact" && (

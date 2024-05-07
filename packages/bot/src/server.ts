@@ -22,10 +22,10 @@ import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { DurableStoredComponent } from "store/src/durable/components.js";
 import {
   backups,
+  buttons as oButtons,
   discordMessageComponents,
   generateId,
   makeSnowflake,
-  buttons as oButtons,
 } from "store/src/schema";
 import {
   Flow,

@@ -23,7 +23,7 @@ export const FileInput = (
         hidden
         onInput={(e) => {
           const files = e.currentTarget.files;
-          let fileNames: string[] = [];
+          const fileNames: string[] = [];
           if (files) {
             for (const file of files) {
               fileNames.push(file.name);

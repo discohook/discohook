@@ -6,9 +6,6 @@
       "build/",
       "./packages/site/functions/",
       "./packages/site/public/emoji.json",
-      "./packages/site/public/help/",
-      "./packages/site/app/i18n/",
-      "./packages/bot/src/i18n/",
       "./packages/site/app/util/highlights.json",
       "./persistence/"
     ]
@@ -28,10 +25,18 @@
       },
       "complexity": {
         "noBannedTypes": "off"
+      },
+      "correctness": {
+        "useHookAtTopLevel": "error"
       }
     }
   },
   "formatter": {
+    "ignore": [
+      "./packages/site/public/help/",
+      "./packages/site/app/i18n/",
+      "./packages/bot/src/i18n/"
+    ],
     "indentStyle": "space"
   },
   "javascript": {
