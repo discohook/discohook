@@ -20,5 +20,8 @@
     "defaultPlaceholder": "Fais un choix",
     "todayAt": "Aujourd’hui à {{time}}",
     "logIn": "S'identifier",
-    "logOut": "Se déconnecter"
+    "logOut": "Se déconnecter",
+    "permission": {
+        "ManageWebhooks": "Webhooks beheren"
+    }
 }
