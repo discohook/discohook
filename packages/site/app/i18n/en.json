@@ -107,6 +107,7 @@
   "refreshShareLink": "Refresh the share link for another 2 weeks (Deluxe feature!)",
   "id": "ID: {{id}}",
   "idText": "ID",
+  "idMention": "ID - {{mention}}",
   "noShareLinkData": "Share link data is not kept after expiration. If you need to permanently store a message, use <backups>Backups</backups> instead.",
   "subscribedSince": "Subscribed Since",
   "notSubscribed": "Not subscribed",

@@ -13,7 +13,9 @@ import {
   APIUserSelectComponent,
   ButtonStyle,
   ComponentType,
+  SelectMenuDefaultValueType,
 } from "discord-api-types/v10";
+import { isSnowflake } from "discord-snowflake";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { EditingFlowData } from "~/modals/FlowEditModal";
@@ -25,6 +27,7 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
+import { StringSelect } from "../StringSelect";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { linkClassName } from "../preview/Markdown";
@@ -107,11 +110,6 @@ export const getComponentErrors = (
   return errors;
 };
 
-export const componentMatches = (
-  left: APIMessageActionRowComponent,
-  right: QueryDataComponent,
-) => "custom_id" in left && left.custom_id === `p_${right.id}`;
-
 export const ActionRowEditor: React.FC<{
   message: QueryData["messages"][number];
   row: APIActionRowComponent<APIMessageActionRowComponent>;
@@ -138,6 +136,42 @@ export const ActionRowEditor: React.FC<{
   const { t } = useTranslation();
   const mi = data.messages.indexOf(message);
   const errors = getComponentErrors(row);
+
+  // if (cache) {
+  //   const requests = row.components
+  //     .filter(
+  //       (
+  //         component,
+  //       ): component is
+  //         | APIRoleSelectComponent
+  //         | APIUserSelectComponent
+  //         | APIMentionableSelectComponent
+  //         | APIChannelSelectComponent =>
+  //         [
+  //           ComponentType.RoleSelect,
+  //           ComponentType.UserSelect,
+  //           ComponentType.MentionableSelect,
+  //           ComponentType.ChannelSelect,
+  //         ].includes(component.type),
+  //     )
+  //     .map(
+  //       (component) =>
+  //         component.default_values
+  //           ?.filter((val) => isSnowflake(val.id))
+  //           .map((val) =>
+  //             val.type === SelectMenuDefaultValueType.User
+  //               ? `member:@global-${val.id}`
+  //               : `${val.type}:${val.id}`,
+  //           ) ?? [],
+  //     )
+  //     .reduce((prev, cur) => {
+  //       prev.push(...cur);
+  //       return prev;
+  //     }, []);
+
+  //   cache.resolveMany(new Set(requests));
+  // }
+
   return (
     <details className="group/action-row" open={open}>
       <summary className="group-open/action-row:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
@@ -357,7 +391,6 @@ export const ActionRowEditor: React.FC<{
                               if (qComponent.data.flow) {
                                 flow = qComponent.data.flow as Flow;
                               } else {
-                                // setEditingFlow(qComponent.data.flows)
                                 return;
                               }
                             } else {
@@ -436,9 +469,13 @@ export const ActionRowEditor: React.FC<{
                         />
                       </div>
                     </div>
-                    {component.type === ComponentType.StringSelect && (
+                    {component.type === ComponentType.StringSelect ? (
                       <>
-                        <div className="pt-2 -mb-2">
+                        <div
+                          className={
+                            component.options.length === 0 ? "" : "pt-2 -mb-2"
+                          }
+                        >
                           {component.options.map((option, oi) => (
                             <SelectMenuOptionsSection
                               key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}-option-${oi}`}
@@ -491,36 +528,250 @@ export const ActionRowEditor: React.FC<{
                                 value={option.description ?? ""}
                                 maxLength={100}
                                 onInput={(e) => {
-                                  option.description = e.currentTarget.value;
+                                  option.description =
+                                    e.currentTarget.value || undefined;
                                   setData({ ...data });
                                 }}
                               />
-                              <TextInput
-                                label="Value (hidden)"
-                                className="w-full"
-                                value={option.value ?? ""}
-                                maxLength={100}
-                                onInput={(e) => {
-                                  option.value = e.currentTarget.value;
-                                  setData({ ...data });
-                                }}
-                                required
-                              />
+                              <div className="flex">
+                                <div className="grow">
+                                  <TextInput
+                                    label={t("valueHidden")}
+                                    className="w-full"
+                                    value={option.value ?? ""}
+                                    maxLength={100}
+                                    onInput={(e) => {
+                                      option.value = e.currentTarget.value;
+                                      setData({ ...data });
+                                    }}
+                                    required
+                                  />
+                                </div>
+                                <Button
+                                  className="mt-auto ltr:ml-2 rtl:mr-2"
+                                  onClick={async () => {
+                                    const flows = (qComponent?.data.flows ??
+                                      {}) as Record<string, Flow>;
+                                    let flow: Flow;
+                                    if (!qComponent) {
+                                      const newId = randomString(10);
+                                      flow = {
+                                        name: "Flow",
+                                        actions: [{ type: 0 }],
+                                      };
+                                      setComponents([
+                                        ...qdComponents,
+                                        {
+                                          id: newId,
+                                          data: { flow },
+                                          draft: true,
+                                        },
+                                      ]);
+                                    } else if (!flows[option.value]) {
+                                      flow = flow = {
+                                        name: "Flow",
+                                        actions: [{ type: 0 }],
+                                      };
+                                      flows[option.value] = flow;
+                                      qComponent.data.flows = flows;
+                                      setComponents([...qdComponents]);
+                                    } else {
+                                      flow = flows[option.value];
+                                    }
+
+                                    setEditingFlow({
+                                      flow,
+                                      setFlow: (newFlow) => {
+                                        if (qComponent?.data) {
+                                          flows[option.value] = newFlow;
+                                          qComponent.data.flows = flows;
+                                        }
+                                        setComponents([
+                                          ...(qdComponents ?? []),
+                                        ]);
+                                      },
+                                    });
+                                  }}
+                                >
+                                  {t(
+                                    // @ts-expect-error
+                                    qComponent?.data?.flows?.[option.value]
+                                      ? "editFlow"
+                                      : "addFlow",
+                                  )}
+                                </Button>
+                              </div>
                             </SelectMenuOptionsSection>
                           ))}
                         </div>
                         <Button
-                          className=""
                           disabled={component.options.length >= 25}
                           onClick={() => {
+                            // For most users, the option value is not
+                            // something they need to worry about, so we auto-
+                            // fill it.
                             component.options.push({
                               label: "",
-                              value: "",
+                              value: randomString(10),
                             });
                             setData({ ...data });
                           }}
                         >
                           {t("addOption")}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          className={
+                            !component.default_values ||
+                            component.default_values.length === 0
+                              ? ""
+                              : "pt-2 -mb-2"
+                          }
+                        >
+                          {component.default_values?.map((value, vi) => {
+                            // We don't want to accidentally double-fetch here
+                            const resolved =
+                              isSnowflake(value.id) && cache
+                                ? value.type === SelectMenuDefaultValueType.User
+                                  ? cache.member.get(value.id)
+                                  : value.type ===
+                                      SelectMenuDefaultValueType.Role
+                                    ? cache.role.get(value.id)
+                                    : cache.channel.get(value.id)
+                                : undefined;
+
+                            return (
+                              <div
+                                key={`edit-message-${mi}-row-${i}-component-${component.type}-${ci}-value-${vi}`}
+                              >
+                                <div className="flex">
+                                  <div className="grow">
+                                    <TextInput
+                                      label={t(
+                                        resolved !== undefined
+                                          ? "idMention"
+                                          : "idText",
+                                        {
+                                          replace: {
+                                            mention: resolved
+                                              ? "user" in resolved
+                                                ? `@${resolved.user.username}`
+                                                : "type" in resolved
+                                                  ? `#${
+                                                      resolved.name ??
+                                                      t("mention.unknown")
+                                                    }`
+                                                  : `@${resolved.name}`
+                                              : resolved === null
+                                                ? value.type ===
+                                                  SelectMenuDefaultValueType.Channel
+                                                  ? `#${t("mention.unknown")}`
+                                                  : `@${t("mention.unknown")}`
+                                                : undefined,
+                                          },
+                                        },
+                                      )}
+                                      className="w-full"
+                                      value={value.id}
+                                      pattern="^\d{17,22}$"
+                                      onChange={(e) => {
+                                        value.id = e.currentTarget.value;
+                                        setData({ ...data });
+                                      }}
+                                      required
+                                    />
+                                  </div>
+                                  {component.type ===
+                                    ComponentType.MentionableSelect && (
+                                    <div className="ltr:ml-2 rtl:mr-2 mt-auto">
+                                      <StringSelect
+                                        label={t("type")}
+                                        // className="shrink-0"
+                                        options={[
+                                          {
+                                            label: t("user"),
+                                            value:
+                                              SelectMenuDefaultValueType.User,
+                                          },
+                                          {
+                                            label: t("role"),
+                                            value:
+                                              SelectMenuDefaultValueType.Role,
+                                          },
+                                        ]}
+                                        value={{
+                                          label: t(value.type),
+                                          value: value.type,
+                                        }}
+                                        onChange={(raw) => {
+                                          const opt = raw as {
+                                            label: string;
+                                            value:
+                                              | SelectMenuDefaultValueType.User
+                                              | SelectMenuDefaultValueType.Role;
+                                          };
+                                          value.type = opt.value;
+                                          setData({ ...data });
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="ltr:ml-2 rtl:mr-2 mt-auto">
+                                    <Button
+                                      discordstyle={ButtonStyle.Danger}
+                                      onClick={() => {
+                                        // @ts-expect-error
+                                        component.default_values =
+                                          component.default_values?.filter(
+                                            (v) =>
+                                              !(
+                                                v.id === value.id &&
+                                                v.type === value.type
+                                              ),
+                                          );
+                                        setData({ ...data });
+                                      }}
+                                    >
+                                      <CoolIcon icon="Trash_Full" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <Button
+                          // Is there not a limit for this?
+                          // disabled={component.options.length >= 25}
+                          onClick={() => {
+                            component.default_values =
+                              component.default_values ?? [];
+                            component.default_values.push(
+                              // @ts-expect-error
+                              // This is perfectly cromulent
+                              component.type === ComponentType.UserSelect ||
+                                component.type ===
+                                  ComponentType.MentionableSelect
+                                ? {
+                                    id: "",
+                                    type: SelectMenuDefaultValueType.User,
+                                  }
+                                : component.type === ComponentType.RoleSelect
+                                  ? {
+                                      id: "",
+                                      type: SelectMenuDefaultValueType.User,
+                                    }
+                                  : {
+                                      id: "",
+                                      type: SelectMenuDefaultValueType.Channel,
+                                    },
+                            );
+                            setData({ ...data });
+                          }}
+                        >
+                          {t("addDefaultValue")}
                         </Button>
                       </>
                     )}
@@ -752,7 +1003,7 @@ export const SelectMenuOptionsSection: React.FC<
     open?: boolean;
   }>
 > = ({ option, index, component, update, open, children }) => {
-  const previewText = option.label || option.description || option.value;
+  const previewText = option.label || option.description;
   return (
     <details className="group/select-option pb-2 -my-1" open={open}>
       <summary className="group-open/select-option:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">

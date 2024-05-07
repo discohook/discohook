@@ -161,8 +161,9 @@ class MemberResourceManager extends ResourceCacheManagerBase<ResolvableAPIGuildM
     // Unfortunately this method relies on iteration and so is not O(1), but
     // since state should always be relatively small I think this shouldn't be
     // an issue.
-    const pair = Object.entries(this.manager.state).find((p) =>
-      p[0].endsWith(`-${userId}`),
+    const pair = Object.entries(this.manager.state).find(
+      (p): p is [ResolutionKey, ResolvableAPIGuildMember] =>
+        p[0].startsWith("member:") && p[0].endsWith(`-${userId}`),
     );
     if (pair) {
       return pair[1];
