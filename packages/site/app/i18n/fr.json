@@ -23,5 +23,14 @@
     "logOut": "Se déconnecter",
     "permission": {
         "ManageWebhooks": "Webhooks beheren"
-    }
+    },
+    "removeResource": "Supprimer {{0}}",
+    "edit": "Editer",
+    "search": "Recherche",
+    "ok": "OK",
+    "delete": "Supprimer",
+    "helpSearchPlaceholder": "Comment puis-je…",
+    "supportServer": "Serveur de support",
+    "saveMessageTitle": "Enregistrer le message",
+    "temporaryShareUrl": "URL de partage temporaire"
 }
