@@ -176,7 +176,7 @@ export const MessageSaveModal = (
                   backupFetcher.submit(
                     {
                       name: new Date().toLocaleDateString(),
-                      data: JSON.stringify(dataWithTargets()),
+                      data: dataWithTargets(),
                     },
                     {
                       action: apiUrl(BRoutes.backups()),

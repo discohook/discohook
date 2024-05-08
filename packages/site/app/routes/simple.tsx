@@ -213,10 +213,8 @@ export default function Index() {
           console.log("Saving backup", backupId);
           fetch(apiUrl(BRoutes.backups(backupId)), {
             method: "PATCH",
-            body: new URLSearchParams({
-              data: JSON.stringify(data),
-            }),
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: JSON.stringify({ data }),
+            headers: { "Content-Type": "application/json" },
           });
         }
       }

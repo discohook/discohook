@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getUser, getUserId } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
-import { jsonAsString, zxParseForm, zxParseQuery } from "~/util/zod";
+import { zxParseJson, zxParseQuery } from "~/util/zod";
 import {
   QueryData,
   backups,
@@ -92,10 +92,9 @@ export const action = async ({ request, context }: ActionArgs) => {
     throw json({ message: "Must provide Content-Length header." }, 400);
   }
 
-  // const formData = await request.clone().formData();
-  const { name, data } = await zxParseForm(request, {
+  const { name, data } = await zxParseJson(request, {
     name: z.string().refine((val) => val.length <= 100),
-    data: jsonAsString(ZodQueryData),
+    data: ZodQueryData,
   });
   const backupId = generateId();
 
