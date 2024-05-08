@@ -1,11 +1,16 @@
 import {
   APIButtonComponentWithCustomId,
   APIButtonComponentWithURL,
+  APIChannelSelectComponent,
+  APIMentionableSelectComponent,
   APIMessageComponentEmoji,
+  APIRoleSelectComponent,
+  APIStringSelectComponent,
+  APIUserSelectComponent,
   ButtonStyle,
   ChannelType,
   ComponentType,
-  SelectMenuDefaultValueType,
+  SelectMenuDefaultValueType
 } from "discord-api-types/v10";
 import { z } from "zod";
 
@@ -43,17 +48,11 @@ export const ZodAPIButtonComponent = z.union([
   ZodAPIButtonComponentWithURL,
 ]);
 
-export const ZodAPISelectMenuComponent = z.object({
-  type: z.union([
-    z.literal(ComponentType.StringSelect),
-    z.literal(ComponentType.UserSelect),
-    z.literal(ComponentType.RoleSelect),
-    z.literal(ComponentType.MentionableSelect),
-    z.literal(ComponentType.ChannelSelect),
-  ]),
-  custom_id: z.string(),
-  options: z
-    .array(
+export const ZodAPIStringSelectMenuComponent: z.ZodType<APIStringSelectComponent> =
+  z.object({
+    type: z.literal(ComponentType.StringSelect),
+    custom_id: z.string(),
+    options: z.array(
       z.object({
         label: z.string(),
         value: z.string(),
@@ -61,44 +60,116 @@ export const ZodAPISelectMenuComponent = z.object({
         emoji: ZodPartialEmoji.optional(),
         default: z.oboolean(),
       }),
-    )
-    .optional(),
-  channel_types: z
-    .array(
-      z.union([
-        z.literal(ChannelType.GuildText),
-        z.literal(ChannelType.GuildVoice),
-        z.literal(ChannelType.GuildCategory),
-        z.literal(ChannelType.GuildAnnouncement),
-        z.literal(ChannelType.AnnouncementThread),
-        z.literal(ChannelType.PublicThread),
-        z.literal(ChannelType.PrivateThread),
-        z.literal(ChannelType.GuildStageVoice),
-        z.literal(ChannelType.GuildDirectory),
-        z.literal(ChannelType.GuildForum),
-        z.literal(ChannelType.GuildMedia),
-      ]),
-    )
-    .optional(),
-  placeholder: z.ostring(),
-  default_values: z
-    .array(
-      z.object({
+    ),
+    placeholder: z.ostring(),
+    min_values: z.onumber(),
+    max_values: z.onumber(),
+    disabled: z.oboolean(),
+  });
+
+export const ZodAPIRoleSelectMenuComponent: z.ZodType<APIRoleSelectComponent> =
+  z.object({
+    type: z.literal(ComponentType.RoleSelect),
+    custom_id: z.string(),
+    default_values: z
+      .object({
+        id: z.string(),
+        type: z.literal(SelectMenuDefaultValueType.Role),
+      })
+      .array()
+      .optional(),
+    placeholder: z.ostring(),
+    min_values: z.onumber(),
+    max_values: z.onumber(),
+    disabled: z.oboolean(),
+  });
+
+export const ZodAPIUserSelectMenuComponent: z.ZodType<APIUserSelectComponent> =
+  z.object({
+    type: z.literal(ComponentType.UserSelect),
+    custom_id: z.string(),
+    default_values: z
+      .object({
+        id: z.string(),
+        type: z.literal(SelectMenuDefaultValueType.User),
+      })
+      .array()
+      .optional(),
+    placeholder: z.ostring(),
+    min_values: z.onumber(),
+    max_values: z.onumber(),
+    disabled: z.oboolean(),
+  });
+
+export const ZodAPIMentionableSelectMenuComponent: z.ZodType<APIMentionableSelectComponent> =
+  z.object({
+    type: z.literal(ComponentType.MentionableSelect),
+    custom_id: z.string(),
+    default_values: z
+      .object({
         id: z.string(),
         type: z.union([
           z.literal(SelectMenuDefaultValueType.User),
           z.literal(SelectMenuDefaultValueType.Role),
-          z.literal(SelectMenuDefaultValueType.Channel),
-        ]) satisfies z.ZodType<SelectMenuDefaultValueType>,
-      }),
-    )
-    .optional(),
-  min_values: z.onumber(),
-  max_values: z.onumber(),
-  disabled: z.oboolean(),
-}); // satisfies z.ZodType<APISelectMenuComponent>;
+        ]),
+      })
+      .array()
+      .optional(),
+    placeholder: z.ostring(),
+    min_values: z.onumber(),
+    max_values: z.onumber(),
+    disabled: z.oboolean(),
+  });
+
+export const ZodAPIChannelSelectMenuComponent: z.ZodType<APIChannelSelectComponent> =
+  z.object({
+    type: z.literal(ComponentType.ChannelSelect),
+    custom_id: z.string(),
+    channel_types: z
+      .array(
+        z.union([
+          z.literal(ChannelType.GuildText),
+          z.literal(ChannelType.GuildVoice),
+          z.literal(ChannelType.GuildCategory),
+          z.literal(ChannelType.GuildAnnouncement),
+          z.literal(ChannelType.AnnouncementThread),
+          z.literal(ChannelType.PublicThread),
+          z.literal(ChannelType.PrivateThread),
+          z.literal(ChannelType.GuildStageVoice),
+          z.literal(ChannelType.GuildDirectory),
+          z.literal(ChannelType.GuildForum),
+          z.literal(ChannelType.GuildMedia),
+        ]),
+      )
+      .optional(),
+
+    default_values: z
+      .object({
+        id: z.string(),
+        type: z.literal(SelectMenuDefaultValueType.Channel),
+      })
+      .array()
+      .optional(),
+    placeholder: z.ostring(),
+    min_values: z.onumber(),
+    max_values: z.onumber(),
+    disabled: z.oboolean(),
+  });
+
+export const ZodAPISelectMenuComponent = z.union([
+  ZodAPIStringSelectMenuComponent,
+  ZodAPIRoleSelectMenuComponent,
+  ZodAPIUserSelectMenuComponent,
+  ZodAPIMentionableSelectMenuComponent,
+  ZodAPIChannelSelectMenuComponent,
+]);
 
 export const ZodAPIMessageActionRowComponent = z.union([
   ZodAPIButtonComponent,
   ZodAPISelectMenuComponent,
 ]);
+
+export const ZodAPIActionRowComponent = z.object({
+  type: z.literal(ComponentType.ActionRow),
+  components: ZodAPIMessageActionRowComponent.array(),
+});

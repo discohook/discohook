@@ -6,8 +6,10 @@ import {
   UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
-import { StorableComponent } from "~/store.server";
+import { Flow } from "~/store.server";
 import { randomString } from "~/util/text";
+import { ZodAPIActionRowComponent } from "./components";
+import { ZodFlow } from "./flows";
 
 /** The version of the query data, defaults to `d2`
  *
@@ -46,8 +48,7 @@ export interface QueryData {
     string,
     {
       id: string;
-      // @ts-expect-error
-      data: Partial<Pick<StorableComponent, "flow" | "flows">>;
+      data: { flow: Flow } | { flows: Record<string, Flow> };
       draft?: boolean;
     }[]
   >;
@@ -125,8 +126,8 @@ export const ZodQueryDataMessage: z.ZodType<QueryData["messages"][number]> =
         })
         .array()
         .optional(),
-      // components:
       webhook_id: z.ostring(),
+      components: ZodAPIActionRowComponent.array().optional(),
     }),
     reference: z.ostring(),
   });
@@ -134,11 +135,6 @@ export const ZodQueryDataMessage: z.ZodType<QueryData["messages"][number]> =
 export type QueryDataComponent = NonNullable<
   QueryData["components"]
 >[string][number];
-
-export const ZodFlow = z.object({
-  name: z.string(),
-  actions: z.object({}).array(),
-});
 
 export const ZodQueryDataComponent: z.ZodType<QueryDataComponent> = z.object({
   id: z.string(),

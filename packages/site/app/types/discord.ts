@@ -1,7 +1,10 @@
 import {
   APIApplication,
   APIApplicationInstallParams,
+  MessageFlags,
 } from "discord-api-types/v10";
+import { MessageFlagsBitField } from "discord-bitflag";
+import { z } from "zod";
 
 export enum ApplicationIntegrationType {
   GuildInstall = 0,
@@ -36,3 +39,13 @@ export type RESTGetAPIApplicationRpcResult = Pick<
     ApplicationIntegrationConfiguration
   >;
 };
+
+export const ZodMessageFlags = z.number().refine((val): val is MessageFlags => {
+  try {
+    // Is this doing much of anything?
+    new MessageFlagsBitField(val);
+    return true;
+  } catch {
+    return false;
+  }
+});

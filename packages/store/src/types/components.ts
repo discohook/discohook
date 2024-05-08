@@ -8,6 +8,7 @@ import {
   MessageFlags,
   RESTPostAPIGuildForumThreadsJSONBody,
   SelectMenuDefaultValueType,
+  ThreadAutoArchiveDuration,
 } from "discord-api-types/v10";
 
 export type StorableComponent =
@@ -159,7 +160,7 @@ export interface FlowActionCreateThread extends FlowActionBase {
    * (e.g. a channel other than the one in context) */
   channelId?: string;
   name: string;
-  autoArchiveDuration?: 60 | 1440 | 4320 | 10080;
+  autoArchiveDuration?: ThreadAutoArchiveDuration;
   rateLimitPerUser?: number;
   // Text/voice/... only
   // messageId?: string;
