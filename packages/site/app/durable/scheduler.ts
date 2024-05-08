@@ -83,6 +83,8 @@ export class DurableScheduler implements DurableObject {
             token: webhookToken,
           },
           message,
+          // TODO: pull files from S3
+          undefined,
           rest,
         );
         if (
