@@ -39,7 +39,7 @@ import { useCache } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
-import { loader as ApiGetAuditLogGuild } from "../api/v1/audit-log.$guildId";
+import { loader as ApiGetAuditLogGuild } from "../api/v1/guilds.$guildId.log";
 import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import { action as ApiPatchGuildWebhook } from "../api/v1/guilds.$guildId.webhooks.$webhookId";
@@ -149,7 +149,7 @@ export default () => {
     switch (tab) {
       case "auditLog": {
         if (!auditLogFetcher.data && auditLogFetcher.state === "idle") {
-          auditLogFetcher.load(apiUrl(BRoutes.guildAuditLog(guild.id)));
+          auditLogFetcher.load(apiUrl(BRoutes.guildLog(guild.id)));
         }
         break;
       }
