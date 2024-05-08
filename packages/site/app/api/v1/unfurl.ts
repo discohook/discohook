@@ -102,6 +102,22 @@ const getMetaTags = (html: string) => {
   return tags;
 };
 
+const qualifyUrl = (url: string, currentUrl: string) => {
+  try {
+    new URL(url);
+    return url;
+  } catch {
+    // TODO: Does Discord really do this or is it a special case
+    // for their own domain? (Dev portal links)
+    const { origin, pathname } = new URL(currentUrl);
+    if (url.startsWith("/")) {
+      return `${origin}${url}`;
+    }
+    // I think this is how it works
+    return `${origin}${pathname}/${url}`;
+  }
+};
+
 export const loader = async ({ request }: LoaderArgs) => {
   const { url: url_ } = zxParseQuery(request, { url: z.string().url() });
 
@@ -209,14 +225,9 @@ export const loader = async ({ request }: LoaderArgs) => {
       case "og:image:url":
       case "og:image:secure_url":
       case "twitter:image": {
-        try {
-          new URL(content);
-        } catch {
-          break;
-        }
         const m = meta[scope as ImageScope];
         m.image = m.image ?? [];
-        m.image.push({ url: content });
+        m.image.push({ url: qualifyUrl(content, url) });
         break;
       }
       case "og:image:height": {
@@ -243,13 +254,8 @@ export const loader = async ({ request }: LoaderArgs) => {
       case "og:video:url":
       case "og:video:secure_url":
       case "twitter:player:stream": {
-        try {
-          new URL(content);
-        } catch {
-          break;
-        }
         const m = meta[scope as ImageScope];
-        m.video = { url: content };
+        m.video = { url: qualifyUrl(content, url) };
         break;
       }
       case "og:video:height":
