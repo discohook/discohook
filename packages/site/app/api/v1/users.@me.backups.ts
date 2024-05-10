@@ -24,7 +24,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     previewImageUrl: backup.previewImageUrl,
     data: {
       messages: backup.data.messages.map((message) => ({
-        text: getMessageText(message.data),
+        text: getMessageText(message.data)?.slice(0, 100),
       })),
     },
   }));

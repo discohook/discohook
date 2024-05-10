@@ -17,8 +17,8 @@ import {
 import { CacheManager } from "~/util/cache/CacheManager";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
 import {
-  PartialBackupsWithMessages,
   loader as ApiGetUserBackups,
+  PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -384,7 +384,11 @@ const FlowActionEditor: React.FC<{
               const messageOptions = [
                 ...(selected
                   ? selected.data.messages.map((msg, i) => ({
-                      label: `${i + 1}. ${msg.text ?? "no content"}`,
+                      label: (
+                        <span className="block truncate">
+                          {i + 1}. {msg.text ?? "no content"}
+                        </span>
+                      ),
                       value: i,
                     }))
                   : []),
@@ -464,7 +468,11 @@ const FlowActionEditor: React.FC<{
               const messageOptions = [
                 ...(selected
                   ? selected.data.messages.map((msg, i) => ({
-                      label: `${i + 1}. ${msg.text ?? "no content"}`,
+                      label: (
+                        <span className="block truncate">
+                          {i + 1}. {msg.text ?? "no content"}
+                        </span>
+                      ),
                       value: i,
                     }))
                   : []),
