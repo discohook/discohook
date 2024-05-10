@@ -20,6 +20,7 @@ import { ExampleModal } from "~/modals/ExampleModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
+import { MessageFlagsEditModal } from "~/modals/MesageFlagsEditModal";
 import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
@@ -356,6 +357,7 @@ export default function Index() {
   const [settingMessageIndex, setSettingMessageIndex] = useState(
     dm?.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
   );
+  const [editingMessageFlags, setEditingMessageFlags] = useState<number>();
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
   const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");
   const [authSuccessOpen, setAuthSuccessOpen] = useState(dm === "auth-success");
@@ -389,6 +391,13 @@ export default function Index() {
         setData={setData}
         messageIndex={settingMessageIndex}
         cache={cache}
+      />
+      <MessageFlagsEditModal
+        open={editingMessageFlags !== undefined}
+        setOpen={() => setEditingMessageFlags(undefined)}
+        data={data}
+        setData={setData}
+        messageIndex={editingMessageFlags}
       />
       <MessageSendModal
         open={sendingMessages}
@@ -597,6 +606,7 @@ export default function Index() {
                     setFiles({ ...files, [id]: newF as DraftFile[] })
                   }
                   setSettingMessageIndex={setSettingMessageIndex}
+                  setEditingMessageFlags={setEditingMessageFlags}
                   webhooks={Object.values(targets)}
                   setEditingFlow={setEditingFlow}
                   cache={cache}

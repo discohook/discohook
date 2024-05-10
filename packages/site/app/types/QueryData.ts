@@ -3,12 +3,14 @@ import {
   APIAttachment,
   APIEmbed,
   APIMessageActionRowComponent,
+  MessageFlags,
   UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { Flow } from "~/store.server";
 import { randomString } from "~/util/text";
 import { ZodAPIActionRowComponent } from "./components";
+import { ZodMessageFlags } from "./discord";
 import { ZodFlow } from "./flows";
 
 /** The version of the query data, defaults to `d2`
@@ -41,6 +43,7 @@ export interface QueryData {
       attachments?: APIAttachment[];
       components?: APIActionRowComponent<APIMessageActionRowComponent>[];
       webhook_id?: string;
+      flags?: MessageFlags;
     };
     reference?: string;
   }[];
@@ -128,6 +131,7 @@ export const ZodQueryDataMessage: z.ZodType<QueryData["messages"][number]> =
         .optional(),
       webhook_id: z.ostring(),
       components: ZodAPIActionRowComponent.array().optional(),
+      flags: ZodMessageFlags.optional(),
     }),
     reference: z.ostring(),
   });

@@ -1,4 +1,5 @@
 import { APIWebhook } from "discord-api-types/v10";
+import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
 import { EditingFlowData } from "~/modals/FlowEditModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
@@ -46,6 +47,9 @@ export const MessageEditor: React.FC<{
   setSettingMessageIndex: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
+  setEditingMessageFlags: React.Dispatch<
+    React.SetStateAction<number | undefined>
+  >;
   setEditingFlow: React.Dispatch<
     React.SetStateAction<EditingFlowData | undefined>
   >;
@@ -59,6 +63,7 @@ export const MessageEditor: React.FC<{
   setData,
   setFiles,
   setSettingMessageIndex,
+  setEditingMessageFlags,
   setEditingFlow,
   webhooks,
   cache,
@@ -71,7 +76,7 @@ export const MessageEditor: React.FC<{
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
       : 0;
   const previewText = getMessageText(message.data);
-  // const components = data.components?.[i];
+  const flags = new MessageFlagsBitField(message.data.flags ?? 0);
 
   const authorTypes = webhooks
     ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
@@ -89,6 +94,20 @@ export const MessageEditor: React.FC<{
           className="group-open/message:rotate-90 mr-2 my-auto transition-transform"
         />
         <span className="truncate">
+          {flags.has(MessageFlags.SuppressNotifications) && (
+            <CoolIcon
+              icon="Bell_Off"
+              title={t("messageFlag.4096")}
+              className="ltr:mr-1 rtl:ml-1"
+            />
+          )}
+          {flags.has(MessageFlags.SuppressEmbeds) && (
+            <CoolIcon
+              icon="Window_Close"
+              title={t("messageFlag.4")}
+              className="ltr:mr-1 rtl:ml-1"
+            />
+          )}
           {t(previewText ? "messageNText" : "messageN", {
             replace: { n: i + 1, text: previewText },
           })}
@@ -265,6 +284,13 @@ export const MessageEditor: React.FC<{
                 </InfoBox>
               </div>
             )}
+            {flags.has(MessageFlags.SuppressEmbeds) && (
+              <div className="-mb-2">
+                <InfoBox severity="yellow" icon="Circle_Warning">
+                  {t("embedsHidden")}
+                </InfoBox>
+              </div>
+            )}
             {message.data.embeds.map((embed, ei) => (
               <EmbedEditor
                 key={`edit-message-${i}-embed-${ei}`}
@@ -380,20 +406,45 @@ export const MessageEditor: React.FC<{
                 //   value: "poll",
                 //   isDisabled: !!message.data.poll,
                 // },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Flag"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("flags")}</span>
+                    </p>
+                  ),
+                  value: "flags",
+                },
               ]}
               onChange={(opt) => {
-                const val = (opt as { value: "embed" | "row" | "poll" }).value;
-                if (val === "embed") {
-                  message.data.embeds = message.data.embeds
-                    ? [...message.data.embeds, {}]
-                    : [{}];
-                  setData({ ...data });
-                } else if (val === "row") {
-                  const emptyRow = { type: 1, components: [] };
-                  message.data.components = message.data.components
-                    ? [...message.data.components, emptyRow]
-                    : [emptyRow];
-                  setData({ ...data });
+                const val = (
+                  opt as { value: "embed" | "row" | "poll" | "flags" }
+                ).value;
+                switch (val) {
+                  case "embed": {
+                    message.data.embeds = message.data.embeds
+                      ? [...message.data.embeds, {}]
+                      : [{}];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "row": {
+                    const emptyRow = { type: 1, components: [] };
+                    message.data.components = message.data.components
+                      ? [...message.data.components, emptyRow]
+                      : [emptyRow];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "flags": {
+                    setEditingMessageFlags(i);
+                    break;
+                  }
+                  default:
+                    break;
                 }
               }}
             >
