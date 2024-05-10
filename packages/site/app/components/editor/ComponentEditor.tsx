@@ -357,7 +357,7 @@ export const ActionRowEditor: React.FC<{
                     ) : (
                       <div>
                         <p className="text-sm font-medium cursor-default">
-                          Style
+                          {t("style")}
                         </p>
                         <div className="grid gap-1 grid-cols-4">
                           {(
