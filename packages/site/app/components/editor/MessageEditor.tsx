@@ -160,7 +160,7 @@ export const MessageEditor: React.FC<{
       </summary>
       <div className="rounded bg-gray-100 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 dark:px-3 dark:-mx-1 mt-1 space-y-2">
         <TextArea
-          label="Content"
+          label={t("content")}
           className="w-full h-40"
           value={message.data.content ?? ""}
           maxLength={2000}
@@ -173,11 +173,9 @@ export const MessageEditor: React.FC<{
           }}
         />
         <div className="-space-y-2">
-          <EmbedEditorSection name="Profile">
+          <EmbedEditorSection name={t("profile")}>
             {!!message.reference && (
-              <InfoBox severity="yellow">
-                Profile info cannot be changed for existing messages.
-              </InfoBox>
+              <InfoBox severity="yellow">{t("profileImmutable")}</InfoBox>
             )}
             <TextInput
               label={t("name")}
@@ -192,7 +190,7 @@ export const MessageEditor: React.FC<{
               }}
             />
             <TextInput
-              label="Avatar URL"
+              label={t("avatarUrl")}
               type="url"
               className="w-full"
               disabled={!!message.reference}
@@ -205,7 +203,13 @@ export const MessageEditor: React.FC<{
               }}
             />
           </EmbedEditorSection>
-          <EmbedEditorSection name={`Files (${files.length}/10)`}>
+          <EmbedEditorSection
+            name={t("filesCount", {
+              replace: {
+                count: files.length,
+              },
+            })}
+          >
             {files.map(({ id, file, embed }) => (
               <div
                 key={`file-${id}`}
@@ -271,7 +275,7 @@ export const MessageEditor: React.FC<{
               }}
               disabled={files.length >= 10}
             >
-              Add File
+              {t("addFile")}
             </Button>
           </EmbedEditorSection>
         </div>
