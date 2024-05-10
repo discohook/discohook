@@ -188,9 +188,8 @@ export default function Index() {
 
     const loadMessageComponents = async (messages: QueryData["messages"]) => {
       const built: typeof data.components = {};
-      let i = -1;
       for (const message of messages) {
-        i += 1;
+        const id = getQdMessageId(message);
         const withCustomIds = (message.data.components ?? [])
           .map((r) => r.components)
           .reduce((prev, cur) => {
@@ -199,7 +198,7 @@ export default function Index() {
           }, [])
           .filter((c) => "custom_id" in c);
         if (withCustomIds.length === 0) {
-          // built[i] = [];
+          // built[id] = [];
           continue;
         }
 
@@ -208,7 +207,7 @@ export default function Index() {
           url.searchParams.append("id", component.custom_id.replace(/^p_/, ""));
         }
         const response = await fetch(url, { method: "GET" });
-        built[i] = await response.json();
+        built[id] = await response.json();
       }
       if (Object.keys(built).length !== 0) {
         setData({ ...data, components: built });

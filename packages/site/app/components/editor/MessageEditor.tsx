@@ -2,7 +2,7 @@ import { APIWebhook } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { EditingFlowData } from "~/modals/FlowEditModal";
-import { DraftFile } from "~/routes/_index";
+import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
@@ -67,6 +67,7 @@ export const MessageEditor: React.FC<{
 }) => {
   const { t } = useTranslation();
   const message = data.messages[i];
+  const id = getQdMessageId(message);
   const embedsLength =
     message.data.embeds && message.data.embeds.length > 0
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
@@ -282,21 +283,23 @@ export const MessageEditor: React.FC<{
         )}
         {message.data.components && message.data.components.length > 0 && (
           <>
-            <p className="mt-1 text-lg font-semibold cursor-default select-none">
-              {t("components")}
-            </p>
             {!possiblyActionable && (
-              <InfoBox icon="Info" collapsible open>
-                {t(
-                  !webhooks || webhooks?.length === 0
-                    ? "componentsNoWebhook"
-                    : possiblyApplication
-                      ? "componentsPossibleWebhook"
-                      : "componentsNoUsableWebhook",
-                )}
-              </InfoBox>
+              <>
+                <p className="mt-1 text-lg font-semibold cursor-default select-none">
+                  {t("components")}
+                </p>
+                <InfoBox icon="Info" collapsible open>
+                  {t(
+                    !webhooks || webhooks?.length === 0
+                      ? "componentsNoWebhook"
+                      : possiblyApplication
+                        ? "componentsPossibleWebhook"
+                        : "componentsNoUsableWebhook",
+                  )}
+                </InfoBox>
+              </>
             )}
-            <div className="mt-1 space-y-1 rounded p-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow">
+            <div className="space-y-1">
               {message.data.components.map((row, ri) => (
                 <div key={`edit-message-${i}-row-${ri}`}>
                   <ActionRowEditor
@@ -310,7 +313,7 @@ export const MessageEditor: React.FC<{
                         ...data,
                         components: {
                           ...(data.components ?? {}),
-                          [i]: value,
+                          [id]: value,
                         },
                       });
                     }}
@@ -318,10 +321,6 @@ export const MessageEditor: React.FC<{
                     setEditingFlow={setEditingFlow}
                     open
                   />
-                  {message.data.components &&
-                    ri < message.data.components.length - 1 && (
-                      <hr className="border border-gray-500/20 my-2" />
-                    )}
                 </div>
               ))}
             </div>
