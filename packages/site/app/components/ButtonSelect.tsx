@@ -1,6 +1,7 @@
 // Heavily modified from https://react-select.com/advanced#experimental (Popout)
 
 import { ReactNode, useState } from "react";
+import { twJoin } from "tailwind-merge";
 import { Button } from "./Button";
 import {
   StringSelect,
@@ -21,15 +22,17 @@ export const ButtonSelect: React.FC<
       onClose={() => setIsOpen(false)}
       target={
         <Button
+          className={props.className}
           onClick={() => setIsOpen((prev) => !prev)}
           disabled={props.isDisabled}
         >
           {props.children}
           <CoolIcon
             icon="Chevron_Down"
-            className={`my-auto ml-1.5 transition-all ${
-              isOpen ? "rotate-180" : "rotate-0"
-            }`}
+            className={twJoin(
+              "my-auto ml-1.5 transition-all",
+              isOpen ? "rotate-180" : "rotate-0",
+            )}
           />
         </Button>
       }
@@ -42,9 +45,13 @@ export const ButtonSelect: React.FC<
         isSearchable={false}
         isClearable={false}
         classNames={{
+          ...props.classNames,
           control: (p) =>
-            selectClassNames.control!(p) +
-            " !invisible !min-h-0 !max-h-0 !-mt-3",
+            twJoin(
+              selectClassNames.control?.(p),
+              props.classNames?.control?.(p),
+              "!invisible !min-h-0 !max-h-0 !-mt-3",
+            ),
         }}
         menuIsOpen
         onChange={(newValue, a) => {

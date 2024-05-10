@@ -7,6 +7,7 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import {
   CacheManager,
   ResolvableAPIChannel,
@@ -158,9 +159,10 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
         data-custom-id={data.custom_id}
         data-type={data.type}
         data-open={false}
-        className={`peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full disabled:opacity-60 disabled:cursor-not-allowed ${
-          nonSendable ? "hidden" : ""
-        }`}
+        className={twJoin(
+          "peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full disabled:opacity-60 disabled:cursor-not-allowed",
+          nonSendable ? "hidden" : undefined,
+        )}
         disabled={data.disabled}
         onClick={(e) => {
           e.currentTarget.dataset.open = String(
