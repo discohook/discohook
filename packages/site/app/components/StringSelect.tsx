@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import Select, { ClassNamesConfig, GroupBase, Props } from "react-select";
+import { twJoin } from "tailwind-merge";
 
 export type StringSelectProps = Props & { label?: string };
 
@@ -17,8 +18,11 @@ export const selectClassNames: ClassNamesConfig<
   singleValue: () => "dark:!text-[#ddd]",
   input: () => "dark:!text-[#ddd]",
   menu: () => "!rounded dark:!bg-[#2b2d31]",
-  option: () =>
-    "!rounded dark:!bg-[#2b2d31] dark:hover:!bg-[#36373d] !font-semibold !text-sm",
+  option: (p) =>
+    twJoin(
+      "!rounded dark:!bg-[#2b2d31] dark:hover:!bg-[#36373d] !font-semibold !text-sm",
+      p.isDisabled ? "!cursor-not-allowed opacity-60" : undefined
+    ),
   menuPortal: () => "!z-30",
 };
 

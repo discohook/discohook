@@ -1,12 +1,15 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { EditingFlowData } from "~/modals/FlowEditModal";
 import { DraftFile } from "~/routes/_index";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
+import { ButtonSelect } from "../ButtonSelect";
 import { InfoBox } from "../InfoBox";
+import { selectClassNames } from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -333,40 +336,55 @@ export const MessageEditor: React.FC<{
               {t(message.reference ? "changeReference" : "setReference")}
             </span>
           </Button>
-          <Button
-            className="ltr:ml-auto rtl:mr-auto shrink"
-            onClick={() => {
-              message.data.embeds = message.data.embeds
-                ? [...message.data.embeds, {}]
-                : [{}];
-              setData({ ...data });
-            }}
-            disabled={!!message.data.embeds && message.data.embeds.length >= 10}
-          >
-            <span className="hidden sm:inline">Add Embed</span>
-            <span className="sm:hidden">Embed</span>
-          </Button>
-          <Button
-            className="ltr:ml-2 rtl:mr-2 shrink"
-            onClick={() => {
-              const emptyRow = { type: 1, components: [] };
-              message.data.components = message.data.components
-                ? [...message.data.components, emptyRow]
-                : [emptyRow];
-              setData({ ...data });
-            }}
-            disabled={
-              !!message.data.components && message.data.components.length >= 5
-            }
-          >
-            <span>
-              {t(
-                message.data.components && message.data.components.length >= 1
-                  ? "addRow"
-                  : "addComponents",
-              )}
-            </span>
-          </Button>
+          <div>
+            <ButtonSelect
+              classNames={{
+                menu: (p) => twJoin(selectClassNames.menu?.(p), "!w-32"),
+              }}
+              options={[
+                {
+                  label: t("addEmbed"),
+                  value: "embed",
+                  isDisabled:
+                    !!message.data.embeds && message.data.embeds.length >= 10,
+                },
+                {
+                  label: t(
+                    message.data.components &&
+                      message.data.components.length >= 1
+                      ? "addRow"
+                      : "addComponents",
+                  ),
+                  value: "row",
+                  isDisabled:
+                    !!message.data.components &&
+                    message.data.components.length >= 5,
+                },
+                // {
+                //   label: t("addPoll"),
+                //   value: "poll",
+                //   isDisabled: !!message.data.poll,
+                // },
+              ]}
+              onChange={(opt) => {
+                const val = (opt as { value: "embed" | "row" | "poll" }).value;
+                if (val === "embed") {
+                  message.data.embeds = message.data.embeds
+                    ? [...message.data.embeds, {}]
+                    : [{}];
+                  setData({ ...data });
+                } else if (val === "row") {
+                  const emptyRow = { type: 1, components: [] };
+                  message.data.components = message.data.components
+                    ? [...message.data.components, emptyRow]
+                    : [emptyRow];
+                  setData({ ...data });
+                }
+              }}
+            >
+              {t("add")}
+            </ButtonSelect>
+          </div>
         </div>
       </div>
     </details>
