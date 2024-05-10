@@ -135,8 +135,8 @@
     "never": "Nooit",
     "joinedDiscohook": "Discohook Lid",
     "donate": "Doneer",
-    "deluxe": "Luxe",
-    "linkEmbedsPremiumNote": "Je hebt een Luxe functie ontdekt! <0>Lees meer over link embeds hier.<0>",
+    "deluxe": "Deluxe",
+    "linkEmbedsPremiumNote": "Je hebt een Deluxe functie ontdekt! <0>Lees meer over link embeds hier.<0>",
     "lifetime": "Levenslang",
     "graceRemaining_one": "{{count}} dag over",
     "graceRemaining_other": "{{count}} dagen over",
@@ -215,7 +215,7 @@
     "webhookCreateSubtitle": "Je zou binnenkort naar de editor moeten terugkeren.",
     "scheduleBackup": "Plan deze backup",
     "botTokenOwnerWarning": "Zorg ervoor dat je huidige Discord account ({{username}}) de eigenaar is van deze bot of deel is van zijn team, anders wordt de token opnieuw ingesteld voor beveiliging.",
-    "botsPremiumNote": "Je hebt een Luxe feature ontdekt! <0>Lees meer over custom bots hier.</0>",
+    "botsPremiumNote": "Je hebt een Deluxe feature ontdekt! <0>Lees meer over custom bots hier.</0>",
     "troubleshootMessage": "Als er niets gebeurd nadat je op de verzendknop drukt, kan het zijn dat uw browser verbindingen met Discord blokkeert, wat soms voorkomt in privacy gerichte extensies zoals Privacy Badger. Probeer privacy extensies tijdelijk uit te schakelen of een privevenster te openen.",
     "historyRemove": "Verwijder van geschiedenis",
     "permission": {
@@ -294,7 +294,7 @@
         "8": "Thread creëren",
         "9": "Variabele instellen"
     },
-    "historyNote": "Hier kunt u de afgelopen 15 (of 30 met Luxe) automatisch opgeslagen exemplaren van de editorgeschiedenis bekijken en beheren. Wanneer je op \"Stel Editor Opnieuw In\" drukt, wordt het editorpaneel leeggemaakt, maar de geschiedenis blijft staan (tot dat nieuwe wijziginen dit overschrijven). Onthoud dat de geschiedenis <bold>niet bewaard</bold> is waneer de pagina opnieuw geladen wordt.",
+    "historyNote": "Hier kunt u de afgelopen 15 (of 30 met Deluxe) automatisch opgeslagen exemplaren van de editorgeschiedenis bekijken en beheren. Wanneer je op \"Stel Editor Opnieuw In\" drukt, wordt het editorpaneel leeggemaakt, maar de geschiedenis blijft staan (tot dat nieuwe wijziginen dit overschrijven). Onthoud dat de geschiedenis <bold>niet bewaard</bold> is waneer de pagina opnieuw geladen wordt.",
     "search": "Zoeken",
     "helpSearchPlaceholder": "Hoe doe ik…",
     "ok": "OK",
@@ -307,7 +307,7 @@
     "componentsNoWebhook": "De beschikbaarheid van componenten is afhankelijk van het type webhook waarmee het bericht verstuurd is. Voor link knoppen, de webhook moet eigendom zijn van een bot, maar om andere knoppen en dropdownmenus te versturen, de webhook moet eigendom zijn van de Discohook applicatie (deze website en hun bot). Voeg een webhook toe voor meer informatie.",
     "referenceNoWebhooks": "Je hebt nog geen webhooks toegevoegd die overeen komen met de berichtenlink die gegeven is. Om te overschrijven of te bewerken, moet je de juiste webhook toevoegen.",
     "valueHidden": "Waarde (verborgen)",
-    "refreshShareLink": "Vernieuw de deel link voor 2 extra weken (Luxe feature)",
+    "refreshShareLink": "Vernieuw de deel link voor 2 extra weken (Deluxe feature)",
     "component": {
         "1": "Rij",
         "2": "Knop",
