@@ -895,7 +895,7 @@ export const ButtonStylePicker: React.FC<{
   update: () => void;
 }> = ({ style, component, update }) => (
   <Button
-    className="block min-h-0 h-7 !p-0"
+    className="block min-h-0 h-7 !p-0 !min-w-0"
     discordstyle={style}
     onClick={() => {
       component.style = style;
