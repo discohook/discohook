@@ -52,6 +52,26 @@ export const ButtonSelect: React.FC<
               props.classNames?.control?.(p),
               "!invisible !min-h-0 !max-h-0 !-mt-3",
             ),
+          menu: (p) =>
+            twJoin(
+              selectClassNames.menu?.(p),
+              props.classNames?.menu?.(p),
+              "!w-max max-w-44 dark:!bg-[#111214]",
+            ),
+          menuList: (p) =>
+            twJoin(
+              selectClassNames.menuList?.(p),
+              props.classNames?.menuList?.(p),
+              "!p-1",
+            ),
+          option: (p) =>
+            twJoin(
+              props.classNames?.option?.(p),
+              "!rounded !py-1 !px-2.5 !bg-inherit dark:hover:!bg-blurple !text-base !font-medium",
+              p.isDisabled
+                ? "!cursor-not-allowed opacity-60"
+                : "!cursor-pointer",
+            ),
         }}
         menuIsOpen
         onChange={(newValue, a) => {

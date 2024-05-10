@@ -1,6 +1,5 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
 import { EditingFlowData } from "~/modals/FlowEditModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
@@ -9,7 +8,6 @@ import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { InfoBox } from "../InfoBox";
-import { selectClassNames } from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -337,22 +335,40 @@ export const MessageEditor: React.FC<{
           </Button>
           <div>
             <ButtonSelect
-              classNames={{
-                menu: (p) => twJoin(selectClassNames.menu?.(p), "!w-32"),
-              }}
+              // classNames={{
+              //   menu: (p) => twJoin(selectClassNames.menu?.(p), "!w-32"),
+              // }}
               options={[
                 {
-                  label: t("addEmbed"),
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Add_Plus_Square"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("addEmbed")}</span>
+                    </p>
+                  ),
                   value: "embed",
                   isDisabled:
                     !!message.data.embeds && message.data.embeds.length >= 10,
                 },
                 {
-                  label: t(
-                    message.data.components &&
-                      message.data.components.length >= 1
-                      ? "addRow"
-                      : "addComponents",
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Add_Row"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">
+                        {t(
+                          message.data.components &&
+                            message.data.components.length >= 1
+                            ? "addRow"
+                            : "addComponents",
+                        )}
+                      </span>
+                    </p>
                   ),
                   value: "row",
                   isDisabled:
