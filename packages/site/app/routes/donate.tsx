@@ -9,6 +9,10 @@ import { InfoBox } from "~/components/InfoBox";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { PreviewButton } from "~/components/preview/Components";
 import { CryptoDonateInfoModal } from "~/modals/CryptoDonateInfoModal";
+import {
+  SimpleTextModal,
+  SimpleTextModalProps,
+} from "~/modals/SimpleTextModal";
 import { getUser } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 
@@ -48,17 +52,80 @@ export const Cell: React.FC<
 const Feature: React.FC<
   React.PropsWithChildren<{
     id: string;
-    title: React.ReactNode;
+    setFeatProps: React.Dispatch<
+      React.SetStateAction<SimpleTextModalProps | undefined>
+    >;
   }>
-> = ({ id, title, children }) => (
-  <div
+> = ({ id, setFeatProps }) => (
+  <button
+    type="button"
     id={id}
-    className="rounded p-2 bg-inherit target:bg-sky-200 dark:target:bg-sky-800/30"
+    className="block ltr:text-left rtl:text-right w-full p-4 pb-3 rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 shadow hover:shadow-lg transition"
+    onClick={() =>
+      setFeatProps({
+        ...features[id],
+        title: `Deluxe feature: ${features[id].title}`,
+      })
+    }
   >
-    <p className="font-semibold text-lg">{title}</p>
-    {children}
-  </div>
+    <p className="font-semibold text-lg">{features[id].title}</p>
+    <div className="h-12 overflow-y-clip relative">
+      {features[id].body}
+      <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-slate-100 dark:from-gray-700" />
+    </div>
+  </button>
 );
+
+const features: Record<string, SimpleTextModalProps> = {
+  "max-actions": {
+    title: "Max. flow actions",
+    body: (
+      <>
+        Free users can have 5 actions per flow - plenty for simple designs, but
+        something more advanced could require the massive <Twemoji emoji="💪" />{" "}
+        20 <Twemoji emoji="💪" /> actions afforded to Deluxe members.
+      </>
+    ),
+  },
+  "max-messages": {
+    title: "Max. message actions per flow",
+    body: (
+      <>
+        Sending messages is a common but limited action, so free users are
+        allowed to send 2 messages per flow (as a response or as a webhook), and
+        Deluxe members can send up to 5.
+      </>
+    ),
+  },
+  "custom-bot": {
+    title: "Custom bot profile",
+    body: (
+      <>
+        Use completely custom branding in your server by creating your own bot.
+      </>
+    ),
+  },
+  "link-embeds": {
+    title: "Use-anywhere embeds (+ embedded videos)",
+    body: (
+      <>
+        Why limit yourself to the functionality of webhook embeds? Deluxe
+        members can create custom embeds usable anywhere on Discord, even
+        without access to a webhook. These embeds can even contain videos and up
+        to 4 images.
+      </>
+    ),
+  },
+  "hosted-files": {
+    title: "Hosted image links & files",
+    body: (
+      <>
+        Many users experience difficulty finding a good place to upload files
+        that's easy to use and Discord will accept long-term.
+      </>
+    ),
+  },
+};
 
 export default function DonatePage() {
   const { user, wallets } = useLoaderData<typeof loader>();
@@ -67,16 +134,22 @@ export default function DonatePage() {
     type: string;
     donationKey: string;
   }>();
+  const [featProps, setFeatProps] = useState<SimpleTextModalProps>();
 
   return (
     <div>
-      <Header user={user} />
+      <SimpleTextModal
+        open={!!featProps}
+        setOpen={() => setFeatProps(undefined)}
+        {...featProps}
+      />
       <CryptoDonateInfoModal
         open={cryptoOpen}
         setOpen={setCryptoOpen}
         wallets={wallets}
         {...cryptoInfo}
       />
+      <Header user={user} />
       <div className="max-w-4xl mx-auto p-4 text-lg">
         <h1 className="text-2xl font-bold">
           <Twemoji emoji="✨" className="h-6" /> Discohook Deluxe
@@ -102,7 +175,7 @@ export default function DonatePage() {
           </div>
           <div className="table-row-group">
             <div className="table-row">
-              <Cell href="#editor">Full-featured message editor</Cell>
+              <Cell>Full-featured message editor</Cell>
               <Cell>
                 <Twemoji emoji="✅" />
               </Cell>
@@ -111,7 +184,7 @@ export default function DonatePage() {
               </Cell>
             </div>
             <div className="table-row">
-              <Cell href="#components">All component types</Cell>
+              <Cell>All component types</Cell>
               <Cell>
                 <Twemoji emoji="✅" />
               </Cell>
@@ -247,44 +320,23 @@ export default function DonatePage() {
         <h1 className="text-xl font-bold mt-4">
           <Twemoji className="h-5" emoji="✨" /> Features
         </h1>
-        <div className="space-y-1">
-          <Feature id="editor" title="Full-featured message editor">
+        <div className="space-y-2 mt-1">
+          {/* <Feature id="editor">
             Everyone gets access to the delightful Discohook message editor for
             free, including all markdown features and sending functionality.
           </Feature>
-          <Feature id="components" title="All component types">
+          <Feature id="components">
             The Discohook bot can be used to add every currently available type
             of component, free of charge - buttons, link buttons, and all select
             menus. But what if you crave more action?
-          </Feature>
-          <Feature id="max-actions" title="Max. flow actions">
-            Free users can have 5 actions per flow - plenty for simple designs,
-            but something more advanced could require the massive{" "}
-            <Twemoji emoji="💪" /> 20 <Twemoji emoji="💪" /> actions afforded to
-            Deluxe members.
-          </Feature>
-          <Feature id="max-messages" title="Max. message actions per flow">
-            Sending messages is a common but limited action, so free users are
-            allowed to send 2 messages per flow (as a response or as a webhook),
-            and Deluxe members can send up to 5.
-          </Feature>
-          <Feature id="custom-bot" title="Custom bot profile">
-            Use completely custom branding in your server by creating your own
-            bot. Read more about how to do this here.
-          </Feature>
-          <Feature
-            id="link-embeds"
-            title="Use-anywhere embeds (+ embedded videos)"
-          >
-            Why limit yourself to the functionality of webhook embeds? Deluxe
-            members can create custom embeds usable anywhere on Discord, even
-            without access to a webhook. These embeds can even contain videos
-            and up to 4 images. Learn more about link embeds here.
-          </Feature>
-          <Feature id="hosted-files" title="Hosted image links & files">
-            Many users experience difficulty finding a good place to upload
-            files that's easy to use and Discord will accept long-term.
-          </Feature>
+          </Feature> */}
+          {Object.keys(features).map((feature) => (
+            <Feature
+              key={`feature-${feature}`}
+              id={feature}
+              setFeatProps={setFeatProps}
+            />
+          ))}
         </div>
       </div>
     </div>
