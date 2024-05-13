@@ -387,7 +387,7 @@ export default function Index() {
                       user.discordUser?.globalName ??
                       user.discordUser?.name ??
                       user.name,
-                    icon_url: getUserAvatar(user),
+                    icon_url: getUserAvatar(user, { size: 128 }),
                     badge: null,
                   },
                   content:
