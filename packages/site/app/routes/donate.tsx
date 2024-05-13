@@ -60,7 +60,7 @@ const Feature: React.FC<
   <button
     type="button"
     id={id}
-    className="block ltr:text-left rtl:text-right w-full p-4 pb-3 rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 shadow hover:shadow-lg transition"
+    className="block ltr:text-left rtl:text-right w-full p-4 rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 shadow hover:shadow-lg transition"
     onClick={() =>
       setFeatProps({
         ...features[id],
@@ -69,9 +69,8 @@ const Feature: React.FC<
     }
   >
     <p className="font-semibold text-lg">{features[id].title}</p>
-    <div className="h-12 overflow-y-clip relative">
+    <div className="truncate">
       {features[id].body}
-      <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-slate-100 dark:from-gray-700" />
     </div>
   </button>
 );
