@@ -8,6 +8,7 @@ import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { PreviewButton } from "~/components/preview/Components";
+import { linkClassName } from "~/components/preview/Markdown";
 import { CryptoDonateInfoModal } from "~/modals/CryptoDonateInfoModal";
 import {
   SimpleTextModal,
@@ -29,9 +30,9 @@ export const Cell: React.FC<
   React.PropsWithChildren & {
     className?: string;
     premium?: boolean;
-    href?: string;
+    onClick?: () => void;
   }
-> = ({ children, className, premium, href }) => (
+> = ({ children, className, premium, onClick }) => (
   <div
     className={twJoin(
       "table-cell text-center p-1 border border-black/10 dark:border-gray-50/10",
@@ -39,10 +40,14 @@ export const Cell: React.FC<
       className ?? "",
     )}
   >
-    {href ? (
-      <a href={href} className="text-blurple-400 hover:underline">
+    {onClick ? (
+      <button
+        type="button"
+        onClick={onClick}
+        className="text-blurple-400 hover:underline"
+      >
         {children}
-      </a>
+      </button>
     ) : (
       children
     )}
@@ -69,9 +74,7 @@ const Feature: React.FC<
     }
   >
     <p className="font-semibold text-lg">{features[id].title}</p>
-    <div className="truncate">
-      {features[id].body}
-    </div>
+    <div className="truncate max-h-6">{features[id].body}</div>
   </button>
 );
 
@@ -112,6 +115,13 @@ const features: Record<string, SimpleTextModalProps> = {
         members can create custom embeds usable anywhere on Discord, even
         without access to a webhook. These embeds can even contain videos and up
         to 4 images.
+        <br />
+        <br />
+        Head to the{" "}
+        <Link to="/link" className={linkClassName}>
+          link embed editor
+        </Link>{" "}
+        to see what's possible.
       </>
     ),
   },
@@ -192,17 +202,23 @@ export default function DonatePage() {
               </Cell>
             </div>
             <div className="table-row">
-              <Cell href="#max-actions">Max. flow actions</Cell>
+              <Cell onClick={() => setFeatProps(features["max-actions"])}>
+                Max. flow actions
+              </Cell>
               <Cell>5</Cell>
               <Cell premium>20</Cell>
             </div>
             <div className="table-row">
-              <Cell href="#max-messages">Max. message actions per flow</Cell>
+              <Cell onClick={() => setFeatProps(features["max-messages"])}>
+                Max. message actions per flow
+              </Cell>
               <Cell>2</Cell>
               <Cell premium>5</Cell>
             </div>
             <div className="table-row">
-              <Cell href="#custom-bot">Custom bot profile</Cell>
+              <Cell onClick={() => setFeatProps(features["custom-bot"])}>
+                Custom bot profile
+              </Cell>
               <Cell>-</Cell>
               <Cell premium>
                 <Twemoji emoji="✅" />
@@ -216,7 +232,7 @@ export default function DonatePage() {
               </Cell>
             </div> */}
             <div className="table-row">
-              <Cell href="#link-embeds">
+              <Cell onClick={() => setFeatProps(features["link-embeds"])}>
                 Use-anywhere embeds (+ embedded videos)
               </Cell>
               <Cell>-</Cell>
@@ -225,7 +241,10 @@ export default function DonatePage() {
               </Cell>
             </div>
             <div className="table-row">
-              <Cell href="#hosted-files" className="rounded-bl">
+              <Cell
+                onClick={() => setFeatProps(features["hosted-files"])}
+                className="rounded-bl"
+              >
                 Hosted image links & files
               </Cell>
               <Cell>-</Cell>
@@ -252,8 +271,15 @@ export default function DonatePage() {
           </div>
           <div className="table-row-group">
             <div className="table-row">
-              <Cell href="https://support.discord.com/hc/en-us/articles/9359445233303#h_01GFK3CW8A5C3M2MYZEN5XRFS3">
-                Discord
+              <Cell>
+                <PreviewButton
+                  data={{
+                    type: ComponentType.Button,
+                    style: ButtonStyle.Link,
+                    url: "https://support.discord.com/hc/en-us/articles/9359445233303#h_01GFK3CW8A5C3M2MYZEN5XRFS3",
+                    label: "Discord",
+                  }}
+                />
               </Cell>
               <Cell>$5.99</Cell>
               <Cell>
