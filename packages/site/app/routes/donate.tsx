@@ -224,13 +224,6 @@ export default function DonatePage() {
                 <Twemoji emoji="✅" />
               </Cell>
             </div>
-            {/* <div className="table-row">
-              <Cell>AMOLED website theme</Cell>
-              <Cell>-</Cell>
-              <Cell premium>
-                <Twemoji emoji="✅" />
-              </Cell>
-            </div> */}
             <div className="table-row">
               <Cell onClick={() => setFeatProps(features["link-embeds"])}>
                 Use-anywhere embeds (+ embedded videos)
@@ -259,7 +252,10 @@ export default function DonatePage() {
         </h1>
         <p>
           There are multiple ways to donate. You get the same thing in the end,
-          but you can decide which method is right for you.
+          but you can decide which method is right for you. And when you donate
+          with a direct method (Ko-fi/Bitcoin), your Deluxe membership stacks
+          and adapts to how much you donated. For example, for about a week of
+          Deluxe, donate $1.
         </p>
         <div className="mt-4 rounded bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table table-auto w-full">
           <div className="table-header-group">
