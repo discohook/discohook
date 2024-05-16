@@ -60,6 +60,7 @@ Before submitting your pull request, please remember to run `npx biome check .` 
 As far as style preferences not covered by the [Biome configuration](/biome.json):
 
 - Use `n += 1` rather than `n++`
+- Prefer chaining schemas (`z.string().optional()`) over nesting (`z.optional(z.string())`)
 
 ### Bot
 
