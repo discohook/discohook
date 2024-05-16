@@ -39,7 +39,7 @@ export const getGuildedAuth = (
     }): Promise<UserAuth> => {
       const guildedUser = profile._json;
 
-      const db = getDb(context.env.DATABASE_URL);
+      const db = getDb(context.env.HYPERDRIVE.connectionString);
       const user = await upsertGuildedUser(db, guildedUser, {
         accessToken,
         refreshToken,

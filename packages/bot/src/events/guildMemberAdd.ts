@@ -217,7 +217,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
 ) => {
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
-  const db = getDb(env.DATABASE_URL);
+  const db = getDb(env.HYPERDRIVE.connectionString);
   const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
 
   // Store member relation data. This isn't *super* important so we

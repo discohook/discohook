@@ -77,7 +77,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     ).optional(),
   });
   const user = await getUser(request, context, true);
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
 
   const backups = (async () =>
     await db.query.backups.findMany({
@@ -204,7 +204,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   );
   const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   switch (data.action) {
     case "DELETE_SHARE_LINK": {
       const link = await db.query.shareLinks.findFirst({
@@ -229,7 +229,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         );
       }
 
-      const db = getDb(context.env.DATABASE_URL);
+      const db = getDb(context.env.HYPERDRIVE.connectionString);
       const share = await db.query.shareLinks.findFirst({
         where: eq(dShareLinks.id, data.linkId),
         columns: {

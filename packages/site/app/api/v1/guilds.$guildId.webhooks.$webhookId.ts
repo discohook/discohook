@@ -35,7 +35,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   switch (request.method) {
     case "PATCH": {

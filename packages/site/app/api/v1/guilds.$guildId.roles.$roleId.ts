@@ -23,7 +23,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   const [, respond] = await authorizeRequest(request, context);
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const dbRole = await db.query.discordRoles.findFirst({
     where: eq(discordRoles.id, roleId),
     columns: {

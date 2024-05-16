@@ -209,7 +209,7 @@ const registerComponent = async (
   }
   nextAvailableRow.components.push(built);
 
-  const db = getDb(ctx.env.DATABASE_URL);
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const returned = await db
     .insert(discordMessageComponents)
     .values({
@@ -264,7 +264,7 @@ export const startComponentFlow = async (
   ctx: InteractionContext<APIInteraction>,
   message: APIMessage,
 ) => {
-  const db = getDb(ctx.env.DATABASE_URL);
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const user = await upsertDiscordUser(db, ctx.user);
 
   if (!message.webhook_id) {
@@ -404,7 +404,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   state.step += 1;
   switch (value) {
     case "button": {
-      const db = getDb(ctx.env.DATABASE_URL);
+      const db = getDb(ctx.env.HYPERDRIVE.connectionString);
       const id = BigInt(generateId());
       state.component = state.component ?? {
         type: ComponentType.Button,

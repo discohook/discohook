@@ -18,7 +18,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backup = await db.query.linkBackups.findFirst({
     where: eq(linkBackups.id, id),
     columns: {
@@ -51,7 +51,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
   requirePremiumOrThrow(user);
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backup = await db.query.linkBackups.findFirst({
     where: eq(linkBackups.id, id),
     columns: {

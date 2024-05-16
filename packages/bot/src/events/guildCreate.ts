@@ -10,7 +10,7 @@ export const guildCreateCallback: GatewayEventCallback = async (
 ) => {
   if (guild.unavailable) return;
 
-  const db = getDb(env.DATABASE_URL);
+  const db = getDb(env.HYPERDRIVE.connectionString);
   await db
     .insert(discordGuilds)
     .values({

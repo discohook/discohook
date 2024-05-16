@@ -22,7 +22,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   });
   const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, id),
     columns: {
@@ -96,7 +96,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
 
   const { data } = data_ ? fixZodQueryData(data_) : { data: undefined };
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, id),
     columns: {

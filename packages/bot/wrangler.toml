@@ -6,9 +6,19 @@ kv_namespaces = [
   { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }
 ]
 
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
+# id = ""
+
+[vars]
+ENVIRONMENT = "dev"
+
 [durable_objects]
 bindings = [{name = "COMPONENTS", class_name = "DurableComponentState"}]
 
 [[migrations]]
 tag = "v1"
 new_classes = ["DurableComponentState"]
+
+[env.production]
+vars = { ENVIRONMENT = "production" }

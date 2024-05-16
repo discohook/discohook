@@ -6,6 +6,7 @@ class CDNService extends WorkerEntrypoint {
 }
 
 export interface Env {
+  ENVIRONMENT: "dev" | "production";
   KV: KVNamespace;
   SCHEDULER: DurableObjectNamespace;
   __STATIC_CONTENT: Fetcher;
@@ -19,7 +20,8 @@ export interface Env {
   AUTHLINK_CLIENT_SECRET?: string;
   GUILDED_BOT_TOKEN?: string;
   DISCORD_SUPPORT_INVITE_CODE: string;
-  DATABASE_URL: string;
+  DATABASE_URL?: string;
+  HYPERDRIVE: Hyperdrive;
   KOFI_WEBHOOK_TOKEN?: string;
   CRYPTO_ALERTS_TOKEN?: string;
   BITCOIN_ADDRESS?: string;

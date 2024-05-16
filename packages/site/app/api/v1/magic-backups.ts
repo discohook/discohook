@@ -39,7 +39,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     });
 
   const { userId } = await verifyToken(request, context.env.KV);
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const user = await db.query.users.findFirst({
     where: eq(users.id, makeSnowflake(userId)),
     columns: {
@@ -106,7 +106,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     );
   }
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   await db
     .insert(backups)
     .values(

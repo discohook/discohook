@@ -156,7 +156,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     }),
   );
 
-  const db = getDb(ctx.env.DATABASE_URL);
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const guild = await getchGuild(
     ctx.rest,
     ctx.env.KV,

@@ -19,7 +19,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   });
   // const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const components = await db.query.discordMessageComponents.findMany({
     where: inArray(discordMessageComponents.id, ids),
     columns: {

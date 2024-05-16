@@ -26,6 +26,6 @@ export class TokenPersistence implements DurableObject {
       return;
     }
 
-    const db = getDb(this.env.DATABASE_URL);
+    const db = getDb(this.env.HYPERDRIVE.connectionString);
   }
 }

@@ -24,7 +24,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   return [
     ctx.defer(),
     async () => {
-      const db = getDb(ctx.env.DATABASE_URL);
+      const db = getDb(ctx.env.HYPERDRIVE.connectionString);
       const guild = await getchTriggerGuild(
         ctx.rest,
         ctx.env.KV,
@@ -87,7 +87,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   const name = ctx.getStringOption("name").value;
 
-  const db = getDb(ctx.env.DATABASE_URL);
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const guild = await getchTriggerGuild(
     ctx.rest,
     ctx.env.KV,
@@ -166,7 +166,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 
 export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
   async (ctx) => {
-    const db = getDb(ctx.env.DATABASE_URL);
+    const db = getDb(ctx.env.HYPERDRIVE.connectionString);
     // This doesn't reflect pre-migration triggers
     const trigs = await db.query.triggers.findMany({
       where: eq(

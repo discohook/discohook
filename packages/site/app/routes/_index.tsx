@@ -46,7 +46,7 @@ import { snowflakeAsString } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const memberships = (async () => {
     return user?.discordId
       ? (

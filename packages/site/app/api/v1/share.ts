@@ -66,7 +66,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     userId: userId?.toString(),
   };
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const kv = context.env.KV;
   const { id, key } = await generateUniqueShortenKey(kv, 8);
   await kv.put(key, JSON.stringify(shortened), {

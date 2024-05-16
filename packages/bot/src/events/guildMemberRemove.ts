@@ -12,7 +12,7 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   payload: GatewayGuildMemberRemoveDispatchData,
 ) => {
   const rest = new REST().setToken(env.DISCORD_TOKEN);
-  const db = getDb(env.DATABASE_URL);
+  const db = getDb(env.HYPERDRIVE.connectionString);
 
   // Remove member relation data. This is slightly more important than storing
   // the data initially but it's still skippable

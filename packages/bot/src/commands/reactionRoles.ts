@@ -216,7 +216,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
     JSON.stringify({ roleId: role.id }),
     { expirationTtl: 604800 },
   );
-  const db = getDb(ctx.env.DATABASE_URL);
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   await upsertGuild(db, guild);
   await db
     .insert(discordReactionRoles)
@@ -316,7 +316,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
     // biome-ignore lint/style/noNonNullAssertion: Must have at least one
     const reaction = (emoji.id ?? emoji.name)!;
 
-    const db = getDb(ctx.env.DATABASE_URL);
+    const db = getDb(ctx.env.HYPERDRIVE.connectionString);
     const deleted = (
       await db
         .delete(discordReactionRoles)
@@ -363,7 +363,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
     });
   }
 
-  const db = getDb(ctx.env.DATABASE_URL);
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const entries = await db.query.discordReactionRoles.findMany({
     where: eq(discordReactionRoles.messageId, makeSnowflake(message.id)),
   });
@@ -430,7 +430,7 @@ export const deleteReactionRoleButtonCallback: ButtonCallback = async (ctx) => {
     "reaction",
   );
 
-  const db = getDb(ctx.env.DATABASE_URL);
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const deleted = (
     await db
       .delete(discordReactionRoles)

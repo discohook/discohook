@@ -15,7 +15,7 @@ export class DurableComponentState implements DurableObject {
   constructor(
     private state: DurableObjectState,
     private env: {
-      DATABASE_URL: string;
+      HYPERDRIVE: Hyperdrive;
     },
   ) {}
 
@@ -23,7 +23,7 @@ export class DurableComponentState implements DurableObject {
     switch (request.method) {
       case "POST": {
         const { id } = zx.parseQuery(request, { id: z.string() });
-        const db = getDb(this.env.DATABASE_URL);
+        const db = getDb(this.env.HYPERDRIVE.connectionString);
         const component = await db.query.discordMessageComponents.findFirst({
           where: eq(discordMessageComponents.id, makeSnowflake(id)),
           columns: {

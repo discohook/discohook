@@ -7,7 +7,7 @@ import { LoaderArgs } from "~/util/loader";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const userId = await getUserId(request, context, true);
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const userBackups = await db.query.backups.findMany({
     where: eq(backups.ownerId, userId),
     columns: {

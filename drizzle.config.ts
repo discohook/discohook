@@ -5,7 +5,7 @@ import type { Config } from "drizzle-kit";
 dotenv.config({ path: "./packages/bot/.dev.vars" });
 
 if (!process.env.DATABASE_URL) {
-  throw Error("Must provide DATABASE_URL");
+  throw Error("Must provide DATABASE_URL in packages/bot/.dev.vars");
 }
 
 export default {

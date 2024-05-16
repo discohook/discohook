@@ -214,7 +214,7 @@ const handleInteraction = async (
         });
       }
     } else if (customId.startsWith("p_")) {
-      const db = getDb(env.DATABASE_URL);
+      const db = getDb(env.HYPERDRIVE.connectionString);
       const doId = env.COMPONENTS.idFromName(
         `${interaction.message.id}-${customId}`,
       );
@@ -370,7 +370,7 @@ const handleInteraction = async (
       }
     } else if (interaction.data.component_type === ComponentType.Button) {
       // Check for unmigrated buttons and migrate them
-      const db = getDb(env.DATABASE_URL);
+      const db = getDb(env.HYPERDRIVE.connectionString);
       const oldMessageButtons = await db.query.buttons.findMany({
         where: eq(oButtons.messageId, makeSnowflake(interaction.message.id)),
         columns: {
@@ -784,6 +784,9 @@ async function verifyDiscordRequest(request: Request, env: Env) {
 const server = {
   verifyDiscordRequest: verifyDiscordRequest,
   fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
+    if (env.ENVIRONMENT === "dev") {
+      env.HYPERDRIVE = { connectionString: env.DATABASE_URL } as Hyperdrive;
+    }
     return router.handle(request, env, ctx);
   },
 };

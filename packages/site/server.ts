@@ -4,6 +4,7 @@ import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
 import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
 export { DurableComponentState } from "store";
+export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
 export { DurableScheduler } from "./app/durable/scheduler";
 
 const MANIFEST = JSON.parse(__STATIC_CONTENT_MANIFEST);
@@ -18,9 +19,15 @@ export default {
     request: Request,
     env: {
       __STATIC_CONTENT: Fetcher;
+      ENVIRONMENT: "dev" | "production";
+      HYPERDRIVE: Hyperdrive;
+      DATABASE_URL: string;
     },
     ctx: ExecutionContext,
   ): Promise<Response> {
+    if (env.ENVIRONMENT === "dev") {
+      env.HYPERDRIVE = { connectionString: env.DATABASE_URL } as Hyperdrive;
+    }
     try {
       const url = new URL(request.url);
       const ttl = url.pathname.startsWith("/build/")

@@ -34,7 +34,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     guild = await getGuild(guildId, rest, context.env);
   }
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   await db
     .insert(discordRoles)
     .values(

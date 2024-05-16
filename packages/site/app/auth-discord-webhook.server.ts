@@ -44,7 +44,7 @@ export const getDiscordWebhookAuth = (context: Context) => {
       const { webhook } =
         extraParams as unknown as RESTPostOAuth2AccessTokenWithBotAndGuildsAndWebhookIncomingScopeResult;
 
-      const db = getDb(context.env.DATABASE_URL);
+      const db = getDb(context.env.HYPERDRIVE.connectionString);
       let guildId: bigint | undefined = undefined;
       if (webhook.guild_id) {
         const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);

@@ -124,7 +124,7 @@ export async function getUser(
     return null;
   }
 
-  const db = getDb(context.env.DATABASE_URL);
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
   const user = await db.query.users.findFirst({
     where: eq(users.id, userId),
     columns: {
@@ -202,7 +202,7 @@ export interface KVTokenPermissions {
 
 const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
   const token = await createToken(env, origin, userId);
-  const db = getDb(env.DATABASE_URL);
+  const db = getDb(env.HYPERDRIVE.connectionString);
   const user = await db.query.users.findFirst({
     where: eq(users.id, userId),
     columns: {
@@ -292,7 +292,7 @@ export async function authorizeRequest(
     const token = await regenerateToken(context.env, context.origin, user.id);
     const countryCode = request.headers.get("CF-IPCountry") ?? undefined;
 
-    const db = getDb(context.env.DATABASE_URL);
+    const db = getDb(context.env.HYPERDRIVE.connectionString);
     await db.insert(tokens).values({
       platform: "discord",
       prefix: "user",
@@ -360,7 +360,7 @@ export async function authorizeRequest(
     const tokenId = payload.jti!;
     // const userId = BigInt(payload.uid as string);
 
-    const db = getDb(context.env.DATABASE_URL);
+    const db = getDb(context.env.HYPERDRIVE.connectionString);
     const token = await db.query.tokens.findFirst({
       where: eq(tokens.id, makeSnowflake(tokenId)),
       columns: {
@@ -443,7 +443,7 @@ export const getTokenGuildPermissions = async (
       permissions: new PermissionsBitField(BigInt(cached.permissions)),
     };
   } else {
-    const db = getDb(env.DATABASE_URL);
+    const db = getDb(env.HYPERDRIVE.connectionString);
     if (!token.user.discordId) {
       throw json({ message: "User has no linked Discord user" }, 401);
     }
