@@ -142,6 +142,46 @@ export const useSafeFetcher = <TData = any>({
       target: FormData | URLSearchParams | any,
       options?: Pick<SubmitOptions, "action" | "method">,
     ) => void,
+    submitAsync: (async (target, options) => {
+      setState("submitting");
+      const contentType =
+        target instanceof FormData || target instanceof URLSearchParams
+          ? "application/x-www-form-urlencoded"
+          : "application/json";
+      try {
+        const response = await fetch(options?.action ?? window.location.href, {
+          method: options?.method ?? "POST",
+          body:
+            contentType === "application/json"
+              ? JSON.stringify(target)
+              : target,
+          headers: {
+            "Content-Type": contentType,
+          },
+        });
+
+        const raw = await response.json();
+        if (!response.ok) {
+          if (onError) {
+            onError({
+              status: response.status,
+              message: getZodErrorMessage(raw),
+            });
+          }
+          setState("idle");
+          return;
+        }
+        const responseData = raw as SerializeFrom<TData>;
+        setData(responseData);
+        setState("idle");
+      } catch (e) {
+        setState("idle");
+        throw e;
+      }
+    }) as (
+      target: FormData | URLSearchParams | any,
+      options?: Pick<SubmitOptions, "action" | "method">,
+    ) => void,
     /**
      * Beware of making it possible to spam concurrent requests
      * since this resets `state` to `idle`

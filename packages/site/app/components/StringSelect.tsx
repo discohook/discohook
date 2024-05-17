@@ -21,7 +21,7 @@ export const selectClassNames: ClassNamesConfig<
   option: (p) =>
     twJoin(
       "!rounded dark:!bg-[#2b2d31] dark:hover:!bg-[#36373d] !font-semibold !text-sm",
-      p.isDisabled ? "!cursor-not-allowed opacity-60" : undefined
+      p.isDisabled ? "!cursor-not-allowed opacity-60" : undefined,
     ),
   menuPortal: () => "!z-30",
 };

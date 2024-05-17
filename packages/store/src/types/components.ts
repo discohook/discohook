@@ -56,7 +56,6 @@ export type StorableComponent =
     };
 
 export interface Flow {
-  name: string;
   actions: FlowAction[];
 }
 

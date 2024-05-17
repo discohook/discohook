@@ -1,8 +1,15 @@
 import {
+  APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
+  APIChannelSelectComponent as _APIChannelSelectComponent,
+  APIMentionableSelectComponent as _APIMentionableSelectComponent,
+  APIRoleSelectComponent as _APIRoleSelectComponent,
+  APIStringSelectComponent as _APIStringSelectComponent,
+  APIUserSelectComponent as _APIUserSelectComponent,
   APIActionRowComponent,
   APIAttachment,
+  APIButtonComponentBase,
   APIEmbed,
-  APIMessageActionRowComponent,
+  ButtonStyle,
   MessageFlags,
   UserFlags,
 } from "discord-api-types/v10";
@@ -11,7 +18,6 @@ import { Flow } from "~/store.server";
 import { randomString } from "~/util/text";
 import { ZodAPIActionRowComponent } from "./components";
 import { ZodMessageFlags } from "./discord";
-import { ZodFlow } from "./flows";
 
 /** The version of the query data, defaults to `d2`
  *
@@ -25,6 +31,60 @@ import { ZodFlow } from "./flows";
  * All of these are backwards compatible with pre-2024 Discohook.
  */
 export type QueryDataVersion = "d2";
+
+export interface APIButtonComponentWithURL
+  extends APIButtonComponentBase<ButtonStyle.Link> {
+  /**
+   * The URL to direct users to when clicked for Link buttons
+   */
+  url: string;
+  /**
+   * An internal Discohook ID, only sent to Discord when combined with the
+   * validated `url`. It is later split from `url` to populate this property.
+   */
+  custom_id?: string;
+}
+
+export interface APIButtonComponentWithCustomId
+  extends _APIButtonComponentWithCustomId {
+  flow?: Flow;
+}
+
+export interface APIStringSelectComponent extends _APIStringSelectComponent {
+  flows?: Record<string, Flow>;
+}
+
+export interface APIUserSelectComponent extends _APIUserSelectComponent {
+  flow?: Flow;
+}
+
+export interface APIRoleSelectComponent extends _APIRoleSelectComponent {
+  flow?: Flow;
+}
+
+export interface APIMentionableSelectComponent
+  extends _APIMentionableSelectComponent {
+  flow?: Flow;
+}
+
+export interface APIChannelSelectComponent extends _APIChannelSelectComponent {
+  flow?: Flow;
+}
+
+export type APIButtonComponent =
+  | APIButtonComponentWithCustomId
+  | APIButtonComponentWithURL;
+
+export type APISelectMenuComponent =
+  | APIStringSelectComponent
+  | APIUserSelectComponent
+  | APIRoleSelectComponent
+  | APIMentionableSelectComponent
+  | APIChannelSelectComponent;
+
+export type APIMessageActionRowComponent =
+  | APIButtonComponent
+  | APISelectMenuComponent;
 
 export interface QueryData {
   version?: QueryDataVersion;
@@ -47,14 +107,6 @@ export interface QueryData {
     };
     reference?: string;
   }[];
-  components?: Record<
-    string,
-    {
-      id: string;
-      data: { flow: Flow } | { flows: Record<string, Flow> };
-      draft?: boolean;
-    }[]
-  >;
   targets?: { url: string }[];
 }
 
@@ -136,21 +188,6 @@ export const ZodQueryDataMessage: z.ZodType<QueryData["messages"][number]> =
     reference: z.ostring(),
   });
 
-export type QueryDataComponent = NonNullable<
-  QueryData["components"]
->[string][number];
-
-export const ZodQueryDataComponent: z.ZodType<QueryDataComponent> = z.object({
-  id: z.string(),
-  data: z.union([
-    z.object({ flow: ZodFlow }),
-    z.object({
-      flows: z.record(z.string(), ZodFlow),
-    }),
-  ]),
-  draft: z.oboolean(),
-});
-
 export const ZodQueryDataTarget: z.ZodType<
   NonNullable<QueryData["targets"]>[number]
 > = z.object({ url: z.string() });
@@ -159,7 +196,6 @@ export const ZodQueryData: z.ZodType<QueryData> = z.object({
   version: z.enum(["d2"]).optional(),
   backup_id: z.ostring(),
   messages: ZodQueryDataMessage.array().max(10),
-  components: z.record(z.string(), ZodQueryDataComponent.array()).optional(),
   targets: ZodQueryDataTarget.array().optional(),
 });
 

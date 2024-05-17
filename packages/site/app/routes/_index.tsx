@@ -1,6 +1,7 @@
 import { SerializeFrom, defer } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { isLinkButton } from "discord-api-types/utils/v10";
+import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,10 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Message } from "~/components/preview/Message";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
+import {
+  ComponentEditModal,
+  EditingComponentData,
+} from "~/modals/ComponentEditModal";
 import { ExampleModal } from "~/modals/ExampleModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
@@ -30,7 +35,11 @@ import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
 import { discordMembers, eq, getDb } from "~/store.server";
-import { QueryData, ZodQueryData } from "~/types/QueryData";
+import {
+  APIMessageActionRowComponent,
+  QueryData,
+  ZodQueryData,
+} from "~/types/QueryData";
 import { useCache } from "~/util/cache/CacheManager";
 import {
   INDEX_FAILURE_MESSAGE,
@@ -43,6 +52,7 @@ import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
+import { loader as ApiGetComponents } from "../api/v1/components";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
@@ -165,9 +175,10 @@ export default function Index() {
     {
       version: "d2",
       messages: [],
-      components: {},
     },
   );
+  const [editingComponent, setEditingComponent] =
+    useState<EditingComponentData>();
   const [editingFlow, setEditingFlow] = useState<EditingFlowData>();
 
   const [urlTooLong, setUrlTooLong] = useState(false);
@@ -188,30 +199,47 @@ export default function Index() {
     };
 
     const loadMessageComponents = async (messages: QueryData["messages"]) => {
-      const built: typeof data.components = {};
-      for (const message of messages) {
-        const id = getQdMessageId(message);
-        const withCustomIds = (message.data.components ?? [])
-          .map((r) => r.components)
-          .reduce((prev, cur) => {
-            prev.push(...cur);
-            return prev;
-          }, [])
-          .filter((c) => "custom_id" in c);
-        if (withCustomIds.length === 0) {
-          // built[id] = [];
-          continue;
-        }
+      const allComponentsById = Object.fromEntries(
+        messages.flatMap((m) =>
+          (m.data.components ?? [])
+            .flatMap((r) => r.components)
+            .map((c) => {
+              if (!!c.custom_id && /^p_\d+/.test(c.custom_id)) {
+                return [c.custom_id.replace(/^p_/, ""), c];
+              }
+              if (c.type === ComponentType.Button && isLinkButton(c)) {
+                try {
+                  const url = new URL(c.url);
+                  const id = url.searchParams.get("dhc-id");
+                  if (id && /\d+/.test(id)) {
+                    return [id, c];
+                  }
+                } catch {}
+              }
+              return undefined;
+            })
+            .filter((pair): pair is NonNullable<typeof pair> => Boolean(pair)),
+        ),
+      ) as Record<string, APIMessageActionRowComponent>;
 
+      if (Object.keys(allComponentsById).length !== 0) {
         const url = new URL(apiUrl(BRoutes.components()));
-        for (const component of withCustomIds) {
-          url.searchParams.append("id", component.custom_id.replace(/^p_/, ""));
+        for (const id of Object.keys(allComponentsById)) {
+          url.searchParams.append("id", id);
         }
         const response = await fetch(url, { method: "GET" });
-        built[id] = await response.json();
-      }
-      if (Object.keys(built).length !== 0) {
-        setData({ ...data, components: built });
+        const raw = (await response.json()) as SerializeFrom<
+          typeof ApiGetComponents
+        >;
+        for (const stored of raw) {
+          const local = allComponentsById[stored.id];
+          if (local) {
+            // TODO edge pieces
+            Object.assign(local, stored.data);
+          }
+        }
+
+        setData({ ...data });
       }
     };
 
@@ -376,6 +404,13 @@ export default function Index() {
         setOpen={setShowDisclaimer}
       />
       <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
+      <ComponentEditModal
+        open={!!editingComponent}
+        setOpen={() => setEditingComponent(undefined)}
+        {...editingComponent}
+        setEditingFlow={setEditingFlow}
+        cache={cache}
+      />
       <FlowEditModal
         open={!!editingFlow}
         setOpen={() => setEditingFlow(undefined)}
@@ -608,7 +643,7 @@ export default function Index() {
                   setSettingMessageIndex={setSettingMessageIndex}
                   setEditingMessageFlags={setEditingMessageFlags}
                   webhooks={Object.values(targets)}
-                  setEditingFlow={setEditingFlow}
+                  setEditingComponent={setEditingComponent}
                   cache={cache}
                 />
                 {i < data.messages.length - 1 && (

@@ -22,6 +22,7 @@ services = [
 bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" }
 ]
 
 [[migrations]]
@@ -31,6 +32,10 @@ new_classes = ["DurableScheduler"]
 [[migrations]]
 tag = "v2"
 new_classes = ["DurableComponentState"]
+
+[[migrations]]
+tag = "v3"
+new_classes = ["DurableDraftComponentCleaner"]
 
 [site]
 bucket = "./public"

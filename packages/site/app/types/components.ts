@@ -1,18 +1,21 @@
 import {
+  APIMessageComponentEmoji,
+  ButtonStyle,
+  ChannelType,
+  ComponentType,
+  SelectMenuDefaultValueType,
+} from "discord-api-types/v10";
+import { z } from "zod";
+import {
   APIButtonComponentWithCustomId,
   APIButtonComponentWithURL,
   APIChannelSelectComponent,
   APIMentionableSelectComponent,
-  APIMessageComponentEmoji,
   APIRoleSelectComponent,
   APIStringSelectComponent,
   APIUserSelectComponent,
-  ButtonStyle,
-  ChannelType,
-  ComponentType,
-  SelectMenuDefaultValueType
-} from "discord-api-types/v10";
-import { z } from "zod";
+} from "./QueryData";
+import { ZodFlow } from "./flows";
 
 export const ZodPartialEmoji: z.ZodType<APIMessageComponentEmoji> = z.object({
   id: z.ostring(),
@@ -32,6 +35,7 @@ export const ZodAPIButtonComponentWithCustomId = z.object({
   emoji: ZodPartialEmoji.optional(),
   custom_id: z.string(),
   disabled: z.oboolean(),
+  flow: ZodFlow.optional(),
 }) satisfies z.ZodType<APIButtonComponentWithCustomId>;
 
 export const ZodAPIButtonComponentWithURL = z.object({
@@ -40,6 +44,7 @@ export const ZodAPIButtonComponentWithURL = z.object({
   label: z.ostring(),
   emoji: ZodPartialEmoji.optional(),
   url: z.string(),
+  custom_id: z.string().optional(),
   disabled: z.oboolean(),
 }) satisfies z.ZodType<APIButtonComponentWithURL>;
 
@@ -65,6 +70,7 @@ export const ZodAPIStringSelectMenuComponent: z.ZodType<APIStringSelectComponent
     min_values: z.onumber(),
     max_values: z.onumber(),
     disabled: z.oboolean(),
+    flows: z.record(z.string(), ZodFlow).optional(),
   });
 
 export const ZodAPIRoleSelectMenuComponent: z.ZodType<APIRoleSelectComponent> =
@@ -82,6 +88,7 @@ export const ZodAPIRoleSelectMenuComponent: z.ZodType<APIRoleSelectComponent> =
     min_values: z.onumber(),
     max_values: z.onumber(),
     disabled: z.oboolean(),
+    flow: ZodFlow.optional(),
   });
 
 export const ZodAPIUserSelectMenuComponent: z.ZodType<APIUserSelectComponent> =
@@ -99,6 +106,7 @@ export const ZodAPIUserSelectMenuComponent: z.ZodType<APIUserSelectComponent> =
     min_values: z.onumber(),
     max_values: z.onumber(),
     disabled: z.oboolean(),
+    flow: ZodFlow.optional(),
   });
 
 export const ZodAPIMentionableSelectMenuComponent: z.ZodType<APIMentionableSelectComponent> =
@@ -119,6 +127,7 @@ export const ZodAPIMentionableSelectMenuComponent: z.ZodType<APIMentionableSelec
     min_values: z.onumber(),
     max_values: z.onumber(),
     disabled: z.oboolean(),
+    flow: ZodFlow.optional(),
   });
 
 export const ZodAPIChannelSelectMenuComponent: z.ZodType<APIChannelSelectComponent> =
@@ -142,7 +151,6 @@ export const ZodAPIChannelSelectMenuComponent: z.ZodType<APIChannelSelectCompone
         ]),
       )
       .optional(),
-
     default_values: z
       .object({
         id: z.string(),
@@ -154,6 +162,7 @@ export const ZodAPIChannelSelectMenuComponent: z.ZodType<APIChannelSelectCompone
     min_values: z.onumber(),
     max_values: z.onumber(),
     disabled: z.oboolean(),
+    flow: ZodFlow.optional(),
   });
 
 export const ZodAPISelectMenuComponent = z.union([

@@ -1,38 +1,34 @@
-import { Link } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/cloudflare";
+import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIActionRowComponent,
+  APIMessageComponent,
+  APITextInputComponent,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
+import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
+import { z } from "zod";
+import { BRoutes, apiUrl } from "~/api/routing";
+import { action as ApiPostComponents } from "~/api/v1/components";
+import { EditingComponentData } from "~/modals/ComponentEditModal";
+import { getQdMessageId } from "~/routes/_index";
+import {
   APIButtonComponent,
   APIChannelSelectComponent,
   APIMentionableSelectComponent,
   APIMessageActionRowComponent,
-  APIMessageComponent,
   APIRoleSelectComponent,
-  APISelectMenuOption,
   APIStringSelectComponent,
-  APITextInputComponent,
   APIUserSelectComponent,
-  ButtonStyle,
-  ComponentType,
-  SelectMenuDefaultValueType,
-} from "discord-api-types/v10";
-import { isSnowflake } from "discord-snowflake";
-import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
-import { EditingFlowData } from "~/modals/FlowEditModal";
-import { getQdMessageId } from "~/routes/_index";
-import { Flow } from "~/store.server";
-import { QueryData, QueryDataComponent } from "~/types/QueryData";
+  QueryData,
+} from "~/types/QueryData";
+import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { CacheManager } from "~/util/cache/CacheManager";
-import { randomString } from "~/util/text";
-import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
-import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
-import { StringSelect } from "../StringSelect";
-import { TextInput } from "../TextInput";
-import { CoolIcon } from "../icons/CoolIcon";
-import { linkClassName } from "../preview/Markdown";
-import { PopoutEmojiPicker } from "./EmojiPicker";
+import { CoolIcon, CoolIconsGlyph } from "../icons/CoolIcon";
 
 export const getComponentText = (
   component: APIMessageComponent,
@@ -111,15 +107,87 @@ export const getComponentErrors = (
   return errors;
 };
 
+const submitComponent = async (data: APIMessageActionRowComponent) => {
+  /**
+   * This is a bit of a dance, we basically just want to generate a
+   * server ID for these components so they can remain synced. From
+   * this point forward, the user has to submit a PATCH request in
+   * order to modify anything about a component (other than its
+   * position).
+   * We use the returned data from the server just in case it wanted
+   * to change something.
+   * You can also do this while logged out.
+   */
+  const response = await fetch(apiUrl(BRoutes.components()), {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    console.error(response.status, response.statusText);
+    return;
+  }
+  const raw = (await response.json()) as SerializeFrom<
+    typeof ApiPostComponents
+  >;
+  let component: APIMessageActionRowComponent | undefined;
+  switch (raw.data.type) {
+    case ComponentType.Button: {
+      // if (raw.data.style === ButtonStyle.Link) {
+      //   component = {
+      //     ...raw.data,
+      //     custom_id: `p_${raw.id}`,
+      //     // url: (() => {new URL(raw.data.url).searchParams.set("dhc-id", String(raw.id))})()
+      //   };
+      //   break;
+      // }
+      component = {
+        ...raw.data,
+        custom_id: `p_${raw.id}`,
+      };
+      break;
+    }
+    case ComponentType.StringSelect: {
+      const { minValues, maxValues, ...rest } = raw.data;
+      component = {
+        ...rest,
+        custom_id: `p_${raw.id}`,
+        min_values: minValues,
+        max_values: maxValues,
+      };
+      break;
+    }
+    case ComponentType.UserSelect:
+    case ComponentType.RoleSelect:
+    case ComponentType.MentionableSelect:
+    case ComponentType.ChannelSelect: {
+      const { minValues, maxValues, defaultValues, ...rest } = raw.data;
+      // @ts-expect-error
+      component = {
+        ...rest,
+        custom_id: `p_${raw.id}`,
+        min_values: minValues,
+        max_values: maxValues,
+        default_values: defaultValues,
+      };
+      break;
+    }
+    default:
+      break;
+  }
+  return component;
+};
+
 export const ActionRowEditor: React.FC<{
   message: QueryData["messages"][number];
   row: APIActionRowComponent<APIMessageActionRowComponent>;
   rowIndex: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
-  setComponents: (value: QueryDataComponent[]) => void;
-  setEditingFlow: React.Dispatch<
-    React.SetStateAction<EditingFlowData | undefined>
+  setEditingComponent: React.Dispatch<
+    React.SetStateAction<EditingComponentData | undefined>
   >;
   cache?: CacheManager;
   open?: boolean;
@@ -129,9 +197,8 @@ export const ActionRowEditor: React.FC<{
   rowIndex: i,
   data,
   setData,
-  setComponents,
-  setEditingFlow,
-  cache,
+  setEditingComponent,
+  // cache,
   open,
 }) => {
   const { t } = useTranslation();
@@ -222,16 +289,7 @@ export const ActionRowEditor: React.FC<{
             }
             onClick={() => {
               message.data.components?.splice(i + 1, 0, structuredClone(row));
-              const copied = (
-                data.components?.[mid].filter((c) =>
-                  row.components
-                    .filter((rc) => "custom_id" in rc)
-                    .map((rc) => rc.custom_id)
-                    .includes(`p_${c.id}`),
-                ) ?? []
-              ).map((d) => structuredClone(d));
-              // This also calls setData
-              setComponents([...(data.components?.[mid] ?? []), ...copied]);
+              setData({ ...data });
             }}
           >
             <CoolIcon icon="Copy" />
@@ -240,15 +298,7 @@ export const ActionRowEditor: React.FC<{
             type="button"
             onClick={() => {
               message.data.components?.splice(i, 1);
-              const withoutRow =
-                data.components?.[mid].filter(
-                  (c) =>
-                    !row.components
-                      .filter((rc) => "custom_id" in rc)
-                      .map((rc) => rc.custom_id)
-                      .includes(`p_${c.id}`),
-                ) ?? [];
-              setComponents(withoutRow);
+              setData({ ...data });
             }}
           >
             <CoolIcon icon="Trash_Full" />
@@ -262,541 +312,47 @@ export const ActionRowEditor: React.FC<{
           </InfoBox>
         </div>
       )}
-      <div className="ml-1 ltr:md:ml-2 rtl:md:mr-2">
-        {row.components.map((component, ci, a) => {
-          const qdComponents = data.components?.[mid] ?? [];
-          const qComponent = qdComponents.find(
-            (c) =>
-              "custom_id" in component &&
-              c.id === component.custom_id.replace(/^p_/, ""),
-          );
+      <div className="space-y-1 mb-1">
+        {row.components.map((component, ci) => {
+          const id =
+            ("custom_id" in component
+              ? component.custom_id?.replace(/^p_/, "")
+              : // : (() => {
+                //     try {
+                //       const url = new URL(component.url);
+                //       return url.searchParams.get("dhc-id") ?? randomString(10);
+                //     } catch {
+                //       return component.url;
+                //     }
+                //   })();
+                undefined) ?? `${i}:${ci}`;
+
           return (
-            <div
-              key={`edit-message-${mid}-row-${i}-component-${component.type}-${ci}`}
-            >
-              <IndividualComponentEditor
-                component={component}
-                index={ci}
-                row={row}
-                updateRow={() => setData({ ...data })}
-                copyQdComponent={() => {
-                  const newId = String(
-                    Math.floor(Math.random() * 100000000000),
-                  );
-                  if (qComponent) {
-                    const copied = structuredClone(qComponent);
-                    copied.id = newId;
-                    qdComponents.splice(
-                      qdComponents.indexOf(qComponent),
-                      0,
-                      copied,
-                    );
-                  }
-                  setComponents(qdComponents);
-                  return newId;
-                }}
-                removeQdComponent={() => {
-                  if (qComponent) {
-                    qdComponents.splice(qdComponents.indexOf(qComponent), 1);
-                  }
-                  setComponents(qdComponents);
-                }}
-                open={component.type !== ComponentType.Button || open}
-              >
-                {component.type === ComponentType.Button ? (
-                  <>
-                    <div className="flex">
-                      <div className="ltr:mr-2 rtl:ml-2 mt-auto">
-                        <p className="text-sm cursor-default font-medium">
-                          Emoji
-                        </p>
-                        <PopoutEmojiPicker
-                          emoji={component.emoji}
-                          emojis={cache ? cache.emoji.getAll() : []}
-                          setEmoji={(emoji) => {
-                            component.emoji = emoji;
-                            setData({ ...data });
-                          }}
-                        />
-                      </div>
-                      <div className="grow">
-                        <TextInput
-                          label="Label"
-                          className="w-full"
-                          value={component.label ?? ""}
-                          onInput={(e) => {
-                            component.label =
-                              e.currentTarget.value || undefined;
-                            setData({ ...data });
-                          }}
-                          maxLength={80}
-                        />
-                      </div>
-                      <div className="ltr:ml-2 rtl:mr-2 my-auto">
-                        <Checkbox
-                          label="Disabled"
-                          checked={component.disabled ?? false}
-                          onChange={(e) => {
-                            component.disabled = e.currentTarget.checked;
-                            setData({ ...data });
-                          }}
-                        />
-                      </div>
-                    </div>
-                    {component.style === ButtonStyle.Link ? (
-                      <TextInput
-                        label="URL"
-                        type="url"
-                        className="w-full"
-                        value={component.url}
-                        onInput={(e) => {
-                          component.url = e.currentTarget.value;
-                          setData({ ...data });
-                        }}
-                      />
-                    ) : (
-                      <div>
-                        <p className="text-sm font-medium cursor-default">
-                          {t("style")}
-                        </p>
-                        <div className="grid gap-1 grid-cols-4">
-                          {(
-                            [
-                              ButtonStyle.Primary,
-                              ButtonStyle.Secondary,
-                              ButtonStyle.Success,
-                              ButtonStyle.Danger,
-                            ] as const
-                          ).map((style) => (
-                            <ButtonStylePicker
-                              key={`edit-message-${mid}-row-${i}-component-${component.type}-${ci}-style-${style}`}
-                              style={style}
-                              component={component}
-                              update={() => setData({ ...data })}
-                            />
-                          ))}
-                        </div>
-                        <div className="mt-1">
-                          <p className="text-sm font-medium cursor-default">
-                            <Trans
-                              t={t}
-                              i18nKey="flowLink"
-                              components={[
-                                <Link
-                                  to="/guide/getting-started/flows"
-                                  target="_blank"
-                                  className={twJoin(
-                                    linkClassName,
-                                    "cursor-pointer",
-                                  )}
-                                />,
-                              ]}
-                            />
-                          </p>
-                          <Button
-                            onClick={async () => {
-                              let flow: Flow;
-                              if (qComponent) {
-                                if ("flow" in qComponent.data) {
-                                  flow = qComponent.data.flow as Flow;
-                                } else {
-                                  return;
-                                }
-                              } else {
-                                // We just need a unique ID for state. We don't
-                                // generate a snowflake here because it would be
-                                // confusing. These IDs are replaced later by the
-                                // server.
-                                const newId = randomString(10);
-                                component.custom_id = `p_${newId}`;
-                                flow = {
-                                  name: "Flow",
-                                  actions: [{ type: 0 }],
-                                };
-                                setComponents([
-                                  ...qdComponents,
-                                  {
-                                    id: newId,
-                                    data: { flow },
-                                    draft: true,
-                                  },
-                                ]);
-                              }
-
-                              setEditingFlow({
-                                flow,
-                                setFlow: (newFlow) => {
-                                  if (qComponent) {
-                                    // @ts-expect-error
-                                    qComponent.data.flow = newFlow;
-                                  }
-                                  setComponents([...(qdComponents ?? [])]);
-                                },
-                              });
-                            }}
-                          >
-                            {t(qComponent ? "editFlow" : "addFlow")}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  [
-                    ComponentType.StringSelect,
-                    ComponentType.UserSelect,
-                    ComponentType.RoleSelect,
-                    ComponentType.MentionableSelect,
-                    ComponentType.ChannelSelect,
-                  ].includes(component.type) && (
-                    <>
-                      <div className="flex">
-                        <div className="grow">
-                          <TextInput
-                            label="Placeholder"
-                            value={component.placeholder ?? ""}
-                            placeholder={t("defaultPlaceholder")}
-                            maxLength={150}
-                            className="w-full"
-                            onInput={(e) => {
-                              component.placeholder =
-                                e.currentTarget.value || undefined;
-                              setData({ ...data });
-                            }}
-                          />
-                        </div>
-                        <div className="ltr:ml-2 rtl:mr-2 my-auto">
-                          <Checkbox
-                            label="Disabled"
-                            checked={component.disabled ?? false}
-                            onChange={(e) => {
-                              component.disabled = e.currentTarget.checked;
-                              setData({ ...data });
-                            }}
-                          />
-                        </div>
-                      </div>
-                      {component.type === ComponentType.StringSelect ? (
-                        <>
-                          <div
-                            className={
-                              component.options.length === 0 ? "" : "pt-2 -mb-2"
-                            }
-                          >
-                            {component.options.map((option, oi) => (
-                              <SelectMenuOptionsSection
-                                key={`edit-message-${mid}-row-${i}-component-${component.type}-${ci}-option-${oi}`}
-                                option={option}
-                                index={oi}
-                                component={component}
-                                update={() => setData({ ...data })}
-                              >
-                                <div className="flex">
-                                  <div className="ltr:mr-2 rtl:ml-2 mt-auto">
-                                    <p className="text-sm cursor-default font-medium">
-                                      {t("emoji")}
-                                    </p>
-                                    <PopoutEmojiPicker
-                                      emoji={option.emoji}
-                                      emojis={cache ? cache.emoji.getAll() : []}
-                                      setEmoji={(emoji) => {
-                                        option.emoji = emoji;
-                                        setData({ ...data });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="grow">
-                                    <TextInput
-                                      label={t("label")}
-                                      className="w-full"
-                                      value={option.label ?? ""}
-                                      maxLength={100}
-                                      onInput={(e) => {
-                                        option.label = e.currentTarget.value;
-                                        setData({ ...data });
-                                      }}
-                                      required
-                                    />
-                                  </div>
-                                  <div className="ltr:ml-2 rtl:mr-2 my-auto">
-                                    <Checkbox
-                                      label={t("default")}
-                                      checked={option.default ?? false}
-                                      onChange={(e) => {
-                                        option.default =
-                                          e.currentTarget.checked;
-                                        setData({ ...data });
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <TextInput
-                                  label={t("description")}
-                                  className="w-full"
-                                  value={option.description ?? ""}
-                                  maxLength={100}
-                                  onInput={(e) => {
-                                    option.description =
-                                      e.currentTarget.value || undefined;
-                                    setData({ ...data });
-                                  }}
-                                />
-                                <div className="flex">
-                                  <div className="grow">
-                                    <TextInput
-                                      label={t("valueHidden")}
-                                      className="w-full"
-                                      value={option.value ?? ""}
-                                      maxLength={100}
-                                      onInput={(e) => {
-                                        option.value = e.currentTarget.value;
-                                        setData({ ...data });
-                                      }}
-                                      required
-                                    />
-                                  </div>
-                                  <Button
-                                    className="mt-auto ltr:ml-2 rtl:mr-2"
-                                    onClick={async () => {
-                                      const flows = (
-                                        qComponent && "flows" in qComponent.data
-                                          ? qComponent.data.flows
-                                          : {}
-                                      ) as Record<string, Flow>;
-                                      let flow: Flow;
-                                      if (!qComponent) {
-                                        const newId = randomString(10);
-                                        flow = {
-                                          name: "Flow",
-                                          actions: [{ type: 0 }],
-                                        };
-                                        setComponents([
-                                          ...qdComponents,
-                                          {
-                                            id: newId,
-                                            data: { flow },
-                                            draft: true,
-                                          },
-                                        ]);
-                                      } else if (!flows[option.value]) {
-                                        flow = flow = {
-                                          name: "Flow",
-                                          actions: [{ type: 0 }],
-                                        };
-                                        flows[option.value] = flow;
-                                        // @ts-expect-error
-                                        qComponent.data.flows = flows;
-                                        setComponents([...qdComponents]);
-                                      } else {
-                                        flow = flows[option.value];
-                                      }
-
-                                      setEditingFlow({
-                                        flow,
-                                        setFlow: (newFlow) => {
-                                          if (qComponent?.data) {
-                                            flows[option.value] = newFlow;
-                                            // @ts-expect-error
-                                            qComponent.data.flows = flows;
-                                          }
-                                          setComponents([
-                                            ...(qdComponents ?? []),
-                                          ]);
-                                        },
-                                      });
-                                    }}
-                                  >
-                                    {t(
-                                      // @ts-expect-error
-                                      qComponent?.data?.flows?.[option.value]
-                                        ? "editFlow"
-                                        : "addFlow",
-                                    )}
-                                  </Button>
-                                </div>
-                              </SelectMenuOptionsSection>
-                            ))}
-                          </div>
-                          <Button
-                            disabled={component.options.length >= 25}
-                            onClick={() => {
-                              // For most users, the option value is not
-                              // something they need to worry about, so we auto-
-                              // fill it.
-                              component.options.push({
-                                label: "",
-                                value: randomString(10),
-                              });
-                              setData({ ...data });
-                            }}
-                          >
-                            {t("addOption")}
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <div
-                            className={
-                              !component.default_values ||
-                              component.default_values.length === 0
-                                ? ""
-                                : "pt-2 -mb-2"
-                            }
-                          >
-                            {component.default_values?.map((value, vi) => {
-                              // We don't want to accidentally double-fetch here
-                              const resolved =
-                                isSnowflake(value.id) && cache
-                                  ? value.type ===
-                                    SelectMenuDefaultValueType.User
-                                    ? cache.member.get(value.id)
-                                    : value.type ===
-                                        SelectMenuDefaultValueType.Role
-                                      ? cache.role.get(value.id)
-                                      : cache.channel.get(value.id)
-                                  : undefined;
-
-                              return (
-                                <div
-                                  key={`edit-message-${mid}-row-${i}-component-${component.type}-${ci}-value-${vi}`}
-                                >
-                                  <div className="flex">
-                                    <div className="grow">
-                                      <TextInput
-                                        label={t(
-                                          resolved !== undefined
-                                            ? "idMention"
-                                            : "idText",
-                                          {
-                                            replace: {
-                                              mention: resolved
-                                                ? "user" in resolved
-                                                  ? `@${resolved.user.username}`
-                                                  : "type" in resolved
-                                                    ? `#${
-                                                        resolved.name ??
-                                                        t("mention.unknown")
-                                                      }`
-                                                    : `@${resolved.name}`
-                                                : resolved === null
-                                                  ? value.type ===
-                                                    SelectMenuDefaultValueType.Channel
-                                                    ? `#${t("mention.unknown")}`
-                                                    : `@${t("mention.unknown")}`
-                                                  : undefined,
-                                            },
-                                          },
-                                        )}
-                                        className="w-full"
-                                        value={value.id}
-                                        pattern="^\d{17,22}$"
-                                        onChange={(e) => {
-                                          value.id = e.currentTarget.value;
-                                          setData({ ...data });
-                                        }}
-                                        required
-                                      />
-                                    </div>
-                                    {component.type ===
-                                      ComponentType.MentionableSelect && (
-                                      <div className="ltr:ml-2 rtl:mr-2 mt-auto">
-                                        <StringSelect
-                                          label={t("type")}
-                                          // className="shrink-0"
-                                          options={[
-                                            {
-                                              label: t("user"),
-                                              value:
-                                                SelectMenuDefaultValueType.User,
-                                            },
-                                            {
-                                              label: t("role"),
-                                              value:
-                                                SelectMenuDefaultValueType.Role,
-                                            },
-                                          ]}
-                                          value={{
-                                            label: t(value.type),
-                                            value: value.type,
-                                          }}
-                                          onChange={(raw) => {
-                                            const opt = raw as {
-                                              label: string;
-                                              value:
-                                                | SelectMenuDefaultValueType.User
-                                                | SelectMenuDefaultValueType.Role;
-                                            };
-                                            value.type = opt.value;
-                                            setData({ ...data });
-                                          }}
-                                        />
-                                      </div>
-                                    )}
-                                    <div className="ltr:ml-2 rtl:mr-2 mt-auto">
-                                      <Button
-                                        discordstyle={ButtonStyle.Danger}
-                                        onClick={() => {
-                                          // @ts-expect-error
-                                          component.default_values =
-                                            component.default_values?.filter(
-                                              (v) =>
-                                                !(
-                                                  v.id === value.id &&
-                                                  v.type === value.type
-                                                ),
-                                            );
-                                          setData({ ...data });
-                                        }}
-                                      >
-                                        <CoolIcon icon="Trash_Full" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <Button
-                            // Is there not a limit for this?
-                            // disabled={component.options.length >= 25}
-                            onClick={() => {
-                              component.default_values =
-                                component.default_values ?? [];
-                              component.default_values.push(
-                                // @ts-expect-error
-                                // This is perfectly cromulent
-                                component.type === ComponentType.UserSelect ||
-                                  component.type ===
-                                    ComponentType.MentionableSelect
-                                  ? {
-                                      id: "",
-                                      type: SelectMenuDefaultValueType.User,
-                                    }
-                                  : component.type === ComponentType.RoleSelect
-                                    ? {
-                                        id: "",
-                                        type: SelectMenuDefaultValueType.User,
-                                      }
-                                    : {
-                                        id: "",
-                                        type: SelectMenuDefaultValueType.Channel,
-                                      },
-                              );
-                              setData({ ...data });
-                            }}
-                          >
-                            {t("addDefaultValue")}
-                          </Button>
-                        </>
-                      )}
-                    </>
-                  )
-                )}
-              </IndividualComponentEditor>
-              {ci < a.length - 1 && (
-                <hr className="border border-gray-500/20 mb-3" />
-              )}
-            </div>
+            <IndividualComponentEditor
+              key={`edit-message-${mid}-component-${id}`}
+              component={component}
+              index={ci}
+              row={row}
+              updateRow={() => setData({ ...data })}
+              onClick={() => {
+                setEditingComponent({
+                  component: {
+                    ...component,
+                    ...((component.type === ComponentType.Button &&
+                      component.style !== ButtonStyle.Link) ||
+                    component.type === ComponentType.UserSelect ||
+                    component.type === ComponentType.RoleSelect ||
+                    component.type === ComponentType.MentionableSelect ||
+                    component.type === ComponentType.ChannelSelect
+                      ? { flow: component.flow ?? { actions: [] } }
+                      : component.type === ComponentType.StringSelect
+                        ? { flows: component.flows ?? {} }
+                        : {}),
+                  },
+                  update: () => setData({ ...data }),
+                });
+              }}
+            />
           );
         })}
       </div>
@@ -840,47 +396,56 @@ export const ActionRowEditor: React.FC<{
           },
         ]}
         isDisabled={getRowWidth(row) >= 5}
-        onChange={(v) => {
+        onChange={async (v) => {
           const { value: type } = v as { value: ComponentType | "linkButton" };
+          let submitData:
+            | z.infer<typeof ZodAPIMessageActionRowComponent>
+            | undefined;
           switch (type) {
             case "linkButton": {
-              row.components.push({
+              submitData = {
                 type: ComponentType.Button,
                 style: ButtonStyle.Link,
                 url: "",
-              });
+              };
               break;
             }
             case ComponentType.Button: {
-              row.components.push({
+              submitData = {
                 type,
                 style: ButtonStyle.Primary,
                 custom_id: "",
-              });
+              };
               break;
             }
             case ComponentType.StringSelect: {
-              row.components.push({
+              submitData = {
                 type,
-                options: [],
                 custom_id: "",
-              });
+                options: [],
+              };
               break;
             }
             case ComponentType.UserSelect:
             case ComponentType.RoleSelect:
             case ComponentType.MentionableSelect:
             case ComponentType.ChannelSelect: {
-              row.components.push({
+              submitData = {
                 type,
                 custom_id: "",
-              });
+              };
               break;
             }
             default:
               break;
           }
-          setData({ ...data });
+          if (submitData) {
+            const component = await submitComponent(submitData);
+            if (component) {
+              row.components.push(component);
+            }
+            setData({ ...data });
+          }
         }}
       >
         {t("addComponent")}
@@ -889,175 +454,117 @@ export const ActionRowEditor: React.FC<{
   );
 };
 
-export const ButtonStylePicker: React.FC<{
-  style: ButtonStyle;
-  component: APIButtonComponent;
-  update: () => void;
-}> = ({ style, component, update }) => (
-  <Button
-    className="block min-h-0 h-7 !p-0 !min-w-0"
-    discordstyle={style}
-    onClick={() => {
-      component.style = style;
-      update();
-    }}
-  >
-    {component.style === style && <CoolIcon icon="Check" className="text-xl" />}
-  </Button>
-);
-
-export const IndividualComponentEditor: React.FC<
-  React.PropsWithChildren<{
-    component: APIMessageActionRowComponent;
-    index: number;
-    row: APIActionRowComponent<APIMessageActionRowComponent>;
-    updateRow: () => void;
-    copyQdComponent: () => string;
-    removeQdComponent: () => void;
-    open?: boolean;
-  }>
-> = ({
-  component,
-  index,
-  row,
-  updateRow,
-  copyQdComponent,
-  removeQdComponent,
-  open,
-  children,
-}) => {
+export const IndividualComponentEditor: React.FC<{
+  component: APIMessageActionRowComponent;
+  index: number;
+  row: APIActionRowComponent<APIMessageActionRowComponent>;
+  updateRow: () => void;
+  onClick: () => void;
+}> = ({ component, index, row, updateRow, onClick }) => {
   const { t } = useTranslation();
   const previewText = getComponentText(component);
   return (
-    <details className="group/component pb-2 -my-1" open={open}>
-      <summary className="group-open/component:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-        <CoolIcon
-          icon="Chevron_Right"
-          className="group-open/component:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-        />
-        <span className="truncate">
-          {t(`component.${component.type}`)} {component.type === 2 && index + 1}
-          {previewText && ` - ${previewText}`}
+    <div className="flex text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none">
+      <button
+        type="button"
+        className="flex p-2 h-full w-full my-auto"
+        onClick={onClick}
+      >
+        <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6">
+          {component.type === ComponentType.Button ? (
+            <div
+              className={twJoin(
+                "rounded",
+                isLinkButton(component)
+                  ? "p-[5px_5px_4px_4px]"
+                  : "w-full h-full",
+                {
+                  [ButtonStyle.Primary]: "bg-blurple",
+                  [ButtonStyle.Secondary]: "bg-[#6d6f78] dark:bg-[#4e5058]",
+                  [ButtonStyle.Link]: "bg-[#6d6f78] dark:bg-[#4e5058]",
+                  [ButtonStyle.Success]: "bg-[#248046] dark:bg-[#248046]",
+                  [ButtonStyle.Danger]: "bg-[#da373c]",
+                }[component.style],
+              )}
+            >
+              {isLinkButton(component) && (
+                <CoolIcon icon="External_Link" className="block" />
+              )}
+            </div>
+          ) : (
+            <div className="rounded bg-[#6d6f78] dark:bg-[#4e5058] p-[5px_5px_4px_4px]">
+              <CoolIcon
+                icon={
+                  (
+                    {
+                      [ComponentType.StringSelect]: "Chevron_Down",
+                      [ComponentType.UserSelect]: "Users",
+                      [ComponentType.RoleSelect]: "Tag",
+                      [ComponentType.MentionableSelect]: "Mention",
+                      [ComponentType.ChannelSelect]: "Chat",
+                    } as Record<(typeof component)["type"], CoolIconsGlyph>
+                  )[component.type]
+                }
+                className="block"
+              />
+            </div>
+          )}
+        </div>
+        <span className="truncate my-auto">
+          {previewText ||
+            `${t(`component.${component.type}`)} ${
+              component.type === 2 ? index + 1 : ""
+            }`}
         </span>
-        <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
-          <button
-            type="button"
-            className={index === 0 ? "hidden" : ""}
-            onClick={() => {
-              row.components.splice(index, 1);
-              row.components.splice(index - 1, 0, component);
-              updateRow();
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={index === row.components.length - 1 ? "hidden" : ""}
-            onClick={() => {
-              row.components.splice(index, 1);
-              row.components.splice(index + 1, 0, component);
-              updateRow();
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            type="button"
-            className={getRowWidth(row) >= 5 ? "hidden" : ""}
-            onClick={() => {
-              const newId = copyQdComponent();
-              const copied = structuredClone(component);
-              if ("custom_id" in copied) {
-                copied.custom_id = `p_${newId}`;
-              }
+      </button>
+      <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
+        <button
+          type="button"
+          className={index === 0 ? "hidden" : ""}
+          onClick={() => {
+            row.components.splice(index, 1);
+            row.components.splice(index - 1, 0, component);
+            updateRow();
+          }}
+        >
+          <CoolIcon icon="Chevron_Up" />
+        </button>
+        <button
+          type="button"
+          className={index === row.components.length - 1 ? "hidden" : ""}
+          onClick={() => {
+            row.components.splice(index, 1);
+            row.components.splice(index + 1, 0, component);
+            updateRow();
+          }}
+        >
+          <CoolIcon icon="Chevron_Down" />
+        </button>
+        <button
+          type="button"
+          className={getRowWidth(row) >= 5 ? "hidden" : ""}
+          onClick={async () => {
+            const copied = await submitComponent(component);
+            if (copied) {
+              // Should always be non-null
               row.components.splice(index + 1, 0, copied);
               updateRow();
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              row.components.splice(index, 1);
-              removeQdComponent();
-              // updateRow();
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
-      </summary>
-      <div className="space-y-2 mb-2">{children}</div>
-    </details>
-  );
-};
-
-export const SelectMenuOptionsSection: React.FC<
-  React.PropsWithChildren<{
-    option: APISelectMenuOption;
-    index: number;
-    component: APIStringSelectComponent;
-    update: () => void;
-    open?: boolean;
-  }>
-> = ({ option, index, component, update, open, children }) => {
-  const previewText = option.label || option.description;
-  return (
-    <details className="group/select-option pb-2 -my-1" open={open}>
-      <summary className="group-open/select-option:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-        <CoolIcon
-          icon="Chevron_Right"
-          className="group-open/select-option:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-        />
-        <span className="shrink-0">Option {index + 1}</span>
-        {previewText && <span className="truncate ml-1">- {previewText}</span>}
-        <div className="ml-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
-          <button
-            type="button"
-            className={index === 0 ? "hidden" : ""}
-            onClick={() => {
-              component.options.splice(index, 1);
-              component.options.splice(index - 1, 0, option);
-              update();
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={index === component.options.length - 1 ? "hidden" : ""}
-            onClick={() => {
-              component.options.splice(index, 1);
-              component.options.splice(index + 1, 0, option);
-              update();
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            type="button"
-            className={component.options.length >= 25 ? "hidden" : ""}
-            onClick={() => {
-              component.options.splice(index + 1, 0, structuredClone(option));
-              update();
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              component.options.splice(index, 1);
-              update();
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
-      </summary>
-      <div className="space-y-2 mb-2">{children}</div>
-    </details>
+            }
+          }}
+        >
+          <CoolIcon icon="Copy" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            // TODO: delete request
+            row.components.splice(index, 1);
+            updateRow();
+          }}
+        >
+          <CoolIcon icon="Trash_Full" />
+        </button>
+      </div>
+    </div>
   );
 };

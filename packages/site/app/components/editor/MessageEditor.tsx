@@ -1,7 +1,7 @@
 import { APIWebhook } from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
-import { EditingFlowData } from "~/modals/FlowEditModal";
+import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, QueryDataComponent } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
@@ -50,8 +50,8 @@ export const MessageEditor: React.FC<{
   setEditingMessageFlags: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
-  setEditingFlow: React.Dispatch<
-    React.SetStateAction<EditingFlowData | undefined>
+  setEditingComponent: React.Dispatch<
+    React.SetStateAction<EditingComponentData | undefined>
   >;
   webhooks?: APIWebhook[];
   cache?: CacheManager;
@@ -64,7 +64,7 @@ export const MessageEditor: React.FC<{
   setFiles,
   setSettingMessageIndex,
   setEditingMessageFlags,
-  setEditingFlow,
+  setEditingComponent,
   webhooks,
   cache,
 }) => {
@@ -346,7 +346,7 @@ export const MessageEditor: React.FC<{
                       });
                     }}
                     cache={cache}
-                    setEditingFlow={setEditingFlow}
+                    setEditingComponent={setEditingComponent}
                     open
                   />
                 </div>

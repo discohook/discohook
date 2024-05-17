@@ -9,6 +9,7 @@ export interface Env {
   ENVIRONMENT: "dev" | "production";
   KV: KVNamespace;
   SCHEDULER: DurableObjectNamespace;
+  DRAFT_CLEANER: DurableObjectNamespace;
   __STATIC_CONTENT: Fetcher;
   // __STATIC_CONTENT_MANIFEST: Object;
   SESSION_SECRET: string;

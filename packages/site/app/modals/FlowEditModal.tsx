@@ -17,8 +17,8 @@ import {
 import { CacheManager } from "~/util/cache/CacheManager";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
 import {
-  loader as ApiGetUserBackups,
   PartialBackupsWithMessages,
+  loader as ApiGetUserBackups,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -72,9 +72,7 @@ export const FlowEditModal = (
                   flow={flow}
                   action={action}
                   actionIndex={ai}
-                  update={() => {
-                    setFlow(structuredClone(flow));
-                  }}
+                  update={() => setFlow(structuredClone(flow))}
                   backupsFetcher={backupsFetcher}
                   cache={cache}
                 />
