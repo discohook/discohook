@@ -47,7 +47,6 @@ export const SimpleMessageEditor: React.FC<{
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
       : 0;
   const previewText = getMessageText(message.data);
-  const components = data.components?.[i];
 
   const authorTypes = webhooks
     ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
@@ -231,15 +230,6 @@ export const SimpleMessageEditor: React.FC<{
                     rowIndex={ri}
                     data={data}
                     setData={setData}
-                    setComponents={(value: QueryDataComponent[]) => {
-                      setData({
-                        ...data,
-                        components: {
-                          ...(data.components ?? {}),
-                          [i]: value,
-                        },
-                      });
-                    }}
                     open
                   />
                   {message.data.components &&

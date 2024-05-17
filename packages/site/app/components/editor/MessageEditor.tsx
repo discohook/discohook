@@ -3,7 +3,7 @@ import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
 import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { QueryData, QueryDataComponent } from "~/types/QueryData";
+import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -336,15 +336,6 @@ export const MessageEditor: React.FC<{
                     rowIndex={ri}
                     data={data}
                     setData={setData}
-                    setComponents={(value: QueryDataComponent[]) => {
-                      setData({
-                        ...data,
-                        components: {
-                          ...(data.components ?? {}),
-                          [id]: value,
-                        },
-                      });
-                    }}
                     cache={cache}
                     setEditingComponent={setEditingComponent}
                     open
