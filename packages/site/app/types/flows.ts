@@ -167,3 +167,9 @@ export const ZodFlow: z.ZodType<Flow> = z.object({
   name: z.string(),
   actions: ZodFlowAction.array(),
 });
+
+export const ZodFlowWithMax = (max: number): z.ZodType<Flow> =>
+  z.object({
+    name: z.string(),
+    actions: ZodFlowAction.array().max(max),
+  });

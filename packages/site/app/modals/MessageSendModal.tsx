@@ -1,6 +1,13 @@
 import { DiscordErrorData, REST } from "@discordjs/rest";
+import { SerializeFrom } from "@remix-run/cloudflare";
 import { useFetcher } from "@remix-run/react";
-import { APIMessage, APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { isLinkButton } from "discord-api-types/utils/v10";
+import {
+  APIMessage,
+  APIWebhook,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
@@ -8,11 +15,13 @@ import { Button } from "~/components/Button";
 import { getMessageText } from "~/components/editor/MessageEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
+import type { Flow } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
-import { action as ApiAuditLogAction } from "../api/v1/audit-log";
+import { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
+import type { action as ApiPostValidateFlows } from "../api/v1/validate.flows";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
 import { Modal, ModalProps } from "./Modal";
@@ -59,6 +68,7 @@ export const submitMessage = async (
       {
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
+        components: message.data.components,
       },
       files,
       undefined,
@@ -73,6 +83,8 @@ export const submitMessage = async (
         avatar_url: message.data.author?.icon_url,
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
+        components: message.data.components,
+        flags: message.data.flags,
       },
       files,
       undefined,
@@ -140,41 +152,22 @@ export const MessageSendModal = (
     }),
     {},
   );
-  const enabledMessagesCount = Object.values(messages).filter(
-    (d) => d.enabled,
-  ).length;
-  useEffect(() => {
-    // Reset all messages to be enabled by default
-    // since the index is not a static identifier
-    updateMessages(
-      data.messages
-        .map((_, i) => i)
-        .reduce(
-          (o, index) => ({
-            // biome-ignore lint/performance/noAccumulatingSpread:
-            ...o,
-            [index]: { enabled: true },
-          }),
-          {},
-        ),
-    );
-  }, [data.messages]);
+  const enabledMessagesCount = Object.values(data.messages).filter((m) => {
+    const id = getQdMessageId(m);
+    return !messages[id] || messages[id].enabled;
+  }).length;
 
   const setOpen = (s: boolean) => {
     props.setOpen(s);
     if (!s) {
       updateMessages(
-        Array(10)
-          .fill(undefined)
-          .map((_, i) => i)
-          .reduce(
-            (o, index) => ({
-              // biome-ignore lint/performance/noAccumulatingSpread:
-              ...o,
-              [index]: { result: undefined, enabled: true },
-            }),
+        Object.fromEntries(
+          Object.entries(messages).map(
+            // Reset result when modal is closed
+            ([id, cur]) => [id, { result: undefined, enabled: cur.enabled }],
             {},
           ),
+        ),
       );
     }
   };
@@ -184,7 +177,7 @@ export const MessageSendModal = (
 
   return (
     <Modal
-      title={`Send Message${data.messages.length === 1 ? "" : "s"}`}
+      title={t("sendMessageN", { count: data.messages.length })}
       {...props}
       setOpen={setOpen}
     >
@@ -197,23 +190,24 @@ export const MessageSendModal = (
         open={troubleshootOpen}
         setOpen={setTroubleshootOpen}
       />
-      <p className="text-sm font-medium">Messages</p>
+      <p className="text-sm font-medium">{t("messages")}</p>
       <div className="space-y-1">
         {data.messages.length > 0 ? (
           data.messages.map((message, i) => {
+            const id = getQdMessageId(message);
             const previewText = getMessageText(message.data);
             return (
-              <div key={`message-send-${i}`} className="flex">
+              <div key={`message-send-${id}`} className="flex">
                 <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer overflow-hidden">
-                  {!!messages[i]?.result && (
+                  {!!messages[id]?.result && (
                     <CoolIcon
                       icon={
-                        messages[i]?.result?.status === "success"
+                        messages[id]?.result?.status === "success"
                           ? "Check"
                           : "Close_MD"
                       }
                       className={`text-2xl my-auto mr-1 ${
-                        messages[i]?.result?.status === "success"
+                        messages[id]?.result?.status === "success"
                           ? "text-green-600"
                           : "text-rose-600"
                       }`}
@@ -221,30 +215,33 @@ export const MessageSendModal = (
                   )}
                   <div className="my-auto grow text-left ltr:mr-2 rtl:ml-2 truncate">
                     <p className="font-semibold text-base truncate">
-                      Message {i + 1}
-                      {!!previewText && (
-                        <span className="truncate ltr:ml-1 rtl:mr-1">
-                          - {previewText}
-                        </span>
-                      )}
+                      {t(previewText ? "messageNText" : "messageN", {
+                        replace: { n: i + 1, text: previewText },
+                      })}
                     </p>
-                    {messages[i]?.result?.status === "error" && (
+                    {messages[id]?.result?.status === "error" && (
                       <p className="text-rose-500 text-sm leading-none">
                         <CoolIcon
                           icon="Circle_Warning"
                           className="ltr:mr-1 rtl:ml-1"
                         />
-                        {(messages[i].result?.data as DiscordErrorData).message}
+                        {
+                          (messages[id].result?.data as DiscordErrorData)
+                            .message
+                        }
                       </p>
                     )}
                   </div>
                   <input
                     type="checkbox"
                     name="message"
-                    checked={!!messages[i]?.enabled}
+                    checked={!messages[id] ? true : messages[id].enabled}
                     onChange={(e) =>
                       updateMessages({
-                        [i]: { enabled: e.currentTarget.checked },
+                        [id]: {
+                          ...messages[id],
+                          enabled: e.currentTarget.checked,
+                        },
                       })
                     }
                     hidden
@@ -258,18 +255,18 @@ export const MessageSendModal = (
                     )}
                     <CoolIcon
                       icon={
-                        messages[i]?.enabled
+                        !messages[id] || messages[id].enabled
                           ? "Checkbox_Check"
                           : "Checkbox_Unchecked"
                       }
                     />
                   </div>
                 </label>
-                {messages[i]?.result && (
+                {messages[id]?.result && (
                   <button
                     type="button"
                     className="flex ml-2 p-2 text-2xl rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-gray-600 text-blurple dark:text-blurple-400 hover:text-blurple-400 hover:dark:text-blurple-300 transition"
-                    onClick={() => setShowingResult(messages[i].result)}
+                    onClick={() => setShowingResult(messages[id].result)}
                   >
                     <CoolIcon icon="Info" className="m-auto" />
                   </button>
@@ -339,7 +336,9 @@ export const MessageSendModal = (
         ) : (
           <div>
             <p>You have no webhooks to send to.</p>
-            <Button onClick={() => setAddingTarget(true)}>Add Webhook</Button>
+            <Button onClick={() => setAddingTarget(true)}>
+              {t("addWebhook")}
+            </Button>
           </div>
         )}
       </div>
@@ -357,17 +356,17 @@ export const MessageSendModal = (
                 const webhook = targets[targetId];
                 if (!webhook) continue;
 
-                for (const [index] of Object.entries(messages).filter(
-                  ([_, v]) => v.enabled,
-                )) {
-                  const message = data.messages[Number(index)];
-                  if (!message) continue;
+                for (const message of data.messages.filter((m) => {
+                  const id = getQdMessageId(m);
+                  return !messages[id] || messages[id].enabled;
+                })) {
+                  const id = getQdMessageId(message);
                   if (
                     message.data.webhook_id &&
                     targetId !== message.data.webhook_id
                   ) {
                     updateMessages({
-                      [index]: {
+                      [id]: {
                         result: {
                           status: "error",
                           data: {
@@ -381,30 +380,85 @@ export const MessageSendModal = (
                     continue;
                   }
 
-                  const result = await submitMessage(
-                    webhook,
-                    message,
-                    files?.[getQdMessageId(message)],
-                  );
+                  const flows: Flow[] = [];
+                  for (const row of message.data.components ?? []) {
+                    for (const component of row.components) {
+                      if ("flow" in component && component.flow) {
+                        flows.push(component.flow);
+                        component.flow = undefined;
+                      }
+                      if ("flows" in component && component.flows) {
+                        flows.push(...Object.values(component.flows));
+                        component.flows = undefined;
+                      }
+                      if (
+                        component.type === ComponentType.Button &&
+                        isLinkButton(component) &&
+                        component.custom_id
+                      ) {
+                        const url = new URL(component.url);
+                        url.searchParams.set(
+                          "dhc-id",
+                          component.custom_id.replace(/^p_/, ""),
+                        );
+                        component.url = url.href;
+                        component.custom_id = undefined;
+                      }
+                    }
+                  }
+                  let result: SubmitMessageResult | undefined;
+                  if (flows.length !== 0) {
+                    const response = await fetch(
+                      apiUrl(BRoutes.validateFlows()),
+                      {
+                        method: "POST",
+                        body: JSON.stringify(flows),
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      },
+                    );
+                    const raw = (await response.json()) as SerializeFrom<
+                      typeof ApiPostValidateFlows
+                    >;
+                    if (raw.success) {
+                      result = {
+                        status: "error",
+                        data: {
+                          code: 0,
+                          message: "Invalid Flow",
+                          errors: raw.error,
+                        },
+                      };
+                    }
+                  }
+
+                  if (!result || result.status === "success") {
+                    result = await submitMessage(webhook, message, files?.[id]);
+                  }
                   if (result.status === "success") {
                     auditLogFetcher.submit(
                       {
                         type: message.reference ? "edit" : "send",
-                        webhookId: webhook.id,
-                        // biome-ignore lint/style/noNonNullAssertion: We needed the token in order to arrive at a success state
-                        webhookToken: webhook.token!,
-                        messageId: result.data.id,
                         // threadId: ,
                       },
                       {
                         method: "POST",
-                        action: apiUrl(BRoutes.auditLog()),
+                        action: apiUrl(
+                          BRoutes.messageLog(
+                            webhook.id,
+                            // We needed the token in order to arrive at a success state
+                            // biome-ignore lint/style/noNonNullAssertion: ^
+                            webhook.token!,
+                            result.data.id,
+                          ),
+                        ),
                       },
                     );
                   }
 
                   updateMessages({
-                    [index]: { result, enabled: true },
+                    [id]: { result, enabled: true },
                   });
                 }
               }

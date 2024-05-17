@@ -2,11 +2,6 @@ import { z } from "zod";
 import { ZodDonateKeyType } from "./v1/donate.$type";
 
 export const BRoutes = {
-  /** - POST /audit-log */
-  auditLog() {
-    return "/audit-log" as const;
-  },
-
   /**
    * - POST /backups
    * - GET /backups/:id
@@ -138,6 +133,13 @@ export const BRoutes = {
     return id ? (`/link-backups/${id}` as const) : ("/link-backups" as const);
   },
 
+  /**
+   * - POST /webhooks/:webhookId/:webhookToken/messages/:messageId/log
+   */
+  messageLog(webhookId: string, webhookToken: string, messageId: string) {
+    return `/log/webhooks/${webhookId}/${webhookToken}/messages/${messageId}` as const;
+  },
+
   /** - GET /oembed?data=... */
   oembed() {
     return "/oembed" as const;
@@ -155,6 +157,11 @@ export const BRoutes = {
   /** - GET /unfurl?url=... */
   unfurl() {
     return "/unfurl" as const;
+  },
+
+  /** - POST /validate/flows */
+  validateFlows() {
+    return "/validate/flows" as const;
   },
 };
 
