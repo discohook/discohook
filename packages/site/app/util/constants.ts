@@ -56,6 +56,10 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
         color: 0x58b9ff,
       },
     ],
+    // This kind of goes against our philosophy to only show components that
+    // exist on the server. Conversely, this sort of thing is inevitable due
+    // to the way query data works, so I'm allowing it for now. I think it's
+    // something that we'll want the server to deal with.
     components: [
       {
         type: ComponentType.ActionRow,
@@ -93,9 +97,9 @@ export const LINK_INDEX_EMBED: LinkQueryData["embed"] = {
     },
     title: "Where am I?",
     description: [
-      "Welcome to the super special <:discohook:736648398081622016> **Discohook** link embed editor! [Deluxe members](https://discohook.app/donate) are able to leverage this page to create beautiful embeds that they can use anywhere on Discord. These embeds can even include videos!",
+      "Welcome to the super special Discohook link embed editor! Deluxe members are able to leverage this page to create beautiful embeds that they can use anywhere on Discord. These embeds can even include videos!",
       "",
-      "To save your embed and get posting, type a name in the box on the left, then click **Save**. Copy your link with **Copy Link**.",
+      "To save your embed and get posting, type a name in the box on the left, then click Save. Copy your link with Copy Link.",
     ].join("\n"),
     // TODO tutorial video on how to use this editor
     video: {

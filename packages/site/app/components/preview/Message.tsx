@@ -68,6 +68,7 @@ export const Message: React.FC<{
   date?: Date;
   setImageModalData?: SetImageModalData;
   forceSeparateAuthor?: boolean;
+  isLinkEmbedEditor?: boolean;
 }> = ({
   message,
   discordApplicationId,
@@ -81,6 +82,7 @@ export const Message: React.FC<{
   date,
   setImageModalData,
   forceSeparateAuthor,
+  isLinkEmbedEditor,
 }) => {
   const { t } = useTranslation();
   const webhook = webhooks
@@ -284,6 +286,7 @@ export const Message: React.FC<{
                   files={files}
                   setImageModalData={setImageModalData}
                   cache={cache}
+                  isLinkEmbed={isLinkEmbedEditor}
                 />
               ))}
             </div>

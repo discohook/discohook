@@ -49,7 +49,8 @@ export const Embed: React.FC<{
   files?: DraftFile[];
   cache?: CacheManager;
   setImageModalData?: SetImageModalData;
-}> = ({ embed, extraImages, files, cache, setImageModalData }) => {
+  isLinkEmbed?: boolean;
+}> = ({ embed, extraImages, files, cache, setImageModalData, isLinkEmbed }) => {
   const fieldLines: APIEmbedField[][] = [];
   for (const field of embed.fields ?? []) {
     const currentLine = fieldLines[fieldLines.length - 1];
@@ -137,12 +138,18 @@ export const Embed: React.FC<{
                 target="_blank"
                 rel="noreferrer nofollow ugc"
               >
-                <Markdown
-                  content={embed.title}
-                  features="title"
-                  cache={cache}
-                />
+                {isLinkEmbed ? (
+                  <p>{embed.title}</p>
+                ) : (
+                  <Markdown
+                    content={embed.title}
+                    features="title"
+                    cache={cache}
+                  />
+                )}
               </a>
+            ) : isLinkEmbed ? (
+              <p>{embed.title}</p>
             ) : (
               <Markdown content={embed.title} features="title" cache={cache} />
             )}
@@ -156,11 +163,15 @@ export const Embed: React.FC<{
               "--font-size": "1rem",
             }}
           >
-            <Markdown
-              content={embed.description}
-              features="full"
-              cache={cache}
-            />
+            {isLinkEmbed ? (
+              <p>{embed.description}</p>
+            ) : (
+              <Markdown
+                content={embed.description}
+                features="full"
+                cache={cache}
+              />
+            )}
           </div>
         )}
         {fieldLines.length > 0 && (

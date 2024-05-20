@@ -7,10 +7,9 @@ import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { requirePremiumOrThrow } from "~/util/users";
 import {
-  jsonAsString,
   snowflakeAsString,
-  zxParseForm,
-  zxParseParams,
+  zxParseJson,
+  zxParseParams
 } from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
 
@@ -42,11 +41,11 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
 export const action = async ({ request, params, context }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { name, data } = await zxParseForm(request, {
+  const { name, data } = await zxParseJson(request, {
     name: z
       .ostring()
       .refine((val) => (val !== undefined ? val.length <= 100 : true)),
-    data: z.optional(jsonAsString(ZodLinkQueryData)),
+    data: z.optional(ZodLinkQueryData),
   });
   const user = await getUser(request, context, true);
   requirePremiumOrThrow(user);
@@ -58,7 +57,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
       ownerId: true,
     },
   });
-  if (!backup || backup.ownerId !== user.id) {
+  if (!backup || backup.ownerId !== BigInt(user.id)) {
     throw json(
       { message: "No backup with that ID or you do not own it." },
       404,

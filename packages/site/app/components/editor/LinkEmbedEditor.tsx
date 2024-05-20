@@ -5,7 +5,6 @@ import {
   LinkEmbedContainer,
   LinkQueryData,
 } from "~/types/QueryData";
-import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
@@ -71,7 +70,6 @@ export const LinkEmbedEditor: React.FC<{
     setData({ ...data });
   };
 
-  const previewText = getEmbedText(embed);
   const errors = getEmbedErrors(embed);
   return (
     <details
@@ -79,9 +77,7 @@ export const LinkEmbedEditor: React.FC<{
       open={open}
       style={
         embed.color
-          ? {
-              borderLeftColor: `#${embed.color.toString(16)}`,
-            }
+          ? { borderLeftColor: `#${embed.color.toString(16)}` }
           : undefined
       }
     >
@@ -96,12 +92,7 @@ export const LinkEmbedEditor: React.FC<{
             className="my-auto text-rose-600 dark:text-rose-400 mr-1.5"
           />
         )}
-        <span className="shrink-0">Embed</span>
-        {previewText ? (
-          <span className="truncate ml-1">- {previewText}</span>
-        ) : (
-          ""
-        )}
+        <span className="truncate">{t("embed")}</span>
       </summary>
       {errors.length > 0 && (
         <div className="-mt-1 mb-1">
@@ -110,11 +101,11 @@ export const LinkEmbedEditor: React.FC<{
           </InfoBox>
         </div>
       )}
-      <EmbedEditorSection name="Provider" open={open}>
+      <EmbedEditorSection name={t("provider")} open={open}>
         <div className="flex">
           <div className="grow">
             <TextArea
-              label="Name"
+              label={t("name")}
               className="w-full"
               maxLength={256}
               value={embed.provider?.name ?? ""}
@@ -141,7 +132,7 @@ export const LinkEmbedEditor: React.FC<{
                 })
               }
             >
-              Add URL
+              {t("addUrl")}
             </Button>
           )}
         </div>
@@ -150,7 +141,7 @@ export const LinkEmbedEditor: React.FC<{
             <div className="flex">
               <div className="grow">
                 <TextInput
-                  label="Provider URL"
+                  label={t("providerUrl")}
                   className="w-full"
                   type="url"
                   value={embed.provider?.url ?? ""}
@@ -175,19 +166,18 @@ export const LinkEmbedEditor: React.FC<{
                   })
                 }
               >
-                Remove
-                <span className="hidden sm:inline"> URL</span>
+                {t("remove")}
               </Button>
             </div>
           )}
         </div>
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
-      <EmbedEditorSection name="Author" open={open}>
+      <EmbedEditorSection name={t("author")} open={open}>
         <div className="flex">
           <div className="grow">
             <TextArea
-              label="Name"
+              label={t("name")}
               className="w-full"
               maxLength={256}
               value={embed.author?.name ?? ""}
@@ -214,7 +204,7 @@ export const LinkEmbedEditor: React.FC<{
                 })
               }
             >
-              Add URL
+              {t("addUrl")}
             </Button>
           )}
         </div>
@@ -223,7 +213,7 @@ export const LinkEmbedEditor: React.FC<{
             <div className="flex">
               <div className="grow">
                 <TextInput
-                  label="Author URL"
+                  label={t("authorUrl")}
                   className="w-full"
                   type="url"
                   value={embed.author?.url ?? ""}
@@ -248,19 +238,18 @@ export const LinkEmbedEditor: React.FC<{
                   })
                 }
               >
-                Remove
-                <span className="hidden sm:inline"> URL</span>
+                {t("remove")}
               </Button>
             </div>
           )}
         </div>
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
-      <EmbedEditorSection name="Body" open={open}>
+      <EmbedEditorSection name={t("body")} open={open}>
         <div className="flex">
           <div className="grow">
             <TextArea
-              label="Title"
+              label={t("title")}
               className="w-full"
               maxLength={256}
               value={embed.title ?? ""}
@@ -272,92 +261,50 @@ export const LinkEmbedEditor: React.FC<{
               }
             />
           </div>
-          {redirect_url === undefined && (
-            <Button
-              className="ml-2 mt-auto shrink-0"
-              onClick={() => {
-                embedContainer.redirect_url = `${
-                  location.origin
-                }#default-${randomString(8)}`;
-                setData({ ...data });
-              }}
-            >
-              Add Redirect URL
-            </Button>
-          )}
         </div>
-        <div className="grid gap-2">
-          {redirect_url !== undefined && (
-            <div className="flex">
-              <div className="grow">
-                <TextInput
-                  label="Redirect URL"
-                  className="w-full"
-                  type="url"
-                  value={redirect_url ?? ""}
-                  onInput={(e) => {
-                    embedContainer.redirect_url = e.currentTarget.value;
-                    setData({ ...data });
-                  }}
-                />
-              </div>
-              <Button
-                className="ml-2 mt-auto shrink-0"
-                onClick={() => {
-                  embedContainer.redirect_url = undefined;
-                  setData({ ...data });
-                }}
-              >
-                Remove
-                <span className="hidden sm:inline"> URL</span>
-              </Button>
-            </div>
-          )}
-          <details className="relative">
-            <summary className="flex cursor-pointer">
-              <div className="grow">
-                <p className="text-sm font-medium">Sidebar Color</p>
-                <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
-                  <span className="align-middle">
-                    {embed.color
-                      ? `#${embed.color.toString(16)}`
-                      : "Click to set"}
-                  </span>
-                </p>
-              </div>
-              <div
-                className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
-                style={{
-                  backgroundColor: embed.color
+        <details className="relative">
+          <summary className="flex cursor-pointer">
+            <div className="grow">
+              <p className="text-sm font-medium">{t("sidebarColor")}</p>
+              <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
+                <span className="align-middle">
+                  {embed.color
                     ? `#${embed.color.toString(16)}`
-                    : undefined,
-                }}
-              />
-            </summary>
-            <ColorPicker
-              color={embed.color ? `#${embed.color.toString(16)}` : undefined}
-              onChange={(color) => {
-                updateEmbed({
-                  color:
-                    color.rgb.a === 0
-                      ? undefined
-                      : parseInt(color.hex.replace("#", "0x"), 16),
-                });
+                    : t("clickToSet")}
+                </span>
+              </p>
+            </div>
+            <div
+              className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
+              style={{
+                backgroundColor: embed.color
+                  ? `#${embed.color.toString(16)}`
+                  : undefined,
               }}
             />
-          </details>
-        </div>
+          </summary>
+          <ColorPicker
+            color={embed.color ? `#${embed.color.toString(16)}` : undefined}
+            onChange={(color) => {
+              updateEmbed({
+                color:
+                  color.rgb.a === 0
+                    ? undefined
+                    : parseInt(color.hex.replace("#", "0x"), 16),
+              });
+            }}
+          />
+        </details>
         {!!embed.video?.url && (
           <InfoBox severity="yellow" icon="Info">
-            On desktop clients, the description is not visible for link embeds
-            with a video. Users on Android can still view the description.
+            {t("linkEmbedsNoVideoAndDescription")}
           </InfoBox>
         )}
         <TextArea
-          label="Description"
+          label={t("description")}
           className="w-full h-40"
           value={embed.description ?? ""}
-          maxLength={4096}
+          maxLength={356}
           onInput={(e) =>
             updateEmbed({
               description: e.currentTarget.value || undefined,
@@ -366,19 +313,15 @@ export const LinkEmbedEditor: React.FC<{
         />
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
-      <EmbedEditorSection name="Images" open={open}>
-        <InfoBox icon="Info">
-          Link embeds can have one thumbnail or up to 4 large images, but not
-          both.
-        </InfoBox>
+      <EmbedEditorSection name={t("images")} open={open}>
+        <InfoBox icon="Info">{t("linkEmbedsImageLimit")}</InfoBox>
         {embed.video?.url && (
           <InfoBox severity="yellow" icon="Triangle_Warning">
-            Link embeds cannot have a video paired with an image. Remove your
-            video in order to add images.
+            {t("linkEmbedsNoVideoAndImage")}
           </InfoBox>
         )}
         <Checkbox
-          label="Use large images"
+          label={t("useLargeImages")}
           checked={embed.large_images ?? false}
           disabled={!embed.images?.length && !!embed.video?.url}
           onChange={(e) =>
@@ -393,7 +336,7 @@ export const LinkEmbedEditor: React.FC<{
                 <div className="flex">
                   <div className="grow">
                     <TextInput
-                      label={i === 0 ? "URL" : ""}
+                      label={i === 0 ? t("url") : ""}
                       type="url"
                       className="w-full"
                       value={img.url ?? ""}
@@ -444,21 +387,20 @@ export const LinkEmbedEditor: React.FC<{
               })
             }
           >
-            Add Image
+            {t("addImage")}
           </Button>
         </div>
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
-      <EmbedEditorSection name="Video" open={open}>
+      <EmbedEditorSection name={t("video")} open={open}>
         {!!embed.images?.length && (
           <InfoBox severity="yellow" icon="Triangle_Warning">
-            Link embeds cannot have a video paired with an image. Remove all
-            images in order to add a video.
+            {t("linkEmbedsNoImagesAndVideo")}
           </InfoBox>
         )}
         <div>
           <TextInput
-            label="URL (direct link or YouTube)"
+            label={t("linkEmbedsVideoUrl")}
             type="url"
             className="w-full"
             value={embed.video?.url ?? ""}
@@ -468,9 +410,7 @@ export const LinkEmbedEditor: React.FC<{
                 large_images: false,
                 images: undefined,
                 video: e.currentTarget.value
-                  ? {
-                      url: e.currentTarget.value,
-                    }
+                  ? { url: e.currentTarget.value }
                   : undefined,
               });
             }}

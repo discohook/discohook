@@ -2,7 +2,7 @@ import { SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIEmbed, APIEmbedImage, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { SafeParseReturnType, z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
@@ -36,6 +36,7 @@ import {
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import { loader as apiLinkBackupsId } from "../api/v1/link-backups.$id";
+import { safePushState } from "./_index";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
@@ -228,11 +229,11 @@ export default function Index() {
     if (!backupInfo) {
       // URLs on Cloudflare are limited to 16KB
       const fullUrl = new URL(`${pathUrl}?data=${encoded}`);
-      history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
+      safePushState({ path: fullUrl.toString() }, fullUrl.toString());
     } else {
       // Make sure it stays there, we also want to wipe any other params
       const fullUrl = `${pathUrl}?backup=${backupInfo.id}`;
-      history.pushState({ path: fullUrl.toString() }, "", fullUrl.toString());
+      safePushState({ path: fullUrl.toString() }, fullUrl.toString());
     }
   }, [backupInfo, data, updateCount]);
 
@@ -276,15 +277,16 @@ export default function Index() {
         >
           {!isPremium ? (
             <InfoBox icon="Info" severity="pink">
-              You're currently in read-only mode. You can play around in the
-              editor, but in order to save a link, you will need to subscribe to{" "}
-              <Link
-                to="/donate"
-                className={twJoin(linkClassName, "dark:brightness-90")}
-              >
-                Discohook Deluxe
-              </Link>
-              .
+              <Trans
+                t={t}
+                i18nKey="linkEmbedsPremiumReadOnly"
+                components={[
+                  <Link
+                    to="/donate"
+                    className={twJoin(linkClassName, "dark:brightness-90")}
+                  />,
+                ]}
+              />
             </InfoBox>
           ) : (
             backupInfo && (
@@ -343,25 +345,43 @@ export default function Index() {
                   apiUrl(BRoutes.linkBackups(backupInfo?.id)),
                   {
                     method: backupInfo ? "PATCH" : "POST",
-                    body: new URLSearchParams({
-                      name: backupNameDraft ?? "",
-                      data: JSON.stringify(data),
-                    }),
+                    body: JSON.stringify({ name: backupNameDraft, data }),
                     headers: {
-                      "Content-Type": "application/x-www-form-urlencoded",
+                      "Content-Type": "application/json",
                     },
                   },
                 );
-                // These payloads don't contain `data` so we don't need
-                // to worry about removing it
-                const d = (await r.json()) as BackupInfo;
-                setBackupInfo(d);
+                if (r.ok) {
+                  // These payloads don't contain `data` so we don't need
+                  // to worry about removing it
+                  const d = (await r.json()) as BackupInfo;
+                  setBackupInfo(d);
+                }
               }}
             >
               {t("save")}
             </Button>
           </div>
-          <LinkEmbedEditor embed={data.embed} data={data} setData={setData} />
+          <div className="flex w-full mb-2">
+            <div className="grow">
+              <TextInput
+                label={t("redirectUrl")}
+                className="w-full"
+                type="url"
+                value={data.embed.redirect_url ?? ""}
+                onInput={(e) => {
+                  data.embed.redirect_url = e.currentTarget.value || undefined;
+                  setData({ ...data });
+                }}
+              />
+            </div>
+          </div>
+          <LinkEmbedEditor
+            embed={data.embed}
+            data={data}
+            setData={setData}
+            open
+          />
         </div>
         <div
           className={twJoin(
@@ -415,6 +435,7 @@ export default function Index() {
                 messageDisplay={settings.messageDisplay}
                 compactAvatars={settings.compactAvatars}
                 setImageModalData={setImageModalData}
+                isLinkEmbedEditor
               />
             ) : (
               <Embed
@@ -424,6 +445,7 @@ export default function Index() {
                   myOrigin,
                 )}
                 setImageModalData={setImageModalData}
+                isLinkEmbed
               />
             )}
           </div>
