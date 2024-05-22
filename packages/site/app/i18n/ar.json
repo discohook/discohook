@@ -466,5 +466,13 @@
     "content": "محتوى",
     "profileImmutable": "لا يمكن تغيير الاسم و الصورة لرسالة قديمة.",
     "messageFlagsNote": "ميزة نوع الرسالة هي ميزة إختيارية يمكنك إطفائها او تشغيلها.",
-    "embedsHidden": "لقد حددت \"إخفاء الرسائل المُضمنة\" في نوع الرسالة, لذا جميع الرسائل المُضمنة لن تظهر."
+    "embedsHidden": "لقد حددت \"إخفاء الرسائل المُضمنة\" في نوع الرسالة, لذا جميع الرسائل المُضمنة لن تظهر.",
+    "messages": "رسائل",
+    "sendMessageN_zero": "",
+    "sendMessageN_one": "ارسال رسالة",
+    "sendMessageN_two": "",
+    "sendMessageN_few": "",
+    "sendMessageN_many": "",
+    "sendMessageN_other": "ارسال رسائل",
+    "editComponent": "تعديل العنصر"
 }
