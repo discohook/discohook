@@ -8,11 +8,14 @@ import {
 } from "@remix-run/cloudflare";
 import {
   APIGuild,
+  APIGuildChannel,
   APIGuildMember,
+  GuildChannelType,
+  OverwriteType,
   RESTGetAPIGuildMemberResult,
   Routes,
 } from "discord-api-types/v10";
-import { PermissionsBitField } from "discord-bitflag";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { eq } from "drizzle-orm";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
@@ -196,6 +199,11 @@ const createToken = async (env: Env, origin: string, userId: bigint) => {
 };
 
 export interface KVTokenPermissions {
+  permissions: string;
+  owner?: boolean;
+}
+
+export interface KVTokenGuildChannelPermissions {
   permissions: string;
   owner?: boolean;
 }
@@ -429,6 +437,10 @@ export interface TokenGuildPermissions {
   member?: APIGuildMember;
 }
 
+export interface TokenGuildChannelPermissions extends TokenGuildPermissions {
+  channel?: APIGuildChannel<GuildChannelType>;
+}
+
 export const getTokenGuildPermissions = async (
   token: TokenWithUser,
   guildId: bigint | string,
@@ -497,7 +509,7 @@ export const getTokenGuildPermissions = async (
           const role = guild.roles.find((r) => r.id === roleId);
           return role?.permissions ?? "0";
         })
-        .reduce((prev, cur) => BigInt(cur) | prev, BigInt(0)),
+        .reduce((prev, cur) => BigInt(cur) | prev, 0n),
     );
 
     const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
@@ -521,6 +533,168 @@ export const getTokenGuildPermissions = async (
       .insert(discordMembers)
       .values({
         guildId: typeof guildId === "bigint" ? guildId : makeSnowflake(guildId),
+        userId: token.user.discordId,
+        permissions: permissions.toString(),
+        owner: data.owner,
+      })
+      .onConflictDoUpdate({
+        target: [discordMembers.userId, discordMembers.guildId],
+        set: {
+          permissions: permissions.toString(),
+          owner: data.owner,
+        },
+      });
+  }
+
+  return data;
+};
+
+export const getTokenGuildChannelPermissions = async (
+  token: TokenWithUser,
+  channelId: bigint | string,
+  env: Env,
+): Promise<TokenGuildChannelPermissions> => {
+  const key = `token-${token.id}-channel-${channelId}`;
+  const cached = await env.KV.get<KVTokenGuildChannelPermissions>(key, "json");
+  let data: TokenGuildChannelPermissions;
+  if (cached) {
+    data = {
+      ...cached,
+      permissions: new PermissionsBitField(BigInt(cached.permissions)),
+    };
+  } else {
+    const db = getDb(env.HYPERDRIVE.connectionString);
+    if (!token.user.discordId) {
+      throw json({ message: "User has no linked Discord user" }, 401);
+    }
+
+    const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
+    let channel: APIGuildChannel<GuildChannelType>;
+    try {
+      channel = (await rest.get(
+        Routes.channel(String(channelId)),
+      )) as typeof channel;
+    } catch {
+      throw json(
+        {
+          message: "Channel does not exist or Discohook Utils cannot access it",
+        },
+        404,
+      );
+    }
+    if (!channel.guild_id) {
+      // Could be confusing
+      return {
+        permissions: new PermissionsBitField().add(
+          PermissionFlags.ViewChannel,
+          PermissionFlags.SendMessages,
+          PermissionFlags.EmbedLinks,
+          PermissionFlags.AttachFiles,
+          PermissionFlags.AddReactions,
+          PermissionFlags.SendVoiceMessages,
+          PermissionFlags.SendTTSMessages,
+          PermissionFlags.UseExternalEmojis,
+          PermissionFlags.UseExternalSounds,
+          PermissionFlags.UseExternalStickers,
+          PermissionFlags.UseApplicationCommands,
+        ),
+      };
+    }
+
+    const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
+    let member: APIGuildMember;
+    if (oauth) {
+      try {
+        member = (await rest.get(Routes.userGuildMember(channel.guild_id), {
+          headers: { Authorization: `Bearer ${oauth.accessToken}` },
+          auth: false,
+        })) as RESTGetAPIGuildMemberResult;
+      } catch (e) {
+        throw json(
+          { message: "Server does not exist or you are not a member of it" },
+          404,
+        );
+      }
+    } else {
+      try {
+        member = (await rest.get(
+          Routes.guildMember(channel.guild_id, String(token.user.discordId)),
+        )) as RESTGetAPIGuildMemberResult;
+      } catch (e) {
+        throw json(
+          { message: "Server does not exist or you are not a member of it" },
+          404,
+        );
+      }
+    }
+
+    let guild: APIGuild;
+    try {
+      guild = await getGuild(channel.guild_id, rest, env);
+    } catch {
+      // This shouldn't fail since we were able to get the channel
+      throw json(
+        {
+          message:
+            "Server does not exist or Discohook Utils is not a member of it",
+        },
+        404,
+      );
+    }
+
+    const guildPermissions = new PermissionsBitField(
+      member.roles
+        .map((roleId) => {
+          const role = guild.roles.find((r) => r.id === roleId);
+          return role?.permissions ?? "0";
+        })
+        .reduce((prev, cur) => BigInt(cur) | prev, 0n),
+    );
+    const permissions = new PermissionsBitField(guildPermissions);
+
+    const overwrites = channel.permission_overwrites ?? [];
+    for (const overwrite of overwrites) {
+      if (
+        (overwrite.type === OverwriteType.Member &&
+          overwrite.id === String(token.user.discordId)) ||
+        (overwrite.type === OverwriteType.Role &&
+          member.roles.includes(overwrite.id))
+      ) {
+        permissions.add(BigInt(overwrite.allow));
+        permissions.remove(BigInt(overwrite.deny));
+      }
+    }
+
+    const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
+    await env.KV.put(
+      `token-${token.id}-guild-${guild.id}`,
+      JSON.stringify({
+        permissions: guildPermissions.toString(),
+        owner: guild.owner_id === member.user?.id,
+      } satisfies KVTokenPermissions),
+      { expirationTtl: permExpireAt },
+    );
+    await env.KV.put(
+      key,
+      JSON.stringify({
+        permissions: permissions.toString(),
+        owner: guild.owner_id === member.user?.id,
+      } satisfies KVTokenGuildChannelPermissions),
+      { expirationTtl: permExpireAt },
+    );
+
+    data = {
+      owner: guild.owner_id === member.user?.id,
+      permissions,
+      member,
+      guild,
+      channel,
+    };
+
+    await db
+      .insert(discordMembers)
+      .values({
+        guildId: makeSnowflake(guild.id),
         userId: token.user.discordId,
         permissions: permissions.toString(),
         owner: data.owner,
