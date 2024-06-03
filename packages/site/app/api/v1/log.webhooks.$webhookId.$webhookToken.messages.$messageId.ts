@@ -26,7 +26,7 @@ import {
   webhooks,
 } from "../../store.server";
 
-const getComponentId = (
+export const getComponentId = (
   component:
     | Pick<APIButtonComponentWithCustomId, "type" | "style" | "custom_id">
     | Pick<APIButtonComponentWithURL, "type" | "style" | "url">
@@ -264,7 +264,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         webhookId,
         type,
         discordGuildId: guildId,
-        // How crucial is an accurate message ID? This could definitely be fabricated
+        // How crucial is an accurate message ID? This could definitely be
+        // fabricated when creating `delete` logs
         messageId: message?.id ?? messageId,
         channelId: message?.channel_id ?? webhook.channel_id,
         threadId,
