@@ -6,14 +6,14 @@ import { ZodLinkQueryData } from "~/types/QueryData";
 import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { requirePremiumOrThrow } from "~/util/users";
-import { jsonAsString, zxParseForm } from "~/util/zod";
+import { zxParseJson } from "~/util/zod";
 import { getDb, linkBackups } from "../../store.server";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const action = async ({ request, context }: ActionArgs) => {
-  const { name, data } = await zxParseForm(request, {
+  const { name, data } = await zxParseJson(request, {
     name: z.string().refine((val) => val.length <= 100),
-    data: jsonAsString(ZodLinkQueryData),
+    data: ZodLinkQueryData,
   });
 
   const user = await getUser(request, context, true);
