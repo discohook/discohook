@@ -60,23 +60,3 @@ Whoops, I just remembered this endpoint requires user authentication. I want to 
 `{type}` can currently be `btc`.
 
 This endpoint is a bit weird, but I decided to document it in case someone wanted to set up some sort of program that donates once a month in order to maintain a subscription. When donating with cryptocurrencies, set your `message` to the `key` returned by this endpoint. -->
-
-## Link Preview
-
-### Unfurl URL Embed
-
-`GET /unfurl?url={url}`
-
-This is a reasonably faithful re-implementation of Discord's web scraper. I created this for internal use on Discohook but we are not actually using it yet.
-
-##### URL Params
-
-| Param | Type                                           |
-|-------|------------------------------------------------|
-| url   | string (http(s) URL of the resource to unfurl) |
-
-##### Response Body (JSON)
-
-| Key    | Type                                                                          |
-|--------|-------------------------------------------------------------------------------|
-| embeds | [Embed](https://discord.dev/resources/channel#embed-object-embed-structure)[] |
