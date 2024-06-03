@@ -97,12 +97,18 @@ export const processQueryData = async (
   queryData: QueryData,
   vars: LiveVariables,
   setVars: Record<string, string>,
-  messageIndex?: number,
+  messageIndex?: number | null,
 ) => {
-  const message = queryData.messages[messageIndex ?? 0];
+  const message =
+    messageIndex === null
+      ? queryData.messages[
+          Math.floor(Math.random() * queryData.messages.length)
+        ]
+      : queryData.messages[messageIndex ?? 0];
   if (!message) {
     throw new FlowFailure("No message at the specified position.");
   }
+
   const data = {
     content: message.data.content || undefined,
     embeds: message.data.embeds || undefined,
