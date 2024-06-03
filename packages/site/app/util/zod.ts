@@ -113,7 +113,7 @@ export const zxParseJson = async <T extends ZodRawShape | ZodTypeAny>(
     throw json(
       {
         message: options?.message ?? "Bad Request",
-        issues: parsed.error.issues,
+        issues: parsed.error.format(),
       },
       { status: options?.status ?? 400 },
     );

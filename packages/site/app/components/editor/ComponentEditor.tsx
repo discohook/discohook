@@ -12,6 +12,7 @@ import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { action as ApiPostComponents } from "~/api/v1/components";
+import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { getQdMessageId } from "~/routes/_index";
 import {
@@ -107,24 +108,39 @@ export const getComponentErrors = (
   return errors;
 };
 
+/**
+ * This is a bit of a dance, we basically just want to generate a
+ * server ID for these components so they can remain synced. From
+ * this point forward, the user has to submit a PATCH request in
+ * order to modify anything about a component (other than its
+ * position).
+ * We use the returned data from the server just in case it wanted
+ * to change something.
+ * You can also do this while logged out.
+ */
 const submitComponent = async (data: APIMessageActionRowComponent) => {
-  /**
-   * This is a bit of a dance, we basically just want to generate a
-   * server ID for these components so they can remain synced. From
-   * this point forward, the user has to submit a PATCH request in
-   * order to modify anything about a component (other than its
-   * position).
-   * We use the returned data from the server just in case it wanted
-   * to change something.
-   * You can also do this while logged out.
-   */
-  const response = await fetch(apiUrl(BRoutes.components()), {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: {
-      "Content-Type": "application/json",
+  const id = getComponentId(data)?.toString();
+  console.log(id);
+
+  let response = await fetch(
+    apiUrl(id ? BRoutes.component(id) : BRoutes.components()),
+    {
+      method: id ? "PUT" : "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
     },
-  });
+  );
+  if (response.status === 404) {
+    response = await fetch(apiUrl(BRoutes.components()), {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
   if (!response.ok) {
     console.error(response.status, response.statusText);
     return;
@@ -177,6 +193,7 @@ const submitComponent = async (data: APIMessageActionRowComponent) => {
     default:
       break;
   }
+  console.log(id, raw.id, component);
   return component;
 };
 
@@ -314,22 +331,23 @@ export const ActionRowEditor: React.FC<{
       )}
       <div className="space-y-1 mb-1">
         {row.components.map((component, ci) => {
-          const id =
-            ("custom_id" in component
-              ? component.custom_id?.replace(/^p_/, "")
-              : // : (() => {
-                //     try {
-                //       const url = new URL(component.url);
-                //       return url.searchParams.get("dhc-id") ?? randomString(10);
-                //     } catch {
-                //       return component.url;
-                //     }
-                //   })();
-                undefined) ?? `${i}:${ci}`;
+          const id = getComponentId(component)?.toString();
+          // const id =
+          //   ("custom_id" in component
+          //     ? component.custom_id?.replace(/^p_/, "")
+          //     : // : (() => {
+          //       //     try {
+          //       //       const url = new URL(component.url);
+          //       //       return url.searchParams.get("dhc-id") ?? randomString(10);
+          //       //     } catch {
+          //       //       return component.url;
+          //       //     }
+          //       //   })();
+          //       undefined) ?? `${i}:${ci}`;
 
           return (
             <IndividualComponentEditor
-              key={`edit-message-${mid}-component-${id}`}
+              key={`edit-message-${mid}-component-${id}-${ci}`}
               component={component}
               index={ci}
               row={row}
@@ -349,7 +367,30 @@ export const ActionRowEditor: React.FC<{
                         ? { flows: component.flows ?? {} }
                         : {}),
                   },
-                  update: () => setData({ ...data }),
+                  setComponent: (newComponent) => {
+                    row.components.splice(ci, 1, newComponent);
+                    setData({ ...data });
+                  },
+                  submit: async (newComponent) => {
+                    const withId = { ...newComponent };
+                    if (
+                      withId.custom_id &&
+                      withId.type === ComponentType.Button &&
+                      withId.style === ButtonStyle.Link
+                    ) {
+                      try {
+                        const url = new URL(withId.url);
+                        url.searchParams.set("dhc-id", withId.custom_id);
+                        withId.url = url.href;
+                      } catch {}
+                    }
+
+                    const updated = await submitComponent(withId);
+                    if (updated) {
+                      row.components.splice(ci, 1, updated);
+                      setData({ ...data });
+                    }
+                  },
                 });
               }}
             />
@@ -467,14 +508,14 @@ export const IndividualComponentEditor: React.FC<{
     <div className="flex text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none">
       <button
         type="button"
-        className="flex p-2 h-full w-full my-auto"
+        className="flex p-2 h-full w-full my-auto truncate"
         onClick={onClick}
       >
         <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6">
           {component.type === ComponentType.Button ? (
             <div
               className={twJoin(
-                "rounded",
+                "rounded text-gray-50",
                 isLinkButton(component)
                   ? "p-[5px_5px_4px_4px]"
                   : "w-full h-full",
@@ -510,12 +551,12 @@ export const IndividualComponentEditor: React.FC<{
             </div>
           )}
         </div>
-        <span className="truncate my-auto">
+        <p className="truncate my-auto">
           {previewText ||
             `${t(`component.${component.type}`)} ${
               component.type === 2 ? index + 1 : ""
             }`}
-        </span>
+        </p>
       </button>
       <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
         <button
@@ -544,7 +585,9 @@ export const IndividualComponentEditor: React.FC<{
           type="button"
           className={getRowWidth(row) >= 5 ? "hidden" : ""}
           onClick={async () => {
-            const copied = await submitComponent(component);
+            // Don't accidentally save the current component
+            const { custom_id: _, ...withoutId } = component;
+            const copied = await submitComponent(withoutId as typeof component);
             if (copied) {
               // Should always be non-null
               row.components.splice(index + 1, 0, copied);

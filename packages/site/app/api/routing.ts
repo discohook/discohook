@@ -21,6 +21,14 @@ export const BRoutes = {
   },
 
   /**
+   * - PATCH /components/:id
+   * - DELETE /components/:id
+   */
+  component(id: string) {
+    return `/components/${id}` as const;
+  },
+
+  /**
    * - POST /components
    * - GET /components?id=...
    */

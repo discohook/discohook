@@ -30,7 +30,8 @@ import { Modal, ModalProps } from "./Modal";
 
 export type EditingComponentData = {
   component: APIMessageActionRowComponent;
-  update: () => void;
+  setComponent: (component: APIMessageActionRowComponent) => void;
+  submit: (component: APIMessageActionRowComponent) => void;
 };
 
 export const ButtonStylePicker: React.FC<{
@@ -128,13 +129,13 @@ export const ComponentEditModal = (
     },
 ) => {
   const { t } = useTranslation();
-  const { component, update, cache, setEditingFlow } = props;
+  const { component, setComponent, submit, cache, setEditingFlow } = props;
   const [error, setError] = useError();
 
   return (
     <Modal title={t("editComponent")} {...props}>
       {error}
-      {component && update && (
+      {component && setComponent && submit && (
         <div className="-mt-2">
           {component.type === ComponentType.Button ? (
             <>
@@ -148,7 +149,7 @@ export const ComponentEditModal = (
                     emojis={cache ? cache.emoji.getAll() : []}
                     setEmoji={(emoji) => {
                       component.emoji = emoji;
-                      update();
+                      setComponent(component);
                     }}
                   />
                 </div>
@@ -159,7 +160,7 @@ export const ComponentEditModal = (
                     value={component.label ?? ""}
                     onInput={(e) => {
                       component.label = e.currentTarget.value || undefined;
-                      update();
+                      setComponent(component);
                     }}
                     maxLength={80}
                   />
@@ -170,7 +171,7 @@ export const ComponentEditModal = (
                     checked={component.disabled ?? false}
                     onChange={(e) => {
                       component.disabled = e.currentTarget.checked;
-                      update();
+                      setComponent(component);
                     }}
                   />
                 </div>
@@ -196,12 +197,12 @@ export const ComponentEditModal = (
                   //   } catch {
                   //     component.url = currentTarget.value;
                   //   }
-                  //   update();
+                  //   setComponent(component);
                   // }}
                   value={component.url}
                   onInput={({ currentTarget }) => {
                     component.url = currentTarget.value;
-                    update();
+                    setComponent(component);
                   }}
                 />
               ) : (
@@ -222,7 +223,7 @@ export const ComponentEditModal = (
                         key={`component-${component.type}-style-${style}`}
                         style={style}
                         component={component}
-                        update={() => update()}
+                        update={() => setComponent(component)}
                       />
                     ))}
                   </div>
@@ -247,7 +248,7 @@ export const ComponentEditModal = (
                           flow,
                           setFlow: (newFlow) => {
                             component.flow = newFlow;
-                            update();
+                            setComponent(component);
                           },
                         });
                       }}
@@ -278,7 +279,7 @@ export const ComponentEditModal = (
                       onInput={(e) => {
                         component.placeholder =
                           e.currentTarget.value || undefined;
-                        update();
+                        setComponent(component);
                       }}
                     />
                   </div>
@@ -288,7 +289,7 @@ export const ComponentEditModal = (
                       checked={component.disabled ?? false}
                       onChange={(e) => {
                         component.disabled = e.currentTarget.checked;
-                        update();
+                        setComponent(component);
                       }}
                     />
                   </div>
@@ -306,7 +307,7 @@ export const ComponentEditModal = (
                           option={option}
                           index={oi}
                           component={component}
-                          update={() => update()}
+                          update={() => setComponent(component)}
                         >
                           <div className="flex">
                             <div className="ltr:mr-2 rtl:ml-2 mt-auto">
@@ -318,7 +319,7 @@ export const ComponentEditModal = (
                                 emojis={cache ? cache.emoji.getAll() : []}
                                 setEmoji={(emoji) => {
                                   option.emoji = emoji;
-                                  update();
+                                  setComponent(component);
                                 }}
                               />
                             </div>
@@ -330,7 +331,7 @@ export const ComponentEditModal = (
                                 maxLength={100}
                                 onInput={(e) => {
                                   option.label = e.currentTarget.value;
-                                  update();
+                                  setComponent(component);
                                 }}
                                 required
                               />
@@ -341,7 +342,7 @@ export const ComponentEditModal = (
                                 checked={option.default ?? false}
                                 onChange={(e) => {
                                   option.default = e.currentTarget.checked;
-                                  update();
+                                  setComponent(component);
                                 }}
                               />
                             </div>
@@ -354,7 +355,7 @@ export const ComponentEditModal = (
                             onInput={(e) => {
                               option.description =
                                 e.currentTarget.value || undefined;
-                              update();
+                              setComponent(component);
                             }}
                           />
                           <div className="flex">
@@ -366,7 +367,7 @@ export const ComponentEditModal = (
                                 maxLength={100}
                                 onInput={(e) => {
                                   option.value = e.currentTarget.value;
-                                  update();
+                                  setComponent(component);
                                 }}
                                 required
                               />
@@ -384,7 +385,7 @@ export const ComponentEditModal = (
                                   };
                                   flows[option.value] = flow;
                                   component.flows = flows;
-                                  update();
+                                  setComponent(component);
                                 }
 
                                 setEditingFlow({
@@ -392,7 +393,7 @@ export const ComponentEditModal = (
                                   setFlow: (newFlow) => {
                                     flows[option.value] = newFlow;
                                     component.flows = flows;
-                                    update();
+                                    setComponent(component);
                                   },
                                 });
                               }}
@@ -413,7 +414,7 @@ export const ComponentEditModal = (
                           label: "",
                           value: randomString(10),
                         });
-                        update();
+                        setComponent(component);
                       }}
                     >
                       {t("addOption")}
@@ -474,7 +475,7 @@ export const ComponentEditModal = (
                                   pattern="^\d{17,22}$"
                                   onChange={(e) => {
                                     value.id = e.currentTarget.value;
-                                    update();
+                                    setComponent(component);
                                   }}
                                   required
                                 />
@@ -507,7 +508,7 @@ export const ComponentEditModal = (
                                           | SelectMenuDefaultValueType.Role;
                                       };
                                       value.type = opt.value;
-                                      update();
+                                      setComponent(component);
                                     }}
                                   />
                                 </div>
@@ -525,7 +526,7 @@ export const ComponentEditModal = (
                                             v.type === value.type
                                           ),
                                       );
-                                    update();
+                                    setComponent(component);
                                   }}
                                 >
                                   <CoolIcon icon="Trash_Full" />
@@ -561,7 +562,7 @@ export const ComponentEditModal = (
                                   type: SelectMenuDefaultValueType.Channel,
                                 },
                         );
-                        update();
+                        setComponent(component);
                       }}
                     >
                       {t("addDefaultValue")}
@@ -572,12 +573,7 @@ export const ComponentEditModal = (
             )
           )}
           <div className="w-full flex mt-4">
-            <Button
-              className="mx-auto"
-              onClick={() => {
-                // saveComponent(component)
-              }}
-            >
+            <Button className="mx-auto" onClick={() => submit(component)}>
               {t("save")}
             </Button>
           </div>

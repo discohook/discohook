@@ -1,4 +1,5 @@
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
+import { parseQuery } from "zodix";
 import { getUserId } from "~/session.server";
 import {
   StorableComponent,
@@ -8,15 +9,21 @@ import {
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
-import { snowflakeAsString, zxParseJson, zxParseQuery } from "~/util/zod";
+import { snowflakeAsString, zxParseJson } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
-  const { id: ids } = zxParseQuery(request, {
-    id: snowflakeAsString()
-      .array()
-      .min(1)
-      .max(25 * 10),
-  });
+  const { id: ids } = parseQuery(
+    request,
+    {
+      id: snowflakeAsString()
+        .array()
+        .min(1)
+        .max(25 * 10),
+    },
+    {
+      parser: (params) => ({ id: params.getAll("id") }),
+    },
+  );
   const userId = await getUserId(request, context);
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
