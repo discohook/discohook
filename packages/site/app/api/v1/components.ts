@@ -38,40 +38,6 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     });
 };
 
-// export const ZodAPIMessageActionRowComponentWithFlow =
-//   ZodAPIMessageActionRowComponent.and(
-//     z.union([
-//       z.object({
-//         type: z.literal(ComponentType.Button),
-//         style: z.union([
-//           z.literal(ButtonStyle.Primary),
-//           z.literal(ButtonStyle.Secondary),
-//           z.literal(ButtonStyle.Success),
-//           z.literal(ButtonStyle.Danger),
-//         ]),
-//         flow: ZodFlow,
-//       }),
-//       z.object({
-//         type: z.literal(ComponentType.Button),
-//         style: z.literal(ButtonStyle.Link),
-//       }),
-//       z.object({
-//         type: z.union([
-//           z.literal(ComponentType.Button),
-//           z.literal(ComponentType.ChannelSelect),
-//           z.literal(ComponentType.MentionableSelect),
-//           z.literal(ComponentType.RoleSelect),
-//           z.literal(ComponentType.UserSelect),
-//         ]),
-//         flow: ZodFlow,
-//       }),
-//       z.object({
-//         type: z.literal(ComponentType.StringSelect),
-//         flows: z.record(z.string(), ZodFlow),
-//       }),
-//     ]),
-//   );
-
 export const action = async ({ request, context }: ActionArgs) => {
   const component = await zxParseJson(request, ZodAPIMessageActionRowComponent);
   const userId = await getUserId(request, context);
