@@ -55,13 +55,13 @@ import {
 } from "~/util/zod";
 import {
   QueryDataVersion,
-  backups as dBackups,
   customBots,
+  backups as dBackups,
+  linkBackups as dLinkBackups,
+  shareLinks as dShareLinks,
   discordMembers,
   getDb,
-  linkBackups as dLinkBackups,
   makeSnowflake,
-  shareLinks as dShareLinks,
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -279,14 +279,14 @@ export const action = async ({ request, context }: ActionArgs) => {
     }
     case "DELETE_LINK_BACKUP": {
       const backup = await db.query.linkBackups.findFirst({
-        where: eq(dBackups.id, data.backupId),
+        where: eq(dLinkBackups.id, data.backupId),
       });
       if (!backup) {
         throw json({ message: "No backup with that ID." }, 404);
       } else if (backup.ownerId !== userId) {
         throw json({ message: "You do not own this backup." }, 403);
       }
-      await db.delete(dLinkBackups).where(eq(dBackups.id, data.backupId));
+      await db.delete(dLinkBackups).where(eq(dLinkBackups.id, data.backupId));
       break;
     }
     case "IMPORT_BACKUPS": {
