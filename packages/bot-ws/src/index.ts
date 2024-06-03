@@ -26,7 +26,8 @@ const manager = new WebSocketManager({
   intents:
     GatewayIntentBits.Guilds |
     GatewayIntentBits.GuildMembers |
-    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildMessageReactions |
+    GatewayIntentBits.GuildWebhooks,
   rest,
   initialPresence: {
     status: PresenceUpdateStatus.Online,
@@ -94,6 +95,7 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       GatewayDispatchEvents.GuildMemberRemove,
       GatewayDispatchEvents.GuildCreate,
       GatewayDispatchEvents.GuildDelete,
+      GatewayDispatchEvents.WebhooksUpdate,
       // Discobot: reaction roles
       GatewayDispatchEvents.MessageReactionAdd,
       GatewayDispatchEvents.MessageReactionRemove,
