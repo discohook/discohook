@@ -33,10 +33,11 @@ const verifyToken = async (request: Request, kv: KVNamespace) => {
 };
 
 export const loader = async ({ request, context }: LoaderArgs) => {
-  if (request.method === "OPTIONS")
+  if (request.method === "OPTIONS") {
     return new Response(undefined, {
       headers: getCorsHeaders(context.env.LEGACY_ORIGIN),
     });
+  }
 
   const { userId } = await verifyToken(request, context.env.KV);
   const db = getDb(context.env.HYPERDRIVE.connectionString);
