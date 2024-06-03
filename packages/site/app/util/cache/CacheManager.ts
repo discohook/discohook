@@ -249,6 +249,7 @@ export type ResolutionScope = "channel" | "member" | "role" | "emoji";
 export class CacheManager {
   public state: Resolutions;
   public setState: React.Dispatch<Partial<Resolutions>>;
+  public queue: ResolutionKey[];
 
   public channel: ChannelResourceManager;
   // public guilds: GuildResourceManager;
@@ -262,6 +263,7 @@ export class CacheManager {
   ) {
     this.state = state;
     this.setState = setState;
+    this.queue = [];
 
     this.channel = new ChannelResourceManager(this);
     // this.guilds = new GuildResourceManage();
@@ -301,13 +303,18 @@ export class CacheManager {
     | ResolvableAPIEmoji
     | null
     | undefined {
-    const cached = this.state[`${request.scope}:${request.key}`];
+    const key = `${request.scope}:${request.key}` as const;
+    const cached = this.state[key];
     if (cached) {
       return cached;
     } else if (cached === null) {
       return null;
+    } else if (this.queue.includes(key)) {
+      // Already resolving asynchronously
+      return undefined;
     }
 
+    this.queue.push(key);
     switch (request.scope) {
       case "channel": {
         this.channel.fetch(request.key);
