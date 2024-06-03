@@ -987,36 +987,38 @@ export default function Me() {
                               <hr className="sm:hidden my-1" />
                               <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2">
                                 {expires > now && (
-                                  <Link
-                                    to={`/?share=${link.shareId}`}
-                                    target="_blank"
-                                  >
-                                    <Button
-                                      discordstyle={ButtonStyle.Secondary}
+                                  <>
+                                    <Link
+                                      to={`/?share=${link.shareId}`}
+                                      target="_blank"
                                     >
-                                      <CoolIcon icon="External_Link" />
+                                      <Button
+                                        discordstyle={ButtonStyle.Secondary}
+                                      >
+                                        <CoolIcon icon="External_Link" />
+                                      </Button>
+                                    </Link>
+                                    <Button
+                                      discordstyle={ButtonStyle.Primary}
+                                      disabled={!userIsPremium(user)}
+                                      title={t("refreshShareLink")}
+                                      onClick={() => {
+                                        submit(
+                                          {
+                                            action: "REFRESH_SHARE_LINK",
+                                            linkId: String(link.id),
+                                          },
+                                          {
+                                            method: "POST",
+                                            replace: true,
+                                          },
+                                        );
+                                      }}
+                                    >
+                                      <CoolIcon icon="Redo" />
                                     </Button>
-                                  </Link>
+                                  </>
                                 )}
-                                <Button
-                                  discordstyle={ButtonStyle.Primary}
-                                  disabled={!userIsPremium(user)}
-                                  title={t("refreshShareLink")}
-                                  onClick={() => {
-                                    submit(
-                                      {
-                                        action: "REFRESH_SHARE_LINK",
-                                        linkId: String(link.id),
-                                      },
-                                      {
-                                        method: "POST",
-                                        replace: true,
-                                      },
-                                    );
-                                  }}
-                                >
-                                  <CoolIcon icon="Redo" />
-                                </Button>
                                 <Button
                                   discordstyle={ButtonStyle.Danger}
                                   onClick={() => {
