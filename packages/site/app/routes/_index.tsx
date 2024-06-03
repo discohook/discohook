@@ -223,7 +223,7 @@ export default function Index() {
       ) as Record<string, APIMessageActionRowComponent>;
 
       if (Object.keys(allComponentsById).length !== 0) {
-        const url = new URL(apiUrl(BRoutes.components()));
+        const url = new URL(origin + apiUrl(BRoutes.components()));
         for (const id of Object.keys(allComponentsById)) {
           url.searchParams.append("id", id);
         }
