@@ -1,14 +1,14 @@
 import {
-  APIActionRowComponent,
-  APIAttachment,
-  APIButtonComponentBase,
   APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
   APIChannelSelectComponent as _APIChannelSelectComponent,
-  APIEmbed,
   APIMentionableSelectComponent as _APIMentionableSelectComponent,
   APIRoleSelectComponent as _APIRoleSelectComponent,
   APIStringSelectComponent as _APIStringSelectComponent,
   APIUserSelectComponent as _APIUserSelectComponent,
+  APIActionRowComponent,
+  APIAttachment,
+  APIButtonComponentBase,
+  APIEmbed,
   ButtonStyle,
   MessageFlags,
   UserFlags,
@@ -26,7 +26,6 @@ import { ZodMessageFlags } from "./discord";
  * - `messages[n].webhook_id`
  * - `messages[n].components`
  * - `backup_id`
- * - `components` (flow data)
  *
  * All of these are backwards compatible with pre-2024 Discohook.
  */
