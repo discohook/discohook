@@ -3,6 +3,7 @@ import {
   APIWebhook,
   GatewayWebhooksUpdateDispatchData,
   Routes,
+  WebhookType,
 } from "discord-api-types/v10";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { getDb } from "store";
@@ -25,9 +26,12 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
     // }
     return;
   }
+  const incoming = channelWebhooks.filter(
+    (w) => w.type === WebhookType.Incoming,
+  );
 
   const db = getDb(env.HYPERDRIVE.connectionString);
-  if (channelWebhooks.length === 0) {
+  if (incoming.length === 0) {
     await db
       .delete(webhooks)
       .where(
@@ -45,7 +49,7 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
           eq(webhooks.platform, "discord"),
           inArray(
             webhooks.id,
-            channelWebhooks.map((w) => w.id),
+            incoming.map((w) => w.id),
           ),
         ),
         columns: {
@@ -57,7 +61,7 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
       await tx
         .insert(webhooks)
         .values(
-          channelWebhooks.map((webhook) => ({
+          incoming.map((webhook) => ({
             platform: "discord" as const,
             id: webhook.id,
             name: webhook.name ?? "",
@@ -87,7 +91,7 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
           eq(webhooks.channelId, event.channel_id),
           notInArray(
             webhooks.id,
-            channelWebhooks.map((w) => w.id),
+            incoming.map((w) => w.id),
           ),
         ),
       );
