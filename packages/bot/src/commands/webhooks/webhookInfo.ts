@@ -105,17 +105,19 @@ export const getWebhookUrlEmbed = (
     embed.setThumbnail(webhookAvatarUrl(webhook, { size: 1024 }));
   }
 
-  if (webhook.application_id && applicationId === webhook.application_id) {
-    embed.addFields({
-      name: ":information_source: Usage",
-      value: dedent`
-        You can use this webhook to send messages like normal,
-        but since it was created by me, I can attach components
-        (buttons) to it afterwards.
+  embed.addFields({
+    name: ":information_source: Usage",
+    value: dedent`
+        Click "Add Webhook" on Discohook, then paste this URL in the box.
+        If you are logged in, you may have to first click "input a webhook URL manually".
+        ${
+          webhook.application_id && applicationId === webhook.application_id
+            ? "This webhook is owned by Discohook, so its messages can have components (buttons/selects)."
+            : ""
+        }
       `,
-      inline: false,
-    });
-  }
+    inline: false,
+  });
 
   if (channelType === ChannelType.GuildForum) {
     embed.addFields({
@@ -135,8 +137,8 @@ export const getWebhookUrlEmbed = (
     embed.addFields({
       name: ":warning: Keep this secret!",
       value: dedent`
-      Someone with this URL can send any message they want to
-      <#${webhook.channel_id}>, including \`@everyone\` mentions.
+      Someone who can see this URL can send any message they want in
+      <#${webhook.channel_id}>, including scams and \`@everyone\` mentions.
       `,
       inline: false,
     });
