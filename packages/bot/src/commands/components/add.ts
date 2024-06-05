@@ -520,7 +520,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                     }),
                     {
                       componentRoutingId:
-                        "add-component-flow_customize-modal-resend",
+                        "add-component-flow-customize-modal-resend",
                       componentTimeout: 600,
                       modal: modal.toJSON(),
                     },

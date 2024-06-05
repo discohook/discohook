@@ -50,7 +50,7 @@ export type ModalRoutingId = "add-component-flow_customize-modal";
 
 export type ComponentRoutingId =
   | "add-component-flow"
-  | "add-component-flow_customize-modal-resend"
+  | "add-component-flow-customize-modal-resend"
   | "delete-reaction-role"
   | "select-restore-options";
 
@@ -62,7 +62,7 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "add-component-flow": {
     handler: continueComponentFlow,
   },
-  "add-component-flow_customize-modal-resend": {
+  "add-component-flow-customize-modal-resend": {
     handler: reopenCustomizeModal,
   },
   "delete-reaction-role": {
