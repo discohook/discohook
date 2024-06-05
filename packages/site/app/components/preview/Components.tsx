@@ -274,7 +274,7 @@ export const MessageComponents: React.FC<{
   return (
     <div className="grid gap-1 py-[0.125rem]">
       {components.map((row, i) => (
-        <div key={`action-row-${i}`} className="flex flex-wrap gap-1">
+        <div key={`action-row-${i}`} className="flex flex-wrap gap-x-1.5 gap-y-0">
           {row.components.map((component, ci) => {
             const fc = previewComponentMap[component.type];
             if (fc) {
