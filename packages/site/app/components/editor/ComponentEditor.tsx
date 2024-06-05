@@ -551,7 +551,7 @@ export const IndividualComponentEditor: React.FC<{
         className="flex p-2 h-full w-full my-auto truncate"
         onClick={onClick}
       >
-        <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6">
+        <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6 shrink-0">
           {component.type === ComponentType.Button ? (
             <div
               className={twJoin(
