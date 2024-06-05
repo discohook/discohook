@@ -23,7 +23,7 @@ import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
 import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { boolEmoji, color } from "../util/meta.js";
-import { randomString } from "../util/text.js";
+import { base64UrlEncode, randomString } from "../util/text.js";
 
 export const messageToQueryData = (
   ...messages: Pick<
@@ -103,6 +103,11 @@ export const generateUniqueShortenKey = async (
   return await generateUniqueShortenKey(kv, length + 1);
 };
 
+export const createLongDiscohookUrl = (origin: string, data: QueryData) =>
+  `${origin}/?${new URLSearchParams({
+    data: base64UrlEncode(JSON.stringify(data)),
+  })}`;
+
 export const createShareLink = async (
   env: Env,
   data: QueryData,
@@ -157,6 +162,16 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
     ctx.user,
   );
   const message = ctx.getMessage();
+
+  if (!message.webhook_id || message.application_id) {
+    const data = messageToQueryData(message);
+    const share = await createShareLink(ctx.env, data, { userId: user.id });
+    return ctx.reply({
+      embeds: [getShareEmbed(share, true).toJSON()],
+      components: [],
+      flags: MessageFlags.Ephemeral,
+    });
+  }
 
   const select = new StringSelectMenuBuilder()
     .setCustomId(

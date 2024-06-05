@@ -12,6 +12,10 @@ import {
 } from "./commands/components/add.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
+import {
+  webhookInfoShowUrlCallback,
+  webhookInfoUseCallback,
+} from "./commands/webhooks/webhookInfo.js";
 import { InteractionContext } from "./interactions.js";
 
 export interface MinimumKVComponentState {
@@ -52,7 +56,9 @@ export type ComponentRoutingId =
   | "add-component-flow"
   | "add-component-flow-customize-modal-resend"
   | "delete-reaction-role"
-  | "select-restore-options";
+  | "select-restore-options"
+  | "webhook-info-use"
+  | "webhook-info-show-url";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
 
@@ -71,6 +77,8 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "select-restore-options": {
     handler: selectRestoreOptionsCallback,
   },
+  "webhook-info-use": { handler: webhookInfoUseCallback },
+  "webhook-info-show-url": { handler: webhookInfoShowUrlCallback },
 };
 
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {

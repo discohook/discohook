@@ -6,7 +6,8 @@ import {
   APIChatInputApplicationCommandInteraction,
   APIInteraction,
   APIInteractionResponse,
-  APIMessageApplicationCommandInteraction,
+  APIMessageApplicationCommandDMInteraction,
+  APIMessageApplicationCommandGuildInteraction,
   APIUserApplicationCommandInteraction,
   ApplicationCommandType,
   MessageFlags,
@@ -58,7 +59,8 @@ export type ChatInputAppCommandCallback<
 >;
 export type MessageAppCommandCallback<
   T extends
-    APIMessageApplicationCommandInteraction = APIMessageApplicationCommandInteraction,
+    | APIMessageApplicationCommandDMInteraction
+    | APIMessageApplicationCommandGuildInteraction = APIMessageApplicationCommandGuildInteraction,
 > = AppCommandCallbackT<T>;
 export type UserAppCommandCallback =
   AppCommandCallbackT<APIUserApplicationCommandInteraction>;
