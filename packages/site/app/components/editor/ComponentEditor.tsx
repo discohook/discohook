@@ -120,7 +120,6 @@ export const getComponentErrors = (
  */
 const submitComponent = async (data: APIMessageActionRowComponent) => {
   const id = getComponentId(data)?.toString();
-  console.log(id);
 
   let response = await fetch(
     apiUrl(id ? BRoutes.component(id) : BRoutes.components()),
@@ -193,8 +192,66 @@ const submitComponent = async (data: APIMessageActionRowComponent) => {
     default:
       break;
   }
-  console.log(id, raw.id, component);
   return component;
+};
+
+const getSetEditingComponentProps = ({
+  component,
+  row,
+  i,
+  data,
+  setData,
+  setEditingComponent,
+}: {
+  component: APIMessageActionRowComponent;
+  row: APIActionRowComponent<APIMessageActionRowComponent>;
+  i: number;
+  data: QueryData;
+  setData: React.Dispatch<QueryData>;
+  setEditingComponent: React.Dispatch<
+    React.SetStateAction<EditingComponentData | undefined>
+  >;
+}): EditingComponentData => {
+  return {
+    component,
+    setComponent: (newComponent) => {
+      row.components.splice(i, 1, newComponent);
+      setData({ ...data });
+    },
+    submit: async (newComponent) => {
+      const withId = { ...newComponent };
+      if (
+        withId.custom_id &&
+        withId.type === ComponentType.Button &&
+        withId.style === ButtonStyle.Link
+      ) {
+        try {
+          const url = new URL(withId.url);
+          url.searchParams.set("dhc-id", withId.custom_id);
+          withId.url = url.href;
+        } catch {}
+      }
+
+      const updated = await submitComponent(withId);
+      if (updated) {
+        row.components.splice(i, 1, updated);
+        setData({ ...data });
+
+        // Reset state with new component so that subsequent saves
+        // without closing the modal will PUT instead of POSTing
+        setEditingComponent(
+          getSetEditingComponentProps({
+            component: updated,
+            row,
+            i,
+            data,
+            setData,
+            setEditingComponent,
+          }),
+        );
+      }
+    },
+  };
 };
 
 export const ActionRowEditor: React.FC<{
@@ -353,45 +410,28 @@ export const ActionRowEditor: React.FC<{
               row={row}
               updateRow={() => setData({ ...data })}
               onClick={() => {
-                setEditingComponent({
-                  component: {
-                    ...component,
-                    ...((component.type === ComponentType.Button &&
-                      component.style !== ButtonStyle.Link) ||
-                    component.type === ComponentType.UserSelect ||
-                    component.type === ComponentType.RoleSelect ||
-                    component.type === ComponentType.MentionableSelect ||
-                    component.type === ComponentType.ChannelSelect
-                      ? { flow: component.flow ?? { actions: [] } }
-                      : component.type === ComponentType.StringSelect
-                        ? { flows: component.flows ?? {} }
-                        : {}),
-                  },
-                  setComponent: (newComponent) => {
-                    row.components.splice(ci, 1, newComponent);
-                    setData({ ...data });
-                  },
-                  submit: async (newComponent) => {
-                    const withId = { ...newComponent };
-                    if (
-                      withId.custom_id &&
-                      withId.type === ComponentType.Button &&
-                      withId.style === ButtonStyle.Link
-                    ) {
-                      try {
-                        const url = new URL(withId.url);
-                        url.searchParams.set("dhc-id", withId.custom_id);
-                        withId.url = url.href;
-                      } catch {}
-                    }
-
-                    const updated = await submitComponent(withId);
-                    if (updated) {
-                      row.components.splice(ci, 1, updated);
-                      setData({ ...data });
-                    }
-                  },
-                });
+                if (
+                  (component.type === ComponentType.Button &&
+                    component.style !== ButtonStyle.Link) ||
+                  component.type === ComponentType.UserSelect ||
+                  component.type === ComponentType.RoleSelect ||
+                  component.type === ComponentType.MentionableSelect ||
+                  component.type === ComponentType.ChannelSelect
+                ) {
+                  component.flow = component.flow ?? { actions: [] };
+                } else if (component.type === ComponentType.StringSelect) {
+                  component.flows = component.flows ?? {};
+                }
+                setEditingComponent(
+                  getSetEditingComponentProps({
+                    component,
+                    row,
+                    i: ci,
+                    data,
+                    setData,
+                    setEditingComponent,
+                  }),
+                );
               }}
             />
           );
