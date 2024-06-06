@@ -8,8 +8,8 @@
     "edit": "编辑",
     "delete": "删除",
     "editBackupTitle": "编辑备份详情",
-    "editBackupMessages": "编辑备份中的信息，请点击 <0/> 按钮。",
-    "saveMessageTitle": "保存信息",
+    "editBackupMessages": "编辑备份中的消息，请点击 <0/> 按钮。",
+    "saveMessageTitle": "保存消息",
     "temporaryShareUrl": "临时共享链接",
     "generate": "生成",
     "copy": "复制",
@@ -70,7 +70,9 @@
     "mention": {
         "guide": "服务器指南",
         "browse": "浏览频道",
-        "customize": "频道和身份组"
+        "customize": "频道和身份组",
+        "unknown": "未知",
+        "unknownUser": "未知用户"
     },
     "timestamp": {
         "time": "{{ date, hh:mm }}",
@@ -128,5 +130,47 @@
     "linkEmbedsPremiumNote": "您发现了高级功能！ <0>在此处阅读有关链接嵌入的更多信息。</0>",
     "deluxe": "高级",
     "lifetime": "终身",
-    "defaultPlaceholder": "进行选择"
+    "defaultPlaceholder": "进行选择",
+    "addImage": "添加图片",
+    "embedExample": "例子",
+    "search": "搜索",
+    "ok": "OK",
+    "actionType": {
+        "1": "等待 X 秒",
+        "3": "添加身分组",
+        "4": "移除身分组",
+        "5": "切换身分组",
+        "6": "发送消息",
+        "7": "发送 Webhook 信息",
+        "8": "创建子区"
+    },
+    "role": "身分组",
+    "linkEmbedsVideoUrl": "URL（直接链接或YouTube）",
+    "home": "主页",
+    "webhooks": "Webhook",
+    "auditLog": "审核日志",
+    "permissions": "权限",
+    "permission": {
+        "CreateInstantInvite": "创建邀请链接",
+        "KickMembers": "踢除用户",
+        "BanMembers": "封锁用户",
+        "Administrator": "管理员",
+        "ManageChannels": "管理频道"
+    },
+    "user": "用户",
+    "sidebarColor": "侧栏颜色",
+    "title": "标题",
+    "images": "图片",
+    "video": "视频",
+    "roles": "身分组",
+    "channels": "频道",
+    "members": "成员",
+    "idMention": "ID - {{mention}}",
+    "idText": "ID",
+    "sendMessageN_other": "发送消息",
+    "messages": "消息",
+    "cozy": "舒适型",
+    "compact": "紧凑型",
+    "webhookCreated": "Webhook 已创建",
+    "webhookCreateFailed": "创建 Webhook 失败"
 }
