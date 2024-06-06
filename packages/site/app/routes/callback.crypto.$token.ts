@@ -26,7 +26,7 @@ export const action = async ({ request, params, context }: LoaderArgs) => {
           method: "GET",
         },
       );
-      // If the increased value is less than whatever $4 is worth right now, reject
+      // If the increased value is less than whatever $6 is worth right now, reject
       const btcMin = Number(await response.text());
       if (payload.value < btcMin) {
         // Alert the user somehow

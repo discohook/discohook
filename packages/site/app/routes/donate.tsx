@@ -167,7 +167,7 @@ export default function DonatePage() {
           Thanks for your interest in donating! Your contribution will help keep
           Discohook up and running for everyone, and it can earn you some sweet
           perks. Donate at least{" "}
-          <span className="font-bold">$4 USD per month</span> to maintain your
+          <span className="font-bold">$6 USD per month</span> to maintain your
           subscription.
           {/* If you donate [x] one time, you can unlock a super-secret lifetime
           subscription. */}
@@ -254,8 +254,8 @@ export default function DonatePage() {
           There are multiple ways to donate. You get the same thing in the end,
           but you can decide which method is right for you. And when you donate
           with a direct method (Ko-fi/Bitcoin), your Deluxe membership stacks
-          and adapts to how much you donated. For example, for about a week of
-          Deluxe, donate $1.
+          and adapts to how much you donated. For example: for about a week of
+          Deluxe, donate $2, or for a year, $72.
         </p>
         <div className="mt-4 rounded bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table table-auto w-full">
           <div className="table-header-group">
@@ -277,10 +277,10 @@ export default function DonatePage() {
                   }}
                 />
               </Cell>
-              <Cell>$5.99</Cell>
+              <Cell>$6</Cell>
               <Cell>
-                Discord takes a 30% cut plus fees. If you use iOS, it will cost
-                ~$7.78 due to Apple's additional cut.
+                Most convenient option, but Discohook earns ~$4 due to fees. If
+                you purchase on iOS, it will cost ~$7.78 due to Apple's cut.
               </Cell>
             </div>
             <div className="table-row">
@@ -294,7 +294,7 @@ export default function DonatePage() {
                   }}
                 />
               </Cell>
-              <Cell>$4</Cell>
+              <Cell>$6</Cell>
               <Cell>
                 Most people will prefer this method. Accepts PayPal, cards, etc.
               </Cell>
@@ -303,10 +303,6 @@ export default function DonatePage() {
               <Cell className="rounded-bl">
                 <Button
                   disabled={!user || !wallets.btc}
-                  // emoji={{
-                  //   id: "",
-                  //   name: "bitcoin",
-                  // }}
                   onClick={async () => {
                     if (!cryptoInfo) {
                       const r = await fetch(apiUrl(BRoutes.donate("btc")), {
@@ -324,7 +320,7 @@ export default function DonatePage() {
                   Bitcoin
                 </Button>
               </Cell>
-              <Cell>$4</Cell>
+              <Cell>$6</Cell>
               <Cell className="rounded-br">
                 Available for users who prefer cryptocurrency.
               </Cell>
