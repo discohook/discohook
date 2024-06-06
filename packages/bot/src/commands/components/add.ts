@@ -23,11 +23,13 @@ import {
   TextInputStyle,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
+import { SignJWT } from "jose";
 import { getDb, getchGuild, upsertDiscordUser, upsertGuild } from "store";
 import {
   discordMessageComponents,
   generateId,
   makeSnowflake,
+  tokens,
 } from "store/src/schema";
 import { StorableComponent } from "store/src/types/components.js";
 import {
@@ -37,6 +39,7 @@ import {
   SelectMenuCallback,
 } from "../../components.js";
 import { InteractionContext } from "../../interactions.js";
+import { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentWidth,
@@ -46,7 +49,6 @@ import {
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
-import { base64UrlEncode } from "../../util/text.js";
 import { getUserPremiumDetails } from "../../util/user.js";
 
 const buildStorableComponent = (
@@ -392,6 +394,51 @@ export const startComponentFlow = async (
   ];
 };
 
+const createLoginToken = async (env: Env, userId: bigint) => {
+  const secretKey = Uint8Array.from(
+    env.TOKEN_SECRET.split("").map((x) => x.charCodeAt(0)),
+  );
+
+  const now = new Date();
+  // Login tokens last for 2 minutes. You are expected to click the button
+  // relatively quickly, and if not, you can log in normally.
+  const expiresAt = new Date(now.getTime() + 120_000);
+  const id = generateId(now);
+  const token = await new SignJWT({ uid: String(userId), scp: "login" })
+    .setProtectedHeader({
+      alg: "HS256",
+    })
+    .setJti(id)
+    .setIssuedAt(now)
+    .setIssuer(env.DISCOHOOK_ORIGIN)
+    .setExpirationTime(expiresAt)
+    .sign(secretKey);
+
+  return { id, value: token, expiresAt };
+};
+
+// const createToken = async (env: Env, userId: bigint) => {
+//   const secretKey = Uint8Array.from(
+//     env.TOKEN_SECRET.split("").map((x) => x.charCodeAt(0)),
+//   );
+
+//   const now = new Date();
+//   // Tokens last for 1 week but permissions are stored per token-guild and last 6 hours.
+//   const expiresAt = new Date(now.getTime() + 604_800_000);
+//   const id = generateId(now);
+//   const token = await new SignJWT({ uid: String(userId), scp: "user" })
+//     .setProtectedHeader({
+//       alg: "HS256",
+//     })
+//     .setJti(id)
+//     .setIssuedAt(now)
+//     .setIssuer(env.DISCOHOOK_ORIGIN)
+//     .setExpirationTime(expiresAt)
+//     .sign(secretKey);
+
+//   return { id, value: token, expiresAt };
+// };
+
 export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   const value = ctx.interaction.data.values[0];
 
@@ -405,22 +452,17 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   switch (value) {
     case "button": {
       const db = getDb(ctx.env.HYPERDRIVE.connectionString);
-      const id = BigInt(generateId());
       state.component = state.component ?? {
         type: ComponentType.Button,
         style: ButtonStyle.Primary,
-        flow: {
-          name: "Flow",
-          actions: [],
-        },
-        label: "New Component",
+        flow: { actions: [] },
+        label: "Button",
       };
 
       const component = (
         await db
           .insert(discordMessageComponents)
           .values({
-            id,
             guildId: makeSnowflake(state.message.guildId),
             channelId: makeSnowflake(state.message.channelId),
             messageId: makeSnowflake(state.message.id),
@@ -434,6 +476,16 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
           })
       )[0];
 
+      // TODO: link to regular token so we can assign permissions from within the bot
+      const loginToken = await createLoginToken(ctx.env, BigInt(state.user.id));
+      await db.insert(tokens).values({
+        platform: "discord",
+        id: makeSnowflake(loginToken.id),
+        prefix: "login",
+        expiresAt: loginToken.expiresAt,
+        userId: makeSnowflake(state.user.id),
+      });
+
       state.stepTitle = "Finish on the web";
       state.totalSteps = 3;
       return ctx.updateMessage({
@@ -445,8 +497,10 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
                 .setURL(
-                  `${ctx.env.DISCOHOOK_ORIGIN}/flows?${new URLSearchParams({
-                    id: String(component.id),
+                  `${ctx.env.DISCOHOOK_ORIGIN}/edit/component/${
+                    component.id
+                  }?${new URLSearchParams({
+                    token: loginToken.value,
                   })}`,
                 ),
             )
@@ -537,6 +591,52 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     case "role-select":
     case "mentionable-select":
     case "channel-select": {
+      const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+      state.component =
+        state.component ?? value === "string-select"
+          ? {
+              type: ComponentType.StringSelect,
+              options: [],
+              flows: {},
+            }
+          : {
+              type:
+                value === "user-select"
+                  ? ComponentType.UserSelect
+                  : value === "role-select"
+                    ? ComponentType.RoleSelect
+                    : value === "mentionable-select"
+                      ? ComponentType.MentionableSelect
+                      : ComponentType.ChannelSelect,
+              flow: { actions: [] },
+            };
+
+      const component = (
+        await db
+          .insert(discordMessageComponents)
+          .values({
+            guildId: makeSnowflake(state.message.guildId),
+            channelId: makeSnowflake(state.message.channelId),
+            messageId: makeSnowflake(state.message.id),
+            data: state.component,
+            createdById: makeSnowflake(state.user.id),
+            updatedById: makeSnowflake(state.user.id),
+            draft: true,
+          })
+          .returning({
+            id: discordMessageComponents.id,
+          })
+      )[0];
+
+      const loginToken = await createLoginToken(ctx.env, BigInt(state.user.id));
+      await db.insert(tokens).values({
+        platform: "discord",
+        id: makeSnowflake(loginToken.id),
+        prefix: "login",
+        expiresAt: loginToken.expiresAt,
+        userId: makeSnowflake(state.user.id),
+      });
+
       state.stepTitle = "Finish on the web";
       state.totalSteps = 3;
       return ctx.updateMessage({
@@ -548,38 +648,10 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 .setStyle(ButtonStyle.Link)
                 .setLabel("Customize")
                 .setURL(
-                  `${ctx.env.DISCOHOOK_ORIGIN}/component?${new URLSearchParams({
-                    data: base64UrlEncode(
-                      JSON.stringify({
-                        type:
-                          value === "string-select"
-                            ? 3
-                            : value === "user-select"
-                              ? 4
-                              : value === "role-select"
-                                ? 5
-                                : value === "mentionable-select"
-                                  ? 6
-                                  : value === "channel-select"
-                                    ? 7
-                                    : undefined,
-                        // ...(value === "string-select"
-                        //   ? {
-                        //       options: [],
-                        //     }
-                        //   : {}),
-                      }),
-                    ),
-                    resolved: base64UrlEncode(
-                      JSON.stringify({
-                        guildId: state.message.guildId,
-                        webhook: {
-                          id: state.message.webhookId,
-                          name: state.message.webhookName,
-                          avatar: state.message.webhookAvatar,
-                        },
-                      }),
-                    ),
+                  `${ctx.env.DISCOHOOK_ORIGIN}/edit/component/${
+                    component.id
+                  }?${new URLSearchParams({
+                    token: loginToken.value,
                   })}`,
                 ),
             )

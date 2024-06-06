@@ -100,7 +100,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const tokens = pgTable("Token", {
   id: snowflakePk(),
   platform: text("platform").$type<"discord" | "guilded">().notNull(),
-  prefix: text("prefix").$type<"user" | "bot">().notNull(),
+  prefix: text("prefix").$type<"user" | "login" | "bot">().notNull(),
   userId: snowflake("userId").references(() => users.id, {
     onDelete: "set null",
   }),

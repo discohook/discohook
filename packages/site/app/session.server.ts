@@ -252,8 +252,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
   return token;
 };
 
-const verifyToken = async (token: string, env: Env, origin: string) => {
-  // const secretKey = createSecretKey(env.TOKEN_SECRET, "utf-8");
+export const verifyToken = async (token: string, env: Env, origin: string) => {
   const secretKey = Uint8Array.from(
     env.TOKEN_SECRET.split("").map((x) => x.charCodeAt(0)),
   );

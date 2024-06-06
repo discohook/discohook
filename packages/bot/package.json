@@ -25,6 +25,7 @@
     "discord-bitflag": "^1.0.1",
     "discord-verify": "^1.2.0",
     "itty-router": "^4.0.13",
+    "jose": "^5.4.0",
     "store": "../store"
   },
   "devDependencies": {

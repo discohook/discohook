@@ -110,15 +110,12 @@ export const getComponentErrors = (
 
 /**
  * This is a bit of a dance, we basically just want to generate a
- * server ID for these components so they can remain synced. From
- * this point forward, the user has to submit a PATCH request in
- * order to modify anything about a component (other than its
- * position).
+ * server ID for these components so they can remain synced.
  * We use the returned data from the server just in case it wanted
  * to change something.
  * You can also do this while logged out.
  */
-const submitComponent = async (data: APIMessageActionRowComponent) => {
+export const submitComponent = async (data: APIMessageActionRowComponent) => {
   const id = getComponentId(data)?.toString();
 
   let response = await fetch(

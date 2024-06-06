@@ -1351,6 +1351,7 @@ __metadata:
     discord-verify: "npm:^1.2.0"
     dotenv: "npm:^16.0.3"
     itty-router: "npm:^4.0.13"
+    jose: "npm:^5.4.0"
     mocha: "npm:^10.2.0"
     ngrok: "npm:^5.0.0-beta.2"
     sinon: "npm:^17.0.0"
@@ -2263,6 +2264,13 @@ __metadata:
     "@pkgjs/parseargs":
       optional: true
   checksum: 10c0/f01d8f972d894cd7638bc338e9ef5ddb86f7b208ce177a36d718eac96ec86638a6efa17d0221b10073e64b45edc2ce15340db9380b1f5d5c5d000cbc517dc111
+  languageName: node
+  linkType: hard
+
+"jose@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "jose@npm:5.4.0"
+  checksum: 10c0/ef880ee7d93d2758f9b9b0883eef2bb10319778142fad8cdea9d4f4322ca4dfae3c1ee87960c7f29c55b9d78460ea3de8dc462987ea23d821596fb5916425bc0
   languageName: node
   linkType: hard
 
@@ -3231,7 +3239,7 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=3d7d38&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=3b3c64&locator=discohook-bot%40workspace%3A."
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
@@ -3239,7 +3247,7 @@ __metadata:
     drizzle-orm: "npm:^0.30.9"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/9f526b4c74b977a2ddf4b78554298f996a9b953a41ccc8c5088c64f63c814ba96a006d09da18db4e115cde59743ed9f3a4fc04126064bc5701cf306feb66dc43
+  checksum: 10c0/c4ec0f248c226d509e860e06b3b90a75f388a9d387fe768b482175ed7e024dfd3c4fe49924fca03bd15006c1f87333c898d6fe64afe18c0aff8e733c193bf5d2
   languageName: node
   linkType: hard
 

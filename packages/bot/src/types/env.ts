@@ -5,6 +5,7 @@ export interface Env {
   DISCORD_TOKEN: string;
   DEVELOPMENT_SERVER_ID: string;
   DISCOHOOK_ORIGIN: string;
+  TOKEN_SECRET: string;
   DATABASE_URL: string;
   HYPERDRIVE: Hyperdrive;
   KV: KVNamespace;
