@@ -100,8 +100,10 @@ details summary.marker-none::-webkit-details-marker {
   --epr-emoji-gap: 0px;
   --epr-emoji-padding: 4px;
   --epr-picker-border-radius: 0.25rem;
-  --epr-picker-border-color: rgb(0 0 0 / 0.05);;
-  --epr-dark-picker-border-color: rgb(0 0 0 / 0.05);;
+  --epr-picker-border-color: rgb(0 0 0 / 0.05);
+  ;
+  --epr-dark-picker-border-color: rgb(0 0 0 / 0.05);
+  ;
   --epr-bg-color: #f2f3f5;
   --epr-dark-bg-color: rgb(47 49 54);
   --epr-category-label-bg-color: #f2f3f5;
