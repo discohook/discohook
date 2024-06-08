@@ -283,45 +283,92 @@ export default function EditComponentPage() {
   const [component, setComponent] = useState(
     buildStorableComponent(component_.data, String(component_.id)),
   );
-  const [position, setPosition] = useReducer(
-    (pos: [number, number], newPos: [number, number]) => {
-      const [y, x] = newPos;
-      
-      return pos;
-    },
-    [0, 0],
-  );
   // TODO: use this to reduce "flicker" when opening/closing modal
   // const [editingFlowOpen, setEditingFlowOpen] = useState(false);
   const [editingFlow, setEditingFlow] = useState<EditingFlowData | undefined>();
 
-  let found = false;
-  const rows: APIActionRowComponent<APIMessageActionRowComponent>[] = [
-    ...(message?.components ?? []),
-  ];
-  for (const row of rows) {
-    let i = -1;
-    for (const child of row.components) {
-      i += 1;
-      if (component.custom_id && child.custom_id === component.custom_id) {
-        // Replace with stateful value and maintain position
-        row.components.splice(i, 1, component);
-        found = true;
-        break;
+  const [rows, setRows] = useState<
+    APIActionRowComponent<APIMessageActionRowComponent>[]
+  >(message?.components ?? []);
+
+  const [position, setPosition] = useReducer(
+    (pos: [number, number], newPos: [number, number]) => {
+      const [oY] = pos;
+      let [y, x] = newPos;
+
+      if (y < 0 || y > 4 || x < 0 || x > 4) return pos;
+
+      console.log(oY, "->", y);
+      let row = rows[y];
+      if (!row && rows.length < 5) {
+        rows.splice(y, 0, {
+          type: ComponentType.ActionRow,
+          components: [],
+        });
+        row = rows[y];
+      }
+      if (!row) {
+        // No room, don't move
+        return pos;
+      } else if (getRowWidth(row) >= 5) {
+        // row is full, find a different one in the same direction
+        const nextEmptyRow = rows.find(
+          (r, i) => (y < oY ? i < y : i > y) && getRowWidth(r) < 5,
+        );
+        if (nextEmptyRow) {
+          y = rows.indexOf(nextEmptyRow);
+        } else {
+          // No room, don't move
+          return pos;
+        }
+      }
+
+      return [Math.min(rows.length, y), Math.min(row.components.length, x)] as [
+        number,
+        number,
+      ];
+    },
+    [0, 0],
+  );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  useEffect(() => {
+    let found = false;
+    for (const row of rows) {
+      let i = -1;
+      for (const child of row.components) {
+        i += 1;
+        if (component.custom_id && child.custom_id === component.custom_id) {
+          // It will later be replaced with the stateful value
+          row.components.splice(i, 1);
+          found = true;
+          setPosition([rows.indexOf(row), i]);
+          break;
+        }
       }
     }
-  }
-  if (!found) {
-    const row = rows.find((row) => getRowWidth(row) < 5);
-    if (!row) {
-      rows.push({
-        type: ComponentType.ActionRow,
-        components: [component],
-      });
-    } else {
-      row.components.push(component);
+    if (!found) {
+      const row = rows.find((row) => getRowWidth(row) < 5);
+      if (!row) {
+        // This component needs a new row, which needs to really exist
+        rows.push({
+          type: ComponentType.ActionRow,
+          components: [component],
+        });
+        setPosition([rows.length - 1, 0]);
+      } else {
+        setPosition([rows.indexOf(row), row.components.length]);
+      }
     }
-  }
+    setRows([...rows]);
+  }, []);
+
+  const rowsWithLive = structuredClone(rows).map((row, i) => {
+    if (i === position[0]) {
+      row.components.splice(position[1], 0, component);
+    }
+    return row;
+  });
 
   return (
     <div>
@@ -335,7 +382,7 @@ export default function EditComponentPage() {
       <Prose className="max-w-xl">
         <div className="mb-4 p-4 rounded-lg shadow dark:shadow-lg border border-gray-300/80 dark:border-gray-300/20">
           <Message
-            message={{ components: rows }}
+            message={{ components: rowsWithLive }}
             cache={cache}
             messageDisplay={settings.messageDisplay}
             compactAvatars={settings.compactAvatars}
@@ -344,10 +391,30 @@ export default function EditComponentPage() {
         <div className="mb-4">
           <p className="text-sm font-medium cursor-default">Position</p>
           <div className="grid grid-cols-4 gap-1">
-            <ArrowButton icon="Chevron_Up" onClick={() => {}} />
-            <ArrowButton icon="Chevron_Down" onClick={() => {}} />
-            <ArrowButton icon="Chevron_Left" onClick={() => {}} />
-            <ArrowButton icon="Chevron_Right" onClick={() => {}} />
+            <ArrowButton
+              icon="Chevron_Up"
+              onClick={() => setPosition([position[0] - 1, position[1]])}
+              disabled={position[0] <= 0}
+            />
+            <ArrowButton
+              icon="Chevron_Down"
+              onClick={() => setPosition([position[0] + 1, position[1]])}
+              disabled={position[0] >= 4}
+            />
+            <ArrowButton
+              icon="Chevron_Left"
+              onClick={() => setPosition([position[0], position[1] - 1])}
+              disabled={position[1] <= 0}
+            />
+            <ArrowButton
+              icon="Chevron_Right"
+              onClick={() => setPosition([position[0], position[1] + 1])}
+              disabled={
+                position[1] >= 4 ||
+                (rows[position[0]] &&
+                  position[1] === rows[position[0]].components.length)
+              }
+            />
           </div>
         </div>
         <ComponentEditForm
@@ -396,11 +463,13 @@ export default function EditComponentPage() {
 const ArrowButton: React.FC<{
   icon: CoolIconsGlyph;
   onClick: MouseEventHandler<HTMLButtonElement>;
-}> = ({ icon, onClick }) => (
+  disabled?: boolean;
+}> = ({ icon, onClick, disabled }) => (
   <Button
     className="w-full"
     discordstyle={ButtonStyle.Secondary}
     onClick={onClick}
+    disabled={disabled}
   >
     <CoolIcon icon={icon} />
   </Button>
