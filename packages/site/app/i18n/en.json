@@ -281,6 +281,7 @@
   "label": "Label",
   "disabled": "Disabled",
   "url": "URL",
+  "position": "Position",
   "addUrl": "Add URL",
   "style": "Style",
   "saveDraft": "Save Draft",

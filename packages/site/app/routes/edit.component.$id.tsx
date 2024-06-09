@@ -402,7 +402,7 @@ export default function EditComponentPage() {
           />
         </div>
         <div className="mb-4">
-          <p className="text-sm font-medium cursor-default">Position</p>
+          <p className="text-sm font-medium cursor-default">{t("position")}</p>
           <div className="grid grid-cols-4 gap-1">
             <ArrowButton
               icon="Chevron_Up"
