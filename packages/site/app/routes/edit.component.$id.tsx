@@ -12,6 +12,7 @@ import {
 import { JWTPayload } from "jose";
 import { MouseEventHandler, useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
@@ -298,7 +299,6 @@ export default function EditComponentPage() {
 
       if (y < 0 || y > 4 || x < 0 || x > 4) return pos;
 
-      console.log(oY, "->", y);
       let row = rows[y];
       if (!row && rows.length < 5) {
         rows.splice(y, 0, {
@@ -370,6 +370,8 @@ export default function EditComponentPage() {
     return row;
   });
 
+  // const [overflowMessage, setOverflowMessage] = useState(false);
+
   return (
     <div>
       <FlowEditModal
@@ -380,7 +382,18 @@ export default function EditComponentPage() {
       />
       <Header user={user} />
       <Prose className="max-w-xl">
-        <div className="mb-4 p-4 rounded-lg shadow dark:shadow-lg border border-gray-300/80 dark:border-gray-300/20">
+        {/* <Checkbox
+          label="Full width message preview"
+          checked={overflowMessage}
+          onChange={(e) => setOverflowMessage(e.currentTarget.checked)}
+          className="mb-1"
+        /> */}
+        <div
+          className={twJoin(
+            "mb-4 p-4 rounded-lg shadow dark:shadow-lg border border-gray-300/80 dark:border-gray-300/20",
+            // overflowMessage ? "w-fit overflow-x-auto" : undefined,
+          )}
+        >
           <Message
             message={{ components: rowsWithLive }}
             cache={cache}
