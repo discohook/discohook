@@ -403,31 +403,40 @@ export default function EditComponentPage() {
         </div>
         <div className="mb-4">
           <p className="text-sm font-medium cursor-default">{t("position")}</p>
-          <div className="grid grid-cols-4 gap-1">
-            <ArrowButton
-              icon="Chevron_Up"
-              onClick={() => setPosition([position[0] - 1, position[1]])}
-              disabled={position[0] <= 0}
-            />
-            <ArrowButton
-              icon="Chevron_Down"
-              onClick={() => setPosition([position[0] + 1, position[1]])}
-              disabled={position[0] >= 4}
-            />
-            <ArrowButton
-              icon="Chevron_Left"
-              onClick={() => setPosition([position[0], position[1] - 1])}
-              disabled={position[1] <= 0}
-            />
-            <ArrowButton
-              icon="Chevron_Right"
-              onClick={() => setPosition([position[0], position[1] + 1])}
-              disabled={
-                position[1] >= 4 ||
-                (rows[position[0]] &&
-                  position[1] === rows[position[0]].components.length)
-              }
-            />
+          <div className="flex">
+            <div className="w-1/2 grid grid-cols-2 gap-1 ltr:mr-1 rtl:ml-1">
+              <ArrowButton
+                icon="Chevron_Up"
+                onClick={() => setPosition([position[0] - 1, position[1]])}
+                disabled={position[0] <= 0}
+              />
+              <ArrowButton
+                icon="Chevron_Down"
+                onClick={() => setPosition([position[0] + 1, position[1]])}
+                disabled={position[0] >= 4}
+              />
+            </div>
+            {/*
+              The message preview is always LTR so we force it here too since
+              we're controlling an element in the preview. A bit janky but
+              preferable to duplicating the elements.
+            */}
+            <div dir="ltr" className="w-1/2 grid grid-cols-2 gap-1">
+              <ArrowButton
+                icon="Chevron_Left"
+                onClick={() => setPosition([position[0], position[1] - 1])}
+                disabled={position[1] <= 0}
+              />
+              <ArrowButton
+                icon="Chevron_Right"
+                onClick={() => setPosition([position[0], position[1] + 1])}
+                disabled={
+                  position[1] >= 4 ||
+                  (rows[position[0]] &&
+                    position[1] === rows[position[0]].components.length)
+                }
+              />
+            </div>
           </div>
         </div>
         <ComponentEditForm
