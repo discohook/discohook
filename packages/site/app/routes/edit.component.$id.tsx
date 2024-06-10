@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   APIActionRowComponent,
   APIEmoji,
@@ -11,7 +11,7 @@ import {
 } from "discord-api-types/v10";
 import { JWTPayload } from "jose";
 import { MouseEventHandler, useEffect, useReducer, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { Button } from "~/components/Button";
@@ -22,6 +22,7 @@ import {
   submitComponent,
 } from "~/components/editor/ComponentEditor";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
@@ -402,7 +403,19 @@ export default function EditComponentPage() {
           />
         </div>
         <div className="mb-4">
-          <p className="text-sm font-medium cursor-default">{t("position")}</p>
+          <p className="text-sm font-medium cursor-default">
+            <Trans
+              t={t}
+              i18nKey="positionLink"
+              components={[
+                <Link
+                  to="/guide/getting-started/positioning"
+                  target="_blank"
+                  className={twJoin(linkClassName, "cursor-pointer")}
+                />,
+              ]}
+            />
+          </p>
           <div className="flex">
             <div className="w-1/2 grid grid-cols-2 gap-1 ltr:mr-1 rtl:ml-1">
               <ArrowButton
