@@ -5,6 +5,7 @@ import {
   APIActionRowComponent,
   APIEmoji,
   APIMessage,
+  APIRole,
   ButtonStyle,
   ComponentType,
   Routes,
@@ -48,6 +49,7 @@ import { APIMessageActionRowComponent } from "~/types/QueryData";
 import {
   ResolutionKey,
   ResolvableAPIEmoji,
+  ResolvableAPIRole,
   useCache,
 } from "~/util/cache/CacheManager";
 import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
@@ -182,6 +184,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   })();
 
   let emojis: ResolvableAPIEmoji[] = [];
+  let roles: ResolvableAPIRole[] = [];
   if (component.guildId) {
     try {
       emojis = (
@@ -195,9 +198,25 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         available: emoji.available === false ? false : undefined,
       }));
     } catch {}
+    try {
+      roles = (
+        (await rest.get(
+          Routes.guildRoles(String(component.guildId)),
+        )) as APIRole[]
+      ).map((role) => ({
+        id: role.id,
+        name: role.name,
+        color: role.color,
+        managed: role.managed,
+        mentionable: role.mentionable,
+        position: role.position,
+        unicode_emoji: role.unicode_emoji,
+        icon: role.icon,
+      }));
+    } catch {}
   }
 
-  return respond(json({ user, component, message, emojis }));
+  return respond(json({ user, component, message, emojis, roles }));
 };
 
 const buildStorableComponent = (
@@ -260,6 +279,7 @@ export default function EditComponentPage() {
     component: component_,
     message,
     emojis,
+    roles,
   } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const [error, setError] = useError(t);
@@ -270,7 +290,10 @@ export default function EditComponentPage() {
     if (component_.guildId) {
       cache.fill(
         ...emojis.map(
-          (e) => [`emoji:${e.id}`, e] as [ResolutionKey, ResolvableAPIEmoji],
+          (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
+        ),
+        ...roles.map(
+          (r) => [`role:${r.id}`, r] as [ResolutionKey, ResolvableAPIRole],
         ),
       );
     }
