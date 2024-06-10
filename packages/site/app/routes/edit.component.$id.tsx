@@ -14,7 +14,10 @@ import { MouseEventHandler, useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
+import { BRoutes, apiUrl } from "~/api/routing";
+import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import { Button } from "~/components/Button";
+import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import {
@@ -26,6 +29,7 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
+import { submitMessage } from "~/modals/MessageSendModal";
 import {
   doubleDecode,
   getSessionStorage,
@@ -46,7 +50,7 @@ import {
   ResolvableAPIEmoji,
   useCache,
 } from "~/util/cache/CacheManager";
-import { LoaderArgs } from "~/util/loader";
+import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
@@ -258,6 +262,7 @@ export default function EditComponentPage() {
     emojis,
   } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
+  const [error, setError] = useError(t);
   const cache = useCache(!user);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever `emojis` changes, which would be never right now
@@ -366,12 +371,23 @@ export default function EditComponentPage() {
 
   const rowsWithLive = structuredClone(rows).map((row, i) => {
     if (i === position[0]) {
-      row.components.splice(position[1], 0, component);
+      // We don't want to send this data to Discord
+      const cleaned = { ...component };
+      if ("flow" in cleaned) {
+        cleaned.flow = undefined;
+      }
+      if ("flows" in cleaned) {
+        cleaned.flows = undefined;
+      }
+      row.components.splice(position[1], 0, cleaned);
     }
     return row;
   });
 
   // const [overflowMessage, setOverflowMessage] = useState(false);
+  const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
+    onError: setError,
+  });
 
   return (
     <div>
@@ -383,6 +399,7 @@ export default function EditComponentPage() {
       />
       <Header user={user} />
       <Prose className="max-w-xl">
+        {error}
         {/* <Checkbox
           label="Full width message preview"
           checked={overflowMessage}
@@ -478,9 +495,32 @@ export default function EditComponentPage() {
             adding a component with the bot.
           */}
           <Button
-            disabled={!component_.messageId}
+            disabled={
+              !component_.messageId ||
+              !component_.guildId ||
+              !message?.webhook_id
+            }
             discordstyle={ButtonStyle.Success}
-            onClick={async () => {}}
+            onClick={async () => {
+              if (
+                component_.messageId &&
+                component_.guildId &&
+                message?.webhook_id
+              ) {
+                const tokenResponse = await webhookTokenFetcher.loadAsync(
+                  apiUrl(
+                    BRoutes.guildWebhookToken(
+                      component_.guildId,
+                      message.webhook_id,
+                    ),
+                  ),
+                );
+                await submitMessage(tokenResponse, {
+                  data: { components: rowsWithLive },
+                  reference: component_.messageId.toString(),
+                });
+              }
+            }}
           >
             {t("editMessage")}
           </Button>
