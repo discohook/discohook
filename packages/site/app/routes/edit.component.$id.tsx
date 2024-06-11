@@ -1,6 +1,11 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import {
   APIActionRowComponent,
   APIEmoji,
@@ -17,6 +22,7 @@ import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
+import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -219,6 +225,82 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   return respond(json({ user, component, message, emojis, roles }));
 };
 
+export const action = async ({ request, context, params }: ActionArgs) => {
+  const { id } = zxParseParams(params, { id: snowflakeAsString() });
+  // const data = await zxParseForm(request, {
+  // });
+
+  const user = await getUser(request, context, true);
+
+  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const component = await db.query.discordMessageComponents.findFirst({
+    where: eq(discordMessageComponents.id, id),
+    columns: {
+      id: true,
+      data: true,
+      draft: true,
+      // createdById: true,
+      // guildId: true,
+      channelId: true,
+      messageId: true,
+    },
+  });
+  if (!component) {
+    throw json({ message: "Unknown Component" }, 404);
+  }
+  if (!component.channelId || !component.messageId) {
+    throw json(
+      { message: "Cannot use this route to modify a message-less component" },
+      400,
+    );
+  }
+
+  const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+  let message: APIMessage;
+  try {
+    message = (await rest.get(
+      Routes.channelMessage(
+        String(component.channelId),
+        String(component.messageId),
+      ),
+    )) as APIMessage;
+  } catch {
+    throw json({ message: "Failed to retrieve the message" }, 400);
+  }
+
+  let isDraft = component.draft;
+  for (const row of message.components ?? []) {
+    for (const rowComponent of row.components) {
+      if (
+        getComponentId(rowComponent) === component.id &&
+        rowComponent.type === component.data.type
+      ) {
+        isDraft = false;
+        break;
+      }
+    }
+  }
+  // Why do this when we can just update it automatically without the user
+  // providing anything?
+  // if (data.draft !== undefined && data.draft !== isDraft) {
+  //   throw json({ message: "Draft status does not match" }, 400);
+  // }
+
+  const updated = (
+    await db
+      .update(discordMessageComponents)
+      .set({
+        draft: isDraft,
+      })
+      .where(eq(discordMessageComponents.id, id))
+      .returning({
+        id: discordMessageComponents.id,
+        draft: discordMessageComponents.draft,
+      })
+  )[0];
+  return updated;
+};
+
 const buildStorableComponent = (
   component: StorableComponent,
   id: string,
@@ -284,6 +366,7 @@ export default function EditComponentPage() {
   const { t } = useTranslation();
   const [error, setError] = useError(t);
   const cache = useCache(!user);
+  const submit = useSubmit();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever `emojis` changes, which would be never right now
   useEffect(() => {
@@ -542,6 +625,11 @@ export default function EditComponentPage() {
                   data: { components: rowsWithLive },
                   reference: component_.messageId.toString(),
                 });
+                if (component_.draft) {
+                  // Tell the server that something changed and
+                  // it needs to fetch the message
+                  submit(null, { method: "PATCH", replace: true });
+                }
               }
             }}
           >
