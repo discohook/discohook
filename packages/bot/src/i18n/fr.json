@@ -3,7 +3,7 @@
     "invite": {
       "name": "ajouter"
     },
-    "webhooks": {
+    "webhook": {
       "description": "Webhooks beheren",
       "options": {
         "create": {

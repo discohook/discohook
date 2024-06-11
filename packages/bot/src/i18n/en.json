@@ -52,7 +52,7 @@
         }
       }
     },
-    "webhooks": {
+    "webhook": {
       "description": "Manage webhooks",
       "options": {
         "create": {
@@ -130,6 +130,37 @@
           }
         }
       }
+    },
+    "format": {
+      "options": {
+        "mention": {
+          "description": "Outputs the mention format for a user or role",
+          "options": {
+            "target": {
+              "description": "The user or role to mention"
+            }
+          }
+        },
+        "channel": {
+          "description": "Outputs the mention format for a channel",
+          "options": {
+            "target": {
+              "description": "The channel to mention"
+            }
+          }
+        },
+        "emoji": {
+          "description": "Outputs the usage format for a server emoji",
+          "options": {
+            "target": {
+              "description": "The emoji to use"
+            }
+          }
+        }
+      }
+    },
+    "invite": {
+      "description": "Invite URL for this bot"
     },
     "_ctx": {
       "components": {
