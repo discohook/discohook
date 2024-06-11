@@ -17,6 +17,7 @@ import {
 } from "discord-api-types/v10";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
+import i18next from "i18next";
 import { IRequest, Router } from "itty-router";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { DurableStoredComponent } from "store/src/durable/components.js";
@@ -54,6 +55,13 @@ import { parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";
 
+const resources = {
+  en: { translation: require("./i18n/en.json") },
+  fr: { translation: require("./i18n/fr.json") },
+  nl: { translation: require("./i18n/nl.json") },
+  "zh-CN": { translation: require("./i18n/zh-CN.json") },
+};
+
 const router = Router();
 
 router.get("/", (_, env: Env) => {
@@ -78,6 +86,11 @@ const handleInteraction = async (
   if (interaction.type === InteractionType.Ping) {
     return respond({ type: InteractionResponseType.Pong });
   }
+
+  await i18next.init({
+    lng: interaction.locale,
+    resources,
+  });
 
   if (
     interaction.type === InteractionType.ApplicationCommand ||
@@ -519,7 +532,6 @@ const handleInteraction = async (
                           return {
                             customId: newCustomId,
                             flow: {
-                              name: "Flow",
                               actions: [
                                 ...(button.roleId
                                   ? [
