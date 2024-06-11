@@ -32,6 +32,7 @@ import {
   tokens,
 } from "store/src/schema";
 import { StorableComponent } from "store/src/types/components.js";
+import { InteractionInstantOrDeferredResponse } from "../../commands.js";
 import {
   ButtonCallback,
   MinimumKVComponentState,
@@ -265,7 +266,7 @@ const registerComponent = async (
 export const startComponentFlow = async (
   ctx: InteractionContext<APIInteraction>,
   message: APIMessage,
-) => {
+): Promise<InteractionInstantOrDeferredResponse> => {
   const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const user = await upsertDiscordUser(db, ctx.user);
 

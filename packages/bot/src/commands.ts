@@ -42,11 +42,13 @@ import { webhookInfoCallback } from "./commands/webhooks/webhookInfo.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { InteractionContext } from "./interactions.js";
 
+export type InteractionInstantOrDeferredResponse =
+  | APIInteractionResponse
+  | [APIInteractionResponse, () => Promise<void>];
+
 export type AppCommandCallbackT<T extends APIInteraction> = (
   ctx: InteractionContext<T>,
-) => Promise<
-  APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]
->;
+) => Promise<InteractionInstantOrDeferredResponse>;
 export type ChatInputAppCommandCallback<
   GuildOnly extends boolean = false,
   DMOnly extends boolean = false,
