@@ -495,5 +495,9 @@
     "images": "الصور",
     "useLargeImages": "استخدم صور بحجم كبير",
     "addImage": "إضافة صورة",
-    "video": "فيديو"
+    "video": "فيديو",
+    "positionLink": "الموضع (<0>كيف تعمل هذه؟</0>)",
+    "saveDraft": "حفظ المسودة",
+    "editMessage": "تعديل الرسالة",
+    "componentSaveEditMessageTip": "نصيحة: اذا كنت تريد تعديل التدفقات فقط, لا تحتاج ان تضغط تعديل الرسالة."
 }
