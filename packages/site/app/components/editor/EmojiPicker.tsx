@@ -414,11 +414,10 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                             .map((k) => k.includes(query))
                             .includes(true),
                       )
-                      .map((emoji) => {
+                      .map(({ skins, ...emoji }) => {
                         const skin =
-                          emoji.skins[
-                            skinTone === undefined ? 0 : skinTone + 1
-                          ] ?? emoji.skins[0];
+                          skins[skinTone === undefined ? 0 : skinTone + 1] ??
+                          skins[0];
                         const selected: SelectedEmoji = { ...emoji, skin };
 
                         return (
