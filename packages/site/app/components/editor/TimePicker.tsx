@@ -28,7 +28,7 @@ export const TimePicker: React.FC<{
   return (
     <div
       className={twJoin(
-        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] border border-black/5 shadow-md",
+        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] border border-black/5 dark:border-gray-200/20 shadow-md",
         className,
       )}
     >

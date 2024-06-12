@@ -185,18 +185,14 @@ const EmojiPicker_: React.FC<PickerProps> = ({
   const skinTone = settings.skinTone;
 
   const categories: Category[] = [
+    // {
+    //   id: "favorites",
+    //   emojis: [],
+    // },
     {
-      id: "favorites",
-      emojis: [],
+      id: "custom",
+      emojis: validCustomEmojis.map((e) => `discord_${e.id}`),
     },
-    ...(validCustomEmojis.length !== 0
-      ? [
-          {
-            id: "custom",
-            emojis: validCustomEmojis.map((e) => `discord_${e.id}`),
-          },
-        ]
-      : []),
     // {
     //   id: "recents",
     //   emojis: [],
@@ -207,7 +203,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
   return (
     <div
       className={twJoin(
-        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] h-80 border border-black/5 shadow-md flex flex-col",
+        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] h-80 border border-black/10 dark:border-gray-200/20 shadow-md flex flex-col",
         className,
       )}
     >
@@ -256,7 +252,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
         </div>
       </div>
       <div className="flex grow h-full overflow-hidden">
-        <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full scrollbar-none space-y-1 p-1 py-2 flex flex-col">
+        <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full rounded-bl scrollbar-none space-y-1 p-1 py-2 flex flex-col">
           {categories
             .filter((c) => c.emojis.length > 0)
             .map((category) => (
@@ -330,7 +326,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                   ))}
           </div>
           {hoverEmoji && (
-            <div className="sticky bottom-0 left-0 w-full bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
+            <div className="sticky bottom-0 left-0 w-full rounded-br bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
               {hoverEmoji.keywords.includes("discord") ? (
                 <img
                   loading="lazy"

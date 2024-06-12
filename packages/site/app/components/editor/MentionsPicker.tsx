@@ -87,7 +87,7 @@ export const MentionsPicker: React.FC<{
   return (
     <div
       className={twJoin(
-        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] h-80 border border-black/5 shadow-md flex flex-col",
+        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] h-80 border border-black/5 dark:border-gray-200/20 shadow-md flex flex-col",
         className,
       )}
     >
