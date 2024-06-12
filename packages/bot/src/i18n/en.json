@@ -179,5 +179,10 @@
         "name": "Debug"
       }
     }
-  }
+  },
+  "noMigratableComponents": "This message has no registered, migratable components.",
+  "noContentAvailable": "No content available",
+  "noComponentFlow": "There was no flow registered for this component. Configure one [here]({{url}}).",
+  "toggledRole": "Toggled the {{role}} role for you.",
+  "welcomerCommandDeprecated": "In order to set up a welcomer, please use the **/triggers** command."
 }

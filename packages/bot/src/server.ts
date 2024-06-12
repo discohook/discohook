@@ -17,7 +17,7 @@ import {
 } from "discord-api-types/v10";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
-import i18next from "i18next";
+import i18next, { t } from "i18next";
 import { IRequest, Router } from "itty-router";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { DurableStoredComponent } from "store/src/durable/components.js";
@@ -291,6 +291,11 @@ const handleInteraction = async (
         case ComponentType.StringSelect: {
           if (component.data.type !== interaction.data.component_type) break;
 
+          // While we do have the logic to handle multiple selected values,
+          // it's currently unsupported behavior and is overwritten when
+          // saving components. Nonetheless, if a user manually saved a select
+          // menu allowing multiple values, we are able to deal with it
+          // gracefully. Should we truncate here too?
           flows = Object.entries(component.data.flows)
             .filter(([key]) =>
               (
@@ -316,7 +321,11 @@ const handleInteraction = async (
       if (flows.length === 0) {
         return respond(
           ctx.reply({
-            content: `There was no flow registered for this component. Configure one [here](${env.DISCOHOOK_ORIGIN}/component?id=${component.id}).`,
+            content: t("noComponentFlow", {
+              replace: {
+                url: `${env.DISCOHOOK_ORIGIN}/edit/component/${component.id}`,
+              },
+            }),
             flags: MessageFlags.Ephemeral,
           }),
         );
@@ -405,7 +414,7 @@ const handleInteraction = async (
       if (oldMessageButtons.length === 0) {
         return respond(
           ctx.reply({
-            content: "This message has no registered, migratable components.",
+            content: t("noMigratableComponents"),
             flags: MessageFlags.Ephemeral,
           }),
         );
@@ -465,13 +474,13 @@ const handleInteraction = async (
                         {
                           data: b.roleId
                             ? {
-                                content: `Toggled the <@&${b.roleId}> role for you.`,
+                                content: t("toggledRole", {
+                                  replace: { role: `<@&${b.roleId}>` },
+                                }),
                               }
                             : dataStr
                               ? JSON.parse(dataStr)
-                              : {
-                                  content: "No content available",
-                                },
+                              : { content: t("noContentAvailable") },
                         },
                       ],
                     } satisfies QueryData,
@@ -601,9 +610,7 @@ const handleInteraction = async (
               };
             }),
           }));
-          await ctx.followup.editOriginalMessage({
-            // components: rows,
-          });
+          await ctx.followup.editOriginalMessage({ components: rows });
           // Free up space. Not 100% sure about this
           // await db
           //   .delete(oButtons)

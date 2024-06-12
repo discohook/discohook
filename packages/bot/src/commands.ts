@@ -12,6 +12,7 @@ import {
   ApplicationCommandType,
   MessageFlags,
 } from "discord-api-types/v10";
+import { t } from "i18next";
 import {
   addComponentChatEntry,
   addComponentMessageAutocomplete,
@@ -132,8 +133,7 @@ export const appCommands: Record<
       handlers: {
         BASE: (async (ctx) =>
           ctx.reply({
-            content:
-              "In order to set up a welcomer, please use the **/triggers** command.",
+            content: t("welcomerCommandDeprecated"),
             flags: MessageFlags.Ephemeral,
           })) as ChatInputAppCommandCallback,
       },
