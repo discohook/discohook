@@ -1,4 +1,3 @@
-import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandAttachmentOption,
@@ -22,6 +21,7 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
 import fs from "fs/promises";
+import process from "node:process";
 import { TriggerEvent } from "store/src/types";
 
 /**
@@ -304,16 +304,16 @@ async function main() {
                 .setDescription("...")
                 .setChoices(
                   {
-                    name: getEnglish("triggers.options.add.event.choices.0"),
+                    name: getEnglish("triggers.options.add.options.event.choices.0"),
                     name_localizations: localize(
-                      "triggers.options.add.event.choices.0",
+                      "triggers.options.add.options.event.choices.0",
                     ),
                     value: TriggerEvent.MemberAdd,
                   },
                   {
-                    name: getEnglish("triggers.options.add.event.choices.1"),
+                    name: getEnglish("triggers.options.add.options.event.choices.1"),
                     name_localizations: localize(
-                      "triggers.options.add.event.choices.1",
+                      "triggers.options.add.options.event.choices.1",
                     ),
                     value: TriggerEvent.MemberRemove,
                   },
