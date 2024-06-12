@@ -4,15 +4,19 @@ import emojiData, {
   EmojiMartData,
   Skin,
 } from "@emoji-mart/data";
-import { APIMessageComponentEmoji } from "discord-api-types/v10";
+import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v10";
+import { isSnowflake } from "discord-snowflake";
 import { memo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
+import { Button } from "../Button";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
-import { IconFC, IconFCProps } from "../icons/Svg";
+import { IconFC, IconFCProps, Svg } from "../icons/Svg";
 import { Twemoji } from "../icons/Twemoji";
 import {
   EmojiIconActivities,
@@ -44,6 +48,7 @@ export interface PickerProps {
   ) => void;
   customEmojis?: APIMessageComponentEmoji[];
   className?: string;
+  cache?: CacheManager;
 }
 
 const categoryToIcon: Record<string, IconFC> = {
@@ -99,7 +104,7 @@ const GridEmoji: React.FC<{
 }> = ({ emoji, onEmojiClick, setHoverEmoji }) => (
   <button
     type="button"
-    className={`rounded p-1 h-11 w-11 hover:bg-white/10 transition invisible data-[visible="true"]:visible`}
+    className='rounded p-1 h-11 w-11 hover:bg-white/10 transition invisible data-[visible="true"]:visible'
     onClick={(ev) => onEmojiClick(emoji, ev)}
     onMouseOver={() => setHoverEmoji(emoji)}
     onFocus={() => setHoverEmoji(emoji)}
@@ -148,15 +153,51 @@ const elementPartiallyVisible = (e: Element) => {
   );
 };
 
+const findCustomEmojiSubstring = (
+  text: string,
+): { id: string; name?: string; animated?: boolean } | undefined => {
+  try {
+    if (isSnowflake(text) && text.length > 17) {
+      return { id: text };
+    }
+  } catch {}
+
+  const wholeMatch = /<(a)?:(\w+):(\d+)>/g.exec(text);
+  if (wholeMatch) {
+    return {
+      id: wholeMatch[3],
+      name: wholeMatch[2],
+      animated: Boolean(wholeMatch[1]),
+    };
+  }
+
+  const urlMatch =
+    /^https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/emojis\/(\d+)(?:\.(\w+))?/.exec(
+      text,
+    );
+  if (urlMatch) {
+    return {
+      id: urlMatch[1],
+      animated: urlMatch[2] === "gif",
+    };
+  }
+};
+
 const EmojiPicker_: React.FC<PickerProps> = ({
   id,
   onEmojiClick,
   customEmojis,
   className,
+  cache,
 }) => {
+  const { t } = useTranslation();
   const [settings, setSettings] = useLocalStorage();
   const [hoverEmoji, setHoverEmoji] = useState<SelectedEmoji>();
   const [query, setQuery] = useState("");
+
+  const [inputtingCustom, setInputtingCustom] = useState(false);
+  const [inputtingCustomDetails, setInputtingCustomDetails] =
+    useState<ReturnType<typeof findCustomEmojiSubstring>>();
 
   const data = structuredClone(emojiData as EmojiMartData);
   const validCustomEmojis = (customEmojis ?? []).filter(
@@ -207,155 +248,289 @@ const EmojiPicker_: React.FC<PickerProps> = ({
         className,
       )}
     >
-      <div className="p-2 shadow border-b border-b-black/5 flex">
-        <div className="grow">
-          <TextInput
-            label=""
-            className="w-full"
-            placeholder="Find the perfect emoji"
-            onInput={(e) =>
-              setQuery(e.currentTarget.value.toLowerCase().trim())
-            }
-          />
-        </div>
-        <div className="shrink-0 ml-3 mr-1 my-auto">
-          <button
-            type="button"
-            onClick={() => {
-              if (skinTone === undefined) {
-                setSettings({ skinTone: 0 });
-              } else if (skinTone < 4) {
-                setSettings({ skinTone: (skinTone + 1) as typeof skinTone });
-              } else {
-                setSettings({ skinTone: undefined });
-              }
-            }}
-          >
-            <Twemoji
-              emoji={
-                skinTone === 0
-                  ? "👏🏻"
-                  : skinTone === 1
-                    ? "👏🏼"
-                    : skinTone === 2
-                      ? "👏🏽"
-                      : skinTone === 3
-                        ? "👏🏾"
-                        : skinTone === 4
-                          ? "👏🏿"
-                          : "👏"
-              }
-              className="h-6 align-[-0.3em] w-6"
-              title="Set skin tone"
-            />
-          </button>
-        </div>
-      </div>
-      <div className="flex grow h-full overflow-hidden">
-        <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full rounded-bl scrollbar-none space-y-1 p-1 py-2 flex flex-col">
-          {categories
-            .filter((c) => c.emojis.length > 0)
-            .map((category) => (
-              <CategoryIconButton
-                key={`emoji-category-${id}-${category.id}-icon`}
-                categoryId={category.id}
-                id={id}
+      {inputtingCustom ? (
+        <div className="h-80 overflow-y-auto">
+          <div className="p-4">
+            <div className="grow">
+              <TextInput
+                label="Custom Emoji ID"
+                className="w-full"
+                onChange={({ currentTarget }) => {
+                  setInputtingCustomDetails(
+                    findCustomEmojiSubstring(currentTarget.value),
+                  );
+                }}
               />
-            ))}
-        </div>
-        <div className="overflow-y-auto flex flex-col grow select-none">
-          <div className="grow px-1.5 pb-1">
-            {query
-              ? Object.values(data.emojis)
-                  .filter(
-                    (e) =>
-                      e.id.includes(query) ||
-                      e.keywords.map((k) => k.includes(query)).includes(true),
-                  )
-                  .map((emoji) => {
-                    const skin =
-                      emoji.skins[skinTone === undefined ? 0 : skinTone + 1] ??
-                      emoji.skins[0];
-                    const selected: SelectedEmoji = { ...emoji, skin };
-
-                    return (
-                      <GridEmoji
-                        key={`emoji-search-${emoji.id}`}
-                        emoji={selected}
-                        onEmojiClick={onEmojiClick}
-                        setHoverEmoji={setHoverEmoji}
-                      />
-                    );
-                  })
-              : categories
-                  .filter((c) => c.emojis.length > 0)
-                  .map((category) => (
-                    <div
-                      key={`emoji-category-${category.id}-body`}
-                      className="pt-3 first:pt-1"
-                    >
-                      <div
-                        id={`${id}-${category.id}`}
-                        className="uppercase text-xs font-semibold pt-1 mb-1 ml-1 flex"
-                      >
-                        {categoryToIcon[category.id]({
-                          className: "my-auto ltr:mr-1.5 rtl:ml-1.5",
-                        })}
-                        <p className="my-auto">{category.id}</p>
-                      </div>
-                      <div className="flex gap-px flex-wrap">
-                        {category.emojis.map((name) => {
-                          const emoji = data.emojis[name];
-                          const skin =
-                            emoji.skins[
-                              skinTone === undefined ? 0 : skinTone + 1
-                            ] ?? emoji.skins[0];
-                          const selected: SelectedEmoji = { ...emoji, skin };
-
-                          return (
-                            <GridEmoji
-                              key={`emoji-category-${category.id}-emoji-${emoji.id}`}
-                              emoji={selected}
-                              onEmojiClick={onEmojiClick}
-                              setHoverEmoji={setHoverEmoji}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-          </div>
-          {hoverEmoji && (
-            <div className="sticky bottom-0 left-0 w-full rounded-br bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
-              {hoverEmoji.keywords.includes("discord") ? (
+            </div>
+            <div className="mt-2">
+              <p className="text-sm font-medium cursor-default">Preview</p>
+              {inputtingCustomDetails ? (
                 <img
-                  loading="lazy"
                   src={cdn.emoji(
-                    hoverEmoji.skin.native,
-                    hoverEmoji.keywords.includes("animated") ? "gif" : "webp",
+                    inputtingCustomDetails.id,
+                    inputtingCustomDetails.animated ? "gif" : undefined,
                   )}
-                  alt={hoverEmoji.name}
-                  className="h-7 my-auto shrink-0 !align-bottom"
+                  className="w-14 h-14"
+                  alt={inputtingCustomDetails.name}
                 />
               ) : (
-                <Twemoji
-                  emoji={hoverEmoji.skin.native}
-                  className="h-7 my-auto shrink-0 !align-bottom"
-                  title={hoverEmoji.id}
-                  loading="lazy"
-                />
+                <div className="w-14 h-14 bg-black/10 rounded-lg" />
               )}
-              <p className="ml-2 text-base font-semibold my-auto truncate">
-                :
-                {hoverEmoji.keywords.includes("discord")
-                  ? hoverEmoji.name
-                  : hoverEmoji.id}
-                :
-              </p>
             </div>
-          )}
+            <div className="mt-2">
+              <p className="font-medium cursor-default">How to find this</p>
+              <ol className="list-decimal list-inside text-sm">
+                <li>In Discord, send a message with the custom emoji in it.</li>
+                {/*
+                This is not a real stipulation?
+                <li>
+                  Make sure Discohook Utils shares a server with the emoji if
+                  it's for a component.
+                </li> */}
+                <li>
+                  Right click the emoji and select "Copy Link" or select "Copy
+                  Text" on the message.
+                </li>
+                <li>Paste above.</li>
+              </ol>
+            </div>
+          </div>
+          <div className="sticky bottom-0 left-0 w-full rounded-b bg-gray-400 dark:bg-gray-900 flex items-end px-4 py-2">
+            <Button
+              discordstyle={ButtonStyle.Secondary}
+              className="ml-auto"
+              onClick={() => {
+                setInputtingCustom(false);
+                setInputtingCustomDetails(undefined);
+              }}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              className="ml-2"
+              onClick={(ev) => {
+                if (cache && inputtingCustomDetails) {
+                  cache.fill([
+                    `emoji:${inputtingCustomDetails.id}`,
+                    {
+                      id: inputtingCustomDetails.id,
+                      name: inputtingCustomDetails.name ?? "unknown",
+                      animated: inputtingCustomDetails.animated,
+                    },
+                  ]);
+                  onEmojiClick(
+                    {
+                      id: inputtingCustomDetails.id,
+                      name: inputtingCustomDetails.name ?? "unknown",
+                      keywords: [
+                        "discord",
+                        inputtingCustomDetails.animated ? "animated" : "static",
+                      ],
+                      skin: {
+                        native: inputtingCustomDetails.id,
+                        unified: "",
+                      },
+                      version: 1,
+                    },
+                    ev,
+                  );
+                  setInputtingCustom(false);
+                  setInputtingCustomDetails(undefined);
+                }
+              }}
+            >
+              {t("save")}
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="p-2 shadow border-b border-b-black/5 flex">
+            <div className="grow">
+              <TextInput
+                label=""
+                className="w-full"
+                placeholder="Find the perfect emoji"
+                onInput={(e) =>
+                  setQuery(e.currentTarget.value.toLowerCase().trim())
+                }
+              />
+            </div>
+            <div className="shrink-0 ml-3 mr-1 my-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  if (skinTone === undefined) {
+                    setSettings({ skinTone: 0 });
+                  } else if (skinTone < 4) {
+                    setSettings({
+                      skinTone: (skinTone + 1) as typeof skinTone,
+                    });
+                  } else {
+                    setSettings({ skinTone: undefined });
+                  }
+                }}
+              >
+                <Twemoji
+                  emoji={
+                    skinTone === 0
+                      ? "👏🏻"
+                      : skinTone === 1
+                        ? "👏🏼"
+                        : skinTone === 2
+                          ? "👏🏽"
+                          : skinTone === 3
+                            ? "👏🏾"
+                            : skinTone === 4
+                              ? "👏🏿"
+                              : "👏"
+                  }
+                  className="h-6 align-[-0.3em] w-6"
+                  title="Set skin tone"
+                />
+              </button>
+            </div>
+          </div>
+          <div className="flex grow h-full overflow-hidden">
+            <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full rounded-bl scrollbar-none space-y-1 p-1 py-2 flex flex-col">
+              {categories
+                .filter((c) => c.id === "custom" || c.emojis.length > 0)
+                .map((category) => (
+                  <CategoryIconButton
+                    key={`emoji-category-${id}-${category.id}-icon`}
+                    categoryId={category.id}
+                    id={id}
+                  />
+                ))}
+            </div>
+            <div className="overflow-y-auto flex flex-col grow select-none">
+              <div className="grow px-1.5 pb-1">
+                {query
+                  ? Object.values(data.emojis)
+                      .filter(
+                        (e) =>
+                          e.id.includes(query) ||
+                          e.keywords
+                            .map((k) => k.includes(query))
+                            .includes(true),
+                      )
+                      .map((emoji) => {
+                        const skin =
+                          emoji.skins[
+                            skinTone === undefined ? 0 : skinTone + 1
+                          ] ?? emoji.skins[0];
+                        const selected: SelectedEmoji = { ...emoji, skin };
+
+                        return (
+                          <GridEmoji
+                            key={`emoji-search-${emoji.id}`}
+                            emoji={selected}
+                            onEmojiClick={onEmojiClick}
+                            setHoverEmoji={setHoverEmoji}
+                          />
+                        );
+                      })
+                  : categories
+                      .filter((c) => c.id === "custom" || c.emojis.length > 0)
+                      .map((category) => (
+                        <div
+                          key={`emoji-category-${category.id}-body`}
+                          className="pt-3 first:pt-1"
+                        >
+                          <div
+                            id={`${id}-${category.id}`}
+                            className="uppercase text-xs font-semibold pt-1 mb-1 ml-1 flex"
+                          >
+                            {categoryToIcon[category.id]({
+                              className: "my-auto ltr:mr-1.5 rtl:ml-1.5",
+                            })}
+                            <p className="my-auto">{category.id}</p>
+                          </div>
+                          <div className="flex gap-px flex-wrap">
+                            {cache && category.id === "custom" && (
+                              <button
+                                type="button"
+                                className="rounded p-1 h-11 w-11 hover:bg-white/10 hover:text-gray-200 transition flex"
+                                title="Add custom emoji by ID"
+                                onClick={() => setInputtingCustom(true)}
+                                // onMouseOver={() => setHoverEmoji(emoji)}
+                                // onFocus={() => setHoverEmoji(emoji)}
+                              >
+                                <Svg width={36} height={36} className="m-auto">
+                                  <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    fill="transparent"
+                                  />
+                                  <path
+                                    fill="currentColor"
+                                    fill-rule="evenodd"
+                                    d="M12 23a11 11 0 1 0 0-22 11 11 0 0 0 0 22zm0-17a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2h-4v4a1 1 0 1 1-2 0v-4H7a1 1 0 1 1 0-2h4V7a1 1 0 0 1 1-1z"
+                                    clip-rule="evenodd"
+                                  />
+                                </Svg>
+                              </button>
+                            )}
+                            {category.emojis.map((name) => {
+                              const emoji = data.emojis[name];
+                              const skin =
+                                emoji.skins[
+                                  skinTone === undefined ? 0 : skinTone + 1
+                                ] ?? emoji.skins[0];
+                              const selected: SelectedEmoji = {
+                                ...emoji,
+                                skin,
+                              };
+
+                              return (
+                                <GridEmoji
+                                  key={`emoji-category-${category.id}-emoji-${emoji.id}`}
+                                  emoji={selected}
+                                  onEmojiClick={onEmojiClick}
+                                  setHoverEmoji={setHoverEmoji}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+              </div>
+              {hoverEmoji && (
+                <div className="sticky bottom-0 left-0 w-full rounded-br bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
+                  {hoverEmoji.keywords.includes("discord") ? (
+                    <img
+                      loading="lazy"
+                      src={cdn.emoji(
+                        hoverEmoji.skin.native,
+                        hoverEmoji.keywords.includes("animated")
+                          ? "gif"
+                          : "webp",
+                      )}
+                      alt={hoverEmoji.name}
+                      className="h-7 my-auto shrink-0 !align-bottom"
+                    />
+                  ) : (
+                    <Twemoji
+                      emoji={hoverEmoji.skin.native}
+                      className="h-7 my-auto shrink-0 !align-bottom"
+                      title={hoverEmoji.id}
+                      loading="lazy"
+                    />
+                  )}
+                  <p className="ml-2 text-base font-semibold my-auto truncate">
+                    :
+                    {hoverEmoji.keywords.includes("discord")
+                      ? hoverEmoji.name
+                      : hoverEmoji.id}
+                    :
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -367,7 +542,8 @@ export const PopoutEmojiPicker: React.FC<{
   setEmoji: (emoji: APIMessageComponentEmoji | undefined) => void;
   emojis?: APIMessageComponentEmoji[];
   isClearable?: boolean;
-}> = ({ emoji, setEmoji, emojis }) => {
+  cache?: CacheManager;
+}> = ({ emoji, setEmoji, emojis, cache }) => {
   const id = randomString(10);
   const [open, setOpen] = useState(false);
   // const close = () => {
@@ -409,6 +585,7 @@ export const PopoutEmojiPicker: React.FC<{
         <div className="absolute z-20 pb-8">
           <EmojiPicker
             id={id}
+            cache={cache}
             customEmojis={emojis}
             onEmojiClick={(selectedEmoji) => {
               // close();

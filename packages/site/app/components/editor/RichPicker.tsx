@@ -107,6 +107,7 @@ export const PopoutRichPicker: React.FC<
         ) : tab === "emoji" ? (
           <EmojiPicker
             id={id}
+            cache={cache}
             className="border-none shadow-none w-full"
             customEmojis={cache ? cache.emoji.getAll() : []}
             onEmojiClick={(emoji, event) => {

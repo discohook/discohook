@@ -142,6 +142,7 @@ export const ComponentEditForm = ({
           <div className="ltr:mr-2 rtl:ml-2 mt-auto">
             <p className="text-sm cursor-default font-medium">{t("emoji")}</p>
             <PopoutEmojiPicker
+              cache={cache}
               emoji={component.emoji}
               emojis={cache ? cache.emoji.getAll() : []}
               setEmoji={(emoji) => {
@@ -307,6 +308,7 @@ export const ComponentEditForm = ({
                           {t("emoji")}
                         </p>
                         <PopoutEmojiPicker
+                          cache={cache}
                           emoji={option.emoji}
                           emojis={cache ? cache.emoji.getAll() : []}
                           setEmoji={(emoji) => {
