@@ -468,11 +468,11 @@
     "messageFlagsNote": "ميزة نوع الرسالة هي ميزة إختيارية يمكنك إطفائها او تشغيلها.",
     "embedsHidden": "لقد حددت \"إخفاء الرسائل المُضمنة\" في نوع الرسالة, لذا جميع الرسائل المُضمنة لن تظهر.",
     "messages": "رسائل",
-    "sendMessageN_zero": "",
+    "sendMessageN_zero": "ارسال رسائل",
     "sendMessageN_one": "ارسال رسالة",
-    "sendMessageN_two": "",
-    "sendMessageN_few": "",
-    "sendMessageN_many": "",
+    "sendMessageN_two": "ارسال رسالتين",
+    "sendMessageN_few": "ارسال رسائل",
+    "sendMessageN_many": "ارسال رسالة",
     "sendMessageN_other": "ارسال رسائل",
     "editComponent": "تعديل العنصر",
     "linkEmbedsPremiumReadOnly": "انت حالياً في وضع القرائة فقط. يمكنك التعديل, لكن إذا اردت حفظ رابط, تحتاج ان تشترك في <0>الاشتراك الفاخر</Link>.",
@@ -499,5 +499,8 @@
     "positionLink": "الموضع (<0>كيف تعمل هذه؟</0>)",
     "saveDraft": "حفظ المسودة",
     "editMessage": "تعديل الرسالة",
-    "componentSaveEditMessageTip": "نصيحة: اذا كنت تريد تعديل التدفقات فقط, لا تحتاج ان تضغط تعديل الرسالة."
+    "componentSaveEditMessageTip": "نصيحة: اذا كنت تريد تعديل التدفقات فقط, لا تحتاج ان تضغط تعديل الرسالة.",
+    "supportServerLanguageNote": "هذا السيرفر للمساعدة <bold>بالإنجليزية فقط</bold>. يدعم موقع ديسكوهوك عدة لغات لسهولة الإستخدام, لكن المساعدين و الإداريين غالبا يستطيعون المساعدة بالإنجليزية فقط. يمكنك استخدام <anchor>ادوات مثل DeepL</anchor> اذا لا تستطيع التحدث بالإنجليزية بطلاقة. حدد المربع لتدخل السيرفر.",
+    "cancel": "إلغاء",
+    "join": "انضمام"
 }
