@@ -585,7 +585,7 @@ export default function EditComponentPage() {
           cache={cache}
           setEditingFlow={setEditingFlow}
         />
-        <hr className="border-gray-300/20 my-4" />
+        <hr className="border-black/5 dark:border-gray-200/20 my-4" />
         <div className="gap-1 flex">
           <Button
             onClick={async () => {
