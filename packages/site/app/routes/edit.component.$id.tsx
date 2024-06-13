@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { json, redirect } from "@remix-run/cloudflare";
 import {
   Link,
   useLoaderData,
@@ -78,6 +78,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   // and that `user` is nullable
   let user = await getUser(request, context, !loginToken as true | undefined);
   if (!user) {
+    // We're purposely trimming the original request's query because it
+    // probably contains the token and nothing else. We don't need that.
+    const redirectUrl = `/auth/discord?redirect=${
+      new URL(request.url).pathname
+    }`;
     // At this point we know `loginToken` is non nullable because if it was
     // undefined and `user` was null, `getUser` would have thrown due to the
     // provided `throwIfNull` value.
@@ -94,10 +99,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     try {
       ({ payload } = await verifyToken(t, context.env, context.origin));
     } catch {
-      throw json({ message: "Invalid token" }, 401);
+      throw redirect(redirectUrl);
     }
     if (payload.scp !== "login") {
-      throw json({ message: "Invalid token" }, 401);
+      throw redirect(redirectUrl);
     }
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
@@ -128,12 +133,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         },
       },
     });
-    if (!token || !token.user) {
-      throw json(
-        { message: "User or token data missing, obtain a new token" },
-        401,
-      );
+    // Always void the token, even if it wasn't used
+    if (token) {
+      await db.delete(tokens).where(eq(tokens.id, token.id));
     }
+    if (!token || !token.user) {
+      throw redirect(redirectUrl);
+    }
+
     user = doubleDecode<typeof token.user>(token.user);
     session.set("user", { id: user.id });
     const committed = await commitSession(session);
@@ -141,10 +148,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       response.headers.append("Set-Cookie", committed);
       return response;
     };
-  }
-
-  if (loginToken) {
-    // Always void the token, even if it wasn't used
   }
 
   const component = await db.query.discordMessageComponents.findFirst({
