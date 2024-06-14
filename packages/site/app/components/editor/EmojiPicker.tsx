@@ -253,7 +253,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
           <div className="p-4">
             <div className="grow">
               <TextInput
-                label="Custom Emoji ID"
+                label={t("emojiPickerCustom.id")}
                 className="w-full"
                 onChange={({ currentTarget }) => {
                   setInputtingCustomDetails(
@@ -263,7 +263,9 @@ const EmojiPicker_: React.FC<PickerProps> = ({
               />
             </div>
             <div className="mt-2">
-              <p className="text-sm font-medium cursor-default">Preview</p>
+              <p className="text-sm font-medium cursor-default">
+                {t("preview")}
+              </p>
               {inputtingCustomDetails ? (
                 <img
                   src={cdn.emoji(
@@ -278,20 +280,13 @@ const EmojiPicker_: React.FC<PickerProps> = ({
               )}
             </div>
             <div className="mt-2">
-              <p className="font-medium cursor-default">How to find this</p>
+              <p className="font-medium cursor-default">
+                {t("emojiPickerCustom.find")}
+              </p>
               <ol className="list-decimal list-inside text-sm">
-                <li>In Discord, send a message with the custom emoji in it.</li>
-                {/*
-                This is not a real stipulation?
-                <li>
-                  Make sure Discohook Utils shares a server with the emoji if
-                  it's for a component.
-                </li> */}
-                <li>
-                  Right click the emoji and select "Copy Link" or select "Copy
-                  Text" on the message.
-                </li>
-                <li>Paste above.</li>
+                <li>{t("emojiPickerCustom.stepSend")}</li>
+                <li>{t("emojiPickerCustom.stepCopy")}</li>
+                <li>{t("emojiPickerCustom.stepPaste")}</li>
               </ol>
             </div>
           </div>
@@ -308,6 +303,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
             </Button>
             <Button
               className="ml-2"
+              disabled={!inputtingCustomDetails}
               onClick={(ev) => {
                 if (cache && inputtingCustomDetails) {
                   cache.fill([

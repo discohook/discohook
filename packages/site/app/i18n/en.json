@@ -370,6 +370,13 @@
   "embedEmpty": "Must contain text or an image",
   "embedsTooLarge": "Embeds must contain at most 6000 characters total (currently {{count}} too many)",
   "embedsHidden": "You have the \"Hide embeds\" flag enabled, so all embeds will be hidden.",
+  "emojiPickerCustom": {
+    "id": "Custom Emoji ID",
+    "find": "How to find this",
+    "stepSend": "In Discord, send a message with the custom emoji in it.",
+    "stepCopy": "Right click the emoji and select \"Copy Link\" or \"Copy Text\" on the message.",
+    "stepPaste": "Paste above."
+  },
   "history": "History",
   "noHistory": "This editor session has no history recorded.",
   "historyNote": "Here you can view and manage the past 15 autosaved instances of editor history (or 30 with Deluxe). Pressing \"Reset Editor\" will reset everything in the left pane, but it will not wipe history (until it is overwritten by your new changes). Just remember that history is <bold>not persisted</bold> when you reload the page.",
