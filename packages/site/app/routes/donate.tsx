@@ -280,7 +280,6 @@ export default function DonatePage() {
               <Cell>$6</Cell>
               <Cell>
                 Most convenient option, but Discohook earns ~$4.7 due to fees.
-                If you purchase on iOS, it will cost ~$7.78 due to Apple's cut.
               </Cell>
             </div>
             <div className="table-row">
@@ -296,7 +295,7 @@ export default function DonatePage() {
               </Cell>
               <Cell>$6</Cell>
               <Cell>
-                Most people will prefer this method. Accepts PayPal, cards, etc.
+                Straightforward and direct support. Accepts PayPal, cards, etc.
               </Cell>
             </div>
             <div className="table-row">
