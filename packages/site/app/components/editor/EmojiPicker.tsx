@@ -390,7 +390,9 @@ const EmojiPicker_: React.FC<PickerProps> = ({
           <div className="flex grow h-full overflow-hidden">
             <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full rounded-bl scrollbar-none space-y-1 p-1 py-2 flex flex-col">
               {categories
-                .filter((c) => c.id === "custom" || c.emojis.length > 0)
+                .filter(
+                  (c) => (c.id === "custom" && cache) || c.emojis.length > 0,
+                )
                 .map((category) => (
                   <CategoryIconButton
                     key={`emoji-category-${id}-${category.id}-icon`}
@@ -426,7 +428,10 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                         );
                       })
                   : categories
-                      .filter((c) => c.id === "custom" || c.emojis.length > 0)
+                      .filter(
+                        (c) =>
+                          (c.id === "custom" && cache) || c.emojis.length > 0,
+                      )
                       .map((category) => (
                         <div
                           key={`emoji-category-${category.id}-body`}

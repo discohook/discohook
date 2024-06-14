@@ -237,7 +237,7 @@ export const MessageEditor: React.FC<{
               </div>
             ))}
             <input
-              id={`files-${i}`}
+              id={`files-${id}`}
               type="file"
               hidden
               multiple
@@ -267,7 +267,7 @@ export const MessageEditor: React.FC<{
             <Button
               onClick={() => {
                 const input = document.querySelector<HTMLInputElement>(
-                  `input#files-${i}`,
+                  `input#files-${id}`,
                 );
                 // Shouldn't happen
                 if (!input) return;
@@ -297,7 +297,7 @@ export const MessageEditor: React.FC<{
             )}
             {message.data.embeds.map((embed, ei) => (
               <EmbedEditor
-                key={`edit-message-${i}-embed-${ei}`}
+                key={`edit-message-${id}-embed-${ei}`}
                 message={message}
                 messageIndex={i}
                 embed={embed}
@@ -316,7 +316,18 @@ export const MessageEditor: React.FC<{
                 <p className="mt-1 text-lg font-semibold cursor-default select-none">
                   {t("components")}
                 </p>
-                <InfoBox icon="Info" collapsible open>
+                <InfoBox
+                  icon="Info"
+                  severity={
+                    !webhooks || webhooks?.length === 0
+                      ? "blue"
+                      : possiblyApplication
+                        ? "yellow"
+                        : "red"
+                  }
+                  collapsible
+                  open
+                >
                   {t(
                     !webhooks || webhooks?.length === 0
                       ? "componentsNoWebhook"
@@ -329,7 +340,7 @@ export const MessageEditor: React.FC<{
             )}
             <div className="space-y-1">
               {message.data.components.map((row, ri) => (
-                <div key={`edit-message-${i}-row-${ri}`}>
+                <div key={`edit-message-${id}-row-${ri}`}>
                   <ActionRowEditor
                     message={message}
                     row={row}
