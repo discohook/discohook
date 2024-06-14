@@ -30,6 +30,7 @@ import { Modal, ModalProps } from "./Modal";
 export const TargetAddModal = (
   props: ModalProps & {
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+    hasAuthentication?: boolean;
     memberships?: Promise<LoadedMembership[]>;
     cache?: CacheManager;
   },
@@ -37,7 +38,9 @@ export const TargetAddModal = (
   const { t } = useTranslation();
   const [webhook, setWebhook] = useState<APIWebhook>();
   const [urlError, setUrlError] = useState<ReactNode>();
-  const [manualWebhook, setManualWebhook] = useState(false);
+  const [manualWebhook, setManualWebhook] = useState(
+    !props.hasAuthentication || !props.memberships,
+  );
 
   const [error, setError] = useError(t);
   const [guildId, setGuildId] = useState<string>();
@@ -146,7 +149,7 @@ export const TargetAddModal = (
 
   return (
     <Modal title={t("addWebhook")} {...props} setOpen={setOpen}>
-      {props.memberships && !manualWebhook ? (
+      {!manualWebhook ? (
         <div>
           {error}
           <p className="text-sm">Choose a server</p>
@@ -396,25 +399,24 @@ export const TargetAddModal = (
       )}
       <div className="flex mt-4">
         <div className="mx-auto space-x-2 rtl:space-x-reverse">
-          {!props.memberships ||
-            (manualWebhook && (
-              <Button
-                disabled={!webhook}
-                onClick={() => {
-                  if (webhook) {
-                    if (props.cache && webhook.guild_id) {
-                      guildCacheableFetcher.load(
-                        apiUrl(BRoutes.guildCacheable(webhook.guild_id)),
-                      );
-                    }
-                    props.updateTargets({ [webhook.id]: webhook });
-                    setOpen(false);
+          {manualWebhook && (
+            <Button
+              disabled={!webhook}
+              onClick={() => {
+                if (webhook) {
+                  if (props.cache && webhook.guild_id) {
+                    guildCacheableFetcher.load(
+                      apiUrl(BRoutes.guildCacheable(webhook.guild_id)),
+                    );
                   }
-                }}
-              >
-                {t("addWebhook")}
-              </Button>
-            ))}
+                  props.updateTargets({ [webhook.id]: webhook });
+                  setOpen(false);
+                }
+              }}
+            >
+              {t("addWebhook")}
+            </Button>
+          )}
           <Button
             discordstyle={ButtonStyle.Link}
             onClick={() =>

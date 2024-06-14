@@ -475,6 +475,7 @@ export default function Index() {
       />
       <TargetAddModal
         open={addingTarget}
+        hasAuthentication={!!user}
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
         memberships={memberships}
