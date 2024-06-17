@@ -262,7 +262,7 @@ export const verifyToken = async (token: string, env: Env, origin: string) => {
       algorithms: ["HS256"],
     });
     if (!data.payload.jti) throw Error("No jti");
-    if (!data.payload.uid) throw Error("No uid");
+    // if (!data.payload.uid) throw Error("No uid");
     return data;
   } catch {
     throw json({ message: "Invalid token" }, 401);

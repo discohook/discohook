@@ -395,20 +395,26 @@ export const startComponentFlow = async (
   ];
 };
 
-const createLoginToken = async (env: Env, userId: bigint) => {
+/**
+ * An editor token is a special subset of our JWTs that is scoped for editing
+ * one or more components, and does not authorize a request as a user.
+ * This flow makes them fairly safe; Even if the token is hijacked, the
+ * attacker cannot edit the message itself or send any new messages to the server.
+ *
+ * The drawback is that if the user wants to add a custom message action, they
+ * will need to log in the long way through OAuth to access their backups.
+ */
+const createEditorToken = async (env: Env) => {
   const secretKey = Uint8Array.from(
     env.TOKEN_SECRET.split("").map((x) => x.charCodeAt(0)),
   );
 
   const now = new Date();
-  // Login tokens last for 2 minutes. You are expected to click the button
-  // relatively quickly, and if not, you can log in normally.
-  const expiresAt = new Date(now.getTime() + 120_000);
+  // 2 hours
+  const expiresAt = new Date(now.getTime() + 7_200_000);
   const id = generateId(now);
-  const token = await new SignJWT({ uid: String(userId), scp: "login" })
-    .setProtectedHeader({
-      alg: "HS256",
-    })
+  const token = await new SignJWT({ scp: "editor" })
+    .setProtectedHeader({ alg: "HS256" })
     .setJti(id)
     .setIssuedAt(now)
     .setIssuer(env.DISCOHOOK_ORIGIN)
@@ -418,28 +424,6 @@ const createLoginToken = async (env: Env, userId: bigint) => {
   return { id, value: token, expiresAt };
 };
 
-// const createToken = async (env: Env, userId: bigint) => {
-//   const secretKey = Uint8Array.from(
-//     env.TOKEN_SECRET.split("").map((x) => x.charCodeAt(0)),
-//   );
-
-//   const now = new Date();
-//   // Tokens last for 1 week but permissions are stored per token-guild and last 6 hours.
-//   const expiresAt = new Date(now.getTime() + 604_800_000);
-//   const id = generateId(now);
-//   const token = await new SignJWT({ uid: String(userId), scp: "user" })
-//     .setProtectedHeader({
-//       alg: "HS256",
-//     })
-//     .setJti(id)
-//     .setIssuedAt(now)
-//     .setIssuer(env.DISCOHOOK_ORIGIN)
-//     .setExpirationTime(expiresAt)
-//     .sign(secretKey);
-
-//   return { id, value: token, expiresAt };
-// };
-
 export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   const value = ctx.interaction.data.values[0];
 
@@ -448,8 +432,8 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   state.steps.push({
     label: `Select component type (${value.replace("-", " ")})`,
   });
-
   state.step += 1;
+
   switch (value) {
     case "button": {
       const db = getDb(ctx.env.HYPERDRIVE.connectionString);
@@ -477,18 +461,42 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
           })
       )[0];
 
-      // TODO: link to regular token so we can assign permissions from within the bot
-      const loginToken = await createLoginToken(ctx.env, BigInt(state.user.id));
+      const editorToken = await createEditorToken(ctx.env);
       await db.insert(tokens).values({
         platform: "discord",
-        id: makeSnowflake(loginToken.id),
-        prefix: "login",
-        expiresAt: loginToken.expiresAt,
-        userId: makeSnowflake(state.user.id),
+        id: makeSnowflake(editorToken.id),
+        prefix: "editor",
+        expiresAt: editorToken.expiresAt,
+        // userId: makeSnowflake(state.user.id),
       });
 
-      state.stepTitle = "Finish on the web";
-      state.totalSteps = 3;
+      await ctx.env.KV.put(
+        `token-${editorToken.id}-component-${component.id}`,
+        JSON.stringify({
+          interactionId: ctx.interaction.id,
+          user: {
+            id: ctx.user.id,
+            name: ctx.user.username,
+            avatar: ctx.user.avatar,
+          },
+        }),
+        {
+          expiration: Math.floor(editorToken.expiresAt.getTime() / 1000),
+        },
+      );
+
+      state.stepTitle = "Finish in the editor";
+      // state.totalSteps = 3;
+      state.steps.push(
+        {
+          label:
+            'Click "Customize" to set details and flows **<--- you are here**',
+        },
+        {
+          label: 'Finish editing and click "Add Button" in the tab',
+        },
+      );
+
       return ctx.updateMessage({
         embeds: [getComponentFlowEmbed(state).toJSON()],
         components: [
@@ -501,9 +509,20 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                   `${ctx.env.DISCOHOOK_ORIGIN}/edit/component/${
                     component.id
                   }?${new URLSearchParams({
-                    token: loginToken.value,
+                    token: editorToken.value,
                   })}`,
                 ),
+              // new ButtonBuilder()
+              //   .setStyle(ButtonStyle.Success)
+              //   .setLabel("Add Button")
+              //   .setDisabled(true)
+              //   .setCustomId(
+              //     // We use the login token to temporarily transmit the
+              //     // position of the button in the message. We don't like to
+              //     // store this info in the database because it's hard to keep
+              //     // track of - we match components to real Discord state instead.
+              //     `a_submit-component_${component.id}:${editorToken.id}` satisfies AutoComponentCustomId,
+              //   ),
             )
             .toJSON(),
         ],
@@ -629,12 +648,12 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
           })
       )[0];
 
-      const loginToken = await createLoginToken(ctx.env, BigInt(state.user.id));
+      const editorToken = await createEditorToken(ctx.env);
       await db.insert(tokens).values({
         platform: "discord",
-        id: makeSnowflake(loginToken.id),
-        prefix: "login",
-        expiresAt: loginToken.expiresAt,
+        id: makeSnowflake(editorToken.id),
+        prefix: "editor",
+        expiresAt: editorToken.expiresAt,
         userId: makeSnowflake(state.user.id),
       });
 
@@ -652,7 +671,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                   `${ctx.env.DISCOHOOK_ORIGIN}/edit/component/${
                     component.id
                   }?${new URLSearchParams({
-                    token: loginToken.value,
+                    token: editorToken.value,
                   })}`,
                 ),
             )

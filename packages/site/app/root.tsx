@@ -59,8 +59,9 @@ i18n.use(initReactI18next).init({
   fallbackLng: "en",
   interpolation: {
     escapeValue: false,
-    format: (value, formatting) => {
-      if (value instanceof Date) return moment(value).format(formatting);
+    format: (value, format) => {
+      if (format === "lowercase") return value.toLowerCase();
+      if (value instanceof Date) return moment(value).format(format);
       return value.toString();
     },
   },

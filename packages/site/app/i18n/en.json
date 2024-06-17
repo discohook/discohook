@@ -273,7 +273,19 @@
     "7": "User & Role Select Menu",
     "8": "Channel Select Menu"
   },
+  "componentShort": {
+    "1": "Row",
+    "2": "Button",
+    "3": "Select",
+    "4": "Input",
+    "5": "Select",
+    "6": "Select",
+    "7": "Select",
+    "8": "Select"
+  },
   "linkButton": "Link Button",
+  "addComponentType": "Add $t(componentShort.{{type}})",
+  "editingComponentFromUser": "Editing a $t(component.{{type}}, lowercase) from",
   "message": "Message",
   "messageN": "Message {{n}}",
   "messageNText": "Message {{n}} - {{text}}",
@@ -374,7 +386,7 @@
     "id": "Custom Emoji ID",
     "find": "How to find this",
     "stepSend": "In Discord, send a message with the custom emoji in it.",
-    "stepCopy": "Right click the emoji and select \"Copy Link\" or \"Copy Text\" on the message.",
+    "stepCopy": "Right click the emoji and select \"Copy Link\" or select \"Copy Text\" on the message.",
     "stepPaste": "Paste above."
   },
   "history": "History",

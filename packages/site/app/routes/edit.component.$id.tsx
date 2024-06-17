@@ -1,18 +1,15 @@
 import { REST } from "@discordjs/rest";
-import { json, redirect } from "@remix-run/cloudflare";
-import {
-  Link,
-  useLoaderData,
-  useSearchParams,
-  useSubmit,
-} from "@remix-run/react";
+import { defer, json, redirect } from "@remix-run/cloudflare";
+import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import {
   APIActionRowComponent,
   APIEmoji,
   APIMessage,
   APIRole,
+  APIWebhook,
   ButtonStyle,
   ComponentType,
+  RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
 import { JWTPayload } from "jose";
@@ -37,12 +34,7 @@ import { Message } from "~/components/preview/Message";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
-import {
-  doubleDecode,
-  getSessionStorage,
-  getUser,
-  verifyToken,
-} from "~/session.server";
+import { getUser, verifyToken } from "~/session.server";
 import {
   StorableComponent,
   discordMessageComponents,
@@ -58,55 +50,74 @@ import {
   ResolvableAPIRole,
   useCache,
 } from "~/util/cache/CacheManager";
+import { cdnImgAttributes } from "~/util/discord";
 import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
-import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
+import { getUserAvatar } from "~/util/users";
+import {
+  snowflakeAsString,
+  zxParseForm,
+  zxParseParams,
+  zxParseQuery,
+} from "~/util/zod";
+
+interface KVComponentEditorState {
+  interactionId: string;
+  user: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  row?: number;
+  column?: number;
+}
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { token: loginToken } = zxParseQuery(request, {
+  const { token: editorToken } = zxParseQuery(request, {
     token: z.ostring(),
   });
   const db = getDb(context.env.HYPERDRIVE.connectionString);
 
-  const { sessionStorage, getSession, commitSession } =
-    getSessionStorage(context);
-  const session = await getSession(request.headers.get("Cookie"));
-  let respond = <T extends Response>(response: T) => response;
+  // We're purposely trimming the original request's query because it
+  // probably contains the token and nothing else. We don't need that.
+  const redirectUrl = `/auth/discord?redirect=${new URL(request.url).pathname}`;
 
-  // TODO: fix overflow so that this `as` is not necessary
-  // and that `user` is nullable
-  let user = await getUser(request, context, !loginToken as true | undefined);
-  if (!user) {
-    // We're purposely trimming the original request's query because it
-    // probably contains the token and nothing else. We don't need that.
-    const redirectUrl = `/auth/discord?redirect=${
-      new URL(request.url).pathname
-    }`;
-    // At this point we know `loginToken` is non nullable because if it was
-    // undefined and `user` was null, `getUser` would have thrown due to the
-    // provided `throwIfNull` value.
-    // biome-ignore lint/style/noNonNullAssertion:
-    const t = loginToken!;
-    // ---
-    // `loginToken` is a one-time-use token that prevents an annoying login
-    // step for users that we have already implicitly authorized (they are
-    // logged in on Discord and are the only user who could have pressed a
-    // button). This allows this page to be opened in the in-app browser, for
-    // instance, and complete component creation with minimal interruption.
-
+  const user = await getUser(request, context);
+  let editingMeta: KVComponentEditorState | undefined;
+  if (editorToken) {
     let payload: JWTPayload;
     try {
-      ({ payload } = await verifyToken(t, context.env, context.origin));
+      ({ payload } = await verifyToken(
+        editorToken,
+        context.env,
+        context.origin,
+      ));
     } catch {
       throw redirect(redirectUrl);
     }
-    if (payload.scp !== "login") {
+    if (payload.scp !== "editor") {
       throw redirect(redirectUrl);
     }
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
-    // const userId = BigInt(payload.uid as string);
+
+    const key = `token-${tokenId}-component-${id}`;
+    const cached = await context.env.KV.get<KVComponentEditorState>(
+      key,
+      "json",
+    );
+    if (cached) {
+      editingMeta = cached;
+    } else {
+      // Token does not have permission data for this component. At the moment
+      // this means the token is expired, since we don't generate multiple
+      // permissions for a single token. Additionally, if someone manually
+      // transplanted this token onto a different component editor, then it's
+      // been leaked and should be deleted anyway.
+      await db.delete(tokens).where(eq(tokens.id, makeSnowflake(tokenId)));
+      throw redirect(redirectUrl);
+    }
 
     const token = await db.query.tokens.findFirst({
       where: eq(tokens.id, makeSnowflake(tokenId)),
@@ -114,40 +125,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         id: true,
         prefix: true,
       },
-      with: {
-        user: {
-          columns: {
-            id: true,
-            name: true,
-            firstSubscribed: true,
-            subscribedSince: true,
-            subscriptionExpiresAt: true,
-            lifetime: true,
-            discordId: true,
-            guildedId: true,
-          },
-          with: {
-            discordUser: true,
-            guildedUser: true,
-          },
-        },
-      },
     });
-    // Always void the token, even if it wasn't used
-    if (token) {
-      await db.delete(tokens).where(eq(tokens.id, token.id));
-    }
-    if (!token || !token.user) {
+    if (!token || token.prefix !== payload.scp) {
       throw redirect(redirectUrl);
     }
-
-    user = doubleDecode<typeof token.user>(token.user);
-    session.set("user", { id: user.id });
-    const committed = await commitSession(session);
-    respond = (response) => {
-      response.headers.append("Set-Cookie", committed);
-      return response;
-    };
+  } else if (!user) {
+    throw redirect(redirectUrl);
   }
 
   const component = await db.query.discordMessageComponents.findFirst({
@@ -163,77 +146,146 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
   });
   if (!component) {
-    throw respond(json({ message: "Unknown Component" }, 404));
+    throw json({ message: "Unknown Component" }, 404);
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-  // TODO: figure out `defer` usage with our `respond`
   const message = await (async () => {
-    if (!component.channelId || !component.messageId) {
-      return;
-    }
+    if (component.channelId && component.messageId) {
+      let msg: APIMessage | undefined;
+      try {
+        msg = (await rest.get(
+          Routes.channelMessage(
+            String(component.channelId),
+            String(component.messageId),
+          ),
+        )) as APIMessage;
+      } catch {}
 
-    let msg: APIMessage | undefined;
-    try {
-      msg = (await rest.get(
-        Routes.channelMessage(
-          String(component.channelId),
-          String(component.messageId),
-        ),
-      )) as APIMessage;
-    } catch {}
-
-    if (msg) {
-      const { components: rows, webhook_id } = msg;
-      return { components: rows, webhook_id } as Pick<
-        APIMessage,
-        "components" | "webhook_id"
-      >;
+      if (msg) {
+        const { resolved, components: rows, webhook_id } = msg;
+        return { resolved, components: rows, webhook_id } as Pick<
+          APIMessage,
+          "resolved" | "components" | "webhook_id"
+        >;
+      }
     }
   })();
 
-  let emojis: ResolvableAPIEmoji[] = [];
-  let roles: ResolvableAPIRole[] = [];
-  if (component.guildId) {
-    try {
-      emojis = (
-        (await rest.get(
-          Routes.guildEmojis(String(component.guildId)),
-        )) as APIEmoji[]
-      ).map((emoji) => ({
-        id: emoji.id ?? undefined,
-        name: emoji.name ?? "",
-        animated: emoji.animated,
-        available: emoji.available === false ? false : undefined,
-      }));
-    } catch {}
-    try {
-      roles = (
-        (await rest.get(
-          Routes.guildRoles(String(component.guildId)),
-        )) as APIRole[]
-      ).map((role) => ({
-        id: role.id,
-        name: role.name,
-        color: role.color,
-        managed: role.managed,
-        mentionable: role.mentionable,
-        position: role.position,
-        unicode_emoji: role.unicode_emoji,
-        icon: role.icon,
-      }));
-    } catch {}
-  }
+  const emojis = (async () => {
+    if (component.guildId) {
+      try {
+        return (
+          (await rest.get(
+            Routes.guildEmojis(String(component.guildId)),
+          )) as APIEmoji[]
+        ).map(
+          (emoji) =>
+            ({
+              id: emoji.id ?? undefined,
+              name: emoji.name ?? "",
+              animated: emoji.animated,
+              available: emoji.available === false ? false : undefined,
+            }) as ResolvableAPIEmoji,
+        );
+      } catch {}
+    }
+    return [];
+  })();
 
-  return respond(json({ user, component, message, emojis, roles }));
+  const roles = (async () => {
+    if (component.guildId) {
+      try {
+        return (
+          (await rest.get(
+            Routes.guildRoles(String(component.guildId)),
+          )) as APIRole[]
+        ).map(
+          (role) =>
+            ({
+              id: role.id,
+              name: role.name,
+              color: role.color,
+              managed: role.managed,
+              mentionable: role.mentionable,
+              position: role.position,
+              unicode_emoji: role.unicode_emoji,
+              icon: role.icon,
+            }) as ResolvableAPIRole,
+        );
+      } catch {}
+    }
+    return [];
+  })();
+
+  return defer({
+    user,
+    component,
+    token: editorToken,
+    editingMeta,
+    message,
+    emojis,
+    roles,
+  });
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  // const data = await zxParseForm(request, {
-  // });
+  const { token, row, column } = await zxParseForm(request, {
+    token: z.ostring(),
+    row: z.number().min(0).max(4).optional(),
+    column: z.number().min(0).max(4).optional(),
+  });
+  let tokenData: KVComponentEditorState | undefined;
+  if (token) {
+    if (row === undefined || column === undefined) {
+      // This is because users logged in regularly (technically a different
+      // sort of flow) are permitted to edit directly from the frontend,
+      // saving us a request.
+      throw json(
+        { message: "`row` and `column` required when using `token`" },
+        400,
+      );
+    }
 
-  const user = await getUser(request, context, true);
+    let payload: JWTPayload;
+    try {
+      ({ payload } = await verifyToken(token, context.env, context.origin));
+    } catch {
+      throw json({ message: "Invalid token" }, 401);
+    }
+    if (payload.scp !== "editor") {
+      throw json({ message: "Invalid token" }, 401);
+    }
+    // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
+    const tokenId = payload.jti!;
+
+    const key = `token-${tokenId}-component-${id}`;
+    const cached = await context.env.KV.get<KVComponentEditorState>(
+      key,
+      "json",
+    );
+    if (!cached) {
+      throw json(
+        {
+          message:
+            "Interaction has timed out, log in normally to edit the message.",
+        },
+        404,
+      );
+    }
+    tokenData = {
+      ...cached,
+      row,
+      column,
+    };
+    await context.env.KV.put(key, JSON.stringify(tokenData), {
+      // 2 hours
+      expirationTtl: 7_200,
+    });
+  }
+
+  const user = await getUser(request, context);
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const component = await db.query.discordMessageComponents.findFirst({
@@ -259,6 +311,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+
   let message: APIMessage;
   try {
     message = (await rest.get(
@@ -283,11 +336,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       }
     }
   }
-  // Why do this when we can just update it automatically without the user
-  // providing anything?
-  // if (data.draft !== undefined && data.draft !== isDraft) {
-  //   throw json({ message: "Draft status does not match" }, 400);
-  // }
 
   const updated = (
     await db
@@ -298,9 +346,40 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       .where(eq(discordMessageComponents.id, id))
       .returning({
         id: discordMessageComponents.id,
+        data: discordMessageComponents.data,
         draft: discordMessageComponents.draft,
       })
   )[0];
+
+  if (tokenData && message.webhook_id) {
+    const webhook = (await rest.get(
+      Routes.webhook(message.webhook_id),
+    )) as APIWebhook;
+    if (!webhook.token) {
+      throw json(
+        {
+          message:
+            "Cannot edit the message because the webhook token is inaccessible.",
+        },
+        401,
+      );
+    }
+
+    await rest.patch(
+      Routes.webhookMessage(webhook.id, webhook.token, message.id),
+      {
+        body: {
+          components: getRowsWithInsertedComponent(
+            message.components ?? [],
+            buildStorableComponent(updated.data, String(updated.id)),
+            // biome-ignore lint/style/noNonNullAssertion: Non-nullable if token is present
+            [row!, column!],
+          ),
+        } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
+      },
+    );
+  }
+
   return updated;
 };
 
@@ -358,44 +437,72 @@ const buildStorableComponent = (
   throw Error("Unsupported storable component type.");
 };
 
+const getRowsWithInsertedComponent = (
+  rows: APIActionRowComponent<APIMessageActionRowComponent>[],
+  component: APIMessageActionRowComponent,
+  position: [number, number],
+) =>
+  structuredClone(rows).map((row, i) => {
+    if (i === position[0]) {
+      // We don't want to send this data to Discord
+      const cleaned = { ...component };
+      if ("flow" in cleaned) {
+        cleaned.flow = undefined;
+      }
+      if ("flows" in cleaned) {
+        cleaned.flows = undefined;
+      }
+      row.components.splice(position[1], 0, cleaned);
+    }
+    return row;
+  });
+
 export default function EditComponentPage() {
   const {
     user,
     component: component_,
+    token,
+    editingMeta,
     message,
     emojis,
     roles,
   } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const [error, setError] = useError(t);
-  const cache = useCache(!user);
+  const cache = useCache(false);
   const submit = useSubmit();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever `emojis` changes, which would be never right now
   useEffect(() => {
     if (component_.guildId) {
-      cache.fill(
-        ...emojis.map(
-          (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
+      emojis.then((resolved) =>
+        cache.fill(
+          ...resolved.map(
+            (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
+          ),
         ),
-        ...roles.map(
-          (r) => [`role:${r.id}`, r] as [ResolutionKey, ResolvableAPIRole],
+      );
+      roles.then((resolved) =>
+        cache.fill(
+          ...resolved.map(
+            (r) => [`role:${r.id}`, r] as [ResolutionKey, ResolvableAPIRole],
+          ),
         ),
       );
     }
-  }, [emojis]);
+  }, [emojis, roles]);
 
-  const [params, setParams] = useSearchParams();
-  useEffect(() => {
-    // Don't allow the login token to persist in the page address
-    if (params.get("token")) {
-      params.delete("token");
-      setParams(params, { replace: true });
-    }
-  }, [params, setParams]);
+  // Temp disabled until we create a session cookie
+  // const [params, setParams] = useSearchParams();
+  // useEffect(() => {
+  //   // Don't allow the token to persist in the page address
+  //   if (params.get("token")) {
+  //     params.delete("token");
+  //     setParams(params, { replace: true });
+  //   }
+  // }, [params, setParams]);
 
   const [settings] = useLocalStorage();
-
   const [component, setComponent] = useState(
     buildStorableComponent(component_.data, String(component_.id)),
   );
@@ -478,20 +585,7 @@ export default function EditComponentPage() {
     setRows([...rows]);
   }, []);
 
-  const rowsWithLive = structuredClone(rows).map((row, i) => {
-    if (i === position[0]) {
-      // We don't want to send this data to Discord
-      const cleaned = { ...component };
-      if ("flow" in cleaned) {
-        cleaned.flow = undefined;
-      }
-      if ("flows" in cleaned) {
-        cleaned.flows = undefined;
-      }
-      row.components.splice(position[1], 0, cleaned);
-    }
-    return row;
-  });
+  const rowsWithLive = getRowsWithInsertedComponent(rows, component, position);
 
   // const [overflowMessage, setOverflowMessage] = useState(false);
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
@@ -509,6 +603,40 @@ export default function EditComponentPage() {
       <Header user={user} />
       <Prose className="max-w-xl">
         {error}
+        {!!editingMeta && (
+          <div
+            className={twJoin(
+              "mb-4 p-2 rounded-full shadow flex dark:shadow-lg border border-gray-300/80 dark:border-gray-300/20",
+            )}
+          >
+            <img
+              {...cdnImgAttributes(64, (size) =>
+                getUserAvatar(
+                  {
+                    discordUser: {
+                      id: BigInt(editingMeta.user.id),
+                      avatar: editingMeta.user.avatar,
+                      discriminator: "0",
+                    },
+                  },
+                  { size },
+                ),
+              )}
+              alt={editingMeta.user.name}
+              className="rounded-full my-auto ltr:mr-2 rtl:ml-2 h-10 w-10 shadow"
+            />
+            <div className="my-auto">
+              <p className="text-gray-500 font-medium text-sm">
+                {t("editingComponentFromUser", {
+                  replace: { type: component.type },
+                })}
+              </p>
+              <p className="font-semibold text-lg leading-none">
+                {editingMeta.user.name}
+              </p>
+            </div>
+          </div>
+        )}
         {/* <Checkbox
           label="Full width message preview"
           checked={overflowMessage}
@@ -603,41 +731,64 @@ export default function EditComponentPage() {
             a relatively uncommon situtation since this page is only linked when
             adding a component with the bot.
           */}
-          <Button
-            disabled={
-              !component_.messageId ||
-              !component_.guildId ||
-              !message?.webhook_id
-            }
-            discordstyle={ButtonStyle.Success}
-            onClick={async () => {
-              if (
-                component_.messageId &&
-                component_.guildId &&
-                message?.webhook_id
-              ) {
-                const tokenResponse = await webhookTokenFetcher.loadAsync(
-                  apiUrl(
-                    BRoutes.guildWebhookToken(
-                      component_.guildId,
-                      message.webhook_id,
-                    ),
-                  ),
-                );
-                await submitMessage(tokenResponse, {
-                  data: { components: rowsWithLive },
-                  reference: component_.messageId.toString(),
-                });
-                if (component_.draft) {
-                  // Tell the server that something changed and
-                  // it needs to fetch the message
-                  submit(null, { method: "PATCH", replace: true });
+          {editingMeta ? (
+            <Button
+              disabled={!token}
+              discordstyle={ButtonStyle.Success}
+              onClick={async () => {
+                if (token) {
+                  submit(
+                    {
+                      token,
+                      row: position[0],
+                      column: position[1],
+                    },
+                    { method: "PATCH", replace: true },
+                  );
                 }
+              }}
+            >
+              {component_.draft
+                ? t("addComponentType", { replace: { type: component.type } })
+                : t("editMessage")}
+            </Button>
+          ) : (
+            <Button
+              disabled={
+                !component_.messageId ||
+                !component_.guildId ||
+                !message?.webhook_id
               }
-            }}
-          >
-            {t("editMessage")}
-          </Button>
+              discordstyle={ButtonStyle.Success}
+              onClick={async () => {
+                if (
+                  component_.messageId &&
+                  component_.guildId &&
+                  message?.webhook_id
+                ) {
+                  const tokenResponse = await webhookTokenFetcher.loadAsync(
+                    apiUrl(
+                      BRoutes.guildWebhookToken(
+                        component_.guildId,
+                        message.webhook_id,
+                      ),
+                    ),
+                  );
+                  await submitMessage(tokenResponse, {
+                    data: { components: rowsWithLive },
+                    reference: component_.messageId.toString(),
+                  });
+                  if (component_.draft) {
+                    // Tell the server that something changed and
+                    // it needs to fetch the message
+                    submit(null, { method: "PATCH", replace: true });
+                  }
+                }
+              }}
+            >
+              {t("editMessage")}
+            </Button>
+          )}
         </div>
         {!component_.draft && (
           <p className="italic text-gray-300/80 text-sm mt-1">
