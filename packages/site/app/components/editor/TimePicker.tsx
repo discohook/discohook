@@ -35,6 +35,7 @@ export const TimePicker: React.FC<{
       <div className="select-none p-3 pt-2">
         <DatePicker
           label="Date"
+          value={date}
           onChange={(v) => {
             if (v) setDate(v.date);
           }}
