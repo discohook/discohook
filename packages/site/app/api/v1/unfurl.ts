@@ -177,12 +177,28 @@ export const loader = async ({ request }: LoaderArgs) => {
   if (!response.ok) {
     throw json({ message: "Received a bad response from the URL" }, 400);
   }
-  const contentType = response.headers.get("Content-Type");
-  if (contentType && !["text/html"].includes(contentType.split(";")[0])) {
-    throw json(
-      { message: "Non-HTML content types are currently not supported" },
-      400,
-    );
+  const contentType = response.headers.get("Content-Type")?.split(";")[0];
+  switch (contentType) {
+    case "image/png":
+    case "image/webp":
+    case "image/jpeg":
+    case "image/gif":
+      return json({
+        embeds: [
+          {
+            type: EmbedType.Image,
+            url,
+            thumbnail: { url },
+          } satisfies APIEmbed,
+        ],
+      });
+    case "text/html":
+      break;
+    default:
+      throw json(
+        { message: `\"${contentType}\" is not a supported content type.` },
+        400,
+      );
   }
 
   const scraperResponse = response.clone();
