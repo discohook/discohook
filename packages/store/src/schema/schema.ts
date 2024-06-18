@@ -547,6 +547,28 @@ export const customBotsRelations = relations(customBots, ({ one, many }) => ({
   }),
 }));
 
+export const githubPosts = pgTable(
+  "GithubPost",
+  {
+    id: snowflakePk(),
+    platform: text("platform").$type<"discord" | "guilded">().notNull(),
+    type: text("type").$type<"issue" | "pull" | "discussion">().notNull(),
+    githubId: bigint("githubId", { mode: "bigint" }).notNull(),
+    repositoryOwner: text("repositoryOwner").notNull(),
+    repositoryName: text("repositoryName").notNull(),
+    channelId: text("channelId").notNull(),
+    postId: text("postId").notNull().unique(),
+  },
+  (table) => ({
+    unq: unique().on(
+      table.platform,
+      table.channelId,
+      table.type,
+      table.githubId,
+    ),
+  }),
+);
+
 // Discobot-imported data
 export const discordReactionRoles = pgTable(
   "reaction_roles",
