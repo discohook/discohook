@@ -1,10 +1,8 @@
 {
-  "id": "0528dbca-b73e-4d54-91f4-84b397a9e624",
-  "prevId": "bb48e5fd-be8d-403f-b0d4-afe5989af76f",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "Backup": {
+    "public.Backup": {
       "name": "Backup",
       "schema": "",
       "columns": {
@@ -94,17 +92,21 @@
         "Backup_ownerId_User_id_fk": {
           "name": "Backup_ownerId_User_id_fk",
           "tableFrom": "Backup",
+          "columnsFrom": [
+            "ownerId"
+          ],
           "tableTo": "User",
-          "columnsFrom": ["ownerId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "CustomBot": {
+    "public.CustomBot": {
       "name": "CustomBot",
       "schema": "",
       "columns": {
@@ -186,32 +188,42 @@
         "CustomBot_ownerId_User_id_fk": {
           "name": "CustomBot_ownerId_User_id_fk",
           "tableFrom": "CustomBot",
+          "columnsFrom": [
+            "ownerId"
+          ],
           "tableTo": "User",
-          "columnsFrom": ["ownerId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "CustomBot_guildId_DiscordGuild_id_fk": {
           "name": "CustomBot_guildId_DiscordGuild_id_fk",
           "tableFrom": "CustomBot",
+          "columnsFrom": [
+            "guildId"
+          ],
           "tableTo": "DiscordGuild",
-          "columnsFrom": ["guildId"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "CustomBot_applicationId_unique": {
           "name": "CustomBot_applicationId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["applicationId"]
+          "columns": [
+            "applicationId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "DiscordGuild": {
+    "public.DiscordGuild": {
       "name": "DiscordGuild",
       "schema": "",
       "columns": {
@@ -240,7 +252,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "DiscordMember": {
+    "public.DiscordMember": {
       "name": "DiscordMember",
       "schema": "",
       "columns": {
@@ -276,32 +288,43 @@
         "DiscordMember_userId_DiscordUser_id_fk": {
           "name": "DiscordMember_userId_DiscordUser_id_fk",
           "tableFrom": "DiscordMember",
+          "columnsFrom": [
+            "userId"
+          ],
           "tableTo": "DiscordUser",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "DiscordMember_guildId_DiscordGuild_id_fk": {
           "name": "DiscordMember_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordMember",
+          "columnsFrom": [
+            "guildId"
+          ],
           "tableTo": "DiscordGuild",
-          "columnsFrom": ["guildId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "DiscordMember_userId_guildId_unique": {
           "name": "DiscordMember_userId_guildId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["userId", "guildId"]
+          "columns": [
+            "userId",
+            "guildId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "DiscordMessageComponent": {
+    "public.DiscordMessageComponent": {
       "name": "DiscordMessageComponent",
       "schema": "",
       "columns": {
@@ -366,7 +389,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "reaction_roles": {
+    "public.reaction_roles": {
       "name": "reaction_roles",
       "schema": "",
       "columns": {
@@ -406,22 +429,29 @@
         "reaction_roles_guild_id_DiscordGuild_id_fk": {
           "name": "reaction_roles_guild_id_DiscordGuild_id_fk",
           "tableFrom": "reaction_roles",
+          "columnsFrom": [
+            "guild_id"
+          ],
           "tableTo": "DiscordGuild",
-          "columnsFrom": ["guild_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
         "reaction_roles_message_id_reaction_pk": {
           "name": "reaction_roles_message_id_reaction_pk",
-          "columns": ["message_id", "reaction"]
+          "columns": [
+            "message_id",
+            "reaction"
+          ]
         }
       },
       "uniqueConstraints": {}
     },
-    "DiscordRoles": {
+    "public.DiscordRoles": {
       "name": "DiscordRoles",
       "schema": "",
       "columns": {
@@ -502,28 +532,37 @@
         "DiscordRoles_guildId_DiscordGuild_id_fk": {
           "name": "DiscordRoles_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordRoles",
+          "columnsFrom": [
+            "guildId"
+          ],
           "tableTo": "DiscordGuild",
-          "columnsFrom": ["guildId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "DiscordRoles_id_unique": {
           "name": "DiscordRoles_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["id"]
+          "columns": [
+            "id"
+          ],
+          "nullsNotDistinct": false
         },
         "DiscordRoles_id_guildId_unique": {
           "name": "DiscordRoles_id_guildId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["id", "guildId"]
+          "columns": [
+            "id",
+            "guildId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "DiscordUser": {
+    "public.DiscordUser": {
       "name": "DiscordUser",
       "schema": "",
       "columns": {
@@ -563,7 +602,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "GuildedServer": {
+    "public.GuildedServer": {
       "name": "GuildedServer",
       "schema": "",
       "columns": {
@@ -591,7 +630,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "GuildedUser": {
+    "public.GuildedUser": {
       "name": "GuildedUser",
       "schema": "",
       "columns": {
@@ -619,7 +658,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "LinkBackup": {
+    "public.LinkBackup": {
       "name": "LinkBackup",
       "schema": "",
       "columns": {
@@ -677,17 +716,21 @@
         "LinkBackup_ownerId_User_id_fk": {
           "name": "LinkBackup_ownerId_User_id_fk",
           "tableFrom": "LinkBackup",
+          "columnsFrom": [
+            "ownerId"
+          ],
           "tableTo": "User",
-          "columnsFrom": ["ownerId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "MessageLogEntry": {
+    "public.MessageLogEntry": {
       "name": "MessageLogEntry",
       "schema": "",
       "columns": {
@@ -784,26 +827,34 @@
         "MessageLogEntry_discordGuildId_DiscordGuild_id_fk": {
           "name": "MessageLogEntry_discordGuildId_DiscordGuild_id_fk",
           "tableFrom": "MessageLogEntry",
+          "columnsFrom": [
+            "discordGuildId"
+          ],
           "tableTo": "DiscordGuild",
-          "columnsFrom": ["discordGuildId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "MessageLogEntry_guildedServerId_GuildedServer_id_fk": {
           "name": "MessageLogEntry_guildedServerId_GuildedServer_id_fk",
           "tableFrom": "MessageLogEntry",
+          "columnsFrom": [
+            "guildedServerId"
+          ],
           "tableTo": "GuildedServer",
-          "columnsFrom": ["guildedServerId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "OAuthInfo": {
+    "public.OAuthInfo": {
       "name": "OAuthInfo",
       "schema": "",
       "columns": {
@@ -856,17 +907,21 @@
       "uniqueConstraints": {
         "OAuthInfo_discordId_unique": {
           "name": "OAuthInfo_discordId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["discordId"]
+          "columns": [
+            "discordId"
+          ],
+          "nullsNotDistinct": false
         },
         "OAuthInfo_guildedId_unique": {
           "name": "OAuthInfo_guildedId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["guildedId"]
+          "columns": [
+            "guildedId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "ShareLink": {
+    "public.ShareLink": {
       "name": "ShareLink",
       "schema": "",
       "columns": {
@@ -906,17 +961,21 @@
         "ShareLink_userId_User_id_fk": {
           "name": "ShareLink_userId_User_id_fk",
           "tableFrom": "ShareLink",
+          "columnsFrom": [
+            "userId"
+          ],
           "tableTo": "User",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "Token": {
+    "public.Token": {
       "name": "Token",
       "schema": "",
       "columns": {
@@ -968,17 +1027,21 @@
         "Token_userId_User_id_fk": {
           "name": "Token_userId_User_id_fk",
           "tableFrom": "Token",
+          "columnsFrom": [
+            "userId"
+          ],
           "tableTo": "User",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "Triggers": {
+    "public.Triggers": {
       "name": "Triggers",
       "schema": "",
       "columns": {
@@ -1050,7 +1113,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "User": {
+    "public.User": {
       "name": "User",
       "schema": "",
       "columns": {
@@ -1110,17 +1173,21 @@
       "uniqueConstraints": {
         "User_discordId_unique": {
           "name": "User_discordId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["discordId"]
+          "columns": [
+            "discordId"
+          ],
+          "nullsNotDistinct": false
         },
         "User_guildedId_unique": {
           "name": "User_guildedId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["guildedId"]
+          "columns": [
+            "guildedId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "Webhook": {
+    "public.Webhook": {
       "name": "Webhook",
       "schema": "",
       "columns": {
@@ -1191,12 +1258,15 @@
       "uniqueConstraints": {
         "Webhook_platform_id_unique": {
           "name": "Webhook_platform_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["platform", "id"]
+          "columns": [
+            "platform",
+            "id"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "autopublish": {
+    "public.autopublish": {
       "name": "autopublish",
       "schema": "",
       "columns": {
@@ -1224,7 +1294,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "buttons": {
+    "public.buttons": {
       "name": "buttons",
       "schema": "",
       "columns": {
@@ -1324,7 +1394,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "message_settings": {
+    "public.message_settings": {
       "name": "message_settings",
       "schema": "",
       "columns": {
@@ -1358,7 +1428,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "welcomer_goodbye": {
+    "public.welcomer_goodbye": {
       "name": "welcomer_goodbye",
       "schema": "",
       "columns": {
@@ -1434,7 +1504,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "welcomer_hello": {
+    "public.welcomer_hello": {
       "name": "welcomer_hello",
       "schema": "",
       "columns": {
@@ -1514,8 +1584,10 @@
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "0528dbca-b73e-4d54-91f4-84b397a9e624",
+  "prevId": "bb48e5fd-be8d-403f-b0d4-afe5989af76f"
 }

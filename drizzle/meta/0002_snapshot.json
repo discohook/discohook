@@ -1,10 +1,8 @@
 {
-  "id": "5fdac848-6a54-4344-ab89-68673a3fb91f",
-  "prevId": "1323dea1-9a0b-410e-9362-0cb5eb113596",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "Backup": {
+    "public.Backup": {
       "name": "Backup",
       "schema": "",
       "columns": {
@@ -56,7 +54,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "DiscordGuild": {
+    "public.DiscordGuild": {
       "name": "DiscordGuild",
       "schema": "",
       "columns": {
@@ -84,7 +82,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "DiscordMember": {
+    "public.DiscordMember": {
       "name": "DiscordMember",
       "schema": "",
       "columns": {
@@ -107,12 +105,15 @@
       "uniqueConstraints": {
         "DiscordMember_userId_guildId_unique": {
           "name": "DiscordMember_userId_guildId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["userId", "guildId"]
+          "columns": [
+            "userId",
+            "guildId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "DiscordMessageComponent": {
+    "public.DiscordMessageComponent": {
       "name": "DiscordMessageComponent",
       "schema": "",
       "columns": {
@@ -190,12 +191,15 @@
       "uniqueConstraints": {
         "DiscordMessageComponent_messageId_customId_unique": {
           "name": "DiscordMessageComponent_messageId_customId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["messageId", "customId"]
+          "columns": [
+            "messageId",
+            "customId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "DiscordRoles": {
+    "public.DiscordRoles": {
       "name": "DiscordRoles",
       "schema": "",
       "columns": {
@@ -277,12 +281,15 @@
       "uniqueConstraints": {
         "DiscordRoles_id_guildId_unique": {
           "name": "DiscordRoles_id_guildId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["id", "guildId"]
+          "columns": [
+            "id",
+            "guildId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "DiscordUser": {
+    "public.DiscordUser": {
       "name": "DiscordUser",
       "schema": "",
       "columns": {
@@ -322,7 +329,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "GuildedServer": {
+    "public.GuildedServer": {
       "name": "GuildedServer",
       "schema": "",
       "columns": {
@@ -350,7 +357,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "GuildedUser": {
+    "public.GuildedUser": {
       "name": "GuildedUser",
       "schema": "",
       "columns": {
@@ -378,7 +385,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "MessageLogEntry": {
+    "public.MessageLogEntry": {
       "name": "MessageLogEntry",
       "schema": "",
       "columns": {
@@ -463,7 +470,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "OAuthInfo": {
+    "public.OAuthInfo": {
       "name": "OAuthInfo",
       "schema": "",
       "columns": {
@@ -516,17 +523,21 @@
       "uniqueConstraints": {
         "OAuthInfo_discordId_unique": {
           "name": "OAuthInfo_discordId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["discordId"]
+          "columns": [
+            "discordId"
+          ],
+          "nullsNotDistinct": false
         },
         "OAuthInfo_guildedId_unique": {
           "name": "OAuthInfo_guildedId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["guildedId"]
+          "columns": [
+            "guildedId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "ShareLink": {
+    "public.ShareLink": {
       "name": "ShareLink",
       "schema": "",
       "columns": {
@@ -572,7 +583,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "Triggers": {
+    "public.Triggers": {
       "name": "Triggers",
       "schema": "",
       "columns": {
@@ -644,7 +655,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "User": {
+    "public.User": {
       "name": "User",
       "schema": "",
       "columns": {
@@ -698,17 +709,21 @@
       "uniqueConstraints": {
         "User_discordId_unique": {
           "name": "User_discordId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["discordId"]
+          "columns": [
+            "discordId"
+          ],
+          "nullsNotDistinct": false
         },
         "User_guildedId_unique": {
           "name": "User_guildedId_unique",
-          "nullsNotDistinct": false,
-          "columns": ["guildedId"]
+          "columns": [
+            "guildedId"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "Webhook": {
+    "public.Webhook": {
       "name": "Webhook",
       "schema": "",
       "columns": {
@@ -779,12 +794,15 @@
       "uniqueConstraints": {
         "Webhook_platform_id_unique": {
           "name": "Webhook_platform_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["platform", "id"]
+          "columns": [
+            "platform",
+            "id"
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "autopublish": {
+    "public.autopublish": {
       "name": "autopublish",
       "schema": "",
       "columns": {
@@ -812,7 +830,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "buttons": {
+    "public.buttons": {
       "name": "buttons",
       "schema": "",
       "columns": {
@@ -912,7 +930,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "message_settings": {
+    "public.message_settings": {
       "name": "message_settings",
       "schema": "",
       "columns": {
@@ -946,7 +964,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "welcomer_goodbye": {
+    "public.welcomer_goodbye": {
       "name": "welcomer_goodbye",
       "schema": "",
       "columns": {
@@ -1022,7 +1040,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "welcomer_hello": {
+    "public.welcomer_hello": {
       "name": "welcomer_hello",
       "schema": "",
       "columns": {
@@ -1102,8 +1120,10 @@
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "5fdac848-6a54-4344-ab89-68673a3fb91f",
+  "prevId": "1323dea1-9a0b-410e-9362-0cb5eb113596"
 }
