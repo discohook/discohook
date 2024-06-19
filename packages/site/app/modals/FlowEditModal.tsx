@@ -6,6 +6,7 @@ import { twJoin } from "tailwind-merge";
 import { MessageFlagsBitField } from "discord-bitflag";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { useError } from "~/components/Error";
+import { NumberInput } from "~/components/NumberInput";
 import {
   Flow,
   FlowAction,
@@ -17,8 +18,8 @@ import {
 import { CacheManager } from "~/util/cache/CacheManager";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
 import {
-  PartialBackupsWithMessages,
   loader as ApiGetUserBackups,
+  PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -337,19 +338,12 @@ const FlowActionEditor: React.FC<{
               }}
             />
           ) : action.type === 1 ? (
-            <TextInput
-              label={t("seconds")}
-              type="number"
+            <NumberInput
               min={1}
               max={60}
-              className="w-full"
               value={action.seconds}
-              onChange={(e) => {
-                // action.seconds = Math.max(
-                //   Math.min(Number(e.currentTarget.value), 1),
-                //   60,
-                // );
-                action.seconds = Number(e.currentTarget.value);
+              onChange={(value) => {
+                action.seconds = Number(value);
                 update();
               }}
             />
