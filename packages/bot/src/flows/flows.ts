@@ -123,7 +123,6 @@ export const executeFlow = async (
           }
           await executeDeleteMessage(
             rest,
-            flow.name,
             vars as { channelId: string; messageId: string },
           );
           break;
@@ -135,7 +134,6 @@ export const executeFlow = async (
           }
           await executeAddRole(
             rest,
-            flow.name,
             action,
             liveVars.guild.id,
             vars as { userId: string },
@@ -149,7 +147,6 @@ export const executeFlow = async (
           }
           await executeRemoveRole(
             rest,
-            flow.name,
             action,
             liveVars.guild.id,
             vars as { userId: string },
@@ -163,7 +160,6 @@ export const executeFlow = async (
           }
           await executeToggleRole(
             rest,
-            flow.name,
             action,
             liveVars.guild.id,
             vars as { userId: string },
@@ -172,7 +168,6 @@ export const executeFlow = async (
         case FlowActionType.CreateThread:
           lastReturnValue = await executeCreateThread(
             rest,
-            flow.name,
             action,
             vars as { channelId?: string },
           );
@@ -208,8 +203,7 @@ const httpFlowFailure = (e: unknown, message: string) => {
   return new FlowFailure(message);
 };
 
-const getReason = (flowName: string) =>
-  `Action in flow "${flowName}"`.slice(0, 512);
+const reason = "Action in a flow";
 
 export const executeSendMessage = async (
   action: FlowActionSendMessage,
@@ -347,7 +341,6 @@ export const executeSendWebhookMessage = async (
 
 export const executeDeleteMessage = async (
   rest: REST,
-  flowName: string,
   setVars: {
     channelId: string;
     messageId: string;
@@ -356,7 +349,7 @@ export const executeDeleteMessage = async (
   try {
     await rest.delete(
       Routes.channelMessage(setVars.channelId, setVars.messageId),
-      { reason: getReason(flowName) },
+      { reason },
     );
   } catch (e) {
     throw httpFlowFailure(e, "Failed to delete the message.");
@@ -365,7 +358,6 @@ export const executeDeleteMessage = async (
 
 export const executeAddRole = async (
   rest: REST,
-  flowName: string,
   action: FlowActionAddRole,
   guildId: string,
   setVars: { userId: string },
@@ -376,7 +368,7 @@ export const executeAddRole = async (
   try {
     await rest.put(
       Routes.guildMemberRole(guildId, setVars.userId, action.roleId),
-      { reason: getReason(flowName) },
+      { reason },
     );
   } catch (e) {
     throw httpFlowFailure(e, "Failed to add the role.");
@@ -385,7 +377,6 @@ export const executeAddRole = async (
 
 export const executeRemoveRole = async (
   rest: REST,
-  flowName: string,
   action: FlowActionRemoveRole,
   guildId: string,
   setVars: { userId: string },
@@ -396,7 +387,7 @@ export const executeRemoveRole = async (
   try {
     await rest.delete(
       Routes.guildMemberRole(guildId, setVars.userId, action.roleId),
-      { reason: getReason(flowName) },
+      { reason },
     );
   } catch (e) {
     throw httpFlowFailure(e, "Failed to remove the role.");
@@ -405,7 +396,6 @@ export const executeRemoveRole = async (
 
 export const executeToggleRole = async (
   rest: REST,
-  flowName: string,
   action: FlowActionToggleRole,
   guildId: string,
   setVars: { userId: string },
@@ -433,7 +423,6 @@ export const executeToggleRole = async (
 
 export const executeCreateThread = async (
   rest: REST,
-  flowName: string,
   action: FlowActionCreateThread,
   setVars: { channelId?: string },
   ctx?: InteractionContext,
@@ -489,7 +478,7 @@ export const executeCreateThread = async (
               type: action.threadType,
               invitable: action.invitable,
             } satisfies RESTPostAPIChannelThreadsJSONBody),
-      reason: getReason(flowName),
+      reason,
     })) as RESTPostAPIChannelThreadsResult;
     return thread;
   } catch (e) {
