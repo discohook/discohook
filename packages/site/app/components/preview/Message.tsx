@@ -184,12 +184,12 @@ export const Message: React.FC<{
       )}
       <div className="grow">
         {showProfile && messageDisplay !== "compact" && (
-          <p className="leading-none h-4">
-            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
+          <p className="leading-none h-5">
+            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5] text-base">
               {username}
             </span>
             {badge && (
-              <span className="font-medium ml-1 mt-[0.75px] text-[10px] rounded px-1.5 py-px bg-blurple text-white items-center inline-flex h-4">
+              <span className="font-semibold align-top ml-1 mt-[0.3em] text-[0.8rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]">
                 {isVerified && (
                   <Svg
                     width={16}
