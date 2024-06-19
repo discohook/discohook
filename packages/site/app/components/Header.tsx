@@ -33,7 +33,7 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
     </div>
   );
 
-  const editorPathsRe = /^(\/|\/link|\/simple|\/edit\/.+)\/?/;
+  const editorPathsRe = /^(\/$|\/link|\/simple|\/edit\/.+)\/?/;
   const isEditorPage = editorPathsRe.test(location.pathname);
 
   return (
