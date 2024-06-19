@@ -458,6 +458,12 @@
     }
   },
   "option": "Option",
+  "howToFormat": "How to format your messages",
+  "formatDescription": "Some messages can be dynamically templated with a selection of format options shown below. All options must include the curly brackets: <0>{}</0>",
+  "formatMemberDescription": "The member used here depends on the context of the message. In a component response, it's the member who interacted with the component. For a member join/remove trigger response, it's the member who joined or was removed from the server.",
+  "formatMemberYou": "In this placeholder, it's you.",
+  "formatServerDescription": "This is the server that the formatted message is sent in. In this placeholder, it's the Discohook support server.",
+  "miscellaneous": "Miscellaneous",
   "formatOptionsNone": "Hover over an option above to see an example.",
   "formatOptionDescription": {
     "member": {

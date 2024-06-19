@@ -1,7 +1,7 @@
 import { useLoaderData } from "@remix-run/react";
 import { TFunction } from "i18next";
 import React, { useReducer } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -157,11 +157,13 @@ export default function FormattingPage() {
     <div>
       <Header user={user} />
       <Prose className="relative">
-        <p className="font-bold text-2xl mt-2">How to format your messages</p>
+        <p className="font-bold text-2xl mt-2">{t("howToFormat")}</p>
         <p>
-          Some messages can be dynamically templated with a selection of format
-          options shown below. All options must include the curly brackets:{" "}
-          <span className={codeStyle}>{"{}"}</span>.
+          <Trans
+            t={t}
+            i18nKey="formatDescription"
+            components={[<span className={codeStyle} />]}
+          />
         </p>
         <details className="group mt-4">
           <FormatCategoryHeader>
@@ -180,14 +182,10 @@ export default function FormattingPage() {
               src={getCharacterAvatarUrl(characterAvatars[4])}
               alt=""
             />
-            <p className="font-bold ltr:ml-2 rtl:mr-2">Members</p>
+            <p className="font-bold ltr:ml-2 rtl:mr-2">{t("members")}</p>
           </FormatCategoryHeader>
           <p>
-            The member used here depends on the context of the message. In a
-            button response, it's the member who clicked the button. For a
-            member join/remove trigger response, it's the member who joined or
-            was removed from the server.{" "}
-            {user && "In this placeholder, it's you."}
+            {t("formatMemberDescription")} {user && t("formatMemberYou")}
           </p>
           <hr className="border-gray-200/20 my-4" />
           <FormatCategoryBody
@@ -205,12 +203,9 @@ export default function FormattingPage() {
               src={placeholders["server.icon_url"] as string}
               alt=""
             />
-            <p className="font-bold ltr:ml-2 rtl:mr-2">Server</p>
+            <p className="font-bold ltr:ml-2 rtl:mr-2">{t("server_one")}</p>
           </FormatCategoryHeader>
-          <p>
-            This is the server that the formatted message is sent in. In this
-            placeholder, it's the Discohook support server.
-          </p>
+          <p>{t("formatServerDescription")}</p>
           <hr className="border-gray-200/20 my-4" />
           <FormatCategoryBody
             t={t}
@@ -222,7 +217,7 @@ export default function FormattingPage() {
         </details>
         <details className="group mt-4">
           <FormatCategoryHeader>
-            <p className="font-bold ltr:ml-1 rtl:mr-1">Miscellaneous</p>
+            <p className="font-bold ltr:ml-1 rtl:mr-1">{t("miscellaneous")}</p>
           </FormatCategoryHeader>
           <FormatCategoryBody
             t={t}
