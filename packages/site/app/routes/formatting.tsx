@@ -54,11 +54,13 @@ const FormatCategoryBody: React.FC<{
     </thead>
     <tbody>
       {paths.map((path) => (
+        // biome-ignore lint/a11y/useKeyWithClickEvents: we just want this to work on mobile devices too
         <tr
           key={`format-path-${path}`}
           className="rounded hover:bg-blurple/20 p-px transition"
           onMouseOver={() => setPreviewPath(path)}
           onFocus={() => setPreviewPath(path)}
+          onClick={() => setPreviewPath(path)}
         >
           <td>
             <span className={codeStyle}>{`{${path}}`}</span>
@@ -218,14 +220,24 @@ export default function FormattingPage() {
             setPreviewPath={setPreviewPath}
           />
         </details>
+        <details className="group mt-4">
+          <FormatCategoryHeader>
+            <p className="font-bold ltr:ml-1 rtl:mr-1">Miscellaneous</p>
+          </FormatCategoryHeader>
+          <FormatCategoryBody
+            t={t}
+            paths={Object.keys(placeholders).filter(
+              (path) => !path.includes("."),
+            )}
+            setPreviewPath={setPreviewPath}
+          />
+        </details>
         <div>
           <div className="invisible p-4 mt-8">{previewValue}</div>
           <div className="bg-gray-200 dark:bg-gray-900 shadow rounded-lg p-4 fixed bottom-4 ltr:mr-8 rtl:ml-8">
             <Message
               message={{
-                content:
-                  previewValue ||
-                  "Hover over the options on the left to view an example",
+                content: previewValue || t("formatOptionsNone"),
               }}
               cache={cache}
               messageDisplay={settings.messageDisplay}

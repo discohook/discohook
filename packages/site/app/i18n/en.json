@@ -458,6 +458,7 @@
     }
   },
   "option": "Option",
+  "formatOptionsNone": "Hover over an option above to see an example.",
   "formatOptionDescription": {
     "member": {
       "id": "The member's ID",
@@ -486,7 +487,7 @@
       "created_relative": "When the server was created, relative",
       "created_long": "When the server was created, long-form"
     },
-    "now": "The current time",
+    "now": "The current time upon formatting",
     "now_relative": "The current time, relative",
     "now_long": "The current time, long-form"
   }
