@@ -4,7 +4,6 @@ import type {
   REST,
   RawFile,
 } from "@discordjs/rest";
-import { DiscordSnowflake } from "@sapphire/snowflake";
 import {
   RESTError,
   RESTGetAPICurrentUserGuildsResult,
@@ -18,6 +17,8 @@ import {
   RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
+import { Snowflake, getDate } from "discord-snowflake";
+import { TimestampStyle } from "~/components/editor/TimePicker";
 import { DraftFile } from "~/routes/_index";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 
@@ -28,7 +29,7 @@ export const DISCORD_BOT_TOKEN_RE =
   /^[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}$/;
 
 export const getSnowflakeDate = (snowflake: string) =>
-  new Date(Number(DiscordSnowflake.deconstruct(snowflake).timestamp));
+  getDate(snowflake as Snowflake);
 
 export const discordRequest = async (
   method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
@@ -366,6 +367,25 @@ export const botAppAvatar = (
   return cdn.defaultAvatar(
     Number((BigInt(app.applicationId) >> BigInt(22)) % BigInt(6)),
   );
+};
+
+export const characterAvatars = [
+  "new-blue-1",
+  "new-blue-2",
+  "new-blue-3",
+  "new-green-1",
+  "new-green-2",
+  "new-yellow-1",
+  "new-yellow-2",
+  "new-yellow-3",
+];
+
+export const getCharacterAvatarUrl = (key: string) =>
+  `/discord-avatars/${key}.png`;
+
+export const time = (date: Date | number, style?: TimestampStyle) => {
+  const stamp = Math.floor(new Date(date).getTime() / 1000);
+  return `<t:${stamp}:${style ?? "f"}>`;
 };
 
 interface DiscordError {

@@ -456,5 +456,38 @@
       "tomorrow": "Tomorrow at {{ date, h:mm A }}",
       "other": "{{ date, MM/DD/YYYY h:mm A }}"
     }
+  },
+  "option": "Option",
+  "formatOptionDescription": {
+    "member": {
+      "id": "The member's ID",
+      "name": "The member's username",
+      "discriminator": "The member's discriminator (old username system)",
+      "display_name": "The member's display name",
+      "tag": "The member's full user tag",
+      "mention": "The member's mention",
+      "avatar_url": "The member's display avatar URL",
+      "default_avatar_url": "The member's default avatar URL",
+      "bot": "Whether the member is a bot",
+      "created": "When the account was created",
+      "created_relative": "When the account was created, relative",
+      "created_long": "When the account was created, long-form"
+    },
+    "server": {
+      "id": "The server ID",
+      "name": "The server name",
+      "icon_url": "The server icon URL",
+      "members": "The number of members in the server",
+      "roles": "The number of roles in the server",
+      "boosts": "The number of boosts the server has",
+      "emoji_limit": "The maximum number of emojis the server can have",
+      "sticker_limit": "The maximum number of stickers the server can have",
+      "created": "When the server was created",
+      "created_relative": "When the server was created, relative",
+      "created_long": "When the server was created, long-form"
+    },
+    "now": "The current time",
+    "now_relative": "The current time, relative",
+    "now_long": "The current time, long-form"
   }
 }
