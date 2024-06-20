@@ -349,7 +349,7 @@ const FlowActionEditor: React.FC<{
             />
           ) : action.type === 3 || action.type === 4 || action.type === 5 ? (
             <>
-              {(!cache || roles.length === 0) && (
+              {roles.length === 0 && (
                 <InfoBox severity="yellow" icon="Info">
                   {t("noMentionsActionNote")}
                 </InfoBox>
@@ -518,7 +518,7 @@ const FlowActionEditor: React.FC<{
               const channel = channels.find((c) => c.id === action.channelId);
               return (
                 <>
-                  {(!cache || channels.length === 0) && (
+                  {channels.length === 0 && (
                     <InfoBox severity="yellow" icon="Info">
                       {t("noMentionsActionNote")}
                     </InfoBox>
