@@ -70,7 +70,7 @@ export const getUserAvatar = (
         )
       : cdn.defaultAvatar(
           user.discordUser.discriminator === "0"
-            ? Number((user.discordUser.id >> BigInt(22)) % BigInt(6))
+            ? Number((BigInt(user.discordUser.id) >> 22n) % 6n)
             : Number(user.discordUser.discriminator) % 5,
         )
     : user.guildedUser
