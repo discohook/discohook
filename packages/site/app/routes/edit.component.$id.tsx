@@ -79,55 +79,69 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   });
   const db = getDb(context.env.HYPERDRIVE.connectionString);
 
-  // We're purposely trimming the original request's query because it
-  // probably contains the token and nothing else. We don't need that.
-  const redirectUrl = `/auth/discord?redirect=${new URL(request.url).pathname}`;
+  const redirectUrl = `/auth/discord?${new URLSearchParams({
+    // We're purposely trimming the original request's query because it
+    // probably contains the token and nothing else. We don't need that.
+    redirect: new URL(request.url).pathname,
+  })}`;
 
   const user = await getUser(request, context);
+  let needUserAuth = false;
+
   let editingMeta: KVComponentEditorState | undefined;
   if (editorToken) {
-    let payload: JWTPayload;
-    try {
-      ({ payload } = await verifyToken(
-        editorToken,
-        context.env,
-        context.origin,
-      ));
-    } catch {
-      throw redirect(redirectUrl);
-    }
-    if (payload.scp !== "editor") {
-      throw redirect(redirectUrl);
-    }
-    // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
-    const tokenId = payload.jti!;
+    // This is kind of weird but it's the best method I could think of to fall
+    // back to user auth if the editor token is invalid in any way. This block
+    // should always execute exactly one time.
+    while (!needUserAuth) {
+      let payload: JWTPayload;
+      try {
+        ({ payload } = await verifyToken(
+          editorToken,
+          context.env,
+          context.origin,
+        ));
+      } catch {
+        needUserAuth = true;
+        break;
+      }
+      if (payload.scp !== "editor") {
+        needUserAuth = true;
+        break;
+      }
+      // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
+      const tokenId = payload.jti!;
 
-    const key = `token-${tokenId}-component-${id}`;
-    const cached = await context.env.KV.get<KVComponentEditorState>(
-      key,
-      "json",
-    );
-    if (cached) {
-      editingMeta = cached;
-    } else {
-      // Token does not have permission data for this component. At the moment
-      // this means the token is expired, since we don't generate multiple
-      // permissions for a single token. Additionally, if someone manually
-      // transplanted this token onto a different component editor, then it's
-      // been leaked and should be deleted anyway.
-      await db.delete(tokens).where(eq(tokens.id, makeSnowflake(tokenId)));
-      throw redirect(redirectUrl);
-    }
+      const key = `token-${tokenId}-component-${id}`;
+      const cached = await context.env.KV.get<KVComponentEditorState>(
+        key,
+        "json",
+      );
+      if (cached) {
+        editingMeta = cached;
+      } else {
+        // Token does not have permission data for this component. At the moment
+        // this means the token is expired, since we don't generate multiple
+        // permissions for a single token. Additionally, if someone manually
+        // transplanted this token onto a different component editor, then it's
+        // been leaked and should be deleted anyway.
+        await db.delete(tokens).where(eq(tokens.id, makeSnowflake(tokenId)));
+        needUserAuth = true;
+        break;
+      }
 
-    const token = await db.query.tokens.findFirst({
-      where: eq(tokens.id, makeSnowflake(tokenId)),
-      columns: {
-        id: true,
-        prefix: true,
-      },
-    });
-    if (!token || token.prefix !== payload.scp) {
-      throw redirect(redirectUrl);
+      const token = await db.query.tokens.findFirst({
+        where: eq(tokens.id, makeSnowflake(tokenId)),
+        columns: {
+          id: true,
+          prefix: true,
+        },
+      });
+      if (!token || token.prefix !== payload.scp) {
+        needUserAuth = true;
+        break;
+      }
+      break;
     }
   } else if (!user) {
     throw redirect(redirectUrl);
@@ -139,7 +153,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       id: true,
       data: true,
       draft: true,
-      // createdById: true,
+      createdById: true,
       guildId: true,
       channelId: true,
       messageId: true,
@@ -147,6 +161,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   });
   if (!component) {
     throw json({ message: "Unknown Component" }, 404);
+  }
+  if (needUserAuth) {
+    if (!user) {
+      throw redirect(redirectUrl);
+    }
+    if (component.createdById !== BigInt(user.id)) {
+      throw json({ message: "You do not have edit access to this component." }, 403);
+    }
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
