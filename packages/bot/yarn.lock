@@ -1425,9 +1425,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"drizzle-orm@npm:^0.30.9":
-  version: 0.30.10
-  resolution: "drizzle-orm@npm:0.30.10"
+"drizzle-orm@npm:^0.31.2":
+  version: 0.31.2
+  resolution: "drizzle-orm@npm:0.31.2"
   peerDependencies:
     "@aws-sdk/client-rds-data": ">=3"
     "@cloudflare/workers-types": ">=3"
@@ -1437,6 +1437,7 @@ __metadata:
     "@op-engineering/op-sqlite": ">=2"
     "@opentelemetry/api": ^1.4.1
     "@planetscale/database": ">=1"
+    "@tidbcloud/serverless": "*"
     "@types/better-sqlite3": "*"
     "@types/pg": "*"
     "@types/react": ">=18"
@@ -1470,6 +1471,8 @@ __metadata:
     "@opentelemetry/api":
       optional: true
     "@planetscale/database":
+      optional: true
+    "@tidbcloud/serverless":
       optional: true
     "@types/better-sqlite3":
       optional: true
@@ -1505,7 +1508,7 @@ __metadata:
       optional: true
     sqlite3:
       optional: true
-  checksum: 10c0/d6ceedbe6b9c6e5908cd242a939b0de4c909344da8616bdf4474fa7a2bc1a659453c5530a275bd66c1b762d08b08a689175f38212575e24b2fbde2e000f83ff9
+  checksum: 10c0/7fb7604dc50204047fc78745c1a956f395dd582f05db9dbf76cfcc658fb180fc3012cfec03fd669140e67184d2ca32419bb3c09aafeb5db5dbe0c2db73f2fe5a
   languageName: node
   linkType: hard
 
@@ -3265,15 +3268,15 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=14afbb&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=75c58b&locator=discohook-bot%40workspace%3A."
   dependencies:
     "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
-    drizzle-orm: "npm:^0.30.9"
+    drizzle-orm: "npm:^0.31.2"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/fad50da01618ca5d512ff371f90e15d70a1f6f666002a7348858323af070ac70403be58d1432ef58a26a43308ca8909f2869c049443fb8cbb0b52a301144b1f9
+  checksum: 10c0/6be5a51928eedeff6e6a73e2fc57a09934d9fbe8d775701baaefaa75b1266190ad22a75481ddebd0d3dbcfcf27a778153b72730bd47a1b614cdd820768aa8ef7
   languageName: node
   linkType: hard
 
