@@ -654,11 +654,36 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         id: makeSnowflake(editorToken.id),
         prefix: "editor",
         expiresAt: editorToken.expiresAt,
-        userId: makeSnowflake(state.user.id),
+        // userId: makeSnowflake(state.user.id),
       });
 
-      state.stepTitle = "Finish on the web";
-      state.totalSteps = 3;
+      await ctx.env.KV.put(
+        `token-${editorToken.id}-component-${component.id}`,
+        JSON.stringify({
+          interactionId: ctx.interaction.id,
+          user: {
+            id: ctx.user.id,
+            name: ctx.user.username,
+            avatar: ctx.user.avatar,
+          },
+        }),
+        {
+          expiration: Math.floor(editorToken.expiresAt.getTime() / 1000),
+        },
+      );
+
+      state.stepTitle = "Finish in the editor";
+      // state.totalSteps = 3;
+      state.steps.push(
+        {
+          label:
+            'Click "Customize" to set details and flows **<--- you are here**',
+        },
+        {
+          label: 'Finish editing and click "Add Select" in the tab',
+        },
+      );
+
       return ctx.updateMessage({
         embeds: [getComponentFlowEmbed(state).toJSON()],
         components: [
