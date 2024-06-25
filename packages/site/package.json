@@ -50,6 +50,7 @@
     "remix-auth-guilded": "^1.0.1",
     "robots-parser": "^3.0.1",
     "tailwind-merge": "^2.2.0",
+    "tif-snowflake": "shayypy/snowflake",
     "zod": "^3.22.4",
     "zodix": "^0.4.4"
   },

@@ -1,4 +1,4 @@
-import { Snowflake } from "@theinternetfolks/snowflake";
+import { Snowflake } from "tif-snowflake";
 
 // Not exported by the package
 export type DeconstructedSnowflake = ReturnType<typeof Snowflake.parse>;

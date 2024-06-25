@@ -1,4 +1,3 @@
-import { Snowflake } from "@theinternetfolks/snowflake";
 import { isSnowflake } from "discord-snowflake";
 import { relations } from "drizzle-orm";
 import {
@@ -12,6 +11,7 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
+import { Snowflake } from "tif-snowflake";
 import {
   LinkQueryData,
   QueryData,

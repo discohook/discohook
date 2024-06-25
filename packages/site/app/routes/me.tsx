@@ -1138,10 +1138,8 @@ export default function Me() {
                 {snowflakeDecoded && (
                   <p>
                     Timestamp:{" "}
-                    {new Date(
-                      snowflakeDecoded.timestamp * 1000,
-                    ).toLocaleString()}{" "}
-                    ({snowflakeDecoded.timestamp} - sec.)
+                    {new Date(snowflakeDecoded.timestamp).toLocaleString()} (
+                    {snowflakeDecoded.timestamp} sec.)
                     <br />
                     Sequence: {snowflakeDecoded.sequence}
                   </p>

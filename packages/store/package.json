@@ -8,12 +8,12 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@theinternetfolks/snowflake": "shayypy/snowflake",
     "discord-api-types": "^0.37.67",
     "discord-snowflake": "^2.0.0",
     "drizzle-orm": "^0.31.2",
     "json-bigint": "^1.0.0",
-    "postgres": "^3.4.3"
+    "postgres": "^3.4.3",
+    "tif-snowflake": "shayypy/snowflake"
   },
   "devDependencies": {
     "@discordjs/rest": "^2.2.0",
