@@ -22,7 +22,7 @@
     "@discordjs/rest": "^2.1.0",
     "dedent-js": "^1.0.1",
     "discord-api-types": "^0.37.81",
-    "discord-bitflag": "^1.0.1",
+    "discord-bitflag": "^1.0.2",
     "discord-verify": "^1.2.0",
     "i18next": "^23.11.5",
     "itty-router": "^4.0.13",

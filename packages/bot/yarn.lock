@@ -1356,7 +1356,7 @@ __metadata:
     chai: "npm:^4.3.7"
     dedent-js: "npm:^1.0.1"
     discord-api-types: "npm:^0.37.81"
-    discord-bitflag: "npm:^1.0.1"
+    discord-bitflag: "npm:^1.0.2"
     discord-verify: "npm:^1.2.0"
     dotenv: "npm:^16.0.3"
     i18next: "npm:^23.11.5"
@@ -1393,12 +1393,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"discord-bitflag@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "discord-bitflag@npm:1.0.1"
+"discord-bitflag@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "discord-bitflag@npm:1.0.2"
   dependencies:
     bitflag-js: "npm:^1.0.0"
-  checksum: 10c0/2d951b4a042c976a15f288d7fa1d17c412216062e200f507fc4cee4cfbfde3565e60ed57c5b6f19e814ea16ad125f5d323ec4954ab06c02f5fcea257401fe630
+  checksum: 10c0/d66cd9d35f420344d9e1f15e573849bb26599d59b85e71f50d40ec8bdb2060b410064e1f537b97442121ba547fbd01710639135b403b67da8ee3906f73589ee0
   languageName: node
   linkType: hard
 
