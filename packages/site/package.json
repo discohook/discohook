@@ -13,7 +13,8 @@
     "typecheck": "tsc",
     "generate-help": "node scripts/generate-help.js",
     "generate-emoji": "node scripts/generate-emoji.js",
-    "generate-highlights": "node scripts/generate-highlights.js"
+    "generate-highlights": "node scripts/generate-highlights.js",
+    "generate-guide": "node scripts/generate-guide.js"
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.1.3",
