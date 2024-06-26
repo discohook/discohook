@@ -25,6 +25,7 @@ import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import {
+  getComponentWidth,
   getRowWidth,
   submitComponent,
 } from "~/components/editor/ComponentEditor";
@@ -557,7 +558,9 @@ export default function EditComponentPage() {
       } else if (getRowWidth(row) >= 5) {
         // row is full, find a different one in the same direction
         const nextEmptyRow = rows.find(
-          (r, i) => (y < oY ? i < y : i > y) && getRowWidth(r) < 5,
+          (r, i) =>
+            (y < oY ? i < y : i > y) &&
+            5 - getComponentWidth(component) - getRowWidth(r) >= 0,
         );
         if (nextEmptyRow) {
           y = rows.indexOf(nextEmptyRow);
@@ -645,7 +648,7 @@ export default function EditComponentPage() {
                 ),
               )}
               alt={editingMeta.user.name}
-              className="rounded-full my-auto ltr:mr-2 rtl:ml-2 h-10 w-10 shadow"
+              className="rounded-full my-auto ltr:mr-2 rtl:ml-2 h-10 w-10"
             />
             <div className="my-auto">
               <p className="text-gray-500 font-medium text-sm">
