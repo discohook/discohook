@@ -1,5 +1,4 @@
 import { APIUser } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import JSONbig_ from "json-bigint";
 import postgres from "postgres";
@@ -95,7 +94,7 @@ export const upsertDiscordUser = async (
   )[0];
 
   const dbUser = await db.query.users.findFirst({
-    where: eq(schema.users.id, id),
+    where: (users, { eq }) => eq(users.id, id),
     columns: {
       id: true,
       name: true,
@@ -190,7 +189,7 @@ export const upsertGuildedUser = async (
   )[0];
 
   const dbUser = await db.query.users.findFirst({
-    where: eq(schema.users.id, id),
+    where: (users, { eq }) => eq(users.id, id),
     columns: {
       id: true,
       name: true,

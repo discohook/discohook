@@ -1,5 +1,4 @@
 import { json } from "@remix-run/cloudflare";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getUser } from "~/session.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
@@ -32,7 +31,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       });
     }
     const extant = await db.query.linkBackups.findFirst({
-      where: eq(linkBackups.code, code),
+      where: (linkBackups, {eq}) => eq(linkBackups.code, code),
       columns: {
         id: true,
       },

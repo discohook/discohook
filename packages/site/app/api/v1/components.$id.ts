@@ -29,7 +29,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
       const db = getDb(context.env.HYPERDRIVE.connectionString);
       const current = await db.query.discordMessageComponents.findFirst({
-        where: eq(discordMessageComponents.id, id),
+        where: (table, { eq }) => eq(table.id, id),
         columns: {
           createdById: true,
           data: true,
@@ -131,7 +131,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     case "DELETE": {
       const db = getDb(context.env.HYPERDRIVE.connectionString);
       const current = await db.query.discordMessageComponents.findFirst({
-        where: eq(discordMessageComponents.id, id),
+        where: (table, { eq }) => eq(table.id, id),
         columns: {
           createdById: true,
           channelId: true,

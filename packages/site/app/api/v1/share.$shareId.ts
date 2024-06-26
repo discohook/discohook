@@ -1,7 +1,6 @@
 import { json } from "@remix-run/cloudflare";
-import { and, eq, lt } from "drizzle-orm";
 import { z } from "zod";
-import { getDb, shareLinks } from "~/store.server";
+import { getDb } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
@@ -27,10 +26,8 @@ export const loader = async ({ params, context }: LoaderArgs) => {
     try {
       const db = getDb(context.env.HYPERDRIVE.connectionString);
       const link = await db.query.shareLinks.findFirst({
-        where: and(
-          eq(shareLinks.shareId, id),
-          lt(shareLinks.expiresAt, new Date()),
-        ),
+        where: (shareLinks, { and, eq, lt }) =>
+          and(eq(shareLinks.shareId, id), lt(shareLinks.expiresAt, new Date())),
         columns: { expiresAt: true },
       });
       if (link) expiredAt = link.expiresAt;

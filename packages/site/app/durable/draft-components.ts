@@ -43,7 +43,7 @@ export class DurableDraftComponentCleaner implements DurableObject {
 
     const db = getDb(this.env.HYPERDRIVE.connectionString);
     const component = await db.query.discordMessageComponents.findFirst({
-      where: eq(discordMessageComponents.id, makeSnowflake(id)),
+      where: (table, { eq }) => eq(table.id, makeSnowflake(id)),
       columns: {
         updatedAt: true,
         draft: true,

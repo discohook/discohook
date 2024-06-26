@@ -1,6 +1,5 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { desc, eq } from "drizzle-orm";
 import { getDb } from "store";
 import { zx } from "zodix";
 import {
@@ -8,7 +7,6 @@ import {
   authorizeRequest,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { discordGuilds, tokens } from "~/store.server";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
@@ -36,7 +34,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const guildWithTokens = await db.query.discordGuilds.findFirst({
-    where: eq(discordGuilds.id, guildId),
+    where: (discordGuilds, { eq }) => eq(discordGuilds.id, guildId),
     columns: {},
     with: {
       tokens: {
@@ -54,7 +52,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           },
         },
         limit,
-        orderBy: desc(tokens.lastUsedAt),
+        orderBy: (tokens, { desc }) => desc(tokens.lastUsedAt),
       },
     },
   });

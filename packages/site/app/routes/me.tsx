@@ -59,7 +59,6 @@ import {
   backups as dBackups,
   linkBackups as dLinkBackups,
   shareLinks as dShareLinks,
-  discordMembers,
   getDb,
   makeSnowflake,
 } from "../store.server";
@@ -81,7 +80,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
   const backups = (async () =>
     await db.query.backups.findMany({
-      where: eq(dBackups.ownerId, user.id),
+      where: (backups, { eq }) => eq(backups.ownerId, user.id),
       columns: {
         id: true,
         name: true,
@@ -98,7 +97,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
   const linkBackups = (async () =>
     await db.query.linkBackups.findMany({
-      where: eq(dBackups.ownerId, user.id),
+      where: (backups, { eq }) => eq(backups.ownerId, user.id),
       columns: {
         id: true,
         name: true,
@@ -111,7 +110,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
   const links = (async () =>
     await db.query.shareLinks.findMany({
-      where: eq(dShareLinks.userId, user.id),
+      where: (shareLinks, { eq }) => eq(shareLinks.userId, user.id),
       orderBy: desc(dShareLinks.expiresAt),
       limit: 50,
     }))();
@@ -119,7 +118,9 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const memberships = (async () =>
     user.discordId
       ? await db.query.discordMembers.findMany({
-          where: eq(discordMembers.userId, user.discordId),
+          where: (discordMembers, { eq }) =>
+            // biome-ignore lint/style/noNonNullAssertion: Checked above
+            eq(discordMembers.userId, user.discordId!),
           columns: { permissions: true },
           with: { guild: true },
         })
@@ -208,7 +209,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   switch (data.action) {
     case "DELETE_SHARE_LINK": {
       const link = await db.query.shareLinks.findFirst({
-        where: eq(dShareLinks.id, data.linkId),
+        where: (shareLinks, { eq }) => eq(shareLinks.id, data.linkId),
       });
       if (!link) {
         throw json({ message: "No link with that ID." }, 404);
@@ -231,7 +232,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
       const db = getDb(context.env.HYPERDRIVE.connectionString);
       const share = await db.query.shareLinks.findFirst({
-        where: eq(dShareLinks.id, data.linkId),
+        where: (shareLinks, { eq }) => eq(shareLinks.id, data.linkId),
         columns: {
           shareId: true,
           userId: true,
@@ -267,7 +268,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     }
     case "DELETE_BACKUP": {
       const backup = await db.query.backups.findFirst({
-        where: eq(dBackups.id, data.backupId),
+        where: (backups, { eq }) => eq(backups.id, data.backupId),
       });
       if (!backup) {
         throw json({ message: "No backup with that ID." }, 404);
@@ -279,7 +280,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     }
     case "DELETE_LINK_BACKUP": {
       const backup = await db.query.linkBackups.findFirst({
-        where: eq(dLinkBackups.id, data.backupId),
+        where: (linkBackups, { eq }) => eq(linkBackups.id, data.backupId),
       });
       if (!backup) {
         throw json({ message: "No backup with that ID." }, 404);

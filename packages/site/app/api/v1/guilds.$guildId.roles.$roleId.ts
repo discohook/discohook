@@ -8,7 +8,7 @@ import {
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { authorizeRequest } from "~/session.server";
-import { discordRoles, eq, getDb, makeSnowflake } from "~/store.server";
+import { discordRoles, getDb, makeSnowflake } from "~/store.server";
 import { ResolvableAPIRole } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
@@ -25,7 +25,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const dbRole = await db.query.discordRoles.findFirst({
-    where: eq(discordRoles.id, roleId),
+    where: (discordRoles, { eq }) => eq(discordRoles.id, roleId),
     columns: {
       id: true,
       name: true,

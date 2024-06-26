@@ -8,7 +8,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { z } from "zod";
-import { and, eq, getDb, githubPosts } from "~/store.server";
+import { getDb, githubPosts } from "~/store.server";
 import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
@@ -127,12 +127,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const extantPost = await db.query.githubPosts.findFirst({
-    where: and(
-      eq(githubPosts.platform, "discord"),
-      eq(githubPosts.channelId, webhook.channel_id),
-      eq(githubPosts.type, githubType),
-      eq(githubPosts.githubId, githubId),
-    ),
+    where: (githubPosts, { and, eq }) =>
+      and(
+        eq(githubPosts.platform, "discord"),
+        eq(githubPosts.channelId, webhook.channel_id),
+        eq(githubPosts.type, githubType),
+        eq(githubPosts.githubId, githubId),
+      ),
   });
 
   // `title` check ensures new posts will only be created for "top level"

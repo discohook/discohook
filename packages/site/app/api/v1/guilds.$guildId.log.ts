@@ -1,9 +1,8 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { and, desc, eq, inArray } from "drizzle-orm";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { getDb, messageLogEntries, webhooks } from "~/store.server";
+import { getDb, webhooks } from "~/store.server";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
@@ -31,7 +30,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const entries = await db.query.messageLogEntries.findMany({
-    where: eq(messageLogEntries.discordGuildId, guildId),
+    where: (table, { eq }) => eq(table.discordGuildId, guildId),
     columns: {
       type: true,
       channelId: true,
@@ -48,7 +47,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
     limit,
     offset: page * limit,
-    orderBy: desc(messageLogEntries.messageId),
+    orderBy: (table, { desc }) => desc(table.messageId),
   });
 
   const webhookIds = entries
@@ -58,10 +57,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     webhookIds.length === 0
       ? []
       : await db.query.webhooks.findMany({
-          where: and(
-            eq(webhooks.platform, "discord"),
-            inArray(webhooks.id, webhookIds),
-          ),
+          where: (table, { and, eq, inArray }) =>
+            and(
+              eq(table.platform, "discord"),
+              inArray(webhooks.id, webhookIds),
+            ),
           columns: {
             id: true,
             name: true,

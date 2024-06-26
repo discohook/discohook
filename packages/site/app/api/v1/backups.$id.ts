@@ -24,7 +24,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backup = await db.query.backups.findFirst({
-    where: eq(backups.id, id),
+    where: (backups, { eq }) => eq(backups.id, id),
     columns: {
       id: true,
       name: true,
@@ -116,7 +116,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backup = await db.query.backups.findFirst({
-    where: eq(backups.id, id),
+    where: (backups, { eq }) => eq(backups.id, id),
     columns: {
       ownerId: true,
       scheduled: true,

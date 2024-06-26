@@ -1,8 +1,7 @@
 import { json } from "@remix-run/cloudflare";
-import { eq } from "drizzle-orm";
 import { getDb } from "store";
 import { z } from "zod";
-import { backups, makeSnowflake, users } from "~/store.server";
+import { backups, makeSnowflake } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
@@ -42,7 +41,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const { userId } = await verifyToken(request, context.env.KV);
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const user = await db.query.users.findFirst({
-    where: eq(users.id, makeSnowflake(userId)),
+    where: (users, { eq }) => eq(users.id, makeSnowflake(userId)),
     columns: {
       name: true,
     },
@@ -69,7 +68,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     );
   }
   const userBackups = await db.query.backups.findMany({
-    where: eq(backups.ownerId, makeSnowflake(userId)),
+    where: (backups, { eq }) => eq(backups.ownerId, makeSnowflake(userId)),
     columns: {
       name: true,
     },

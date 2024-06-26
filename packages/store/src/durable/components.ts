@@ -1,8 +1,7 @@
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
 import { getDb } from "../db.js";
-import { discordMessageComponents, makeSnowflake } from "../schema/schema.js";
+import { makeSnowflake } from "../schema/schema.js";
 import { StorableComponent } from "../types/index.js";
 
 export interface DurableStoredComponent {
@@ -25,7 +24,7 @@ export class DurableComponentState implements DurableObject {
         const { id } = zx.parseQuery(request, { id: z.string() });
         const db = getDb(this.env.HYPERDRIVE.connectionString);
         const component = await db.query.discordMessageComponents.findFirst({
-          where: eq(discordMessageComponents.id, makeSnowflake(id)),
+          where: (table, { eq }) => eq(table.id, makeSnowflake(id)),
           columns: {
             id: true,
             data: true,

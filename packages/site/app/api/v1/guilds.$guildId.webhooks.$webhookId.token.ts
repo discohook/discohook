@@ -2,7 +2,7 @@ import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { APIWebhook, Routes, WebhookType } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { and, eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
@@ -26,10 +26,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const dbWebhook = await db.query.webhooks.findFirst({
-    where: and(
-      eq(webhooks.platform, "discord"),
-      eq(webhooks.id, String(webhookId)),
-    ),
+    where: (webhooks, { and, eq }) =>
+      and(eq(webhooks.platform, "discord"), eq(webhooks.id, String(webhookId))),
     columns: {
       token: true,
       applicationId: true,

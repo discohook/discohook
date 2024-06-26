@@ -6,7 +6,7 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
@@ -35,10 +35,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   let guildWebhooks = await db.query.webhooks.findMany({
-    where: and(
-      eq(webhooks.discordGuildId, guildId),
-      eq(webhooks.platform, "discord"),
-    ),
+    where: (webhooks, { and, eq }) =>
+      and(
+        eq(webhooks.discordGuildId, guildId),
+        eq(webhooks.platform, "discord"),
+      ),
     columns: {
       id: true,
       name: true,
@@ -55,7 +56,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
     limit,
     offset: page * limit,
-    orderBy: desc(webhooks.name),
+    orderBy: (webhooks, { desc }) => desc(webhooks.name),
   });
 
   if (guildWebhooks.length === 0) {

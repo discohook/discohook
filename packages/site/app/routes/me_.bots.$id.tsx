@@ -125,7 +125,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     });
 
     const bot = await db.query.customBots.findFirst({
-      where: eq(customBots.id, botId),
+      where: (customBots, { eq }) => eq(customBots.id, botId),
       columns: {
         applicationId: true,
         ownerId: true,
@@ -320,7 +320,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     return json({ id: updated.id }, 200);
   } else if (request.method === "DELETE") {
     const bot = await db.query.customBots.findFirst({
-      where: eq(customBots.id, botId),
+      where: (customBots, { eq }) => eq(customBots.id, botId),
       columns: {
         applicationId: true,
         ownerId: true,

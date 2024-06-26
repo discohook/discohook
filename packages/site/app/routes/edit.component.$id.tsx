@@ -132,7 +132,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       }
 
       const token = await db.query.tokens.findFirst({
-        where: eq(tokens.id, makeSnowflake(tokenId)),
+        where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
         columns: {
           id: true,
           prefix: true,
@@ -149,7 +149,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   }
 
   const component = await db.query.discordMessageComponents.findFirst({
-    where: eq(discordMessageComponents.id, id),
+    where: (table, { eq }) => eq(table.id, id),
     columns: {
       id: true,
       data: true,
@@ -168,7 +168,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       throw redirect(redirectUrl);
     }
     if (component.createdById !== BigInt(user.id)) {
-      throw json({ message: "You do not have edit access to this component." }, 403);
+      throw json(
+        { message: "You do not have edit access to this component." },
+        403,
+      );
     }
   }
 
@@ -312,7 +315,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const component = await db.query.discordMessageComponents.findFirst({
-    where: eq(discordMessageComponents.id, id),
+    where: (table, { eq }) => eq(table.id, id),
     columns: {
       id: true,
       data: true,

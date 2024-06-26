@@ -34,7 +34,7 @@ import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
-import { discordMembers, eq, getDb } from "~/store.server";
+import { getDb } from "~/store.server";
 import {
   APIMessageActionRowComponent,
   QueryData,
@@ -61,7 +61,9 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     return user?.discordId
       ? (
           await db.query.discordMembers.findMany({
-            where: eq(discordMembers.userId, user.discordId),
+            where: (discordMembers, { eq }) =>
+              // biome-ignore lint/style/noNonNullAssertion: Checked above
+              eq(discordMembers.userId, user.discordId!),
             with: {
               guild: true,
             },

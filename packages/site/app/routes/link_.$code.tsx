@@ -7,14 +7,13 @@ import {
 } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
 import { Embed } from "~/components/preview/Embed";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
-import { getDb, linkBackups } from "~/store.server";
+import { getDb } from "~/store.server";
 import { LinkQueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { copyText } from "~/util/text";
@@ -29,7 +28,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const linkBackup = await db.query.linkBackups.findFirst({
-    where: eq(linkBackups.code, code),
+    where: (linkBackups, { eq }) => eq(linkBackups.code, code),
     columns: {
       data: true,
     },

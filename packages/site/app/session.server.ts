@@ -17,7 +17,6 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
-import { eq } from "drizzle-orm";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { getDiscordUserOAuth } from "./auth-discord.server";
 import {
@@ -27,7 +26,6 @@ import {
   makeSnowflake,
   tokens,
   upsertDiscordUser,
-  users,
 } from "./store.server";
 import { Env } from "./types/env";
 import { Context } from "./util/loader";
@@ -129,7 +127,7 @@ export async function getUser(
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
+    where: (users, { eq }) => eq(users.id, userId),
     columns: {
       id: true,
       name: true,
@@ -212,7 +210,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
   const token = await createToken(env, origin, userId);
   const db = getDb(env.HYPERDRIVE.connectionString);
   const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
+    where: (users, { eq }) => eq(users.id, userId),
     columns: {
       discordId: true,
     },
@@ -221,7 +219,9 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
     throw Error("User has no linked Discord account");
   }
   const memberships = await db.query.discordMembers.findMany({
-    where: eq(discordMembers.userId, user.discordId),
+    where: (discordMembers, { eq }) =>
+      // biome-ignore lint/style/noNonNullAssertion: Checked above
+      eq(discordMembers.userId, user.discordId!),
     columns: {
       guildId: true,
       permissions: true,
@@ -369,7 +369,7 @@ export async function authorizeRequest(
 
     const db = getDb(context.env.HYPERDRIVE.connectionString);
     const token = await db.query.tokens.findFirst({
-      where: eq(tokens.id, makeSnowflake(tokenId)),
+      where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
       columns: {
         id: true,
         prefix: true,
