@@ -12,7 +12,10 @@ import {
   RESTGetAPIGuildRolesResult,
   Routes,
 } from "discord-api-types/v10";
-import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import {
+  PermissionFlags,
+  PermissionsBitField
+} from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "store";
 import { getId, messageLogEntries } from "store/src/schema/schema.js";
@@ -47,11 +50,7 @@ const getMessageDebugEmbed = async (
         type: true,
       },
       with: {
-        user: {
-          columns: {
-            discordId: true,
-          },
-        },
+        user: { columns: { discordId: true } },
       },
       orderBy: desc(messageLogEntries.id),
     });
@@ -93,30 +92,38 @@ const getMessageDebugEmbed = async (
     | ChannelType.GuildForum
     | ChannelType.GuildMedia
   >;
+  const overwrites =
+    ((await ctx.rest.get(Routes.channel(channel.id))) as typeof channel)
+      .permission_overwrites ?? [];
 
   const permissions = {
     everyone: {
       guild: new PermissionsBitField(
-        roles
-          ? BigInt(roles.find((r) => r.id === guildId)?.permissions ?? "0")
-          : 0,
+        BigInt(roles?.find((r) => r.id === guildId)?.permissions ?? "0"),
       ),
       channel: (() => {
         const ow = channel.permission_overwrites?.find(
           (ow) => ow.id === guildId && ow.type === OverwriteType.Role,
         );
-        const perm = new PermissionsBitField();
         if (ow) {
-          perm.add(BigInt(ow.allow));
-          perm.remove(BigInt(ow.deny));
+          return {
+            allow: new PermissionsBitField(BigInt(ow.allow)),
+            deny: new PermissionsBitField(BigInt(ow.deny)),
+          };
         }
-        return perm;
+        return {
+          allow: new PermissionsBitField(),
+          deny: new PermissionsBitField(),
+        };
       })(),
     },
     // reg. message author or app webhook owner
     user: {
       guild: new PermissionsBitField(),
-      channel: new PermissionsBitField(),
+      channel: {
+        allow: new PermissionsBitField(),
+        deny: new PermissionsBitField(),
+      },
     },
   };
 
@@ -132,14 +139,14 @@ const getMessageDebugEmbed = async (
             BigInt(roles.find((role) => role.id === rid)?.permissions ?? "0"),
           ),
         );
-        const ows = channel.permission_overwrites?.filter(
+        const ows = overwrites.filter(
           (ow) =>
             (ow.id === webhook.user?.id && ow.type === OverwriteType.Member) ||
             (ow.type === OverwriteType.Role && member.roles.includes(ow.id)),
         );
-        for (const ow of ows ?? []) {
-          permissions.user.channel.add(BigInt(ow.allow));
-          permissions.user.channel.remove(BigInt(ow.deny));
+        for (const ow of ows) {
+          permissions.user.channel.deny.add(BigInt(ow.deny));
+          permissions.user.channel.allow.add(BigInt(ow.allow));
         }
       } catch {}
     }
@@ -155,17 +162,26 @@ const getMessageDebugEmbed = async (
   } else {
     try {
       // May no longer be a member
-      const member = (await ctx.rest.get(
-        Routes.guildMember(guildId, message.author.id),
-      )) as RESTGetAPIGuildMemberResult;
-      const ows = channel.permission_overwrites?.filter(
+      const member =
+        message.author.id === ctx.user.id
+          ? ctx.interaction.member
+          : ((await ctx.rest.get(
+              Routes.guildMember(guildId, message.author.id),
+            )) as RESTGetAPIGuildMemberResult);
+      permissions.user.guild.add(
+        ...(roles
+          ?.filter((role) => member.roles.includes(role.id))
+          .map((role) => BigInt(role.permissions)) ?? []),
+      );
+
+      const ows = overwrites.filter(
         (ow) =>
           (ow.id === message.author.id && ow.type === OverwriteType.Member) ||
           (ow.type === OverwriteType.Role && member.roles.includes(ow.id)),
       );
-      for (const ow of ows ?? []) {
-        permissions.user.channel.add(BigInt(ow.allow));
-        permissions.user.channel.remove(BigInt(ow.deny));
+      for (const ow of ows) {
+        permissions.user.channel.deny.add(BigInt(ow.deny));
+        permissions.user.channel.allow.add(BigInt(ow.allow));
       }
     } catch {}
     embed.addFields({
@@ -184,16 +200,24 @@ const getMessageDebugEmbed = async (
   const guildPerm =
     permissionScope === "user"
       ? new PermissionsBitField(
-          permissions.everyone.guild,
-          permissions.user.guild,
+          permissions.everyone.guild.mask(permissions.user.guild),
         )
       : permissions.everyone.guild;
   const channelPerm =
     permissionScope === "user"
-      ? new PermissionsBitField(
-          permissions.everyone.channel,
-          permissions.user.channel,
-        )
+      ? // ?  {
+        //       allow: new PermissionsBitField(
+        //         permissions.everyone.channel.allow.mask(
+        //           permissions.user.channel.allow,
+        //         ),
+        //       ),
+        //       deny: new PermissionsBitField(
+        //         permissions.everyone.channel.deny.mask(
+        //           permissions.user.channel.deny,
+        //         ),
+        //       ),
+        //     }
+        permissions.user.channel
       : permissions.everyone.channel;
 
   embed.addFields({
@@ -212,12 +236,20 @@ const getMessageDebugEmbed = async (
       }
 
       **Server**
-      ${boolEmoji(guildPerm.has(PermissionFlags.UseExternalEmojis))} Use External Emojis
-      ${boolEmoji(true)} Use Discord emojis & emojis from this server
+      ${boolEmoji(true)} Use Discord emojis
+      ${boolEmoji(true)} Use this server's emojis
+      ${boolEmoji(guildPerm.has(PermissionFlags.UseExternalEmojis))} Use external emojis
 
       **Channel**
-      ${boolEmoji(channelPerm.has(PermissionFlags.UseExternalEmojis))} Use External Emojis
-      ${boolEmoji(true)} Use Discord emojis & emojis from this server
+      ${boolEmoji(true)} Use Discord emojis
+      ${boolEmoji(true)} Use this server's emojis
+      ${boolEmoji(
+        channelPerm.deny.has(PermissionFlags.UseExternalEmojis)
+          ? false
+          : channelPerm.allow.has(PermissionFlags.UseExternalEmojis)
+            ? true
+            : null,
+      )} Use external emojis
     `,
   });
 
