@@ -61,6 +61,7 @@ As far as style preferences not covered by the [Biome configuration](/biome.json
 
 - Use `n += 1` rather than `n++`
 - Prefer chaining schemas (`z.string().optional()`) over nesting (`z.optional(z.string())`)
+- Prefer Drizzle callbacks where possible (`(table, { eq }) => eq(table.id, id)`) over importing individual tables and functions
 
 ### Bot
 
