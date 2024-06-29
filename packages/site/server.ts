@@ -1,6 +1,6 @@
 import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
 import type { AppLoadContext } from "@remix-run/cloudflare";
-import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
+import { createRequestHandler, json, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
 import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
 export { DurableComponentState } from "store";
@@ -52,13 +52,30 @@ export default {
     }
 
     try {
+      const origin = new URL(request.url).origin;
       const loadContext: AppLoadContext = {
-        origin: new URL(request.url).origin,
+        origin,
         env,
         waitUntil: ctx.waitUntil,
         // passThroughOnException: ctx.passThroughOnException,
       };
-      return await handleRemixRequest(request, loadContext);
+      const response = await handleRemixRequest(request, loadContext);
+      if (
+        request.url.startsWith(`${origin}/api/`) &&
+        !response.headers.get("Content-Type")?.startsWith("application/json")
+      ) {
+        response.headers.delete("Content-Type");
+        if (response.status === 404) {
+          return json(
+            { message: "Not Found" },
+            {
+              status: 404,
+              headers: response.headers,
+            },
+          );
+        }
+      }
+      return response;
     } catch (error) {
       console.log(error);
       return new Response("An unexpected error occurred", { status: 500 });
