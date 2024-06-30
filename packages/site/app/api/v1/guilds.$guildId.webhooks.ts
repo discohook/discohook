@@ -68,7 +68,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       )) as RESTGetAPIGuildWebhooksResult;
     } catch (e) {
       if (isDiscordError(e)) {
-        throw respond(json(e.rawError, 500));
+        throw respond(json(e.rawError, e.status));
       }
     }
     if (freshWebhooks) {
