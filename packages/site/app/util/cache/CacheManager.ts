@@ -1,3 +1,4 @@
+import { SerializeFrom } from "@remix-run/cloudflare";
 import {
   APIChannel,
   APIGuild,
@@ -7,6 +8,7 @@ import {
 } from "discord-api-types/v10";
 import { useReducer } from "react";
 import { ApiRoute, BRoutes, apiUrl } from "~/api/routing";
+import type { loader as ApiGetGuildCacheable } from "~/api/v1/guilds.$guildId.cacheable";
 
 export type Resolutions = {
   [key: `channel:${string}`]: ResolvableAPIChannel | undefined | null;
@@ -196,19 +198,19 @@ class RoleResourceManager extends ResourceCacheManagerBase<ResolvableAPIRole> {
     return resource;
   }
 
-  async fetchMany(guildId: string) {
-    const resource = await this._fetch<ResolvableAPIRole[]>(
-      BRoutes.guildRoles(guildId),
-    );
-    if (!resource) return [];
+  // async fetchMany(guildId: string) {
+  //   const resource = await this._fetch<ResolvableAPIRole[]>(
+  //     BRoutes.guildRoles(guildId),
+  //   );
+  //   if (!resource) return [];
 
-    this.manager.fill(
-      ...resource.map(
-        (r) => [`role:${r.id}`, r] satisfies [ResolutionKey, ResolvableAPIRole],
-      ),
-    );
-    return resource;
-  }
+  //   this.manager.fill(
+  //     ...resource.map(
+  //       (r) => [`role:${r.id}`, r] satisfies [ResolutionKey, ResolvableAPIRole],
+  //     ),
+  //   );
+  //   return resource;
+  // }
 }
 
 class EmojiResourceManager extends ResourceCacheManagerBase<ResolvableAPIEmoji> {
@@ -361,6 +363,33 @@ export class CacheManager {
         this.resolve({ scope, key });
       }
     }
+  }
+
+  async fetchGuildCacheable(guildId: string) {
+    // TODO: move `_fetch` to main manager instance
+    const mgr = new ResourceCacheManagerBase(this);
+
+    const resources = await mgr._fetch<
+      SerializeFrom<typeof ApiGetGuildCacheable>
+    >(BRoutes.guildCacheable(guildId));
+    if (!resources) return this;
+
+    this.fill(
+      ...resources.roles.map(
+        (r) => [`role:${r.id}`, r] satisfies [ResolutionKey, ResolvableAPIRole],
+      ),
+      ...resources.channels.map(
+        (r) =>
+          [`channel:${r.id}`, r] satisfies [
+            ResolutionKey,
+            ResolvableAPIChannel,
+          ],
+      ),
+      ...resources.emojis.map(
+        (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
+      ),
+    );
+    return this;
   }
 }
 

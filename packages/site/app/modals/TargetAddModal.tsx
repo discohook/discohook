@@ -12,17 +12,12 @@ import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
 import { LoadedMembership } from "~/routes/_index";
 import {
-  CacheManager,
-  ResolutionKey,
-  ResolvableAPIChannel,
-  ResolvableAPIEmoji,
-  ResolvableAPIRole,
+  CacheManager
 } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdn, getWebhook } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { randomString } from "~/util/text";
-import type { loader as ApiGetGuildCacheable } from "../api/v1/guilds.$guildId.cacheable";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import { Modal, ModalProps } from "./Modal";
@@ -56,11 +51,6 @@ export const TargetAddModal = (
       setError({ message: e.message });
     },
   });
-  const guildCacheableFetcher = useSafeFetcher<typeof ApiGetGuildCacheable>({
-    onError(e) {
-      setError({ message: e.message });
-    },
-  });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
@@ -81,9 +71,7 @@ export const TargetAddModal = (
           if (webhook.id) {
             setWebhook(webhook);
             if (props.cache && webhook.guild_id) {
-              guildCacheableFetcher.load(
-                apiUrl(BRoutes.guildCacheable(webhook.guild_id)),
-              );
+              props.cache.fetchGuildCacheable(webhook.guild_id);
             }
           } else if ("message" in webhook) {
             setError({ message: webhook.message as string });
@@ -92,32 +80,6 @@ export const TargetAddModal = (
       }
     }
   }, [guildWebhookTokenFetcher, webhook, props.updateTargets]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We don't need to update on props.cache, and it would cause an update loop
-  useEffect(() => {
-    if (
-      guildCacheableFetcher.data &&
-      guildCacheableFetcher.state === "idle" &&
-      props.cache
-    ) {
-      props.cache.fill(
-        ...guildCacheableFetcher.data.roles.map(
-          (r) =>
-            [`role:${r.id}`, r] satisfies [ResolutionKey, ResolvableAPIRole],
-        ),
-        ...guildCacheableFetcher.data.channels.map(
-          (r) =>
-            [`channel:${r.id}`, r] satisfies [
-              ResolutionKey,
-              ResolvableAPIChannel,
-            ],
-        ),
-        ...guildCacheableFetcher.data.emojis.map(
-          (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
-        ),
-      );
-    }
-  }, [guildCacheableFetcher.data, guildCacheableFetcher.state]);
 
   const avatarUrl = webhook
     ? webhook.avatar
@@ -130,7 +92,6 @@ export const TargetAddModal = (
     if (!s) {
       guildWebhooksFetcher.reset();
       guildWebhookTokenFetcher.reset();
-      guildCacheableFetcher.reset();
       setGuildId(undefined);
       setWebhook(undefined);
       setError(undefined);
@@ -405,9 +366,7 @@ export const TargetAddModal = (
               onClick={() => {
                 if (webhook) {
                   if (props.cache && webhook.guild_id) {
-                    guildCacheableFetcher.load(
-                      apiUrl(BRoutes.guildCacheable(webhook.guild_id)),
-                    );
+                    props.cache.fetchGuildCacheable(webhook.guild_id);
                   }
                   props.updateTargets({ [webhook.id]: webhook });
                   setOpen(false);
