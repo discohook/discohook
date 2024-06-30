@@ -189,7 +189,7 @@ export const Message: React.FC<{
               {username}
             </span>
             {badge && (
-              <span className="font-semibold align-top ml-1 mt-[0.3em] text-[0.8rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]">
+              <span className="font-semibold align-top ml-1 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]">
                 {isVerified && (
                   <Svg
                     width={16}
@@ -234,7 +234,7 @@ export const Message: React.FC<{
               )}
               <span className="mr-1">
                 {badge && (
-                  <span className="font-medium mr-1 text-[10px] rounded mt-px px-1.5 py-px bg-blurple text-white items-center inline-flex h-4 indent-0">
+                  <span className="font-semibold mr-2 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem] indent-0">
                     {badge}
                   </span>
                 )}
