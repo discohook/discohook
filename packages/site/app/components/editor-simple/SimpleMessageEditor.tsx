@@ -203,8 +203,8 @@ export const SimpleMessageEditor: React.FC<{
                   Component availability is dependent on the type of webhook
                   that you send a message with. For link buttons, the webhook
                   must be owned by a bot, but to send other buttons and select
-                  menus, the webhook must be owned by the Discohook application
-                  (this website/its bot). Add a webhook for more information.
+                  menus, the webhook must be owned by Discohook (Discohook
+                  Utils#4333). Add a webhook for more info.
                 </>
               ) : possiblyApplication ? (
                 <>

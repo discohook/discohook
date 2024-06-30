@@ -1,4 +1,4 @@
-import { Resource } from "i18next";
+import type { Resource } from "i18next";
 
 export const resources = {
   en: {
