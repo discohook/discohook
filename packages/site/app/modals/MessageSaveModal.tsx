@@ -12,7 +12,6 @@ import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
 import { copyText } from "~/util/text";
-import { relativeTime } from "~/util/time";
 import { action as backupCreateAction } from "../api/v1/backups";
 import { action as shareCreateAction } from "../api/v1/share";
 import { Modal, ModalProps } from "./Modal";
@@ -78,7 +77,39 @@ export const MessageSaveModal = (
       <div className="flex">
         <div className="grow">
           <TextInput
-            label={t("temporaryShareUrl")}
+            label={
+              <Trans
+                t={t}
+                i18nKey={
+                  shareFetcher.data
+                    ? "temporaryShareUrlExpires"
+                    : "temporaryShareUrl"
+                }
+                components={[
+                  <span
+                    className="text-blurple dark:text-blurple-300"
+                    title={
+                      shareFetcher.data
+                        ? t("timestamp.full", {
+                            replace: {
+                              date: new Date(shareFetcher.data.expires),
+                            },
+                          })
+                        : ""
+                    }
+                  />,
+                ]}
+                values={{
+                  count: shareFetcher.data
+                    ? Math.floor(
+                        (new Date(shareFetcher.data.expires).getTime() -
+                          new Date().getTime()) /
+                          86_400_000,
+                      )
+                    : undefined,
+                }}
+              />
+            }
             className="w-full"
             value={shareFetcher.data ? shareFetcher.data.url : ""}
             placeholder={t("clickGenerate")}
@@ -99,21 +130,6 @@ export const MessageSaveModal = (
           {t(shareFetcher.data ? "copy" : "generate")}
         </Button>
       </div>
-      {shareFetcher.data && (
-        <p className="mt-1">
-          <Trans
-            t={t}
-            i18nKey="linkExpiresAt"
-            values={{
-              time: new Date(shareFetcher.data.expires).toLocaleString(),
-              relativeTime: relativeTime(
-                new Date(shareFetcher.data.expires),
-                t,
-              ),
-            }}
-          />
-        </p>
-      )}
       <p className="text-sm font-medium mt-1">{t("options")}</p>
       <Checkbox
         label={t("includeWebhookUrls")}
