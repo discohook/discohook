@@ -12,7 +12,7 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
-import { AuthorType, getAuthorType } from "../preview/Message";
+import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
 import {
   EmbedEditor,

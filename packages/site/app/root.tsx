@@ -16,7 +16,7 @@ import moment from "moment";
 import { Suspense, lazy, memo, useEffect } from "react";
 import { initReactI18next } from "react-i18next";
 import styles from "../styles/app.css";
-import { Message } from "./components/preview/Message";
+import { Message } from "./components/preview/Message.client";
 import icons from "./styles/coolicons.css";
 import { resources } from "./util/i18n";
 import { getZodErrorMessage } from "./util/loader";

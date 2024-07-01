@@ -14,9 +14,9 @@ import {
   EmbedEditorSection,
   getEmbedLength,
 } from "../editor/EmbedEditor";
-import { getBlobDataUrl, getMessageText } from "../editor/MessageEditor";
+import { getBlobDataUrl } from "../editor/MessageEditor.client";
 import { CoolIcon } from "../icons/CoolIcon";
-import { AuthorType, getAuthorType } from "../preview/Message";
+import { AuthorType, getAuthorType } from "../preview/Message.client";
 
 export const SimpleMessageEditor: React.FC<{
   data: QueryData;
@@ -46,7 +46,7 @@ export const SimpleMessageEditor: React.FC<{
     message.data.embeds && message.data.embeds.length > 0
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
       : 0;
-  const previewText = getMessageText(message.data);
+  // const previewText = getMessageText(message.data);
 
   const authorTypes = webhooks
     ? webhooks.map((w) => getAuthorType(discordApplicationId, w))

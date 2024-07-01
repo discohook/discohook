@@ -14,7 +14,7 @@ import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";

@@ -4,7 +4,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { HistoryItem } from "~/routes/_index";
 import { LinkHistoryItem, linkEmbedToAPIEmbed } from "~/routes/link";
 import { LinkQueryData, QueryData } from "~/types/QueryData";

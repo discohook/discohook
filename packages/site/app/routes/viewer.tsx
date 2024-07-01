@@ -3,7 +3,7 @@ import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { Header } from "~/components/Header";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { FullscreenThrobber } from "~/root";
 import { getUser } from "~/session.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";

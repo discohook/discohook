@@ -12,9 +12,9 @@ import { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
-import { MessageEditor } from "~/components/editor/MessageEditor";
+import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import {

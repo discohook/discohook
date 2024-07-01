@@ -10,7 +10,7 @@ import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { SimpleMessageEditor } from "~/components/editor-simple/SimpleMessageEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { TabsWindow } from "~/components/tabs";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";

@@ -1,5 +1,5 @@
 import { SerializeFrom } from "@remix-run/cloudflare";
-import { getMessageText } from "~/components/editor/MessageEditor";
+import { getMessageText } from "~/components/editor/MessageEditor.client";
 import { getUserId } from "~/session.server";
 import { getDb } from "~/store.server";
 import { LoaderArgs } from "~/util/loader";

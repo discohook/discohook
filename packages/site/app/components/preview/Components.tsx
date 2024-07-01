@@ -21,7 +21,7 @@ import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 import { RoleShield } from "../icons/role";
 import { channelIcons } from "./Markdown";
-import { AuthorType } from "./Message";
+import { AuthorType } from "./Message.client";
 
 type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
   data: T;

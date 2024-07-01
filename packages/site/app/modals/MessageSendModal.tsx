@@ -12,7 +12,7 @@ import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
-import { getMessageText } from "~/components/editor/MessageEditor";
+import { getMessageText } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import type { Flow } from "~/store.server";

@@ -31,7 +31,7 @@ import {
 } from "~/components/editor/ComponentEditor";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";

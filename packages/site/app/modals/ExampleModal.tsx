@@ -1,5 +1,5 @@
 import { Button } from "~/components/Button";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 

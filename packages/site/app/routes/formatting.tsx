@@ -6,7 +6,7 @@ import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { codeStyle } from "~/components/preview/Markdown";
-import { Message } from "~/components/preview/Message";
+import { Message } from "~/components/preview/Message.client";
 import { getUser } from "~/session.server";
 import { useCache } from "~/util/cache/CacheManager";
 import {
