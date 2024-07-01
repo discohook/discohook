@@ -17,7 +17,7 @@ export const PreviewDisclaimerModal = (props: ModalProps) => {
       <p className="mt-2">
         If something doesn't seem right, just send the message in a private
         channel to make sure everything is working as expected. New Discord
-        style updates will usually be reflected within a few days or weeks.
+        style updates will usually be reflected within a few weeks.
       </p>
       <div className="flex w-full mt-4">
         <Button onClick={() => props.setOpen(false)} className="mx-auto">
