@@ -21,17 +21,22 @@ export const TextArea = (
     cache?: CacheManager;
   },
 ) => {
-  const { label, onInput, delayOnInput, short, markdown, cache } = props;
+  const {
+    label,
+    onInput,
+    delayOnInput,
+    short,
+    freelength,
+    markdown,
+    cache,
+    ...newProps
+  } = props;
   const ref = useRef<HTMLTextAreaElement>(null);
   const length = ref.current ? ref.current.value.length : 0;
 
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
-  // React yells when providing props like this, so we remove it
-  const newProps = { ...props };
-  // biome-ignore lint/performance/noDelete:
-  delete newProps.delayOnInput;
-  if (props.freelength) {
+  if (freelength) {
     newProps.maxLength = undefined;
   }
 
@@ -88,10 +93,10 @@ export const TextArea = (
           className={twJoin(
             "rounded border bg-gray-300 border-gray-200 focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 transition resize-y",
             short ? "min-h-9 py-1 px-[14px]" : "min-h-11 p-2",
-            props.className ?? "",
+            props.className,
           )}
         />
-        {props.markdown && (
+        {markdown && (
           <PopoutRichPicker
             cache={cache}
             insertText={(text) => {
