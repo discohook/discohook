@@ -107,6 +107,16 @@ const MemoizedOutlet = memo(
   }),
 );
 
+export const FullscreenThrobber = () => (
+  <div className="h-screen w-full flex">
+    <img
+      src="/logos/icon.svg"
+      alt="Discohook"
+      className="h-32 animate-pulse m-auto"
+    />
+  </div>
+);
+
 export default function App() {
   useEffect(changeLanguageEffect, []);
   return (
@@ -119,17 +129,7 @@ export default function App() {
         <TailwindThemeScript />
       </head>
       <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230">
-        <Suspense
-          fallback={
-            <div className="h-screen w-full flex">
-              <img
-                src="/logos/icon.svg"
-                alt="Discohook"
-                className="h-32 animate-pulse m-auto"
-              />
-            </div>
-          }
-        >
+        <Suspense fallback={<FullscreenThrobber />}>
           <MemoizedOutlet />
         </Suspense>
         <ScrollRestoration />
