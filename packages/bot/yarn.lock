@@ -664,13 +664,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theinternetfolks/snowflake@shayypy/snowflake":
-  version: 1.3.0
-  resolution: "@theinternetfolks/snowflake@https://github.com/shayypy/snowflake.git#commit=5631e2ade0ec5ba9d02192455d2558db284f27b6"
-  checksum: 10c0/b9434c7b000ef4d8a92458e15f5f53f31d140d78416eb76c94a3a1f804cd6c4c433b537f6133aad8ad01206b8407c10c77762614d0b12ff736d3938536601c4c
-  languageName: node
-  linkType: hard
-
 "@tsconfig/node18@npm:^18.2.2":
   version: 18.2.2
   resolution: "@tsconfig/node18@npm:18.2.2"
@@ -3268,15 +3261,15 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=75c58b&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=0227e0&locator=discohook-bot%40workspace%3A."
   dependencies:
-    "@theinternetfolks/snowflake": shayypy/snowflake
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.31.2"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
-  checksum: 10c0/6be5a51928eedeff6e6a73e2fc57a09934d9fbe8d775701baaefaa75b1266190ad22a75481ddebd0d3dbcfcf27a778153b72730bd47a1b614cdd820768aa8ef7
+    tif-snowflake: shayypy/snowflake
+  checksum: 10c0/465ba3eb139fd6bbea54171e31bfd46674623e1a66ead1c5dd9bb326612270993350e688f4f44ea241a434ec15e643633c90ab9fd75f9ca21164d32bce766527
   languageName: node
   linkType: hard
 
@@ -3374,6 +3367,13 @@ __metadata:
     glob: "npm:^7.1.4"
     minimatch: "npm:^3.0.4"
   checksum: 10c0/019d33d81adff3f9f1bfcff18125fb2d3c65564f437d9be539270ee74b994986abb8260c7c2ce90e8f30162178b09dbbce33c6389273afac4f36069c48521f57
+  languageName: node
+  linkType: hard
+
+tif-snowflake@shayypy/snowflake:
+  version: 1.3.0
+  resolution: "tif-snowflake@https://github.com/shayypy/snowflake.git#commit=5631e2ade0ec5ba9d02192455d2558db284f27b6"
+  checksum: 10c0/d170220535c3f90cbb173ec8b1e01efa4ca763aa59dfc55985e7ad5a21b51862cbd226cf3bbae2c7c0df2b5a6a381d2a190c094488512861cb3f6625f226a76f
   languageName: node
   linkType: hard
 
