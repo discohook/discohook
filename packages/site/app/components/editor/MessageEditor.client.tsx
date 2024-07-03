@@ -1,9 +1,10 @@
-import { APIWebhook } from "discord-api-types/v10";
+import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
 import { EditingComponentData } from "~/modals/ComponentEditModal";
+import { JsonEditorProps } from "~/modals/JsonEditorModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
+import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -53,6 +54,9 @@ export const MessageEditor: React.FC<{
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
   >;
+  setJsonEditor: React.Dispatch<
+    React.SetStateAction<JsonEditorProps | undefined>
+  >;
   webhooks?: APIWebhook[];
   cache?: CacheManager;
 }> = ({
@@ -65,6 +69,7 @@ export const MessageEditor: React.FC<{
   setSettingMessageIndex,
   setEditingMessageFlags,
   setEditingComponent,
+  setJsonEditor,
   webhooks,
   cache,
 }) => {
@@ -356,11 +361,8 @@ export const MessageEditor: React.FC<{
             </div>
           </>
         )}
-        <div className="flex">
-          <Button
-            className="ltr:mr-2 rtl:ml-2 shrink"
-            onClick={() => setSettingMessageIndex(i)}
-          >
+        <div className="flex space-x-2 rtl:space-x-reverse">
+          <Button className="shrink" onClick={() => setSettingMessageIndex(i)}>
             <span>
               {t(message.reference ? "changeReference" : "setReference")}
             </span>
@@ -457,6 +459,20 @@ export const MessageEditor: React.FC<{
               {t("add")}
             </ButtonSelect>
           </div>
+          <Button
+            onClick={() =>
+              setJsonEditor({
+                data: message.data,
+                update: (newData) => {
+                  message.data = newData;
+                },
+                schema: ZodQueryDataMessage.shape.data,
+              })
+            }
+            discordstyle={ButtonStyle.Secondary}
+          >
+            {t("jsonEditor")}
+          </Button>
         </div>
       </div>
     </details>

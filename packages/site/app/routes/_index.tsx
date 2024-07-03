@@ -25,6 +25,7 @@ import { ExampleModal } from "~/modals/ExampleModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
+import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
 import { MessageFlagsEditModal } from "~/modals/MesageFlagsEditModal";
 import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
@@ -396,6 +397,7 @@ export default function Index() {
   const [sharing, setSharing] = useState(dm === "share-create");
   const [editingWebhook, setEditingWebhook] = useState<string>();
   const [showHistory, setShowHistory] = useState(dm === "history");
+  const [jsonEditor, setJsonEditor] = useState<JsonEditorProps>();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -461,6 +463,11 @@ export default function Index() {
         data={data}
         setData={setData}
         user={user}
+      />
+      <JsonEditorModal
+        open={!!jsonEditor}
+        setOpen={() => setJsonEditor(undefined)}
+        {...jsonEditor}
       />
       <HistoryModal
         open={showHistory}
@@ -645,6 +652,7 @@ export default function Index() {
                   }
                   setSettingMessageIndex={setSettingMessageIndex}
                   setEditingMessageFlags={setEditingMessageFlags}
+                  setJsonEditor={setJsonEditor}
                   webhooks={Object.values(targets)}
                   setEditingComponent={setEditingComponent}
                   cache={cache}
