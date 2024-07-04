@@ -99,15 +99,15 @@ export const MessageSaveModal = (
                     }
                   />,
                 ]}
-                values={{
-                  count: shareFetcher.data
+                count={
+                  shareFetcher.data
                     ? Math.floor(
                         (new Date(shareFetcher.data.expires).getTime() -
                           new Date().getTime()) /
                           86_400_000,
                       )
-                    : undefined,
-                }}
+                    : undefined
+                }
               />
             }
             className="w-full"

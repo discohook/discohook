@@ -19,6 +19,7 @@
   "saveMessageTitle": "Save Message",
   "temporaryShareUrl": "Share URL",
   "temporaryShareUrlExpires": "Share URL (expires <0>$t(timestamp.relative.days_future)</0>)",
+  "expiresIn": "Expires {{0}}",
   "shareExpired": "Invalid Share Link",
   "generate": "Generate",
   "copy": "Copy",

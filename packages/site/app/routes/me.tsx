@@ -946,18 +946,21 @@ export default function Me() {
                             >
                               <div className="truncate shrink-0 w-full sm:w-fit">
                                 <p className="font-medium">
-                                  {
-                                    // TODO this should be i18n'd so that the flow of time makes sense in RTL
-                                    created.toLocaleDateString(undefined, {
-                                      month: "short",
-                                      day: "numeric",
-                                      year:
-                                        now.getFullYear() ===
-                                        created.getFullYear()
-                                          ? undefined
-                                          : "numeric",
-                                    })
-                                  }
+                                  <span className="text-gray-600 dark:text-gray-500">
+                                    {
+                                      // TODO this should be i18n'd so that the flow of time makes sense in RTL
+                                      created.toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                        year:
+                                          now.getFullYear() ===
+                                          created.getFullYear()
+                                            ? undefined
+                                            : "numeric",
+                                      })
+                                    }{" "}
+                                    -
+                                  </span>
                                   <span
                                     className={twJoin(
                                       "ml-1",
@@ -966,10 +969,9 @@ export default function Me() {
                                         : expires.getTime() - now.getTime() <=
                                             86400000
                                           ? "text-yellow-500 dark:text-yellow-400"
-                                          : "text-gray-600 dark:text-gray-500",
+                                          : undefined,
                                     )}
                                   >
-                                    -{" "}
                                     {expires.toLocaleDateString(undefined, {
                                       month: "short",
                                       day: "numeric",
@@ -982,7 +984,16 @@ export default function Me() {
                                   </span>
                                 </p>
                                 <p className="text-gray-600 dark:text-gray-500 text-sm">
-                                  {t("id", { replace: { id: link.shareId } })}
+                                  {expires < now
+                                    ? t("id", { replace: { id: link.shareId } })
+                                    : t("expiresIn", {
+                                        replace: [
+                                          relativeTime(
+                                            new Date(link.expiresAt),
+                                            t,
+                                          ),
+                                        ],
+                                      })}
                                 </p>
                               </div>
                               <hr className="sm:hidden my-1" />
