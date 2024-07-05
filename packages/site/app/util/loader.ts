@@ -21,9 +21,28 @@ export type ActionArgs = RRActionFunctionArgs<Context> & { context: Context };
 
 export const getZodErrorMessage = (e: any) => {
   if ("issues" in e) {
-    return (e as ZodError).issues
-      .map((iss) => `${iss.message} (${iss.path.join(".")})`)
-      .join("\n");
+    if (Array.isArray(e.issues)) {
+      return (e as ZodError).issues
+        .map((iss) => `${iss.message} (${iss.path.join(".")})`)
+        .join("\n");
+    }
+    const lines: string[] = [];
+    let i = -1;
+    const iter = (obj: Record<string, unknown>, top = false) => {
+      if (top) {
+        i += 1;
+      }
+      for (const [key, errs] of Object.entries(obj)) {
+        if (key === "_errors") {
+          lines[i] = `${lines[i] ?? ""} ${(errs as string[]).join(", ")}`;
+        } else {
+          lines[i] = `${lines[i] ?? ""} ${key}:`.trim();
+          iter(errs as Record<string, unknown>);
+        }
+      }
+    };
+    iter(e.issues, true);
+    return lines.join("\n");
   } else if ("message" in e) {
     return (e as ZodError).message;
   }
