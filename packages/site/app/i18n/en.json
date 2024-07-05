@@ -210,6 +210,8 @@
   "hourTime": "Hour ({{timezone}})",
   "minute": "Minute",
   "scheduleFrequencyNote": "Scheduled backups can be no sooner than 2 hours apart from each other. To reset a field to \"Every month/day/weekday,\" remove all chosen options.",
+  "nextRunAtOnce": "<0/> Scheduled for $t(timestamp.full) ({{relative}})",
+  "nextRunAtRepeat": "<0/> Next run {{relative}} ($t(timestamp.full))",
   "bots": "Bots",
   "newBot": "New Bot",
   "updateBot": "Update Bot",

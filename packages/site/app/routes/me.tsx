@@ -737,28 +737,27 @@ export default function Me() {
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-500 text-sm">
                                   {backup.nextRunAt ? (
-                                    <>
-                                      <Twemoji
-                                        emoji="🕑"
-                                        className="grayscale"
-                                      />{" "}
-                                      Next run{" "}
-                                      {relativeTime(
-                                        new Date(backup.nextRunAt),
-                                        t,
-                                      )}{" "}
-                                      (
-                                      {new Date(
-                                        backup.nextRunAt,
-                                      ).toLocaleString(undefined, {
-                                        month: "numeric",
-                                        day: "numeric",
-                                        year: "numeric",
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                      })}
-                                      )
-                                    </>
+                                    <Trans
+                                      t={t}
+                                      i18nKey={
+                                        backup.cron
+                                          ? "nextRunAtRepeat"
+                                          : "nextRunAtOnce"
+                                      }
+                                      components={[
+                                        <Twemoji
+                                          emoji="🕑"
+                                          className="grayscale ltr:mr-1 rtl:ml-1"
+                                        />,
+                                      ]}
+                                      values={{
+                                        relative: relativeTime(
+                                          new Date(backup.nextRunAt),
+                                          t,
+                                        ),
+                                        date: new Date(backup.nextRunAt),
+                                      }}
+                                    />
                                   ) : backup.importedFromOrg ? (
                                     <>
                                       <Twemoji
