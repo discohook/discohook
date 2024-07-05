@@ -562,5 +562,7 @@
     "addComponentType": "اضافة $t(componentShort.{{type}})",
     "formatMemberDescription": "العضو المُستخدم هنا يعتمد على نوع الرسالة. اذا كان عنصر, يكون العضو هو الذي استخدم العنصر. اذا كانت رسالة دخول او خروج من السيرفر, يكون العضو الذي دخل او خرج.",
     "formatDescription": "بعض الرسائل يمكن انشاء نموذج منها بشكل متغير بأستخدام اختيارات التنسيق اسفل. كل الاختيارات يجب ان تكون بين قوسين مجعدين: <0>{}</0>",
-    "temporaryShareUrlExpires": "رابط المشاركة (ينتهي بتاريخ <0>$t(timestamp.relative.days_future)</0>)"
+    "temporaryShareUrlExpires": "رابط المشاركة (ينتهي بتاريخ <0>$t(timestamp.relative.days_future)</0>)",
+    "jsonEditor": "مُعدِل ال JSON",
+    "jsonPrettify": "تحسين شكل ال JSON"
 }
