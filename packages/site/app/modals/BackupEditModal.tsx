@@ -335,6 +335,7 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
                   now,
                   new Date(new Date(now).setFullYear(now.getFullYear() + 2)),
                 )}
+                value={scheduleDate ?? null}
                 onChange={(o) => {
                   if (o) setScheduleDate(o.date);
                 }}
