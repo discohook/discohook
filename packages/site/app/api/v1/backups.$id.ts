@@ -119,6 +119,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     where: (backups, { eq }) => eq(backups.id, id),
     columns: {
       ownerId: true,
+      data: true,
       scheduled: true,
     },
   });
@@ -133,6 +134,18 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     scheduleAt === undefined && cron === undefined
       ? undefined
       : !!(scheduleAt || cron || undefined);
+
+  const targets = data ? data.targets : backup.data.targets;
+  if (isScheduled && (!targets || targets.length === 0)) {
+    throw json(
+      {
+        message:
+          "This backup does not have any targets, so it cannot be scheduled. Edit the backup and add a webhook.",
+      },
+      400,
+    );
+  }
+
   const nextRunAt = cron ? cron.next().toDate() : scheduleAt || undefined;
   const updated = (
     await db
