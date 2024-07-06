@@ -88,7 +88,7 @@ export interface LinkHistoryItem {
   data: LinkQueryData;
 }
 
-export default function Index() {
+export default () => {
   const { t } = useTranslation();
   const { user, myOrigin } = useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
@@ -472,4 +472,4 @@ export default function Index() {
       </div>
     </div>
   );
-}
+};
