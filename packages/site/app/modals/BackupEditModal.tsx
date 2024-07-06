@@ -114,6 +114,7 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
           if (day && time) {
             const [hours, minutes] = time.split(":").map(Number);
             const date = new Date(new Date(day).setHours(hours, minutes, 0, 0));
+            data.cron = null;
             data.scheduleAt = date.toISOString();
           }
           data.day = undefined;

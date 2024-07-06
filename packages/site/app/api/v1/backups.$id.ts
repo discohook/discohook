@@ -78,9 +78,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
   const { name, data, scheduleAt, cron, timezone } = await zxParseJson(
     request,
     {
-      name: z
-        .ostring()
-        .refine((val) => (val !== undefined ? val.length <= 100 : true)),
+      name: z.string().max(100).optional(),
       data: ZodQueryData.transform(fixZodQueryData).optional(),
       scheduleAt: z
         .string()
@@ -158,7 +156,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
           : undefined,
         scheduled: isScheduled,
         nextRunAt,
-        cron: cron ? cron.stringify() : undefined,
+        cron: cron === null ? null : cron ? cron.stringify() : undefined,
         timezone,
       })
       .where(eq(backups.id, id))
