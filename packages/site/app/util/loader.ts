@@ -193,6 +193,7 @@ export const useSafeFetcher = <TData = any>({
         const responseData = raw as SerializeFrom<TData>;
         setData(responseData);
         setState("idle");
+        return responseData;
       } catch (e) {
         setState("idle");
         throw e;
@@ -200,7 +201,7 @@ export const useSafeFetcher = <TData = any>({
     }) as (
       target: FormData | URLSearchParams | any,
       options?: Pick<SubmitOptions, "action" | "method">,
-    ) => void,
+    ) => Promise<SerializeFrom<TData>>,
     /**
      * Beware of making it possible to spam concurrent requests
      * since this resets `state` to `idle`
