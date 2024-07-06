@@ -337,7 +337,16 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
                 )}
                 value={scheduleDate ?? null}
                 onChange={(o) => {
-                  if (o) setScheduleDate(o.date);
+                  if (o) {
+                    const newDate = o.date.clone();
+                    if (scheduleDate) {
+                      // Preserve time since date picker will reset it
+                      newDate.hour(scheduleDate.hour());
+                      newDate.minute(scheduleDate.minute());
+                      newDate.second(scheduleDate.second());
+                    }
+                    setScheduleDate(newDate);
+                  }
                 }}
                 isDisabled={!scheduled || repeating}
                 required={scheduled}
@@ -348,11 +357,32 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
                 label={t("time", {
                   replace: { timezone: getTimezone("longGeneric") },
                 })}
+                value={
+                  scheduleDate
+                    ? scheduleDate.toDate().toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })
+                    : ""
+                }
+                onChange={(e) => {
+                  if (scheduleDate) {
+                    const [hour, minute] = e.currentTarget.value
+                      .split(":")
+                      .map(Number);
+                    const newDate = scheduleDate.clone();
+                    newDate.hour(hour);
+                    newDate.minute(minute);
+                    newDate.second(0);
+                    setScheduleDate(newDate);
+                  }
+                }}
                 min={
                   !scheduleDate ||
                   scheduleDate.toISOString().split("T")[0] ===
                     now.toISOString().split("T")[0]
-                    ? now.toLocaleTimeString(undefined, {
+                    ? now.toLocaleTimeString("en-US", {
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: false,
@@ -360,7 +390,7 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
                     : ""
                 }
                 className="w-full"
-                disabled={!scheduled || repeating}
+                disabled={!scheduled || repeating || !scheduleDate}
                 required={scheduled}
               />
             </>
