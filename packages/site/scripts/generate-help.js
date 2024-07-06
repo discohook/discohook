@@ -53,10 +53,18 @@ const data = {
   //   image: { url: "https://assets.discohook.app/discord_md_cheatsheet.png" },
   // },
   // formatting: "markdown",
+  blocked: {
+    title: "My request to Discord was blocked, what do I do?",
+    description:
+      'The most common cause of this is a privacy extension like Privacy Badger blocking requests to Discord, which is a 3rd-party host. If you have an extension like this, allow Discord\'s domains or simply disable it for Discohook. Anything to the right of "block entirely" for `discord.com` is enough.',
+    image: {
+      url: "https://discohook.app/help/privacy_badger.png",
+    },
+  },
   nothing: {
     title: "I set up my webhook, but clicking send does nothing.",
     description:
-      'This is probably because your browser wasn\'t able to connect to Discord. Try restarting your browser, using private ("incognito") mode, or disabling extensions like Privacy Badger or DuckDuckGo that may be blocking Discohook from connecting to Discord.',
+      'This is probably because your browser wasn\'t able to connect to Discord. Try restarting your browser or using private ("incognito") mode.',
   },
   image: {
     title: "My images don't load properly.",
