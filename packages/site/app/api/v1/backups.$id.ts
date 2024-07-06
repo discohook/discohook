@@ -144,7 +144,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     );
   }
 
-  const nextRunAt = cron ? cron.next().toDate() : scheduleAt || undefined;
+  const nextRunAt = cron ? cron.next().toDate() : scheduleAt;
   const updated = (
     await db
       .update(backups)
