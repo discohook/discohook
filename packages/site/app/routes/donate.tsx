@@ -1,13 +1,8 @@
 import { Link, useLoaderData } from "@remix-run/react";
-import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import React, { useState } from "react";
 import { twJoin } from "tailwind-merge";
-import { BRoutes, apiUrl } from "~/api/routing";
-import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
-import { InfoBox } from "~/components/InfoBox";
 import { Twemoji } from "~/components/icons/Twemoji";
-import { PreviewButton } from "~/components/preview/Components";
 import { linkClassName } from "~/components/preview/Markdown";
 import { CryptoDonateInfoModal } from "~/modals/CryptoDonateInfoModal";
 import {
@@ -251,13 +246,15 @@ export default function DonatePage() {
           <Twemoji emoji="💰" className="h-5" /> How to donate
         </h1>
         <p>
-          There are multiple ways to donate. You get the same thing in the end,
+          {/* There are multiple ways to donate. You get the same thing in the end,
           but you can decide which method is right for you. And when you donate
           with a direct method (Ko-fi/Bitcoin), your Deluxe membership stacks
           and adapts to how much you donated. For example: for about a week of
-          Deluxe, donate $2, or for a year, $72.
+          Deluxe, donate $2, or for a year, $72. */}
+          You can currently donate through Discord. Click on Discohook Utils in
+          the member sidebar, click "Shop", then select a Deluxe subscription.
         </p>
-        <div className="mt-4 rounded bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table table-auto w-full">
+        {/* <div className="mt-4 rounded bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table table-auto w-full">
           <div className="table-header-group">
             <div className="table-row">
               <Cell className="font-semibold rounded-tl sm:px-6">Method</Cell>
@@ -332,7 +329,7 @@ export default function DonatePage() {
               Please sign in to donate with cryptocurrencies.
             </InfoBox>
           </Link>
-        )}
+        )} */}
         <h1 className="text-xl font-bold mt-4">
           <Twemoji className="h-5" emoji="✨" /> Features
         </h1>
