@@ -682,7 +682,7 @@ export default () => {
                   {t("backToTriggers")}
                 </button>
                 <TabHeader>{t(`triggerEvent.${openTrigger.event}`)}</TabHeader>
-                <div className="rounded px-4 py-3 bg-gray-200 dark:bg-primary-700 shadow flex">
+                <div className="rounded px-4 py-3 bg-gray-200 dark:bg-gray-900 shadow flex">
                   <div>
                     <p className="text-sm font-medium">
                       {t("createTrigger.when")}
@@ -696,7 +696,7 @@ export default () => {
                     className="text-4xl my-auto ml-auto"
                   />
                 </div>
-                <div className="mt-2 rounded px-4 py-3 bg-gray-200 dark:bg-primary-700 shadow">
+                <div className="mt-2 rounded px-4 py-3 bg-gray-200 dark:bg-gray-900 shadow">
                   <p className="text-sm font-medium">
                     {t("createTrigger.then")}
                   </p>
