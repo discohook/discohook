@@ -1,3 +1,4 @@
+import { ComponentType } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { relations } from "drizzle-orm";
 import {
@@ -17,7 +18,11 @@ import {
   QueryData,
   ScheduledRunData,
 } from "../types/backups.js";
-import { Flow, StorableComponent } from "../types/components.js";
+import {
+  FlowAction,
+  FlowActionType,
+  StorableComponent,
+} from "../types/components.js";
 import { TriggerEvent } from "../types/triggers.js";
 
 // @ts-ignore
@@ -458,13 +463,14 @@ export const discordMessageComponents = pgTable("DiscordMessageComponent", {
   createdById: snowflake("createdById"),
   updatedById: snowflake("updatedById"),
   updatedAt: date("updatedAt"),
+  type: integer("type").notNull().$type<ComponentType>(),
   data: json("data").notNull().$type<StorableComponent>(),
   draft: boolean("draft").notNull().default(false),
 });
 
 export const discordMessageComponentsRelations = relations(
   discordMessageComponents,
-  ({ one }) => ({
+  ({ one, many }) => ({
     guild: one(discordGuilds, {
       fields: [discordMessageComponents.guildId],
       references: [discordGuilds.id],
@@ -480,20 +486,84 @@ export const discordMessageComponentsRelations = relations(
       references: [users.id],
       relationName: "User_DiscordMessageComponent-updated",
     }),
+    componentsToFlows: many(discordMessageComponentsToFlows),
   }),
 );
 
-export const triggers = pgTable("Triggers", {
+export const discordMessageComponentsToFlows = pgTable(
+  "DiscordMessageComponent_to_Flow",
+  {
+    discordMessageComponentId: snowflake("discordMessageComponentId")
+      .notNull()
+      .references(() => discordMessageComponents.id, { onDelete: "cascade" }),
+    flowId: snowflake("flowId")
+      .notNull()
+      .references(() => flows.id, { onDelete: "cascade" }),
+  },
+  (table) => ({
+    pk: primaryKey({
+      columns: [table.discordMessageComponentId, table.flowId],
+    }),
+  }),
+);
+
+export const discordMessageComponentsToFlowsRelations = relations(
+  discordMessageComponentsToFlows,
+  ({ one }) => ({
+    discordMessageComponent: one(discordMessageComponents, {
+      fields: [discordMessageComponentsToFlows.discordMessageComponentId],
+      references: [discordMessageComponents.id],
+    }),
+    flow: one(flows, {
+      fields: [discordMessageComponentsToFlows.flowId],
+      references: [flows.id],
+    }),
+  }),
+);
+
+export const flows = pgTable("Flow", {
+  id: snowflakePk(),
+  name: text("name"),
+});
+
+export const flowsRelations = relations(flows, ({ many }) => ({
+  componentsToFlows: many(discordMessageComponentsToFlows),
+  trigger: many(triggers, {
+    relationName: "Flow_Trigger",
+  }),
+  actions: many(flowActions, { relationName: "Flow_Action" }),
+}));
+
+export const flowActions = pgTable("Action", {
+  id: snowflakePk(),
+  type: integer("type").notNull().$type<FlowActionType>(),
+  data: json("data").notNull().$type<FlowAction>(),
+  flowId: snowflake("flowId")
+    .notNull()
+    .references(() => flows.id, { onDelete: "cascade" }),
+  // lastExecutionContext: json(),
+});
+
+export const flowActionsRelations = relations(flowActions, ({ one }) => ({
+  flow: one(flows, {
+    fields: [flowActions.id],
+    references: [flows.id],
+    relationName: "Flow_Action",
+  }),
+}));
+
+export const triggers = pgTable("Trigger", {
   id: snowflakePk(),
   platform: text("platform").$type<"discord" | "guilded">().notNull(),
   event: integer("event").$type<TriggerEvent>().notNull(),
   discordGuildId: snowflake("discordGuildId"),
   guildedServerId: text("guildedServerId"),
-  flow: json("flow").$type<Flow>(),
+  flowId: snowflake("flowId")
+    .notNull()
+    .references(() => flows.id, { onDelete: "cascade" }),
   updatedById: snowflake("updatedById"),
   updatedAt: date("updatedAt"),
   disabled: boolean("disabled").notNull().default(false),
-  ignoreBots: boolean("ignoreBots").default(false),
 });
 
 export const triggersRelations = relations(triggers, ({ one }) => ({
@@ -506,6 +576,11 @@ export const triggersRelations = relations(triggers, ({ one }) => ({
     fields: [triggers.guildedServerId],
     references: [guildedServers.id],
     relationName: "GuildedServer_Trigger",
+  }),
+  flow: one(flows, {
+    fields: [triggers.flowId],
+    references: [flows.id],
+    relationName: "Flow_Trigger",
   }),
   updatedBy: one(users, {
     fields: [triggers.updatedById],

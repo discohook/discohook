@@ -28,14 +28,10 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
 
   const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
   const triggers = await getWelcomerConfigurations(db, "remove", rest, guild);
-  const applicable = triggers.filter(
-    (t) =>
-      !!t.flow && !t.disabled && (payload.user?.bot ? !t.ignoreBots : true),
-  );
+  const applicable = triggers.filter((t) => !!t.flow && !t.disabled);
 
   for (const trigger of applicable) {
-    // biome-ignore lint/style/noNonNullAssertion: Filtered above
-    await executeFlow(trigger.flow!, rest, db, {
+    await executeFlow(trigger.flow, rest, db, {
       user: payload.user,
       guild,
     });

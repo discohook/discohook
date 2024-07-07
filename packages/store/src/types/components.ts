@@ -1,4 +1,4 @@
-import {
+import type {
   APIMessageComponentEmoji,
   APISelectMenuDefaultValue,
   APISelectMenuOption,
@@ -6,10 +6,11 @@ import {
   ChannelType,
   ComponentType,
   MessageFlags,
-  RESTPostAPIGuildForumThreadsJSONBody,
+  RESTPostAPIChannelMessageJSONBody,
   SelectMenuDefaultValueType,
   ThreadAutoArchiveDuration,
 } from "discord-api-types/v10";
+import type { flowActions, flows } from "../schema/schema.js";
 
 export type StorableComponent =
   | {
@@ -19,9 +20,9 @@ export type StorableComponent =
         | ButtonStyle.Secondary
         | ButtonStyle.Success
         | ButtonStyle.Danger;
+      flowId: string;
       label?: string;
       emoji?: APIMessageComponentEmoji;
-      flow: Flow;
       disabled?: boolean;
     }
   | {
@@ -34,7 +35,12 @@ export type StorableComponent =
     }
   | {
       type: ComponentType.StringSelect;
-      flows: Record<string, Flow>;
+      // Considering: this could be reduced by automatically assigning flow
+      // IDs to be option values (and vice versa) - so the submitted value
+      // tells the application which flow to execute. The only holdoff on this
+      // is that, when users are able to have a `maxValue > 1`, they will need
+      // to be able to conveniently refer to option values
+      flowIds: Record<string, string>;
       options: APISelectMenuOption[];
       placeholder?: string;
       minValues?: number;
@@ -47,7 +53,7 @@ export type StorableComponent =
         | ComponentType.RoleSelect
         | ComponentType.MentionableSelect
         | ComponentType.ChannelSelect;
-      flow: Flow;
+      flowId: string;
       placeholder?: string;
       minValues?: number;
       maxValues?: number;
@@ -55,9 +61,11 @@ export type StorableComponent =
       disabled?: boolean;
     };
 
-export interface Flow {
-  actions: FlowAction[];
-}
+export type Flow = typeof flows.$inferSelect & {
+  actions: DBFlowAction[];
+};
+
+export type DBFlowAction = typeof flowActions.$inferSelect;
 
 export enum FlowActionType {
   /** Do nothing */
@@ -66,6 +74,8 @@ export enum FlowActionType {
   Wait = 1,
   /** Ensure that a condition is true before proceeding */
   Check = 2,
+  /** Halt execution and optionally attempt to send a simple error message */
+  Stop = 11,
   /** Set a variable for use in a later action */
   SetVariable = 9,
   /** Add a role to the invoking member */
@@ -80,7 +90,7 @@ export enum FlowActionType {
   SendWebhookMessage = 7,
   /** Create a new thread */
   CreateThread = 8,
-  // /** Delete a message with ID `messageId` */
+  /** Delete a message with ID `messageId` */
   DeleteMessage = 10,
   // /** Show a custom modal to the user */
   // SendModal,
@@ -99,9 +109,58 @@ export interface FlowActionWait extends FlowActionBase {
   seconds: number;
 }
 
+export enum FlowActionCheckFunctionType {
+  /** All conditions must be true. */
+  And = 0,
+  /** One or more conditions must be true. */
+  Or = 1,
+  /** Exactly one condition must be true. */
+  // Xor = 2,
+  /** All conditions must be false, a.k.a. NOR. */
+  Not = 3,
+  /** The provided element A must be contained in array B. */
+  In = 4,
+  /** The provided element A must equal element B. */
+  Equals = 5,
+  // We should support numbers before adding support for gt/lt
+  // Less,
+  // Greater,
+  // Sum,
+}
+
 export interface FlowActionCheck extends FlowActionBase {
   type: FlowActionType.Check;
+  function: FlowActionCheckFunction;
+  then: FlowAction[];
+  else: FlowAction[];
 }
+
+export interface FlowActionCheckFunctionConditional {
+  type:
+    | FlowActionCheckFunctionType.And
+    | FlowActionCheckFunctionType.Or
+    | FlowActionCheckFunctionType.Not;
+  conditions: FlowActionCheckFunction[];
+}
+
+export interface FlowActionCheckFunctionIn {
+  type: FlowActionCheckFunctionType.In;
+  element: AnonymousVariable;
+  array: AnonymousVariable;
+}
+
+export interface FlowActionCheckFunctionEquals {
+  type: FlowActionCheckFunctionType.Equals;
+  a: AnonymousVariable;
+  b: AnonymousVariable;
+  /** Whether to use loose equality (==) */
+  loose?: boolean;
+}
+
+export type FlowActionCheckFunction =
+  | FlowActionCheckFunctionConditional
+  | FlowActionCheckFunctionIn
+  | FlowActionCheckFunctionEquals;
 
 export enum FlowActionSetVariableType {
   /** A static variable is a value that does not change. */
@@ -113,6 +172,8 @@ export enum FlowActionSetVariableType {
    * this variable will be the channel ID of the message that was sent.
    */
   Adaptive = 1,
+  /** Resolves the value of a previous variable. */
+  Get = 2,
 }
 
 export interface FlowActionSetVariable extends FlowActionBase {
@@ -121,6 +182,11 @@ export interface FlowActionSetVariable extends FlowActionBase {
   name: string;
   value: string | boolean;
 }
+
+export type AnonymousVariable = Pick<
+  FlowActionSetVariable,
+  "varType" | "value"
+>;
 
 export interface FlowActionAddRole extends FlowActionBase {
   type: FlowActionType.AddRole;
@@ -155,9 +221,7 @@ export interface FlowActionSendWebhookMessage extends FlowActionBase {
 
 export interface FlowActionCreateThread extends FlowActionBase {
   type: FlowActionType.CreateThread;
-  /** Should be present only if it should be constant
-   * (e.g. a channel other than the one in context) */
-  channelId?: string;
+  channel: AnonymousVariable;
   name: string;
   autoArchiveDuration?: ThreadAutoArchiveDuration;
   rateLimitPerUser?: number;
@@ -166,12 +230,17 @@ export interface FlowActionCreateThread extends FlowActionBase {
   threadType?: ChannelType.PublicThread | ChannelType.PrivateThread;
   invitable?: boolean;
   // Forum/media only
-  message?: RESTPostAPIGuildForumThreadsJSONBody["message"];
+  message?: RESTPostAPIChannelMessageJSONBody;
   appliedTags?: string[];
 }
 
 export interface FlowActionDeleteMessage extends FlowActionBase {
   type: FlowActionType.DeleteMessage;
+}
+
+export interface FlowActionStop extends FlowActionBase {
+  type: FlowActionType.Stop;
+  message?: Pick<RESTPostAPIChannelMessageJSONBody, "content" | "flags">;
 }
 
 export type FlowAction =
@@ -185,4 +254,5 @@ export type FlowAction =
   | FlowActionSendMessage
   | FlowActionSendWebhookMessage
   | FlowActionCreateThread
-  | FlowActionDeleteMessage;
+  | FlowActionDeleteMessage
+  | FlowActionStop;

@@ -472,11 +472,11 @@ const getRowsWithInsertedComponent = (
     if (i === position[0]) {
       // We don't want to send this data to Discord
       const cleaned = { ...component };
-      if ("flow" in cleaned) {
-        cleaned.flow = undefined;
+      if ("flowId" in cleaned) {
+        cleaned.flowId = undefined;
       }
-      if ("flows" in cleaned) {
-        cleaned.flows = undefined;
+      if ("flowIds" in cleaned) {
+        cleaned.flowIds = undefined;
       }
       row.components.splice(position[1], 0, cleaned);
     }

@@ -2,11 +2,14 @@ import { z } from "zod";
 import { zx } from "zodix";
 import { getDb } from "../db.js";
 import { makeSnowflake } from "../schema/schema.js";
-import { StorableComponent } from "../types/index.js";
+import { Flow, StorableComponent } from "../types/index.js";
 
 export interface DurableStoredComponent {
   id: bigint;
   data: StorableComponent;
+  componentsToFlows: {
+    flow: Flow;
+  }[];
   draft?: boolean;
 }
 
@@ -30,6 +33,16 @@ export class DurableComponentState implements DurableObject {
             data: true,
             draft: true,
           },
+          with: {
+            componentsToFlows: {
+              columns: {},
+              with: {
+                flow: {
+                  with: { actions: true },
+                },
+              },
+            },
+          },
         });
         if (!component) {
           return new Response(undefined, { status: 404 });
@@ -39,7 +52,10 @@ export class DurableComponentState implements DurableObject {
           "component",
           component satisfies DurableStoredComponent,
         );
-        return new Response(undefined, { status: 201 });
+        return new Response(JSON.stringify(component), {
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+        });
       }
       case "GET": {
         const component =

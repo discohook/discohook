@@ -4,6 +4,7 @@ import { getUserId } from "~/session.server";
 import {
   StorableComponent,
   discordMessageComponents,
+  flows,
   getDb,
   inArray,
 } from "~/store.server";
@@ -50,10 +51,15 @@ export const action = async ({ request, context }: ActionArgs) => {
   const userId = await getUserId(request, context);
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
+
+  const createdFlow = (
+    await db.insert(flows).values({}).returning({ id: flows.id })
+  )[0];
   const inserted = (
     await db
       .insert(discordMessageComponents)
       .values({
+        type: component.type,
         data: (() => {
           const { custom_id: _, ...c } = component;
           switch (c.type) {
@@ -61,7 +67,7 @@ export const action = async ({ request, context }: ActionArgs) => {
               if (c.style === ButtonStyle.Link) {
                 return c;
               }
-              return { ...c, flow: c.flow ?? { actions: [] } };
+              return { ...c, flowId: String(createdFlow.id) };
             }
             case ComponentType.StringSelect: {
               return {
@@ -72,7 +78,7 @@ export const action = async ({ request, context }: ActionArgs) => {
                 // a way to tell which values have been selected - `{values[n]}`?
                 minValues: 1,
                 maxValues: 1,
-                flows: c.flows ?? {},
+                flowIds: {},
               };
             }
             case ComponentType.UserSelect:
@@ -84,7 +90,7 @@ export const action = async ({ request, context }: ActionArgs) => {
                 // See above
                 minValues: 1,
                 maxValues: 1,
-                flow: c.flow ?? { actions: [] },
+                flowId: String(createdFlow.id),
               };
             }
             default:

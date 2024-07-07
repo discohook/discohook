@@ -14,6 +14,18 @@ Here's a list of currently supported actions:
 **Do nothing**
 Useful for creating display buttons. If this is not the only action in the flow, there is no reason to use it.
 
+**Check**
+Depending on whether a condition is true or false, run a sub-flow. You can execute one of the following functions to calculate the result:
+
+- `And` - all inner functions must return true
+- `Or` - at least one inner function must return true
+- `Not` - all inner functions must return false
+- `Equal` - the value of `a` must be equal to that of `b`. optionally, use [loose equality](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness#loose_equality_using), which causes things like `"0" == false` to return true. this is usually confusing and as such it's disabled by default.
+- `In` - the value of `element` must be contained within `array` (according to strict equality), which must be a string parsable to a JSON array (like `["one","two","three"]`). such arrays are also returned by variables like `member.role_ids`, which is how one might check if a member has an arbitrary role (keep in mind that member state is partial for the member removal trigger).
+
+**Stop**
+Immediately halts the entire flow, even if this action is in a sub-flow. Optionally add a plain text string to attempt to deliver to the user - more limited than sending a backup but easier to set up and customize while editing the rest of your flow.
+
 **Wait for X seconds**
 Pause for the specified number of seconds before continuing to the next action.
 
@@ -35,6 +47,8 @@ Assign a name to an arbitrary value up to 500 characters (static type), or to so
 If you're creating a static variable, the literal values "true" and "false" (without quotes) will evaluate to [boolean values](https://en.wikipedia.org/wiki/Boolean_data_type). Everything else is a string. For message templating, this doesn't matter; all values are cast to string.
 
 If you're creating an adaptive variable, the "Attribute of previous return" you specify should match one of the attributes documented in a return type. For example, if the previous action was **Create thread**, you might want to set a variable with the name `threadId` with attribute `id`. This will let you mention the new thread in a message with the format `<#{threadId}>`, for something like a ticketing system.
+
+If you're creating a mirror variable, "Full prior variable name" should be the fully qualified reference for the variable you want to mirror. This includes the "scope" of the variable for [nested data](https://discohook.app/formatting), so if you want to mirror the server name, use `server.name` in this field. This type of variable is mostly only useful if you are creating an anonymous (no name) variable nested inside another action. Keep in mind that a mirror variable will not be updated if the original variable being mirrored has its value changed for any reason.
 
 **Delete message**
 Delete the message with the ID defined as the `messageId` variable.

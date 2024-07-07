@@ -27,11 +27,12 @@ import { SignJWT } from "jose";
 import { getDb, getchGuild, upsertDiscordUser, upsertGuild } from "store";
 import {
   discordMessageComponents,
+  flows,
   generateId,
   makeSnowflake,
   tokens,
 } from "store/src/schema";
-import { StorableComponent } from "store/src/types/components.js";
+import { StorableComponent } from "store/src/types";
 import { InteractionInstantOrDeferredResponse } from "../../commands.js";
 import {
   ButtonCallback,
@@ -221,6 +222,7 @@ const registerComponent = async (
       channelId: makeSnowflake(flow.message.channelId),
       messageId: makeSnowflake(flow.message.id),
       createdById: makeSnowflake(flow.user.id),
+      type: data.type,
       data,
     })
     .onConflictDoUpdate({
@@ -437,10 +439,15 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   switch (value) {
     case "button": {
       const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+
+      const { id: flowId } = (
+        await db.insert(flows).values({}).returning({ id: flows.id })
+      )[0];
+
       state.component = state.component ?? {
         type: ComponentType.Button,
         style: ButtonStyle.Primary,
-        flow: { actions: [] },
+        flowId: String(flowId),
         label: "Button",
       };
 
@@ -451,6 +458,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
             guildId: makeSnowflake(state.message.guildId),
             channelId: makeSnowflake(state.message.channelId),
             messageId: makeSnowflake(state.message.id),
+            type: state.component.type,
             data: state.component,
             createdById: makeSnowflake(state.user.id),
             updatedById: makeSnowflake(state.user.id),
@@ -612,12 +620,17 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     case "mentionable-select":
     case "channel-select": {
       const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+      const { id: flowId } =
+        state.component ?? value === "string-select"
+          ? { id: 0 }
+          : (await db.insert(flows).values({}).returning({ id: flows.id }))[0];
+
       state.component =
         state.component ?? value === "string-select"
           ? {
               type: ComponentType.StringSelect,
               options: [],
-              flows: {},
+              flowIds: {},
             }
           : {
               type:
@@ -628,7 +641,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                     : value === "mentionable-select"
                       ? ComponentType.MentionableSelect
                       : ComponentType.ChannelSelect,
-              flow: { actions: [] },
+              flowId: String(flowId),
             };
 
       const component = (
@@ -638,6 +651,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
             guildId: makeSnowflake(state.message.guildId),
             channelId: makeSnowflake(state.message.channelId),
             messageId: makeSnowflake(state.message.id),
+            type: state.component.type,
             data: state.component,
             createdById: makeSnowflake(state.user.id),
             updatedById: makeSnowflake(state.user.id),

@@ -4,6 +4,8 @@ import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
 
 import { MessageFlagsBitField } from "discord-bitflag";
+import { TFunction } from "i18next";
+import React from "react";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { useError } from "~/components/Error";
 import { NumberInput } from "~/components/NumberInput";
@@ -150,6 +152,10 @@ const varTypeOptions: {
   {
     label: "Adaptive",
     value: 1,
+  },
+  {
+    label: "Mirror",
+    value: 2,
   },
 ];
 
@@ -515,7 +521,9 @@ const FlowActionEditor: React.FC<{
             })()
           ) : action.type === 8 ? (
             (() => {
-              const channel = channels.find((c) => c.id === action.channelId);
+              const channel = channels.find(
+                (c) => c.id === action.channel.value,
+              );
               return (
                 <>
                   {channels.length === 0 && (
@@ -533,7 +541,7 @@ const FlowActionEditor: React.FC<{
                       value={channel}
                       onChange={(c) => {
                         if (c) {
-                          action.channelId = c.id;
+                          action.channel = { value: c.id };
                           if (c.type === "forum") {
                             action.threadType = ChannelType.PublicThread;
                           }
@@ -601,57 +609,16 @@ const FlowActionEditor: React.FC<{
               );
             })()
           ) : action.type === 9 ? (
-            <>
-              <StringSelect
-                name="varType"
-                label={t("type")}
-                options={varTypeOptions}
-                value={
-                  varTypeOptions.find((o) => o.value === action.varType) ??
-                  varTypeOptions[0]
-                }
-                onChange={(opt) => {
-                  action.varType = opt
-                    ? (opt as { value: FlowActionSetVariableType }).value
-                    : undefined;
-                  update();
-                }}
-              />
-              <TextInput
-                name="name"
-                label={t("name")}
-                className="w-full"
-                maxLength={100}
-                value={action.name}
-                onChange={(e) => {
-                  action.name = e.currentTarget.value;
-                  update();
-                }}
-              />
-              <TextInput
-                name="value"
-                label={t(action.varType === 1 ? "valueFromReturn" : "value")}
-                className="w-full"
-                maxLength={action.varType === 1 ? 30 : 500}
-                value={String(action.value ?? "")}
-                onChange={({ currentTarget }) => {
-                  const v = currentTarget.value;
-                  if (["true", "false"].includes(v) && action.varType !== 1) {
-                    action.value = v === "true";
-                  } else {
-                    action.value = currentTarget.value;
-                  }
-                  update();
-                }}
-              />
-            </>
+            <FlowActionSetVariableEditor
+              t={t}
+              action={action}
+              update={update}
+            />
           ) : action.type === 10 ? (
             (() => {
-              const varAction = flow.actions.find(
-                (a, subI): a is FlowActionSetVariable => {
-                  return subI < i && a.type === 9 && a.name === "messageId";
-                },
-              );
+              const varAction = flow.actions.find((a, subI) => {
+                return subI < i && a.type === 9 && a.name === "messageId";
+              });
               return (
                 <p className="text-sm">
                   <Trans
@@ -684,5 +651,70 @@ const FlowActionEditor: React.FC<{
         </div>
       </div>
     </div>
+  );
+};
+
+const FlowActionSetVariableEditor: React.FC<{
+  t: TFunction;
+  action: FlowActionSetVariable;
+  update: () => void;
+  anonymous?: boolean;
+}> = ({ t, action, update, anonymous }) => {
+  return (
+    <>
+      <StringSelect
+        name="varType"
+        label={t("type")}
+        options={varTypeOptions}
+        value={
+          varTypeOptions.find((o) => o.value === action.varType) ??
+          varTypeOptions[0]
+        }
+        onChange={(opt) => {
+          action.varType = opt
+            ? (opt as { value: FlowActionSetVariableType }).value
+            : undefined;
+          update();
+        }}
+      />
+      {!anonymous && (
+        <TextInput
+          name="name"
+          label={t("name")}
+          className="w-full font-code"
+          maxLength={100}
+          value={action.name}
+          onChange={(e) => {
+            action.name = e.currentTarget.value;
+            update();
+          }}
+        />
+      )}
+      <TextInput
+        name="value"
+        label={t(
+          action.varType === 1
+            ? "valueFromReturn"
+            : action.varType === 2
+              ? "valueMirrorVariable"
+              : "value",
+        )}
+        className={twJoin(
+          "w-full",
+          action.varType !== 0 ? "font-code" : undefined,
+        )}
+        maxLength={action.varType === 1 ? 30 : action.varType === 2 ? 100 : 500}
+        value={String(action.value ?? "")}
+        onChange={({ currentTarget }) => {
+          const v = currentTarget.value;
+          if (["true", "false"].includes(v) && action.varType !== 1) {
+            action.value = v === "true";
+          } else {
+            action.value = currentTarget.value;
+          }
+          update();
+        }}
+      />
+    </>
   );
 };

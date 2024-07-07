@@ -370,6 +370,7 @@
   "value": "Value",
   "valueHidden": "Value (hidden)",
   "valueFromReturn": "Attribute of previous return",
+  "valueMirrorVariable": "Full prior variable name",
   "actionN": "Action {{n}}",
   "actionNText": "Action {{n}} - {{text}}",
   "flowLink": "Flow (<0>what's a flow?</0>)",

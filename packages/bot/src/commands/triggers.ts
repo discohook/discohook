@@ -6,7 +6,7 @@ import {
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
-import { makeSnowflake, triggers } from "store/src/schema/schema.js";
+import { flows, makeSnowflake, triggers } from "store/src/schema";
 import { FlowActionType } from "store/src/types/components.js";
 import { TriggerEvent } from "store/src/types/triggers.js";
 import {
@@ -46,6 +46,9 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
         }
       }
       const user = await upsertDiscordUser(db, ctx.user);
+      const { id: flowId } = (
+        await db.insert(flows).values({}).returning({ id: flows.id })
+      )[0];
       const trigger = (
         await db
           .insert(triggers)
@@ -54,10 +57,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
             event,
             discordGuildId: makeSnowflake(guild.id),
             disabled: true,
-            flow: {
-              name,
-              actions: [],
-            },
+            flowId,
             updatedAt: new Date(),
             updatedById: user.id,
           })
@@ -74,7 +74,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
                 type: ComponentType.Button,
                 style: ButtonStyle.Link,
                 label: "Add Actions",
-                url: `${ctx.env.DISCOHOOK_ORIGIN}/g/${trigger.discordGuildId}/triggers`,
+                url: `${ctx.env.DISCOHOOK_ORIGIN}/s/${trigger.discordGuildId}?t=triggers`,
               },
             ],
           },
@@ -125,7 +125,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
             ? "No actions"
             : trigger.flow?.actions
                 .map(
-                  (action, i) =>
+                  ({ data: action }, i) =>
                     `${i + 1}. ${spaceEnum(FlowActionType[action.type])}${
                       action.type === FlowActionType.Wait
                         ? ` ${action.seconds}s`
@@ -144,7 +144,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
             .setStyle(ButtonStyle.Link)
             .setLabel("Manage Actions")
             .setURL(
-              `${ctx.env.DISCOHOOK_ORIGIN}/g/${ctx.interaction.guild_id}/triggers`,
+              `${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}?t=triggers`,
             ),
         )
         // .addComponents(
@@ -176,7 +176,13 @@ export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
       ),
       columns: {
         id: true,
-        flow: true,
+      },
+      with: {
+        flow: {
+          columns: {
+            name: true,
+          },
+        },
       },
     });
     return trigs.map((t) => ({

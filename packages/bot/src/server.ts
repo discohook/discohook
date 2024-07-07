@@ -24,18 +24,19 @@ import { DurableStoredComponent } from "store/src/durable/components.js";
 import {
   backups,
   discordMessageComponents,
+  flowActions,
+  flows,
   generateId,
   makeSnowflake,
   buttons as oButtons,
 } from "store/src/schema";
 import {
   Flow,
-  FlowAction,
   FlowActionSendMessage,
   FlowActionToggleRole,
   FlowActionType,
   QueryData,
-  StorableComponent,
+  StorableComponent
 } from "store/src/types";
 import { AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import {
@@ -248,6 +249,15 @@ const handleInteraction = async (
             data: true,
             draft: true,
           },
+          with: {
+            componentsToFlows: {
+              with: {
+                flow: {
+                  with: { actions: true },
+                },
+              },
+            },
+          },
         });
         if (!dbComponent) {
           return respond({
@@ -278,14 +288,16 @@ const handleInteraction = async (
         member: interaction.member,
         user: interaction.member?.user,
       };
+      console.log(component)
 
+      const allFlows = component.componentsToFlows.map((ctf) => ctf.flow);
       let flows: Flow[] = [];
       switch (component.data.type) {
         case ComponentType.Button: {
           if (component.data.type !== interaction.data.component_type) break;
 
           if (component.data.style === ButtonStyle.Link) break;
-          flows = [component.data.flow];
+          flows = allFlows;
           break;
         }
         case ComponentType.StringSelect: {
@@ -296,13 +308,16 @@ const handleInteraction = async (
           // saving components. Nonetheless, if a user manually saved a select
           // menu allowing multiple values, we are able to deal with it
           // gracefully. Should we truncate here too?
-          flows = Object.entries(component.data.flows)
+          flows = Object.entries(component.data.flowIds)
             .filter(([key]) =>
               (
                 interaction.data as APIMessageStringSelectInteractionData
               ).values.includes(key),
             )
-            .map(([_, flow]) => flow);
+            .map(([_, flowId]) =>
+              allFlows.find((flow) => String(flow.id) === flowId),
+            )
+            .filter((v): v is NonNullable<typeof v> => Boolean(v));
           break;
         }
         case ComponentType.ChannelSelect:
@@ -311,7 +326,7 @@ const handleInteraction = async (
         case ComponentType.UserSelect: {
           if (component.data.type !== interaction.data.component_type) break;
 
-          flows = [component.data.flow];
+          flows = allFlows;
           break;
         }
         default:
@@ -344,6 +359,7 @@ const handleInteraction = async (
               {
                 guildId,
                 channelId: interaction.channel.id,
+                // Possible confusing conflict with Delete Message action
                 messageId: interaction.message.id,
                 userId: ctx.user.id,
               },
@@ -491,97 +507,114 @@ const handleInteraction = async (
             .returning({ id: backups.id, name: backups.name });
 
           const oldIdMap: Record<string, string> = {};
+
+          const values: (typeof discordMessageComponents.$inferInsert)[] = [];
+          for (const button of oldMessageButtons) {
+            const old = getOldCustomId(button);
+            const newId = generateId();
+            const newCustomId = `p_${newId}`;
+            if (old) {
+              oldIdMap[old] = newId;
+            }
+            // const newCustomId = old
+            //   ? `p_${old}-${getCustomId(false).replace(/^p_/, "")}`.slice(
+            //       0,
+            //       100,
+            //     )
+            //   : undefined;
+
+            values.push({
+              id: BigInt(newId),
+              channelId: makeSnowflake(interaction.channel.id),
+              guildId: makeSnowflake(guildId),
+              messageId: makeSnowflake(interaction.message.id),
+              draft: false,
+              type: ComponentType.Button,
+              data: {
+                type: ComponentType.Button,
+                label: button.customLabel ?? undefined,
+                emoji: button.emoji
+                  ? button.emoji.startsWith("<")
+                    ? {
+                        id: button.emoji.split(":")[2].replace(/\>$/, ""),
+                        name: button.emoji.split(":")[1],
+                        animated: button.emoji.split(":")[0] === "<a",
+                      }
+                    : {
+                        name: button.emoji,
+                      }
+                  : undefined,
+                ...(button.url
+                  ? {
+                      url: button.url,
+                      style: ButtonStyle.Link,
+                    }
+                  : await (async () => {
+                      const backupId = insertedBackups.find(
+                        // biome-ignore lint/style/noNonNullAssertion:
+                        (b) => b.name === customIdToTempId[old!],
+                      )?.id;
+                      const { id: flowId } = (
+                        await db
+                          .insert(flows)
+                          .values({})
+                          .returning({ id: flows.id })
+                      )[0];
+                      const actions = [
+                        ...(button.roleId
+                          ? [
+                              {
+                                type: FlowActionType.ToggleRole,
+                                roleId: String(button.roleId),
+                              } satisfies FlowActionToggleRole,
+                            ]
+                          : []),
+                        ...(backupId
+                          ? [
+                              {
+                                type: FlowActionType.SendMessage,
+                                backupId: backupId.toString(),
+                                response: true,
+                                flags:
+                                  button.roleId ||
+                                  button.customEphemeralMessageData
+                                    ? MessageFlags.Ephemeral
+                                    : undefined,
+                              } satisfies FlowActionSendMessage,
+                            ]
+                          : []),
+                      ];
+                      if (actions.length !== 0) {
+                        await db.insert(flowActions).values(
+                          actions.map((action) => ({
+                            flowId,
+                            type: action.type,
+                            data: action,
+                          })),
+                        );
+                      }
+
+                      return {
+                        customId: newCustomId,
+                        flowId: String(flowId),
+                        style:
+                          (
+                            {
+                              primary: ButtonStyle.Primary,
+                              secondary: ButtonStyle.Secondary,
+                              success: ButtonStyle.Success,
+                              danger: ButtonStyle.Danger,
+                            } as const
+                          )[button.style ?? "primary"] ?? ButtonStyle.Primary,
+                      };
+                    })()),
+              } satisfies StorableComponent,
+            });
+          }
+
           const inserted = await db
             .insert(discordMessageComponents)
-            .values(
-              oldMessageButtons.map((button) => {
-                const old = getOldCustomId(button);
-                const newId = generateId();
-                const newCustomId = `p_${newId}`;
-                if (old) {
-                  oldIdMap[old] = newId;
-                }
-                // const newCustomId = old
-                //   ? `p_${old}-${getCustomId(false).replace(/^p_/, "")}`.slice(
-                //       0,
-                //       100,
-                //     )
-                //   : undefined;
-
-                return {
-                  id: BigInt(newId),
-                  channelId: makeSnowflake(interaction.channel.id),
-                  guildId: makeSnowflake(guildId),
-                  messageId: makeSnowflake(interaction.message.id),
-                  draft: false,
-                  data: {
-                    type: ComponentType.Button,
-                    label: button.customLabel ?? undefined,
-                    emoji: button.emoji
-                      ? button.emoji.startsWith("<")
-                        ? {
-                            id: button.emoji.split(":")[2].replace(/\>$/, ""),
-                            name: button.emoji.split(":")[1],
-                            animated: button.emoji.split(":")[0] === "<a",
-                          }
-                        : {
-                            name: button.emoji,
-                          }
-                      : undefined,
-                    ...(button.url
-                      ? {
-                          url: button.url,
-                          style: ButtonStyle.Link,
-                        }
-                      : (() => {
-                          const backupId = insertedBackups.find(
-                            // biome-ignore lint/style/noNonNullAssertion:
-                            (b) => b.name === customIdToTempId[old!],
-                          )?.id;
-                          return {
-                            customId: newCustomId,
-                            flow: {
-                              actions: [
-                                ...(button.roleId
-                                  ? [
-                                      {
-                                        type: FlowActionType.ToggleRole,
-                                        roleId: String(button.roleId),
-                                      } satisfies FlowActionToggleRole,
-                                    ]
-                                  : []),
-                                ...(backupId
-                                  ? [
-                                      {
-                                        type: FlowActionType.SendMessage,
-                                        backupId: backupId.toString(),
-                                        response: true,
-                                        flags:
-                                          button.roleId ||
-                                          button.customEphemeralMessageData
-                                            ? MessageFlags.Ephemeral
-                                            : undefined,
-                                      } satisfies FlowActionSendMessage,
-                                    ]
-                                  : []),
-                              ] satisfies FlowAction[],
-                            } as Flow,
-                            style:
-                              (
-                                {
-                                  primary: ButtonStyle.Primary,
-                                  secondary: ButtonStyle.Secondary,
-                                  success: ButtonStyle.Success,
-                                  danger: ButtonStyle.Danger,
-                                } as const
-                              )[button.style ?? "primary"] ??
-                              ButtonStyle.Primary,
-                          };
-                        })()),
-                  } satisfies StorableComponent,
-                };
-              }),
-            )
+            .values(values)
             .onConflictDoNothing()
             .returning({
               id: discordMessageComponents.id,
@@ -631,9 +664,17 @@ const handleInteraction = async (
               `${interaction.message.id}-${customId}`,
             );
             const stub = env.COMPONENTS.get(doId);
-            await stub.fetch(`http://do/?id=${thisButton.id}`, {
-              method: "POST",
-            });
+            const response = await stub.fetch(
+              `http://do/?id=${thisButton.id}`,
+              {
+                method: "POST",
+              },
+            );
+            // The DO saves the button to its storage and returns the saved
+            // data (w/ flow) so we don't need to do gymnastics to find what
+            // we saved.
+            const thisButtonData =
+              (await response.json()) as DurableStoredComponent;
 
             const liveVars: LiveVariables = {
               guild,
@@ -641,7 +682,7 @@ const handleInteraction = async (
               user: interaction.member?.user,
             };
             const result = await executeFlow(
-              thisButton.data.flow,
+              thisButtonData.componentsToFlows[0].flow,
               rest,
               db,
               liveVars,

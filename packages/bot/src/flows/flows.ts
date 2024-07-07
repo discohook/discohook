@@ -23,19 +23,22 @@ import {
 import {
   Flow,
   FlowActionAddRole,
+  FlowActionCheckFunction,
+  FlowActionCheckFunctionType,
   FlowActionCreateThread,
   FlowActionRemoveRole,
   FlowActionSendMessage,
   FlowActionSendWebhookMessage,
+  FlowActionSetVariable,
   FlowActionSetVariableType,
   FlowActionToggleRole,
   FlowActionType,
-} from "store/src/types/components.js";
-import { TriggerKVGuild } from "store/src/types/guild.js";
+  TriggerKVGuild,
+} from "store/src/types";
 import { InteractionContext } from "../interactions.js";
 import { isDiscordError } from "../util/error.js";
 import { sleep } from "../util/sleep.js";
-import { processQueryData } from "./backup.js";
+import { getReplacements, processQueryData } from "./backup.js";
 
 export interface LiveVariables {
   member?: APIGuildMember;
@@ -59,33 +62,147 @@ export interface FlowResult {
 }
 
 export const executeFlow = async (
-  flow: Flow,
+  flow: Pick<Flow, "actions">,
   rest: REST,
   db: DBWithSchema,
   liveVars: LiveVariables,
   setVars?: Record<string, string | boolean>,
   ctx?: InteractionContext<APIMessageComponentInteraction>,
+  recursion = 0,
 ): Promise<FlowResult> => {
   const vars = setVars ?? {};
   let lastReturnValue: any = undefined;
+  if (recursion > 50) {
+    return {
+      status: "failure",
+      message: `Too much recursion (${recursion} layers)`,
+    };
+  }
+
+  const resolveSetVariable = (v: FlowActionSetVariable): string | boolean => {
+    if (v.varType === FlowActionSetVariableType.Adaptive) {
+      if (!lastReturnValue) {
+        throw new FlowFailure(
+          `Adaptive variable \`${v.name}\` was attempted to be assigned with attribute \`${v.value}\`, but there was no previous return value.`,
+        );
+      }
+      return lastReturnValue[String(v.value)];
+    } else if (v.varType === FlowActionSetVariableType.Get) {
+      const replacements = getReplacements(vars, {});
+      return (
+        Object.fromEntries(
+          Object.entries(replacements).map((entry) => [entry[0], entry[1]]),
+        )[v.value.toString()] ?? ""
+      ).toString();
+    }
+    return v.value;
+  };
+
   try {
-    for (const action of flow.actions) {
+    for (const { data: action } of flow.actions) {
       switch (action.type) {
         case FlowActionType.Wait:
           await sleep(action.seconds * 1000);
           break;
         case FlowActionType.SetVariable:
-          if (action.varType === FlowActionSetVariableType.Adaptive) {
-            if (!lastReturnValue) {
-              throw new FlowFailure(
-                `Adaptive variable \`${action.name}\` was attempted to be assigned with attribute \`${action.value}\`, but there was no previous return value.`,
-              );
+          vars[action.name] = resolveSetVariable(action);
+          break;
+        case FlowActionType.Check: {
+          /** Get the boolean results of all functions provided */
+          const recurseFunctions = (
+            functions: FlowActionCheckFunction[],
+          ): boolean[] => {
+            const results: boolean[] = [];
+            for (const func of functions) {
+              switch (func.type) {
+                case FlowActionCheckFunctionType.And: {
+                  results.push(
+                    recurseFunctions(func.conditions).filter((r) => r !== true)
+                      .length === 0,
+                  );
+                  break;
+                }
+                case FlowActionCheckFunctionType.Or: {
+                  results.push(
+                    recurseFunctions(func.conditions).filter((r) => r === true)
+                      .length >= 1,
+                  );
+                  break;
+                }
+                case FlowActionCheckFunctionType.Not: {
+                  results.push(
+                    recurseFunctions(func.conditions).filter((r) => r === true)
+                      .length === 0,
+                  );
+                  break;
+                }
+                case FlowActionCheckFunctionType.In: {
+                  let arr: unknown[];
+                  try {
+                    arr = JSON.parse(
+                      (func.array.varType === FlowActionSetVariableType.Static
+                        ? func.array.value
+                        : resolveSetVariable({
+                            type: FlowActionType.SetVariable,
+                            name: "array",
+                            ...func.array,
+                          })
+                      ).toString(),
+                    );
+                    if (!Array.isArray(arr)) {
+                      throw Error("Not an array");
+                    }
+                  } catch {
+                    throw new FlowFailure(
+                      "Provided `array` value could not be parsed as an array.",
+                    );
+                  }
+                  results.push(
+                    arr.includes(
+                      resolveSetVariable({
+                        type: FlowActionType.SetVariable,
+                        name: "element",
+                        ...func.element,
+                      }),
+                    ),
+                  );
+                  break;
+                }
+                case FlowActionCheckFunctionType.Equals: {
+                  const a = resolveSetVariable({
+                    type: FlowActionType.SetVariable,
+                    name: "a",
+                    ...func.a,
+                  });
+                  const b = resolveSetVariable({
+                    type: FlowActionType.SetVariable,
+                    name: "b",
+                    ...func.b,
+                  });
+                  // I thought the `strict` option might be useful in the future.
+                  // It defaults to true since non-strict equality can be confusing.
+                  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality
+                  // biome-ignore lint/suspicious/noDoubleEquals: ^
+                  results.push(func.strict ? a === b : a == b);
+                  break;
+                }
+                default:
+                  // This shouldn't happen, but we want to keep the return array length the same
+                  results.push(false);
+                  break;
+              }
             }
-            vars[action.name] = lastReturnValue[String(action.value)];
+            return results;
+          };
+
+          const checkResult = recurseFunctions([action.function])[0];
+          if (checkResult) {
+            // executeFlow();
           } else {
-            vars[action.name] = action.value;
+            // executeFlow();
           }
           break;
+        }
         case FlowActionType.SendMessage:
           if (!vars.channelId) {
             throw new FlowFailure(

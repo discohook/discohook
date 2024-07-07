@@ -17,6 +17,7 @@ export const getReplacements = (
   const now = new Date();
   return {
     ...setVars,
+    "member.role_ids": JSON.stringify(vars.member ? vars.member.roles : []),
     // Legacy (v1) format options
     // Member
     "member.id": vars.user?.id,

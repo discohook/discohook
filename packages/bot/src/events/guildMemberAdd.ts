@@ -15,6 +15,8 @@ import {
 } from "store";
 import {
   backups,
+  flowActions,
+  flows,
   makeSnowflake,
   triggers,
   webhooks,
@@ -22,8 +24,16 @@ import {
   welcomer_hello,
 } from "store/src/schema";
 import {
+  FlowAction,
+  FlowActionCheck,
+  FlowActionCheckFunctionType,
+  FlowActionDeleteMessage,
+  FlowActionSendMessage,
+  FlowActionSendWebhookMessage,
+  FlowActionSetVariable,
   FlowActionSetVariableType,
   FlowActionType,
+  FlowActionWait,
   TriggerEvent,
   TriggerKVGuild,
 } from "store/src/types";
@@ -39,9 +49,17 @@ export const getWelcomerConfigurations = async (
   let configs = await db.query.triggers.findMany({
     columns: {
       id: true,
-      flow: true,
-      ignoreBots: true,
       disabled: true,
+    },
+    with: {
+      flow: {
+        columns: {
+          name: true,
+        },
+        with: {
+          actions: true,
+        },
+      },
     },
     where: and(
       eq(triggers.platform, "discord"),
@@ -139,72 +157,119 @@ export const getWelcomerConfigurations = async (
         }
       }
       await upsertGuild(db, guild);
-      configs = await db
+
+      const flow = (
+        await db
+          .insert(flows)
+          .values({
+            name: `Welcomer (${type})`,
+          })
+          .returning()
+      )[0];
+      const actions: FlowAction[] = backupId
+        ? [
+            ...(oldConfiguration[0].ignoreBots
+              ? [
+                  {
+                    type: FlowActionType.Check,
+                    function: {
+                      type: FlowActionCheckFunctionType.Equals,
+                      a: {
+                        varType: FlowActionSetVariableType.Get,
+                        value: "member.bot",
+                      },
+                      b: {
+                        varType: FlowActionSetVariableType.Static,
+                        value: true,
+                      },
+                    },
+                    then: [{ type: FlowActionType.Stop }],
+                    else: [],
+                  } satisfies FlowActionCheck,
+                ]
+              : []),
+            ...(oldConfiguration[0].webhookId && !webhookInvalid
+              ? [
+                  {
+                    type: FlowActionType.SendWebhookMessage,
+                    webhookId: String(oldConfiguration[0].webhookId),
+                    backupId: backupId.toString(),
+                  } satisfies FlowActionSendWebhookMessage,
+                ]
+              : [
+                  {
+                    type: FlowActionType.SetVariable,
+                    name: "channelId",
+                    value: String(oldConfiguration[0].channelId),
+                  } satisfies FlowActionSetVariable,
+                  {
+                    type: FlowActionType.SendMessage,
+                    backupId: backupId.toString(),
+                  } satisfies FlowActionSendMessage,
+                ]),
+            ...(oldConfiguration[0].deleteMessagesAfter
+              ? [
+                  {
+                    type: FlowActionType.SetVariable,
+                    varType: FlowActionSetVariableType.Adaptive,
+                    name: "messageId",
+                    value: "id",
+                  } satisfies FlowActionSetVariable,
+                  {
+                    type: FlowActionType.Wait,
+                    seconds: oldConfiguration[0].deleteMessagesAfter,
+                  } satisfies FlowActionWait,
+                  {
+                    type: FlowActionType.DeleteMessage,
+                  } satisfies FlowActionDeleteMessage,
+                ]
+              : []),
+          ]
+        : [];
+      if (actions.length !== 0) {
+        await db.insert(flowActions).values(
+          actions.map((action) => ({
+            flowId: flow.id,
+            type: action.type,
+            data: action,
+          })),
+        );
+      }
+
+      const protoConfigs = await db
         .insert(triggers)
         .values({
           platform: "discord",
           event:
             type === "add" ? TriggerEvent.MemberAdd : TriggerEvent.MemberRemove,
           discordGuildId: makeSnowflake(guild.id),
-          lastModifiedById: userId || undefined,
-          lastModifiedAt: oldConfiguration[0].lastModifiedAt
+          updatedById: userId || undefined,
+          updatedAt: oldConfiguration[0].lastModifiedAt
             ? new Date(oldConfiguration[0].lastModifiedAt)
             : undefined,
-          // I want to turn this into a Check action but I'm not
-          // quite sure yet how I want to format them.
-          ignoreBots: oldConfiguration[0].ignoreBots ?? undefined,
           disabled: oldConfiguration[0].overrideDisabled ?? undefined,
-          flow: backupId
-            ? {
-                name: `Welcomer (${type})`,
-                actions: [
-                  ...(oldConfiguration[0].webhookId && !webhookInvalid
-                    ? [
-                        {
-                          type: FlowActionType.SendWebhookMessage,
-                          webhookId: String(oldConfiguration[0].webhookId),
-                          backupId: backupId.toString(),
-                        },
-                      ]
-                    : [
-                        {
-                          type: FlowActionType.SetVariable,
-                          name: "channelId",
-                          value: String(oldConfiguration[0].channelId),
-                        },
-                        {
-                          type: FlowActionType.SendMessage,
-                          backupId: backupId.toString(),
-                        },
-                      ]),
-                  ...(oldConfiguration[0].deleteMessagesAfter
-                    ? [
-                        {
-                          type: FlowActionType.SetVariable,
-                          varType: FlowActionSetVariableType.Adaptive,
-                          name: "messageId",
-                          value: "id",
-                        },
-                        {
-                          type: FlowActionType.Wait,
-                          seconds: oldConfiguration[0].deleteMessagesAfter,
-                        },
-                        {
-                          type: FlowActionType.DeleteMessage,
-                        },
-                      ]
-                    : []),
-                ],
-              }
-            : undefined,
+          flowId: flow.id,
         })
         .onConflictDoNothing()
         .returning({
           id: triggers.id,
-          flow: triggers.flow,
-          ignoreBots: triggers.ignoreBots,
+          // flowId: triggers.flowId,
           disabled: triggers.disabled,
         });
+      configs = [
+        {
+          ...protoConfigs[0],
+          flow: {
+            ...flow,
+            actions: actions.map((data) => ({
+              id: 0n, // this might need to be real in the future for diagnostics
+              flowId: flow.id,
+              type: data.type,
+              data,
+            })),
+          },
+        },
+      ];
       await db.delete(oldTable).where(eq(oldTable.id, oldConfiguration[0].id));
     }
   }
@@ -238,14 +303,10 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
 
   // Get & execute triggers
   const triggers = await getWelcomerConfigurations(db, "add", rest, guild);
-  const applicable = triggers.filter(
-    (t) =>
-      !!t.flow && !t.disabled && (payload.user?.bot ? !t.ignoreBots : true),
-  );
+  const applicable = triggers.filter((t) => !!t.flow && !t.disabled);
 
   for (const trigger of applicable) {
-    // biome-ignore lint/style/noNonNullAssertion: Filtered above
-    await executeFlow(trigger.flow!, rest, db, {
+    await executeFlow(trigger.flow, rest, db, {
       member: payload,
       user: payload.user,
       guild,
