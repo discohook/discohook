@@ -26,21 +26,26 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
-import { CoolIcon } from "~/components/icons/CoolIcon";
+import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { TabHeader, TabsWindow } from "~/components/tabs";
+import { FlowEditModal } from "~/modals/FlowEditModal";
+import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import {
   authorizeRequest,
   getGuild,
   getTokenGuildPermissions,
 } from "~/session.server";
+import { Flow } from "~/store.server";
 import { useCache } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 import { loader as ApiGetAuditLogGuild } from "../api/v1/guilds.$guildId.log";
 import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
+import { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
+import { action as ApiPatchGuildTrigger } from "../api/v1/guilds.$guildId.triggers.$triggerId";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import { action as ApiPatchGuildWebhook } from "../api/v1/guilds.$guildId.webhooks.$webhookId";
 import { Cell } from "./donate";
@@ -114,7 +119,22 @@ export const meta: MetaFunction = ({ data }) => {
   return [];
 };
 
-const tabValues = ["home", "auditLog", "webhooks", "sessions"] as const;
+const tabValues = [
+  "home",
+  "auditLog",
+  "webhooks",
+  "sessions",
+  "triggers",
+] as const;
+
+const flowEventsDetails: Record<number, { icon: CoolIconsGlyph }> = {
+  0: {
+    icon: "User_Add",
+  },
+  1: {
+    icon: "User_Remove",
+  },
+};
 
 export default () => {
   const { guild, user, member, discordApplicationId } =
@@ -128,7 +148,7 @@ export default () => {
   const cache = useCache(!user);
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    cache.channel.fetchMany(guild.id);
+    cache.fetchGuildCacheable(guild.id);
   }, [guild]);
 
   const [searchParams] = useSearchParams();
@@ -136,14 +156,38 @@ export default () => {
   const [tab, setTab] = useState<(typeof tabValues)[number]>(
     defaultTab && tabValues.includes(defaultTab) ? defaultTab : tabValues[0],
   );
+
   const [openWebhookId, setOpenWebhookId] = useState<string>();
+  const [creatingTrigger, setCreatingTrigger] = useState(false);
 
   const auditLogFetcher = useFetcher<typeof ApiGetAuditLogGuild>();
   const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
   const guildWebhookFetcher = useSafeFetcher<typeof ApiPatchGuildWebhook>({
-    onError: () => {},
+    onError: setError,
   });
   const sessionsFetcher = useFetcher<typeof ApiGetGuildSessions>();
+  const triggersFetcher = useSafeFetcher<typeof ApiGetGuildTriggers>({
+    onError: setError,
+  });
+  const triggerSaveFetcher = useSafeFetcher<typeof ApiPatchGuildTrigger>({
+    onError: setError,
+  });
+  const [openTriggerId, setOpenTriggerId] = useState<bigint>();
+  const [editOpenTriggerFlow, setEditOpenTriggerFlow] = useState(false);
+  const openTrigger = triggersFetcher.data
+    ? triggersFetcher.data.find((t) => t.id === openTriggerId)
+    : undefined;
+
+  const [draftFlow, setDraftFlow] = useState<Flow>();
+  useEffect(() => {
+    if (openTrigger) {
+      setDraftFlow(openTrigger.flow);
+    } else {
+      setDraftFlow(undefined);
+      setEditOpenTriggerFlow(false);
+    }
+  }, [openTrigger]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: A wizard specifies precisely the dependencies he means to.
   useEffect(() => {
     switch (tab) {
@@ -165,6 +209,12 @@ export default () => {
         }
         break;
       }
+      case "triggers": {
+        if (!triggersFetcher.data && triggersFetcher.state === "idle") {
+          triggersFetcher.load(apiUrl(BRoutes.guildTriggers(guild.id)));
+        }
+        break;
+      }
       default:
         break;
     }
@@ -176,6 +226,8 @@ export default () => {
     webhooksFetcher.state,
     sessionsFetcher.data,
     sessionsFetcher.state,
+    triggersFetcher.data,
+    triggersFetcher.state,
   ]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -223,6 +275,19 @@ export default () => {
         user={user}
         cache={cache}
       />
+      <TriggerCreateModal
+        open={creatingTrigger}
+        setOpen={setCreatingTrigger}
+        guildId={guild.id}
+        cache={cache}
+      />
+      <FlowEditModal
+        open={editOpenTriggerFlow}
+        setOpen={setEditOpenTriggerFlow}
+        flow={draftFlow}
+        setFlow={setDraftFlow}
+        cache={cache}
+      />
       <Header user={user} />
       <Prose>
         {error}
@@ -252,6 +317,14 @@ export default () => {
                   //   label: t("sessions"),
                   //   value: "sessions",
                   // },
+                ]
+              : []),
+            ...(has(PermissionFlags.ManageGuild)
+              ? [
+                  {
+                    label: t("triggers"),
+                    value: "triggers",
+                  },
                 ]
               : []),
           ]}
@@ -313,6 +386,10 @@ export default () => {
                           ),
                         )}
                       </Cell>
+                    </div>
+                    <div className="table-row">
+                      <Cell>{t("triggers")}</Cell>
+                      <Cell>{t("permission.ManageGuild")}</Cell>
                     </div>
                     {/* <div className="table-row">
                       <Cell>Sessions</Cell>
@@ -594,6 +671,104 @@ export default () => {
                 )}
               </div>
             </div>
+          ) : tab === "triggers" ? (
+            openTrigger ? (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setOpenTriggerId(undefined)}
+                >
+                  <CoolIcon icon="Arrow_Left_MD" rtl="Arrow_Right_MD" />{" "}
+                  {t("backToTriggers")}
+                </button>
+                <TabHeader>{t(`triggerEvent.${openTrigger.event}`)}</TabHeader>
+                <div className="rounded px-4 py-3 bg-gray-200 dark:bg-primary-700 shadow flex">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {t("createTrigger.when")}
+                    </p>
+                    <p className="font-semibold text-lg">
+                      {t(`triggerEventDescription.${openTrigger.event}`)}
+                    </p>
+                  </div>
+                  <CoolIcon
+                    icon={flowEventsDetails[openTrigger.event].icon}
+                    className="text-4xl my-auto ml-auto"
+                  />
+                </div>
+                <div className="mt-2 rounded px-4 py-3 bg-gray-200 dark:bg-primary-700 shadow">
+                  <p className="text-sm font-medium">
+                    {t("createTrigger.then")}
+                  </p>
+                  <Button onClick={() => setEditOpenTriggerFlow(true)}>
+                    {t("editFlow")}
+                  </Button>
+                </div>
+                <Button
+                  className="mt-2"
+                  discordstyle={ButtonStyle.Success}
+                  onClick={async () => {
+                    if (draftFlow) {
+                      await triggerSaveFetcher.submitAsync(
+                        {
+                          flow: {
+                            name: draftFlow.name,
+                            actions: draftFlow.actions,
+                          },
+                        },
+                        {
+                          action: apiUrl(
+                            BRoutes.guildTrigger(guild.id, openTrigger.id),
+                          ),
+                          method: "PATCH",
+                        },
+                      );
+                    }
+                  }}
+                >
+                  {t("save")}
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex mb-2">
+                  <p className="text-xl font-semibold dark:text-gray-100 my-auto">
+                    {t(tab)}
+                  </p>
+                  <Button
+                    onClick={() => setCreatingTrigger(true)}
+                    className="mb-auto ltr:ml-auto rtl:mr-auto"
+                  >
+                    {t("newTrigger")}
+                  </Button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {triggersFetcher.data ? (
+                    triggersFetcher.data.map((trigger) => {
+                      const meta = flowEventsDetails[trigger.event];
+                      return (
+                        <button
+                          key={`trigger-${trigger.id}`}
+                          type="button"
+                          className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-[#2B2D31] dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg flex flex-col"
+                          onClick={() => setOpenTriggerId(trigger.id)}
+                        >
+                          <CoolIcon
+                            icon={meta.icon}
+                            className="text-6xl mx-auto opacity-80"
+                          />
+                          <p className="text-center font-medium truncate text-sm">
+                            {t(`triggerEvent.${trigger.event}`)}
+                          </p>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                </div>
+              </div>
+            )
           ) : (
             <></>
           )}

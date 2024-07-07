@@ -105,6 +105,24 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /guilds/:guildId/triggers/:triggerId
+   *
+   * Accepts token or cookie auth.
+   */
+  guildTrigger(id: bigint | string, triggerId: bigint | string) {
+    return `/guilds/${String(id)}/triggers/${String(triggerId)}` as const;
+  },
+
+  /**
+   * - GET /guilds/:id/triggers
+   *
+   * Accepts token or cookie auth.
+   */
+  guildTriggers(id: bigint | string) {
+    return `/guilds/${String(id)}/triggers` as const;
+  },
+
+  /**
    * - GET /guilds/:id/webhooks
    *
    * Accepts token or cookie auth.

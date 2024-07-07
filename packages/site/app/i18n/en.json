@@ -244,6 +244,22 @@
     "title": "Delete Bot",
     "note": "To delete this custom bot, type its name below. This will not delete the linked Discord application."
   },
+  "createTrigger": {
+    "title": "Create Trigger",
+    "when": "When this happens:",
+    "then": "Do this:"
+  },
+  "triggers": "Triggers",
+  "newTrigger": "New Trigger",
+  "triggerEvent": {
+    "0": "Member Join",
+    "1": "Member Remove"
+  },
+  "triggerEventDescription": {
+    "0": "A member joins the server",
+    "1": "A member leaves the server (or is removed)"
+  },
+  "backToTriggers": "Back to Triggers",
   "information": "Information",
   "havingTrouble": "Having Trouble?",
   "troubleshootMessage": "If you press the send button and nothing happens, it may be because your browser is blocking connections to Discord, which is not uncommon for privacy-focused extensions like Privacy Badger. Try disabling privacy extensions or entering incognito/private mode.",
