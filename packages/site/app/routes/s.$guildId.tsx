@@ -42,7 +42,7 @@ import { useCache } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
-import { loader as ApiGetAuditLogGuild } from "../api/v1/guilds.$guildId.log";
+import { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
 import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
 import { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
 import { action as ApiPatchGuildTrigger } from "../api/v1/guilds.$guildId.triggers.$triggerId";
@@ -160,7 +160,7 @@ export default () => {
   const [openWebhookId, setOpenWebhookId] = useState<string>();
   const [creatingTrigger, setCreatingTrigger] = useState(false);
 
-  const auditLogFetcher = useFetcher<typeof ApiGetAuditLogGuild>();
+  const auditLogFetcher = useFetcher<typeof ApiGetGuildAuditLog>();
   const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
   const guildWebhookFetcher = useSafeFetcher<typeof ApiPatchGuildWebhook>({
     onError: setError,
