@@ -176,12 +176,12 @@ export const submitComponent = async (data: APIMessageActionRowComponent) => {
     case ComponentType.MentionableSelect:
     case ComponentType.ChannelSelect: {
       const { minValues, maxValues, defaultValues, ...rest } = raw.data;
-      // @ts-expect-error
       component = {
         ...rest,
         custom_id: `p_${raw.id}`,
         min_values: minValues,
         max_values: maxValues,
+        // @ts-expect-error
         default_values: defaultValues,
       };
       break;

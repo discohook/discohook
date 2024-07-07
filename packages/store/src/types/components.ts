@@ -12,58 +12,98 @@ import type {
 } from "discord-api-types/v10";
 import type { flowActions, flows } from "../schema/schema.js";
 
+export interface StorableButtonWithCustomId {
+  type: ComponentType.Button;
+  style:
+    | ButtonStyle.Primary
+    | ButtonStyle.Secondary
+    | ButtonStyle.Success
+    | ButtonStyle.Danger;
+  flowId: string;
+  label?: string;
+  emoji?: APIMessageComponentEmoji;
+  disabled?: boolean;
+}
+
+export type StorableButtonWithCustomIdResolved = Omit<
+  StorableButtonWithCustomId,
+  "flowId"
+> & {
+  flow: DraftFlow;
+};
+
+export interface StorableButtonWithUrl {
+  type: ComponentType.Button;
+  style: ButtonStyle.Link;
+  label?: string;
+  emoji?: APIMessageComponentEmoji;
+  url: string;
+  disabled?: boolean;
+}
+
+export interface StorableStringSelect {
+  type: ComponentType.StringSelect;
+  // Considering: this could be reduced by automatically assigning flow
+  // IDs to be option values (and vice versa) - so the submitted value
+  // tells the application which flow to execute. The only holdoff on this
+  // is that, when users are able to have a `maxValue > 1`, they will need
+  // to be able to conveniently refer to option values
+  flowIds: Record<string, string>;
+  options: APISelectMenuOption[];
+  placeholder?: string;
+  minValues?: number;
+  maxValues?: number;
+  disabled?: boolean;
+}
+
+export type StorableStringSelectResolved = Omit<
+  StorableStringSelect,
+  "flowIds"
+> & {
+  flows: Record<string, DraftFlow>;
+};
+
+export interface StorableAutopopulatedSelect {
+  type:
+    | ComponentType.UserSelect
+    | ComponentType.RoleSelect
+    | ComponentType.MentionableSelect
+    | ComponentType.ChannelSelect;
+  flowId: string;
+  placeholder?: string;
+  minValues?: number;
+  maxValues?: number;
+  defaultValues?: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
+  disabled?: boolean;
+}
+
+export type StorableAutopopulatedSelectResolved = Omit<
+  StorableAutopopulatedSelect,
+  "flowId"
+> & {
+  flow: DraftFlow;
+};
+
 export type StorableComponent =
-  | {
-      type: ComponentType.Button;
-      style:
-        | ButtonStyle.Primary
-        | ButtonStyle.Secondary
-        | ButtonStyle.Success
-        | ButtonStyle.Danger;
-      flowId: string;
-      label?: string;
-      emoji?: APIMessageComponentEmoji;
-      disabled?: boolean;
-    }
-  | {
-      type: ComponentType.Button;
-      style: ButtonStyle.Link;
-      label?: string;
-      emoji?: APIMessageComponentEmoji;
-      url: string;
-      disabled?: boolean;
-    }
-  | {
-      type: ComponentType.StringSelect;
-      // Considering: this could be reduced by automatically assigning flow
-      // IDs to be option values (and vice versa) - so the submitted value
-      // tells the application which flow to execute. The only holdoff on this
-      // is that, when users are able to have a `maxValue > 1`, they will need
-      // to be able to conveniently refer to option values
-      flowIds: Record<string, string>;
-      options: APISelectMenuOption[];
-      placeholder?: string;
-      minValues?: number;
-      maxValues?: number;
-      disabled?: boolean;
-    }
-  | {
-      type:
-        | ComponentType.UserSelect
-        | ComponentType.RoleSelect
-        | ComponentType.MentionableSelect
-        | ComponentType.ChannelSelect;
-      flowId: string;
-      placeholder?: string;
-      minValues?: number;
-      maxValues?: number;
-      defaultValues?: APISelectMenuDefaultValue<SelectMenuDefaultValueType>[];
-      disabled?: boolean;
-    };
+  | StorableButtonWithCustomId
+  | StorableButtonWithUrl
+  | StorableStringSelect
+  | StorableAutopopulatedSelect;
+
+export type DraftComponent =
+  | StorableButtonWithCustomIdResolved
+  | StorableButtonWithUrl
+  | StorableStringSelectResolved
+  | StorableAutopopulatedSelectResolved;
 
 export type Flow = typeof flows.$inferSelect & {
   actions: DBFlowAction[];
 };
+
+export interface DraftFlow {
+  name?: string | null;
+  actions: FlowAction[];
+}
 
 export type DBFlowAction = typeof flowActions.$inferSelect;
 

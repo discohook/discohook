@@ -3,6 +3,7 @@ import { z } from "zod";
 import type {
   AnonymousVariable,
   DBFlowAction,
+  DraftFlow,
   Flow,
   FlowAction,
   FlowActionAddRole,
@@ -255,14 +256,12 @@ export const ZodFlowWithMax = (max: number): z.ZodType<Flow> =>
     actions: ZodFlowDBAction.array().max(max),
   });
 
-export const ZodDraftFlow = z.object({
+export const ZodDraftFlow: z.ZodType<DraftFlow> = z.object({
   name: z.string().nullable().optional(),
   actions: ZodFlowAction.array(),
 });
 
-export type DraftFlow = z.infer<typeof ZodDraftFlow>;
-
-export const ZodDraftFlowWithMax = (max: number) =>
+export const ZodDraftFlowWithMax = (max: number): z.ZodType<DraftFlow> =>
   z.object({
     name: z.string().nullable().optional(),
     actions: ZodFlowAction.array().max(max),

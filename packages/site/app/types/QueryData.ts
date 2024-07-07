@@ -14,6 +14,7 @@ import {
   UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
+import { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";
 import { ZodAPIActionRowComponent } from "./components";
 import { ZodMessageFlags } from "./discord";
@@ -45,28 +46,28 @@ export interface APIButtonComponentWithURL
 
 export interface APIButtonComponentWithCustomId
   extends _APIButtonComponentWithCustomId {
-  flowId?: string;
+  flow?: DraftFlow;
 }
 
 export interface APIStringSelectComponent extends _APIStringSelectComponent {
-  flowIds?: Record<string, string>;
+  flows?: Record<string, DraftFlow>;
 }
 
 export interface APIUserSelectComponent extends _APIUserSelectComponent {
-  flowId?: string;
+  flow?: DraftFlow;
 }
 
 export interface APIRoleSelectComponent extends _APIRoleSelectComponent {
-  flowId?: string;
+  flow?: DraftFlow;
 }
 
 export interface APIMentionableSelectComponent
   extends _APIMentionableSelectComponent {
-  flowId?: string;
+  flow?: DraftFlow;
 }
 
 export interface APIChannelSelectComponent extends _APIChannelSelectComponent {
-  flowId?: string;
+  flow?: DraftFlow;
 }
 
 export type APIButtonComponent =

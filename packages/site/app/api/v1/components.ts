@@ -2,6 +2,8 @@ import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { parseQuery } from "zodix";
 import { getUserId } from "~/session.server";
 import {
+  DraftComponent,
+  DraftFlow,
   StorableComponent,
   discordMessageComponents,
   flows,
@@ -36,13 +38,77 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       draft: true,
       createdById: true,
     },
+    with: {
+      componentsToFlows: {
+        with: {
+          flow: {
+            with: {
+              actions: {
+                columns: {
+                  data: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   return components
     .filter((c) => !c.createdById || c.createdById === userId)
     .map((c) => {
-      const { createdById, id, ...extra } = c;
-      return { id: String(id), ...extra };
+      const { createdById: _, id, componentsToFlows, data: d, ...extra } = c;
+      const data = d as DraftComponent & StorableComponent;
+      switch (data.type) {
+        case ComponentType.Button: {
+          if (data.style !== ButtonStyle.Link) {
+            const flow = componentsToFlows[0].flow;
+            data.flow = {
+              name: flow.name,
+              actions: flow.actions.map((a) => a.data),
+            };
+          }
+          break;
+        }
+        case ComponentType.StringSelect: {
+          data.flows = Object.fromEntries(
+            Object.entries(data.flowIds).map(([optionValue, flowId]) => {
+              const ctf = componentsToFlows.find(
+                (ctf) => String(ctf.flowId) === flowId,
+              );
+              return [
+                optionValue,
+                ctf
+                  ? {
+                      name: ctf.flow.name,
+                      actions: ctf.flow.actions.map((a) => a.data),
+                    }
+                  : { actions: [] },
+              ];
+            }),
+          );
+          break;
+        }
+        case ComponentType.UserSelect:
+        case ComponentType.RoleSelect:
+        case ComponentType.MentionableSelect:
+        case ComponentType.ChannelSelect: {
+          const flow = componentsToFlows[0].flow;
+          data.flow = {
+            name: flow.name,
+            actions: flow.actions.map((a) => a.data),
+          } satisfies DraftFlow;
+          break;
+        }
+        default:
+          break;
+      }
+      return {
+        id: String(id),
+        data: data as DraftComponent,
+        ...extra,
+      };
     });
 };
 

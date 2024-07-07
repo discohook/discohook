@@ -8,8 +8,13 @@ import {
 import {
   StorableComponent,
   discordMessageComponents,
+  discordMessageComponentsToFlows,
   eq,
+  flowActions,
+  flows,
+  generateId,
   getDb,
+  inArray,
   sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
@@ -34,6 +39,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           createdById: true,
           data: true,
           channelId: true,
+        },
+        with: {
+          componentsToFlows: {
+            columns: { flowId: true },
+          },
         },
       });
       if (current?.channelId) {
@@ -63,70 +73,158 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         throw respond(json({ message: "Incorrect Type" }, 400));
       }
 
-      const inserted = (
-        await db
-          .update(discordMessageComponents)
-          .set({
-            data: (() => {
-              const { custom_id: _, ...c } = component;
-              switch (c.type) {
-                case ComponentType.Button: {
-                  if (c.style === ButtonStyle.Link) {
-                    return { ...current.data, ...c };
-                  }
-                  return {
-                    ...c,
-                    flow: c.flow ?? { actions: [] },
-                  };
-                }
-                case ComponentType.StringSelect: {
-                  return {
-                    ...c,
-                    // Force max 1 value until we support otherwise
-                    // I want to make it so selects with >1 max_values share one
-                    // flow for all options, like with autofill selects. And also
-                    // a way to tell which values have been selected - `{values[n]}`?
-                    minValues: 1,
-                    maxValues: 1,
-                    flows: c.flows ?? {},
-                  };
-                }
-                case ComponentType.UserSelect:
-                case ComponentType.RoleSelect:
-                case ComponentType.MentionableSelect:
-                case ComponentType.ChannelSelect: {
-                  return {
-                    ...c,
-                    // See above
-                    minValues: 1,
-                    maxValues: 1,
-                    flow: c.flow ?? { actions: [] },
-                  };
-                }
-                default:
-                  break;
+      const updated = await db.transaction(async (tx) => {
+        await tx
+          .delete(discordMessageComponentsToFlows)
+          .where(
+            eq(discordMessageComponentsToFlows.discordMessageComponentId, id),
+          );
+        const curFlowIds = current.componentsToFlows.map((ctf) => ctf.flowId);
+        if (curFlowIds.length !== 0) {
+          await tx.delete(flows).where(inArray(flows.id, curFlowIds));
+        }
+
+        const { custom_id: _, ...c } = component;
+        let data: StorableComponent | undefined;
+        let allFlowIds: string[] = [];
+        switch (c.type) {
+          case ComponentType.Button: {
+            if (c.style === ButtonStyle.Link) {
+              data = c; //{ ...current.data, ...c };
+              break;
+            }
+
+            const { flow, ...rest } = c;
+
+            const flowId = generateId();
+            allFlowIds = [flowId];
+            await tx
+              .insert(flows)
+              .values({ id: BigInt(flowId), name: flow?.name });
+            if (flow && flow.actions.length !== 0) {
+              await tx.insert(flowActions).values(
+                flow.actions.map((action) => ({
+                  flowId: BigInt(flowId),
+                  type: action.type,
+                  data: action,
+                })),
+              );
+            }
+
+            data = { ...rest, flowId };
+            break;
+          }
+          case ComponentType.StringSelect: {
+            let { flows: cFlows, ...rest } = c;
+            cFlows = cFlows ?? {};
+            const flowIds = Object.fromEntries(
+              Object.keys(cFlows).map((optionValue) => [
+                optionValue,
+                generateId(),
+              ]),
+            );
+            allFlowIds = Object.values(flowIds);
+
+            if (Object.keys(flowIds).length !== 0) {
+              await tx.insert(flows).values(
+                Object.entries(cFlows).map(([optionValue, flow]) => ({
+                  id: BigInt(flowIds[optionValue]),
+                  name: flow.name,
+                })),
+              );
+              const flowsWithActions = Object.entries(cFlows)
+                .filter(([, flow]) => flow.actions.length !== 0)
+                .map(([optionValue, flow]) => ({
+                  id: BigInt(flowIds[optionValue]),
+                  ...flow,
+                }));
+              if (flowsWithActions.length !== 0) {
+                await tx.insert(flowActions).values(
+                  flowsWithActions.flatMap((flow) =>
+                    flow.actions.map((action) => ({
+                      flowId: flow.id,
+                      type: action.type,
+                      data: action,
+                    })),
+                  ),
+                );
               }
-              // Shouldn't happen
-              throw Error("Unsupported component type");
-            })() satisfies StorableComponent,
-            updatedById: token.user.id,
-            updatedAt: sql`NOW()`,
-          })
-          .where(eq(discordMessageComponents.id, id))
-          .returning({
-            id: discordMessageComponents.id,
-            data: discordMessageComponents.data,
-            draft: discordMessageComponents.draft,
-          })
-      )[0];
+            }
 
-      // We create durable objects for all new draft components so that they can
-      // self-expire if they haven't been touched.
-      // const doId = context.env.DRAFT_CLEANER.idFromName(String(inserted.id));
-      // const stub = context.env.DRAFT_CLEANER.get(doId);
-      // await stub.fetch(`http://do/?id=${inserted.id}`);
+            data = { ...rest, flowIds };
+            break;
+          }
+          case ComponentType.UserSelect:
+          case ComponentType.RoleSelect:
+          case ComponentType.MentionableSelect:
+          case ComponentType.ChannelSelect: {
+            const flowId = generateId();
+            allFlowIds = [flowId];
+            const { flow, ...rest } = c;
+            await tx
+              .insert(flows)
+              .values({ id: BigInt(flowId), name: flow?.name });
+            if (flow && flow.actions.length !== 0) {
+              await tx.insert(flowActions).values(
+                flow.actions.map((action) => ({
+                  flowId: BigInt(flowId),
+                  type: action.type,
+                  data: action,
+                })),
+              );
+            }
 
-      return respond(json(inserted));
+            data = {
+              ...rest,
+              // See above
+              minValues: 1,
+              maxValues: 1,
+              flowId,
+            };
+            break;
+          }
+          default:
+            break;
+        }
+        if (!data) {
+          tx.rollback();
+          throw json(
+            { message: "Failed to compile data structure for the component" },
+            500,
+          );
+        }
+
+        if (allFlowIds.length !== 0) {
+          await tx
+            .insert(discordMessageComponentsToFlows)
+            .values(
+              allFlowIds.map((flowId) => ({
+                discordMessageComponentId: id,
+                flowId: BigInt(flowId),
+              })),
+            )
+            .onConflictDoNothing();
+        }
+
+        const updated = (
+          await tx
+            .update(discordMessageComponents)
+            .set({
+              data,
+              updatedById: token.user.id,
+              updatedAt: sql`NOW()`,
+            })
+            .where(eq(discordMessageComponents.id, id))
+            .returning({
+              id: discordMessageComponents.id,
+              data: discordMessageComponents.data,
+              draft: discordMessageComponents.draft,
+            })
+        )[0];
+        return updated;
+      });
+
+      return respond(json(updated));
     }
     case "DELETE": {
       const db = getDb(context.env.HYPERDRIVE.connectionString);
