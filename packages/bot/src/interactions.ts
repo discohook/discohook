@@ -22,7 +22,6 @@ import {
   APIModalInteractionResponse,
   APIModalInteractionResponseCallbackData,
   APIModalSubmitInteraction,
-  APIPremiumRequiredInteractionResponse,
   APIRole,
   APIUser,
   ApplicationCommandOptionType,
@@ -435,10 +434,6 @@ export class InteractionContext<
     data: APIModalInteractionResponseCallbackData,
   ): APIModalInteractionResponse {
     return { type: InteractionResponseType.Modal, data };
-  }
-
-  premiumRequired(): APIPremiumRequiredInteractionResponse {
-    return { type: InteractionResponseType.PremiumRequired };
   }
 }
 
