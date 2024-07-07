@@ -1,8 +1,8 @@
 import { SerializeFrom } from "@remix-run/cloudflare";
-import { getMessageText } from "~/components/editor/MessageEditor.client";
 import { getUserId } from "~/session.server";
 import { getDb } from "~/store.server";
 import { LoaderArgs } from "~/util/loader";
+import { getMessageText } from "~/util/message";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const userId = await getUserId(request, context, true);

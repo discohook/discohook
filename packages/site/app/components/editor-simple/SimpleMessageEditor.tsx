@@ -3,6 +3,7 @@ import { Trans } from "react-i18next";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { getBlobDataUrl } from "~/util/message";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { InfoBox } from "../InfoBox";
@@ -14,7 +15,6 @@ import {
   EmbedEditorSection,
   getEmbedLength,
 } from "../editor/EmbedEditor";
-import { getBlobDataUrl } from "../editor/MessageEditor.client";
 import { CoolIcon } from "../icons/CoolIcon";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 

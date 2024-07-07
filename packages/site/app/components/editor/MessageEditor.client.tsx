@@ -6,6 +6,7 @@ import { JsonEditorProps } from "~/modals/JsonEditorModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { getBlobDataUrl, getMessageText } from "~/util/message";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -18,25 +19,8 @@ import { ActionRowEditor } from "./ComponentEditor";
 import {
   EmbedEditor,
   EmbedEditorSection,
-  getEmbedLength,
-  getEmbedText,
+  getEmbedLength
 } from "./EmbedEditor";
-
-export const getMessageText = (
-  message: QueryData["messages"][number]["data"],
-): string | undefined =>
-  message.content ??
-  (message.embeds
-    ? message.embeds.map(getEmbedText).find((t) => !!t)
-    : undefined);
-
-export const getBlobDataUrl = (blob: Blob): Promise<string> => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
-};
 
 export const MessageEditor: React.FC<{
   data: QueryData;
