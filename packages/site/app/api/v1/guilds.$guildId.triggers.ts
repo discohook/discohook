@@ -52,8 +52,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           id: true,
           name: true,
         },
-        // TODO: This doesn't actually include the relation data for some reason.
-        // It's present so that we can overwrite the data with no typing issues.
         with: { actions: true },
       },
       updatedBy: {
@@ -74,17 +72,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     limit,
     offset: page,
   });
-  const flowIds = triggers.map((t) => t.flow.id);
-  if (flowIds.length !== 0) {
-    const actions = await db.query.flowActions.findMany({
-      where: (flowActions, { inArray }) => inArray(flowActions.flowId, flowIds),
-    });
-    for (const trigger of triggers) {
-      trigger.flow.actions = actions.filter(
-        (a) => a.flowId === trigger.flow.id,
-      );
-    }
-  }
 
   return respond(json(triggers));
 };

@@ -546,7 +546,7 @@ export const flowActions = pgTable("Action", {
 
 export const flowActionsRelations = relations(flowActions, ({ one }) => ({
   flow: one(flows, {
-    fields: [flowActions.id],
+    fields: [flowActions.flowId],
     references: [flows.id],
     relationName: "Flow_Action",
   }),
