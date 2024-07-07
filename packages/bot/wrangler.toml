@@ -12,6 +12,7 @@ kv_namespaces = [
 
 [vars]
 ENVIRONMENT = "dev"
+PREMIUM_SKUS = ["1249810125418397867", "1256329259501355188"]
 
 [durable_objects]
 bindings = [{name = "COMPONENTS", class_name = "DurableComponentState"}]
@@ -21,4 +22,4 @@ tag = "v1"
 new_classes = ["DurableComponentState"]
 
 [env.production]
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", PREMIUM_SKUS = ["1249810125418397867", "1256329259501355188"] }

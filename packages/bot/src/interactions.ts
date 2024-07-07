@@ -27,6 +27,7 @@ import {
   APIUser,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  EntitlementType,
   InteractionResponseType,
   InteractionType,
   MessageFlags,
@@ -98,6 +99,46 @@ export class InteractionContext<
       ? this.interaction.member.user
       : // biome-ignore lint/style/noNonNullAssertion: There will always be one of these
         this.interaction.user!;
+  }
+
+  get premium() {
+    const entitlements = this.interaction.entitlements.filter((e) =>
+      this.env.PREMIUM_SKUS.includes(e.sku_id),
+    );
+    const details: {
+      active: boolean;
+      grace?: boolean;
+      graceDaysRemaining?: number;
+    } = {
+      active: entitlements.length !== 0,
+    };
+
+    // We might have several SKUs that grant premium access
+    for (const entitlement of entitlements) {
+      if (
+        entitlement.type === EntitlementType.ApplicationSubscription &&
+        entitlement.ends_at
+      ) {
+        // I'm not sure a grace period would actually work with Discord's subscriptions
+        const diff =
+          (new Date(entitlement.ends_at).getTime() - new Date().getTime()) /
+          86_400_000;
+        if (diff <= 0) {
+          if (diff < 3) {
+            details.active = false;
+          } else {
+            details.grace = true;
+            details.graceDaysRemaining = 3 - Math.floor(diff);
+          }
+        }
+      }
+    }
+
+    return details;
+  }
+
+  isPremium() {
+    return this.premium.active;
   }
 
   getMessage(): T extends APIMessageApplicationCommandInteraction
