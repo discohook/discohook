@@ -23,6 +23,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
@@ -37,10 +38,12 @@ import {
   getGuild,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { Flow } from "~/store.server";
+import { DraftFlow } from "~/store.server";
 import { useCache } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
+import { flowToDraftFlow } from "~/util/flow";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
+import { getUserAvatar } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
 import { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
 import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
@@ -70,6 +73,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         new REST().setToken(context.env.DISCORD_BOT_TOKEN),
         context.env,
       );
+      owner = guild.owner_id === String(token.user.discordId);
     }
   } catch (e) {
     if (isDiscordError(e)) {
@@ -91,7 +95,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       user: token.user,
       member: {
         owner,
-        permissions: permissions.value.toString(),
+        permissions: permissions.toString(),
       },
       discordApplicationId: context.env.DISCORD_CLIENT_ID,
     }),
@@ -178,10 +182,10 @@ export default () => {
     ? triggersFetcher.data.find((t) => t.id === openTriggerId)
     : undefined;
 
-  const [draftFlow, setDraftFlow] = useState<Flow>();
+  const [draftFlow, setDraftFlow] = useState<DraftFlow>();
   useEffect(() => {
     if (openTrigger) {
-      setDraftFlow(openTrigger.flow);
+      setDraftFlow(flowToDraftFlow(openTrigger.flow));
     } else {
       setDraftFlow(undefined);
       setEditOpenTriggerFlow(false);
@@ -280,6 +284,7 @@ export default () => {
         setOpen={setCreatingTrigger}
         guildId={guild.id}
         cache={cache}
+        setOpenTriggerId={setOpenTriggerId}
       />
       <FlowEditModal
         open={editOpenTriggerFlow}
@@ -333,29 +338,59 @@ export default () => {
             <div>
               <TabHeader>{t("home")}</TabHeader>
               <div className="space-y-2">
-                <div className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex">
-                  <img
-                    {...cdnImgAttributes(64, (size) =>
-                      guild.icon
-                        ? cdn.icon(guild.id, guild.icon, { size })
-                        : cdn.defaultAvatar(0),
-                    )}
-                    className="rounded-lg h-12 w-12 ltr:mr-4 rtl:ml-4"
-                    alt={guild.name}
-                  />
-                  <div className="-mt-2">
-                    <p className="text-xl font-semibold">{guild.name}</p>
-                    <p>
-                      <Trans
-                        t={t}
-                        i18nKey="homeWelcome"
-                        components={{
-                          narrow: <span className="inline sm:hidden" />,
-                          wide: <span className="hidden sm:inline" />,
-                        }}
-                      />
-                    </p>
+                <div className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900">
+                  <div className="flex">
+                    <img
+                      {...cdnImgAttributes(64, (size) =>
+                        guild.icon
+                          ? cdn.icon(guild.id, guild.icon, { size })
+                          : cdn.defaultAvatar(0),
+                      )}
+                      className="rounded-lg h-12 w-12 ltr:mr-4 rtl:ml-4"
+                      alt={guild.name}
+                    />
+                    <div className="-mt-2">
+                      <p className="text-xl font-semibold">{guild.name}</p>
+                      <p>
+                        <Trans
+                          t={t}
+                          i18nKey="homeWelcome"
+                          components={{
+                            narrow: <span className="inline sm:hidden" />,
+                            wide: <span className="hidden sm:inline" />,
+                          }}
+                        />
+                      </p>
+                    </div>
                   </div>
+                  <details className="rounded-lg mt-2 p-2 bg-gray-200 dark:bg-gray-800">
+                    <summary className="flex">
+                      <img
+                        {...cdnImgAttributes(64, (size) =>
+                          getUserAvatar(user, { size }),
+                        )}
+                        className="rounded-full h-10 w-10 ltr:mr-3 ltr:ml-1 rtl:ml-3 rtl:mr-1 my-auto"
+                        alt={user.name}
+                      />
+                      <p className="font-medium my-auto">
+                        {member.owner
+                          ? "You own this server."
+                          : permissions.has(PermissionFlags.Administrator)
+                            ? "You are an administrator in this server."
+                            : "Your roles in this server grant you some server-wide permissions (though channel overrides may differ)."}
+                      </p>
+                    </summary>
+                    <div className="p-2 mt-1 space-y-1.5">
+                      {Object.entries(PermissionFlags).map(([flag, value]) => (
+                        <Checkbox
+                          key={`permission-${flag}`}
+                          checked={has(value)}
+                          readOnly
+                          label={t(`permission.${flag}`)}
+                        />
+                      ))}
+                    </div>
+                  </details>
                 </div>
                 <div className="rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table w-full">
                   <div className="table-header-group">
@@ -363,19 +398,30 @@ export default () => {
                       <Cell className="font-semibold rounded-tl-lg">
                         {t("tab")}
                       </Cell>
-                      <Cell className="font-semibold rounded-tr-lg">
-                        {t("permissions")}
-                      </Cell>
+                      <Cell className="font-semibold">{t("permissions")}</Cell>
+                      <Cell className="rounded-tr-lg" />
                     </div>
                   </div>
                   <div className="table-row-group">
                     <div className="table-row">
                       <Cell>{t("home")}</Cell>
                       <Cell>{t("justBeAMember")}</Cell>
+                      <Cell>
+                        <CoolIcon icon="Check" />
+                      </Cell>
                     </div>
                     <div className="table-row">
                       <Cell>{t("webhooks")}</Cell>
                       <Cell>{t("permission.ManageWebhooks")}</Cell>
+                      <Cell>
+                        <CoolIcon
+                          icon={
+                            permissions.has(PermissionFlags.ManageWebhooks)
+                              ? "Check"
+                              : "Close_MD"
+                          }
+                        />
+                      </Cell>
                     </div>
                     <div className="table-row">
                       <Cell>{t("auditLog")}</Cell>
@@ -386,10 +432,31 @@ export default () => {
                           ),
                         )}
                       </Cell>
+                      <Cell>
+                        <CoolIcon
+                          icon={
+                            permissions.has(
+                              PermissionFlags.ViewAuditLog,
+                              PermissionFlags.ManageGuild,
+                            )
+                              ? "Check"
+                              : "Close_MD"
+                          }
+                        />
+                      </Cell>
                     </div>
                     <div className="table-row">
                       <Cell>{t("triggers")}</Cell>
                       <Cell>{t("permission.ManageGuild")}</Cell>
+                      <Cell>
+                        <CoolIcon
+                          icon={
+                            permissions.has(PermissionFlags.ManageGuild)
+                              ? "Check"
+                              : "Close_MD"
+                          }
+                        />
+                      </Cell>
                     </div>
                     {/* <div className="table-row">
                       <Cell>Sessions</Cell>
@@ -710,12 +777,7 @@ export default () => {
                   onClick={async () => {
                     if (draftFlow) {
                       await triggerSaveFetcher.submitAsync(
-                        {
-                          flow: {
-                            name: draftFlow.name,
-                            actions: draftFlow.actions,
-                          },
-                        },
+                        { flow: draftFlow },
                         {
                           action: apiUrl(
                             BRoutes.guildTrigger(guild.id, openTrigger.id),
