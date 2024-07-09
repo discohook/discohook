@@ -4097,8 +4097,9 @@ cron-parser@shayypy/cron-parser:
     react-i18next: "npm:^14.0.5"
     react-modal: "npm:^3.16.1"
     react-select: "npm:^5.8.0"
-    remix-auth-discord: "npm:^1.3.2"
+    remix-auth-discord: "npm:^1.3.3"
     remix-auth-guilded: "npm:^1.0.1"
+    remix-utils: "npm:^7.6.0"
     robots-parser: "npm:^3.0.1"
     tailwind-merge: "npm:^2.2.0"
     tailwindcss: "npm:^3.3.6"
@@ -4115,7 +4116,7 @@ cron-parser@shayypy/cron-parser:
   resolution: "discohook@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^1.5.1"
-    drizzle-kit: "npm:^0.22.7"
+    drizzle-kit: "npm:^0.22.8"
     ngrok: "npm:^5.0.0-beta.2"
   languageName: unknown
   linkType: soft
@@ -4216,6 +4217,19 @@ cron-parser@shayypy/cron-parser:
   bin:
     drizzle-kit: bin.cjs
   checksum: 10c0/535d22abc657b78438124770210edec5e9d820c8fe07e61aba45ce754a6be2f63ae0328c4daf37884b981d9aea3889b3f0566be7f67290da6257383c07fd6fcc
+  languageName: node
+  linkType: hard
+
+"drizzle-kit@npm:^0.22.8":
+  version: 0.22.8
+  resolution: "drizzle-kit@npm:0.22.8"
+  dependencies:
+    "@esbuild-kit/esm-loader": "npm:^2.5.5"
+    esbuild: "npm:^0.19.7"
+    esbuild-register: "npm:^3.5.0"
+  bin:
+    drizzle-kit: bin.cjs
+  checksum: 10c0/e3bbda283de8d3985644d771fe773fcee3f31dd485cb3d32af077c52a088580921fcaae3f7b383279f8799b223d74701ebc4866b6e4952c8c813cd0cb5f80908
   languageName: node
   linkType: hard
 
@@ -8702,15 +8716,15 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"remix-auth-discord@npm:^1.3.2":
-  version: 1.3.2
-  resolution: "remix-auth-discord@npm:1.3.2"
+"remix-auth-discord@npm:^1.3.3":
+  version: 1.3.3
+  resolution: "remix-auth-discord@npm:1.3.3"
   dependencies:
     remix-auth: "npm:^3.6.0"
     remix-auth-oauth2: "npm:^1.11.0"
   peerDependencies:
     "@remix-run/server-runtime": ^2.1.0
-  checksum: 10c0/4290e2b809a910173c767cc6c1ac661d6cac6d21d31d2014cb335c6948c2d472b57efcf292832aa5b32ae03e45f1d31c7b9ef750db6c8253f2a55a508fe8d3a3
+  checksum: 10c0/eb226d9a3101f9034c3e7efcc27e43f407cfc3031f410463794858d9b6f520b4376ccf683432f4567a20c97b52a5e505e4910a66a3e0efd44317d17c49b2159a
   languageName: node
   linkType: hard
 
@@ -8726,19 +8740,7 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"remix-auth-oauth2@npm:^1.11.0":
-  version: 1.11.1
-  resolution: "remix-auth-oauth2@npm:1.11.1"
-  dependencies:
-    debug: "npm:^4.3.4"
-  peerDependencies:
-    "@remix-run/server-runtime": ^1.0.0 || ^2.0.0
-    remix-auth: ^3.6.0
-  checksum: 10c0/2b034fbe8b2e7d925b667bd4ac38d5c9f3f5a8a418c964ee816ae00e390f6ab40467ef7d7881deef36b409b73416d7d38858d0fd89e88eee659ff78e6638d871
-  languageName: node
-  linkType: hard
-
-"remix-auth-oauth2@npm:^1.11.2":
+"remix-auth-oauth2@npm:^1.11.0, remix-auth-oauth2@npm:^1.11.2":
   version: 1.11.2
   resolution: "remix-auth-oauth2@npm:1.11.2"
   dependencies:
@@ -8751,7 +8753,7 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"remix-auth@npm:^3.0.0, remix-auth@npm:^3.6.0":
+"remix-auth@npm:^3.0.0":
   version: 3.6.0
   resolution: "remix-auth@npm:3.6.0"
   dependencies:
@@ -8760,6 +8762,59 @@ cron-parser@shayypy/cron-parser:
     "@remix-run/react": ^1.0.0 || ^2.0.0
     "@remix-run/server-runtime": ^1.0.0 || ^2.0.0
   checksum: 10c0/2b9d9f5ad02e7addbf2082d0968b8a23cb7569d68c322b713b35864e21028ceca9d554c36e33f42e7ece04c826a08411e120fdc827595cee3932facd5071fcf5
+  languageName: node
+  linkType: hard
+
+"remix-auth@npm:^3.6.0":
+  version: 3.7.0
+  resolution: "remix-auth@npm:3.7.0"
+  dependencies:
+    uuid: "npm:^8.3.2"
+  peerDependencies:
+    "@remix-run/react": ^1.0.0 || ^2.0.0
+    "@remix-run/server-runtime": ^1.0.0 || ^2.0.0
+  checksum: 10c0/25242a94a2de15b0efac2fd81d66af26778fbfd5f34de3de94ff72a9f828f6ec4cc631a23d1f96c8b8c0e6221a10a29e098a1d6c058e264ba06f8739189bcccf
+  languageName: node
+  linkType: hard
+
+"remix-utils@npm:^7.6.0":
+  version: 7.6.0
+  resolution: "remix-utils@npm:7.6.0"
+  dependencies:
+    type-fest: "npm:^4.3.3"
+  peerDependencies:
+    "@remix-run/cloudflare": ^2.0.0
+    "@remix-run/deno": ^2.0.0
+    "@remix-run/node": ^2.0.0
+    "@remix-run/react": ^2.0.0
+    "@remix-run/router": ^1.7.2
+    crypto-js: ^4.1.1
+    intl-parse-accept-language: ^1.0.0
+    is-ip: ^5.0.1
+    react: ^18.0.0
+    zod: ^3.22.4
+  peerDependenciesMeta:
+    "@remix-run/cloudflare":
+      optional: true
+    "@remix-run/deno":
+      optional: true
+    "@remix-run/node":
+      optional: true
+    "@remix-run/react":
+      optional: true
+    "@remix-run/router":
+      optional: true
+    crypto-js:
+      optional: true
+    intl-parse-accept-language:
+      optional: true
+    is-ip:
+      optional: true
+    react:
+      optional: true
+    zod:
+      optional: true
+  checksum: 10c0/f1533cc596f53384c53e8b15a4f937d7ba3f55e793c9df2949a8a986fb41c28b03fbb2c1962baa9371401c7011b6d563385885d33bd4cbb66d9c1ecf5dbeb594
   languageName: node
   linkType: hard
 
@@ -9298,7 +9353,7 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=928e4c&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=ec6962&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
@@ -9306,7 +9361,7 @@ cron-parser@shayypy/cron-parser:
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     tif-snowflake: shayypy/snowflake
-  checksum: 10c0/4b508ecb607c3fdf720bd0f14c09f1cce6ddebd4b2f1d9cbc9da6d624709ea2a143ad2d0e8ae8beb39f32e5a7e3762c9814693db204ab7bb7d0799bf71ecdb54
+  checksum: 10c0/3b5c984a2120fa541959312eef93192cf671f9e2a4f1d76624f1b3f8cedb8d2624392856c58c8c5845716b9586b1df274ae299e2f5f363eab788e5f01efce1bd
   languageName: node
   linkType: hard
 
@@ -9820,6 +9875,13 @@ tif-snowflake@shayypy/snowflake:
   version: 4.0.8
   resolution: "type-detect@npm:4.0.8"
   checksum: 10c0/8fb9a51d3f365a7de84ab7f73b653534b61b622aa6800aecdb0f1095a4a646d3f5eb295322127b6573db7982afcd40ab492d038cf825a42093a58b1e1353e0bd
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^4.3.3":
+  version: 4.21.0
+  resolution: "type-fest@npm:4.21.0"
+  checksum: 10c0/60c09995336ea15a405caa76a9ad9238e7ea324d945519880c560e4ee0845479889c45a51810ca81b0f37abd46229a06d2e17ab9b12d1a5cbe335af56819c92b
   languageName: node
   linkType: hard
 
