@@ -4,7 +4,7 @@ import { zx } from "zodix";
 import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
 import { getDiscordAuth } from "~/auth-discord.server";
 import { getGuildedAuth } from "~/auth-guilded.server";
-import { getSessionStorage } from "~/session.server";
+import { getSessionStorage, getUser, getUserId } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams, zxParseQuery } from "~/util/zod";
 
@@ -38,10 +38,26 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     return null;
   }
 
-  const { force, redirect: redirectTo } = zxParseQuery(request, {
+  let { force, redirect: redirectTo } = zxParseQuery(request, {
     redirect: z.ostring(),
     force: zx.BoolAsString.optional(),
   });
+
+  const userId = await getUserId(request, context);
+  const user = await getUser(request, context);
+  if (user) {
+    if (
+      redirectTo &&
+      (redirectTo.startsWith("/") ||
+        ["discohook.app", "discohook.org"].includes(new URL(redirectTo).host))
+    ) {
+      return redirect(redirectTo);
+    }
+    return redirect("/?m=auth-success");
+  } else if (userId) {
+    // Likely lingering cookie with unavailable server-side data
+    force = true;
+  }
 
   // const beforeStorage = getSessionStorage(context);
   // const beforeSession = await beforeStorage.getSession(request.headers.get("Cookie"));
