@@ -455,9 +455,9 @@ export default () => {
                       </Cell>
                     </div>
                     <div className="table-row">
-                      <Cell>{t("triggers")}</Cell>
+                      <Cell className="rounded-bl-lg">{t("triggers")}</Cell>
                       <Cell>{t("permission.ManageGuild")}</Cell>
-                      <Cell>
+                      <Cell className="rounded-br-lg">
                         <CoolIcon
                           icon={
                             permissions.has(PermissionFlags.ManageGuild)
