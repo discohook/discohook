@@ -363,24 +363,33 @@ export default () => {
                       </p>
                     </div>
                   </div>
-                  <details className="rounded-lg mt-2 p-2 bg-gray-200 dark:bg-gray-800">
-                    <summary className="flex">
+                  <details className="rounded-lg mt-2 bg-gray-200 dark:bg-gray-800 group">
+                    <summary className="flex marker:content-none marker-none cursor-pointer py-2 px-3">
                       <img
                         {...cdnImgAttributes(64, (size) =>
                           getUserAvatar(user, { size }),
                         )}
-                        className="rounded-full h-10 w-10 ltr:mr-3 ltr:ml-1 rtl:ml-3 rtl:mr-1 my-auto"
+                        className="rounded-full h-10 w-10 ltr:mr-3 rtl:ml-3 my-auto"
                         alt={user.name}
                       />
-                      <p className="font-medium my-auto">
-                        {member.owner
-                          ? "You own this server."
-                          : permissions.has(PermissionFlags.Administrator)
-                            ? "You are an administrator in this server."
-                            : "Your roles in this server grant you some server-wide permissions (though channel overrides may differ)."}
+                      <p className="font-medium my-auto ltr:mr-2 rtl:ml-2">
+                        {t(
+                          `homePermission.${
+                            member.owner
+                              ? "owner"
+                              : permissions.has(PermissionFlags.Administrator)
+                                ? "admin"
+                                : "roles"
+                          }`,
+                        )}
                       </p>
+                      <CoolIcon
+                        icon="Chevron_Right"
+                        rtl="Chevron_Left"
+                        className="ltr:ml-auto rtl:mr-auto my-auto text-lg ltr:group-open:rotate-90 rtl:group-open:-rotate-90 transition"
+                      />
                     </summary>
-                    <div className="p-2 mt-1 space-y-1.5">
+                    <div className="p-4 pt-2 space-y-1.5">
                       {Object.entries(PermissionFlags).map(([flag, value]) => (
                         <Checkbox
                           key={`permission-${flag}`}

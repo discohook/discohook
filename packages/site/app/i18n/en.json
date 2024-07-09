@@ -142,6 +142,11 @@
   "addToServer": "Add to Server",
   "home": "Home",
   "homeWelcome": "Welcome to the homepage. Depending on your permissions in this server, you will be able to access various tabs in the <narrow>top bar</narrow><wide>sidebar</wide>.",
+  "homePermission": {
+    "owner": "You own this server.",
+    "administrator": "You are an administrator.",
+    "roles": "Your roles grant you some server-wide permissions (not counting channel overrides)."
+  },
   "justBeAMember": "Just be a member",
   "webhooks": "Webhooks",
   "auditLog": "Audit Log",
