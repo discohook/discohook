@@ -1,13 +1,13 @@
 import { Form } from "@remix-run/react";
 import { TFunction } from "i18next";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import type { action as ApiPostGuildTriggers } from "~/api/v1/guilds.$guildId.triggers";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { StringSelect } from "~/components/StringSelect";
-import { Flow, TriggerEvent } from "~/store.server";
+import { DraftFlow, TriggerEvent } from "~/store.server";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { useSafeFetcher } from "~/util/loader";
 import { FlowEditModal } from "./FlowEditModal";
@@ -20,18 +20,18 @@ const getTriggerEventOptions = (t: TFunction) =>
   })) as { label: string; value: TriggerEvent }[];
 
 export const TriggerCreateModal = (
-  props: ModalProps & { guildId: string; cache: CacheManager },
+  props: ModalProps & {
+    guildId: string;
+    cache: CacheManager;
+    setOpenTriggerId: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  },
 ) => {
   const { t } = useTranslation();
   const [error, setError] = useError();
 
   const [event, setEvent] = useState<TriggerEvent>();
   const [editingFlow, setEditingFlow] = useState(false);
-  const [flow, setFlow] = useState<Flow>({
-    id: 0n,
-    name: null,
-    actions: [],
-  });
+  const [flow, setFlow] = useState<DraftFlow>({ actions: [] });
 
   const fetcher = useSafeFetcher<typeof ApiPostGuildTriggers>({
     onError: setError,
@@ -62,23 +62,15 @@ export const TriggerCreateModal = (
         onSubmit={async (e) => {
           e.preventDefault();
 
-          await fetcher.submitAsync(
-            {
-              event,
-              flow: {
-                // This is silly. We accept `DraftFlow` just to be
-                // more bot-friendly.
-                name: flow.name,
-                actions: flow.actions,
-                // actions: flow.actions.map((a) => a.data),
-              },
-            },
+          const created = await fetcher.submitAsync(
+            { event, flow },
             {
               action: apiUrl(BRoutes.guildTriggers(props.guildId)),
               method: "POST",
             },
           );
-          // props.setOpen(false);
+          props.setOpenTriggerId(created.id);
+          props.setOpen(false);
         }}
       >
         {error}

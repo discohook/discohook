@@ -10,12 +10,12 @@ import { ChannelSelect } from "~/components/ChannelSelect";
 import { useError } from "~/components/Error";
 import { NumberInput } from "~/components/NumberInput";
 import {
-  Flow,
+  DraftFlow,
   FlowAction,
   FlowActionCreateThread,
   FlowActionSetVariable,
   FlowActionSetVariableType,
-  FlowActionType,
+  FlowActionType
 } from "~/store.server";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
@@ -32,13 +32,13 @@ import { CoolIcon } from "../components/icons/CoolIcon";
 import { mentionStyle } from "../components/preview/Markdown";
 import { Modal, ModalProps } from "./Modal";
 
-type FlowWithPartials = Flow & {
+type FlowWithPartials = DraftFlow & {
   actions: (Partial<FlowAction> & Pick<FlowAction, "type">)[];
 };
 
 export type EditingFlowData = {
-  flow: Flow;
-  setFlow: (flow: Flow) => void;
+  flow: DraftFlow;
+  setFlow: (flow: DraftFlow) => void;
 };
 
 export const FlowEditModal = (
@@ -616,9 +616,11 @@ const FlowActionEditor: React.FC<{
             />
           ) : action.type === 10 ? (
             (() => {
-              const varAction = flow.actions.find((a, subI) => {
-                return subI < i && a.type === 9 && a.name === "messageId";
-              });
+              const varAction = flow.actions.find(
+                (a, subI): a is FlowActionSetVariable => {
+                  return subI < i && a.type === 9 && a.name === "messageId";
+                },
+              );
               return (
                 <p className="text-sm">
                   <Trans

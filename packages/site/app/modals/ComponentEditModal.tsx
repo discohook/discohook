@@ -14,7 +14,6 @@ import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
-import { Flow } from "~/store.server";
 import {
   APIButtonComponent,
   APIMessageActionRowComponent,
@@ -369,7 +368,8 @@ export const ComponentEditForm = ({
                         className="mt-auto ltr:ml-2 rtl:mr-2"
                         onClick={async () => {
                           const flows = component.flows ?? {};
-                          let flow: Flow | undefined = flows[option.value];
+                          let flow: (typeof flows)[string] | undefined =
+                            flows[option.value];
 
                           if (!flow) {
                             flow = flow = {

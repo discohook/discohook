@@ -3,7 +3,7 @@ import { json } from "@remix-run/cloudflare";
 import {
   ChannelType,
   RESTGetAPIGuildChannelsResult,
-  Routes,
+  Routes
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
 import {
@@ -21,6 +21,13 @@ import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 import { getChannelIconType } from "./channels.$channelId";
 
+// export type GuildMe = Pick<APIGuildMember, "roles" | "avatar"> & {
+//   /** Whether the member owns the guild */
+//   owner: boolean;
+//   /** Calculated server-level permissions */
+//   permissions: string;
+// };
+
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
@@ -32,7 +39,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   if (!guild) {
     guild = await getGuild(guildId, rest, context.env);
+    // owner = guild.owner_id === String(token.user.discordUser?.id);
   }
+  // if (!member) {
+  //   member = (await rest.get(
+  //     Routes.guildMember(String(guildId), String(token.user.discordUser?.id)),
+  //   )) as APIGuildMember;
+  //   owner = guild.owner_id === member.user?.id;
+  // }
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   await db
@@ -76,6 +90,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       // Unsure what to do about members since they aren't capped as low as
       // roles and channels. I suppose the client could paginate through the
       // server in the future
+      // me: {
+      //   avatar: member.avatar,
+      //   roles: member.roles,
+      //   owner,
+      //   permissions: permissions.toString(),
+      // } as GuildMe,
       roles: guild.roles
         .filter((r) => r.id !== guild.id)
         .map((role) => ({
