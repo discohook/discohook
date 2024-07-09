@@ -13,8 +13,9 @@ import {
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import i18n from "i18next";
 import moment from "moment";
-import { Suspense, lazy, memo, useEffect } from "react";
+import { useEffect } from "react";
 import { initReactI18next } from "react-i18next";
+import { ClientOnly } from "remix-utils/client-only";
 import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message.client";
 import icons from "./styles/coolicons.css";
@@ -101,12 +102,6 @@ const changeLanguageEffect = () => {
   }
 };
 
-const MemoizedOutlet = memo(
-  lazy(async () => {
-    return { default: Outlet };
-  }),
-);
-
 export const FullscreenThrobber = () => (
   <div className="h-screen w-full flex">
     <img
@@ -129,9 +124,9 @@ export default function App() {
         <TailwindThemeScript />
       </head>
       <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230">
-        <Suspense fallback={<FullscreenThrobber />}>
-          <MemoizedOutlet />
-        </Suspense>
+        <ClientOnly fallback={<FullscreenThrobber />}>
+          {() => <Outlet />}
+        </ClientOnly>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
@@ -156,34 +151,39 @@ export function ErrorBoundary() {
       </head>
       <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230 h-screen flex">
         <div className="p-8 max-w-3xl mx-auto">
-          <Message
-            message={{
-              content: [
-                "You just encountered an error, here's all we know:",
-                "```",
-                isRouteErrorResponse(error)
-                  ? typeof error.data === "object" && "message" in error.data
-                    ? getZodErrorMessage(error.data)
-                    : String(error.data)
-                  : String(error),
-                "```",
-                "If you think this shouldn't have happened, visit the support server.",
-              ].join("\n"),
-              components: [
-                {
-                  type: ComponentType.ActionRow,
+          <ClientOnly fallback={<FullscreenThrobber />}>
+            {() => (
+              <Message
+                message={{
+                  content: [
+                    "You just encountered an error, here's all we know:",
+                    "```",
+                    isRouteErrorResponse(error)
+                      ? typeof error.data === "object" &&
+                        "message" in error.data
+                        ? getZodErrorMessage(error.data)
+                        : String(error.data)
+                      : String(error),
+                    "```",
+                    "If you think this shouldn't have happened, visit the support server.",
+                  ].join("\n"),
                   components: [
                     {
-                      type: ComponentType.Button,
-                      style: ButtonStyle.Link,
-                      label: "Support Server",
-                      url: "/discord",
+                      type: ComponentType.ActionRow,
+                      components: [
+                        {
+                          type: ComponentType.Button,
+                          style: ButtonStyle.Link,
+                          label: "Support Server",
+                          url: "/discord",
+                        },
+                      ],
                     },
                   ],
-                },
-              ],
-            }}
-          />
+                }}
+              />
+            )}
+          </ClientOnly>
         </div>
         <Scripts />
       </body>
