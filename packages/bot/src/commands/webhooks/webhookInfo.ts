@@ -105,19 +105,20 @@ export const getWebhookUrlEmbed = (
     embed.setThumbnail(webhookAvatarUrl(webhook, { size: 1024 }));
   }
 
-  embed.addFields({
-    name: ":information_source: Usage",
-    value: dedent`
-        Click "Add Webhook" on Discohook, then paste this URL in the box.
-        If you are logged in, you may have to first click "input a webhook URL manually".
-        ${
-          webhook.application_id && applicationId === webhook.application_id
-            ? "This webhook is owned by Discohook, so its messages can have components (buttons/selects)."
-            : ""
-        }
-      `,
-    inline: false,
-  });
+  // Surely this is not necessary?
+  // embed.addFields({
+  //   name: ":information_source: Usage",
+  //   value: dedent`
+  //       Click "Open in Discohook". Compose your message and click send to create a new message.
+  //       ${
+  //         webhook.application_id && applicationId === webhook.application_id
+  //           ? "This webhook is owned by Discohook, so its messages can have components (buttons/selects)."
+  //           : ""
+  //       }
+  //       If you need the webhook URL for another application,
+  //     `,
+  //   inline: false,
+  // });
 
   if (channelType === ChannelType.GuildForum) {
     embed.addFields({
