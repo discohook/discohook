@@ -4207,19 +4207,6 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"drizzle-kit@npm:^0.22.7":
-  version: 0.22.7
-  resolution: "drizzle-kit@npm:0.22.7"
-  dependencies:
-    "@esbuild-kit/esm-loader": "npm:^2.5.5"
-    esbuild: "npm:^0.19.7"
-    esbuild-register: "npm:^3.5.0"
-  bin:
-    drizzle-kit: bin.cjs
-  checksum: 10c0/535d22abc657b78438124770210edec5e9d820c8fe07e61aba45ce754a6be2f63ae0328c4daf37884b981d9aea3889b3f0566be7f67290da6257383c07fd6fcc
-  languageName: node
-  linkType: hard
-
 "drizzle-kit@npm:^0.22.8":
   version: 0.22.8
   resolution: "drizzle-kit@npm:0.22.8"
@@ -9353,7 +9340,7 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=ec6962&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=34d535&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
@@ -9361,7 +9348,7 @@ cron-parser@shayypy/cron-parser:
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     tif-snowflake: shayypy/snowflake
-  checksum: 10c0/3b5c984a2120fa541959312eef93192cf671f9e2a4f1d76624f1b3f8cedb8d2624392856c58c8c5845716b9586b1df274ae299e2f5f363eab788e5f01efce1bd
+  checksum: 10c0/c095bf72dfccb617e71443ae307c2cb91f0f04d9b70e754570ec5bc8d132ef52efdc7cb61800530755e08f972866345ef274343e4166656d1e03072db620e30b
   languageName: node
   linkType: hard
 
@@ -9373,7 +9360,7 @@ cron-parser@shayypy/cron-parser:
     "@types/json-bigint": "npm:^1.0.4"
     discord-api-types: "npm:^0.37.67"
     discord-snowflake: "npm:^2.0.0"
-    drizzle-kit: "npm:^0.22.7"
+    drizzle-kit: "npm:^0.22.8"
     drizzle-orm: "npm:^0.31.2"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"

@@ -18,7 +18,7 @@
   "devDependencies": {
     "@discordjs/rest": "^2.2.0",
     "@types/json-bigint": "^1.0.4",
-    "drizzle-kit": "^0.22.7",
+    "drizzle-kit": "^0.22.8",
     "typescript": "^5.3.3"
   }
 }

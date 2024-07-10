@@ -201,7 +201,7 @@ export const discordGuilds = pgTable("DiscordGuild", {
 export const discordGuildsRelations = relations(discordGuilds, ({ many }) => ({
   members: many(discordMembers, { relationName: "DiscordGuild_DiscordMember" }),
   roles: many(discordRoles, { relationName: "DiscordGuild_DiscordRole" }),
-  backups: many(backups, { relationName: "DiscordGuild_Backup" }),
+  backups: many(discordGuildsToBackups),
   webhooks: many(webhooks, { relationName: "DiscordGuild_Webhook" }),
   triggers: many(triggers, { relationName: "DiscordGuild_Trigger" }),
   reactionRoles: many(discordReactionRoles, {
@@ -285,12 +285,10 @@ export const guildedServers = pgTable("GuildedServer", {
 export const guildedServersRelations = relations(
   guildedServers,
   ({ many }) => ({
-    backups: many(backups, { relationName: "GuildedServer_Backup" }),
+    backups: many(backups),
     webhooks: many(webhooks, { relationName: "GuildedServer_Webhook" }),
     triggers: many(triggers, { relationName: "GuildedServer_Trigger" }),
-    messageLogEntries: many(messageLogEntries, {
-      relationName: "GuildedServer_MessageLogEntry",
-    }),
+    messageLogEntries: many(messageLogEntries),
   }),
 );
 
@@ -312,6 +310,37 @@ export const shareLinksRelations = relations(shareLinks, ({ one }) => ({
     relationName: "User_ShareLink",
   }),
 }));
+
+export const discordGuildsToBackups = pgTable(
+  "DiscordGuild_to_Backup",
+  {
+    discordGuildId: snowflake("discordGuildId")
+      .notNull()
+      .references(() => discordGuilds.id, { onDelete: "cascade" }),
+    backupId: snowflake("backupId")
+      .notNull()
+      .references(() => backups.id, { onDelete: "cascade" }),
+  },
+  (table) => ({
+    pk: primaryKey({
+      columns: [table.discordGuildId, table.backupId],
+    }),
+  }),
+);
+
+export const discordGuildsToBackupsRelations = relations(
+  discordGuildsToBackups,
+  ({ one }) => ({
+    guild: one(discordGuilds, {
+      fields: [discordGuildsToBackups.discordGuildId],
+      references: [discordGuilds.id],
+    }),
+    backup: one(backups, {
+      fields: [discordGuildsToBackups.backupId],
+      references: [backups.id],
+    }),
+  }),
+);
 
 export const backups = pgTable("Backup", {
   id: snowflakePk(),
@@ -339,10 +368,9 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
   owner: one(users, {
     fields: [backups.ownerId],
     references: [users.id],
-    relationName: "User_Backup",
   }),
-  guilds: many(discordGuilds, { relationName: "DiscordGuild_Backup" }),
-  servers: many(guildedServers, { relationName: "GuildedServer_Backup" }),
+  guilds: many(discordGuildsToBackups),
+  servers: many(guildedServers),
 }));
 
 export const linkBackups = pgTable("LinkBackup", {
@@ -491,9 +519,9 @@ export const discordMessageComponentsRelations = relations(
 );
 
 export const discordMessageComponentsToFlows = pgTable(
-  "DiscordMessageComponent_to_Flow",
+  "DMC_to_Flow",
   {
-    discordMessageComponentId: snowflake("discordMessageComponentId")
+    discordMessageComponentId: snowflake("dmcId")
       .notNull()
       .references(() => discordMessageComponents.id, { onDelete: "cascade" }),
     flowId: snowflake("flowId")
@@ -503,6 +531,7 @@ export const discordMessageComponentsToFlows = pgTable(
   (table) => ({
     pk: primaryKey({
       columns: [table.discordMessageComponentId, table.flowId],
+      name: "discordMessageComponent_to_Flow_pk",
     }),
   }),
 );
