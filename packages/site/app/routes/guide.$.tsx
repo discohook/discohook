@@ -56,6 +56,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   return { user, content: parsed.body, meta: { ...zparsed.data, file, path } };
 };
 
+export type GuideFileMeta = SerializeFrom<typeof loader>["meta"];
+
 export const meta: MetaFunction = ({ data }) => {
   if (data) {
     const { meta } = data as SerializeFrom<typeof loader>;
@@ -98,7 +100,7 @@ export default function GuidePage() {
   const { user, content, meta } = useLoaderData<typeof loader>();
   const cache = useCache(!user);
 
-  const [indexData, setIndexData] = useState<Record<string, (typeof meta)[]>>();
+  const [indexData, setIndexData] = useState<Record<string, GuideFileMeta[]>>();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -117,14 +119,14 @@ export default function GuidePage() {
       <Header user={user} />
       <Prose>
         <TabsWindow
-          data={Object.entries(indexData ?? {}).flatMap(([path, files]) => {
-            return files
-              .filter((file) => meta.path.startsWith(path))
-              .map((file) => ({
+          data={Object.entries(indexData ?? {})
+            .filter(([path]) => meta.path.startsWith(path))
+            .flatMap(([path, files]) => {
+              return files.map((file) => ({
                 label: file.title,
                 value: `${path}/${file.file}`,
               }));
-          })}
+            })}
           tab={meta.path}
           setTab={(tab) => navigate(`/guide/${tab}`)}
         >

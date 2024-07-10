@@ -103,7 +103,7 @@ const changeLanguageEffect = () => {
 };
 
 export const FullscreenThrobber = () => (
-  <div className="h-screen w-full flex">
+  <div className="h-screen w-full flex absolute top-0 left-0">
     <img
       src="/logos/icon.svg"
       alt="Discohook"
