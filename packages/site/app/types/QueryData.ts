@@ -81,6 +81,12 @@ export type APISelectMenuComponent =
   | APIMentionableSelectComponent
   | APIChannelSelectComponent;
 
+export type APIAutoPopulatedSelectMenuComponent =
+  | APIUserSelectComponent
+  | APIRoleSelectComponent
+  | APIMentionableSelectComponent
+  | APIChannelSelectComponent;
+
 export type APIMessageActionRowComponent =
   | APIButtonComponent
   | APISelectMenuComponent;

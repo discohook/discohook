@@ -16,7 +16,9 @@ import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.m
 import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { getQdMessageId } from "~/routes/_index";
 import {
+  APIAutoPopulatedSelectMenuComponent,
   APIButtonComponent,
+  APIButtonComponentWithCustomId,
   APIChannelSelectComponent,
   APIMentionableSelectComponent,
   APIMessageActionRowComponent,
@@ -155,15 +157,20 @@ export const submitComponent = async (data: APIMessageActionRowComponent) => {
       //   };
       //   break;
       // }
+
       component = {
         ...raw.data,
         custom_id: `p_${raw.id}`,
       };
+      if (component.style !== ButtonStyle.Link) {
+        component.flow = (data as APIButtonComponentWithCustomId).flow;
+      }
       break;
     }
     case ComponentType.StringSelect: {
       const { minValues, maxValues, ...rest } = raw.data;
       component = {
+        flows: (data as APIStringSelectComponent).flows,
         ...rest,
         custom_id: `p_${raw.id}`,
         min_values: minValues,
@@ -177,6 +184,7 @@ export const submitComponent = async (data: APIMessageActionRowComponent) => {
     case ComponentType.ChannelSelect: {
       const { minValues, maxValues, defaultValues, ...rest } = raw.data;
       component = {
+        flow: (data as APIAutoPopulatedSelectMenuComponent).flow,
         ...rest,
         custom_id: `p_${raw.id}`,
         min_values: minValues,
