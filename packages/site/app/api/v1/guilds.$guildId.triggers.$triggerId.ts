@@ -2,7 +2,7 @@ import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { eq, flowActions, flows } from "~/store.server";
+import { eq, flowActions, flows, triggers } from "~/store.server";
 import { ZodDraftFlowWithMax } from "~/types/flows";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
@@ -47,7 +47,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
-  if (request.method !== "PATCH") {
+  if (request.method !== "PATCH" && request.method !== "DELETE") {
     throw json({ message: "Method Not Allowed" }, 405);
   }
   const { guildId, triggerId } = zxParseParams(params, {
@@ -65,6 +65,20 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
   const premium = userIsPremium(token.user);
+
+  if (request.method === "DELETE") {
+    const db = getDb(context.env.HYPERDRIVE.connectionString);
+    const trigger = await db.query.triggers.findFirst({
+      where: (triggers, { eq }) => eq(triggers.id, triggerId),
+      columns: { discordGuildId: true },
+    });
+    if (!trigger || trigger.discordGuildId !== guildId) {
+      throw json({ message: "Unknown Trigger" }, 404);
+    }
+
+    await db.delete(triggers).where(eq(triggers.id, triggerId));
+    return respond(json({ id: triggerId }));
+  }
 
   const { flow } = await zxParseJson(request, {
     flow: ZodDraftFlowWithMax(premium ? 20 : 5),

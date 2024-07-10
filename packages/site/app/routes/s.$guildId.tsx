@@ -30,6 +30,7 @@ import { Prose } from "~/components/Prose";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { TabHeader, TabsWindow } from "~/components/tabs";
+import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
@@ -163,6 +164,7 @@ export default () => {
 
   const [openWebhookId, setOpenWebhookId] = useState<string>();
   const [creatingTrigger, setCreatingTrigger] = useState(false);
+  const [confirmModal, setConfirmModal] = useConfirmModal();
 
   const auditLogFetcher = useFetcher<typeof ApiGetGuildAuditLog>();
   const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
@@ -293,6 +295,7 @@ export default () => {
         setFlow={setDraftFlow}
         cache={cache}
       />
+      {confirmModal}
       <Header user={user} />
       <Prose>
         {error}
@@ -798,6 +801,48 @@ export default () => {
                   }}
                 >
                   {t("save")}
+                </Button>
+                <Button
+                  className="ltr:ml-2 rtl:mr-2"
+                  discordstyle={ButtonStyle.Danger}
+                  onClick={() =>
+                    setConfirmModal({
+                      title: t("deleteTrigger"),
+                      children: (
+                        <>
+                          <p>
+                            {t("deleteTriggerConfirm", {
+                              replace: [openTrigger.event],
+                            })}
+                          </p>
+                          <Button
+                            onClick={async () => {
+                              await triggerSaveFetcher.submitAsync(undefined, {
+                                action: apiUrl(
+                                  BRoutes.guildTrigger(
+                                    guild.id,
+                                    openTrigger.id,
+                                  ),
+                                ),
+                                method: "DELETE",
+                              });
+                              setOpenTriggerId(undefined);
+                              setConfirmModal(undefined);
+                              triggersFetcher.load(
+                                apiUrl(BRoutes.guildTriggers(guild.id)),
+                              );
+                            }}
+                            className="mt-2"
+                            discordstyle={ButtonStyle.Danger}
+                          >
+                            {t("delete")}
+                          </Button>
+                        </>
+                      ),
+                    })
+                  }
+                >
+                  {t("delete")}
                 </Button>
               </div>
             ) : (

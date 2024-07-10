@@ -106,6 +106,8 @@ export const BRoutes = {
 
   /**
    * - GET /guilds/:guildId/triggers/:triggerId
+   * - PATCH /guilds/:guildId/triggers/:triggerId
+   * - DELETE /guilds/:guildId/triggers/:triggerId
    *
    * Accepts token or cookie auth.
    */
