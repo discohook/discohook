@@ -21,7 +21,9 @@ export const webhookAvatarUrl = (
   if (webhook.avatar) {
     return cdn.avatar(webhook.id, webhook.avatar, options);
   } else {
-    return cdn.defaultAvatar(5);
+    return cdn.defaultAvatar(
+      getUserDefaultAvatar({ id: webhook.id, discriminator: "0" }),
+    );
   }
 };
 
