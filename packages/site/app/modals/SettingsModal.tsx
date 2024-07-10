@@ -58,7 +58,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
   return (
     <Modal title={t("settings")} {...props}>
       <div>
-        <p className="text-sm font-black uppercase dark:text-gray-400">
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
           {t("theme")}
         </p>
         <div className="flex mt-2 overflow-x-auto">
@@ -104,7 +104,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         </div>
       </div>
       <div className="mt-8">
-        <p className="text-sm font-black uppercase dark:text-gray-400">
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
           {t("messageDisplay")}
         </p>
         <div className="space-y-2 mt-2">
@@ -140,7 +140,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         </div>
       </div>
       <div className="mt-8">
-        <p className="text-sm font-black uppercase dark:text-gray-400">
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
           {t("editorPanes")}
         </p>
         <div className="space-y-2 mt-2">
@@ -154,7 +154,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         </div>
       </div>
       <div className="mt-8">
-        <p className="text-sm font-black uppercase dark:text-gray-400">
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
           {t("language")}
         </p>
         <div className="space-y-2 mt-2">
