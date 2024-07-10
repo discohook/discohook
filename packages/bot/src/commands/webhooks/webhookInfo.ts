@@ -201,6 +201,10 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
       await getWebhook(webhookId, ctx.env)
     : ((await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook);
 
+  const tokenAccessible = webhook.application_id
+    ? !!ctx.env.APPLICATIONS[webhook.application_id]
+    : webhook.type === WebhookType.Incoming;
+
   const embeds = [getWebhookInfoEmbed(webhook).toJSON()];
   if (showUrl) {
     embeds.push(
@@ -217,7 +221,8 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
   if (
     !showUrl &&
     ctx.userPermissons.has(PermissionFlags.ManageWebhooks) &&
-    !webhook.token
+    !webhook.token &&
+    !tokenAccessible
   ) {
     embeds[0].footer = {
       // This basically just means that if another bot created the webhook and
@@ -236,12 +241,12 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
               new ButtonBuilder()
                 .setCustomId(`a_webhook-info-use_${webhook.id}`)
                 .setLabel("Use Webhook")
-                .setDisabled(!webhook.token)
+                .setDisabled(!webhook.token && !tokenAccessible)
                 .setStyle(ButtonStyle.Primary),
               new ButtonBuilder()
                 .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
                 .setLabel("Show URL (advanced)")
-                .setDisabled(!webhook.token)
+                .setDisabled(!webhook.token && !tokenAccessible)
                 .setStyle(ButtonStyle.Secondary),
             )
             .toJSON(),
