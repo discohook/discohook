@@ -34,7 +34,7 @@ const manager = new WebSocketManager({
     activities: [
       {
         name: "Custom",
-        state: "Road work ahead",
+        state: "discohook.app/guide",
         type: ActivityType.Custom,
       },
     ],
