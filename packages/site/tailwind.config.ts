@@ -73,6 +73,8 @@ export default {
           800: "#2f3136",
           900: "#202225",
         },
+        muted: "#5C5E65",
+        "muted-dark": "#959BA3",
       },
     },
   },

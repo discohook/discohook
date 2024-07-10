@@ -214,6 +214,25 @@ const headingRule = defineRule({
   },
 });
 
+const footingRule = defineRule({
+  capture(source, state, parse) {
+    if (!/\n$|^$/.test(state.completed)) return;
+    const match = /^ *-#\s+((?!(?:-#)+)[^\n]+?)(?:-#)*\s*(?:\n|$)/.exec(source);
+    if (!match) return;
+    return {
+      size: match[0].length,
+      content: parse(match[1].trim()),
+    };
+  },
+  render(capture, render) {
+    return (
+      <span className="block text-[calc(var(--font-size)*0.8125)] text-muted dark:text-muted-dark">
+        {render(capture.content)}
+      </span>
+    );
+  },
+});
+
 export const codeBlockStyle =
   "block overflow-x-auto whitespace-pre-wrap rounded border border-primary-200 bg-primary-130 p-[0.5em] indent-0 font-code text-[calc(var(--font-size)*0.875)] leading-[calc(var(--font-size)*1.125)] text-primary-600 dark:border-primary-700 dark:bg-primary-630 dark:text-primary-230 [[data-embed]_&]:border-none [[data-embed]_&]:bg-primary-200 dark:[[data-embed]_&]:bg-primary-700";
 
@@ -1044,6 +1063,7 @@ const textRule = defineRule({
 
 type RuleOptionKey =
   | "headings"
+  | "footings"
   | "codeBlocks"
   | "inlineCode"
   | "blockQuotes"
@@ -1077,6 +1097,7 @@ export const ruleOptions: Record<
   { rule: Rule; title?: boolean; full?: boolean }
 > = {
   headings: { rule: headingRule, full: true },
+  footings: { rule: footingRule, full: true },
   codeBlocks: { rule: codeBlockRule, full: true },
   inlineCode: { rule: codeRule, full: true },
   blockQuotes: { rule: blockQuoteRule, full: true },
