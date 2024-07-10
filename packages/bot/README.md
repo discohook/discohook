@@ -4,7 +4,7 @@ Prose here
 
 ## Setup
 
-I strongly recommend you do not do this! *Especially* if you have not done something similar before! Instead, invite the instance of the bot that I host. [It's quick and easy!]()
+Due to the complexity of this project, I recommend that you do not do this, *especially* if you have not done something similar before! Instead, invite the instance of the bot that I host. [It's quick and easy!](https://discohook.app/bot)
 
 ### Attribution
 
@@ -106,3 +106,7 @@ $ wrangler secret put DISCORD_TOKEN
 $ wrangler secret put DISCORD_PUBLIC_KEY
 $ wrangler secret put DISCORD_APPLICATION_ID
 ```
+
+##### Tokens for other bots
+
+If you want the bot to be able to access webhook tokens created by other applications, supply a mapping of application ID to bot token as the `APPLICATIONS_RAW` environment variable. This will be parsed on fetch as `APPLICATIONS`.

@@ -8,6 +8,8 @@ export interface Env {
   DISCOHOOK_ORIGIN: string;
   TOKEN_SECRET: string;
   DATABASE_URL: string;
+  APPLICATIONS: Record<string, string>;
+  APPLICATIONS_RAW?: string;
   HYPERDRIVE: Hyperdrive;
   KV: KVNamespace;
   COMPONENTS: DurableObjectNamespace;

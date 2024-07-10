@@ -7,6 +7,7 @@ import {
   spoiler,
   time,
 } from "@discordjs/builders";
+import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
 import {
   APIMessageComponentButtonInteraction,
@@ -16,6 +17,7 @@ import {
   MessageFlags,
   RouteBases,
   Routes,
+  WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { Snowflake, getDate } from "discord-snowflake";
@@ -25,6 +27,7 @@ import { webhooks } from "store/src/schema/schema.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { ButtonCallback } from "../../components.js";
 import { InteractionContext } from "../../interactions.js";
+import { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { parseAutoComponentId } from "../../util/components.js";
 import { color } from "../../util/meta.js";
@@ -110,15 +113,25 @@ export const getWebhookUrlEmbed = (
   //   name: ":information_source: Usage",
   //   value: dedent`
   //       Click "Open in Discohook". Compose your message and click send to create a new message.
-  //       ${
-  //         webhook.application_id && applicationId === webhook.application_id
-  //           ? "This webhook is owned by Discohook, so its messages can have components (buttons/selects)."
-  //           : ""
-  //       }
   //       If you need the webhook URL for another application,
   //     `,
   //   inline: false,
   // });
+
+  embed.addFields(
+    webhook.application_id && applicationId === webhook.application_id
+      ? {
+          name: ":information_source: Buttons & Selects",
+          value:
+            "This webhook is owned by Discohook, so its messages can have components.",
+          inline: false,
+        }
+      : {
+          name: ":warning: Buttons & Selects",
+          value: "This webhook is not owned by Discohook.",
+          inline: false,
+        },
+  );
 
   if (channelType === ChannelType.GuildForum) {
     embed.addFields({
@@ -138,8 +151,9 @@ export const getWebhookUrlEmbed = (
     embed.addFields({
       name: ":warning: Keep this secret!",
       value: dedent`
-      Someone who can see this URL can send any message they want in
-      <#${webhook.channel_id}>, including scams and \`@everyone\` mentions.
+        Someone who can see this URL can send any message they want in
+        <#${webhook.channel_id}>, including scams and \`@everyone\` mentions.
+        We are not able to screen messages sent by users.
       `,
       inline: false,
     });
@@ -148,10 +162,44 @@ export const getWebhookUrlEmbed = (
   return embed;
 };
 
+export const getWebhook = async (
+  webhookId: string,
+  env: Env,
+  webhookApplicationId?: string,
+): Promise<APIWebhook> => {
+  let tryAppId = webhookApplicationId;
+  let token = webhookApplicationId
+    ? env.APPLICATIONS[webhookApplicationId]
+    : env.DISCORD_TOKEN;
+  if (!token) {
+    tryAppId = env.DISCORD_APPLICATION_ID;
+    token = env.DISCORD_TOKEN;
+  }
+  const rest = new REST().setToken(token);
+  const webhook = (await rest.get(Routes.webhook(webhookId))) as APIWebhook;
+  if (webhook.token || webhook.type !== WebhookType.Incoming) {
+    // Non-incoming webhooks don't have tokens
+    return webhook;
+  }
+
+  if (webhook.application_id && tryAppId !== webhook.application_id) {
+    if (env.APPLICATIONS[webhook.application_id]) {
+      // env check ensures we don't enter infinite recursion
+      return await getWebhook(webhook.id, env, webhook.application_id);
+    }
+    return webhook;
+  }
+
+  throw Error("Could not retrieve the webhook.");
+};
+
 export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
   const webhookId = ctx.getStringOption("webhook").value;
   const showUrl = ctx.getBooleanOption("show-url")?.value ?? false;
-  const webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
+  const webhook = showUrl
+    ? // if we're going to need the URL right away, bother with the possible extra fetch
+      await getWebhook(webhookId, ctx.env)
+    : ((await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook);
 
   const embeds = [getWebhookInfoEmbed(webhook).toJSON()];
   if (showUrl) {
@@ -173,10 +221,10 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
   ) {
     embeds[0].footer = {
       // This basically just means that if another bot created the webhook and
-      // lets you see the token then you can provide it youtself on the website.
+      // lets you see the token then you can provide it yourself on the website.
       // But that's a little wordy and I'm not sure how many cases there are
       // where that's useful information for people.
-      text: "Discohook cannot see this webhook's token, so it cannot be used unless you provide it manually.",
+      text: "Discohook cannot see this webhook's token, so it cannot be used unless you provide the URL manually. Try creating a new webhook with Discohook.",
     };
   }
 
@@ -188,12 +236,12 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
               new ButtonBuilder()
                 .setCustomId(`a_webhook-info-use_${webhook.id}`)
                 .setLabel("Use Webhook")
-                // .setDisabled(!webhook.token)
+                .setDisabled(!webhook.token)
                 .setStyle(ButtonStyle.Primary),
               new ButtonBuilder()
                 .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
                 .setLabel("Show URL (advanced)")
-                // .setDisabled(!webhook.token)
+                .setDisabled(!webhook.token)
                 .setStyle(ButtonStyle.Secondary),
             )
             .toJSON(),
@@ -230,7 +278,7 @@ const processUseWebhookButtonBoilerplate = async (
     },
   });
 
-  const webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
+  const webhook = await getWebhook(webhookId, ctx.env);
   db.insert(webhooks)
     .values({
       platform: "discord",

@@ -36,7 +36,7 @@ import {
   FlowActionToggleRole,
   FlowActionType,
   QueryData,
-  StorableComponent
+  StorableComponent,
 } from "store/src/types";
 import { AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import {
@@ -288,7 +288,7 @@ const handleInteraction = async (
         member: interaction.member,
         user: interaction.member?.user,
       };
-      console.log(component)
+      console.log(component);
 
       const allFlows = component.componentsToFlows.map((ctf) => ctf.flow);
       let flows: Flow[] = [];
@@ -842,11 +842,19 @@ async function verifyDiscordRequest(request: Request, env: Env) {
 }
 
 const server = {
-  verifyDiscordRequest: verifyDiscordRequest,
+  verifyDiscordRequest,
   fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
     if (env.ENVIRONMENT === "dev") {
       env.HYPERDRIVE = { connectionString: env.DATABASE_URL } as Hyperdrive;
     }
+    if (env.APPLICATIONS_RAW) {
+      env.APPLICATIONS = JSON.parse(env.APPLICATIONS_RAW);
+    } else {
+      env.APPLICATIONS = {};
+    }
+    // Duplicate the "main" bot token so that custom bots can still access the same webhooks
+    env.APPLICATIONS[env.DISCORD_APPLICATION_ID] = env.DISCORD_TOKEN;
+
     return router.handle(request, env, ctx);
   },
 };
