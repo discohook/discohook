@@ -1,25 +1,56 @@
 {
-  "commands": {
-    "buttons": {
-      "options": {
-        "add": {
-          "description": "添加按钮"
+    "commands": {
+        "buttons": {
+            "options": {
+                "add": {
+                    "description": "添加按钮"
+                }
+            },
+            "description": "添加、删除和管理按钮"
+        },
+        "_ctx": {
+            "edit": {
+                "name": "快速编辑"
+            },
+            "restore": {
+                "name": "恢复消息"
+            },
+            "webhook": {
+                "name": "Webhook 信息"
+            },
+            "components": {
+                "name": "按钮 & 组件"
+            }
+        },
+        "webhook": {
+            "description": "管理 Webhook",
+            "options": {
+                "create": {
+                    "description": "创建一个 Webhook",
+                    "options": {
+                        "name": {
+                            "description": "Webhook 名称"
+                        },
+                        "avatar": {
+                            "description": "Webhook 的头像"
+                        }
+                    }
+                }
+            }
+        },
+        "triggers": {
+            "options": {
+                "add": {
+                    "options": {
+                        "event": {
+                            "choices": {
+                                "0": "成员加入",
+                                "1": "成员移除"
+                            }
+                        }
+                    }
+                }
+            }
         }
-      }
-    },
-    "_ctx": {
-      "edit": {
-        "name": "快速编辑"
-      },
-      "restore": {
-        "name": "恢复消息"
-      },
-      "webhook": {
-        "name": "Webhook 信息"
-      },
-      "components": {
-        "name": "按钮 & 组件"
-      }
     }
-  }
 }
