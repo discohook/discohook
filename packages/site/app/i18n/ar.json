@@ -567,5 +567,28 @@
     "jsonPrettify": "تحسين شكل ال JSON",
     "expiresIn": "ينتهي في {{0}}",
     "nextRunAtOnce": "<0/> تمت جدولته بتوقيت $t(timestamp.full) {{relative}}",
-    "nextRunAtRepeat": "<0/> التنفيذ القادم {{relative}} $t(timestamp.full)"
+    "nextRunAtRepeat": "<0/> التنفيذ القادم {{relative}} $t(timestamp.full)",
+    "createTrigger": {
+        "title": "انشاء مُشغِْل",
+        "when": "عندما يحدث هذا:",
+        "then": "اتبع الحل الآتي:"
+    },
+    "triggers": "مُشغْلين",
+    "newTrigger": "مشغِْل جديد",
+    "triggerEvent": {
+        "0": "انضمام عضو",
+        "1": "ازالة عضو"
+    },
+    "triggerEventDescription": {
+        "0": "عضو ينضم الى السيرفر",
+        "1": "عضو يخرج من السيرفر (او يتم ازالته)"
+    },
+    "backToTriggers": "العودة إلى المُشغِْلين",
+    "homePermission": {
+        "owner": "انت المالك لهذا السيرفر.",
+        "administrator": "انت ادمن.",
+        "roles": "الرول الخاص بك يتيح لك بعض الصلاحيات (بدون تجاوزات التشانلات الخاصة)."
+    },
+    "deleteTrigger": "مسح المُشغِْل",
+    "deleteTriggerConfirm": "هل انت متأكد من مسح $t(triggerEvent.{{0}}) و التدفق الخاص به؟"
 }
