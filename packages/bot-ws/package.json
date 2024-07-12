@@ -7,7 +7,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "bot": "ts-node src/index.ts"
+    "dev": "ts-node src/bot.ts",
+    "build": "tsc",
+    "start": "node src/index.js",
+    "prod": "npm run build && npm run start"
   },
   "dependencies": {
     "@discordjs/rest": "^2.2.0",
@@ -17,6 +20,6 @@
   },
   "devDependencies": {
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.5.3"
   }
 }

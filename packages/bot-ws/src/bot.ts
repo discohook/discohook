@@ -7,13 +7,10 @@ import {
   PresenceUpdateStatus,
 } from "discord-api-types/v10";
 import { configDotenv } from "dotenv";
+import type { Env } from "./types";
 
 configDotenv();
-
-const env = process.env as {
-  DISCORD_TOKEN: string;
-  WORKER_ORIGIN: string;
-};
+const env = process.env as unknown as Env;
 
 if (!env.DISCORD_TOKEN || !env.WORKER_ORIGIN) {
   throw Error("Missing required environment variables. Refer to README.");
@@ -41,6 +38,11 @@ const manager = new WebSocketManager({
     afk: false,
     since: null,
   },
+  shardCount: env.SHARD_COUNT ?? null,
+  // 13 processes for ~128 shards seems about right.
+  // Each process handles ~10k guilds with this setup
+  // buildStrategy: (manager) =>
+  //   new ProcessShardingStrategy(manager, { shardsPerProcess: 10 }),
 });
 
 manager.on(WebSocketShardEvents.Ready, (event) => {
