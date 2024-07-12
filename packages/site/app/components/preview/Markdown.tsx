@@ -602,7 +602,7 @@ const maskedLinkRule = defineRule({
       <a
         href={capture.url}
         title={capture.title}
-        className="text-blue-430 [word-break:break-word] hover:underline dark:text-blue-345"
+        className={linkClassName}
         rel="noreferrer noopener nofollow ugc"
         target="_blank"
       >
@@ -618,7 +618,7 @@ const maskedImageLinkRule = defineRule({
   // Considering the complexity of this regex it would be desirable to reduce this
   capture(source) {
     const match =
-      /^\[((?:\[[^\]]*\]|[^[\]]|\](?=[^[]*\]))*)\]\(\s*<?((?:\([^)]*\)|[^\s\\]|\\.)*?)>?(?:\s+['"](.*?)['"])?\s*\)/su.exec(
+      /^!\[((?:\[[^\]]*\]|[^[\]]|\](?=[^[]*\]))*)\]\(\s*<?((?:\([^)]*\)|[^\s\\]|\\.)*?)>?(?:\s+['"](.*?)['"])?\s*\)/su.exec(
         source,
       );
     if (!match) return;
@@ -1073,8 +1073,8 @@ type RuleOptionKey =
   | "references"
   | "links"
   | "autoLinks"
-  | "maskedLinks"
   | "maskedImageLinks"
+  | "maskedLinks"
   | "italic"
   | "bold"
   | "underline"
@@ -1107,8 +1107,8 @@ export const ruleOptions: Record<
   references: { rule: referenceRule, full: true },
   links: { rule: linkRule, title: true, full: true },
   autoLinks: { rule: autoLinkRule, title: true, full: true },
-  maskedLinks: { rule: maskedLinkRule, full: true },
   maskedImageLinks: { rule: maskedImageLinkRule },
+  maskedLinks: { rule: maskedLinkRule, full: true },
   italic: { rule: emphasisRule, title: true, full: true },
   bold: { rule: strongRule, title: true, full: true },
   underline: { rule: underlineRule, title: true, full: true },
@@ -1151,9 +1151,15 @@ function getRules(features: FeatureConfig) {
   if (typeof features === "string") {
     rules = extendable[features].map((key) => ruleOptions[key].rule);
   } else {
-    const enabledKeys = features.extend
-      ? extendable[features.extend].filter((key) => features[key] !== false)
-      : Object.entries(features)
+    const { extend, ...ft } = features;
+    const enabledKeys = extend
+      ? [
+          ...extendable[extend].filter((key) => ft[key] !== false),
+          ...Object.keys(ruleOptions).filter(
+            (key) => ft[key as RuleOptionKey] === true,
+          ),
+        ]
+      : Object.entries(ft)
           .filter((pair) => pair[1])
           .map((pair) => pair[0]);
 
