@@ -504,6 +504,26 @@ export const linkClassName = twMerge(
   "text-blue-430 [word-break:break-word] hover:underline dark:text-blue-345",
 );
 
+/**
+ * Transforms URLs like `discohook://path` to `/path`, which the client
+ * will resolve appropriately
+ */
+const pathize = (href: string) => href.replace(/^discohook:\/\//, "/");
+
+const resolvePathable = (href: string) => {
+  const path = pathize(href);
+  if (path !== href) {
+    let origin: string;
+    try {
+      origin = window.location.origin;
+    } catch {
+      origin = "https://discohook.app";
+    }
+    return new URL(path, origin).href;
+  }
+  return href;
+};
+
 const linkRule = defineRule({
   capture(source) {
     const match = /^<([^ :>]+:\/[^ >]+)>/.exec(source);
@@ -515,19 +535,18 @@ const linkRule = defineRule({
     }
     return {
       size: match[0].length,
-      url: match[1],
+      url: new URL(match[1]).href,
     };
   },
   render(capture) {
-    const url = new URL(capture.url).href;
     return (
       <a
-        href={url}
+        href={pathize(capture.url)}
         className={linkClassName}
         rel="noreferrer noopener nofollow ugc"
         target="_blank"
       >
-        {url}
+        {resolvePathable(capture.url)}
       </a>
     );
   },
@@ -535,7 +554,7 @@ const linkRule = defineRule({
 
 const autoLinkRule = defineRule({
   capture(source) {
-    const match = /^https?:\/\/[^\s<]+[^\s"',.:;<\]]/.exec(source);
+    const match = /^(?:discohook|https?):\/\/[^\s<]+[^\s"',.:;<\]]/.exec(source);
     if (!match) return;
     try {
       new URL(match[0]);
@@ -563,15 +582,14 @@ const autoLinkRule = defineRule({
     };
   },
   render(capture) {
-    const url = new URL(capture.url).href;
     return (
       <a
-        href={url}
-        className="text-blue-430 [word-break:break-word] hover:underline dark:text-blue-345"
+        href={pathize(capture.url)}
+        className={linkClassName}
         rel="noreferrer noopener nofollow ugc"
         target="_blank"
       >
-        {url}
+        {resolvePathable(capture.url)}
       </a>
     );
   },
@@ -600,7 +618,7 @@ const maskedLinkRule = defineRule({
   render(capture, render) {
     return (
       <a
-        href={capture.url}
+        href={pathize(capture.url)}
         title={capture.title}
         className={linkClassName}
         rel="noreferrer noopener nofollow ugc"
@@ -638,7 +656,7 @@ const maskedImageLinkRule = defineRule({
   render(capture) {
     return (
       <img
-        src={capture.url}
+        src={pathize(capture.url)}
         title={capture.title}
         className="rounded-lg"
         rel="noreferrer noopener nofollow ugc"
