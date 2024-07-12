@@ -461,7 +461,7 @@ export default function Index() {
         setOpen={setSharing}
         targets={targets}
         data={data}
-        setData={setData}
+        setBackupId={setBackupId}
         user={user}
       />
       <JsonEditorModal

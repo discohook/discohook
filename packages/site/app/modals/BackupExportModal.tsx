@@ -111,6 +111,7 @@ export const BackupExportModal = (
               `${apiUrl(BRoutes.backups())}?${new URLSearchParams({
                 ids: selectedBackups.join(","),
               })}`,
+              { method: "GET" },
             );
             if (!response.ok) {
               const data = (await response.json()) as { message: string };

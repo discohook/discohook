@@ -8,6 +8,7 @@ import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { linkClassName } from "~/components/preview/Markdown";
 import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
@@ -20,12 +21,12 @@ export const MessageSaveModal = (
   props: ModalProps & {
     targets: Record<string, APIWebhook>;
     data: QueryData;
-    setData: React.Dispatch<QueryData>;
+    setBackupId: React.Dispatch<React.SetStateAction<bigint | undefined>>;
     user?: User | null;
   },
 ) => {
   const { t } = useTranslation();
-  const { targets, data, setData, user } = props;
+  const { targets, data, setBackupId, user } = props;
   const [error, setError] = useError(t);
 
   const [includeTargets, setIncludeTargets] = useState(false);
@@ -65,9 +66,6 @@ export const MessageSaveModal = (
   useEffect(() => {
     if (props.open && user && data.backup_id !== undefined && !backup) {
       backupFetcher.load(apiUrl(BRoutes.backups(data.backup_id)));
-    }
-    if (props.open && backup && typeof data.backup_id !== "string") {
-      setData({ ...data, backup_id: backup.id.toString() });
     }
   }, [props.open, data.backup_id, backup]);
 
@@ -142,21 +140,17 @@ export const MessageSaveModal = (
         }}
       />
       <hr className="border border-gray-400 dark:border-gray-600 my-4" />
-      <p className="text-lg font-medium">Backup</p>
+      <p className="text-lg font-medium">{t("backup")}</p>
       {user ? (
         <div>
-          <Link
-            to="/me"
-            target="_blank"
-            className="text-[#006ce7] dark:text-[#00a8fc] hover:underline"
-          >
+          <Link to="/me?t=backups" target="_blank" className={linkClassName}>
             {t("manageBackups")}
           </Link>
           {backupFetcher.state !== "idle" || backup ? (
             <div className="rounded bg-gray-200 dark:bg-gray-700 p-2 flex">
               <CoolIcon
                 icon="File_Document"
-                className="ml-2 mr-4 text-4xl my-auto"
+                className="ltr:ml-2 rtl:mr-2 ltr:mr-4 rtl:ml-4 text-4xl my-auto"
               />
               <div className="my-auto grow">
                 {backup ? (
@@ -188,8 +182,8 @@ export const MessageSaveModal = (
           ) : (
             <div className="mt-1">
               <Button
-                onClick={() =>
-                  backupFetcher.submit(
+                onClick={async () => {
+                  const created = await backupFetcher.submitAsync(
                     {
                       name: new Date().toLocaleDateString(),
                       data: dataWithTargets(),
@@ -198,8 +192,9 @@ export const MessageSaveModal = (
                       action: apiUrl(BRoutes.backups()),
                       method: "POST",
                     },
-                  )
-                }
+                  );
+                  setBackupId(BigInt(created.id));
+                }}
               >
                 {t("saveBackup")}
               </Button>
@@ -207,11 +202,7 @@ export const MessageSaveModal = (
           )}
         </div>
       ) : (
-        <Link
-          to="/auth/discord"
-          target="_blank"
-          className="text-[#006ce7] dark:text-[#00a8fc] hover:underline"
-        >
+        <Link to="/auth/discord" target="_blank" className={linkClassName}>
           {t("logInToSaveBackups")}
         </Link>
       )}
