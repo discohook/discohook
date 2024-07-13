@@ -4,7 +4,7 @@ import {
   ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
+import { t } from "i18next";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { flows, makeSnowflake, triggers } from "store/src/schema";
 import { FlowActionType } from "store/src/types/components.js";
@@ -40,7 +40,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
         );
         if (configs.length !== 0) {
           await ctx.followup.editOriginalMessage({
-            content: "This server already has a trigger for that event.",
+            content: t("triggerDuplicate"),
           });
           return;
         }
@@ -65,7 +65,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
       )[0];
 
       await ctx.followup.editOriginalMessage({
-        content: `Trigger **${name}** created successfully.`,
+        content: t("triggerCreated", { replace: { name } }),
         components: [
           {
             type: ComponentType.ActionRow,
@@ -73,7 +73,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
               {
                 type: ComponentType.Button,
                 style: ButtonStyle.Link,
-                label: "Add Actions",
+                label: t("addActions"),
                 url: `${ctx.env.DISCOHOOK_ORIGIN}/s/${trigger.discordGuildId}?t=triggers`,
               },
             ],
@@ -110,7 +110,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   );
   if (!trigger) {
     return ctx.reply({
-      content: "This server has no trigger with that name.",
+      content: t("noTrigger"),
       flags: MessageFlags.Ephemeral,
     });
   }
@@ -118,11 +118,11 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   return ctx.reply({
     embeds: [
       {
-        title: trigger.flow?.name ?? "Unnamed trigger",
+        title: trigger.flow?.name ?? t("unnamedTrigger"),
         color,
         description:
           trigger.flow?.actions?.length === 0
-            ? "No actions"
+            ? t("noActions")
             : trigger.flow?.actions
                 .map(
                   ({ data: action }, i) =>
@@ -142,7 +142,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
         .addComponents(
           new ButtonBuilder()
             .setStyle(ButtonStyle.Link)
-            .setLabel("Manage Actions")
+            .setLabel(t("manageActions"))
             .setURL(
               `${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}?t=triggers`,
             ),
@@ -168,12 +168,13 @@ export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
   async (ctx) => {
     const db = getDb(ctx.env.HYPERDRIVE.connectionString);
     // This doesn't reflect pre-migration triggers
-    const trigs = await db.query.triggers.findMany({
-      where: eq(
-        triggers.discordGuildId,
-        // biome-ignore lint/style/noNonNullAssertion: Guild only command
-        makeSnowflake(ctx.interaction.guild_id!),
-      ),
+    const triggers = await db.query.triggers.findMany({
+      where: (triggers, { eq }) =>
+        eq(
+          triggers.discordGuildId,
+          // biome-ignore lint/style/noNonNullAssertion: Guild only command
+          makeSnowflake(ctx.interaction.guild_id!),
+        ),
       columns: {
         id: true,
       },
@@ -185,8 +186,8 @@ export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
         },
       },
     });
-    return trigs.map((t) => ({
-      name: t.flow?.name ?? "Unnamed trigger",
-      value: `_id:${t.id}`,
+    return triggers.map((trigger) => ({
+      name: trigger.flow?.name ?? t("unnamedTrigger"),
+      value: `_id:${trigger.id}`,
     }));
   };

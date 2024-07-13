@@ -184,5 +184,12 @@
   "noContentAvailable": "No content available",
   "noComponentFlow": "There was no flow registered for this component. Configure one [here]({{url}}).",
   "toggledRole": "Toggled the {{role}} role for you.",
-  "welcomerCommandDeprecated": "In order to set up a welcomer, please use the **/triggers** command."
+  "welcomerCommandDeprecated": "In order to set up a welcomer, please use the **/triggers** command.",
+  "noTrigger": "This server has no trigger with that name.",
+  "unnamedTrigger": "Unnamed trigger",
+  "triggerDuplicate": "This server already has a trigger for that event.",
+  "triggerCreated": "Trigger **{{name}}** created successfully.",
+  "addActions": "Add Actions",
+  "noActions": "No actions",
+  "manageActions": "Manage Actions"
 }
