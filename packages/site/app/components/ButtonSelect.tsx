@@ -1,5 +1,6 @@
 // Heavily modified from https://react-select.com/advanced#experimental (Popout)
 
+import { ButtonStyle } from "discord-api-types/v10";
 import { ReactNode, useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { Button } from "./Button";
@@ -11,7 +12,7 @@ import {
 import { CoolIcon } from "./icons/CoolIcon";
 
 export const ButtonSelect: React.FC<
-  React.PropsWithChildren<StringSelectProps>
+  React.PropsWithChildren<StringSelectProps & { discordstyle?: ButtonStyle }>
 > = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState<{ label: string; value: string } | null>();
@@ -25,6 +26,7 @@ export const ButtonSelect: React.FC<
           className={props.className}
           onClick={() => setIsOpen((prev) => !prev)}
           disabled={props.isDisabled}
+          discordstyle={props.discordstyle}
         >
           {props.children}
           <CoolIcon

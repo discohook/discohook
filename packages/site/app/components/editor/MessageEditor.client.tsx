@@ -7,7 +7,7 @@ import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { getBlobDataUrl, getMessageText } from "~/util/message";
-import { randomString } from "~/util/text";
+import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { InfoBox } from "../InfoBox";
@@ -16,11 +16,7 @@ import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
-import {
-  EmbedEditor,
-  EmbedEditorSection,
-  getEmbedLength
-} from "./EmbedEditor";
+import { EmbedEditor, EmbedEditorSection, getEmbedLength } from "./EmbedEditor";
 
 export const MessageEditor: React.FC<{
   data: QueryData;
@@ -443,20 +439,59 @@ export const MessageEditor: React.FC<{
               {t("add")}
             </ButtonSelect>
           </div>
-          <Button
-            onClick={() =>
-              setJsonEditor({
-                data: message.data,
-                update: (newData) => {
-                  message.data = newData;
+          <div>
+            <ButtonSelect
+              discordstyle={ButtonStyle.Secondary}
+              options={[
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Terminal"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("jsonEditor")}</span>
+                    </p>
+                  ),
+                  value: "jsonEditor",
                 },
-                schema: ZodQueryDataMessage.shape.data,
-              })
-            }
-            discordstyle={ButtonStyle.Secondary}
-          >
-            {t("jsonEditor")}
-          </Button>
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Copy"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("copyQueryData")}</span>
+                    </p>
+                  ),
+                  value: "copyQueryData",
+                },
+              ]}
+              onChange={(opt) => {
+                const val = (opt as { value: "jsonEditor" | "copyQueryData" })
+                  .value;
+                switch (val) {
+                  case "jsonEditor":
+                    setJsonEditor({
+                      data: message.data,
+                      update: (newData) => {
+                        message.data = newData;
+                      },
+                      schema: ZodQueryDataMessage.shape.data,
+                    });
+                    break;
+                  case "copyQueryData":
+                    copyText(JSON.stringify(message));
+                    break;
+                  default:
+                    break;
+                }
+              }}
+            >
+              {t("developer")}
+            </ButtonSelect>
+          </div>
         </div>
       </div>
     </details>

@@ -506,7 +506,7 @@ export default function Me() {
               value: "bots",
             },
             {
-              label: "Developer",
+              label: t("developer"),
               value: "developer",
             },
           ]}
@@ -1136,7 +1136,7 @@ export default function Me() {
             </div>
           ) : tab === "developer" ? (
             <div>
-              <TabHeader>Developer</TabHeader>
+              <TabHeader>{t(tab)}</TabHeader>
               <p>Your ID: {String(user.id)}</p>
               <div className="mt-2">
                 <TextInput
