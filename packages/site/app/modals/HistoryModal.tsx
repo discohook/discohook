@@ -1,5 +1,5 @@
 import { ButtonStyle } from "discord-api-types/v10";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -9,13 +9,8 @@ import { HistoryItem } from "~/routes/_index";
 import { LinkHistoryItem, linkEmbedToAPIEmbed } from "~/routes/link";
 import { LinkQueryData, QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
+import { useConfirmModal } from "./ConfirmModal";
 import { Modal, ModalProps } from "./Modal";
-
-enum ResetState {
-  Default = 0,
-  Confirm = 1,
-  Finish = 2,
-}
 
 export const HistoryModal = <
   T extends HistoryItem | LinkHistoryItem,
@@ -31,19 +26,11 @@ export const HistoryModal = <
   const { t } = useTranslation();
   const { localHistory, setLocalHistory, setData, resetData } = props;
   const [settings] = useLocalStorage();
-  const [resetState, setResetState] = useState(ResetState.Default);
-  useEffect(() => {
-    if (resetState === ResetState.Confirm) {
-      setTimeout(() => {
-        if (resetState === ResetState.Confirm) {
-          setResetState(ResetState.Default);
-        }
-      }, 5000);
-    }
-  }, [resetState]);
+  const [confirm, setConfirm] = useConfirmModal();
 
   return (
     <Modal title={t("history")} {...props}>
+      {confirm}
       <div className="flex mb-4">
         <p className="ltr:mr-2 rtl:ml-2">
           <Trans
@@ -56,24 +43,37 @@ export const HistoryModal = <
         </p>
         <Button
           className="ml-auto shrink-0"
-          onClick={() => {
-            if (resetState === ResetState.Default) {
-              setResetState(ResetState.Confirm);
-              return;
-            }
-            resetData();
-            setResetState(ResetState.Finish);
-            return;
-          }}
+          onClick={() =>
+            setConfirm({
+              title: t("resetEditor"),
+              children: (
+                <>
+                  <p>{t("resetEditorConfirm")}</p>
+                  <div className="gap-2 mt-2">
+                    <Button
+                      onClick={() => {
+                        resetData();
+                        setConfirm(undefined);
+                      }}
+                      discordstyle={ButtonStyle.Danger}
+                    >
+                      {t("resetEditor")}
+                    </Button>
+                    <Button
+                      onClick={() => setConfirm(undefined)}
+                      discordstyle={ButtonStyle.Secondary}
+                      className="ltr:ml-2 rtl:mr-2"
+                    >
+                      {t("cancel")}
+                    </Button>
+                  </div>
+                </>
+              ),
+            })
+          }
           discordstyle={ButtonStyle.Danger}
         >
-          {t(
-            resetState === ResetState.Default
-              ? "resetEditor"
-              : resetState === ResetState.Finish
-                ? "resetFinished"
-                : "resetEditorWarning",
-          )}
+          {t("resetEditor")}
         </Button>
       </div>
       {localHistory.length === 0 ? (
