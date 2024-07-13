@@ -33,6 +33,7 @@ import {
 import {
   Flow,
   FlowActionSendMessage,
+  FlowActionStop,
   FlowActionToggleRole,
   FlowActionType,
   QueryData,
@@ -475,30 +476,26 @@ const handleInteraction = async (
             .insert(backups)
             .values(
               oldMessageButtons
-                .filter((b) => !!getOldCustomId(b))
+                .filter(
+                  (b) =>
+                    !!getOldCustomId(b) &&
+                    !!(
+                      b.customPublicMessageData ||
+                      b.customEphemeralMessageData ||
+                      b.customDmMessageData
+                    ),
+                )
                 .map((b) => {
-                  const dataStr =
-                    b.customPublicMessageData ??
+                  // biome-ignore lint/style/noNonNullAssertion: At least one must be non-null according to filter
+                  const dataStr = (b.customPublicMessageData ??
                     b.customEphemeralMessageData ??
-                    b.customDmMessageData;
+                    b.customDmMessageData)!;
                   return {
                     // biome-ignore lint/style/noNonNullAssertion: Filter
                     name: customIdToTempId[getOldCustomId(b)!],
                     ownerId: ownerUser.id,
                     data: {
-                      messages: [
-                        {
-                          data: b.roleId
-                            ? {
-                                content: t("toggledRole", {
-                                  replace: { role: `<@&${b.roleId}>` },
-                                }),
-                              }
-                            : dataStr
-                              ? JSON.parse(dataStr)
-                              : { content: t("noContentAvailable") },
-                        },
-                      ],
+                      messages: [{ data: JSON.parse(dataStr) }],
                     } satisfies QueryData,
                     dataVersion: "d2",
                   };
@@ -554,12 +551,10 @@ const handleInteraction = async (
                         // biome-ignore lint/style/noNonNullAssertion:
                         (b) => b.name === customIdToTempId[old!],
                       )?.id;
-                      const { id: flowId } = (
-                        await db
-                          .insert(flows)
-                          .values({})
-                          .returning({ id: flows.id })
-                      )[0];
+
+                      const flowId = BigInt(generateId());
+                      await db.insert(flows).values({ id: flowId });
+
                       const actions = [
                         ...(button.roleId
                           ? [
@@ -567,22 +562,27 @@ const handleInteraction = async (
                                 type: FlowActionType.ToggleRole,
                                 roleId: String(button.roleId),
                               } satisfies FlowActionToggleRole,
-                            ]
-                          : []),
-                        ...(backupId
-                          ? [
                               {
-                                type: FlowActionType.SendMessage,
-                                backupId: backupId.toString(),
-                                response: true,
-                                flags:
-                                  button.roleId ||
-                                  button.customEphemeralMessageData
+                                type: FlowActionType.Stop,
+                                message: {
+                                  content: t("toggledRole", {
+                                    replace: { role: `<@${button.roleId}>` },
+                                  }),
+                                },
+                              } satisfies FlowActionStop,
+                            ]
+                          : backupId
+                            ? [
+                                {
+                                  type: FlowActionType.SendMessage,
+                                  backupId: backupId.toString(),
+                                  response: true,
+                                  flags: button.customEphemeralMessageData
                                     ? MessageFlags.Ephemeral
                                     : undefined,
-                              } satisfies FlowActionSendMessage,
-                            ]
-                          : []),
+                                } satisfies FlowActionSendMessage,
+                              ]
+                            : []),
                       ];
                       if (actions.length !== 0) {
                         await db.insert(flowActions).values(
