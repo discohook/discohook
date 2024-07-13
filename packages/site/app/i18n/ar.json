@@ -590,5 +590,9 @@
         "roles": "الرول الخاص بك يتيح لك بعض الصلاحيات (بدون تجاوزات التشانلات الخاصة)."
     },
     "deleteTrigger": "مسح المُشغِْل",
-    "deleteTriggerConfirm": "هل انت متأكد من مسح $t(triggerEvent.{{0}}) و التدفق الخاص به؟"
+    "deleteTriggerConfirm": "هل انت متأكد من مسح $t(triggerEvent.{{0}}) و التدفق الخاص به؟",
+    "valueMirrorVariable": "الاسم الكامل للمُتغير الذي تريد ان تنسخه",
+    "developer": "مُطوِر",
+    "copyQueryData": "نسخ بيانات البحث",
+    "resetEditorConfirm": "هل انت متأكد انك تريد ازالة كل المحتوى من المُحرر؟"
 }
