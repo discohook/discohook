@@ -29,7 +29,7 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
           {
             name: "Discohook Utils - complementary bot",
             value:
-              "You can [invite our bot here](https://discohook.app/bot). In case you recognize that name, Discohook [merged with Discohook Utils](https://discohook.app/migrate-utils) in 2024. If you have Discobot in your server, invite Discohook Utils instead for all future use.",
+              "You can [invite our bot here](https://discohook.app/bot). In case you recognize that name, Discohook [merged with Discohook Utils](https://discohook.app/guide/deprecated/migrate-utils) in 2024. If you have Discobot in your server, invite Discohook Utils instead for all future use.",
           },
         ],
         color: 0x58b9ff,

@@ -84,7 +84,7 @@ const data = {
       {
         name: "If you are currently using Discobot for this",
         value:
-          "Invite the above bot instead so that your reaction roles continue working. Read more about this [here](https://discohook.app/migrate-utils).",
+          "Invite the above bot instead so that your reaction roles continue working. Read more about this [here](https://discohook.app/guide/deprecated/migrate-utils).",
       },
     ],
   },
