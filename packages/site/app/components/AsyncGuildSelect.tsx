@@ -15,7 +15,7 @@ const getOption = (guild: OptionGuild) => ({
         <img
           src={cdn.icon(String(guild.id), guild.icon)}
           alt=""
-          className="rounded-lg h-6 w-6 mr-1.5 inline-block"
+          className="rounded-lg h-6 w-6 ltr:mr-1.5 rtl:ml-1.5 inline-block"
         />
       )}
       <span className="align-middle">{guild.name}</span>
