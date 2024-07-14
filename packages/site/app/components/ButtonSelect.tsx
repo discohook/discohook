@@ -2,7 +2,7 @@
 
 import { ButtonStyle } from "discord-api-types/v10";
 import { ReactNode, useState } from "react";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { Button } from "./Button";
 import {
   StringSelect,
@@ -49,25 +49,25 @@ export const ButtonSelect: React.FC<
         classNames={{
           ...props.classNames,
           control: (p) =>
-            twJoin(
+            twMerge(
               selectClassNames.control?.(p),
               props.classNames?.control?.(p),
               "!invisible !min-h-0 !max-h-0 !-mt-3",
             ),
           menu: (p) =>
-            twJoin(
+            twMerge(
               selectClassNames.menu?.(p),
               props.classNames?.menu?.(p),
               "!w-max max-w-44 dark:!bg-[#111214]",
             ),
           menuList: (p) =>
-            twJoin(
+            twMerge(
               selectClassNames.menuList?.(p),
               props.classNames?.menuList?.(p),
               "!p-1",
             ),
           option: (p) =>
-            twJoin(
+            twMerge(
               props.classNames?.option?.(p),
               "!rounded !py-1 !px-2.5 !bg-inherit dark:hover:!bg-blurple !text-base !font-medium",
               p.isDisabled
