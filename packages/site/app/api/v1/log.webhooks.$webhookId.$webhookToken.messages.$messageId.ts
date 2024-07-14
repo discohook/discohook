@@ -106,6 +106,26 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
+  if (type === "send" || type === "delete") {
+    const entry = await db.query.messageLogEntries.findFirst({
+      where: (messageLogEntries, { eq, and }) =>
+        and(
+          eq(messageLogEntries.type, type),
+          eq(messageLogEntries.messageId, messageId),
+        ),
+      columns: {
+        id: true,
+        webhookId: true,
+        channelId: true,
+        messageId: true,
+      },
+    });
+    // If it's a duplicate, assume race condition and
+    // return the same record instead of erroring
+    if (entry) {
+      return entry;
+    }
+  }
 
   let guildId: bigint | undefined = undefined;
   if (webhook.guild_id) {
