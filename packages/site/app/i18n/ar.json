@@ -594,5 +594,6 @@
     "valueMirrorVariable": "الاسم الكامل للمُتغير الذي تريد ان تنسخه",
     "developer": "مُطوِر",
     "copyQueryData": "نسخ بيانات البحث",
-    "resetEditorConfirm": "هل انت متأكد انك تريد ازالة كل المحتوى من المُحرر؟"
+    "resetEditorConfirm": "هل انت متأكد انك تريد ازالة كل المحتوى من المُحرر؟",
+    "threadName": "اسم المنشور"
 }
