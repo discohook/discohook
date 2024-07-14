@@ -9,12 +9,15 @@ import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
+import { LoadedBackup } from "~/routes/me";
 import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
 import { copyText } from "~/util/text";
-import { action as backupCreateAction } from "../api/v1/backups";
-import { action as shareCreateAction } from "../api/v1/share";
+import { action as ApiPostBackups } from "../api/v1/backups";
+import { action as ApiGetBackup } from "../api/v1/backups.$id";
+import { action as ApiPostShare } from "../api/v1/share";
+import { BackupEditModal } from "./BackupEditModal";
 import { Modal, ModalProps } from "./Modal";
 
 export const MessageSaveModal = (
@@ -40,8 +43,10 @@ export const MessageSaveModal = (
     [data, targets],
   );
 
-  const shareFetcher = useFetcher<typeof shareCreateAction>();
-  const backupFetcher = useSafeFetcher<typeof backupCreateAction>({
+  const shareFetcher = useFetcher<typeof ApiPostShare>();
+  const backupFetcher = useSafeFetcher<
+    typeof ApiPostBackups | typeof ApiGetBackup
+  >({
     onError: setError,
   });
 
@@ -60,8 +65,8 @@ export const MessageSaveModal = (
     [includeTargets, data, shareFetcher.submit],
   );
 
-  const [backup, setBackup] = useState<typeof backupFetcher.data>();
-  useEffect(() => setBackup(backupFetcher.data), [backupFetcher.data]);
+  const backup = backupFetcher.data as LoadedBackup | undefined;
+  const [editingBackup, setEditingBackup] = useState(false);
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (props.open && user && data.backup_id !== undefined && !backup) {
@@ -71,6 +76,11 @@ export const MessageSaveModal = (
 
   return (
     <Modal title={t("saveMessageTitle")} {...props}>
+      <BackupEditModal
+        open={editingBackup}
+        setOpen={setEditingBackup}
+        backup={backup}
+      />
       {error}
       <div className="flex">
         <div className="grow">
@@ -154,7 +164,16 @@ export const MessageSaveModal = (
               />
               <div className="my-auto grow">
                 {backup ? (
-                  <p className="font-semibold">{backup.name}</p>
+                  <div className="flex max-w-full">
+                    <p className="font-semibold truncate">{backup.name}</p>
+                    <button
+                      type="button"
+                      className="ltr:ml-2 rtl:mr-2 my-auto"
+                      onClick={() => setEditingBackup(true)}
+                    >
+                      <CoolIcon icon="Edit_Pencil_01" />
+                    </button>
+                  </div>
                 ) : (
                   <div className="h-5 rounded-full bg-gray-400 dark:bg-gray-600 w-1/5 mt-px" />
                 )}

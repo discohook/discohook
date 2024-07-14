@@ -31,6 +31,12 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
       data: returnData,
       dataVersion: true,
       ownerId: true,
+      previewImageUrl: true,
+      importedFromOrg: true,
+      scheduled: true,
+      nextRunAt: true,
+      cron: true,
+      timezone: true,
     },
   });
   if (!backup || backup.ownerId !== userId) {

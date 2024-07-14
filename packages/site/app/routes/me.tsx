@@ -729,7 +729,7 @@ export default function Me() {
                                   </p>
                                   <button
                                     type="button"
-                                    className="ml-2 my-auto"
+                                    className="ltr:ml-2 rtl:mr-2 my-auto"
                                     onClick={() => setEditingBackup(backup)}
                                   >
                                     <CoolIcon icon="Edit_Pencil_01" />

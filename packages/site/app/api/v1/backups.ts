@@ -155,7 +155,12 @@ export const action = async ({ request, context }: ActionArgs) => {
       .returning({
         id: backups.id,
         name: backups.name,
-        dataVersion: backups.dataVersion,
+        previewImageUrl: backups.previewImageUrl,
+        importedFromOrg: backups.importedFromOrg,
+        scheduled: backups.scheduled,
+        nextRunAt: backups.nextRunAt,
+        cron: backups.cron,
+        timezone: backups.timezone,
       })
   )[0];
 };
