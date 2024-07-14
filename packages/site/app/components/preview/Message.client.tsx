@@ -14,11 +14,13 @@ import { CacheManager } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
 import { Svg } from "../icons/Svg";
+import { PostChannelIcon } from "../icons/channel";
 import { MessageComponents } from "./Components";
 import { Embed } from "./Embed";
 import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
+import { MessageDivider } from "./MessageDivider.client";
 
 export enum AuthorType {
   /** A user. */
@@ -162,144 +164,160 @@ export const Message: React.FC<{
   );
 
   return (
-    <div
-      className={twJoin(
-        "flex dark:text-primary-230",
-        showProfile && !forceSeparateAuthor && lastMessage ? "mt-4" : "",
-      )}
-      dir="ltr"
-    >
-      {messageDisplay !== "compact" && (
-        <div className="hidden sm:block w-fit shrink-0">
-          {showProfile ? (
-            <img
-              className="rounded-full mr-3 h-10 w-10 cursor-pointer hover:shadow-lg active:translate-y-px"
-              src={avatarUrl}
-              alt={username}
-            />
-          ) : (
-            <div className="w-10 mr-3" />
-          )}
+    <div className={twJoin("dark:text-primary-230")} dir="ltr">
+      {showProfile && message.thread_name && (
+        <div>
+          <div className="w-16 h-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
+            <PostChannelIcon className="w-10 h-10" />
+          </div>
+          <h3 className="font-medium select-text my-2 text-[32px] leading-5">
+            {message.thread_name}
+          </h3>
+          <MessageDivider>
+            {t("timestamp.date_verbose", {
+              replace: { date: date ?? new Date() },
+            })}
+          </MessageDivider>
         </div>
       )}
-      <div className="grow">
-        {showProfile && messageDisplay !== "compact" && (
-          <p className="leading-none h-5">
-            <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5] text-base">
-              {username}
-            </span>
-            {badge && (
-              <span className="font-semibold align-top ml-1 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]">
-                {isVerified && (
-                  <Svg
-                    width={16}
-                    height={16}
-                    className="w-[0.9375rem] h-[0.9375rem] -ml-1 inline-block"
-                  >
-                    <path
-                      fill="currentColor"
-                      fillRule="evenodd"
-                      d="M18.7 7.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4l3.3 3.29 7.3-7.3a1 1 0 0 1 1.4 0Z"
-                      clipRule="evenodd"
-                    />
-                  </Svg>
-                )}
-                {badge}
-              </span>
-            )}
-            <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-              {t("todayAt", { replace: { date: date ?? new Date() } })}
-            </span>
-          </p>
+      <div
+        className={twJoin(
+          "flex",
+          showProfile && !forceSeparateAuthor && lastMessage ? "mt-4" : "",
         )}
-        <div
-          className={
-            messageDisplay === "compact" ? "relative pl-20 -indent-16" : ""
-          }
-        >
-          {messageDisplay === "compact" && (
-            <h3 className="inline text-base">
-              <span className="font-medium mr-1 h-5 text-[11px] leading-[22px] break-words cursor-default align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-                {(date ?? new Date()).toLocaleTimeString(undefined, {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
+      >
+        {messageDisplay !== "compact" && (
+          <div className="hidden sm:block w-fit shrink-0">
+            {showProfile ? (
+              <img
+                className="rounded-full mr-3 h-10 w-10 cursor-pointer hover:shadow-lg active:translate-y-px"
+                src={avatarUrl}
+                alt={username}
+              />
+            ) : (
+              <div className="w-10 mr-3" />
+            )}
+          </div>
+        )}
+        <div className="grow">
+          {showProfile && messageDisplay !== "compact" && (
+            <p className="leading-none h-5">
+              <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5] text-base">
+                {username}
               </span>
-              {compactAvatars && (
-                <img
-                  className="inline-block rounded-full -mt-1 ml-[0.1em] mr-1 h-4 w-4 cursor-pointer active:translate-y-px"
-                  src={avatarUrl}
-                  alt={username}
-                />
-              )}
-              <span className="mr-1">
-                {badge && (
-                  <span className="font-semibold mr-2 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem] indent-0">
-                    {badge}
-                  </span>
-                )}
-                <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
-                  {username}
+              {badge && (
+                <span className="font-semibold align-top ml-1 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]">
+                  {isVerified && (
+                    <Svg
+                      width={16}
+                      height={16}
+                      className="w-[0.9375rem] h-[0.9375rem] -ml-1 inline-block"
+                    >
+                      <path
+                        fill="currentColor"
+                        fillRule="evenodd"
+                        d="M18.7 7.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4l3.3 3.29 7.3-7.3a1 1 0 0 1 1.4 0Z"
+                        clipRule="evenodd"
+                      />
+                    </Svg>
+                  )}
+                  {badge}
                 </span>
-              </span>
-            </h3>
-          )}
-          {message.content && (
-            <div
-              className="contents font-medium text-primary-600 dark:text-primary-230 dark:font-normal leading-[1.375] whitespace-pre-line"
-              style={{
-                // @ts-expect-error
-                "--font-size": "1rem",
-              }}
-            >
-              <Markdown
-                content={message.content}
-                features="full"
-                cache={cache}
-              />
-            </div>
-          )}
-        </div>
-        <div className={messageDisplay === "compact" ? "pl-20" : ""}>
-          {allAttachments.length > 0 && (
-            <div className="max-w-[550px] mt-1 space-y-1">
-              {fileAttachments.map((attachment) => (
-                <FileAttachment
-                  key={`attachment-${attachment.id}`}
-                  attachment={attachment}
-                />
-              ))}
-              {mediaAttachments.length > 0 && (
-                <Gallery
-                  attachments={mediaAttachments}
-                  setImageModalData={setImageModalData}
-                />
               )}
-            </div>
+              <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
+                {t("todayAt", { replace: { date: date ?? new Date() } })}
+              </span>
+            </p>
           )}
-          {embeds.length > 0 && (
-            <div className="space-y-1 mt-1">
-              {embeds.map((embedData, i) => (
-                <Embed
-                  key={`message-preview-embed-${i}`}
-                  {...embedData}
-                  files={files}
-                  setImageModalData={setImageModalData}
+          <div
+            className={
+              messageDisplay === "compact" ? "relative pl-20 -indent-16" : ""
+            }
+          >
+            {messageDisplay === "compact" && (
+              <h3 className="inline text-base">
+                <span className="font-medium mr-1 h-5 text-[11px] leading-[22px] break-words cursor-default align-baseline text-[#5C5E66] dark:text-[#949BA4]">
+                  {(date ?? new Date()).toLocaleTimeString(undefined, {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
+                {compactAvatars && (
+                  <img
+                    className="inline-block rounded-full -mt-1 ml-[0.1em] mr-1 h-4 w-4 cursor-pointer active:translate-y-px"
+                    src={avatarUrl}
+                    alt={username}
+                  />
+                )}
+                <span className="mr-1">
+                  {badge && (
+                    <span className="font-semibold mr-2 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem] indent-0">
+                      {badge}
+                    </span>
+                  )}
+                  <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
+                    {username}
+                  </span>
+                </span>
+              </h3>
+            )}
+            {message.content && (
+              <div
+                className="contents font-medium text-primary-600 dark:text-primary-230 dark:font-normal leading-[1.375] whitespace-pre-line"
+                style={{
+                  // @ts-expect-error
+                  "--font-size": "1rem",
+                }}
+              >
+                <Markdown
+                  content={message.content}
+                  features="full"
                   cache={cache}
-                  isLinkEmbed={isLinkEmbedEditor}
                 />
-              ))}
-            </div>
-          )}
-          {message.components && message.components.length > 0 && (
-            <div className="mt-1">
-              <MessageComponents
-                components={message.components}
-                authorType={authorType}
-                cache={cache}
-              />
-            </div>
-          )}
+              </div>
+            )}
+          </div>
+          <div className={messageDisplay === "compact" ? "pl-20" : ""}>
+            {allAttachments.length > 0 && (
+              <div className="max-w-[550px] mt-1 space-y-1">
+                {fileAttachments.map((attachment) => (
+                  <FileAttachment
+                    key={`attachment-${attachment.id}`}
+                    attachment={attachment}
+                  />
+                ))}
+                {mediaAttachments.length > 0 && (
+                  <Gallery
+                    attachments={mediaAttachments}
+                    setImageModalData={setImageModalData}
+                  />
+                )}
+              </div>
+            )}
+            {embeds.length > 0 && (
+              <div className="space-y-1 mt-1">
+                {embeds.map((embedData, i) => (
+                  <Embed
+                    key={`message-preview-embed-${i}`}
+                    {...embedData}
+                    files={files}
+                    setImageModalData={setImageModalData}
+                    cache={cache}
+                    isLinkEmbed={isLinkEmbedEditor}
+                  />
+                ))}
+              </div>
+            )}
+            {message.components && message.components.length > 0 && (
+              <div className="mt-1">
+                <MessageComponents
+                  components={message.components}
+                  authorType={authorType}
+                  cache={cache}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
