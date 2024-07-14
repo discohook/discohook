@@ -112,6 +112,7 @@ export interface QueryData {
       thread_name?: string;
     };
     reference?: string;
+    thread_id?: string;
   }[];
   targets?: { url: string }[];
 }
@@ -189,8 +190,10 @@ export const ZodQueryDataMessage = z.object({
     webhook_id: z.ostring(),
     components: ZodAPIActionRowComponent.array().optional(),
     flags: ZodMessageFlags.optional(),
+    thread_name: z.ostring(),
   }),
   reference: z.ostring(),
+  thread_id: z.ostring(),
 }) satisfies z.ZodType<QueryData["messages"][number]>;
 
 export const ZodQueryDataTarget: z.ZodType<

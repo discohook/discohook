@@ -45,6 +45,7 @@ export const submitMessage = async (
   message: QueryData["messages"][number],
   files?: DraftFile[],
   rest?: REST,
+  orThreadId?: string,
 ): Promise<SubmitMessageResult> => {
   const token = target.token;
   if (!token) {
@@ -72,10 +73,11 @@ export const submitMessage = async (
         components: message.data.components,
       },
       files,
-      undefined,
+      message.thread_id ?? orThreadId,
       rest,
     );
   } else {
+    const threadName = message.data.thread_name?.trim();
     data = await executeWebhook(
       target.id,
       token,
@@ -86,10 +88,10 @@ export const submitMessage = async (
         embeds: message.data.embeds || undefined,
         components: message.data.components,
         flags: message.data.flags,
-        thread_name: message.data.thread_name?.trim() || undefined,
+        thread_name: threadName || undefined,
       },
       files,
-      undefined,
+      threadName ? undefined : message.thread_id ?? orThreadId,
       rest,
     );
   }
@@ -362,6 +364,12 @@ export const MessageSendModal = (
                 const webhook = targets[targetId];
                 if (!webhook) continue;
 
+                // If a message created a forum thread, assume subsequent
+                // messages with no thread_id or thread_name set are intended
+                // to send into the new thread. This should be a reasonably
+                // harmless assumption since the request will error otherwise.
+                let forumThreadId: string | undefined;
+
                 for (const message of data.messages.filter((m) => {
                   const id = getQdMessageId(m);
                   return !messages[id] || messages[id].enabled;
@@ -440,9 +448,18 @@ export const MessageSendModal = (
                   }
 
                   if (!result || result.status === "success") {
-                    result = await submitMessage(webhook, message, files?.[id]);
+                    result = await submitMessage(
+                      webhook,
+                      message,
+                      files?.[id],
+                      undefined,
+                      forumThreadId,
+                    );
                   }
                   if (result.status === "success") {
+                    if (message.data.thread_name) {
+                      forumThreadId = result.data.channel_id;
+                    }
                     auditLogFetcher.submit(
                       {
                         type: message.reference ? "edit" : "send",

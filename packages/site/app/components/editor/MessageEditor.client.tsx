@@ -1,3 +1,4 @@
+import { Link } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
@@ -14,6 +15,7 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
 import { EmbedEditor, EmbedEditorSection, getEmbedLength } from "./EmbedEditor";
@@ -86,6 +88,7 @@ export const MessageEditor: React.FC<{
     channels.length < webhooks.length;
   const isAllForum =
     !!webhooks &&
+    webhooks.length !== 0 &&
     channels.map((c) => c.type === "forum").length === webhooks.length;
 
   return (
@@ -161,23 +164,6 @@ export const MessageEditor: React.FC<{
         </div>
       </summary>
       <div className="rounded bg-gray-100 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 dark:px-3 dark:-mx-1 mt-1 space-y-2">
-        {possiblyForum && (
-          <div>
-            <TextInput
-              label={t("threadName")}
-              className="w-full"
-              value={message.data.thread_name ?? ""}
-              maxLength={100}
-              freelength
-              required={isAllForum}
-              disabled={!!message.reference}
-              onInput={(e) => {
-                message.data.thread_name = e.currentTarget.value || undefined;
-                setData({ ...data });
-              }}
-            />
-          </div>
-        )}
         <TextArea
           label={t("content")}
           className="w-full h-40"
@@ -192,6 +178,54 @@ export const MessageEditor: React.FC<{
           }}
         />
         <div className="-space-y-2">
+          <EmbedEditorSection name={t("thread")}>
+            {!!message.reference && (
+              <InfoBox severity="yellow">{t("forumImmutable")}</InfoBox>
+            )}
+            <p className="text-sm italic mb-2">
+              <Trans
+                t={t}
+                i18nKey="threadsNote"
+                components={[
+                  <Link
+                    to="/guide/getting-started/threads"
+                    className={linkClassName}
+                    target="_blank"
+                  />,
+                ]}
+              />
+            </p>
+            <TextInput
+              label={t("forumThreadName")}
+              className="w-full"
+              value={message.data.thread_name ?? ""}
+              maxLength={100}
+              freelength
+              required={isAllForum && !message.thread_id}
+              disabled={
+                !!message.reference || !possiblyForum || !!message.thread_id
+              }
+              onInput={(e) => {
+                message.data.thread_name = e.currentTarget.value || undefined;
+                setData({ ...data });
+              }}
+            />
+            <TextInput
+              // TODO: I want this to be a thread picker in the future, when
+              // possible, but we'll always need a way to input an ID
+              label={t("threadId")}
+              className="w-full"
+              value={message.thread_id ?? ""}
+              maxLength={30}
+              freelength
+              required={isAllForum && !message.data.thread_name}
+              disabled={!!message.data.thread_name}
+              onInput={(e) => {
+                message.thread_id = e.currentTarget.value || undefined;
+                setData({ ...data });
+              }}
+            />
+          </EmbedEditorSection>
           <EmbedEditorSection name={t("profile")}>
             {!!message.reference && (
               <InfoBox severity="yellow">{t("profileImmutable")}</InfoBox>
