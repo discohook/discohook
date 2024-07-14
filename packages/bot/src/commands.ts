@@ -25,6 +25,11 @@ import {
   formatMentionCallback,
 } from "./commands/format.js";
 import { helpAutocomplete, helpEntry } from "./commands/help.js";
+import {
+  idChannelCallback,
+  idEmojiCallback,
+  idMentionCallback,
+} from "./commands/id.js";
 import { inviteCallback } from "./commands/invite.js";
 import {
   createReactionRoleHandler,
@@ -103,6 +108,13 @@ export const appCommands: Record<
         mention: formatMentionCallback,
         channel: formatChannelCallback,
         emoji: formatEmojiCallback,
+      },
+    },
+    id: {
+      handlers: {
+        mention: idMentionCallback,
+        channel: idChannelCallback,
+        emoji: idEmojiCallback,
       },
     },
     invite: {

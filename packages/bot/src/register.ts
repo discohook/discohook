@@ -279,6 +279,44 @@ async function main() {
         ),
     ),
     addLocalizations(
+      new SlashCommandBuilder()
+        .setName("id")
+        .setDescription("...")
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("mention")
+            .setDescription("...")
+            .addMentionableOption(
+              new SlashCommandMentionableOption()
+                .setName("target")
+                .setDescription("...")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("channel")
+            .setDescription("...")
+            .addChannelOption(
+              new SlashCommandChannelOption()
+                .setName("target")
+                .setDescription("...")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("emoji")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("target")
+                .setDescription("...")
+                .setRequired(true),
+            ),
+        ),
+    ),
+    addLocalizations(
       new SlashCommandBuilder().setName("invite").setDescription("..."),
     ),
     addLocalizations(
@@ -304,14 +342,18 @@ async function main() {
                 .setDescription("...")
                 .setChoices(
                   {
-                    name: getEnglish("triggers.options.add.options.event.choices.0"),
+                    name: getEnglish(
+                      "triggers.options.add.options.event.choices.0",
+                    ),
                     name_localizations: localize(
                       "triggers.options.add.options.event.choices.0",
                     ),
                     value: TriggerEvent.MemberAdd,
                   },
                   {
-                    name: getEnglish("triggers.options.add.options.event.choices.1"),
+                    name: getEnglish(
+                      "triggers.options.add.options.event.choices.1",
+                    ),
                     name_localizations: localize(
                       "triggers.options.add.options.event.choices.1",
                     ),

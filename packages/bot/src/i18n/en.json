@@ -162,6 +162,36 @@
     "invite": {
       "description": "Invite URL for this bot"
     },
+    "id": {
+      "name": "id",
+      "description": "Get the numeric ID of a Discord resource",
+      "options": {
+        "mention": {
+          "description": "Outputs the ID for a user or role",
+          "options": {
+            "target": {
+              "description": "The user or role"
+            }
+          }
+        },
+        "channel": {
+          "description": "Outputs the ID for a channel or thread",
+          "options": {
+            "target": {
+              "description": "The channel or thread"
+            }
+          }
+        },
+        "emoji": {
+          "description": "Outputs the ID for a server emoji",
+          "options": {
+            "target": {
+              "description": "The emoji"
+            }
+          }
+        }
+      }
+    },
     "_ctx": {
       "components": {
         "name": "Buttons & Components"
@@ -191,5 +221,6 @@
   "triggerCreated": "Trigger **{{name}}** created successfully.",
   "addActions": "Add Actions",
   "noActions": "No actions",
-  "manageActions": "Manage Actions"
+  "manageActions": "Manage Actions",
+  "idUnavailable": "ID unavailable."
 }

@@ -81,7 +81,7 @@ export const formatChannelCallback: ChatInputAppCommandCallback = async (
 
 // Borrowed and modified from the legacy bot:
 // https://github.com/discohook/bot/blob/7c5a03ed25ad6d699eef322048b2791e025ec416/src/lib/emojis/parseEmojiOption.ts
-const parseEmojiOption = async (
+export const parseEmojiOption = async (
   ctx: InteractionContext<APIChatInputApplicationCommandInteraction>,
   emojiOptionName: string,
 ): Promise<string | APIPartialEmoji | undefined> => {
