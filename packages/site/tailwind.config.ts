@@ -75,6 +75,10 @@ export default {
         },
         muted: "#5C5E65",
         "muted-dark": "#959BA3",
+        background: {
+          secondary: "#F2F3F5",
+          "secondary-dark": "#2B2D31",
+        },
       },
     },
   },

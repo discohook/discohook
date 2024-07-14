@@ -1095,7 +1095,7 @@ export default function Me() {
                       .map((_, i) => (
                         <div
                           key={`bot-skeleton-${i}`}
-                          className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-[#2B2D31] dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                          className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-background-secondary-dark dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg cursor-pointer"
                         >
                           <div className="rounded-lg h-24 w-24 bg-gray-500/50" />
                           <div className="w-full flex mt-1">
@@ -1114,7 +1114,7 @@ export default function Me() {
                           return (
                             <Link
                               key={`bot-${bot.id}`}
-                              className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-[#2B2D31] dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg"
+                              className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-background-secondary-dark dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg"
                               to={`/me/bots/${bot.id}`}
                             >
                               <img

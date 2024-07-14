@@ -17,10 +17,10 @@ export const selectClassNames: ClassNamesConfig<
   multiValueRemove: () => "hover:!bg-[#da373c] hover:!text-white",
   singleValue: () => "dark:!text-[#ddd]",
   input: () => "dark:!text-[#ddd]",
-  menu: () => "!rounded dark:!bg-[#2b2d31]",
+  menu: () => "!rounded dark:!bg-background-secondary-dark",
   option: (p) =>
     twJoin(
-      "!rounded dark:!bg-[#2b2d31] dark:hover:!bg-[#36373d] !font-semibold !text-sm",
+      "!rounded dark:!bg-background-secondary-dark dark:hover:!bg-[#36373d] !font-semibold !text-sm",
       p.isDisabled ? "!cursor-not-allowed opacity-60" : undefined,
     ),
   menuPortal: () => "!z-30",

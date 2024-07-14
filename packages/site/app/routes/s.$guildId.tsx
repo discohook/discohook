@@ -866,7 +866,7 @@ export default () => {
                         <button
                           key={`trigger-${trigger.id}`}
                           type="button"
-                          className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-[#2B2D31] dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg flex flex-col"
+                          className="rounded-lg p-2 w-28 bg-primary-160 hover:bg-primary-230 dark:bg-background-secondary-dark dark:hover:bg-[#232428] transition hover:-translate-y-1 hover:shadow-lg flex flex-col"
                           onClick={() => setOpenTriggerId(trigger.id)}
                         >
                           <CoolIcon
