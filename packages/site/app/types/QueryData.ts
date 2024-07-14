@@ -109,6 +109,7 @@ export interface QueryData {
       components?: APIActionRowComponent<APIMessageActionRowComponent>[];
       webhook_id?: string;
       flags?: MessageFlags;
+      thread_name?: string;
     };
     reference?: string;
   }[];

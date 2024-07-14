@@ -1,6 +1,5 @@
 import { DiscordErrorData, REST } from "@discordjs/rest";
 import { SerializeFrom } from "@remix-run/cloudflare";
-import { useFetcher } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIMessage,
@@ -12,13 +11,15 @@ import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import type { Flow } from "~/store.server";
+import type { DraftFlow } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
+import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
 import { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import type { action as ApiPostValidateFlows } from "../api/v1/validate.flows";
@@ -85,6 +86,7 @@ export const submitMessage = async (
         embeds: message.data.embeds || undefined,
         components: message.data.components,
         flags: message.data.flags,
+        thread_name: message.data.thread_name?.trim() || undefined,
       },
       files,
       undefined,
@@ -108,8 +110,11 @@ export const MessageSendModal = (
 ) => {
   const { t } = useTranslation();
   const { targets, setAddingTarget, data, files, cache } = props;
+  const [error, setError] = useError(t);
 
-  const auditLogFetcher = useFetcher<typeof ApiAuditLogAction>();
+  const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
+    onError: setError,
+  });
   // const backupFetcher = useFetcher<typeof ApiBackupsAction>();
 
   const [selectedWebhooks, updateSelectedWebhooks] = useReducer(
@@ -190,6 +195,7 @@ export const MessageSendModal = (
         open={troubleshootOpen}
         setOpen={setTroubleshootOpen}
       />
+      {error}
       <p className="text-sm font-medium">{t("messages")}</p>
       <div className="space-y-1">
         {data.messages.length > 0 ? (
@@ -380,7 +386,7 @@ export const MessageSendModal = (
                     continue;
                   }
 
-                  const flows: Flow[] = [];
+                  const flows: DraftFlow[] = [];
                   for (const row of message.data.components ?? []) {
                     for (const component of row.components) {
                       if ("flow" in component && component.flow) {
@@ -440,7 +446,11 @@ export const MessageSendModal = (
                     auditLogFetcher.submit(
                       {
                         type: message.reference ? "edit" : "send",
-                        // threadId: ,
+                        threadId:
+                          // This may cause issues if the webhook's channel was changed without the client being aware
+                          result.data.channel_id === webhook.channel_id
+                            ? undefined
+                            : result.data.channel_id,
                       },
                       {
                         method: "POST",

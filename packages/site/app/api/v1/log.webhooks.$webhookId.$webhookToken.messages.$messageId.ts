@@ -14,7 +14,7 @@ import { z } from "zod";
 import { getUserId } from "~/session.server";
 import { getWebhook, getWebhookMessage } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
-import { snowflakeAsString, zxParseForm, zxParseParams } from "~/util/zod";
+import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
   and,
   discordMessageComponents,
@@ -60,7 +60,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     webhookToken: z.string(),
     messageId: snowflakeAsString().transform(String),
   });
-  const { type, threadId } = await zxParseForm(request, {
+  const { type, threadId } = await zxParseJson(request, {
     type: z.union([z.literal("send"), z.literal("edit"), z.literal("delete")]),
     threadId: snowflakeAsString().transform(String).optional(),
     // components: z

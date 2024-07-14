@@ -387,6 +387,7 @@
   "addAction": "Add Action",
   "editComponent": "Edit Component",
   "backup": "Backup",
+  "threadName": "Thread Name",
   "content": "Content",
   "avatarUrl": "Avatar URL",
   "profileImmutable": "Profile info cannot be changed for existing messages.",

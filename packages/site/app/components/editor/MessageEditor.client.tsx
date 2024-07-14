@@ -5,7 +5,7 @@ import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { JsonEditorProps } from "~/modals/JsonEditorModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
-import { CacheManager } from "~/util/cache/CacheManager";
+import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import { getBlobDataUrl, getMessageText } from "~/util/message";
 import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -70,6 +70,23 @@ export const MessageEditor: React.FC<{
   const possiblyApplication = authorTypes.includes(
     AuthorType.ApplicationWebhook,
   );
+  const channels =
+    webhooks && cache
+      ? webhooks
+          .map((w) => cache.channel.get(w.channel_id))
+          .filter((c): c is ResolvableAPIChannel => !!c)
+      : [];
+  const possiblyForum =
+    // At least one forum channel
+    channels.map((c) => c.type === "forum").length !== 0 ||
+    // No webhooks
+    !webhooks ||
+    webhooks.length === 0 ||
+    // Some channels are of undetermined type
+    channels.length < webhooks.length;
+  const isAllForum =
+    !!webhooks &&
+    channels.map((c) => c.type === "forum").length === webhooks.length;
 
   return (
     <details className="group/message mt-4 pb-2" open>
@@ -144,6 +161,23 @@ export const MessageEditor: React.FC<{
         </div>
       </summary>
       <div className="rounded bg-gray-100 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 dark:px-3 dark:-mx-1 mt-1 space-y-2">
+        {possiblyForum && (
+          <div>
+            <TextInput
+              label={t("threadName")}
+              className="w-full"
+              value={message.data.thread_name ?? ""}
+              maxLength={100}
+              freelength
+              required={isAllForum}
+              disabled={!!message.reference}
+              onInput={(e) => {
+                message.data.thread_name = e.currentTarget.value || undefined;
+                setData({ ...data });
+              }}
+            />
+          </div>
+        )}
         <TextArea
           label={t("content")}
           className="w-full h-40"
