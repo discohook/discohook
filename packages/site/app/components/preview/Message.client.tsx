@@ -114,7 +114,8 @@ export const Message: React.FC<{
     (lastMessage
       ? lastMessage.data.author?.name !== message.author?.name ||
         lastMessage.data.author?.icon_url !== message.author?.icon_url
-      : true);
+      : true) ||
+    !!message.thread_name;
   // To save time, display components if the user has no webhooks
   const authorType = webhook
     ? getAuthorType(discordApplicationId, webhook)
@@ -165,7 +166,7 @@ export const Message: React.FC<{
 
   return (
     <div className={twJoin("dark:text-primary-230")} dir="ltr">
-      {showProfile && message.thread_name && (
+      {message.thread_name && (
         <div>
           <div className="w-16 h-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
             <PostChannelIcon className="w-10 h-10" />
