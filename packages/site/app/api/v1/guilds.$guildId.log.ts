@@ -33,6 +33,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     where: (table, { eq }) => eq(table.discordGuildId, guildId),
     columns: {
       type: true,
+      id: true,
       channelId: true,
       messageId: true,
       webhookId: true,

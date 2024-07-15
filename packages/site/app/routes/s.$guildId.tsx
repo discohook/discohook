@@ -43,6 +43,7 @@ import { DraftFlow } from "~/store.server";
 import { useCache } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
 import { flowToDraftFlow } from "~/util/flow";
+import { getId } from "~/util/id";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
@@ -594,7 +595,9 @@ export default () => {
               <div className="space-y-2">
                 {auditLogFetcher.data ? (
                   auditLogFetcher.data.entries.map((entry) => {
-                    const createdAt = getDate(entry.messageId as `${bigint}`);
+                    const createdAt = new Date(
+                      getId({ id: entry.id }).timestamp,
+                    );
                     const webhook = auditLogFetcher.data?.webhooks.find(
                       (w) => w.id === entry.webhookId,
                     );
@@ -608,7 +611,7 @@ export default () => {
                             : "?";
                     return (
                       <div
-                        key={`message-entry-${entry.messageId}`}
+                        key={`message-entry-${entry.id}`}
                         className="rounded-lg py-3 px-4 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
                       >
                         {/* {entry.type && (
