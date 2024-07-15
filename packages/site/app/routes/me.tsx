@@ -33,6 +33,7 @@ import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { BotCreateModal } from "~/modals/BotCreateModal";
+import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import { DiscohookBackup } from "~/types/discohook";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
@@ -429,6 +430,7 @@ export default function Me() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [editingBackup, setEditingBackup] = useState<LoadedBackup>();
   const [createBotOpen, setCreateBotOpen] = useState(false);
+  const [confirm, setConfirm] = useConfirmModal();
 
   const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
   const [tab, setTab] = useState<(typeof tabValues)[number]>(
@@ -461,6 +463,7 @@ export default function Me() {
         backup={editingBackup}
       />
       <BotCreateModal open={createBotOpen} setOpen={setCreateBotOpen} />
+      {confirm}
       <Header user={user} />
       <Prose>
         <TabsWindow
@@ -783,17 +786,62 @@ export default function Me() {
                                 </Link>
                                 <Button
                                   discordstyle={ButtonStyle.Danger}
-                                  onClick={() => {
-                                    submit(
-                                      {
-                                        action: "DELETE_BACKUP",
-                                        backupId: String(backup.id),
-                                      },
-                                      {
-                                        method: "POST",
-                                        replace: true,
-                                      },
-                                    );
+                                  onClick={(e) => {
+                                    const callback = () =>
+                                      submit(
+                                        {
+                                          action: "DELETE_BACKUP",
+                                          backupId: String(backup.id),
+                                        },
+                                        {
+                                          method: "POST",
+                                          replace: true,
+                                        },
+                                      );
+
+                                    if (e.shiftKey) {
+                                      callback();
+                                      return;
+                                    }
+
+                                    setConfirm({
+                                      title: t("deleteBackup"),
+                                      children: (
+                                        <>
+                                          <p>{t("deleteBackupConfirm")}</p>
+                                          <div className="rounded-lg p-4 flex bg-gray-100 dark:bg-gray-900/60 shadow my-2">
+                                            {backup.previewImageUrl && (
+                                              <div
+                                                style={{
+                                                  backgroundImage: `url(${backup.previewImageUrl})`,
+                                                }}
+                                                className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                                              />
+                                            )}
+                                            <div className="truncate my-auto">
+                                              <p className="font-medium truncate">
+                                                {backup.name}
+                                              </p>
+                                              <p className="text-gray-600 dark:text-gray-500 text-sm">
+                                                {t("createdAt", {
+                                                  replace: { createdAt },
+                                                })}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                                            {t("shiftSkipTip")}
+                                          </p>
+                                          <Button
+                                            className="mt-4"
+                                            discordstyle={ButtonStyle.Danger}
+                                            onClick={callback}
+                                          >
+                                            {t("delete")}
+                                          </Button>
+                                        </>
+                                      ),
+                                    });
                                   }}
                                 >
                                   <CoolIcon icon="Trash_Full" />
