@@ -41,7 +41,12 @@ import {
 } from "~/session.server";
 import { DraftFlow } from "~/store.server";
 import { useCache } from "~/util/cache/CacheManager";
-import { cdn, cdnImgAttributes, isDiscordError } from "~/util/discord";
+import {
+  cdn,
+  cdnImgAttributes,
+  isDiscordError,
+  webhookAvatarUrl,
+} from "~/util/discord";
 import { flowToDraftFlow } from "~/util/flow";
 import { getId } from "~/util/id";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
@@ -507,11 +512,7 @@ export default () => {
                           >
                             <img
                               {...cdnImgAttributes(64, (size) =>
-                                webhook.avatar
-                                  ? cdn.avatar(webhook.id, webhook.avatar, {
-                                      size,
-                                    })
-                                  : cdn.defaultAvatar(5),
+                                webhookAvatarUrl(webhook, { size }),
                               )}
                               className="rounded-full my-auto w-10 h-10 ltr:mr-4 rtl:ml-4"
                               alt={webhook.name}
@@ -628,8 +629,8 @@ export default () => {
                         )} */}
                         <img
                           {...cdnImgAttributes(64, (size) =>
-                            webhook?.avatar
-                              ? cdn.avatar(webhook.id, webhook.avatar, { size })
+                            webhook
+                              ? webhookAvatarUrl(webhook, { size })
                               : cdn.defaultAvatar(5),
                           )}
                           className="rounded-full my-auto w-10 h-10 mr-2 hidden sm:block"
@@ -704,11 +705,7 @@ export default () => {
                           className="rounded-full my-auto w-10 h-10 mr-2 hidden sm:block"
                           src={
                             webhook
-                              ? webhook.avatar
-                                ? cdn.avatar(webhook.id, webhook.avatar, {
-                                    size: 64,
-                                  })
-                                : cdn.defaultAvatar(5)
+                              ? webhookAvatarUrl(webhook, { size: 64 })
                               : cdn.defaultAvatar(5)
                           }
                           alt=""

@@ -47,7 +47,7 @@ import {
   INDEX_MESSAGE,
   WEBHOOK_URL_RE,
 } from "~/util/constants";
-import { cdn, getWebhook } from "~/util/discord";
+import { getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
@@ -553,9 +553,7 @@ export default function Index() {
             </Button>
           </div>
           {Object.values(targets).map((webhook) => {
-            const avatarUrl = webhook.avatar
-              ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
-              : cdn.defaultAvatar(5);
+            const avatarUrl = webhookAvatarUrl(webhook, { size: 64 });
 
             return (
               <div

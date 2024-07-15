@@ -1,8 +1,9 @@
-import type {
-  BaseImageURLOptions,
-  ImageExtension,
-  REST,
-  RawFile,
+import {
+  type BaseImageURLOptions,
+  type ImageExtension,
+  type REST,
+  type RawFile,
+  calculateUserDefaultAvatarIndex,
 } from "@discordjs/rest";
 import {
   RESTError,
@@ -367,6 +368,17 @@ export const botAppAvatar = (
   return cdn.defaultAvatar(
     Number((BigInt(app.applicationId) >> BigInt(22)) % BigInt(6)),
   );
+};
+
+export const webhookAvatarUrl = (
+  webhook: { id: string; avatar: string | null },
+  options?: BaseImageURLOptions,
+): string => {
+  if (webhook.avatar) {
+    return cdn.avatar(webhook.id, webhook.avatar, options);
+  } else {
+    return cdn.defaultAvatar(calculateUserDefaultAvatarIndex(webhook.id));
+  }
 };
 
 export const characterAvatars = [

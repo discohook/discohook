@@ -18,7 +18,12 @@ import type { DraftFlow } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
-import { cdn, executeWebhook, updateWebhookMessage } from "~/util/discord";
+import {
+  cdnImgAttributes,
+  executeWebhook,
+  updateWebhookMessage,
+  webhookAvatarUrl,
+} from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
 import { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
@@ -297,11 +302,9 @@ export const MessageSendModal = (
                 className="flex rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer"
               >
                 <img
-                  src={
-                    target.avatar
-                      ? cdn.avatar(target.id, target.avatar, { size: 64 })
-                      : cdn.defaultAvatar(5)
-                  }
+                  {...cdnImgAttributes(64, (size) =>
+                    webhookAvatarUrl(target, { size }),
+                  )}
                   alt={target.name ?? "Webhook"}
                   className="rounded-full h-12 w-12 mr-2 my-auto shrink-0"
                 />

@@ -7,7 +7,11 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
-import { cdn, getWebhookMessage } from "~/util/discord";
+import {
+  cdnImgAttributes,
+  getWebhookMessage,
+  webhookAvatarUrl,
+} from "~/util/discord";
 import { Modal, ModalProps } from "./Modal";
 
 export const MessageSetModal = (
@@ -102,11 +106,9 @@ export const MessageSetModal = (
                 className="flex rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 hover:dark:bg-gray-600 transition py-2 px-4 w-full cursor-pointer"
               >
                 <img
-                  src={
-                    target.avatar
-                      ? cdn.avatar(target.id, target.avatar, { size: 64 })
-                      : cdn.defaultAvatar(5)
-                  }
+                  {...cdnImgAttributes(64, (size) =>
+                    webhookAvatarUrl(target, { size }),
+                  )}
                   alt={target.name ?? t("webhook")}
                   className="rounded-full h-12 w-12 mr-2 my-auto"
                 />

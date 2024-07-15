@@ -11,11 +11,9 @@ import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
 import { LoadedMembership } from "~/routes/_index";
-import {
-  CacheManager
-} from "~/util/cache/CacheManager";
+import { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
-import { cdn, getWebhook } from "~/util/discord";
+import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
@@ -81,11 +79,7 @@ export const TargetAddModal = (
     }
   }, [guildWebhookTokenFetcher, webhook, props.updateTargets]);
 
-  const avatarUrl = webhook
-    ? webhook.avatar
-      ? cdn.avatar(webhook.id, webhook.avatar, { size: 128 })
-      : cdn.defaultAvatar(5)
-    : null;
+  const avatarUrl = webhook ? webhookAvatarUrl(webhook, { size: 128 }) : null;
 
   const setOpen = (s: boolean) => {
     props.setOpen(s);
@@ -198,14 +192,10 @@ export const TargetAddModal = (
                       className="rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
                     >
                       <img
+                        {...cdnImgAttributes(64, (size) =>
+                          webhookAvatarUrl(gWebhook, { size }),
+                        )}
                         className="rounded-full my-auto w-8 h-8 mr-3"
-                        src={
-                          gWebhook.avatar
-                            ? cdn.avatar(gWebhook.id, gWebhook.avatar, {
-                                size: 64,
-                              })
-                            : cdn.defaultAvatar(5)
-                        }
                         alt={gWebhook.name}
                       />
                       <div className="truncate my-auto">

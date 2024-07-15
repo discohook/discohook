@@ -11,7 +11,7 @@ import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
-import { cdn } from "~/util/discord";
+import { webhookAvatarUrl } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
 import { Svg } from "../icons/Svg";
 import { PostChannelIcon } from "../icons/channel";
@@ -95,9 +95,7 @@ export const Message: React.FC<{
   const avatarUrl =
     message.author?.icon_url ??
     (webhook
-      ? webhook.avatar
-        ? cdn.avatar(webhook.id, webhook.avatar, { size: 64 })
-        : cdn.defaultAvatar(5)
+      ? webhookAvatarUrl(webhook, { size: 64 })
       : "/logos/discohook.svg");
   const badge =
     message.author?.badge === null
