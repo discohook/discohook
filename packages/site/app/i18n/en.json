@@ -118,6 +118,8 @@
   "version": "Version: {{version}}",
   "shareLinks": "Share Links",
   "noLinks": "You haven't created any share links.",
+  "deleteShareLink": "Delete Share Link",
+  "deleteShareLinkConfirm": "Are you sure you want to delete this share link? This cannot be undone.",
   "refreshShareLink": "Refresh the share link for another 2 weeks (Deluxe feature!)",
   "id": "ID: {{id}}",
   "idText": "ID",

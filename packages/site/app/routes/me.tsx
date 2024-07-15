@@ -982,14 +982,14 @@ export default function Me() {
                 <Await resolve={links}>
                   {(links) =>
                     links.length > 0 ? (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         {links.map((link) => {
                           const created = new Date(getId(link).timestamp);
                           const expires = new Date(link.expiresAt);
                           return (
                             <div
                               key={`share-link-${link.id}`}
-                              className="rounded p-4 bg-gray-100 dark:bg-gray-900 flex flex-wrap sm:flex-nowrap"
+                              className="rounded py-2 px-3 bg-gray-100 dark:bg-gray-900 flex flex-wrap sm:flex-nowrap"
                             >
                               <div className="truncate shrink-0 w-full sm:w-fit">
                                 <p className="font-medium">
@@ -1080,17 +1080,86 @@ export default function Me() {
                                 )}
                                 <Button
                                   discordstyle={ButtonStyle.Danger}
-                                  onClick={() => {
-                                    submit(
-                                      {
-                                        action: "DELETE_SHARE_LINK",
-                                        linkId: String(link.id),
-                                      },
-                                      {
-                                        method: "POST",
-                                        replace: true,
-                                      },
-                                    );
+                                  onClick={(e) => {
+                                    const callback = () =>
+                                      submit(
+                                        {
+                                          action: "DELETE_SHARE_LINK",
+                                          linkId: String(link.id),
+                                        },
+                                        {
+                                          method: "POST",
+                                          replace: true,
+                                        },
+                                      );
+
+                                    if (e.shiftKey) {
+                                      callback();
+                                      return;
+                                    }
+
+                                    setConfirm({
+                                      title: t("deleteShareLink"),
+                                      children: (
+                                        <>
+                                          <p>{t("deleteShareLinkConfirm")}</p>
+                                          <div className="rounded-lg py-2 px-3 flex bg-gray-100 dark:bg-gray-900/60 shadow my-2">
+                                            <div className="truncate my-auto">
+                                              <p className="font-medium">
+                                                {
+                                                  // TODO this should be i18n'd so that the flow of time makes sense in RTL
+                                                  created.toLocaleDateString(
+                                                    undefined,
+                                                    {
+                                                      month: "short",
+                                                      day: "numeric",
+                                                      year:
+                                                        now.getFullYear() ===
+                                                        created.getFullYear()
+                                                          ? undefined
+                                                          : "numeric",
+                                                    },
+                                                  )
+                                                }{" "}
+                                                -{" "}
+                                                {expires.toLocaleDateString(
+                                                  undefined,
+                                                  {
+                                                    month: "short",
+                                                    day: "numeric",
+                                                    year:
+                                                      now.getFullYear() ===
+                                                      expires.getFullYear()
+                                                        ? undefined
+                                                        : "numeric",
+                                                  },
+                                                )}
+                                              </p>
+                                              <p className="text-gray-600 dark:text-gray-500 text-sm">
+                                                {t("expiresIn", {
+                                                  replace: [
+                                                    relativeTime(
+                                                      new Date(link.expiresAt),
+                                                      t,
+                                                    ),
+                                                  ],
+                                                })}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                                            {t("shiftSkipTip")}
+                                          </p>
+                                          <Button
+                                            className="mt-4"
+                                            discordstyle={ButtonStyle.Danger}
+                                            onClick={callback}
+                                          >
+                                            {t("delete")}
+                                          </Button>
+                                        </>
+                                      ),
+                                    });
                                   }}
                                 >
                                   <CoolIcon icon="Trash_Full" />
