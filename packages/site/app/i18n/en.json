@@ -105,6 +105,8 @@
   "webhookCreateSubtitle": "You should be returned to the editor shortly.",
   "profile": "Profile",
   "linkEmbeds": "Link Embeds",
+  "deleteLinkBackup": "Delete Link Embed",
+  "deleteLinkBackupConfirm": "Are you sure you want to delete this link embed? This cannot be undone.",
   "backups": "Backups",
   "noBackups": "You haven't created any backups.",
   "deleteBackup": "Delete Backup",

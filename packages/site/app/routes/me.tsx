@@ -835,7 +835,10 @@ export default function Me() {
                                           <Button
                                             className="mt-4"
                                             discordstyle={ButtonStyle.Danger}
-                                            onClick={callback}
+                                            onClick={() => {
+                                              callback();
+                                              setConfirm(undefined);
+                                            }}
                                           >
                                             {t("delete")}
                                           </Button>
@@ -931,17 +934,65 @@ export default function Me() {
                                 </Link>
                                 <Button
                                   discordstyle={ButtonStyle.Danger}
-                                  onClick={() => {
-                                    submit(
-                                      {
-                                        action: "DELETE_LINK_BACKUP",
-                                        backupId: String(backup.id),
-                                      },
-                                      {
-                                        method: "POST",
-                                        replace: true,
-                                      },
-                                    );
+                                  onClick={(e) => {
+                                    const callback = () =>
+                                      submit(
+                                        {
+                                          action: "DELETE_LINK_BACKUP",
+                                          backupId: String(backup.id),
+                                        },
+                                        {
+                                          method: "POST",
+                                          replace: true,
+                                        },
+                                      );
+
+                                    if (e.shiftKey) {
+                                      callback();
+                                      return;
+                                    }
+
+                                    setConfirm({
+                                      title: t("deleteLinkBackup"),
+                                      children: (
+                                        <>
+                                          <p>{t("deleteLinkBackupConfirm")}</p>
+                                          <div className="rounded-lg p-4 flex bg-gray-100 dark:bg-gray-900/60 shadow my-2">
+                                            {backup.previewImageUrl && (
+                                              <div
+                                                style={{
+                                                  backgroundImage: `url(${backup.previewImageUrl})`,
+                                                }}
+                                                className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                                              />
+                                            )}
+                                            <div className="truncate my-auto">
+                                              <p className="font-medium truncate">
+                                                {backup.name}
+                                              </p>
+                                              <p className="text-gray-600 dark:text-gray-500 text-sm">
+                                                {t("id", {
+                                                  replace: { id: backup.code },
+                                                })}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                                            {t("shiftSkipTip")}
+                                          </p>
+                                          <Button
+                                            className="mt-4"
+                                            discordstyle={ButtonStyle.Danger}
+                                            onClick={() => {
+                                              callback();
+                                              setConfirm(undefined);
+                                            }}
+                                          >
+                                            {t("delete")}
+                                          </Button>
+                                        </>
+                                      ),
+                                    });
                                   }}
                                 >
                                   <CoolIcon icon="Trash_Full" />
@@ -1153,7 +1204,10 @@ export default function Me() {
                                           <Button
                                             className="mt-4"
                                             discordstyle={ButtonStyle.Danger}
-                                            onClick={callback}
+                                            onClick={() => {
+                                              callback();
+                                              setConfirm(undefined);
+                                            }}
                                           >
                                             {t("delete")}
                                           </Button>
