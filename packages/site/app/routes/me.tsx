@@ -545,14 +545,9 @@ export default function Me() {
                     </p>
                     <p className="text-base font-normal">
                       {user.subscribedSince ? (
-                        new Date(user.subscribedSince).toLocaleDateString(
-                          undefined,
-                          {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          },
-                        )
+                        t("timestamp.date_verbose", {
+                          replace: { date: new Date(user.subscribedSince) },
+                        })
                       ) : (
                         <Link
                           to="/donate"
@@ -573,14 +568,9 @@ export default function Me() {
                     </p>
                     <p className="text-base font-normal">
                       {user.firstSubscribed
-                        ? new Date(user.firstSubscribed).toLocaleDateString(
-                            undefined,
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )
+                        ? t("timestamp.date_verbose", {
+                            replace: { date: new Date(user.firstSubscribed) },
+                          })
                         : t("never")}
                     </p>
                   </div>
@@ -589,14 +579,9 @@ export default function Me() {
                       {t("joinedDiscohook")}
                     </p>
                     <p className="text-base font-normal">
-                      {new Date(getId(user).timestamp).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        },
-                      )}
+                      {t("timestamp.date_verbose", {
+                        replace: { date: new Date(getId(user).timestamp) },
+                      })}
                     </p>
                   </div>
                 </div>
