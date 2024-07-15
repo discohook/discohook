@@ -254,7 +254,7 @@ export const ZodLinkEmbed = z.object({
 
 export const ZodLinkQueryData = z.object({
   version: ZodLinkQueryDataVersion.optional(),
-  backup_id: z.onumber(),
+  backup_id: z.ostring(),
   embed: z.object({ data: ZodLinkEmbed, redirect_url: z.ostring() }),
 });
 

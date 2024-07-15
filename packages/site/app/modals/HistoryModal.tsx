@@ -19,7 +19,7 @@ export const HistoryModal = <
   props: ModalProps & {
     localHistory: T[];
     setLocalHistory: React.Dispatch<React.SetStateAction<T[]>>;
-    setData: React.Dispatch<Q>;
+    setData: React.Dispatch<Q> | React.Dispatch<React.SetStateAction<Q>>;
     resetData: () => void;
   },
 ) => {
