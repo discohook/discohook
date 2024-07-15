@@ -142,6 +142,7 @@ export const MessageSaveModal = (
       <Checkbox
         label={t("includeWebhookUrls")}
         checked={includeTargets}
+        disabled={Object.keys(targets).length === 0}
         onChange={(e) => {
           setIncludeTargets(e.currentTarget.checked);
           if (shareFetcher.data) {
