@@ -35,7 +35,7 @@ import {
 } from "~/util/text";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
-import { loader as apiLinkBackupsId } from "../api/v1/link-backups.$id";
+import { loader as ApiGetLinkBackup } from "../api/v1/link-backups.$id";
 import { safePushState } from "./_index";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -129,7 +129,7 @@ export default () => {
       return null;
     }
     const { id, code, name, data } = (await r.json()) as SerializeFrom<
-      typeof apiLinkBackupsId
+      typeof ApiGetLinkBackup
     >;
     return {
       id,
@@ -212,10 +212,8 @@ export default () => {
           console.log("Saving backup", backupInfo.id);
           fetch(apiUrl(BRoutes.linkBackups(backupInfo.id)), {
             method: "PATCH",
-            body: new URLSearchParams({
-              data: JSON.stringify(data),
-            }),
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: JSON.stringify({ data }),
+            headers: { "Content-Type": "application/json" },
           }).then((r) => {
             if (!r.ok) return;
             r.json().then((d) => setBackupInfo(d as BackupInfo));
@@ -258,11 +256,7 @@ export default () => {
         localHistory={localHistory}
         setLocalHistory={setLocalHistory}
         setData={setData}
-        resetData={() => {
-          setData({
-            embed: { data: {} },
-          });
-        }}
+        resetData={() => setData({ embed: { data: {} } })}
       />
       <ImageModal
         clear={() => setImageModalData(undefined)}
