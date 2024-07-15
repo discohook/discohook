@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { defer, json } from "@remix-run/cloudflare";
+import { defer, json, redirect } from "@remix-run/cloudflare";
 import { Form, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import {
   APIApplication,
@@ -317,7 +317,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       } satisfies KVCustomBot),
     );
 
-    return json({ id: updated.id }, 200);
+    return { id: updated.id };
   } else if (request.method === "DELETE") {
     const bot = await db.query.customBots.findFirst({
       where: (customBots, { eq }) => eq(customBots.id, botId),
@@ -333,7 +333,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       await context.env.KV.delete(`custom-bot-${botId}`);
     } catch {}
     await db.delete(customBots).where(eq(customBots.id, botId));
-    throw new Response(null, { status: 204 });
+    throw redirect("/me?t=bots");
   }
 
   throw new Response("Method Not Allowed", { status: 405 });
