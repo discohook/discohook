@@ -1,11 +1,14 @@
 {
-  "todayAt": "Today at {{ date, H:mm }}",
-  "timestamp": {
-    "time": "{{ date, HH:mm }}",
-    "time_verbose": "{{ date, HH:mm:ss }}",
-    "full": "{{ date, D MMMM YYYY HH:mm }}",
-    "full_verbose": "{{ date, dddd, D MMMM YYYY HH:mm:ss }}",
-    "date": "{{ date, DD/MM/YYYY }}",
-    "date_verbose": "{{ date, D MMMM YYYY }}"
-  }
+    "todayAt": "Today at {{ date, H:mm }}",
+    "timestamp": {
+        "time": "{{ date, HH:mm }}",
+        "time_verbose": "{{ date, HH:mm:ss }}",
+        "full": "{{ date, D MMMM YYYY HH:mm }}",
+        "full_verbose": "{{ date, dddd, D MMMM YYYY HH:mm:ss }}",
+        "date": "{{ date, DD/MM/YYYY }}",
+        "date_verbose": "{{ date, D MMMM YYYY }}"
+    },
+    "permission": {
+        "ViewCreatorMonetizationAnalytics": "View Creator Monetisation Analytics"
+    }
 }
