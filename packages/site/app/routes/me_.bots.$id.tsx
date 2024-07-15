@@ -445,10 +445,11 @@ export default function CustomBot() {
                   </a>
                   <Button
                     discordstyle={ButtonStyle.Danger}
-                    className="text-sm ltr:ml-1 rtl:mr-1"
+                    className="ltr:ml-1 rtl:mr-1"
                     onClick={() => setDeleting(true)}
-                    emoji={{ name: "🗑️" }}
-                  />
+                  >
+                    <CoolIcon icon="Trash_Full" />
+                  </Button>
                 </div>
                 <input name="botId" value={String(bot.id)} readOnly hidden />
                 <div>
