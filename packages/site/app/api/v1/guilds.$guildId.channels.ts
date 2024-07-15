@@ -6,7 +6,10 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import {
+  ResolvableAPIChannel,
+  tagToResolvableTag,
+} from "~/util/cache/CacheManager";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 import { getChannelIconType } from "./channels.$channelId";
@@ -37,6 +40,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           id: channel.id,
           name: channel.name,
           type: getChannelIconType(channel),
+          tags:
+            "available_tags" in channel
+              ? channel.available_tags.map(tagToResolvableTag)
+              : undefined,
         })) satisfies ResolvableAPIChannel[] as ResolvableAPIChannel[],
     ),
   );

@@ -2,15 +2,14 @@ import { SerializeFrom } from "@remix-run/cloudflare";
 import {
   APIChannel,
   APIGuild,
+  APIGuildForumTag,
   APIGuildMember,
   APIRole,
   APIUser,
 } from "discord-api-types/v10";
 import { useReducer } from "react";
 import { ApiRoute, BRoutes, apiUrl } from "~/api/routing";
-import type {
-  loader as ApiGetGuildCacheable
-} from "~/api/v1/guilds.$guildId.cacheable";
+import type { loader as ApiGetGuildCacheable } from "~/api/v1/guilds.$guildId.cacheable";
 
 export type Resolutions = {
   [key: `channel:${string}`]: ResolvableAPIChannel | undefined | null;
@@ -69,8 +68,28 @@ export type ResolvableAPIChannelType =
   | "forum"
   | "post";
 
+export const tagToResolvableTag = (
+  tag: APIGuildForumTag,
+): ResolvableAPIGuildForumTag => ({
+  id: tag.id,
+  name: tag.name,
+  moderated: tag.moderated ? true : undefined,
+  emoji_id: tag.emoji_id ? tag.emoji_id : undefined,
+  emoji_name: tag.emoji_name ? tag.emoji_name : undefined,
+});
+
+export type ResolvableAPIGuildForumTag = Pick<
+  APIGuildForumTag,
+  "id" | "name"
+> & {
+  moderated?: boolean;
+  emoji_id?: string;
+  emoji_name?: string;
+};
+
 export type ResolvableAPIChannel = Pick<APIChannel, "id" | "name"> & {
   type: ResolvableAPIChannelType;
+  tags?: ResolvableAPIGuildForumTag[];
 };
 
 export type ResolvableAPIGuild = Pick<APIGuild, "id" | "name" | "icon">;

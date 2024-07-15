@@ -3,7 +3,7 @@ import { json } from "@remix-run/cloudflare";
 import {
   ChannelType,
   RESTGetAPIGuildChannelsResult,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
 import {
@@ -16,6 +16,7 @@ import {
   ResolvableAPIChannel,
   ResolvableAPIEmoji,
   ResolvableAPIRole,
+  tagToResolvableTag,
 } from "~/util/cache/CacheManager";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
@@ -119,6 +120,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           id: channel.id,
           name: channel.name,
           type: getChannelIconType(channel),
+          tags:
+            "available_tags" in channel
+              ? channel.available_tags.map(tagToResolvableTag)
+              : undefined,
         })) satisfies ResolvableAPIChannel[] as ResolvableAPIChannel[],
       emojis: guild.emojis.map((emoji) => ({
         id: emoji.id ?? undefined,

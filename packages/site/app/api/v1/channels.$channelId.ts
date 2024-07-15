@@ -7,7 +7,10 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { authorizeRequest } from "~/session.server";
-import { ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import {
+  ResolvableAPIChannel,
+  tagToResolvableTag,
+} from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
@@ -57,6 +60,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       id: rawChannel.id,
       name: rawChannel.name,
       type: getChannelIconType(rawChannel),
+      tags:
+        "available_tags" in rawChannel
+          ? rawChannel.available_tags.map(tagToResolvableTag)
+          : undefined,
     };
   } catch (e) {
     throw respond(
