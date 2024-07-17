@@ -6,6 +6,7 @@ import {
   APIWebhook,
   ButtonStyle,
   ComponentType,
+  RESTJSONErrorCodes,
 } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -459,6 +460,32 @@ export const MessageSendModal = (
                       forumThreadId,
                     );
                   }
+                  if (
+                    result.status === "error" &&
+                    result.data.code === RESTJSONErrorCodes.UnknownMessage &&
+                    !forumThreadId &&
+                    !message.thread_id &&
+                    message.reference
+                  ) {
+                    // Assume that the message link contains a thread ID: set it and try again
+                    const match = message.reference.match(MESSAGE_REF_RE);
+                    if (match?.[2] && match[2] !== webhook.channel_id) {
+                      console.log(
+                        `Message ID ${match[3]} not found in webhook channel, trying again with ${match[2]} as thread ID`,
+                      );
+                      message.thread_id = match[2];
+                      result = await submitMessage(
+                        webhook,
+                        message,
+                        files?.[id],
+                      );
+                      if (result.status === "error") {
+                        // Unmutate the state since our guess was wrong
+                        message.thread_id = undefined;
+                      }
+                    }
+                  }
+
                   if (result.status === "success") {
                     if (message.data.thread_name) {
                       forumThreadId = result.data.channel_id;
