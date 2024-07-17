@@ -67,7 +67,9 @@ export const extractWebhookableChannel = (
   return [channelId, channelType];
 };
 
-export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
+export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
+  ctx,
+) => {
   const name = ctx.getStringOption("name").value;
   const avatar = ctx.getAttachmentOption("avatar");
   const channel = ctx.getChannelOption("channel");
@@ -86,108 +88,114 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
     });
   }
 
-  let avatarData: string | undefined = undefined;
-  if (avatar) {
-    if (
-      !avatar.content_type ||
-      !["image/png", "image/jpeg", "image/gif", "image/webp"].includes(
-        avatar.content_type,
-      )
-    ) {
-      return ctx.reply({
-        content:
-          "Invalid attachment type. Must be a PNG, JPEG/JPG, GIF, or WebP image.",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    try {
-      avatarData = await readAttachment(avatar.url);
-    } catch (e) {
-      if (e instanceof RangeError) {
-        console.error(e);
-        return ctx.reply({
-          content:
-            "Failed to handle the file, it may be too large or it may be malformed.",
-          flags: MessageFlags.Ephemeral,
-        });
-      } else {
-        console.error(e);
-        return ctx.reply({
-          content:
-            "Failed to handle the file. Try creating a webhook without an avatar and uploading it later.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-    }
-  }
-
-  let webhook: APIWebhook;
-  try {
-    webhook = (await ctx.rest.post(Routes.channelWebhooks(channelId), {
-      body: { name, avatar: avatarData },
-    })) as APIWebhook;
-  } catch {
-    return ctx.reply({
-      content:
-        "Failed to create the webhook. It may have an invalid name or avatar, or I may be missing permissions.",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  const embed = getWebhookUrlEmbed(
-    webhook,
-    "Webhook Created",
-    ctx.followup.applicationId,
-    channelType ?? ctx.interaction.channel.type,
-    showUrl,
-  );
-
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder({
-      style: ButtonStyle.Link,
-      url: `${ctx.env.DISCOHOOK_ORIGIN}/?data=${btoa(
-        JSON.stringify({
-          messages: [{ data: {} }],
-          targets: [{ url: webhook.url }],
-        }),
-      )}`,
-      label: "Open in Discohook",
-    }),
-  );
-
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
-  const guild = await getchGuild(
-    ctx.rest,
-    ctx.env.KV,
-    // biome-ignore lint/style/noNonNullAssertion:
-    ctx.interaction.guild_id!,
-  );
-  await upsertGuild(db, guild);
-  const dbUser = await upsertDiscordUser(db, ctx.user);
-  await db
-    .insert(webhooks)
-    .values({
-      platform: "discord",
-      id: webhook.id,
-      token: webhook.token,
-      name: webhook.name ?? name,
-      // biome-ignore lint/style/noNonNullAssertion:
-      discordGuildId: makeSnowflake(webhook.guild_id!),
-      channelId: webhook.channel_id,
-      avatar: webhook.avatar,
-      applicationId: webhook.application_id,
-      userId: dbUser.id,
-    })
-    .onConflictDoNothing();
-
   return [
-    ctx.reply({
-      embeds: [embed.toJSON()],
-      components: [row.toJSON()],
-      flags: MessageFlags.Ephemeral,
-    }),
+    // Defer because attachment handling takes so long
+    ctx.defer({ ephemeral: true }),
     async () => {
+      let avatarData: string | undefined = undefined;
+      if (avatar) {
+        if (
+          !avatar.content_type ||
+          !["image/png", "image/jpeg", "image/gif", "image/webp"].includes(
+            avatar.content_type,
+          )
+        ) {
+          await ctx.followup.editOriginalMessage({
+            content:
+              "Invalid attachment type. Must be a PNG, JPEG/JPG, GIF, or WebP image.",
+          });
+          return;
+        }
+
+        try {
+          avatarData = await readAttachment(avatar.url);
+        } catch (e) {
+          if (e instanceof RangeError) {
+            console.error(e);
+            await ctx.followup.editOriginalMessage({
+              content:
+                "Failed to handle the file, it may be too large or it may be malformed.",
+            });
+            return;
+          } else {
+            console.error(e);
+            await ctx.followup.editOriginalMessage({
+              content:
+                "Failed to handle the file. Try creating a webhook without an avatar and uploading it later.",
+            });
+            return;
+          }
+        }
+      }
+
+      let webhook: APIWebhook;
+      try {
+        webhook = (await ctx.rest.post(Routes.channelWebhooks(channelId), {
+          body: { name, avatar: avatarData },
+        })) as APIWebhook;
+      } catch {
+        await ctx.followup.editOriginalMessage({
+          content:
+            "Failed to create the webhook. It may have an invalid name or avatar, or I may be missing permissions.",
+        });
+        return;
+      }
+
+      const embed = getWebhookUrlEmbed(
+        webhook,
+        "Webhook Created",
+        ctx.followup.applicationId,
+        channelType ?? ctx.interaction.channel.type,
+        showUrl,
+      );
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setLabel("Use in Discohook")
+          .setURL(
+            `${ctx.env.DISCOHOOK_ORIGIN}/?data=${btoa(
+              JSON.stringify({
+                messages: [{ data: {} }],
+                targets: [{ url: webhook.url }],
+              }),
+            )}`,
+          ),
+        // new ButtonBuilder()
+        //   .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
+        //   .setLabel("Show URL (advanced)")
+        //   .setStyle(ButtonStyle.Secondary),
+      );
+
+      const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+      const guild = await getchGuild(
+        ctx.rest,
+        ctx.env.KV,
+        ctx.interaction.guild_id,
+      );
+      await upsertGuild(db, guild);
+      const dbUser = await upsertDiscordUser(db, ctx.user);
+      await db
+        .insert(webhooks)
+        .values({
+          platform: "discord",
+          id: webhook.id,
+          token: webhook.token,
+          name: webhook.name ?? name,
+          // biome-ignore lint/style/noNonNullAssertion:
+          discordGuildId: makeSnowflake(webhook.guild_id!),
+          channelId: webhook.channel_id,
+          avatar: webhook.avatar,
+          applicationId: webhook.application_id,
+          userId: dbUser.id,
+        })
+        .onConflictDoNothing();
+
+      await ctx.followup.editOriginalMessage({
+        embeds: [embed.toJSON()],
+        components: [row.toJSON()],
+      });
+
       await sleep(2000);
       try {
         await ctx.rest.get(Routes.webhook(webhook.id, webhook.token));
@@ -198,11 +206,11 @@ export const webhookCreateEntry: ChatInputAppCommandCallback = async (ctx) => {
               {
                 title: "Webhook was deleted",
                 description: dedent`
-                Your webhook was created successfully, but it seems like a
-                moderation bot may have deleted it automatically. Some bots
-                detect new webhooks as spam activity. Check your server audit
-                log for more details.
-              `,
+                  Your webhook was created successfully, but it seems like a
+                  moderation bot may have deleted it automatically. Some bots
+                  detect new webhooks as spam activity. Check your server audit
+                  log for more details.
+                `,
                 color,
               },
             ],
