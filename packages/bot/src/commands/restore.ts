@@ -11,6 +11,7 @@ import {
   APIGuildChannel,
   APIMessage,
   APIWebhook,
+  ChannelType,
   GuildChannelType,
   MessageFlags,
   PermissionFlagsBits,
@@ -179,7 +180,9 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
 
   const select = new StringSelectMenuBuilder()
     .setCustomId(
-      `a_select-restore-options_${user.id}:${message.id}` satisfies AutoComponentCustomId,
+      `a_select-restore-options_${user.id}:${message.id}:${
+        message.webhook_id ?? ""
+      }` satisfies AutoComponentCustomId,
     )
     .setMaxValues(1)
     .addOptions(
@@ -222,14 +225,43 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
 };
 
 export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
-  const { userId, messageId } = parseAutoComponentId(
+  const { userId, messageId, webhookId } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "userId",
     "messageId",
+    "webhookId",
   );
-  const message = (await ctx.rest.get(
-    Routes.channelMessage(ctx.interaction.message.channel_id, messageId),
-  )) as APIMessage;
+
+  let threadId = [
+    ChannelType.PublicThread,
+    ChannelType.PrivateThread,
+    ChannelType.AnnouncementThread,
+  ].includes(ctx.interaction.channel.type)
+    ? ctx.interaction.channel.id
+    : undefined;
+
+  let message: APIMessage | undefined;
+  let webhook: APIWebhook | undefined;
+  if (webhookId) {
+    try {
+      webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
+    } catch {}
+    if (webhook?.token) {
+      message = (await ctx.rest.get(
+        Routes.webhookMessage(webhook.id, webhook.token, messageId),
+        {
+          query: threadId
+            ? new URLSearchParams({ thread_id: threadId })
+            : undefined,
+        },
+      )) as APIMessage;
+    }
+  }
+  if (!message) {
+    message = (await ctx.rest.get(
+      Routes.channelMessage(ctx.interaction.channel.id, messageId),
+    )) as APIMessage;
+  }
 
   const value = (
     ctx.interaction.data.values as ("none" | "edit" | "link")[]
@@ -247,19 +279,16 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
       });
     }
     case "edit": {
-      if (!message.webhook_id) {
+      if (!webhook) {
         return ctx.updateMessage({
           content: "This is not a webhook message.",
           components: [],
         });
       }
-      const webhook = (await ctx.rest.get(
-        Routes.webhook(message.webhook_id),
-      )) as APIWebhook;
       if (!webhook.token) {
         return ctx.updateMessage({
           content: dedent`
-            Webhook token (ID ${message.webhook_id}) was not available.
+            Webhook token (ID ${webhookId}) was not available.
             It may be an incompatible type of webhook, or it may have been
             created by a different bot user.
           `,
@@ -268,13 +297,17 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
       }
 
       let channel: APIGuildChannel<GuildChannelType> | undefined;
-      let threadId: string | undefined;
       if (message.channel_id !== webhook.channel_id) {
-        try {
-          channel = (await ctx.rest.get(
-            Routes.channel(message.channel_id),
-          )) as APIGuildChannel<GuildChannelType>;
-        } catch {}
+        if (message.channel_id !== ctx.interaction.channel.id) {
+          try {
+            channel = (await ctx.rest.get(
+              Routes.channel(message.channel_id),
+            )) as APIGuildChannel<GuildChannelType>;
+          } catch {}
+        } else {
+          channel = ctx.interaction
+            .channel as APIGuildChannel<GuildChannelType>;
+        }
 
         if (channel && isThread(channel)) {
           threadId = channel.id;
@@ -288,9 +321,12 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
           try {
             await ctx.rest.patch(Routes.webhook(webhook.id), {
               body: { channel_id: channel.id },
-              reason: `User ${getUserTag(ctx.user)} (${ctx.user.id}) restored ${
-                message.id
-              } to edit it, but the webhook had to be moved.`.slice(0, 512),
+              reason: `User ${getUserTag(ctx.user)} (${
+                ctx.user.id
+              }) restored ${messageId} to edit it, but the webhook had to be moved.`.slice(
+                0,
+                512,
+              ),
             });
           } catch {}
         }
