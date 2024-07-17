@@ -1,4 +1,8 @@
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import {
+  APIWebhook,
+  ButtonStyle,
+  RESTJSONErrorCodes,
+} from "discord-api-types/v10";
 import { ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
@@ -201,7 +205,12 @@ export const MessageSetModal = (
                   webhook.token,
                   messageLink[2],
                 );
-                if ("code" in msg && msg.code === 10008 && messageLink[1]) {
+                let threadId: string | undefined;
+                if (
+                  "code" in msg &&
+                  msg.code === RESTJSONErrorCodes.UnknownMessage &&
+                  messageLink[1]
+                ) {
                   console.log(
                     `Message ID ${messageLink[2]} not found in webhook channel, trying again with ${messageLink[1]} as thread ID`,
                   );
@@ -211,6 +220,9 @@ export const MessageSetModal = (
                     messageLink[2],
                     messageLink[1],
                   );
+                  // Success, save the thread ID in the query data so we don't
+                  // need to do this again while editing
+                  if (msg.id) threadId = messageLink[1];
                 }
                 if ("message" in msg) {
                   setError(msg.message as string);
@@ -224,6 +236,7 @@ export const MessageSetModal = (
                       attachments: msg.attachments,
                       webhook_id: msg.webhook_id,
                     },
+                    thread_id: threadId,
                     reference: messageLink[0]
                       ? `https://discord.com/channels/${messageLink[0]}/${messageLink[1]}/${messageLink[2]}`
                       : messageLink[2],
