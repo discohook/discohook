@@ -6,7 +6,6 @@ import {
   ComponentType,
   SelectMenuDefaultValueType,
 } from "discord-api-types/v10";
-import { isSnowflake } from "discord-snowflake";
 import { TFunction } from "i18next";
 import React from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -19,6 +18,7 @@ import {
   APIMessageActionRowComponent,
 } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { isSnowflakeSafe } from "~/util/discord";
 import { randomString } from "~/util/text";
 import { Button } from "../components/Button";
 import { StringSelect } from "../components/StringSelect";
@@ -419,13 +419,13 @@ export const ComponentEditForm = ({
                   !component.default_values ||
                   component.default_values.length === 0
                     ? ""
-                    : "pt-2 -mb-2"
+                    : "pt-2"
                 }
               >
                 {component.default_values?.map((value, vi) => {
                   // We don't want to accidentally double-fetch here
                   const resolved =
-                    isSnowflake(value.id) && cache
+                    isSnowflakeSafe(value.id) && cache
                       ? value.type === SelectMenuDefaultValueType.User
                         ? cache.member.get(value.id)
                         : value.type === SelectMenuDefaultValueType.Role
@@ -434,7 +434,9 @@ export const ComponentEditForm = ({
                       : undefined;
 
                   return (
-                    <div key={`component-${component.type}-value-${vi}`}>
+                    <div
+                      key={`component-${component.type}-value-${vi}-type-${value.type}`}
+                    >
                       <div className="flex">
                         <div className="grow">
                           <TextInput
@@ -528,6 +530,7 @@ export const ComponentEditForm = ({
               <Button
                 // Is there not a limit for this?
                 // disabled={component.options.length >= 25}
+                className="mt-2"
                 onClick={() => {
                   component.default_values = component.default_values ?? [];
                   component.default_values.push(

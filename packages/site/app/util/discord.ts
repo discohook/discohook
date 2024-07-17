@@ -18,7 +18,7 @@ import {
   RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
-import { Snowflake, getDate } from "discord-snowflake";
+import { Snowflake, getDate, isSnowflake } from "discord-snowflake";
 import { TimestampStyle } from "~/components/editor/TimePicker";
 import { DraftFile } from "~/routes/_index";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
@@ -398,6 +398,14 @@ export const getCharacterAvatarUrl = (key: string) =>
 export const time = (date: Date | number, style?: TimestampStyle) => {
   const stamp = Math.floor(new Date(date).getTime() / 1000);
   return `<t:${stamp}:${style ?? "f"}>`;
+};
+
+export const isSnowflakeSafe = (id: string): id is `${bigint}` => {
+  try {
+    return isSnowflake(id);
+  } catch {
+    return false;
+  }
 };
 
 interface DiscordError {
