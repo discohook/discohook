@@ -398,6 +398,7 @@
   "threadsNote": "Webhooks can create & use threads. <0>How do I use this?</0>",
   "forumThreadName": "Forum Thread Name",
   "forumImmutable": "Webhooks cannot change the thread name.",
+  "noForumWebhooks": "None of your webhooks are in a thread-only channel, so a thread name cannot be set.",
   "threadId": "Thread ID",
   "content": "Content",
   "avatarUrl": "Avatar URL",

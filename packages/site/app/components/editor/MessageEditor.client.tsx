@@ -78,18 +78,19 @@ export const MessageEditor: React.FC<{
           .map((w) => cache.channel.get(w.channel_id))
           .filter((c): c is ResolvableAPIChannel => !!c)
       : [];
-  const possiblyForum =
-    // At least one forum channel
-    channels.map((c) => c.type === "forum").length !== 0 ||
-    // No webhooks
-    !webhooks ||
-    webhooks.length === 0 ||
-    // Some channels are of undetermined type
-    channels.length < webhooks.length;
+
   const isAllForum =
     !!webhooks &&
     webhooks.length !== 0 &&
-    channels.map((c) => c.type === "forum").length === webhooks.length;
+    channels.filter((c) => c.type === "forum").length === webhooks.length;
+  const isNoneForum =
+    // There are webhooks
+    !!webhooks &&
+    webhooks.length !== 0 &&
+    // All of their channels are resolved
+    channels.length === webhooks?.length &&
+    // None of them are forums
+    channels.filter((c) => c.type === "forum").length === 0;
 
   return (
     <details className="group/message mt-4 pb-2" open>
@@ -179,8 +180,10 @@ export const MessageEditor: React.FC<{
         />
         <div className="-space-y-2">
           <EmbedEditorSection name={t("thread")}>
-            {!!message.reference && (
-              <InfoBox severity="yellow">{t("forumImmutable")}</InfoBox>
+            {(!!message.reference || isNoneForum) && (
+              <InfoBox severity="blue" icon="Info">
+                {t(isNoneForum ? "noForumWebhooks" : "forumImmutable")}
+              </InfoBox>
             )}
             <p className="text-sm italic mb-2">
               <Trans
@@ -203,7 +206,7 @@ export const MessageEditor: React.FC<{
               freelength
               required={isAllForum && !message.thread_id}
               disabled={
-                !!message.reference || !possiblyForum || !!message.thread_id
+                !!message.reference || isNoneForum || !!message.thread_id
               }
               onInput={(e) => {
                 message.data.thread_name = e.currentTarget.value || undefined;
@@ -228,7 +231,9 @@ export const MessageEditor: React.FC<{
           </EmbedEditorSection>
           <EmbedEditorSection name={t("profile")}>
             {!!message.reference && (
-              <InfoBox severity="yellow">{t("profileImmutable")}</InfoBox>
+              <InfoBox severity="blue" icon="Info">
+                {t("profileImmutable")}
+              </InfoBox>
             )}
             <TextInput
               label={t("name")}
