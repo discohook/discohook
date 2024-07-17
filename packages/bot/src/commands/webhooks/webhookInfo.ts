@@ -104,7 +104,12 @@ export const getWebhookUrlEmbed = (
     color,
   });
 
-  if (!showUrl) {
+  if (showUrl) {
+    embed.setAuthor({
+      name: webhook.name ?? "Webhook",
+      iconURL: webhookAvatarUrl(webhook, { size: 128 }),
+    });
+  } else {
     embed.setThumbnail(webhookAvatarUrl(webhook, { size: 1024 }));
   }
 
