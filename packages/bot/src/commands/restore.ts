@@ -8,11 +8,13 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
+  APIGuildChannel,
   APIMessage,
-  APIVersion,
   APIWebhook,
+  GuildChannelType,
   MessageFlags,
   PermissionFlagsBits,
+  RouteBases,
   Routes,
 } from "discord-api-types/v10";
 import { getDb, upsertDiscordUser } from "store";
@@ -22,8 +24,10 @@ import { MessageAppCommandCallback } from "../commands.js";
 import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
 import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
+import { isThread } from "../util/guards.js";
 import { boolEmoji, color } from "../util/meta.js";
 import { base64UrlEncode, randomString } from "../util/text.js";
+import { getUserTag } from "../util/user.js";
 
 export const messageToQueryData = (
   ...messages: Pick<
@@ -163,7 +167,7 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
   );
   const message = ctx.getMessage();
 
-  if (!message.webhook_id || message.application_id) {
+  if (!message.webhook_id || message.interaction_metadata) {
     const data = messageToQueryData(message);
     const share = await createShareLink(ctx.env, data, { userId: user.id });
     return ctx.reply({
@@ -175,7 +179,7 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
 
   const select = new StringSelectMenuBuilder()
     .setCustomId(
-      `a_select-restore-options_${user.id}` satisfies AutoComponentCustomId,
+      `a_select-restore-options_${user.id}:${message.id}` satisfies AutoComponentCustomId,
     )
     .setMaxValues(1)
     .addOptions(
@@ -218,11 +222,15 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
 };
 
 export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
-  const { userId } = parseAutoComponentId(
+  const { userId, messageId } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "userId",
+    "messageId",
   );
-  const message = ctx.interaction.message;
+  const message = (await ctx.rest.get(
+    Routes.channelMessage(ctx.interaction.message.channel_id, messageId),
+  )) as APIMessage;
+
   const value = (
     ctx.interaction.data.values as ("none" | "edit" | "link")[]
   )[0];
@@ -259,16 +267,44 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
         });
       }
 
+      let channel: APIGuildChannel<GuildChannelType> | undefined;
+      let threadId: string | undefined;
+      if (message.channel_id !== webhook.channel_id) {
+        try {
+          channel = (await ctx.rest.get(
+            Routes.channel(message.channel_id),
+          )) as APIGuildChannel<GuildChannelType>;
+        } catch {}
+
+        if (channel && isThread(channel)) {
+          threadId = channel.id;
+        } else if (channel) {
+          // The message channel is not a thread, yet it differs from the
+          // webhook channel. In this instance, we attempt to move the webhook
+          // so that the user can edit the message. I'm afraid that this might
+          // be confusing for users who use the same webhook across multiple
+          // channels a lot, but if they only use the bot to restore, everything
+          // should stay in sync.
+          try {
+            await ctx.rest.patch(Routes.webhook(webhook.id), {
+              body: { channel_id: channel.id },
+              reason: `User ${getUserTag(ctx.user)} (${ctx.user.id}) restored ${
+                message.id
+              } to edit it, but the webhook had to be moved.`.slice(0, 512),
+            });
+          } catch {}
+        }
+      }
+
       const data = messageToQueryData(message);
+      data.messages[0].thread_id = threadId;
       data.messages[0].reference = ctx.interaction.guild_id
         ? messageLink(message.channel_id, message.id, ctx.interaction.guild_id)
         : messageLink(message.channel_id, message.id);
+
       data.targets = [
         {
-          url: `https://discord.com/api/v${APIVersion}${Routes.webhook(
-            webhook.id,
-            webhook.token,
-          )}`,
+          url: `${RouteBases.api}${Routes.webhook(webhook.id, webhook.token)}`,
         },
       ];
       const share = await createShareLink(ctx.env, data, {
