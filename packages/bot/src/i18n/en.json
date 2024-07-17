@@ -131,6 +131,24 @@
         }
       }
     },
+    "restore": {
+      "name": "restore",
+      "description": "Restore a message to the Discohook editor",
+      "options": {
+        "message": {
+          "name": "message",
+          "description": "The message to restore. A message link is also accepted here"
+        },
+        "mode": {
+          "name": "mode",
+          "description": "How to restore the message. Currently this only allows including edit options",
+          "choices": {
+            "edit": "With edit options",
+            "link": "To link embed editor"
+          }
+        }
+      }
+    },
     "format": {
       "options": {
         "mention": {

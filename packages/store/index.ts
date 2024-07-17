@@ -5,6 +5,7 @@ export * from "./src/durable/components.js";
 export * from "./src/kv.js";
 export * from "./src/schema";
 export * from "./src/types";
+export * from "./src/zod";
 
 export const flowActionTypeMeta: Partial<
   Record<

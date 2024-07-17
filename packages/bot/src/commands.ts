@@ -17,6 +17,7 @@ import {
   addComponentChatEntry,
   addComponentMessageAutocomplete,
   addComponentMessageEntry,
+  autocompleteMessageCallback,
 } from "./commands/components/entry.js";
 import { debugMessageCallback } from "./commands/debug.js";
 import {
@@ -36,7 +37,10 @@ import {
   deleteReactionRoleHandler,
   messageAndEmojiAutocomplete,
 } from "./commands/reactionRoles.js";
-import { restoreMessageEntry } from "./commands/restore.js";
+import {
+  restoreMessageChatInputCallback,
+  restoreMessageEntry,
+} from "./commands/restore.js";
 import {
   addTriggerCallback,
   triggerAutocompleteCallback,
@@ -165,6 +169,14 @@ export const appCommands: Record<
         // filtered by messages that have registered reaction roles, but I
         // can't think of a particularly efficient way to do that right now
         delete: messageAndEmojiAutocomplete,
+      },
+    },
+    restore: {
+      handlers: {
+        BASE: restoreMessageChatInputCallback,
+      },
+      autocompleteHandlers: {
+        BASE: autocompleteMessageCallback,
       },
     },
   },

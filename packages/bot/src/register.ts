@@ -6,6 +6,7 @@ import {
   SlashCommandChannelOption,
   SlashCommandIntegerOption,
   SlashCommandMentionableOption,
+  SlashCommandOptionsOnlyBuilder,
   SlashCommandRoleOption,
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
@@ -128,6 +129,7 @@ async function main() {
     command:
       | SlashCommandBuilder
       | SlashCommandSubcommandsOnlyBuilder
+      | SlashCommandOptionsOnlyBuilder
       | Omit<SlashCommandBuilder, "addSubcommandGroup" | "addSubcommand">,
   ) => {
     const n = command.name;
@@ -510,6 +512,42 @@ async function main() {
                 .setName("channel")
                 .setDescription("...")
                 .addChannelTypes(...messageChannelTypes),
+            ),
+        ),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
+        .setName("restore")
+        .setDescription("...")
+        .setDefaultMemberPermissions(PermissionFlags.ViewChannel)
+        .setDMPermission(false)
+        .addStringOption((opt) =>
+          opt
+            .setName("message")
+            .setDescription("...")
+            .setRequired(true)
+            .setAutocomplete(true),
+        )
+        .addStringOption((opt) =>
+          opt
+            .setName("mode")
+            .setDescription("...")
+            .setRequired(false)
+            .setChoices(
+              {
+                name: getEnglish("restore.options.mode.choices.edit"),
+                name_localizations: localize(
+                  "restore.options.mode.choices.edit",
+                ),
+                value: "edit",
+              },
+              // {
+              //   name: getEnglish("restore.options.mode.choices.link"),
+              //   name_localizations: localize(
+              //     "restore.options.mode.choices.link",
+              //   ),
+              //   value: "link",
+              // },
             ),
         ),
     ),

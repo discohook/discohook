@@ -18,10 +18,14 @@ import {
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
+import { PermissionFlags } from "discord-bitflag";
 import { getDb, upsertDiscordUser } from "store";
 import { shareLinks } from "store/src/schema/index.js";
 import { QueryData } from "store/src/types/backups.js";
-import { MessageAppCommandCallback } from "../commands.js";
+import {
+  ChatInputAppCommandCallback,
+  MessageAppCommandCallback,
+} from "../commands.js";
 import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
 import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
@@ -29,6 +33,7 @@ import { isThread } from "../util/guards.js";
 import { boolEmoji, color } from "../util/meta.js";
 import { base64UrlEncode, randomString } from "../util/text.js";
 import { getUserTag } from "../util/user.js";
+import { resolveMessageLink } from "./components/entry.js";
 
 export const messageToQueryData = (
   ...messages: Pick<
@@ -360,6 +365,141 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
   }
   return ctx.reply({
     content: "This shouldn't happen!",
+    flags: MessageFlags.Ephemeral,
+  });
+};
+
+export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
+  true
+> = async (ctx) => {
+  const message = await resolveMessageLink(
+    ctx.rest,
+    ctx.getStringOption("message").value,
+  );
+  if (typeof message === "string") {
+    return ctx.reply({ content: message, flags: MessageFlags.Ephemeral });
+  }
+  const mode = (ctx.getStringOption("mode").value || "none") as
+    | "none"
+    | "edit"
+    | "link";
+
+  const user = await upsertDiscordUser(
+    getDb(ctx.env.HYPERDRIVE.connectionString),
+    ctx.user,
+  );
+  // if (!userIsPremium(user) && mode === "link") {}
+  if (
+    mode === "edit" &&
+    !ctx.userPermissons.has(PermissionFlags.ManageWebhooks)
+  ) {
+    return ctx.reply({
+      content:
+        "You must have the manage webhooks permission to restore a message in edit mode.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const data = messageToQueryData(message);
+
+  if (!message.webhook_id || message.interaction_metadata) {
+    const share = await createShareLink(ctx.env, data, { userId: user.id });
+    return ctx.reply({
+      embeds: [getShareEmbed(share, true).toJSON()],
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  switch (mode) {
+    case "none": {
+      const data = messageToQueryData(message);
+      // url.searchParams.set("data", base64UrlEncode(JSON.stringify(data)))
+      const share = await createShareLink(ctx.env, data, {
+        userId: BigInt(user.id),
+      });
+      return ctx.reply({
+        embeds: [getShareEmbed(share, true).toJSON()],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    case "edit": {
+      if (!message.webhook_id) {
+        return ctx.reply({
+          content: "This is not a webhook message.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const webhook = (await ctx.rest.get(
+        Routes.webhook(message.webhook_id),
+      )) as APIWebhook;
+      if (!webhook.token) {
+        return ctx.reply({
+          content: dedent`
+            Webhook token (ID ${message.webhook_id}) was not available.
+            It may be an incompatible type of webhook, or it may have been
+            created by a different bot user.
+          `,
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      let channel: APIGuildChannel<GuildChannelType> | undefined;
+      let threadId: string | undefined;
+      if (message.channel_id !== webhook.channel_id) {
+        if (message.channel_id !== ctx.interaction.channel.id) {
+          try {
+            channel = (await ctx.rest.get(
+              Routes.channel(message.channel_id),
+            )) as APIGuildChannel<GuildChannelType>;
+          } catch {}
+        } else {
+          channel = ctx.interaction
+            .channel as APIGuildChannel<GuildChannelType>;
+        }
+
+        if (channel && isThread(channel)) {
+          threadId = channel.id;
+        } else if (channel) {
+          // See comment in selectRestoreOptionsCallback
+          try {
+            await ctx.rest.patch(Routes.webhook(webhook.id), {
+              body: { channel_id: channel.id },
+              reason: `User ${getUserTag(ctx.user)} (${ctx.user.id}) restored ${
+                message.id
+              } to edit it, but the webhook had to be moved.`.slice(0, 512),
+            });
+          } catch {}
+        }
+      }
+
+      data.messages[0].thread_id = threadId;
+      data.messages[0].reference = ctx.interaction.guild_id
+        ? messageLink(message.channel_id, message.id, ctx.interaction.guild_id)
+        : messageLink(message.channel_id, message.id);
+      data.targets = [
+        {
+          url: `${RouteBases.api}${Routes.webhook(webhook.id, webhook.token)}`,
+        },
+      ];
+      const share = await createShareLink(ctx.env, data, {
+        userId: user.id,
+      });
+      return ctx.reply({
+        embeds: [getShareEmbed(share, false).toJSON()],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    case "link": {
+      const url = new URL(ctx.env.DISCOHOOK_ORIGIN);
+      break;
+    }
+    default:
+      break;
+  }
+
+  return ctx.reply({
+    content: "This shouldn't happen",
     flags: MessageFlags.Ephemeral,
   });
 };

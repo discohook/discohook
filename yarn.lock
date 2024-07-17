@@ -9413,16 +9413,16 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=d938f2&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=4d6d9e&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.67"
-    discord-bitflag: "npm:^1.0.2"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.31.2"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     tif-snowflake: shayypy/snowflake
-  checksum: 10c0/dc3108fa3f527ad551488cd3429f73efbb9fda7929db0f8e6f18907f3a3fc107768e4cf77fba1cabb59408dd589e49231cbb44dc314327b80c62f8fc40b35ae5
+    zod: "npm:^3.23.8"
+  checksum: 10c0/49bb652c9557f4e414bc684fe0921142a036cafc00c422a8865cbc879be2e5ce2f2ce14bfa9b36659819786e80c7981aa03ae98e26bae08587549222fc221c32
   languageName: node
   linkType: hard
 
@@ -9440,6 +9440,7 @@ cron-parser@shayypy/cron-parser:
     postgres: "npm:^3.4.3"
     tif-snowflake: shayypy/snowflake
     typescript: "npm:^5.3.3"
+    zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
 
@@ -10916,6 +10917,13 @@ tif-snowflake@shayypy/snowflake:
   version: 3.22.4
   resolution: "zod@npm:3.22.4"
   checksum: 10c0/7578ab283dac0eee66a0ad0fc4a7f28c43e6745aadb3a529f59a4b851aa10872b3890398b3160f257f4b6817b4ce643debdda4fb21a2c040adda7862cab0a587
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.23.8":
+  version: 3.23.8
+  resolution: "zod@npm:3.23.8"
+  checksum: 10c0/8f14c87d6b1b53c944c25ce7a28616896319d95bc46a9660fe441adc0ed0a81253b02b5abdaeffedbeb23bdd25a0bf1c29d2c12dd919aef6447652dd295e3e69
   languageName: node
   linkType: hard
 

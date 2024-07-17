@@ -3,8 +3,11 @@ import {
   APIAttachment,
   APIEmbed,
   APIMessageActionRowComponent,
+  MessageFlags,
+  UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
+import { ZodLinkEmbed, ZodLinkQueryData } from "../zod/query.js";
 
 /** The version of the query data, defaults to `d2`
  *
@@ -19,74 +22,27 @@ export interface QueryData {
   version?: QueryDataVersion;
   backup_id?: string;
   messages: {
+    _id?: string;
     data: {
       author?: {
         name?: string;
         icon_url?: string;
+        badge?: string | null;
+        flags?: UserFlags;
       };
       content?: string | null;
       embeds?: APIEmbed[] | null;
       attachments?: APIAttachment[];
       components?: APIActionRowComponent<APIMessageActionRowComponent>[];
       webhook_id?: string;
+      flags?: MessageFlags;
+      thread_name?: string;
     };
     reference?: string;
+    thread_id?: string;
   }[];
   targets?: { url: string }[];
 }
-
-export const ZodQueryData: z.ZodType<QueryData> = z.any();
-
-export const ZodLinkQueryDataVersion = z.literal(1);
-
-export const ZodLinkEmbed = z.object({
-  // type: z
-  //   .union([
-  //     z.literal(EmbedType.Article),
-  //     z.literal(EmbedType.Link),
-  //     z.literal(EmbedType.Video),
-  //     // I think GIFV and Image don't render as unfurl embeds?
-  //     z.literal(EmbedType.Image),
-  //     z.literal(EmbedType.GIFV),
-  //   ])
-  //   .optional(),
-  title: z.ostring(),
-  description: z.ostring(),
-  provider: z
-    .object({
-      name: z.ostring(),
-      url: z.ostring(),
-    })
-    .optional(),
-  author: z
-    .object({
-      name: z.string(),
-      url: z.ostring(),
-    })
-    .optional(),
-  images: z
-    .object({
-      url: z.string(),
-    })
-    .array()
-    .optional(),
-  large_images: z.oboolean(),
-  video: z
-    .object({
-      /** Direct video file or YouTube video */
-      url: z.string(),
-      height: z.onumber(),
-      width: z.onumber(),
-    })
-    .optional(),
-  color: z.onumber(),
-});
-
-export const ZodLinkQueryData = z.object({
-  version: ZodLinkQueryDataVersion.optional(),
-  backup_id: z.ostring(),
-  embed: z.object({ data: ZodLinkEmbed, redirect_url: z.ostring() }),
-});
 
 export type LinkQueryData = z.infer<typeof ZodLinkQueryData>;
 export type LinkEmbed = z.infer<typeof ZodLinkEmbed>;

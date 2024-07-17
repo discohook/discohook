@@ -6,7 +6,7 @@ import {
   APIMessage,
   ApplicationCommandOptionType,
   MessageFlags,
-  Routes,
+  Routes
 } from "discord-api-types/v10";
 import { Snowflake, getDate } from "discord-snowflake";
 import {
@@ -36,8 +36,8 @@ export const resolveMessageLink = async (
     return (await rest.get(
       Routes.channelMessage(match[2], match[3]),
     )) as APIMessage;
-  } catch {
-    return "Failed to resolve that message link. It may be invalid.";
+  } catch (e) {
+    return "Unable to resolve that message. Make sure you are pasting a valid message link in a channel that I can access.";
   }
 };
 

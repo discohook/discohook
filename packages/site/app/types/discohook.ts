@@ -5,18 +5,7 @@ import {
   ZodQueryDataTarget,
 } from "./QueryData";
 
-export interface DiscohookBackup {
-  id?: number;
-  name: string;
-  messages: QueryData["messages"];
-  targets: QueryData["targets"];
-  schedule?: {
-    cron: string;
-    timezone?: string;
-  };
-}
-
-export const ZodDiscohookBackup: z.ZodType<DiscohookBackup> = z.object({
+export const ZodDiscohookBackup = z.object({
   id: z.onumber(),
   name: z.string(),
   messages: ZodQueryDataMessage.array(),
@@ -28,6 +17,8 @@ export const ZodDiscohookBackup: z.ZodType<DiscohookBackup> = z.object({
     })
     .optional(),
 });
+
+export type DiscohookBackup = z.infer<typeof ZodDiscohookBackup>;
 
 // https://github.com/discohook/site/blob/main/modules/database/backup/types/ExportData.ts
 
