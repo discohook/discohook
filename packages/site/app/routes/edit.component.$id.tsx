@@ -886,11 +886,10 @@ export default () => {
                     reference: component_.messageId.toString(),
                     thread_id: threadId,
                   });
-                  if (component_.draft) {
-                    // Tell the server that something changed and
-                    // it needs to fetch the message
-                    submit(null, { method: "PATCH", replace: true });
-                  }
+                  // Tell the server that something changed and it needs to
+                  // either fetch the message or ensure that the component's
+                  // durable object is up to date
+                  submit(null, { method: "PATCH", replace: true });
                 }
               }}
             >
