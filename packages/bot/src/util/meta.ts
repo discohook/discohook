@@ -6,16 +6,16 @@ export const deluxeColor = 0xff81ff;
 
 export const boolEmoji = (value: boolean | null) =>
   value === null
-    ? "<:null:1253688417275871302>"
+    ? "<:null:1263857962892660786>"
     : value
-      ? "<:true:834927244500533258>"
-      : "<:false:834927293633527839>";
+      ? "<:true:1263857933209571329>"
+      : "<:false:1263857948086505482>";
 
 export const boolPartialEmoji = (
   value: boolean | null,
 ): APIMessageComponentEmoji =>
   value === null
-    ? { name: "null", id: "1253688417275871302" }
+    ? { name: "null", id: "1263857962892660786" }
     : value
-      ? { name: "true", id: "834927244500533258" }
-      : { name: "false", id: "834927293633527839" };
+      ? { name: "true", id: "1263857933209571329" }
+      : { name: "false", id: "1263857948086505482" };
