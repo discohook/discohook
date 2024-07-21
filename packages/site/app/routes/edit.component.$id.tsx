@@ -43,10 +43,14 @@ import {
   discordMessageComponents,
   eq,
   getDb,
+  launchComponentDurableObject,
   makeSnowflake,
   tokens,
 } from "~/store.server";
-import { APIMessageActionRowComponent } from "~/types/QueryData";
+import {
+  APIButtonComponentWithCustomId,
+  APIMessageActionRowComponent,
+} from "~/types/QueryData";
 import {
   ResolutionKey,
   ResolvableAPIChannel,
@@ -413,6 +417,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       })
   )[0];
 
+  const built = buildStorableComponent(updated.data, String(updated.id));
   if (tokenData && message.webhook_id) {
     const webhook = (await rest.get(
       Routes.webhook(message.webhook_id),
@@ -433,7 +438,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         body: {
           components: getRowsWithInsertedComponent(
             message.components ?? [],
-            buildStorableComponent(updated.data, String(updated.id)),
+            built,
             // biome-ignore lint/style/noNonNullAssertion: Non-nullable if token is present
             [row!, column!],
           ),
@@ -445,6 +450,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     );
   }
 
+  if (built.custom_id) {
+    const dob = await launchComponentDurableObject(context.env, {
+      messageId: message.id,
+      customId: built.custom_id,
+      componentId: updated.id,
+    });
+    console.log(JSON.stringify(dob));
+  }
   return updated;
 };
 
