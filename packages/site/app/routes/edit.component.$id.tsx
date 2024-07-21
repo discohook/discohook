@@ -492,21 +492,35 @@ const getRowsWithInsertedComponent = (
   rows: APIActionRowComponent<APIMessageActionRowComponent>[],
   component: APIMessageActionRowComponent,
   position: [number, number],
-) =>
-  structuredClone(rows).map((row, i) => {
+) => {
+  // We don't want to send this data to Discord
+  const cleaned = { ...component };
+  if ("flowId" in cleaned) {
+    cleaned.flowId = undefined;
+  }
+  if ("flowIds" in cleaned) {
+    cleaned.flowIds = undefined;
+  }
+
+  if (rows.length === 0 || rows.length < position[0]) {
+    const cloned = structuredClone(rows);
+    cloned.push({
+      type: ComponentType.ActionRow,
+      components: [cleaned],
+    });
+    return cloned;
+  }
+  const cloned = structuredClone(rows).map((row, i) => {
     if (i === position[0]) {
-      // We don't want to send this data to Discord
-      const cleaned = { ...component };
-      if ("flowId" in cleaned) {
-        cleaned.flowId = undefined;
-      }
-      if ("flowIds" in cleaned) {
-        cleaned.flowIds = undefined;
-      }
-      row.components.splice(position[1], 0, cleaned);
+      const extant = !!row.components.find(
+        (c) => c.custom_id && c.custom_id === cleaned.custom_id,
+      );
+      row.components.splice(position[1], extant ? 1 : 0, cleaned);
     }
     return row;
   });
+  return cloned;
+};
 
 export default function EditComponentPage() {
   const {
