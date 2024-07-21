@@ -59,15 +59,19 @@ const buildStorableComponent = (
 ): APIButtonComponent | APISelectMenuComponent | undefined => {
   switch (component.type) {
     case ComponentType.Button:
-      return {
-        type: component.type,
-        custom_id: component.style === ButtonStyle.Link ? undefined : customId,
-        url: component.style === ButtonStyle.Link ? component.url : undefined,
-        style: component.style,
-        label: component.label,
-        emoji: component.emoji,
-        disabled: component.disabled,
-      } as APIButtonComponent;
+      return component.style === ButtonStyle.Premium
+        ? component
+        : ({
+            type: component.type,
+            custom_id:
+              component.style === ButtonStyle.Link ? undefined : customId,
+            url:
+              component.style === ButtonStyle.Link ? component.url : undefined,
+            style: component.style,
+            label: component.label,
+            emoji: component.emoji,
+            disabled: component.disabled,
+          } as APIButtonComponent);
     case ComponentType.StringSelect:
       return {
         type: component.type,

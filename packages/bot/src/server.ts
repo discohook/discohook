@@ -56,7 +56,7 @@ import { eventNameToCallback } from "./events.js";
 import { LiveVariables, executeFlow } from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
 import { Env } from "./types/env.js";
-import { parseAutoComponentId } from "./util/components.js";
+import { hasCustomId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";
 
@@ -631,7 +631,7 @@ const handleInteraction = async (
             components: row.components.map((component) => {
               if (
                 component.type !== ComponentType.Button ||
-                component.style === ButtonStyle.Link
+                !hasCustomId(component)
               ) {
                 return component;
               }

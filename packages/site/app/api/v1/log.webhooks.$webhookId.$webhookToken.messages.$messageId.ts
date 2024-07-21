@@ -3,6 +3,7 @@ import { json } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIButtonComponentWithCustomId,
+  APIButtonComponentWithSKUId,
   APIButtonComponentWithURL,
   APIMessage,
   APISelectMenuComponent,
@@ -12,7 +13,7 @@ import {
 import { notInArray } from "drizzle-orm";
 import { z } from "zod";
 import { getUserId } from "~/session.server";
-import { getWebhook, getWebhookMessage } from "~/util/discord";
+import { getWebhook, getWebhookMessage, hasCustomId } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
@@ -35,6 +36,7 @@ export const getComponentId = (
   component:
     | Pick<APIButtonComponentWithCustomId, "type" | "style" | "custom_id">
     | Pick<APIButtonComponentWithURL, "type" | "style" | "url">
+    | Pick<APIButtonComponentWithSKUId, "type" | "style" | "sku_id">
     | Pick<APISelectMenuComponent, "type" | "custom_id">,
 ) => {
   if (
@@ -50,6 +52,8 @@ export const getComponentId = (
     }
     return undefined;
   }
+  if ("sku_id" in component) return undefined;
+
   return /^p_\d+/.test(component.custom_id)
     ? BigInt(component.custom_id.replace(/^p_/, ""))
     : undefined;
@@ -269,7 +273,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                 data: (() => {
                   switch (component.type) {
                     case ComponentType.Button: {
-                      if (isLinkButton(component)) {
+                      if (!hasCustomId(component)) {
                         return component;
                       }
                       const { custom_id: _, ...c } = component;

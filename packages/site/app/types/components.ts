@@ -8,6 +8,7 @@ import {
 import { z } from "zod";
 import {
   APIButtonComponentWithCustomId,
+  APIButtonComponentWithSkuId,
   APIButtonComponentWithURL,
   APIChannelSelectComponent,
   APIMentionableSelectComponent,
@@ -44,13 +45,22 @@ export const ZodAPIButtonComponentWithURL = z.object({
   label: z.ostring(),
   emoji: ZodPartialEmoji.optional(),
   url: z.string(),
-  custom_id: z.string().optional(),
+  custom_id: z.ostring(),
   disabled: z.oboolean(),
 }) satisfies z.ZodType<APIButtonComponentWithURL>;
+
+export const ZodAPIButtonComponentWithSkuId = z.object({
+  type: z.literal(ComponentType.Button),
+  style: z.literal(ButtonStyle.Premium),
+  sku_id: z.string(),
+  custom_id: z.ostring(),
+  disabled: z.oboolean(),
+}) satisfies z.ZodType<APIButtonComponentWithSkuId>;
 
 export const ZodAPIButtonComponent = z.union([
   ZodAPIButtonComponentWithCustomId,
   ZodAPIButtonComponentWithURL,
+  ZodAPIButtonComponentWithSkuId,
 ]);
 
 export const ZodAPIStringSelectMenuComponent: z.ZodType<APIStringSelectComponent> =

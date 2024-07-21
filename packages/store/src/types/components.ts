@@ -41,6 +41,13 @@ export interface StorableButtonWithUrl {
   disabled?: boolean;
 }
 
+export interface StorableButtonWithSkuId {
+  type: ComponentType.Button;
+  style: ButtonStyle.Premium;
+  sku_id: string;
+  disabled?: boolean;
+}
+
 export interface StorableStringSelect {
   type: ComponentType.StringSelect;
   // Considering: this could be reduced by automatically assigning flow
@@ -87,12 +94,14 @@ export type StorableAutopopulatedSelectResolved = Omit<
 export type StorableComponent =
   | StorableButtonWithCustomId
   | StorableButtonWithUrl
+  | StorableButtonWithSkuId
   | StorableStringSelect
   | StorableAutopopulatedSelect;
 
 export type DraftComponent =
   | StorableButtonWithCustomIdResolved
   | StorableButtonWithUrl
+  | StorableButtonWithSkuId
   | StorableStringSelectResolved
   | StorableAutopopulatedSelectResolved;
 

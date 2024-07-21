@@ -44,6 +44,15 @@ export interface APIButtonComponentWithURL
   custom_id?: string;
 }
 
+// I don't see any way to key these components in the way we do with e.g. URL
+// buttons, but we add an optional custom_id parameter just for ease of typing.
+// In any normal scenario we are not actually ever dealing with these.
+export interface APIButtonComponentWithSkuId
+  extends APIButtonComponentBase<ButtonStyle.Premium> {
+  sku_id: string;
+  custom_id?: string;
+}
+
 export interface APIButtonComponentWithCustomId
   extends _APIButtonComponentWithCustomId {
   flow?: DraftFlow;
@@ -72,7 +81,8 @@ export interface APIChannelSelectComponent extends _APIChannelSelectComponent {
 
 export type APIButtonComponent =
   | APIButtonComponentWithCustomId
-  | APIButtonComponentWithURL;
+  | APIButtonComponentWithURL
+  | APIButtonComponentWithSkuId;
 
 export type APISelectMenuComponent =
   | APIStringSelectComponent

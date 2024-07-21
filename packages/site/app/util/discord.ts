@@ -5,7 +5,15 @@ import {
   type RawFile,
   calculateUserDefaultAvatarIndex,
 } from "@discordjs/rest";
+import { isLinkButton } from "discord-api-types/utils/v10";
 import {
+  APIButtonComponent,
+  APIButtonComponentWithCustomId,
+  APIButtonComponentWithSKUId,
+  APIMessageComponent,
+  APISelectMenuComponent,
+  ButtonStyle,
+  ComponentType,
   RESTError,
   RESTGetAPICurrentUserGuildsResult,
   RESTGetAPIWebhookWithTokenMessageResult,
@@ -419,3 +427,21 @@ interface DiscordError {
 export const isDiscordError = (error: any): error is DiscordError => {
   return "code" in error && "rawError" in error;
 };
+
+export const isSkuButton = (
+  component: Pick<APIButtonComponent, "type" | "style">,
+): component is APIButtonComponentWithSKUId =>
+  component.type === ComponentType.Button &&
+  component.style === ButtonStyle.Premium;
+
+export const hasCustomId = (
+  component: APIMessageComponent,
+): component is APIButtonComponentWithCustomId | APISelectMenuComponent =>
+  (component.type === ComponentType.Button &&
+    !isSkuButton(component) &&
+    !isLinkButton(component)) ||
+  component.type === ComponentType.StringSelect ||
+  component.type === ComponentType.RoleSelect ||
+  component.type === ComponentType.UserSelect ||
+  component.type === ComponentType.ChannelSelect ||
+  component.type === ComponentType.MentionableSelect;

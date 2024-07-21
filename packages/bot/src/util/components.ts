@@ -7,12 +7,18 @@ import {
   StringSelectMenuBuilder,
   UserSelectMenuBuilder,
 } from "@discordjs/builders";
+import { isLinkButton } from "discord-api-types/utils";
 import {
   APIActionRowComponent,
   APIButtonComponent,
+  APIButtonComponentWithCustomId,
+  APIButtonComponentWithSKUId,
+  APIButtonComponentWithURL,
   APIChannelSelectComponent,
   APIMentionableSelectComponent,
+  APIMessageComponent,
   APIRoleSelectComponent,
+  APISelectMenuComponent,
   APIStringSelectComponent,
   APITextInputComponent,
   APIUserSelectComponent,
@@ -131,4 +137,49 @@ export const parseAutoComponentId = <P extends string>(
       rest.split(":").map((value, i) => [parameters[i], value]),
     ) as Record<P, string>),
   };
+};
+
+export const isSkuButton = (
+  component: Pick<APIButtonComponent, "type" | "style">,
+): component is APIButtonComponentWithSKUId =>
+  component.type === ComponentType.Button &&
+  component.style === ButtonStyle.Premium;
+
+export const hasCustomId = (
+  component: APIMessageComponent,
+): component is APIButtonComponentWithCustomId | APISelectMenuComponent =>
+  (component.type === ComponentType.Button &&
+    !isSkuButton(component) &&
+    !isLinkButton(component)) ||
+  component.type === ComponentType.StringSelect ||
+  component.type === ComponentType.RoleSelect ||
+  component.type === ComponentType.UserSelect ||
+  component.type === ComponentType.ChannelSelect ||
+  component.type === ComponentType.MentionableSelect;
+
+export const getComponentId = (
+  component:
+    | Pick<APIButtonComponentWithCustomId, "type" | "style" | "custom_id">
+    | Pick<APIButtonComponentWithURL, "type" | "style" | "url">
+    | Pick<APIButtonComponentWithSKUId, "type" | "style" | "sku_id">
+    | Pick<APISelectMenuComponent, "type" | "custom_id">,
+) => {
+  if (
+    component.type === ComponentType.Button &&
+    component.style === ButtonStyle.Link
+  ) {
+    const url = new URL(component.url);
+    const id = url.searchParams.get("dhc-id");
+    if (id) {
+      try {
+        return BigInt(id);
+      } catch {}
+    }
+    return undefined;
+  }
+  if ("sku_id" in component) return undefined;
+
+  return /^p_\d+/.test(component.custom_id)
+    ? BigInt(component.custom_id.replace(/^p_/, ""))
+    : undefined;
 };
