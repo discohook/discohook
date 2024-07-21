@@ -189,6 +189,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+  let threadId: string | undefined;
   const message = await (async () => {
     if (component.channelId && component.messageId) {
       let msg: APIMessage | undefined;
@@ -200,6 +201,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           ),
         )) as APIMessage;
       } catch {}
+      if (msg?.position !== undefined) {
+        threadId = msg.channel_id;
+      }
 
       if (msg) {
         const { resolved, components: rows, webhook_id } = msg;
@@ -372,6 +376,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   } catch {
     throw json({ message: "Failed to retrieve the message" }, 400);
   }
+  const threadId =
+    message.position !== undefined ? message.channel_id : undefined;
 
   let isDraft = component.draft;
   for (const row of message.components ?? []) {
@@ -425,6 +431,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             [row!, column!],
           ),
         } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
+        query: threadId
+          ? new URLSearchParams({ thread_id: threadId })
+          : undefined,
       },
     );
   }
@@ -544,6 +553,7 @@ export default () => {
     emojis,
     channels,
     roles,
+    threadId,
   } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const [error, setError] = useError(t);
@@ -867,6 +877,7 @@ export default () => {
                   await submitMessage(wt, {
                     data: { components: rowsWithLive },
                     reference: component_.messageId.toString(),
+                    thread_id: threadId,
                   });
                   if (component_.draft) {
                     // Tell the server that something changed and
