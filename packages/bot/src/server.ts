@@ -59,6 +59,7 @@ export { DurableComponentState } from "store/src/durable/components.js";
 
 const resources = {
   en: { translation: require("./i18n/en.json") },
+  "en-GB": { translation: require("./i18n/en-GB.json") },
   fr: { translation: require("./i18n/fr.json") },
   nl: { translation: require("./i18n/nl.json") },
   "zh-CN": { translation: require("./i18n/zh-CN.json") },
