@@ -16,6 +16,7 @@ import { MouseEventHandler, useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
+import { zx } from "zodix";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
@@ -286,8 +287,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const { token, row, column } = await zxParseForm(request, {
     token: z.ostring(),
-    row: z.number().min(0).max(4).optional(),
-    column: z.number().min(0).max(4).optional(),
+    row: zx.IntAsString.refine(
+      (v) => v >= 0 && v <= 4,
+      "Must be between 0-4 inclusive",
+    ).optional(),
+    column: zx.IntAsString.refine(
+      (v) => v >= 0 && v <= 4,
+      "Must be between 0-4 inclusive",
+    ).optional(),
   });
   let tokenData: KVComponentEditorState | undefined;
   if (token) {
