@@ -18,6 +18,8 @@ import {
   ChannelType,
   LocaleString,
   LocalizationMap,
+  RouteBases,
+  Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
@@ -68,7 +70,7 @@ if (!applicationId) {
  * Register all commands globally.  This can take o(minutes), so wait until
  * you're sure these are the commands you want.
  */
-const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
+const url = RouteBases.api + Routes.applicationCommands(applicationId);
 
 async function loadLocalization(lang: string) {
   return (
