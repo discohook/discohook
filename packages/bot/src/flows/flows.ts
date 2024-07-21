@@ -21,6 +21,7 @@ import {
   webhooks,
 } from "store/src/schema";
 import {
+  AnonymousVariable,
   Flow,
   FlowActionAddRole,
   FlowActionCheckFunction,
@@ -79,11 +80,17 @@ export const executeFlow = async (
     };
   }
 
-  const resolveSetVariable = (v: FlowActionSetVariable): string | boolean => {
+  const resolveSetVariable = (
+    v: FlowActionSetVariable | AnonymousVariable,
+  ): string | boolean => {
     if (v.varType === FlowActionSetVariableType.Adaptive) {
       if (!lastReturnValue) {
         throw new FlowFailure(
-          `Adaptive variable \`${v.name}\` was attempted to be assigned with attribute \`${v.value}\`, but there was no previous return value.`,
+          `Adaptive variable \`${
+            "name" in v ? v.name : "[anonymous]"
+          }\` was attempted to be assigned with attribute \`${
+            v.value
+          }\`, but there was no previous return value.`,
         );
       }
       return lastReturnValue[String(v.value)];
@@ -179,11 +186,11 @@ export const executeFlow = async (
                     name: "b",
                     ...func.b,
                   });
-                  // I thought the `strict` option might be useful in the future.
-                  // It defaults to true since non-strict equality can be confusing.
+                  // I thought the `loose` option might be useful in the future.
+                  // It defaults to false since non-strict equality can be confusing.
                   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality
                   // biome-ignore lint/suspicious/noDoubleEquals: ^
-                  results.push(func.strict ? a === b : a == b);
+                  results.push(func.loose ? a == b : a === b);
                   break;
                 }
                 default:
@@ -283,11 +290,13 @@ export const executeFlow = async (
           );
           break;
         case FlowActionType.CreateThread:
-          lastReturnValue = await executeCreateThread(
-            rest,
-            action,
-            vars as { channelId?: string },
-          );
+          {
+            const channelId =
+              resolveSetVariable(action.channel)?.toString() ?? vars.channelId;
+            lastReturnValue = await executeCreateThread(rest, action, {
+              channelId,
+            });
+          }
           break;
         default:
           break;
@@ -541,10 +550,10 @@ export const executeToggleRole = async (
 export const executeCreateThread = async (
   rest: REST,
   action: FlowActionCreateThread,
-  setVars: { channelId?: string },
+  setVars: { channelId: string },
   ctx?: InteractionContext,
 ) => {
-  const channelId = action.channelId ?? setVars.channelId;
+  const channelId = setVars.channelId;
   if (!channelId) {
     throw new FlowFailure("No channel ID was set.");
   }
