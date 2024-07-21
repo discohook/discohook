@@ -238,12 +238,16 @@ export const ComponentEditForm = ({
               </p>
               <Button
                 onClick={async () => {
-                  const flow = component.flow ?? { actions: [] };
+                  const flow = (component.style !== ButtonStyle.Premium
+                    ? component.flow
+                    : undefined) ?? { actions: [] };
                   setEditingFlow({
                     flow,
                     setFlow: (newFlow) => {
-                      component.flow = newFlow;
-                      setComponent(component);
+                      if (component.style !== ButtonStyle.Premium) {
+                        component.flow = newFlow;
+                        setComponent(component);
+                      }
                     },
                   });
                 }}
