@@ -794,15 +794,18 @@ export default function EditComponentPage() {
                   component_.guildId &&
                   message?.webhook_id
                 ) {
-                  const tokenResponse = await webhookTokenFetcher.loadAsync(
-                    apiUrl(
-                      BRoutes.guildWebhookToken(
-                        component_.guildId,
-                        message.webhook_id,
+                  let wt = webhookTokenFetcher.data;
+                  if (!wt) {
+                    wt = await webhookTokenFetcher.loadAsync(
+                      apiUrl(
+                        BRoutes.guildWebhookToken(
+                          component_.guildId,
+                          message.webhook_id,
+                        ),
                       ),
-                    ),
-                  );
-                  await submitMessage(tokenResponse, {
+                    );
+                  }
+                  await submitMessage(wt, {
                     data: { components: rowsWithLive },
                     reference: component_.messageId.toString(),
                   });
