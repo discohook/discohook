@@ -240,5 +240,6 @@
   "addActions": "Add Actions",
   "noActions": "No actions",
   "manageActions": "Manage Actions",
-  "idUnavailable": "ID unavailable."
+  "idUnavailable": "ID unavailable.",
+  "customize": "Customize"
 }
