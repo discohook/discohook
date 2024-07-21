@@ -126,13 +126,13 @@ export const getWebhookUrlEmbed = (
   embed.addFields(
     webhook.application_id && applicationId === webhook.application_id
       ? {
-          name: ":information_source: Buttons & Selects",
+          name: ":white_check_mark: Buttons & Selects",
           value:
             "This webhook is owned by Discohook, so its messages can have components.",
           inline: false,
         }
       : {
-          name: ":warning: Buttons & Selects",
+          name: ":x: Buttons & Selects",
           value: "This webhook is not owned by Discohook.",
           inline: false,
         },

@@ -28,7 +28,7 @@ export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
   const url = new URL(
     `https://discord.com/oauth2/authorize?${new URLSearchParams({
       client_id: ctx.followup.applicationId,
-      permissions: String(permissions.value),
+      permissions: permissions.toString(),
       scope: "bot",
     })}`,
   );

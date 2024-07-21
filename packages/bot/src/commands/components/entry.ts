@@ -6,7 +6,7 @@ import {
   APIMessage,
   ApplicationCommandOptionType,
   MessageFlags,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { Snowflake, getDate } from "discord-snowflake";
 import {
@@ -41,7 +41,7 @@ export const resolveMessageLink = async (
   }
 };
 
-export const addComponentChatEntry: ChatInputAppCommandCallback = async (
+export const addComponentChatEntry: ChatInputAppCommandCallback<true> = async (
   ctx,
 ) => {
   const message = await resolveMessageLink(
@@ -140,7 +140,7 @@ export const addComponentMessageAutocomplete: AppCommandAutocompleteCallback = (
     ctx,
     (m) =>
       !!m.webhook_id &&
-      !m.interaction &&
+      !m.interaction_metadata &&
       // dapi-types says application_id is only for interaction responses,
       // but it appears for application-owned webhooks as well:
       // https://discord.dev/resources/channel#message-object
