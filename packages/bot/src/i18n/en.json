@@ -9,13 +9,24 @@
       }
     },
     "buttons": {
-      "description": "Add, remove, and manage buttons",
+      "description": "Add, remove, and manage components",
       "options": {
         "add": {
-          "description": "Add a button",
+          "description": "Add a component",
           "options": {
             "message": {
-              "description": "Add a button to this message. A message link is also accepted here"
+              "description": "Add a component to this message. A message link is also accepted here"
+            },
+            "channel": {
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        },
+        "edit": {
+          "description": "Edit a component",
+          "options": {
+            "message": {
+              "description": "Edit a component on this message. A message link is also accepted here"
             },
             "channel": {
               "description": "The channel that the message is in, for autocomplete results"

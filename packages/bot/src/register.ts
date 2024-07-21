@@ -231,6 +231,25 @@ async function main() {
                 .setRequired(false)
                 .addChannelTypes(...webhookChannelTypes),
             ),
+        )
+        .addSubcommand(
+          new SlashCommandSubcommandBuilder()
+            .setName("edit")
+            .setDescription("...")
+            .addStringOption(
+              new SlashCommandStringOption()
+                .setName("message")
+                .setDescription("...")
+                .setRequired(true)
+                .setAutocomplete(true),
+            )
+            .addChannelOption(
+              new SlashCommandChannelOption()
+                .setName("channel")
+                .setDescription("...")
+                .setRequired(false)
+                .addChannelTypes(...webhookChannelTypes),
+            ),
         ),
     ),
     addLocalizations(

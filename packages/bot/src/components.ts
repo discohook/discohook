@@ -10,6 +10,7 @@ import {
   reopenCustomizeModal,
   submitCustomizeModal,
 } from "./commands/components/add.js";
+import { editComponentFlowModeCallback, editComponentFlowPickCallback } from "./commands/components/edit.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import {
@@ -55,6 +56,8 @@ export type ModalRoutingId = "add-component-flow_customize-modal";
 export type ComponentRoutingId =
   | "add-component-flow"
   | "add-component-flow-customize-modal-resend"
+  | "edit-component-flow-pick"
+  | "edit-component-flow-mode"
   | "delete-reaction-role"
   | "select-restore-options"
   | "webhook-info-use"
@@ -70,6 +73,12 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   },
   "add-component-flow-customize-modal-resend": {
     handler: reopenCustomizeModal,
+  },
+  "edit-component-flow-pick": {
+    handler: editComponentFlowPickCallback,
+  },
+  "edit-component-flow-mode": {
+    handler: editComponentFlowModeCallback,
   },
   "delete-reaction-role": {
     handler: deleteReactionRoleButtonCallback,

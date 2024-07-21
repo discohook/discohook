@@ -23,8 +23,16 @@ import {
   TextInputStyle,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
+import { t } from "i18next";
 import { SignJWT } from "jose";
-import { getDb, getchGuild, upsertDiscordUser, upsertGuild } from "store";
+import {
+  DBWithSchema,
+  getDb,
+  getchGuild,
+  launchComponentDurableObject,
+  upsertDiscordUser,
+  upsertGuild,
+} from "store";
 import {
   discordMessageComponents,
   flows,
@@ -266,6 +274,11 @@ const registerComponent = async (
     }
     throw e;
   }
+  await launchComponentDurableObject(ctx.env, {
+    messageId: editedMsg.id,
+    componentId: id,
+    customId: customId ?? `p_${id}`,
+  });
   return editedMsg;
 };
 
@@ -298,7 +311,7 @@ export const startComponentFlow = async (
   }
 
   const componentFlow: ComponentFlow = {
-    componentTimeout: 60,
+    componentTimeout: 300,
     componentRoutingId: "add-component-flow",
     step: 0,
     stepTitle: "Add Component",
@@ -430,6 +443,56 @@ const createEditorToken = async (env: Env) => {
   return { id, value: token, expiresAt };
 };
 
+interface KVComponentEditorState {
+  interactionId: string;
+  user: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  row?: number;
+  column?: number;
+}
+
+export const generateEditorTokenForComponent = async (
+  db: DBWithSchema,
+  env: Env,
+  componentId: bigint,
+  data: KVComponentEditorState,
+) => {
+  const editorToken = await createEditorToken(env);
+  await db.insert(tokens).values({
+    platform: "discord",
+    id: makeSnowflake(editorToken.id),
+    prefix: "editor",
+    expiresAt: editorToken.expiresAt,
+    // userId: makeSnowflake(state.user.id),
+  });
+
+  await env.KV.put(
+    `token-${editorToken.id}-component-${componentId}`,
+    JSON.stringify(data),
+    {
+      expiration: Math.floor(editorToken.expiresAt.getTime() / 1000),
+    },
+  );
+  return { ...editorToken, componentId };
+};
+
+export type EditorTokenWithComponent = Awaited<
+  ReturnType<typeof generateEditorTokenForComponent>
+>;
+
+export const getEditorTokenComponentUrl = (
+  token: EditorTokenWithComponent,
+  env: Env,
+): string =>
+  `${env.DISCOHOOK_ORIGIN}/edit/component/${
+    token.componentId
+  }?${new URLSearchParams({
+    token: token.value,
+  })}`;
+
 export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   const value = ctx.interaction.data.values[0];
 
@@ -473,27 +536,17 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
           })
       )[0];
 
-      const editorToken = await createEditorToken(ctx.env);
-      await db.insert(tokens).values({
-        platform: "discord",
-        id: makeSnowflake(editorToken.id),
-        prefix: "editor",
-        expiresAt: editorToken.expiresAt,
-        // userId: makeSnowflake(state.user.id),
-      });
-
-      await ctx.env.KV.put(
-        `token-${editorToken.id}-component-${component.id}`,
-        JSON.stringify({
+      const editorToken = await generateEditorTokenForComponent(
+        db,
+        ctx.env,
+        component.id,
+        {
           interactionId: ctx.interaction.id,
           user: {
             id: ctx.user.id,
             name: ctx.user.username,
             avatar: ctx.user.avatar,
           },
-        }),
-        {
-          expiration: Math.floor(editorToken.expiresAt.getTime() / 1000),
         },
       );
 
@@ -516,14 +569,8 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
             .addComponents(
               new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
-                .setLabel("Customize")
-                .setURL(
-                  `${ctx.env.DISCOHOOK_ORIGIN}/edit/component/${
-                    component.id
-                  }?${new URLSearchParams({
-                    token: editorToken.value,
-                  })}`,
-                ),
+                .setLabel(t("customize"))
+                .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
               // new ButtonBuilder()
               //   .setStyle(ButtonStyle.Success)
               //   .setLabel("Add Button")
@@ -600,10 +647,9 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
               new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(
                   await storeComponents(ctx.env.KV, [
-                    new ButtonBuilder({
-                      style: ButtonStyle.Primary,
-                      label: "Open modal",
-                    }),
+                    new ButtonBuilder()
+                      .setStyle(ButtonStyle.Primary)
+                      .setLabel("Open modal"),
                     {
                       componentRoutingId:
                         "add-component-flow-customize-modal-resend",
@@ -666,27 +712,17 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
           })
       )[0];
 
-      const editorToken = await createEditorToken(ctx.env);
-      await db.insert(tokens).values({
-        platform: "discord",
-        id: makeSnowflake(editorToken.id),
-        prefix: "editor",
-        expiresAt: editorToken.expiresAt,
-        // userId: makeSnowflake(state.user.id),
-      });
-
-      await ctx.env.KV.put(
-        `token-${editorToken.id}-component-${component.id}`,
-        JSON.stringify({
+      const editorToken = await generateEditorTokenForComponent(
+        db,
+        ctx.env,
+        component.id,
+        {
           interactionId: ctx.interaction.id,
           user: {
             id: ctx.user.id,
             name: ctx.user.username,
             avatar: ctx.user.avatar,
           },
-        }),
-        {
-          expiration: Math.floor(editorToken.expiresAt.getTime() / 1000),
         },
       );
 
@@ -709,14 +745,8 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
             .addComponents(
               new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
-                .setLabel("Customize")
-                .setURL(
-                  `${ctx.env.DISCOHOOK_ORIGIN}/edit/component/${
-                    component.id
-                  }?${new URLSearchParams({
-                    token: editorToken.value,
-                  })}`,
-                ),
+                .setLabel(t("customize"))
+                .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
             )
             .toJSON(),
         ],
@@ -753,12 +783,14 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
       });
     }
 
-    state.component.label = label;
-    // state.component.emoji = emoji;
-    // state.step += 1;
-    // state.steps?.push({ label: `Set label (${escapeMarkdown(label)})` });
-    // state.step += 1;
-    // state.steps?.push({ label: `Set emoji (${escapeMarkdown(label)})` });
+    if (state.component.style !== ButtonStyle.Premium) {
+      state.component.label = label;
+      // state.component.emoji = emoji;
+      // state.step += 1;
+      // state.steps?.push({ label: `Set label (${escapeMarkdown(label)})` });
+      // state.step += 1;
+      // state.steps?.push({ label: `Set emoji (${escapeMarkdown(label)})` });
+    }
 
     if (state.component.style === ButtonStyle.Link) {
       const url = ctx.getModalComponent("url").value;
@@ -796,5 +828,8 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
     }
   }
 
-  return ctx.reply("a");
+  return ctx.reply({
+    content: "This shouldn't happen",
+    flags: MessageFlags.Ephemeral,
+  });
 };

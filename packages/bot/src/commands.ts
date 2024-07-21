@@ -13,6 +13,7 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { t } from "i18next";
+import { editComponentChatEntry } from "./commands/components/edit.js";
 import {
   addComponentChatEntry,
   addComponentMessageAutocomplete,
@@ -102,9 +103,11 @@ export const appCommands: Record<
     buttons: {
       handlers: {
         add: addComponentChatEntry,
+        edit: editComponentChatEntry,
       },
       autocompleteHandlers: {
         add: addComponentMessageAutocomplete,
+        edit: addComponentMessageAutocomplete,
       },
     },
     format: {
