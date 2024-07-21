@@ -3,9 +3,8 @@ import { defer, json, redirect } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import {
   APIActionRowComponent,
-  APIEmoji,
+  APIChannel,
   APIMessage,
-  APIRole,
   APIWebhook,
   ButtonStyle,
   ComponentType,
@@ -18,6 +17,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
+import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
@@ -35,8 +35,9 @@ import { Message } from "~/components/preview/Message.client";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
-import { getUser, verifyToken } from "~/session.server";
+import { getGuild, getUser, verifyToken } from "~/session.server";
 import {
+  Flow,
   StorableComponent,
   discordMessageComponents,
   eq,
@@ -47,6 +48,7 @@ import {
 import { APIMessageActionRowComponent } from "~/types/QueryData";
 import {
   ResolutionKey,
+  ResolvableAPIChannel,
   ResolvableAPIEmoji,
   ResolvableAPIRole,
   useCache,
@@ -209,46 +211,54 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     }
   })();
 
-  const emojis = (async () => {
-    if (component.guildId) {
-      try {
-        return (
-          (await rest.get(
-            Routes.guildEmojis(String(component.guildId)),
-          )) as APIEmoji[]
-        ).map(
-          (emoji) =>
-            ({
-              id: emoji.id ?? undefined,
-              name: emoji.name ?? "",
-              animated: emoji.animated,
-              available: emoji.available === false ? false : undefined,
-            }) as ResolvableAPIEmoji,
-        );
-      } catch {}
-    }
-    return [];
-  })();
+  let emojis: ResolvableAPIEmoji[] = [];
+  let roles: ResolvableAPIRole[] = [];
+  if (component.guildId) {
+    try {
+      const guild = await getGuild(component.guildId, rest, context.env);
+      emojis = guild.emojis.map(
+        (emoji) =>
+          ({
+            id: emoji.id ?? undefined,
+            name: emoji.name ?? "",
+            animated: emoji.animated,
+            available: emoji.available === false ? false : undefined,
+          }) as ResolvableAPIEmoji,
+      );
+      roles = guild.roles.map(
+        (role) =>
+          ({
+            id: role.id,
+            name: role.name,
+            color: role.color,
+            managed: role.managed,
+            mentionable: role.mentionable,
+            position: role.position,
+            unicode_emoji: role.unicode_emoji,
+            icon: role.icon,
+          }) as ResolvableAPIRole,
+      );
+    } catch {}
+  }
 
-  const roles = (async () => {
+  const channels = (async () => {
     if (component.guildId) {
       try {
         return (
           (await rest.get(
-            Routes.guildRoles(String(component.guildId)),
-          )) as APIRole[]
+            Routes.guildChannels(String(component.guildId)),
+          )) as APIChannel[]
         ).map(
-          (role) =>
+          (channel) =>
             ({
-              id: role.id,
-              name: role.name,
-              color: role.color,
-              managed: role.managed,
-              mentionable: role.mentionable,
-              position: role.position,
-              unicode_emoji: role.unicode_emoji,
-              icon: role.icon,
-            }) as ResolvableAPIRole,
+              id: channel.id,
+              name: channel.name,
+              type: getChannelIconType(channel),
+              tags:
+                "available_tags" in channel
+                  ? channel.available_tags
+                  : undefined,
+            }) as ResolvableAPIChannel,
         );
       } catch {}
     }
@@ -263,6 +273,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     message,
     emojis,
     roles,
+    channels,
+    threadId,
   });
 };
 
@@ -522,7 +534,7 @@ const getRowsWithInsertedComponent = (
   return cloned;
 };
 
-export default function EditComponentPage() {
+export default () => {
   const {
     user,
     component: component_,
@@ -530,6 +542,7 @@ export default function EditComponentPage() {
     editingMeta,
     message,
     emojis,
+    channels,
     roles,
   } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
@@ -537,25 +550,27 @@ export default function EditComponentPage() {
   const cache = useCache(false);
   const submit = useSubmit();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever `emojis` changes, which would be never right now
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever one of these changes, which would be never right now
   useEffect(() => {
     if (component_.guildId) {
-      emojis.then((resolved) =>
-        cache.fill(
-          ...resolved.map(
-            (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
-          ),
+      cache.fill(
+        ...emojis.map(
+          (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
+        ),
+        ...roles.map(
+          (r) => [`role:${r.id}`, r] as [ResolutionKey, ResolvableAPIRole],
         ),
       );
-      roles.then((resolved) =>
+      channels.then((resolved) =>
         cache.fill(
           ...resolved.map(
-            (r) => [`role:${r.id}`, r] as [ResolutionKey, ResolvableAPIRole],
+            (r) =>
+              [`channel:${r.id}`, r] as [ResolutionKey, ResolvableAPIChannel],
           ),
         ),
       );
     }
-  }, [emojis, roles]);
+  }, [emojis, roles, channels]);
 
   // Temp disabled until we create a session cookie
   // const [params, setParams] = useSearchParams();
@@ -873,7 +888,7 @@ export default function EditComponentPage() {
       </Prose>
     </div>
   );
-}
+};
 
 const ArrowButton: React.FC<{
   icon: CoolIconsGlyph;
