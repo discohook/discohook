@@ -1372,13 +1372,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"discord-api-types@npm:^0.37.67":
-  version: 0.37.73
-  resolution: "discord-api-types@npm:0.37.73"
-  checksum: 10c0/4e2a16418d38ab1a75a77df614c9c64d7d3dd8c6500cba0d82e1a0cb3c9e694d96049b49f68516075a591ac4dffe62727d05e41e66a2764f0b9c5f45b1784be1
-  languageName: node
-  linkType: hard
-
 "discord-api-types@npm:^0.37.92":
   version: 0.37.92
   resolution: "discord-api-types@npm:0.37.92"
@@ -3261,16 +3254,17 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=4d6d9e&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=fcd6ec&locator=discohook-bot%40workspace%3A."
   dependencies:
-    discord-api-types: "npm:^0.37.67"
+    discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.31.2"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     tif-snowflake: shayypy/snowflake
     zod: "npm:^3.23.8"
-  checksum: 10c0/49bb652c9557f4e414bc684fe0921142a036cafc00c422a8865cbc879be2e5ce2f2ce14bfa9b36659819786e80c7981aa03ae98e26bae08587549222fc221c32
+    zodix: "npm:^0.4.4"
+  checksum: 10c0/d2f31027a49cf2bda07314ee4014fc2527013a697f71ce44c1e09ac3ebff665a0ff5b106db91c224b5888fef29bd6919aaedd9d78ab6e15ae7448185c96545e9
   languageName: node
   linkType: hard
 
@@ -3768,5 +3762,15 @@ tif-snowflake@shayypy/snowflake:
   version: 3.23.8
   resolution: "zod@npm:3.23.8"
   checksum: 10c0/8f14c87d6b1b53c944c25ce7a28616896319d95bc46a9660fe441adc0ed0a81253b02b5abdaeffedbeb23bdd25a0bf1c29d2c12dd919aef6447652dd295e3e69
+  languageName: node
+  linkType: hard
+
+"zodix@npm:^0.4.4":
+  version: 0.4.4
+  resolution: "zodix@npm:0.4.4"
+  peerDependencies:
+    "@remix-run/server-runtime": 1.x || 2.x
+    zod: 3.x
+  checksum: 10c0/018aadaa4290d318055f048d3d2aebc54e477ecefaa4b81414e6f0bb8c7ba63a4867548431677c6a285b166854786186b7d4a035d3c0be530413bc2f9dfe580b
   languageName: node
   linkType: hard

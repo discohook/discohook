@@ -10,6 +10,7 @@ export interface Env {
   KV: KVNamespace;
   SCHEDULER: DurableObjectNamespace;
   DRAFT_CLEANER: DurableObjectNamespace;
+  COMPONENTS: DurableObjectNamespace;
   __STATIC_CONTENT: Fetcher;
   // __STATIC_CONTENT_MANIFEST: Object;
   SESSION_SECRET: string;

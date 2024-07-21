@@ -20,7 +20,10 @@ import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
 import { IRequest, Router } from "itty-router";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
-import { DurableStoredComponent } from "store/src/durable/components.js";
+import {
+  DurableStoredComponent,
+  launchComponentDurableObject,
+} from "store/src/durable/components.js";
 import {
   backups,
   discordMessageComponents,
@@ -267,7 +270,7 @@ const handleInteraction = async (
             status: response.status,
           });
         }
-        await stub.fetch(`http://do/?id=${dbComponent.id}`, { method: "POST" });
+        await stub.fetch(`http://do/?id=${dbComponent.id}`, { method: "PUT" });
         component = dbComponent;
       } else if (!response.ok) {
         return respond({
@@ -658,24 +661,14 @@ const handleInteraction = async (
           if (
             thisButton &&
             thisButton.data.type === ComponentType.Button &&
-            thisButton.data.style !== ButtonStyle.Link
+            thisButton.data.style !== ButtonStyle.Link &&
+            thisButton.data.style !== ButtonStyle.Premium
           ) {
-            // Store the durable object for later
-            const doId = env.COMPONENTS.idFromName(
-              `${interaction.message.id}-${customId}`,
-            );
-            const stub = env.COMPONENTS.get(doId);
-            const response = await stub.fetch(
-              `http://do/?id=${thisButton.id}`,
-              {
-                method: "POST",
-              },
-            );
-            // The DO saves the button to its storage and returns the saved
-            // data (w/ flow) so we don't need to do gymnastics to find what
-            // we saved.
-            const thisButtonData =
-              (await response.json()) as DurableStoredComponent;
+            const thisButtonData = await launchComponentDurableObject(env, {
+              messageId: interaction.message.id,
+              customId,
+              componentId: thisButton.id,
+            });
 
             const liveVars: LiveVariables = {
               guild,

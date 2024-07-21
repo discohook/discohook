@@ -4,6 +4,12 @@ import { getDb } from "../db.js";
 import { makeSnowflake } from "../schema/schema.js";
 import { Flow, StorableComponent } from "../types/index.js";
 
+interface MockStoreEnv {
+  HYPERDRIVE: Hyperdrive;
+  DATABASE_URL?: string;
+  COMPONENTS: DurableObjectNamespace;
+}
+
 export interface DurableStoredComponent {
   id: bigint;
   data: StorableComponent;
@@ -16,16 +22,17 @@ export interface DurableStoredComponent {
 export class DurableComponentState implements DurableObject {
   constructor(
     private state: DurableObjectState,
-    private env: {
-      HYPERDRIVE: Hyperdrive;
-    },
+    private env: MockStoreEnv,
   ) {}
 
   async fetch(request: Request) {
+    const connectionString =
+      this.env.HYPERDRIVE?.connectionString ?? this.env.DATABASE_URL;
+
     switch (request.method) {
-      case "POST": {
+      case "PUT": {
         const { id } = zx.parseQuery(request, { id: z.string() });
-        const db = getDb(this.env.HYPERDRIVE.connectionString);
+        const db = getDb(connectionString);
         const component = await db.query.discordMessageComponents.findFirst({
           where: (table, { eq }) => eq(table.id, makeSnowflake(id)),
           columns: {
@@ -78,3 +85,24 @@ export class DurableComponentState implements DurableObject {
     }
   }
 }
+
+export const launchComponentDurableObject = async (
+  env: MockStoreEnv,
+  options: {
+    messageId: string;
+    customId: string;
+    componentId: string | bigint;
+  },
+) => {
+  const doId = env.COMPONENTS.idFromName(
+    `${options.messageId}-${options.customId}`,
+  );
+  const stub = env.COMPONENTS.get(doId);
+  const response = await stub.fetch(`http://do/?id=${options.componentId}`, {
+    method: "PUT",
+  });
+
+  const raw = await response.text();
+  const data = JSON.parse(raw) as DurableStoredComponent;
+  return data;
+};

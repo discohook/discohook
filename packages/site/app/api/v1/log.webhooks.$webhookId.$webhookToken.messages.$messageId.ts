@@ -24,6 +24,7 @@ import {
   getDb,
   getchGuild,
   inArray,
+  launchComponentDurableObject,
   messageLogEntries,
   sql,
   upsertGuild,
@@ -174,7 +175,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       .map(getComponentId)
       .filter((id): id is bigint => id !== undefined);
 
-    await db.transaction(async (tx) => {
+    const createdComponents = await db.transaction(async (tx) => {
       const stored =
         componentIds.length !== 0
           ? await tx.query.discordMessageComponents.findMany({
@@ -245,7 +246,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         )
         .onConflictDoNothing();
 
-      await tx
+      return await tx
         .insert(discordMessageComponents)
         .values(
           components.flatMap((component) => {
@@ -344,10 +345,24 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             channelId: sql`excluded."channelId"`,
             messageId: sql`excluded."messageId"`,
           },
+        })
+        .returning({
+          id: discordMessageComponents.id,
+          messageId: discordMessageComponents.messageId,
         });
-
-      // TODO: create DOs for these components
     });
+    // I want to do this in the background (ctx.waitUntil) but I had issues
+    // the last time I tried with this Remix project. TODO: Try again after
+    // upgrading to vite?
+    for (const created of createdComponents) {
+      if (created.messageId) {
+        await launchComponentDurableObject(context.env, {
+          messageId: created.messageId.toString(),
+          componentId: created.id,
+          customId: `p_${created.id}`,
+        });
+      }
+    }
   }
 
   const entry = (

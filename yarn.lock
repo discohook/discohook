@@ -4187,13 +4187,6 @@ cron-parser@shayypy/cron-parser:
   languageName: node
   linkType: hard
 
-"discord-api-types@npm:^0.37.67":
-  version: 0.37.67
-  resolution: "discord-api-types@npm:0.37.67"
-  checksum: 10c0/b003ff4c0c82814f2dc3450d6765d470111c001d6f1eb1ec29f2d99c43590adeef1d400c0247f7c5c9044a3c93027d1d6409454401f091e4434dfa1408723545
-  languageName: node
-  linkType: hard
-
 "discord-api-types@npm:^0.37.81":
   version: 0.37.81
   resolution: "discord-api-types@npm:0.37.81"
@@ -9413,16 +9406,17 @@ cron-parser@shayypy/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=4d6d9e&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=fcd6ec&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
-    discord-api-types: "npm:^0.37.67"
+    discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.31.2"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     tif-snowflake: shayypy/snowflake
     zod: "npm:^3.23.8"
-  checksum: 10c0/49bb652c9557f4e414bc684fe0921142a036cafc00c422a8865cbc879be2e5ce2f2ce14bfa9b36659819786e80c7981aa03ae98e26bae08587549222fc221c32
+    zodix: "npm:^0.4.4"
+  checksum: 10c0/d2f31027a49cf2bda07314ee4014fc2527013a697f71ce44c1e09ac3ebff665a0ff5b106db91c224b5888fef29bd6919aaedd9d78ab6e15ae7448185c96545e9
   languageName: node
   linkType: hard
 
@@ -9432,7 +9426,7 @@ cron-parser@shayypy/cron-parser:
   dependencies:
     "@discordjs/rest": "npm:^2.2.0"
     "@types/json-bigint": "npm:^1.0.4"
-    discord-api-types: "npm:^0.37.67"
+    discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
     drizzle-kit: "npm:^0.22.8"
     drizzle-orm: "npm:^0.31.2"
@@ -9441,6 +9435,7 @@ cron-parser@shayypy/cron-parser:
     tif-snowflake: shayypy/snowflake
     typescript: "npm:^5.3.3"
     zod: "npm:^3.23.8"
+    zodix: "npm:^0.4.4"
   languageName: unknown
   linkType: soft
 
