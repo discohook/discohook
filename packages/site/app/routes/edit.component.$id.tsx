@@ -52,6 +52,7 @@ import {
   useCache,
 } from "~/util/cache/CacheManager";
 import { cdnImgAttributes } from "~/util/discord";
+import { flowToDraftFlow } from "~/util/flow";
 import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { getUserAvatar } from "~/util/users";
@@ -158,6 +159,16 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       guildId: true,
       channelId: true,
       messageId: true,
+    },
+    with: {
+      componentsToFlows: {
+        columns: {},
+        with: {
+          flow: {
+            with: { actions: true },
+          },
+        },
+      },
     },
   });
   if (!component) {
@@ -412,16 +423,20 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 const buildStorableComponent = (
   component: StorableComponent,
   id: string,
+  flows: Flow[] = [],
 ): APIMessageActionRowComponent => {
   switch (component.type) {
     case ComponentType.Button: {
       if (component.style === ButtonStyle.Link) {
         return component;
       }
+      // if (isSkuButton(component)) {
+      // }
       return {
         ...component,
         custom_id: `p_${id}`,
-      };
+        flow: flowToDraftFlow(flows[0]),
+      } as APIButtonComponentWithCustomId;
     }
     case ComponentType.StringSelect: {
       const {
@@ -435,6 +450,15 @@ const buildStorableComponent = (
         custom_id: `p_${id}`,
         min_values,
         max_values,
+        flows: Object.fromEntries(
+          Object.entries(rest.flowIds).map(([optionValue, flowId]) => {
+            const flow = flows.find((flow) => String(flow.id) === flowId);
+            return [
+              optionValue,
+              flow ? flowToDraftFlow(flow) : { actions: [] },
+            ];
+          }),
+        ),
       };
     }
     case ComponentType.UserSelect:
@@ -455,6 +479,7 @@ const buildStorableComponent = (
         max_values,
         // @ts-expect-error
         default_values,
+        flow: flowToDraftFlow(flows[0]),
       };
     }
     default:
@@ -530,8 +555,13 @@ export default function EditComponentPage() {
 
   const [settings] = useLocalStorage();
   const [component, setComponent] = useState(
-    buildStorableComponent(component_.data, String(component_.id)),
+    buildStorableComponent(
+      component_.data,
+      String(component_.id),
+      component_.componentsToFlows.map((ctf) => ctf.flow),
+    ),
   );
+
   // TODO: use this to reduce "flicker" when opening/closing modal
   // const [editingFlowOpen, setEditingFlowOpen] = useState(false);
   const [editingFlow, setEditingFlow] = useState<EditingFlowData | undefined>();
