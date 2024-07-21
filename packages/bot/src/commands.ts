@@ -49,6 +49,7 @@ import {
 } from "./commands/triggers.js";
 import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
 import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
+import { webhookDeleteEntryCallback } from "./commands/webhooks/webhookDelete.js";
 import { webhookInfoCallback } from "./commands/webhooks/webhookInfo.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { InteractionContext } from "./interactions.js";
@@ -142,6 +143,7 @@ export const appCommands: Record<
       handlers: {
         create: webhookCreateEntry,
         info: webhookInfoCallback,
+        delete: webhookDeleteEntryCallback,
       },
       autocompleteHandlers: {
         delete: webhookAutocomplete,

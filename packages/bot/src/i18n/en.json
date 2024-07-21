@@ -252,5 +252,7 @@
   "noActions": "No actions",
   "manageActions": "Manage Actions",
   "idUnavailable": "ID unavailable.",
-  "customize": "Customize"
+  "customize": "Customize",
+  "gteNMessagesSent_one": "At least {{count}} message sent",
+  "gteNMessagesSent_other": "At least {{count}} messages sent"
 }
