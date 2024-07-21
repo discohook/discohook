@@ -85,7 +85,7 @@ export type AppCommandAutocompleteCallback = (
 ) => Promise<AutocompleteChoices>;
 
 export type AppCommandCallback =
-  | ChatInputAppCommandCallback
+  | ChatInputAppCommandCallback<boolean>
   | MessageAppCommandCallback
   | UserAppCommandCallback;
 
