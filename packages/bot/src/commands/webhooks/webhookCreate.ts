@@ -133,7 +133,20 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
         webhook = (await ctx.rest.post(Routes.channelWebhooks(channelId), {
           body: { name, avatar: avatarData },
         })) as APIWebhook;
-      } catch {
+      } catch (e) {
+        if (isDiscordError(e)) {
+          if (
+            [
+              RESTJSONErrorCodes.MaximumNumberOfWebhooksReached,
+              RESTJSONErrorCodes.MaximumNumberOfWebhooksPerGuildReached,
+            ].includes(e.code)
+          ) {
+            await ctx.followup.editOriginalMessage({
+              content: e.rawError.message,
+            });
+            return;
+          }
+        }
         await ctx.followup.editOriginalMessage({
           content:
             "Failed to create the webhook. It may have an invalid name or avatar, or I may be missing permissions.",
