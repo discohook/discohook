@@ -13,8 +13,11 @@ import {
   APIMessage,
   APIPartialEmoji,
   ButtonStyle,
+  CDNRoutes,
+  ImageFormat,
   MessageFlags,
   RESTGetAPIGuildEmojisResult,
+  RouteBases,
   Routes,
 } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
@@ -41,15 +44,36 @@ export const isSnowflakeSafe = (id: string): id is `${bigint}` => {
   }
 };
 
+export const CUSTOM_EMOJI_RE = /^<(a)?:(\w+):(\d+)>/;
+
 export const resolveEmoji = async (
   rest: REST,
   value: string,
-  message: APIMessage,
+  message: APIMessage | undefined,
   guildId: string,
   discohookOrigin: string,
-) => {
+): Promise<APIPartialEmoji | undefined> => {
+  const match = value.match(CUSTOM_EMOJI_RE);
+  if (match) {
+    // Possible worry: this does not check if the bot can access the emoji.
+    const response = await fetch(
+      RouteBases.cdn + CDNRoutes.emoji(match[3], ImageFormat.WebP),
+    );
+    if (response.ok) {
+      // This does not check that the emoji still exists, only that the ID was
+      // once valid. We are also assuming that the name and animated flag are
+      // correct.
+      return {
+        id: match[3],
+        name: match[2],
+        animated: Boolean(match[1]),
+      };
+    }
+    return undefined;
+  }
+
   const val = value.replace(/^:|:$/g, "");
-  const messageReaction = message.reactions?.find((r) =>
+  const messageReaction = message?.reactions?.find((r) =>
     r.emoji.id
       ? r.emoji.id === value || r.emoji.name === val
       : r.emoji.name === val,
