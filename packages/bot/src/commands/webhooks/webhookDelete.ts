@@ -9,7 +9,7 @@ import { PermissionFlags } from "discord-bitflag";
 import { and, count, eq } from "drizzle-orm";
 import { t } from "i18next";
 import { getDb } from "store";
-import { messageLogEntries } from "store/src/schema/schema.js";
+import { messageLogEntries, webhooks } from "store/src/schema/schema.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { AutoComponentCustomId, ButtonCallback } from "../../components.js";
 import { parseAutoComponentId } from "../../util/components.js";
@@ -85,6 +85,12 @@ export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
     "webhookId",
   );
   await ctx.rest.delete(Routes.webhook(webhookId));
+
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  await db
+    .delete(webhooks)
+    .where(and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)));
+
   return ctx.updateMessage({
     content: "Deleted the webhook successfully.",
     embeds: [],
