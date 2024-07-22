@@ -750,6 +750,36 @@ const handleInteraction = async (
           status: 500,
         });
       }
+    } else if (customId.startsWith("a_")) {
+      const { routingId } = parseAutoComponentId(customId);
+      const stored = modalStore[routingId as ModalRoutingId];
+      if (!stored) {
+        return respond({ error: "Unknown routing ID" });
+      }
+
+      const ctx = new InteractionContext(rest, interaction, env);
+      try {
+        const response = await stored.handler(ctx);
+        if (Array.isArray(response)) {
+          eCtx.waitUntil(response[1]());
+          return respond(response[0]);
+        } else {
+          return respond(response);
+        }
+      } catch (e) {
+        if (isDiscordError(e)) {
+          const errorResponse = getErrorMessage(ctx, e.rawError);
+          if (errorResponse) {
+            return respond(errorResponse);
+          }
+        } else {
+          console.error(e);
+        }
+        return respond({
+          error: "You've found a super unlucky error. Try again later!",
+          status: 500,
+        });
+      }
     }
   }
 

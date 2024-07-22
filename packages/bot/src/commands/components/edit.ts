@@ -1,27 +1,49 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
+  MessageActionRowComponentBuilder,
+  ModalBuilder,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
+  TextInputBuilder,
+  messageLink,
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
   APIEmoji,
+  APIInteraction,
   APIMessage,
+  APIMessageComponentEmoji,
+  APIPartialEmoji,
   APISelectMenuOption,
   ButtonStyle,
   ComponentType,
   MessageFlags,
   Routes,
+  TextInputStyle,
 } from "discord-api-types/v10";
 import { t } from "i18next";
-import { getDb } from "store";
+import { getDb, launchComponentDurableObject, upsertDiscordUser } from "store";
+import {
+  discordMessageComponents,
+  makeSnowflake,
+} from "store/src/schema/schema.js";
+import { StorableComponent } from "store/src/types/components.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
-import { AutoComponentCustomId, SelectMenuCallback } from "../../components.js";
+import {
+  AutoComponentCustomId,
+  AutoModalCustomId,
+  ButtonCallback,
+  ModalCallback,
+  SelectMenuCallback,
+} from "../../components.js";
 import { InteractionContext } from "../../interactions.js";
 import { getComponentId, parseAutoComponentId } from "../../util/components.js";
+import { resolveEmoji } from "../reactionRoles.js";
+import { getWebhook } from "../webhooks/webhookInfo.js";
 import {
+  buildStorableComponent,
   generateEditorTokenForComponent,
   getEditorTokenComponentUrl,
 } from "./add.js";
@@ -271,6 +293,128 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
   }
 };
 
+const getComponentEditModal = (
+  component: {
+    id: bigint;
+    data: StorableComponent;
+  },
+  messageId: string,
+) => {
+  const modal = new ModalBuilder()
+    .setCustomId(
+      `a_edit-component-flow-modal_${messageId}:${component.id}` satisfies AutoModalCustomId,
+    )
+    .setTitle("Edit Component");
+
+  switch (component.data.type) {
+    case ComponentType.Button:
+      if (component.data.style === ButtonStyle.Premium) {
+        modal.addComponents(
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("sku_id")
+              .setLabel("SKU ID")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(true)
+              .setValue(component.data.sku_id)
+              .setPlaceholder("Identifier for a purchasable SKU"),
+          ),
+        );
+      } else {
+        modal.addComponents(
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("label")
+              .setLabel("Label")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false)
+              .setMaxLength(80)
+              .setValue(component.data.label ?? "")
+              .setPlaceholder("The text displayed on this button."),
+          ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("emoji")
+              .setLabel("Emoji")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false)
+              .setValue(
+                component.data.emoji?.id ?? component.data.emoji?.name ?? "",
+              )
+              .setPlaceholder("Like :smile: or a custom emoji in the server."),
+          ),
+        );
+        if (component.data.style === ButtonStyle.Link) {
+          modal.addComponents(
+            new ActionRowBuilder<TextInputBuilder>().addComponents(
+              new TextInputBuilder()
+                .setCustomId("url")
+                .setLabel("Button URL")
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true)
+                .setValue(component.data.url)
+                .setPlaceholder(
+                  "The full URL this button will lead to when it is clicked.",
+                ),
+            ),
+          );
+        }
+      }
+      modal.addComponents(
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setCustomId("disabled")
+            .setLabel("Disabled?")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+            .setMinLength(4)
+            .setMaxLength(5)
+            .setValue(String(component.data.disabled ?? false))
+            .setPlaceholder(
+              'Type "true" or "false" for whether the button should be unclickable.',
+            ),
+        ),
+      );
+      break;
+    case ComponentType.StringSelect:
+    case ComponentType.ChannelSelect:
+    case ComponentType.MentionableSelect:
+    case ComponentType.RoleSelect:
+    case ComponentType.UserSelect:
+      modal.addComponents(
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setCustomId("placeholder")
+            .setLabel("Placeholder")
+            .setStyle(TextInputStyle.Paragraph)
+            .setMaxLength(150)
+            .setRequired(false)
+            .setValue(component.data.placeholder ?? "")
+            .setPlaceholder(
+              "The text to show in the select menu when it is collapsed.",
+            ),
+        ),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+          new TextInputBuilder()
+            .setCustomId("disabled")
+            .setLabel("Disabled?")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+            .setMinLength(4)
+            .setMaxLength(5)
+            .setValue(String(component.data.disabled ?? false))
+            .setPlaceholder(
+              'Type "true" or "false" for whether the select should be unclickable.',
+            ),
+        ),
+      );
+      break;
+    default:
+      break;
+  }
+  return modal;
+};
+
 export const editComponentFlowModeCallback: SelectMenuCallback = async (
   ctx,
 ) => {
@@ -302,7 +446,28 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
   }
 
   if (mode === "internal") {
-    // Modal for changing the values
+    const modal = getComponentEditModal(component, messageId);
+    // TODO: also allow changing button style in this mode
+    return [
+      ctx.modal(modal.toJSON()),
+      async () => {
+        await ctx.followup.editOriginalMessage({
+          content: "Click the button to continue editing the component.",
+          components: [
+            new ActionRowBuilder<ButtonBuilder>()
+              .addComponents(
+                new ButtonBuilder()
+                  .setCustomId(
+                    `a_edit-component-flow-modal-resend_${messageId}:${componentId}` satisfies AutoComponentCustomId,
+                  )
+                  .setStyle(ButtonStyle.Secondary)
+                  .setLabel(t("customize")),
+              )
+              .toJSON(),
+          ],
+        });
+      },
+    ];
   }
 
   const editorToken = await generateEditorTokenForComponent(
@@ -332,4 +497,280 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
         .toJSON(),
     ],
   });
+};
+
+const registerComponentUpdate = async (
+  ctx: InteractionContext<APIInteraction>,
+  id: bigint,
+  data: StorableComponent,
+  webhook: { id: string; token: string; guild_id?: string },
+  message: APIMessage,
+) => {
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const user = await upsertDiscordUser(db, ctx.user);
+
+  const customId =
+    data.type === ComponentType.Button &&
+    (data.style === ButtonStyle.Link || data.style === ButtonStyle.Premium)
+      ? undefined
+      : `p_${id}`;
+
+  const built = buildStorableComponent(data, customId);
+  if (!built) {
+    throw new Error(`Failed to built the component (type ${data.type}).`);
+  }
+
+  const components = message.components ?? [
+    new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
+  ];
+  const row = components.find((c) =>
+    c.components
+      .filter((c) => c.type === built.type)
+      .map(getComponentId)
+      .includes(id),
+  );
+  const current = row?.components.find(
+    (c) => c.type === built.type && getComponentId(c) === id,
+  );
+  if (!row || !current) {
+    throw new Error(
+      `Couldn't find the row that this component is on. Try editing via the site instead (choose "Everything")`,
+    );
+  }
+  row.components.splice(row.components.indexOf(current), 1, built);
+
+  const editedMsg = await db.transaction(async (tx) => {
+    await tx
+      .insert(discordMessageComponents)
+      .values({
+        id,
+        guildId: webhook.guild_id ? makeSnowflake(webhook.guild_id) : undefined,
+        channelId: makeSnowflake(message.channel_id),
+        messageId: makeSnowflake(message.id),
+        createdById: user.id,
+        type: data.type,
+        data,
+      })
+      .onConflictDoUpdate({
+        target: discordMessageComponents.id,
+        set: {
+          data,
+          draft: false,
+          updatedAt: new Date(),
+          updatedById: user.id,
+        },
+      });
+
+    // An error thrown here triggers a rollback
+    return (await ctx.rest.patch(
+      Routes.webhookMessage(webhook.id, webhook.token, message.id),
+      {
+        body: { components },
+        query:
+          message.position !== undefined
+            ? new URLSearchParams({ thread_id: message.channel_id })
+            : undefined,
+      },
+    )) as APIMessage;
+  });
+
+  await launchComponentDurableObject(ctx.env, {
+    messageId: editedMsg.id,
+    componentId: id,
+    customId: customId ?? `p_${id}`,
+  });
+  return editedMsg;
+};
+
+export const partialEmojiToComponentEmoji = (
+  emoji: APIPartialEmoji,
+): APIMessageComponentEmoji => ({
+  id: emoji.id ?? undefined,
+  name: emoji.name ?? undefined,
+  animated: emoji.animated,
+});
+
+export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
+  const { messageId, componentId } = parseAutoComponentId(
+    ctx.interaction.data.custom_id,
+    "messageId",
+    "componentId",
+  );
+
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const component = await db.query.discordMessageComponents.findFirst({
+    where: (table, { eq }) => eq(table.id, BigInt(componentId)),
+    columns: {
+      id: true,
+      data: true,
+      guildId: true,
+      channelId: true,
+      messageId: true,
+    },
+  });
+  if (
+    !component ||
+    component.guildId?.toString() !== ctx.interaction.guild_id ||
+    component.messageId?.toString() !== messageId
+  ) {
+    // This shouldn't happen unless the component was deleted in between
+    // running the command and selecting the option
+    return ctx.updateMessage({ content: "Unknown component", components: [] });
+  }
+  // biome-ignore lint/style/noNonNullAssertion: Only a guild-only command should get us here
+  const guildId = (component.guildId?.toString() ?? ctx.interaction.guild_id)!;
+
+  const channelId =
+    component.channelId?.toString() ?? ctx.interaction.channel?.id;
+  if (!channelId) {
+    return ctx.updateMessage({
+      content: "Channel context was unavailable",
+      components: [],
+    });
+  }
+
+  let message: APIMessage | undefined;
+  try {
+    message = (await ctx.rest.get(
+      Routes.channelMessage(channelId, messageId),
+    )) as APIMessage;
+  } catch {
+    return ctx.updateMessage({
+      content: `Failed to fetch the message (${messageId}). Make sure I am able to view <#${channelId}>.`,
+      components: [],
+    });
+  }
+  const webhookId = message.webhook_id;
+  if (!webhookId) {
+    return ctx.updateMessage({
+      content: `Apparently, the message (${messageId}) was not sent by a webhook. This shouldn't happen.`,
+      components: [],
+    });
+  }
+  const webhook = await getWebhook(webhookId, ctx.env, message.application_id);
+  if (!webhook.token) {
+    return ctx.updateMessage({
+      content: `The webhook's token (ID ${webhookId}) is not accessible, so I cannot edit the message.`,
+      components: [],
+    });
+  }
+
+  const data: StorableComponent = component.data;
+  switch (data.type) {
+    case ComponentType.Button:
+      if (data.style === ButtonStyle.Premium) {
+        data.sku_id = ctx.getModalComponent("sku_id").value;
+      } else {
+        data.label = ctx.getModalComponent("label")?.value || undefined;
+        const emojiRaw = ctx.getModalComponent("emoji")?.value || undefined;
+        if (!emojiRaw) {
+          data.emoji = undefined;
+        } else {
+          if (emojiRaw.includes(" ")) {
+            return ctx.reply({
+              content: "Invalid emoji: Contains invalid characters.",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+
+          const emoji = await resolveEmoji(
+            ctx.rest,
+            emojiRaw,
+            undefined,
+            guildId,
+            ctx.env.DISCOHOOK_ORIGIN,
+          );
+          if (!emoji) {
+            return ctx.reply({
+              content:
+                "Could not find an emoji that matches the input. For a custom emoji, try using the numeric ID, and make sure Discohook has access to it.",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+          data.emoji = partialEmojiToComponentEmoji(emoji);
+        }
+      }
+      if (data.style === ButtonStyle.Link) {
+        let url: URL;
+        try {
+          url = new URL(ctx.getModalComponent("url").value);
+          if (!["http:", "https:", "discord:"].includes(url.protocol)) {
+            throw Error("Protocol must be `http`, `https`, or `discord`.");
+          }
+        } catch (e) {
+          return ctx.reply({
+            content: "Invalid URL",
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+        url.searchParams.set("dhc-id", componentId);
+        data.url = url.href;
+      }
+      break;
+    default:
+      break;
+  }
+  const disabledRaw = ctx.getModalComponent("disabled")?.value;
+  if (disabledRaw) {
+    if (!["true", "false"].includes(disabledRaw.toLowerCase())) {
+      return ctx.reply({
+        content: "Disabled field must be either `true` or `false`.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    data.disabled = disabledRaw.toLowerCase() === "true";
+  }
+
+  const edited = await registerComponentUpdate(
+    ctx,
+    component.id,
+    data,
+    {
+      id: webhookId,
+      token: webhook.token,
+      guild_id: guildId,
+    },
+    message,
+  );
+
+  return ctx.updateMessage({
+    content: `Message edited successfully: ${messageLink(
+      edited.channel_id,
+      edited.id,
+      guildId,
+    )}`,
+    components: [],
+  });
+};
+
+export const editComponentFlowModalResendCallback: ButtonCallback = async (
+  ctx,
+) => {
+  const { messageId, componentId } = parseAutoComponentId(
+    ctx.interaction.data.custom_id,
+    "messageId",
+    "componentId",
+  );
+
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const component = await db.query.discordMessageComponents.findFirst({
+    where: (table, { eq }) => eq(table.id, BigInt(componentId)),
+    columns: {
+      id: true,
+      data: true,
+      guildId: true,
+      messageId: true,
+    },
+  });
+  if (
+    !component ||
+    component.guildId?.toString() !== ctx.interaction.guild_id ||
+    component.messageId?.toString() !== messageId
+  ) {
+    // This shouldn't happen unless the component was deleted in between
+    // running the command and selecting the option
+    return ctx.updateMessage({ content: "Unknown component", components: [] });
+  }
+
+  return ctx.modal(getComponentEditModal(component, messageId).toJSON());
 };

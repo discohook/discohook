@@ -2,9 +2,12 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   EmbedBuilder,
+  MessageActionRowComponentBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
   TextInputBuilder,
+  escapeMarkdown,
+  formatEmoji,
   messageLink,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
@@ -60,8 +63,10 @@ import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
 import { getUserPremiumDetails } from "../../util/user.js";
+import { resolveEmoji } from "../reactionRoles.js";
+import { partialEmojiToComponentEmoji } from "./edit.js";
 
-const buildStorableComponent = (
+export const buildStorableComponent = (
   component: StorableComponent,
   customId?: string,
 ): APIButtonComponent | APISelectMenuComponent | undefined => {
@@ -176,13 +181,15 @@ const getComponentFlowEmbed = (flow: ComponentFlow) => {
 const registerComponent = async (
   ctx: InteractionContext<APIInteraction>,
   flow: ComponentFlow,
+  componentId?: bigint,
 ) => {
   // biome-ignore lint/style/noNonNullAssertion: It's not null
   const data = flow.component!;
 
-  const id = BigInt(generateId());
+  const id = componentId ?? BigInt(generateId());
   const customId =
-    data.type === ComponentType.Button && data.style === ButtonStyle.Link
+    data.type === ComponentType.Button &&
+    (data.style === ButtonStyle.Link || data.style === ButtonStyle.Premium)
       ? undefined
       : `p_${id}`;
   const built = buildStorableComponent(data, customId);
@@ -211,12 +218,15 @@ const registerComponent = async (
   //   ? message.components.map(c => new ActionRowBuilder(c))
   //   : [new ActionRowBuilder()];
 
-  const components = message.components ?? [new ActionRowBuilder().toJSON()];
+  const components = message.components ?? [
+    new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
+  ];
   let nextAvailableRow = components.find(
     (c) => 5 - getRowWidth(c) >= requiredWidth,
   );
   if (!nextAvailableRow && components.length < 5) {
-    nextAvailableRow = new ActionRowBuilder().toJSON();
+    nextAvailableRow =
+      new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON();
     components.push(nextAvailableRow);
   } else if (!nextAvailableRow) {
     throw new Error(
@@ -262,14 +272,9 @@ const registerComponent = async (
     )) as APIMessage;
   } catch (e) {
     if (isDiscordError(e)) {
-      // await db
-      //   .delete(discordMessageComponents)
-      //   .where(eq(discordMessageComponents.id, returned[0].id));
       await db
         .update(discordMessageComponents)
-        .set({
-          draft: true,
-        })
+        .set({ draft: true })
         .where(eq(discordMessageComponents.id, returned[0].id));
     }
     throw e;
@@ -626,6 +631,18 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 "The full URL this button will lead to when it is clicked.",
               ),
           ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("disabled")
+              .setLabel("Disabled?")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false)
+              .setMinLength(4)
+              .setMaxLength(5)
+              .setPlaceholder(
+                'Type "true" or "false" for whether the button should be unclickable.',
+              ),
+          ),
         );
 
       await storeComponents(ctx.env.KV, [
@@ -633,7 +650,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         {
           ...state,
           componentTimeout: 600,
-          componentRoutingId: "add-component-flow_customize-modal",
+          componentRoutingId: "add-component-flow-customize-modal",
           componentOnce: false,
         },
       ]);
@@ -774,9 +791,9 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
 
   if (state.component?.type === ComponentType.Button) {
     const label = ctx.getModalComponent("label").value;
-    const emoji = ctx.getModalComponent("emoji").value;
+    const emojiRaw = ctx.getModalComponent("emoji").value;
 
-    if (!label && !emoji) {
+    if (!label && !emojiRaw) {
       return ctx.reply({
         content: "Must provide either a label or emoji.",
         flags: MessageFlags.Ephemeral,
@@ -785,37 +802,82 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
 
     if (state.component.style !== ButtonStyle.Premium) {
       state.component.label = label;
-      // state.component.emoji = emoji;
-      // state.step += 1;
-      // state.steps?.push({ label: `Set label (${escapeMarkdown(label)})` });
-      // state.step += 1;
-      // state.steps?.push({ label: `Set emoji (${escapeMarkdown(label)})` });
+      if (emojiRaw) {
+        if (emojiRaw.includes(" ")) {
+          return ctx.reply({
+            content: "Invalid emoji: Contains invalid characters.",
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+
+        const emoji = await resolveEmoji(
+          ctx.rest,
+          emojiRaw,
+          undefined,
+          state.message.guildId,
+          ctx.env.DISCOHOOK_ORIGIN,
+        );
+        if (!emoji) {
+          return ctx.reply({
+            content:
+              "Could not find an emoji that matches the input. For a custom emoji, try using the numeric ID, and make sure Discohook has access to it.",
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+        state.component.emoji = partialEmojiToComponentEmoji(emoji);
+      }
+      state.step += 1;
+      state.steps?.push({
+        label: `Set label (${
+          label ? escapeMarkdown(label) : "none"
+        }) and emoji (${
+          state.component.emoji?.id
+            ? formatEmoji(
+                state.component.emoji.id,
+                state.component.emoji.animated,
+              )
+            : state.component.emoji?.name ?? "none"
+        })`,
+      });
+    }
+
+    const disabledRaw = ctx.getModalComponent("disabled")?.value;
+    if (disabledRaw) {
+      if (!["true", "false"].includes(disabledRaw.toLowerCase())) {
+        return ctx.updateMessage({
+          content: "Disabled field must be either `true` or `false`.",
+          components: [],
+        });
+      }
+      state.component.disabled = disabledRaw.toLowerCase() === "true";
     }
 
     if (state.component.style === ButtonStyle.Link) {
-      const url = ctx.getModalComponent("url").value;
-      if (!BUTTON_URL_RE.test(url)) {
-        return ctx.reply({
-          content:
-            "Invalid URL. Must be a `http://`, `https://`, or `discord://` address.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      let url: URL;
       try {
-        new URL(url);
+        url = new URL(ctx.getModalComponent("url").value);
       } catch {
         return ctx.reply({
           content: "Invalid URL.",
           flags: MessageFlags.Ephemeral,
         });
       }
+      if (!BUTTON_URL_RE.test(url.href)) {
+        return ctx.reply({
+          content:
+            "Invalid URL. Must be a `http://`, `https://`, or `discord://` address.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
 
-      state.component.url = url;
+      const id = generateId();
+      url.searchParams.set("dhc-id", id);
+      state.component.url = url.href;
       state.step += 1;
-      state.steps?.push({ label: "Set label, emoji, and URL" });
+      state.steps?.push({ label: "Set URL" });
 
       try {
-        await registerComponent(ctx, state);
+        await registerComponent(ctx, state, BigInt(id));
       } catch (e) {
         console.error(e);
         return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
