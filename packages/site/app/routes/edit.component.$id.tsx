@@ -476,7 +476,7 @@ const buildStorableComponent = (
       return {
         ...component,
         custom_id: `p_${id}`,
-        flow: flowToDraftFlow(flows[0]),
+        flow: flows[0] ? flowToDraftFlow(flows[0]) : { actions: [] },
       } as APIButtonComponentWithCustomId;
     }
     case ComponentType.StringSelect: {
@@ -520,7 +520,7 @@ const buildStorableComponent = (
         max_values,
         // @ts-expect-error
         default_values,
-        flow: flowToDraftFlow(flows[0]),
+        flow: flows[0] ? flowToDraftFlow(flows[0]) : { actions: [] },
       };
     }
     default:
