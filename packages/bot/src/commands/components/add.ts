@@ -12,9 +12,11 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
+  APIActionRowComponent,
   APIButtonComponent,
   APIInteraction,
   APIMessage,
+  APIMessageActionRowComponent,
   APIModalInteractionResponseCallbackData,
   APISelectMenuComponent,
   APIStringSelectComponent,
@@ -290,6 +292,7 @@ const registerComponent = async (
 export const startComponentFlow = async (
   ctx: InteractionContext<APIInteraction>,
   message: APIMessage,
+  components?: APIActionRowComponent<APIMessageActionRowComponent>[],
 ): Promise<InteractionInstantOrDeferredResponse> => {
   const db = getDb(ctx.env.HYPERDRIVE.connectionString);
   const user = await upsertDiscordUser(db, ctx.user);
@@ -319,7 +322,7 @@ export const startComponentFlow = async (
     componentTimeout: 300,
     componentRoutingId: "add-component-flow",
     step: 0,
-    stepTitle: "Add Component",
+    stepTitle: "Message Components",
     webhookToken,
     message: {
       id: message.id,
@@ -336,8 +339,6 @@ export const startComponentFlow = async (
     },
   };
 
-  // Maybe switch to a quickie web form instead of a long flow like this
-  // but some users prefer to stay within discord (for whatever reason!)
   return [
     ctx.reply({
       embeds: [getComponentFlowEmbed(componentFlow).toJSON()],
@@ -346,7 +347,7 @@ export const startComponentFlow = async (
           .addComponents(
             await storeComponents(ctx.env.KV, [
               new StringSelectMenuBuilder({
-                placeholder: "Select a component type",
+                placeholder: "Add a component",
                 options: [
                   {
                     label: "Button",
@@ -404,6 +405,7 @@ export const startComponentFlow = async (
             ]),
           )
           .toJSON(),
+        ...(components ?? []),
       ],
       flags: MessageFlags.Ephemeral,
     }),

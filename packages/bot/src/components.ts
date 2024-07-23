@@ -11,6 +11,7 @@ import {
   submitCustomizeModal,
 } from "./commands/components/add.js";
 import {
+  editComponentButtonEntry,
   editComponentFlowModalCallback,
   editComponentFlowModalResendCallback,
   editComponentFlowModeCallback,
@@ -67,6 +68,7 @@ export type ModalRoutingId =
 export type ComponentRoutingId =
   | "add-component-flow"
   | "add-component-flow-customize-modal-resend"
+  | "edit-component-flow-ctx"
   | "edit-component-flow-pick"
   | "edit-component-flow-mode"
   | "edit-component-flow-modal-resend"
@@ -89,6 +91,9 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   },
   "add-component-flow-customize-modal-resend": {
     handler: reopenCustomizeModal,
+  },
+  "edit-component-flow-ctx": {
+    handler: editComponentButtonEntry,
   },
   "edit-component-flow-pick": {
     handler: editComponentFlowPickCallback,

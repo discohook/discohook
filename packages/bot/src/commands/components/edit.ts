@@ -1,6 +1,7 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
+  EmbedBuilder,
   MessageActionRowComponentBuilder,
   ModalBuilder,
   SelectMenuBuilder,
@@ -39,7 +40,9 @@ import {
   SelectMenuCallback,
 } from "../../components.js";
 import { InteractionContext } from "../../interactions.js";
+import { webhookAvatarUrl } from "../../util/cdn.js";
 import { getComponentId, parseAutoComponentId } from "../../util/components.js";
+import { color } from "../../util/meta.js";
 import { resolveEmoji } from "../reactionRoles.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import {
@@ -66,60 +69,44 @@ export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
   return await pickWebhookMessageComponentToEdit(ctx, message);
 };
 
+export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) {
+    return ctx.reply("Guild-only");
+  }
+
+  const { channelId, messageId } = parseAutoComponentId(
+    ctx.interaction.data.custom_id,
+    "channelId",
+    "messageId",
+  );
+  const message = await resolveMessageLink(
+    ctx.rest,
+    messageLink(channelId, messageId, guildId),
+  );
+  if (typeof message === "string") {
+    return ctx.reply({
+      content: message,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const response = await pickWebhookMessageComponentToEdit(ctx, message);
+  return ctx.updateMessage(response.data);
+};
+
 export const pickWebhookMessageComponentToEdit = async (
   ctx: InteractionContext,
   message: APIMessage,
 ) => {
-  const mapping: Record<string, string> = {};
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) {
+    return ctx.reply("Guild only");
+  }
 
-  // const rows = (message.components ?? []).map((row) => ({
-  //   ...row,
-  //   components: row.components.map(
-  //     (component): APIButtonComponentWithCustomId => {
-  //       const custom_id = generateId();
-  //       switch (component.type) {
-  //         case ComponentType.Button:
-  //           if (component.style === ButtonStyle.Premium) {
-  //             return {
-  //               type: component.type,
-  //               style: ButtonStyle.Primary,
-  //               custom_id,
-  //               label: "Premium",
-  //               emoji: { name: "🛒" },
-  //               // We can't really do anything with these
-  //               disabled: true,
-  //             };
-  //           }
-  //           if (component.style === ButtonStyle.Link) {
-  //             return {
-  //               type: component.type,
-  //               style: ButtonStyle.Secondary,
-  //               custom_id,
-  //               label: component.label,
-  //               emoji: component.emoji,
-  //             };
-  //           }
-  //           return {
-  //             ...component,
-  //             custom_id,
-  //           };
-  //         case ComponentType.StringSelect:
-  //           return {
-  //             type: ComponentType.Button,
-  //             custom_id,
-  //           };
-  //         default:
-  //           break;
-  //       }
-  //     },
-  //   ),
-  // }));
-
-  const emojis = ctx.interaction.guild_id
-    ? ((await ctx.rest.get(
-        Routes.guildEmojis(ctx.interaction.guild_id),
-      )) as APIEmoji[])
-    : [];
+  const emojis = (await ctx.rest.get(
+    Routes.guildEmojis(guildId),
+  )) as APIEmoji[];
 
   const options = (message.components ?? []).flatMap((row, ri) =>
     row.components
@@ -213,6 +200,23 @@ export const pickWebhookMessageComponentToEdit = async (
     .addOptions(options);
 
   return ctx.reply({
+    embeds: [
+      new EmbedBuilder({
+        title: "Edit Component",
+        color,
+      })
+        .addFields({
+          name: "Message",
+          value: messageLink(message.channel_id, message.id, guildId),
+        })
+        .setThumbnail(
+          webhookAvatarUrl({
+            id: message.author.id,
+            avatar: message.author.avatar,
+          }),
+        )
+        .toJSON(),
+    ],
     components: [
       new ActionRowBuilder<typeof select>().addComponents(select).toJSON(),
     ],
@@ -256,6 +260,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
       return ctx.updateMessage({
         content:
           "What aspect of this component would you like to edit? Surface details are what users can see before clicking on the component.",
+        embeds: [],
         components: [
           new ActionRowBuilder<SelectMenuBuilder>()
             .addComponents(

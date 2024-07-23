@@ -1,3 +1,4 @@
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { messageLink } from "@discordjs/formatters";
 import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
@@ -5,6 +6,7 @@ import {
   APIApplicationCommandAutocompleteInteraction,
   APIMessage,
   ApplicationCommandOptionType,
+  ButtonStyle,
   MessageFlags,
   Routes,
 } from "discord-api-types/v10";
@@ -14,6 +16,7 @@ import {
   ChatInputAppCommandCallback,
   MessageAppCommandCallback,
 } from "../../commands.js";
+import { AutoComponentCustomId } from "../../components.js";
 import { InteractionContext } from "../../interactions.js";
 import { startComponentFlow } from "./add.js";
 
@@ -151,8 +154,21 @@ export const addComponentMessageAutocomplete: AppCommandAutocompleteCallback = (
 
 export const addComponentMessageEntry: MessageAppCommandCallback = (ctx) => {
   const message = ctx.getMessage();
-  return startComponentFlow(
-    ctx,
-    message,
-  ) as ReturnType<MessageAppCommandCallback>;
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(
+        `a_edit-component-flow-ctx_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
+      )
+      .setLabel("Edit mode")
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setLabel("View all")
+      .setStyle(ButtonStyle.Link)
+      .setURL(
+        `${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}?t=components`,
+      ),
+  );
+  return startComponentFlow(ctx, message, [
+    row.toJSON(),
+  ]) as ReturnType<MessageAppCommandCallback>;
 };
