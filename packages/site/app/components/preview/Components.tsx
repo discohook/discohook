@@ -6,6 +6,7 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
+import { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import {
@@ -28,6 +29,7 @@ type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
   authorType?: AuthorType;
   cache?: CacheManager;
+  t?: TFunction;
 }>;
 
 export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
@@ -146,8 +148,8 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
   onClick,
   authorType,
   cache,
+  t,
 }) => {
-  const { t } = useTranslation();
   const shouldLeftPad =
     "options" in data && data.options.filter((o) => o.emoji).length !== 0;
   const nonSendable = authorType && authorType < AuthorType.ActionableWebhook;
@@ -172,7 +174,7 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
         }}
       >
         <span className="truncate text-[#5c5e66] dark:text-[#949ba4] leading-none">
-          {data.placeholder ?? t("defaultPlaceholder")}
+          {data.placeholder ?? (t ? t("defaultPlaceholder") : "")}
         </span>
         <div className="flex items-center gap-1">
           <CoolIcon
@@ -271,10 +273,14 @@ export const MessageComponents: React.FC<{
   authorType?: AuthorType;
   cache?: CacheManager;
 }> = ({ components, authorType, cache }) => {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-1 py-[0.125rem]">
       {components.map((row, i) => (
-        <div key={`action-row-${i}`} className="flex flex-wrap gap-x-1.5 gap-y-0">
+        <div
+          key={`action-row-${i}`}
+          className="flex flex-wrap gap-x-1.5 gap-y-0"
+        >
           {row.components.map((component, ci) => {
             const fc = previewComponentMap[component.type];
             if (fc) {
@@ -288,6 +294,7 @@ export const MessageComponents: React.FC<{
                     data: component,
                     authorType,
                     cache,
+                    t,
                   })}
                 </div>
               );
