@@ -69,14 +69,14 @@ const Feature: React.FC<
     }
   >
     <p className="font-semibold text-lg">{features[id].title}</p>
-    <div className="truncate max-h-6">{features[id].body}</div>
+    <div className="truncate max-h-6">{features[id].children}</div>
   </button>
 );
 
 const features: Record<string, SimpleTextModalProps> = {
   "max-actions": {
     title: "Max. flow actions",
-    body: (
+    children: (
       <>
         Free users can have 5 actions per flow - plenty for simple designs, but
         something more advanced could require the massive <Twemoji emoji="💪" />{" "}
@@ -86,7 +86,7 @@ const features: Record<string, SimpleTextModalProps> = {
   },
   "max-messages": {
     title: "Max. message actions per flow",
-    body: (
+    children: (
       <>
         Sending messages is a common but limited action, so free users are
         allowed to send 2 messages per flow (as a response or as a webhook), and
@@ -96,7 +96,7 @@ const features: Record<string, SimpleTextModalProps> = {
   },
   "custom-bot": {
     title: "Custom bot profile",
-    body: (
+    children: (
       <>
         Use completely custom branding in your server by creating your own bot.
       </>
@@ -104,7 +104,7 @@ const features: Record<string, SimpleTextModalProps> = {
   },
   "link-embeds": {
     title: "Use-anywhere embeds (+ embedded videos)",
-    body: (
+    children: (
       <>
         Why limit yourself to the functionality of webhook embeds? Deluxe
         members can create custom embeds usable anywhere on Discord, even
@@ -122,7 +122,7 @@ const features: Record<string, SimpleTextModalProps> = {
   },
   "hosted-files": {
     title: "Hosted image links & files",
-    body: (
+    children: (
       <>
         Many users experience difficulty finding a good place to upload files
         that's easy to use and Discord will accept long-term.

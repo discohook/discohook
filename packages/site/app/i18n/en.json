@@ -38,6 +38,8 @@
   "sendToAll": "Send to All",
   "sendAll": "Send All",
   "sendNoMessages": "You have no messages to send.",
+  "orgRedirectTitle": "You were just redirected from discohook.org",
+  "orgRedirectBody": "Discohook is now available at <bold>discohook.app</bold>. To migrate your backups, <importLink>click here</importLink>. To read more about this update, <infoLink>click here</infoLink>.",
   "willBeEdited": "This message has a reference set, so it will be edited.",
   "skippedEdit": "Skipped edit due to mismatched webhook ID.",
   "submitResultTitle": "Submit Result",

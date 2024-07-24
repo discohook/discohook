@@ -3,7 +3,7 @@ import { Modal, ModalProps } from "./Modal";
 
 export interface SimpleTextModalProps {
   title: string;
-  body: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export const SimpleTextModal = (
@@ -11,7 +11,7 @@ export const SimpleTextModal = (
 ) => {
   return (
     <Modal {...props}>
-      {props.body}
+      {props.children}
       <div className="flex w-full mt-4">
         <Button onClick={() => props.setOpen(false)} className="mx-auto">
           OK

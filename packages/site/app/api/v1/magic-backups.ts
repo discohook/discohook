@@ -76,7 +76,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   return json(
     {
       name: user.name,
-      avatarUrl: getUserAvatar(user, { size: 32 }),
+      avatarUrl: getUserAvatar(user, { size: 64 }),
       backups: userBackups,
     },
     { headers: getCorsHeaders(context.env.LEGACY_ORIGIN) },

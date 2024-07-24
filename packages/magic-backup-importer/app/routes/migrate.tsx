@@ -62,7 +62,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const params = new URL(request.url).searchParams;
   const token = params.get("token");
   if (!token) {
-    return redirect(`${context.env.DISCOHOOK_ORIGIN}/?dm=org&${params}`);
+    return redirect(`${context.env.DISCOHOOK_ORIGIN}/?m=org&${params}`);
   }
   return { token, origin: context.env.DISCOHOOK_ORIGIN };
 };

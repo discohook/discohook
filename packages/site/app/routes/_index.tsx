@@ -4,7 +4,7 @@ import { isLinkButton } from "discord-api-types/utils/v10";
 import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { useEffect, useReducer, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
@@ -14,6 +14,7 @@ import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
@@ -32,6 +33,7 @@ import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
+import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getUser } from "~/session.server";
@@ -398,6 +400,7 @@ export default function Index() {
   const [editingWebhook, setEditingWebhook] = useState<string>();
   const [showHistory, setShowHistory] = useState(dm === "history");
   const [jsonEditor, setJsonEditor] = useState<JsonEditorProps>();
+  const [showOrgMigration, setShowOrgMigration] = useState(dm === "org");
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -495,6 +498,32 @@ export default function Index() {
         setOpen={() => setBadShareData(undefined)}
         data={badShareData}
       />
+      <SimpleTextModal open={showOrgMigration} setOpen={setShowOrgMigration}>
+        <p className="font-medium text-lg mb-2">{t("orgRedirectTitle")}</p>
+        <p>
+          <Trans
+            t={t}
+            i18nKey="orgRedirectBody"
+            components={{
+              bold: <span className="font-semibold" />,
+              importLink: (
+                <Link
+                  to="/me/import-org-backups"
+                  className={linkClassName}
+                  target="_blank"
+                />
+              ),
+              infoLink: (
+                <Link
+                  to="/guide/deprecated/migrate-utils"
+                  className={linkClassName}
+                  target="_blank"
+                />
+              ),
+            }}
+          />
+        </p>
+      </SimpleTextModal>
       <AuthSuccessModal
         open={authSuccessOpen}
         setOpen={setAuthSuccessOpen}
