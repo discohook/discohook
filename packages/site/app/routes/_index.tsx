@@ -544,12 +544,10 @@ export default function Index() {
       >
         <div
           className={twMerge(
-            "p-4 h-full overflow-y-scroll md:w-1/2",
+            "p-4 h-full overflow-y-scroll",
             settings.forceDualPane
               ? "w-1/2"
-              : tab === "editor"
-                ? ""
-                : "hidden md:block",
+              : twJoin("md:w-1/2", tab === "editor" ? "" : "hidden md:block"),
           )}
         >
           {urlTooLong && (
@@ -703,12 +701,13 @@ export default function Index() {
         </div>
         <div
           className={twMerge(
-            "border-l-gray-400 dark:border-l-[#1E1F22] h-full flex-col md:w-1/2",
+            "border-l-gray-400 dark:border-l-[#1E1F22] h-full flex-col",
             settings.forceDualPane
               ? "flex w-1/2 border-l-2"
-              : tab === "preview"
-                ? "flex"
-                : "hidden md:border-l-2 md:flex",
+              : twJoin(
+                  "md:w-1/2",
+                  tab === "preview" ? "flex" : "hidden md:border-l-2 md:flex",
+                ),
           )}
         >
           <div className="overflow-y-scroll grow p-4 pb-8">
