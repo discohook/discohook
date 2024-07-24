@@ -47,7 +47,7 @@ command = "npm run build"
 ENVIRONMENT = "dev"
 DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
 LEGACY_ORIGIN = "https://discohook.org"
-MY_ORIGIN = "https://my.discohook.app"
+LINK_ORIGIN = "https://discohook.link"
 CDN_ORIGIN = "https://cdn.discohook.app"
 BOTS_ORIGIN = "https://bots.discohook.app"
 

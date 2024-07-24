@@ -40,12 +40,12 @@ import { safePushState } from "./_index";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
-  return { user, myOrigin: context.env.MY_ORIGIN };
+  return { user, linkOrigin: context.env.LINK_ORIGIN };
 };
 
-export const linkEmbedUrl = (code: string, myOrigin?: string) => {
-  if (myOrigin) {
-    return `${myOrigin}/${code}`;
+export const linkEmbedUrl = (code: string, linkOrigin?: string) => {
+  if (linkOrigin) {
+    return `${linkOrigin}/${code}`;
   }
   try {
     return `${origin}/link/${code}`;
@@ -57,11 +57,11 @@ export const linkEmbedUrl = (code: string, myOrigin?: string) => {
 export const linkEmbedToAPIEmbed = (
   data: z.infer<typeof ZodLinkEmbed>,
   code?: string,
-  myOrigin?: string,
+  linkOrigin?: string,
 ): { embed: APIEmbed; extraImages: APIEmbedImage[] } => {
   const embed: APIEmbed = {
     title: data.title,
-    url: code ? linkEmbedUrl(code, myOrigin) : "#",
+    url: code ? linkEmbedUrl(code, linkOrigin) : "#",
     provider: data.provider,
     author: data.author,
     description: data.description,
@@ -90,7 +90,7 @@ export interface LinkHistoryItem {
 
 export default () => {
   const { t } = useTranslation();
-  const { user, myOrigin } = useLoaderData<typeof loader>();
+  const { user, linkOrigin } = useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
 
   const [settings] = useLocalStorage();
@@ -303,7 +303,7 @@ export default () => {
               disabled={!backupInfo?.code}
               onClick={() => {
                 if (!backupInfo) return;
-                copyText(linkEmbedUrl(backupInfo.code, myOrigin));
+                copyText(linkEmbedUrl(backupInfo.code, linkOrigin));
               }}
             >
               {t("copyLink")}
@@ -406,21 +406,21 @@ export default () => {
                   },
                   content:
                     loc && backupInfo
-                      ? linkEmbedUrl(backupInfo.code, myOrigin)
+                      ? linkEmbedUrl(backupInfo.code, linkOrigin)
                       : undefined,
                   embeds: [
                     linkEmbedToAPIEmbed(
                       data.embed.data,
                       backupInfo?.code,
-                      myOrigin,
+                      linkOrigin,
                     ).embed,
                     ...linkEmbedToAPIEmbed(
                       data.embed.data,
                       backupInfo?.code,
-                      myOrigin,
+                      linkOrigin,
                     ).extraImages.map((image) => ({
                       url: backupInfo
-                        ? linkEmbedUrl(backupInfo.code, myOrigin)
+                        ? linkEmbedUrl(backupInfo.code, linkOrigin)
                         : "#",
                       image,
                     })),
@@ -436,7 +436,7 @@ export default () => {
                 {...linkEmbedToAPIEmbed(
                   data.embed.data,
                   backupInfo?.code,
-                  myOrigin,
+                  linkOrigin,
                 )}
                 setImageModalData={setImageModalData}
                 isLinkEmbed

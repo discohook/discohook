@@ -31,8 +31,8 @@ export interface Env {
   GIST_TOKEN?: string;
   // discohook.org - for importing old-style backups
   LEGACY_ORIGIN?: string;
-  // my.discohook.app - prettier links for link embeds
-  MY_ORIGIN?: string;
+  // discohook.link - prettier links for link embeds
+  LINK_ORIGIN?: string;
   // cdn.discohook.app - user uploaded content on B2
   CDN_ORIGIN: string;
   CDN: Service<CDNService>;
