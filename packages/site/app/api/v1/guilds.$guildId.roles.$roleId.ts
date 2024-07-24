@@ -23,6 +23,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   const [, respond] = await authorizeRequest(request, context);
 
+  const key = `cache-role-${roleId}`;
+  const cached = await context.env.KV.get<ResolvableAPIRole>(key, "json");
+  if (cached) return cached;
+
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const dbRole = await db.query.discordRoles.findFirst({
     where: (discordRoles, { eq }) => eq(discordRoles.id, roleId),
@@ -39,20 +43,21 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   });
   if (dbRole) {
     // TODO sniff out stale store
-    const { unicodeEmoji } = dbRole;
-    // @ts-expect-error
-    // biome-ignore lint/performance/noDelete: Actually remove it from response so it doesn't get cached
-    delete dbRole.unicodeEmoji;
-    return respond(
-      json({
-        ...dbRole,
-        id: String(dbRole.id),
-        color: dbRole.color ?? 0,
-        managed: dbRole.managed ?? false,
-        mentionable: dbRole.mentionable ?? false,
-        unicode_emoji: unicodeEmoji,
-      } satisfies ResolvableAPIRole),
-    );
+    const { unicodeEmoji, ...roleRest } = dbRole;
+    const returnRole = {
+      ...roleRest,
+      id: String(roleRest.id),
+      color: roleRest.color ?? 0,
+      managed: roleRest.managed ?? false,
+      mentionable: roleRest.mentionable ?? false,
+      unicode_emoji: unicodeEmoji,
+    } satisfies ResolvableAPIRole;
+
+    await context.env.KV.put(key, JSON.stringify(returnRole), {
+      // 2 hours
+      expirationTtl: 7200,
+    });
+    return respond(json(returnRole));
   }
 
   if (guildId === "@global") {
@@ -111,19 +116,23 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const role = roles.find((r) => r.id === String(roleId));
   if (!role) {
-    throw respond(json({ message: "The role does not exist" }, 404));
+    throw respond(json({ message: "Unknown Role" }, 404));
   }
 
-  return respond(
-    json({
-      id: role.id,
-      name: role.name,
-      color: role.color,
-      icon: role.icon,
-      unicode_emoji: role.unicode_emoji,
-      managed: role.managed,
-      mentionable: role.mentionable,
-      position: role.position,
-    } satisfies ResolvableAPIRole),
-  );
+  const returnRole = {
+    id: role.id,
+    name: role.name,
+    color: role.color,
+    icon: role.icon,
+    unicode_emoji: role.unicode_emoji,
+    managed: role.managed,
+    mentionable: role.mentionable,
+    position: role.position,
+  } satisfies ResolvableAPIRole;
+
+  await context.env.KV.put(key, JSON.stringify(returnRole), {
+    // 2 hours
+    expirationTtl: 7200,
+  });
+  return respond(json(returnRole));
 };

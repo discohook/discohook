@@ -18,6 +18,13 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     userId: snowflakeAsString(),
   });
 
+  const key = `cache-member-${guildId}-${userId}`;
+  const cached = await context.env.KV.get<ResolvableAPIGuildMember>(
+    key,
+    "json",
+  );
+  if (cached) return cached;
+
   const [token, respond] = await authorizeRequest(request, context);
   if (guildId !== "@global") {
     const { member: userMember } = await getTokenGuildPermissions(
@@ -29,16 +36,20 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       // Self-mention and fresh token assignment
       // biome-ignore lint/style/noNonNullAssertion:
       const user = userMember.user!;
-      return respond(
-        json({
-          nick: userMember.nick,
-          user: {
-            id: user.id,
-            global_name: user.global_name,
-            username: user.username,
-          },
-        } satisfies ResolvableAPIGuildMember),
-      );
+      const member = {
+        nick: userMember.nick,
+        user: {
+          id: user.id,
+          global_name: user.global_name,
+          username: user.username,
+        },
+      } satisfies ResolvableAPIGuildMember;
+
+      await context.env.KV.put(key, JSON.stringify(member), {
+        // 2 hours
+        expirationTtl: 7200,
+      });
+      return respond(json(member));
     }
   }
 
@@ -91,5 +102,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     }
   }
 
+  await context.env.KV.put(key, JSON.stringify(member), {
+    // 2 hours
+    expirationTtl: 7200,
+  });
   return respond(json(member));
 };

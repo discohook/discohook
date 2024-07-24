@@ -50,6 +50,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   });
   const [, respond] = await authorizeRequest(request, context);
 
+  const key = `cache-channel-${channelId}`;
+  const cached = await context.env.KV.get<ResolvableAPIChannel>(key, "json");
+  if (cached) return cached;
+
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   let channel: ResolvableAPIChannel;
   try {
@@ -74,5 +78,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     );
   }
 
+  await context.env.KV.put(key, JSON.stringify(channel), {
+    // 2 hours
+    expirationTtl: 7200,
+  });
   return respond(json(channel));
 };
