@@ -46,12 +46,12 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
   const button = (
     <Button
       discordstyle={data.style}
-      emoji={data.emoji}
+      emoji={data.style !== ButtonStyle.Premium ? data.emoji : undefined}
       disabled={data.disabled ?? false}
-      className={`!text-sm ${nonSendable ? "hidden" : ""}`}
+      className={twJoin("!text-sm", nonSendable ? "hidden" : undefined)}
       onClick={onClick}
     >
-      {data.label}
+      {data.style !== ButtonStyle.Premium ? data.label : `SKU ${data.sku_id}`}
     </Button>
   );
   return data.style === ButtonStyle.Link ? (

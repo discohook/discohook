@@ -37,7 +37,9 @@ export const getComponentText = (
   component: APIMessageComponent,
 ): string | undefined =>
   component.type === ComponentType.Button
-    ? component.label ?? component.emoji?.name
+    ? component.style !== ButtonStyle.Premium
+      ? component.label ?? component.emoji?.name
+      : `SKU ${component.sku_id}`
     : component.type === ComponentType.StringSelect
       ? component.placeholder
       : undefined;
@@ -92,7 +94,11 @@ export const getComponentErrors = (
       // }
       break;
     case ComponentType.Button:
-      if (!component.emoji && !component.label) {
+      if (
+        component.style !== ButtonStyle.Premium &&
+        !component.emoji &&
+        !component.label
+      ) {
         errors.push("labelEmpty");
       }
       if (component.style === ButtonStyle.Link && !component.url) {
@@ -162,7 +168,10 @@ export const submitComponent = async (data: APIMessageActionRowComponent) => {
         ...raw.data,
         custom_id: `p_${raw.id}`,
       };
-      if (component.style !== ButtonStyle.Link) {
+      if (
+        component.style !== ButtonStyle.Link &&
+        component.style !== ButtonStyle.Premium
+      ) {
         component.flow = (data as APIButtonComponentWithCustomId).flow;
       }
       break;
@@ -417,7 +426,8 @@ export const ActionRowEditor: React.FC<{
               onClick={() => {
                 if (
                   (component.type === ComponentType.Button &&
-                    component.style !== ButtonStyle.Link) ||
+                    component.style !== ButtonStyle.Link &&
+                    component.style !== ButtonStyle.Premium) ||
                   component.type === ComponentType.UserSelect ||
                   component.type === ComponentType.RoleSelect ||
                   component.type === ComponentType.MentionableSelect ||
@@ -566,6 +576,7 @@ export const IndividualComponentEditor: React.FC<{
                   : "w-full h-full",
                 {
                   [ButtonStyle.Primary]: "bg-blurple",
+                  [ButtonStyle.Premium]: "bg-blurple",
                   [ButtonStyle.Secondary]: "bg-[#6d6f78] dark:bg-[#4e5058]",
                   [ButtonStyle.Link]: "bg-[#6d6f78] dark:bg-[#4e5058]",
                   [ButtonStyle.Success]: "bg-[#248046] dark:bg-[#248046]",
