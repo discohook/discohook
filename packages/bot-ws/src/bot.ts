@@ -70,9 +70,8 @@ manager.on(WebSocketShardEvents.Closed, (event) => {
 
 manager.on(WebSocketShardEvents.Dispatch, async (event) => {
   // We have to have just a little bit of local state to prevent sending 1000+
-  // requests every time a shard is ready. Fortunately, even 500,000 guild IDs
-  // should only take up about 9MB of memory. I'm mostly concerned about race
-  // conditions and maybe CPU.
+  // requests every time a shard is ready. Since this is the only cache, I am
+  // not so concerned about RAM with this 'hybrid' technique
   switch (event.data.t) {
     case GatewayDispatchEvents.GuildCreate: {
       const alreadyMember = guildIds.includes(event.data.d.id);
@@ -81,7 +80,7 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       break;
     }
     case GatewayDispatchEvents.GuildDelete: {
-      // It's just unavailable, ignore but let the bot worker deal with it
+      // It's just unavailable, ignore but let the bot worker handle it
       if (event.data.d.unavailable) break;
       const index = guildIds.indexOf(event.data.d.id);
       if (index !== -1) guildIds.splice(index, 1);
