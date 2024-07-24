@@ -330,25 +330,33 @@ export class CacheManager {
     const cached = this.state[key];
     if (cached) {
       return cached;
-    } else if (cached === null) {
+    }
+    if (cached === null) {
       return null;
-    } else if (this.queue.includes(key)) {
+    }
+    if (this.queue.includes(key)) {
       // Already resolving asynchronously
       return undefined;
     }
 
     this.queue.push(key);
+    const unqueue = () => {
+      this.queue = this.queue.filter((k) => k !== key);
+    };
+
     switch (request.scope) {
       case "channel": {
-        this.channel.fetch(request.key);
+        this.channel.fetch(request.key).then(unqueue);
         break;
       }
       case "member": {
-        this.member.fetch(...(request.key.split("-") as [string, string]));
+        this.member
+          .fetch(...(request.key.split("-") as [string, string]))
+          .then(unqueue);
         break;
       }
       case "role": {
-        this.role.fetch("@global", request.key);
+        this.role.fetch("@global", request.key).then(unqueue);
         break;
       }
       case "emoji": {
@@ -358,6 +366,7 @@ export class CacheManager {
           id: request.key,
           name: "emoji",
         });
+        unqueue();
         break;
       }
       default:
