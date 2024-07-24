@@ -5,7 +5,13 @@ import {
   json,
   redirect,
 } from "@remix-run/cloudflare";
-import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+  Link,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "@remix-run/react";
 import {
   APIGuild,
   APIWebhook,
@@ -20,6 +26,7 @@ import {
 import { getDate } from "discord-snowflake";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
@@ -27,8 +34,12 @@ import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
+import { getComponentWidth } from "~/components/editor/ComponentEditor";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
+import { PostChannelIcon } from "~/components/icons/channel";
+import { GenericPreviewComponent } from "~/components/preview/Components";
+import { Markdown } from "~/components/preview/Markdown";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
@@ -52,6 +63,8 @@ import { getId } from "~/util/id";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
+import { action as ApiDeleteComponent } from "../api/v1/components.$id";
+import { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
 import { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
 import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
 import { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
@@ -136,6 +149,7 @@ const tabValues = [
   "webhooks",
   "sessions",
   "triggers",
+  "components",
 ] as const;
 
 const flowEventsDetails: Record<number, { icon: CoolIconsGlyph }> = {
@@ -155,6 +169,7 @@ export default () => {
   const permissions = new PermissionsBitField(BigInt(member.permissions));
   const has = (...flags: BitFlagResolvable[]) =>
     member.owner ? true : permissions.has(...flags);
+  const navigate = useNavigate();
 
   const cache = useCache(!user);
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -170,7 +185,7 @@ export default () => {
 
   const [openWebhookId, setOpenWebhookId] = useState<string>();
   const [creatingTrigger, setCreatingTrigger] = useState(false);
-  const [confirmModal, setConfirmModal] = useConfirmModal();
+  const [confirmModal, setConfirm] = useConfirmModal();
 
   const auditLogFetcher = useFetcher<typeof ApiGetGuildAuditLog>();
   const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
@@ -178,6 +193,12 @@ export default () => {
     onError: setError,
   });
   const sessionsFetcher = useFetcher<typeof ApiGetGuildSessions>();
+  const componentsFetcher = useSafeFetcher<typeof ApiGetGuildComponents>({
+    onError: setError,
+  });
+  const componentDeleteFetcher = useSafeFetcher<typeof ApiDeleteComponent>({
+    onError: setError,
+  });
   const triggersFetcher = useSafeFetcher<typeof ApiGetGuildTriggers>({
     onError: setError,
   });
@@ -227,6 +248,12 @@ export default () => {
         }
         break;
       }
+      case "components": {
+        if (!componentsFetcher.data && componentsFetcher.state === "idle") {
+          componentsFetcher.load(apiUrl(BRoutes.guildComponents(guild.id)));
+        }
+        break;
+      }
       default:
         break;
     }
@@ -240,6 +267,8 @@ export default () => {
     sessionsFetcher.state,
     triggersFetcher.data,
     triggersFetcher.state,
+    componentsFetcher.data,
+    componentsFetcher.state,
   ]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -313,6 +342,17 @@ export default () => {
               label: t("home"),
               value: "home",
             },
+            ...(has(
+              PermissionFlags.ManageMessages,
+              PermissionFlags.ManageWebhooks,
+            )
+              ? [
+                  {
+                    label: t("components"),
+                    value: "components",
+                  },
+                ]
+              : []),
             ...(has(PermissionFlags.ManageWebhooks)
               ? [
                   {
@@ -429,6 +469,28 @@ export default () => {
                       </Cell>
                     </div>
                     <div className="table-row">
+                      <Cell className="rounded-bl-lg">{t("components")}</Cell>
+                      <Cell className="rounded-br-lg">
+                        {new Intl.ListFormat().format(
+                          ["ManageMessages", "ManageWebhooks"].map((p) =>
+                            t(`permission.${p}`),
+                          ),
+                        )}
+                      </Cell>
+                      <Cell>
+                        <CoolIcon
+                          icon={
+                            permissions.has(
+                              PermissionFlags.ManageMessages,
+                              PermissionFlags.ManageWebhooks,
+                            )
+                              ? "Check"
+                              : "Close_MD"
+                          }
+                        />
+                      </Cell>
+                    </div>
+                    <div className="table-row">
                       <Cell>{t("webhooks")}</Cell>
                       <Cell>{t("permission.ManageWebhooks")}</Cell>
                       <Cell>
@@ -479,12 +541,6 @@ export default () => {
                     {/* <div className="table-row">
                       <Cell>Sessions</Cell>
                       <Cell>View Audit Logs, Manage Server</Cell>
-                    </div> */}
-                    {/* <div className="table-row">
-                      <Cell className="rounded-bl-lg">Components</Cell>
-                      <Cell className="rounded-br-lg">
-                        Manage Messages, Manage Webhooks
-                      </Cell>
                     </div> */}
                   </div>
                 </div>
@@ -806,7 +862,7 @@ export default () => {
                   className="ltr:ml-2 rtl:mr-2"
                   discordstyle={ButtonStyle.Danger}
                   onClick={() =>
-                    setConfirmModal({
+                    setConfirm({
                       title: t("deleteTrigger"),
                       children: (
                         <>
@@ -827,7 +883,7 @@ export default () => {
                                 method: "DELETE",
                               });
                               setOpenTriggerId(undefined);
-                              setConfirmModal(undefined);
+                              setConfirm(undefined);
                               triggersFetcher.load(
                                 apiUrl(BRoutes.guildTriggers(guild.id)),
                               );
@@ -885,6 +941,244 @@ export default () => {
                 </div>
               </div>
             )
+          ) : tab === "components" ? (
+            <div>
+              <TabHeader>{t("components")}</TabHeader>
+              <div>
+                {componentsFetcher.data
+                  ? (() => {
+                      // biome-ignore lint/style/noNonNullAssertion: Above
+                      const allComponents = componentsFetcher.data!;
+                      const byChannel: Record<
+                        string,
+                        Record<string, typeof allComponents>
+                      > = {};
+                      for (const component of allComponents) {
+                        const channelId = component.channelId?.toString() ?? "";
+                        const messageId = component.messageId?.toString() ?? "";
+                        byChannel[channelId] = byChannel[channelId] ?? {};
+                        byChannel[channelId][messageId] =
+                          byChannel[channelId][messageId] ?? [];
+                        byChannel[channelId][messageId].push(component);
+                      }
+
+                      return (
+                        <div className="space-y-4">
+                          {Object.entries(byChannel).map(
+                            ([channelId, byMessage]) => {
+                              return (
+                                <div key={`components-${channelId}`}>
+                                  <div
+                                    className="text-base font-medium"
+                                    style={{
+                                      // @ts-expect-error
+                                      "--font-size": "1rem",
+                                    }}
+                                  >
+                                    {channelId ? (
+                                      <a
+                                        href={`https://discord.com/channels/${guild.id}/${channelId}`}
+                                        className="contents"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        <Markdown
+                                          content={`<#${channelId}>`}
+                                          features="full"
+                                          cache={cache}
+                                        />
+                                      </a>
+                                    ) : (
+                                      "None"
+                                    )}
+                                  </div>
+                                  <div className="space-y-2 mt-1">
+                                    {Object.entries(byMessage).map(
+                                      ([messageId, components]) => (
+                                        <div
+                                          key={`components-message-${messageId}`}
+                                          className="flex p-2 text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition"
+                                        >
+                                          <div className="flex flex-wrap gap-x-1.5 gap-y-0 mt-1 ltr:mr-4 rtl:ml-4">
+                                            {components.map((component) => (
+                                              <div
+                                                key={`component-${component.id}`}
+                                                className={twJoin(
+                                                  getComponentWidth(
+                                                    component.data,
+                                                  ) >= 5
+                                                    ? "block w-full my-1 first:mt-0"
+                                                    : "contents",
+                                                )}
+                                              >
+                                                <GenericPreviewComponent
+                                                  // @ts-expect-error the type is close enough for this component
+                                                  // TODO: use `buildStorableComponent` for general completeness
+                                                  data={component.data}
+                                                  cache={cache}
+                                                  t={t}
+                                                  onClick={(e) => {
+                                                    if (e.shiftKey) {
+                                                      navigate(
+                                                        `/edit/component/${component.id}`,
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    setConfirm({
+                                                      title:
+                                                        t("messageComponent"),
+                                                      children: (
+                                                        <>
+                                                          <div className="flex w-full">
+                                                            <div className="mx-auto">
+                                                              <GenericPreviewComponent
+                                                                // @ts-expect-error
+                                                                data={
+                                                                  component.data
+                                                                }
+                                                                cache={cache}
+                                                                t={t}
+                                                              />
+                                                            </div>
+                                                          </div>
+                                                          <hr className="border border-gray-500/20 mt-4 mb-1" />
+                                                          <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                                                            {t(
+                                                              "componentEditShiftSkipTip",
+                                                            )}
+                                                          </p>
+                                                          <div className="space-x-1.5 rtl:space-x-reverse mt-4">
+                                                            <Link
+                                                              to={`/edit/component/${component.id}`}
+                                                              className="contents"
+                                                            >
+                                                              <Button
+                                                                discordstyle={
+                                                                  ButtonStyle.Link
+                                                                }
+                                                              >
+                                                                {t("edit")}
+                                                              </Button>
+                                                            </Link>
+                                                            <Button
+                                                              discordstyle={
+                                                                ButtonStyle.Danger
+                                                              }
+                                                              onClick={(e) => {
+                                                                const callback =
+                                                                  () =>
+                                                                    componentDeleteFetcher.submit(
+                                                                      undefined,
+                                                                      {
+                                                                        method:
+                                                                          "DELETE",
+                                                                        action:
+                                                                          apiUrl(
+                                                                            BRoutes.component(
+                                                                              component.id.toString(),
+                                                                            ),
+                                                                          ),
+                                                                      },
+                                                                    );
+
+                                                                if (
+                                                                  e.shiftKey
+                                                                ) {
+                                                                  callback();
+                                                                  return;
+                                                                }
+
+                                                                setConfirm({
+                                                                  title:
+                                                                    t(
+                                                                      "deleteComponent",
+                                                                    ),
+                                                                  children: (
+                                                                    <>
+                                                                      <p>
+                                                                        {t(
+                                                                          "deleteComponentConfirm",
+                                                                          {
+                                                                            replace:
+                                                                              {
+                                                                                type: component
+                                                                                  .data
+                                                                                  .type,
+                                                                              },
+                                                                          },
+                                                                        )}
+                                                                      </p>
+                                                                      <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                                                                        {t(
+                                                                          "shiftSkipTip",
+                                                                        )}
+                                                                      </p>
+                                                                      <Button
+                                                                        className="mt-4"
+                                                                        discordstyle={
+                                                                          ButtonStyle.Danger
+                                                                        }
+                                                                        onClick={() => {
+                                                                          callback();
+                                                                          setConfirm(
+                                                                            undefined,
+                                                                          );
+                                                                        }}
+                                                                      >
+                                                                        {t(
+                                                                          "delete",
+                                                                        )}
+                                                                      </Button>
+                                                                    </>
+                                                                  ),
+                                                                });
+                                                              }}
+                                                            >
+                                                              {t("delete")}
+                                                            </Button>
+                                                          </div>
+                                                        </>
+                                                      ),
+                                                    });
+                                                  }}
+                                                />
+                                              </div>
+                                            ))}
+                                          </div>
+                                          {channelId && messageId && (
+                                            <div className="border-l border-l-blurple/30 ltr:ml-auto rtl:mr-auto ltr:pl-4 ltr:pr-1 rtl:pr-4 rtl:pl-1 flex">
+                                              <a
+                                                href={`https://discord.com/channels/${guild.id}/${channelId}/${messageId}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="m-auto"
+                                              >
+                                                <PostChannelIcon className="h-8 w-8 hover:opacity-80 transition-opacity" />
+                                              </a>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            },
+                          )}
+                        </div>
+                      );
+                    })()
+                  : Array(10)
+                      .fill(undefined)
+                      .map((_, i) => (
+                        <div
+                          key={`component-skeleton-${i}`}
+                          className="h-16 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition mb-2"
+                        />
+                      ))}
+              </div>
+            </div>
           ) : (
             <></>
           )}

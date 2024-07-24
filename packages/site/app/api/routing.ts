@@ -69,6 +69,15 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /guilds/:id/components
+   *
+   * Accepts token or cookie auth.
+   */
+  guildComponents(id: bigint | string) {
+    return `/guilds/${String(id)}/components` as const;
+  },
+
+  /**
    * - GET /guilds/:guildId/members/:userId
    *
    * Accepts token auth.

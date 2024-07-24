@@ -268,6 +268,14 @@ const previewComponentMap = {
   [ComponentType.ChannelSelect]: PreviewSelect,
 };
 
+export const GenericPreviewComponent: PreviewComponent<
+  APIMessageActionRowComponent
+> = (props) => {
+  const fc = previewComponentMap[props.data.type];
+  // @ts-expect-error
+  return fc ? fc(props) : <></>;
+};
+
 export const MessageComponents: React.FC<{
   components: NonNullable<APIMessage["components"]>;
   authorType?: AuthorType;
@@ -281,25 +289,16 @@ export const MessageComponents: React.FC<{
           key={`action-row-${i}`}
           className="flex flex-wrap gap-x-1.5 gap-y-0"
         >
-          {row.components.map((component, ci) => {
-            const fc = previewComponentMap[component.type];
-            if (fc) {
-              return (
-                <div
-                  key={`action-row-${i}-component-${ci}`}
-                  className="contents"
-                >
-                  {fc({
-                    // @ts-ignore
-                    data: component,
-                    authorType,
-                    cache,
-                    t,
-                  })}
-                </div>
-              );
-            }
-          })}
+          {row.components.map((component, ci) => (
+            <div key={`action-row-${i}-component-${ci}`} className="contents">
+              <GenericPreviewComponent
+                data={component}
+                authorType={authorType}
+                cache={cache}
+                t={t}
+              />
+            </div>
+          ))}
         </div>
       ))}
     </div>
