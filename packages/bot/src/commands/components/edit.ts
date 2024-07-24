@@ -12,9 +12,11 @@ import {
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
+  APIActionRowComponent,
   APIEmoji,
   APIInteraction,
   APIMessage,
+  APIMessageActionRowComponent,
   APIMessageComponentEmoji,
   APIPartialEmoji,
   APISelectMenuOption,
@@ -95,20 +97,11 @@ export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
   return ctx.updateMessage(response.data);
 };
 
-export const pickWebhookMessageComponentToEdit = async (
-  ctx: InteractionContext,
-  message: APIMessage,
-) => {
-  const guildId = ctx.interaction.guild_id;
-  if (!guildId) {
-    return ctx.reply("Guild only");
-  }
-
-  const emojis = (await ctx.rest.get(
-    Routes.guildEmojis(guildId),
-  )) as APIEmoji[];
-
-  const options = (message.components ?? []).flatMap((row, ri) =>
+export const getComponentsAsOptions = (
+  components: APIActionRowComponent<APIMessageActionRowComponent>[],
+  emojis: APIEmoji[],
+) =>
+  components.flatMap((row, ri) =>
     row.components
       .map((component, ci): APISelectMenuOption | undefined => {
         const id = getComponentId(component);
@@ -185,9 +178,25 @@ export const pickWebhookMessageComponentToEdit = async (
       .filter((c): c is APISelectMenuOption => !!c),
   );
 
+const pickWebhookMessageComponentToEdit = async (
+  ctx: InteractionContext,
+  message: APIMessage,
+) => {
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) {
+    return ctx.reply("Guild only");
+  }
+
+  const emojis = (await ctx.rest.get(
+    Routes.guildEmojis(guildId),
+  )) as APIEmoji[];
+
+  const options = getComponentsAsOptions(message.components ?? [], emojis);
   if (options.length === 0) {
     return ctx.reply({
       content: "That message has no components that can be picked from.",
+      embeds: [],
+      components: [],
       flags: MessageFlags.Ephemeral,
     });
   }

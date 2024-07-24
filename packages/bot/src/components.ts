@@ -11,6 +11,12 @@ import {
   submitCustomizeModal,
 } from "./commands/components/add.js";
 import {
+  deleteComponentButtonEntry,
+  deleteComponentCancel,
+  deleteComponentConfirm,
+  deleteComponentFlowPickCallback,
+} from "./commands/components/delete.js";
+import {
   editComponentButtonEntry,
   editComponentFlowModalCallback,
   editComponentFlowModalResendCallback,
@@ -72,6 +78,10 @@ export type ComponentRoutingId =
   | "edit-component-flow-pick"
   | "edit-component-flow-mode"
   | "edit-component-flow-modal-resend"
+  | "delete-component-pick-ctx"
+  | "delete-component-pick"
+  | "delete-component-confirm"
+  | "delete-component-cancel"
   | "delete-reaction-role"
   | "select-restore-options"
   | "webhook-info-use"
@@ -103,6 +113,18 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   },
   "edit-component-flow-modal-resend": {
     handler: editComponentFlowModalResendCallback,
+  },
+  "delete-component-pick": {
+    handler: deleteComponentFlowPickCallback,
+  },
+  "delete-component-pick-ctx": {
+    handler: deleteComponentButtonEntry,
+  },
+  "delete-component-confirm": {
+    handler: deleteComponentConfirm,
+  },
+  "delete-component-cancel": {
+    handler: deleteComponentCancel,
   },
   "delete-reaction-role": {
     handler: deleteReactionRoleButtonCallback,

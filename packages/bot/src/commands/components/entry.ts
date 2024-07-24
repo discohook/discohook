@@ -167,6 +167,12 @@ export const addComponentMessageEntry: MessageAppCommandCallback = (ctx) => {
       .setURL(
         `${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}?t=components`,
       ),
+    new ButtonBuilder()
+      .setCustomId(
+        `a_delete-component-pick-ctx_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
+      )
+      .setLabel("Delete mode")
+      .setStyle(ButtonStyle.Danger),
   );
   return startComponentFlow(ctx, message, [
     row.toJSON(),
