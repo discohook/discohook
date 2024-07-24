@@ -89,7 +89,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         let allFlowIds: string[] = [];
         switch (c.type) {
           case ComponentType.Button: {
-            if (c.style === ButtonStyle.Link) {
+            if (
+              c.style === ButtonStyle.Link ||
+              c.style === ButtonStyle.Premium
+            ) {
               data = c; //{ ...current.data, ...c };
               break;
             }
