@@ -24,8 +24,9 @@ export const deluxeInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
     },
   ];
   return ctx.reply({
-    content: `Learn more about Discohook Deluxe here: <${ctx.env.DISCOHOOK_ORIGIN}/donate>`,
+    content: `Learn about Discohook Deluxe here: <${ctx.env.DISCOHOOK_ORIGIN}/donate>`,
     components,
+    flags: MessageFlags.Ephemeral,
   });
 };
 
