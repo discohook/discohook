@@ -101,24 +101,39 @@ export class InteractionContext<
   }
 
   get premium() {
-    const entitlements = this.interaction.entitlements.filter((e) =>
-      this.env.PREMIUM_SKUS.includes(e.sku_id),
-    );
+    const entitlements = this.interaction.entitlements;
     const details: {
       active: boolean;
       grace?: boolean;
-      graceDaysRemaining?: number;
+      graceEndsAt?: Date;
+      subscribedAt?: Date;
+      endsAt?: Date;
+      purchased?: boolean;
+      lifetime?: boolean;
     } = {
       active: entitlements.length !== 0,
+      lifetime:
+        !!this.env.LIFETIME_SKU &&
+        entitlements.map((e) => e.sku_id).includes(this.env.LIFETIME_SKU),
     };
+
+    if (details.lifetime) return details;
 
     // We might have several SKUs that grant premium access
     for (const entitlement of entitlements) {
+      if (entitlement.ends_at) {
+        details.endsAt = new Date(entitlement.ends_at);
+      }
+      if (entitlement.starts_at) {
+        details.subscribedAt = new Date(entitlement.starts_at);
+      }
       if (
+        // Only give grace periods for purchased subscriptions. But I'm not
+        // sure a grace period would actually work with Discord subscriptions
         entitlement.type === EntitlementType.ApplicationSubscription &&
         entitlement.ends_at
       ) {
-        // I'm not sure a grace period would actually work with Discord's subscriptions
+        details.purchased = true;
         const diff =
           (new Date(entitlement.ends_at).getTime() - new Date().getTime()) /
           86_400_000;
@@ -127,7 +142,10 @@ export class InteractionContext<
             details.active = false;
           } else {
             details.grace = true;
-            details.graceDaysRemaining = 3 - Math.floor(diff);
+            // details.graceDaysRemaining = 3 - Math.floor(diff);
+            details.graceEndsAt = new Date(
+              new Date(entitlement.ends_at).getTime() + 3 * 86_400_000,
+            );
           }
         }
       }

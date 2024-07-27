@@ -46,6 +46,19 @@
         }
       }
     },
+    "deluxe": {
+      "name": "deluxe",
+      "options": {
+        "info": {
+          "name": "info",
+          "description": "Info about Discohook Deluxe, our premium subscription option"
+        },
+        "sync": {
+          "name": "sync",
+          "description": "Make sure the Discohook website is up to date with your Deluxe subscription"
+        }
+      }
+    },
     "triggers": {
       "description": "Set up triggers to respond to events in your server",
       "options": {

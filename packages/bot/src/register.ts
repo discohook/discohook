@@ -273,6 +273,13 @@ async function main() {
     ),
     addLocalizations(
       new SlashCommandBuilder()
+        .setName("deluxe")
+        .setDescription("...")
+        .addSubcommand((c) => c.setName("info").setDescription("..."))
+        .addSubcommand((c) => c.setName("sync").setDescription("...")),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
         .setName("format")
         .setDescription("...")
         .addSubcommand(

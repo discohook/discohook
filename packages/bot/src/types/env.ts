@@ -1,6 +1,7 @@
 export interface Env {
   ENVIRONMENT: "dev" | "production";
   PREMIUM_SKUS: string[];
+  LIFETIME_SKU: string;
   DISCORD_APPLICATION_ID: string;
   DISCORD_PUBLIC_KEY: string;
   DISCORD_TOKEN: string;

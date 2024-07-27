@@ -22,6 +22,7 @@ import {
   autocompleteMessageCallback,
 } from "./commands/components/entry.js";
 import { debugMessageCallback } from "./commands/debug.js";
+import { deluxeInfoCallback, deluxeSyncCallback } from "./commands/deluxe.js";
 import {
   formatChannelCallback,
   formatEmojiCallback,
@@ -185,6 +186,12 @@ export const appCommands: Record<
       },
       autocompleteHandlers: {
         BASE: autocompleteMessageCallback,
+      },
+    },
+    deluxe: {
+      handlers: {
+        info: deluxeInfoCallback,
+        sync: deluxeSyncCallback,
       },
     },
   },
