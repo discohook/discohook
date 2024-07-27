@@ -60,7 +60,7 @@ export const deluxeSyncCallback: ChatInputAppCommandCallback = async (ctx) => {
                 : ""
             }).`
           : premium.active
-            ? `You have a premium subscription until ${
+            ? `You have an active Deluxe subscription until ${
                 premium.endsAt
                   ? time(premium.endsAt, TimestampStyles.LongDate)
                   : "unknown"
