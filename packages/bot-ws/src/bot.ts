@@ -16,6 +16,17 @@ if (!env.DISCORD_TOKEN || !env.WORKER_ORIGIN) {
   throw Error("Missing required environment variables. Refer to README.");
 }
 
+// const arg = yargs(hideBin(process.argv)).parseSync();
+// const cluster = <number>arg.cluster ?? 0;
+// const shardCount = env.SHARD_COUNT ?? 1;
+// const clusterCount = env.CLUSTER_COUNT ?? 1;
+// const shardsPerCluster = Math.floor(shardCount / clusterCount);
+
+// const shardIds = Array.from(Array(shardCount).keys()).slice(
+//   cluster * shardsPerCluster,
+//   (cluster + 1) * shardsPerCluster,
+// );
+
 let guildIds: string[] = [];
 const rest = new REST().setToken(env.DISCORD_TOKEN);
 const manager = new WebSocketManager({
@@ -38,11 +49,8 @@ const manager = new WebSocketManager({
     afk: false,
     since: null,
   },
-  shardCount: env.SHARD_COUNT ?? null,
-  // 13 processes for ~128 shards seems about right.
-  // Each process handles ~10k guilds with this setup
-  // buildStrategy: (manager) =>
-  //   new ProcessShardingStrategy(manager, { shardsPerProcess: 10 }),
+  // shardCount,
+  // shardIds,
 });
 
 manager.on(WebSocketShardEvents.Ready, (event) => {
@@ -50,9 +58,9 @@ manager.on(WebSocketShardEvents.Ready, (event) => {
   console.log(
     `${event.data.user.username}#${event.data.user.discriminator} ready with ${
       event.data.shard ? event.data.shard[1] : 0
-    } shards on ${event.data.guilds.length} guilds\nWorker origin: ${
-      env.WORKER_ORIGIN
-    }`,
+    } shards on ${
+      event.data.guilds.length
+    } guilds\nWorker origin: ${env.WORKER_ORIGIN}`,
   );
 });
 
@@ -66,6 +74,10 @@ manager.on(WebSocketShardEvents.Resumed, (event) => {
 
 manager.on(WebSocketShardEvents.Closed, (event) => {
   console.log(`[closed] Shard ID ${event.shardId}`);
+});
+
+manager.on(WebSocketShardEvents.Error, (event) => {
+  console.error(`[error] Shard ID ${event.shardId}:`, event.error);
 });
 
 manager.on(WebSocketShardEvents.Dispatch, async (event) => {
@@ -110,6 +122,7 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
           Authorization: `Bot ${env.DISCORD_TOKEN}`,
           "X-Discohook-Event": event.data.t,
           "X-Discohook-Shard": String(event.shardId),
+          // "X-Discohook-Cluster": String(cluster),
           "Content-Type": "application/json",
           "User-Agent":
             "discohook-bot-ws/1.0.0 (+https://github.com/shayypy/discohook)",

@@ -16,9 +16,11 @@
     "@discordjs/rest": "^2.2.0",
     "@discordjs/ws": "^1.0.2",
     "discord-api-types": "^0.37.81",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/yargs": "^17.0.32",
     "ts-node": "^10.9.1",
     "typescript": "^5.5.3"
   }
