@@ -1,3 +1,4 @@
+import { MetaFunction } from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
 import { twJoin } from "tailwind-merge";
@@ -15,10 +16,18 @@ import { LoaderArgs } from "~/util/loader";
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
   const wallets = {
-    btc: context.env.BITCOIN_ADDRESS,
+    // btc: context.env.BITCOIN_ADDRESS,
   };
 
   return { user, wallets };
+};
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Discohook Deluxe" },
+    { name: "og:description", content: "Subscribe to Deluxe!" },
+    { name: "theme-color", content: "#FF81FF" },
+  ];
 };
 
 export const Cell: React.FC<
@@ -94,14 +103,14 @@ const features: Record<string, SimpleTextModalProps> = {
       </>
     ),
   },
-  "custom-bot": {
-    title: "Custom bot profile",
-    children: (
-      <>
-        Use completely custom branding in your server by creating your own bot.
-      </>
-    ),
-  },
+  // "custom-bot": {
+  //   title: "Custom bot profile",
+  //   children: (
+  //     <>
+  //       Use completely custom branding in your server by creating your own bot.
+  //     </>
+  //   ),
+  // },
   "link-embeds": {
     title: "Use-anywhere embeds (+ embedded videos)",
     children: (
@@ -120,15 +129,18 @@ const features: Record<string, SimpleTextModalProps> = {
       </>
     ),
   },
-  "hosted-files": {
-    title: "Hosted image links & files",
-    children: (
-      <>
-        Many users experience difficulty finding a good place to upload files
-        that's easy to use and Discord will accept long-term.
-      </>
-    ),
-  },
+  // "hosted-files": {
+  //   title: "Hosted image links & files",
+  //   children: (
+  //     <>
+  //       Many users experience difficulty finding a good place to upload files
+  //       that's easy to use and Discord will accept long-term. Discohook offers a
+  //       CDN specifically designed for webhook messages. Images, GIFs, and videos
+  //       uploaded to it do not expire and can be up to 100MB, the maximum for a
+  //       webhook in a level 3 server.
+  //     </>
+  //   ),
+  // },
 };
 
 export default function DonatePage() {
@@ -210,7 +222,7 @@ export default function DonatePage() {
               <Cell>2</Cell>
               <Cell premium>5</Cell>
             </div>
-            <div className="table-row">
+            {/* <div className="table-row">
               <Cell onClick={() => setFeatProps(features["custom-bot"])}>
                 Custom bot profile
               </Cell>
@@ -218,7 +230,7 @@ export default function DonatePage() {
               <Cell premium>
                 <Twemoji emoji="✅" />
               </Cell>
-            </div>
+            </div> */}
             <div className="table-row">
               <Cell onClick={() => setFeatProps(features["link-embeds"])}>
                 Use-anywhere embeds (+ embedded videos)
@@ -228,7 +240,7 @@ export default function DonatePage() {
                 <Twemoji emoji="✅" />
               </Cell>
             </div>
-            <div className="table-row">
+            {/* <div className="table-row">
               <Cell
                 onClick={() => setFeatProps(features["hosted-files"])}
                 className="rounded-bl"
@@ -239,7 +251,7 @@ export default function DonatePage() {
               <Cell className="rounded-br" premium>
                 <Twemoji emoji="✅" />
               </Cell>
-            </div>
+            </div> */}
           </div>
         </div>
         <h1 className="text-xl font-bold mt-4">
