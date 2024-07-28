@@ -9,10 +9,9 @@
     "start": "tsx src/server.ts",
     "dev": "wrangler dev src/server.ts --persist-to=../../persistence",
     "ngrok": "ngrok http 8787",
-    "fix": "eslint --fix '**/*.ts'",
-    "lint": "eslint '**/*.ts'",
     "register": "tsx src/register.ts",
-    "publish": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "deploy-ptb": "wrangler deploy --env=preview"
   },
   "keywords": [],
   "license": "MIT",

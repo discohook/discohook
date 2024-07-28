@@ -1,7 +1,6 @@
 ##: schema https://github.com/cloudflare/workers-sdk/files/12887590/wrangler.schema.json
 
 name = "discohook-site"
-workers_dev = true
 main = "./build/index.js"
 compatibility_date = "2023-04-20"
 node_compat = true
@@ -14,28 +13,20 @@ services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
 ]
 
-# [[hyperdrive]]
-# binding = "HYPERDRIVE"
-# id = ""
-
 [durable_objects]
 bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
-  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" }
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
 ]
 
 [[migrations]]
 tag = "v1"
-new_classes = ["DurableScheduler"]
-
-[[migrations]]
-tag = "v2"
-new_classes = ["DurableComponentState"]
-
-[[migrations]]
-tag = "v3"
-new_classes = ["DurableDraftComponentCleaner"]
+new_classes = [
+  "DurableScheduler",
+  "DurableComponentState",
+  "DurableDraftComponentCleaner",
+]
 
 [site]
 bucket = "./public"
@@ -46,10 +37,74 @@ command = "npm run build"
 [vars]
 ENVIRONMENT = "dev"
 DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
+BOTS_ORIGIN = "http://localhost:8787"
+LEGACY_ORIGIN = "http://localhost:8789"
+LINK_ORIGIN = "http://localhost:8790"
+CDN_ORIGIN = "http://localhost:8791"
+
+[env.preview]
+name = "discohook-site-preview"
+route = { pattern = "preview.discohook.app", custom_domain = true }
+hyperdrive = [
+  { binding = "HYPERDRIVE", id = "d22debad1b2340b4879004af235b1dc7" },
+]
+kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
+services = [
+  { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
+]
+
+[env.preview.durable_objects]
+bindings = [
+  { name = "SCHEDULER", class_name = "DurableScheduler" },
+  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
+]
+
+[[env.preview.migrations]]
+tag = "v1"
+new_classes = [
+  "DurableScheduler",
+  "DurableComponentState",
+  "DurableDraftComponentCleaner",
+]
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
+BOTS_ORIGIN = "https://bots.preview.discohook.app"
 LEGACY_ORIGIN = "https://discohook.org"
 LINK_ORIGIN = "https://discohook.link"
 CDN_ORIGIN = "https://cdn.discohook.app"
-BOTS_ORIGIN = "https://bots.discohook.app"
+
+[env.production]
+route = { pattern = "discohook.app", custom_domain = true }
+hyperdrive = [
+  { binding = "HYPERDRIVE", id = "b78274cce7d543ca952af16633c1885d" },
+]
+kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
+services = [
+  { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
+]
+
+[env.production.durable_objects]
+bindings = [
+  { name = "SCHEDULER", class_name = "DurableScheduler" },
+  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
+]
+
+[[env.production.migrations]]
+tag = "v1"
+new_classes = [
+  "DurableScheduler",
+  "DurableComponentState",
+  "DurableDraftComponentCleaner",
+]
 
 [env.production.vars]
 ENVIRONMENT = "production"
+DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
+BOTS_ORIGIN = "https://bots.discohook.app"
+LEGACY_ORIGIN = "https://discohook.org"
+LINK_ORIGIN = "https://discohook.link"
+CDN_ORIGIN = "https://cdn.discohook.app"

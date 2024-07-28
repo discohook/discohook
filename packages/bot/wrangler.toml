@@ -3,12 +3,8 @@ main = "./src/server.ts"
 compatibility_date = "2023-05-18"
 node_compat = true
 kv_namespaces = [
-  { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }
+  { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" },
 ]
-
-# [[hyperdrive]]
-# binding = "HYPERDRIVE"
-# id = ""
 
 [vars]
 ENVIRONMENT = "dev"
@@ -16,9 +12,43 @@ PREMIUM_SKUS = ["1249810125418397867"]
 LIFETIME_SKU = "1266826214807572542"
 
 [durable_objects]
-bindings = [{name = "COMPONENTS", class_name = "DurableComponentState"}]
+bindings = [{ name = "COMPONENTS", class_name = "DurableComponentState" }]
 
 [[migrations]]
+tag = "v1"
+new_classes = ["DurableComponentState"]
+
+[env.preview]
+route = { pattern = "bots.preview.discohook.app", custom_domain = true }
+kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
+hyperdrive = [
+  { binding = "HYPERDRIVE", id = "d22debad1b2340b4879004af235b1dc7" },
+]
+
+[env.preview.durable_objects]
+bindings = [{ name = "COMPONENTS", class_name = "DurableComponentState" }]
+
+[[env.preview.migrations]]
+tag = "v1"
+new_classes = ["DurableComponentState"]
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+PREMIUM_SKUS = []
+LIFETIME_SKU = ""
+DISCOHOOK_ORIGIN = "https://preview.discohook.app"
+
+[env.production]
+route = { pattern = "bots.discohook.app", custom_domain = true }
+kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
+hyperdrive = [
+  { binding = "HYPERDRIVE", id = "b78274cce7d543ca952af16633c1885d" },
+]
+
+[env.production.durable_objects]
+bindings = [{ name = "COMPONENTS", class_name = "DurableComponentState" }]
+
+[[env.production.migrations]]
 tag = "v1"
 new_classes = ["DurableComponentState"]
 
@@ -26,3 +56,4 @@ new_classes = ["DurableComponentState"]
 ENVIRONMENT = "production"
 PREMIUM_SKUS = ["1249810125418397867"]
 LIFETIME_SKU = "1266826214807572542"
+DISCOHOOK_ORIGIN = "https://discohook.app"

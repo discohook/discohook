@@ -1,5 +1,5 @@
 export interface Env {
-  ENVIRONMENT: "dev" | "production";
+  ENVIRONMENT: "dev" | "preview" | "production";
   PREMIUM_SKUS: string[];
   LIFETIME_SKU: string;
   DISCORD_APPLICATION_ID: string;
