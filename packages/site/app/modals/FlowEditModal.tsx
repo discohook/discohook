@@ -20,8 +20,8 @@ import {
 import { CacheManager } from "~/util/cache/CacheManager";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
 import {
-  PartialBackupsWithMessages,
   loader as ApiGetUserBackups,
+  PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -522,7 +522,7 @@ const FlowActionEditor: React.FC<{
           ) : action.type === 8 ? (
             (() => {
               const channel = channels.find(
-                (c) => c.id === action.channel.value,
+                (c) => c.id === action.channel?.value,
               );
               return (
                 <>
