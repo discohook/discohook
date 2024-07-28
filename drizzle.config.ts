@@ -1,6 +1,6 @@
-import process from "node:process";
 import dotenv from "dotenv";
 import type { Config } from "drizzle-kit";
+import process from "node:process";
 
 dotenv.config({ path: "./packages/bot/.dev.vars" });
 
@@ -15,7 +15,6 @@ export default {
   ],
   out: "./drizzle",
   dialect: "postgresql",
-  dbCredentials: {
-    url: process.env.DATABASE_URL,
-  },
+  dbCredentials: { url: process.env.DATABASE_URL },
+  migrations: { schema: "public" },
 } satisfies Config;
