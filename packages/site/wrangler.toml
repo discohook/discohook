@@ -51,5 +51,5 @@ LINK_ORIGIN = "https://discohook.link"
 CDN_ORIGIN = "https://cdn.discohook.app"
 BOTS_ORIGIN = "https://bots.discohook.app"
 
-[env.production]
-vars = { ENVIRONMENT = "production" }
+[env.production.vars]
+ENVIRONMENT = "production"

@@ -497,21 +497,21 @@ export default function Me() {
               ),
               value: "linkEmbeds",
             },
-            {
-              label: (
-                <>
-                  <p className="text-xs font-semibold uppercase text-brand-pink">
-                    {t("deluxe")}
-                  </p>
-                  {t("bots")}
-                </>
-              ),
-              value: "bots",
-            },
-            {
-              label: t("developer"),
-              value: "developer",
-            },
+            // {
+            //   label: (
+            //     <>
+            //       <p className="text-xs font-semibold uppercase text-brand-pink">
+            //         {t("deluxe")}
+            //       </p>
+            //       {t("bots")}
+            //     </>
+            //   ),
+            //   value: "bots",
+            // },
+            // {
+            //   label: t("developer"),
+            //   value: "developer",
+            // },
           ]}
         >
           {tab === "profile" ? (
