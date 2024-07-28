@@ -1,4 +1,3 @@
-import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandAttachmentOption,
@@ -25,6 +24,7 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
 import fs from "fs/promises";
+import process from "node:process";
 import { TriggerEvent } from "store/src/types";
 
 /**
@@ -210,7 +210,7 @@ async function main() {
         .setName("buttons")
         .setDescription("...")
         .setDefaultMemberPermissions(
-          PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
+          PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
         )
         .setDMPermission(false)
         .addSubcommand(
@@ -484,6 +484,7 @@ async function main() {
       new SlashCommandBuilder()
         .setName("welcomer")
         .setDMPermission(false)
+        .setDefaultMemberPermissions(PermissionFlags.ManageGuild)
         .setDescription("..."),
     ),
     addLocalizations(
@@ -604,14 +605,16 @@ async function main() {
       .setNameLocalizations(localize("_ctx.components.name"))
       .setDMPermission(false)
       .setDefaultMemberPermissions(
-        PermissionFlags.ManageMessages | PermissionFlags.ManageGuild,
+        PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
       ),
-    new ContextMenuCommandBuilder()
-      .setType(ApplicationCommandType.Message)
-      .setName(getEnglish("_ctx.edit.name"))
-      .setNameLocalizations(localize("_ctx.edit.name"))
-      .setDMPermission(false)
-      .setDefaultMemberPermissions(PermissionFlags.ManageMessages),
+    // new ContextMenuCommandBuilder()
+    //   .setType(ApplicationCommandType.Message)
+    //   .setName(getEnglish("_ctx.edit.name"))
+    //   .setNameLocalizations(localize("_ctx.edit.name"))
+    //   .setDMPermission(false)
+    //   .setDefaultMemberPermissions(
+    //     PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
+    //   ),
     new ContextMenuCommandBuilder()
       .setType(ApplicationCommandType.Message)
       .setName(getEnglish("_ctx.restore.name"))
