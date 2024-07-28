@@ -7,7 +7,7 @@ import { Prose } from "~/components/Prose";
 import { FullscreenThrobber } from "~/root";
 import { getUser } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
-import { GuideFileMeta } from "./guide.$";
+import type { GuideFileMeta } from "./guide.$";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
