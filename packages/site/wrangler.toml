@@ -56,7 +56,7 @@ services = [
 [env.preview.durable_objects]
 bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
-  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
+  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-preview" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
 ]
 
@@ -70,6 +70,7 @@ new_classes = [
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
+DISCORD_CLIENT_ID = "1259876010627694662"
 DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
 BOTS_ORIGIN = "https://bots.preview.discohook.app"
 LEGACY_ORIGIN = "https://discohook.org"
@@ -103,6 +104,7 @@ new_classes = [
 
 [env.production.vars]
 ENVIRONMENT = "production"
+DISCORD_CLIENT_ID = "792842038332358656"
 DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
 BOTS_ORIGIN = "https://bots.discohook.app"
 LEGACY_ORIGIN = "https://discohook.org"

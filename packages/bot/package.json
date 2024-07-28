@@ -11,7 +11,7 @@
     "ngrok": "ngrok http 8787",
     "register": "tsx src/register.ts",
     "deploy": "wrangler deploy",
-    "deploy-ptb": "wrangler deploy --env=preview"
+    "deploy-preview": "wrangler deploy --env=preview"
   },
   "keywords": [],
   "license": "MIT",

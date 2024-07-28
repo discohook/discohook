@@ -34,6 +34,7 @@ new_classes = ["DurableComponentState"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
+DISCORD_APPLICATION_ID = "1259876010627694662"
 PREMIUM_SKUS = []
 LIFETIME_SKU = ""
 DISCOHOOK_ORIGIN = "https://preview.discohook.app"
@@ -54,6 +55,7 @@ new_classes = ["DurableComponentState"]
 
 [env.production.vars]
 ENVIRONMENT = "production"
+DISCORD_APPLICATION_ID = "792842038332358656"
 PREMIUM_SKUS = ["1249810125418397867"]
 LIFETIME_SKU = "1266826214807572542"
 DISCOHOOK_ORIGIN = "https://discohook.app"
