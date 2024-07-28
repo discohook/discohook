@@ -6,10 +6,11 @@
   "author": "shayypy",
   "license": "MIT",
   "private": true,
+  "main": "src/bot.js",
   "scripts": {
     "dev": "ts-node src/bot.ts",
     "build": "tsc",
-    "start": "node src/index.js",
+    "start": "node src/bot.js",
     "prod": "npm run build && npm run start"
   },
   "dependencies": {
