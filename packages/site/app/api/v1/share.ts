@@ -1,12 +1,11 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
-import { zx } from "zodix";
 import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
 import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
-import { jsonAsString, zxParseForm } from "~/util/zod";
+import { zxParseJson } from "~/util/zod";
 
 const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 
@@ -45,11 +44,13 @@ export const action = async ({ request, context }: ActionArgs) => {
     data,
     ttl,
     origin: origin_,
-  } = await zxParseForm(request, {
-    data: jsonAsString(ZodQueryData),
-    // Max 4 weeks, min 5 minutes
-    ttl: zx.IntAsString.optional()
-      .default("604800000")
+  } = await zxParseJson(request, {
+    data: ZodQueryData,
+    ttl: z
+      .number()
+      .int()
+      .default(604800000)
+      // Max 4 weeks, min 5 minutes
       .refine((val) => val >= 300000 && val <= 2419200000),
     origin: z.enum(ALLOWED_EXTERNAL_ORIGINS).optional(),
   });

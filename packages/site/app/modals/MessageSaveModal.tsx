@@ -1,4 +1,4 @@
-import { Link, useFetcher } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -43,7 +43,9 @@ export const MessageSaveModal = (
     [data, targets],
   );
 
-  const shareFetcher = useFetcher<typeof ApiPostShare>();
+  const shareFetcher = useSafeFetcher<typeof ApiPostShare>({
+    onError: setError,
+  });
   const backupFetcher = useSafeFetcher<
     typeof ApiPostBackups | typeof ApiGetBackup
   >({
@@ -54,11 +56,7 @@ export const MessageSaveModal = (
     (options?: { includeTargets_?: boolean }) => {
       const { includeTargets_ } = options ?? {};
       shareFetcher.submit(
-        {
-          data: JSON.stringify(
-            includeTargets_ ?? includeTargets ? dataWithTargets() : data,
-          ),
-        },
+        { data: includeTargets_ ?? includeTargets ? dataWithTargets() : data },
         { method: "POST", action: apiUrl(BRoutes.share()) },
       );
     },
@@ -136,6 +134,14 @@ export const MessageSaveModal = (
           className="ml-2 mt-auto"
         >
           {t(shareFetcher.data ? "copy" : "generate")}
+        </Button>
+        <Button
+          disabled={shareFetcher.state !== "idle" || !shareFetcher.data}
+          onClick={shareFetcher.reset}
+          className="ml-2 mt-auto"
+          discordstyle={ButtonStyle.Secondary}
+        >
+          {t("clear")}
         </Button>
       </div>
       <p className="text-sm font-medium mt-1">{t("options")}</p>

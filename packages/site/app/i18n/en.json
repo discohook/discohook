@@ -22,6 +22,7 @@
   "expiresIn": "Expires {{0}}",
   "shareExpired": "Invalid Share Link",
   "generate": "Generate",
+  "clear": "Clear",
   "copy": "Copy",
   "copyLink": "Copy Link",
   "clickGenerate": "Press \"Generate\" to generate a share link",
