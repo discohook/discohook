@@ -1,117 +1,12 @@
 {
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1706229919517,
-      "tag": "0000_chunky_screwball",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1706306125092,
-      "tag": "0001_uneven_husk",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1708146706027,
-      "tag": "0002_bouncy_weapon_omega",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1710096298563,
-      "tag": "0003_gifted_puppet_master",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1710284726414,
-      "tag": "0004_perfect_vance_astro",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1710622055826,
-      "tag": "0005_useful_ben_urich",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1711139341419,
-      "tag": "0006_petite_red_wolf",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1712158949987,
-      "tag": "0007_careful_paibok",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "5",
-      "when": 1713284464612,
-      "tag": "0008_known_madelyne_pryor",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "5",
-      "when": 1713558722836,
-      "tag": "0009_faulty_steve_rogers",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "5",
-      "when": 1713732665771,
-      "tag": "0010_neat_king_bedlam",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "5",
-      "when": 1714322032024,
-      "tag": "0011_exotic_namor",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "5",
-      "when": 1714353905536,
-      "tag": "0012_typical_senator_kelly",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "5",
-      "when": 1717984083336,
-      "tag": "0013_legal_mandarin",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
       "version": "7",
-      "when": 1718726813587,
-      "tag": "0014_tense_lady_deathstrike",
-      "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "7",
-      "when": 1720373585596,
-      "tag": "0015_late_nekra",
+      "when": 1722183044599,
+      "tag": "0000_flawless_william_stryker",
       "breakpoints": true
     }
   ]

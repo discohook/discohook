@@ -1,1 +1,0 @@
-ALTER TABLE "CustomBot" ADD COLUMN "clientSecret" text;

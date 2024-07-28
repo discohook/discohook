@@ -531,7 +531,6 @@ export const discordMessageComponentsToFlows = pgTable(
   (table) => ({
     pk: primaryKey({
       columns: [table.discordMessageComponentId, table.flowId],
-      name: "discordMessageComponent_to_Flow_pk",
     }),
   }),
 );
