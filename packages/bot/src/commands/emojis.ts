@@ -23,11 +23,10 @@ export const emojiUnicodeToNameMap = Object.fromEntries(
   Object.values(emojiData)
     .flat()
     .flatMap((emoji) => {
-      if ("diversityChildren" in emoji) {
+      if ("diversityChildren" in emoji && emoji.diversityChildren) {
         return [
           [emoji.surrogates, emoji.names] as const,
-          // biome-ignore lint/style/noNonNullAssertion: just checked
-          ...emoji.diversityChildren!.map(
+          ...emoji.diversityChildren.map(
             (diversity) => [diversity.surrogates, diversity.names] as const,
           ),
         ];
