@@ -125,7 +125,7 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
           // "X-Discohook-Cluster": String(cluster),
           "Content-Type": "application/json",
           "User-Agent":
-            "discohook-bot-ws/1.0.0 (+https://github.com/shayypy/discohook)",
+            "discohook-bot-ws/1.0.0 (+https://github.com/discohook/discohook)",
         },
       });
       console.log(`${event.data.t} returned ${response.status}`);

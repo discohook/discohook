@@ -27,7 +27,7 @@
     "@twemoji/api": "^15.0.3",
     "@types/showdown": "^2.0.6",
     "chrono-node": "^2.7.5",
-    "cron-parser": "shayypy/cron-parser",
+    "cron-parser": "discohook/cron-parser",
     "discord-api-types": "^0.37.92",
     "discord-bitflag": "^1.0.1",
     "discord-snowflake": "^2.0.0",
@@ -52,7 +52,7 @@
     "remix-utils": "^7.6.0",
     "robots-parser": "^3.0.1",
     "tailwind-merge": "^2.2.0",
-    "tif-snowflake": "shayypy/snowflake",
+    "tif-snowflake": "discohook/snowflake",
     "zod": "^3.22.4",
     "zodix": "^0.4.4"
   },

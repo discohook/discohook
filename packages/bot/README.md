@@ -26,7 +26,7 @@ Next, you'll need to create a Cloudflare Worker.
 First clone the project:
 
 ```
-git clone https://github.com/shayypy/discohook.git
+git clone https://github.com/discohook/discohook.git
 ```
 
 Then navigate to the bot directory and install all dependencies:
