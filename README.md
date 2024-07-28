@@ -4,19 +4,7 @@ Simple, free, and highly versatile message designer for Discord webhooks.
 
 ## Feature comparison
 
-This is a complete rewrite of the [original Discohook project](https://github.com/discohook/site) by [@maddysrc](https://github.com/maddysrc), now under new ownership. Here's what's new.
-
-- Extended Markdown support: headers, lists, timestamps, mentions, message links
-- Cloud backups
-- Message logs
-- Button/select editor
-- [Localization](https://translate.shay.cat/engage/discohook/)
-- Scheduled messages
-- Reordering messages
-- Editor history
-- Attachment URI support
-<!-- - Mobile-specific preview toggle for ironing out Discord inconsistencies -->
-<!-- - Custom bots -->
+This is a complete rewrite of the [original Discohook project](https://github.com/discohook/site) by [@maddysrc](https://github.com/maddysrc), now under new ownership. [Read the full changelog](https://discohook.app/guide/changelog/2024-x-x).
 
 ## Free?
 
