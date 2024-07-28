@@ -137,7 +137,7 @@
   "joinedDiscohook": "Joined Discohook",
   "linkEmbedsPremiumNote": "You've uncovered a Deluxe feature! <0>Read more about link embeds here.</0>",
   "linkEmbedsPremiumReadOnly": "You're currently in read-only mode. You can play around in the editor, but in order to save a link, you will need to subscribe to <0>Discohook Deluxe</Link>.",
-  "linkEmbedsNoVideoAndDescription": "Only users on Android can view the description when there is a video set.",
+  "linkEmbedsNoVideoAndDescription": "The description is not visible when a video is set.",
   "linkEmbedsImageLimit": "Link embeds can have one thumbnail or up to 4 large images, but not both.",
   "linkEmbedsNoVideoAndImage": "Link embeds cannot have a video paired with an image. Remove your video in order to add images.",
   "linkEmbedsNoImagesAndVideo": "Link embeds cannot have a video paired with an image. Remove all images in order to add a video.",
