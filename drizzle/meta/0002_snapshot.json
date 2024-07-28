@@ -105,10 +105,7 @@
       "uniqueConstraints": {
         "DiscordMember_userId_guildId_unique": {
           "name": "DiscordMember_userId_guildId_unique",
-          "columns": [
-            "userId",
-            "guildId"
-          ],
+          "columns": ["userId", "guildId"],
           "nullsNotDistinct": false
         }
       }
@@ -191,10 +188,7 @@
       "uniqueConstraints": {
         "DiscordMessageComponent_messageId_customId_unique": {
           "name": "DiscordMessageComponent_messageId_customId_unique",
-          "columns": [
-            "messageId",
-            "customId"
-          ],
+          "columns": ["messageId", "customId"],
           "nullsNotDistinct": false
         }
       }
@@ -281,10 +275,7 @@
       "uniqueConstraints": {
         "DiscordRoles_id_guildId_unique": {
           "name": "DiscordRoles_id_guildId_unique",
-          "columns": [
-            "id",
-            "guildId"
-          ],
+          "columns": ["id", "guildId"],
           "nullsNotDistinct": false
         }
       }
@@ -523,16 +514,12 @@
       "uniqueConstraints": {
         "OAuthInfo_discordId_unique": {
           "name": "OAuthInfo_discordId_unique",
-          "columns": [
-            "discordId"
-          ],
+          "columns": ["discordId"],
           "nullsNotDistinct": false
         },
         "OAuthInfo_guildedId_unique": {
           "name": "OAuthInfo_guildedId_unique",
-          "columns": [
-            "guildedId"
-          ],
+          "columns": ["guildedId"],
           "nullsNotDistinct": false
         }
       }
@@ -709,16 +696,12 @@
       "uniqueConstraints": {
         "User_discordId_unique": {
           "name": "User_discordId_unique",
-          "columns": [
-            "discordId"
-          ],
+          "columns": ["discordId"],
           "nullsNotDistinct": false
         },
         "User_guildedId_unique": {
           "name": "User_guildedId_unique",
-          "columns": [
-            "guildedId"
-          ],
+          "columns": ["guildedId"],
           "nullsNotDistinct": false
         }
       }
@@ -794,10 +777,7 @@
       "uniqueConstraints": {
         "Webhook_platform_id_unique": {
           "name": "Webhook_platform_id_unique",
-          "columns": [
-            "platform",
-            "id"
-          ],
+          "columns": ["platform", "id"],
           "nullsNotDistinct": false
         }
       }

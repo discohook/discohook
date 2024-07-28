@@ -1,5 +1,5 @@
-import matter from "front-matter";
 import { readFile, readdir, writeFile } from "node:fs/promises";
+import matter from "front-matter";
 
 (async () => {
   // Assume only one layer of nesting
@@ -29,5 +29,9 @@ import { readFile, readdir, writeFile } from "node:fs/promises";
   }
 
   await writeFile("public/guide-index.json", JSON.stringify(folders));
-  console.log("Wrote index of", contents.length, "items (directories included)");
+  console.log(
+    "Wrote index of",
+    contents.length,
+    "items (directories included)",
+  );
 })();

@@ -105,26 +105,18 @@
         "DiscordMember_userId_DiscordUser_id_fk": {
           "name": "DiscordMember_userId_DiscordUser_id_fk",
           "tableFrom": "DiscordMember",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "DiscordUser",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "DiscordMember_guildId_DiscordGuild_id_fk": {
           "name": "DiscordMember_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordMember",
-          "columnsFrom": [
-            "guildId"
-          ],
+          "columnsFrom": ["guildId"],
           "tableTo": "DiscordGuild",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -133,10 +125,7 @@
       "uniqueConstraints": {
         "DiscordMember_userId_guildId_unique": {
           "name": "DiscordMember_userId_guildId_unique",
-          "columns": [
-            "userId",
-            "guildId"
-          ],
+          "columns": ["userId", "guildId"],
           "nullsNotDistinct": false
         }
       }
@@ -219,10 +208,7 @@
       "uniqueConstraints": {
         "DiscordMessageComponent_messageId_customId_unique": {
           "name": "DiscordMessageComponent_messageId_customId_unique",
-          "columns": [
-            "messageId",
-            "customId"
-          ],
+          "columns": ["messageId", "customId"],
           "nullsNotDistinct": false
         }
       }
@@ -267,13 +253,9 @@
         "reaction_roles_guild_id_DiscordGuild_id_fk": {
           "name": "reaction_roles_guild_id_DiscordGuild_id_fk",
           "tableFrom": "reaction_roles",
-          "columnsFrom": [
-            "guild_id"
-          ],
+          "columnsFrom": ["guild_id"],
           "tableTo": "DiscordGuild",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -281,10 +263,7 @@
       "compositePrimaryKeys": {
         "reaction_roles_message_id_reaction_pk": {
           "name": "reaction_roles_message_id_reaction_pk",
-          "columns": [
-            "message_id",
-            "reaction"
-          ]
+          "columns": ["message_id", "reaction"]
         }
       },
       "uniqueConstraints": {}
@@ -370,13 +349,9 @@
         "DiscordRoles_guildId_DiscordGuild_id_fk": {
           "name": "DiscordRoles_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordRoles",
-          "columnsFrom": [
-            "guildId"
-          ],
+          "columnsFrom": ["guildId"],
           "tableTo": "DiscordGuild",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -385,17 +360,12 @@
       "uniqueConstraints": {
         "DiscordRoles_id_unique": {
           "name": "DiscordRoles_id_unique",
-          "columns": [
-            "id"
-          ],
+          "columns": ["id"],
           "nullsNotDistinct": false
         },
         "DiscordRoles_id_guildId_unique": {
           "name": "DiscordRoles_id_guildId_unique",
-          "columns": [
-            "id",
-            "guildId"
-          ],
+          "columns": ["id", "guildId"],
           "nullsNotDistinct": false
         }
       }
@@ -692,16 +662,12 @@
       "uniqueConstraints": {
         "OAuthInfo_discordId_unique": {
           "name": "OAuthInfo_discordId_unique",
-          "columns": [
-            "discordId"
-          ],
+          "columns": ["discordId"],
           "nullsNotDistinct": false
         },
         "OAuthInfo_guildedId_unique": {
           "name": "OAuthInfo_guildedId_unique",
-          "columns": [
-            "guildedId"
-          ],
+          "columns": ["guildedId"],
           "nullsNotDistinct": false
         }
       }
@@ -884,16 +850,12 @@
       "uniqueConstraints": {
         "User_discordId_unique": {
           "name": "User_discordId_unique",
-          "columns": [
-            "discordId"
-          ],
+          "columns": ["discordId"],
           "nullsNotDistinct": false
         },
         "User_guildedId_unique": {
           "name": "User_guildedId_unique",
-          "columns": [
-            "guildedId"
-          ],
+          "columns": ["guildedId"],
           "nullsNotDistinct": false
         }
       }
@@ -969,10 +931,7 @@
       "uniqueConstraints": {
         "Webhook_platform_id_unique": {
           "name": "Webhook_platform_id_unique",
-          "columns": [
-            "platform",
-            "id"
-          ],
+          "columns": ["platform", "id"],
           "nullsNotDistinct": false
         }
       }

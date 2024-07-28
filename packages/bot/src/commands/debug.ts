@@ -12,10 +12,7 @@ import {
   RESTGetAPIGuildRolesResult,
   Routes,
 } from "discord-api-types/v10";
-import {
-  PermissionFlags,
-  PermissionsBitField
-} from "discord-bitflag";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "store";
 import { getId, messageLogEntries } from "store/src/schema/schema.js";

@@ -2,7 +2,7 @@ import {
   APIChannel,
   APIGuildChannel,
   APIThreadChannel,
-  ChannelType
+  ChannelType,
 } from "discord-api-types/v10";
 
 export const isThread = (

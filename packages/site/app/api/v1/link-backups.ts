@@ -31,7 +31,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       });
     }
     const extant = await db.query.linkBackups.findFirst({
-      where: (linkBackups, {eq}) => eq(linkBackups.code, code),
+      where: (linkBackups, { eq }) => eq(linkBackups.code, code),
       columns: {
         id: true,
       },

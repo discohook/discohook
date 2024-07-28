@@ -1,6 +1,6 @@
+import process from "node:process";
 import dotenv from "dotenv";
 import type { Config } from "drizzle-kit";
-import process from "node:process";
 
 dotenv.config({ path: "./packages/bot/.dev.vars" });
 

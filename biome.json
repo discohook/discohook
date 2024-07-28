@@ -6,6 +6,7 @@
       "build/",
       "./packages/site/functions/",
       "./packages/site/public/emoji.json",
+      "./packages/site/public/guide-index.json",
       "./packages/site/app/util/highlights.json",
       "./persistence/"
     ]

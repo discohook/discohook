@@ -26,12 +26,12 @@ import {
 } from "store/src/durable/components.js";
 import {
   backups,
+  buttons as oButtons,
   discordMessageComponents,
   flowActions,
   flows,
   generateId,
   makeSnowflake,
-  buttons as oButtons,
 } from "store/src/schema";
 import {
   Flow,

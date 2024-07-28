@@ -54,13 +54,9 @@
         "Backup_ownerId_User_id_fk": {
           "name": "Backup_ownerId_User_id_fk",
           "tableFrom": "Backup",
-          "columnsFrom": [
-            "ownerId"
-          ],
+          "columnsFrom": ["ownerId"],
           "tableTo": "User",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -119,10 +115,7 @@
       "uniqueConstraints": {
         "DiscordMember_userId_guildId_unique": {
           "name": "DiscordMember_userId_guildId_unique",
-          "columns": [
-            "userId",
-            "guildId"
-          ],
+          "columns": ["userId", "guildId"],
           "nullsNotDistinct": false
         }
       }
@@ -197,39 +190,27 @@
         "DiscordMessageComponent_guildId_DiscordGuild_id_fk": {
           "name": "DiscordMessageComponent_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordMessageComponent",
-          "columnsFrom": [
-            "guildId"
-          ],
+          "columnsFrom": ["guildId"],
           "tableTo": "DiscordGuild",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "DiscordMessageComponent_createdById_User_id_fk": {
           "name": "DiscordMessageComponent_createdById_User_id_fk",
           "tableFrom": "DiscordMessageComponent",
-          "columnsFrom": [
-            "createdById"
-          ],
+          "columnsFrom": ["createdById"],
           "tableTo": "User",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "DiscordMessageComponent_updatedById_User_id_fk": {
           "name": "DiscordMessageComponent_updatedById_User_id_fk",
           "tableFrom": "DiscordMessageComponent",
-          "columnsFrom": [
-            "updatedById"
-          ],
+          "columnsFrom": ["updatedById"],
           "tableTo": "User",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -238,10 +219,7 @@
       "uniqueConstraints": {
         "DiscordMessageComponent_messageId_customId_unique": {
           "name": "DiscordMessageComponent_messageId_customId_unique",
-          "columns": [
-            "messageId",
-            "customId"
-          ],
+          "columns": ["messageId", "customId"],
           "nullsNotDistinct": false
         }
       }
@@ -327,13 +305,9 @@
         "DiscordRoles_guildId_DiscordGuild_id_fk": {
           "name": "DiscordRoles_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordRoles",
-          "columnsFrom": [
-            "guildId"
-          ],
+          "columnsFrom": ["guildId"],
           "tableTo": "DiscordGuild",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -342,10 +316,7 @@
       "uniqueConstraints": {
         "DiscordRoles_id_guildId_unique": {
           "name": "DiscordRoles_id_guildId_unique",
-          "columns": [
-            "id",
-            "guildId"
-          ],
+          "columns": ["id", "guildId"],
           "nullsNotDistinct": false
         }
       }
@@ -531,13 +502,9 @@
         "MessageLogEntry_userId_User_id_fk": {
           "name": "MessageLogEntry_userId_User_id_fk",
           "tableFrom": "MessageLogEntry",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "User",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -591,13 +558,9 @@
         "ShareLink_userId_User_id_fk": {
           "name": "ShareLink_userId_User_id_fk",
           "tableFrom": "ShareLink",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "User",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -677,39 +640,27 @@
         "Triggers_discordGuildId_DiscordGuild_id_fk": {
           "name": "Triggers_discordGuildId_DiscordGuild_id_fk",
           "tableFrom": "Triggers",
-          "columnsFrom": [
-            "discordGuildId"
-          ],
+          "columnsFrom": ["discordGuildId"],
           "tableTo": "DiscordGuild",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "Triggers_guildedServerId_GuildedServer_id_fk": {
           "name": "Triggers_guildedServerId_GuildedServer_id_fk",
           "tableFrom": "Triggers",
-          "columnsFrom": [
-            "guildedServerId"
-          ],
+          "columnsFrom": ["guildedServerId"],
           "tableTo": "GuildedServer",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "Triggers_updatedById_User_id_fk": {
           "name": "Triggers_updatedById_User_id_fk",
           "tableFrom": "Triggers",
-          "columnsFrom": [
-            "updatedById"
-          ],
+          "columnsFrom": ["updatedById"],
           "tableTo": "User",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -770,26 +721,18 @@
         "User_discordId_DiscordUser_id_fk": {
           "name": "User_discordId_DiscordUser_id_fk",
           "tableFrom": "User",
-          "columnsFrom": [
-            "discordId"
-          ],
+          "columnsFrom": ["discordId"],
           "tableTo": "DiscordUser",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "User_guildedId_GuildedUser_id_fk": {
           "name": "User_guildedId_GuildedUser_id_fk",
           "tableFrom": "User",
-          "columnsFrom": [
-            "guildedId"
-          ],
+          "columnsFrom": ["guildedId"],
           "tableTo": "GuildedUser",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -798,16 +741,12 @@
       "uniqueConstraints": {
         "User_discordId_unique": {
           "name": "User_discordId_unique",
-          "columns": [
-            "discordId"
-          ],
+          "columns": ["discordId"],
           "nullsNotDistinct": false
         },
         "User_guildedId_unique": {
           "name": "User_guildedId_unique",
-          "columns": [
-            "guildedId"
-          ],
+          "columns": ["guildedId"],
           "nullsNotDistinct": false
         }
       }
@@ -882,39 +821,27 @@
         "Webhook_userId_User_id_fk": {
           "name": "Webhook_userId_User_id_fk",
           "tableFrom": "Webhook",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "User",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "Webhook_discordGuildId_DiscordGuild_id_fk": {
           "name": "Webhook_discordGuildId_DiscordGuild_id_fk",
           "tableFrom": "Webhook",
-          "columnsFrom": [
-            "discordGuildId"
-          ],
+          "columnsFrom": ["discordGuildId"],
           "tableTo": "DiscordGuild",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "Webhook_guildedServerId_GuildedServer_id_fk": {
           "name": "Webhook_guildedServerId_GuildedServer_id_fk",
           "tableFrom": "Webhook",
-          "columnsFrom": [
-            "guildedServerId"
-          ],
+          "columnsFrom": ["guildedServerId"],
           "tableTo": "GuildedServer",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -923,10 +850,7 @@
       "uniqueConstraints": {
         "Webhook_platform_id_unique": {
           "name": "Webhook_platform_id_unique",
-          "columns": [
-            "platform",
-            "id"
-          ],
+          "columns": ["platform", "id"],
           "nullsNotDistinct": false
         }
       }

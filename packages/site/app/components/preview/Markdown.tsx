@@ -554,7 +554,9 @@ const linkRule = defineRule({
 
 const autoLinkRule = defineRule({
   capture(source) {
-    const match = /^(?:discohook|https?):\/\/[^\s<]+[^\s"',.:;<\]]/.exec(source);
+    const match = /^(?:discohook|https?):\/\/[^\s<]+[^\s"',.:;<\]]/.exec(
+      source,
+    );
     if (!match) return;
     try {
       new URL(match[0]);
