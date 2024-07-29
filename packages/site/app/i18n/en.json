@@ -98,6 +98,7 @@
   "previewInfo": "Preview Info",
   "editingBackupNote": "You're editing a backup, so your work is saved periodically while you edit. In order to share this message with others, use the \"Save Message\" button.",
   "editingLinkBackupNote": "You're editing a backup, so your work is saved periodically while you edit.",
+  "linkEmbedCacheNote": "Discord caches link embeds for 30 minutes. <0>Copy this partially randomized link</0> to force Discord to re-fetch the data. Link embeds are not updated for past messages (you need to edit the message).",
   "channel": "Channel",
   "webhookChannelMentionAndThreads": "<#{{0}}> (and its threads)",
   "cannotChangeChannel": "Webhook channel must be set inside Discord or from the <0>server webhooks menu</0>.",

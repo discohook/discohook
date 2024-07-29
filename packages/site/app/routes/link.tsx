@@ -3,7 +3,7 @@ import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { APIEmbed, APIEmbedImage, ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { SafeParseReturnType, z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
@@ -316,7 +316,7 @@ export default () => {
               {t("preview")} <CoolIcon icon="Chevron_Right" />
             </Button>
           </div>
-          <div className="flex w-full mb-2">
+          <div className="flex w-full">
             <div className="grow">
               <TextInput
                 label={t("name")}
@@ -356,6 +356,32 @@ export default () => {
               {t("save")}
             </Button>
           </div>
+          <p className="mb-2 italic text-sm text-muted dark:text-muted-dark">
+            {isPremium && (
+              <Trans
+                t={t}
+                i18nKey="linkEmbedCacheNote"
+                components={[
+                  <button
+                    type="button"
+                    className={twMerge(
+                      linkClassName,
+                      "italic contents ltr:text-left rtl:text-right",
+                    )}
+                    onClick={() => {
+                      if (!backupInfo) return;
+                      copyText(
+                        `${linkEmbedUrl(
+                          backupInfo.code,
+                          linkOrigin,
+                        )}#${randomString(6)}`,
+                      );
+                    }}
+                  />,
+                ]}
+              />
+            )}
+          </p>
           <div className="flex w-full mb-2">
             <div className="grow">
               <TextInput
