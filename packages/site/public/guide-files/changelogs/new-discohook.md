@@ -1,13 +1,13 @@
 ---
-title: "New Discohook - x x, 2024"
+title: "New Discohook - 2024 rewrite"
 description: "The good times are here"
 ---
 
-Here's a list of every single thing that was changed in this update.
+Here's a list of every single thing that was changed in this update (draft).
 
 # Meta
 
-Discohook is now maintained by @catshay. You may know me from Discohook Utils, which is another thing I created. Also, the entire project was completely rewritten, and the source is now available at https://github.com/discohook/discohook. The old [site](https://github.com/discohook/discohook) and [bot](https://github.com/discohook/bot) repositories have been archived.
+Discohook is now maintained by @catshay. You may know me from Discohook Utils, which is another thing I created. Also, the entire project was completely rewritten, and the source is now available at [discohook/discohook](https://github.com/discohook/discohook). The old [site](https://github.com/discohook/site) and [bot](https://github.com/discohook/bot) repositories have been archived.
 
 Naturally, Discohook and Discohook Utils have merged. [Read more about this here](discohook://guide/deprecated/migrate-utils).
 
@@ -15,14 +15,12 @@ Naturally, Discohook and Discohook Utils have merged. [Read more about this here
 
 ## Editor
 
-- [Localization](https://translate.shay.cat/engage/discohook/)
+- [Localization](https://translate.shay.cat/engage/discohook/) (thank you so much to our lovely translators who helped translate before this update released - maddy, mew, anon)
 - Embeds now support the `attachment://` URI ([site#90](https://github.com/discohook/site/issues/90))
 - Webhooks can now be selected from your list of servers while logged in, or created straight from Discohook ([site#25](https://github.com/discohook/site/issues/25))
 - Server data like channels, emojis, and roles are now loaded for mentioning when you add a webhook ([site#35](https://github.com/discohook/site/issues/35))
 - Messages can now be rearranged while editing ([site#51](https://github.com/discohook/site/issues/51))
 - A thread ID for editing messages can now be set in the same section as the forum thread name ([site#65](https://github.com/discohook/site/issues/65))
-~~- In the message flags section, advanced mention settings can now be adjusted ([site#58](https://github.com/discohook/site/issues/58))~~
-~~- Attachments can now have alt text and be moved within the message ([site#52](https://github.com/discohook/site/issues/52))~~
 
 ## Markdown
 
