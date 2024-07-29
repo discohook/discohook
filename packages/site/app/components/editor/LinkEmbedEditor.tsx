@@ -314,11 +314,12 @@ export const LinkEmbedEditor: React.FC<{
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
       <EmbedEditorSection name={t("images")} open={open}>
-        <InfoBox icon="Info">{t("linkEmbedsImageLimit")}</InfoBox>
-        {embed.video?.url && (
+        {embed.video?.url ? (
           <InfoBox severity="yellow" icon="Triangle_Warning">
             {t("linkEmbedsNoVideoAndImage")}
           </InfoBox>
+        ) : (
+          <InfoBox icon="Info">{t("linkEmbedsImageLimit")}</InfoBox>
         )}
         <Checkbox
           label={t("useLargeImages")}
