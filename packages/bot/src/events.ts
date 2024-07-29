@@ -1,4 +1,9 @@
 import { GatewayDispatchEvents } from "discord-api-types/v10";
+import {
+  entitlementCreateCallback,
+  entitlementUpdateCallback,
+} from "./events/entitlementCreate.js";
+import { entitlementDeleteCallback } from "./events/entitlementDelete.js";
 import { guildCreateCallback } from "./events/guildCreate.js";
 import { guildDeleteCallback } from "./events/guildDelete.js";
 import { guildMemberAddCallback } from "./events/guildMemberAdd.js";
@@ -20,4 +25,7 @@ export const eventNameToCallback: Partial<
   [GatewayDispatchEvents.WebhooksUpdate]: webhooksUpdateCallback,
   [GatewayDispatchEvents.MessageReactionAdd]: messageReactionAddCallback,
   [GatewayDispatchEvents.MessageReactionRemove]: messageReactionRemoveCallback,
+  [GatewayDispatchEvents.EntitlementCreate]: entitlementCreateCallback,
+  [GatewayDispatchEvents.EntitlementUpdate]: entitlementUpdateCallback,
+  [GatewayDispatchEvents.EntitlementDelete]: entitlementDeleteCallback,
 };

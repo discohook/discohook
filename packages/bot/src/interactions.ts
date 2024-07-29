@@ -128,8 +128,8 @@ export class InteractionContext<
         details.subscribedAt = new Date(entitlement.starts_at);
       }
       if (
-        // Only give grace periods for purchased subscriptions. But I'm not
-        // sure a grace period would actually work with Discord subscriptions
+        // Only give grace periods for purchased subscriptions
+        // Might be jankily inconsistent with the site's logic
         entitlement.type === EntitlementType.ApplicationSubscription &&
         entitlement.ends_at
       ) {

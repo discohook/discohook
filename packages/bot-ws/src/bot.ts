@@ -109,6 +109,9 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       GatewayDispatchEvents.GuildCreate,
       GatewayDispatchEvents.GuildDelete,
       GatewayDispatchEvents.WebhooksUpdate,
+      GatewayDispatchEvents.EntitlementCreate,
+      GatewayDispatchEvents.EntitlementUpdate,
+      GatewayDispatchEvents.EntitlementDelete,
       // Discobot: reaction roles
       GatewayDispatchEvents.MessageReactionAdd,
       GatewayDispatchEvents.MessageReactionRemove,
