@@ -22,7 +22,7 @@ new_classes = ["DurableComponentState"]
 route = { pattern = "bots.preview.discohook.app", custom_domain = true }
 kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
 hyperdrive = [
-  { binding = "HYPERDRIVE", id = "d22debad1b2340b4879004af235b1dc7" },
+  { binding = "HYPERDRIVE", id = "f8f714cc2701467cacf61b203ccd933a" },
 ]
 services = [
   { binding = "SITE", service = "discohook-site-preview" },

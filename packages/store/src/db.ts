@@ -13,6 +13,7 @@ const getDbWithClient = (client: postgres.Sql) =>
 
 export const getDb = (connectionString: string) => {
   const client = postgres(connectionString, {
+    prepare: false,
     // Thanks https://github.com/drizzle-team/drizzle-orm/issues/989#issuecomment-1936564267
     types: {
       bigint: postgres.BigInt,

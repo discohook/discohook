@@ -47,7 +47,7 @@ CDN_ORIGIN = "http://localhost:8791"
 name = "discohook-site-preview"
 route = { pattern = "preview.discohook.app", custom_domain = true }
 hyperdrive = [
-  { binding = "HYPERDRIVE", id = "d22debad1b2340b4879004af235b1dc7" },
+  { binding = "HYPERDRIVE", id = "f8f714cc2701467cacf61b203ccd933a" },
 ]
 kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
 services = [
