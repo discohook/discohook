@@ -52,6 +52,7 @@ hyperdrive = [
 kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
+  { binding = "BOT", service = "discohook-bot-preview" },
 ]
 
 [env.preview.durable_objects]
@@ -86,6 +87,7 @@ hyperdrive = [
 kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
+  { binding = "BOT", service = "discohook-bot" },
 ]
 
 [env.production.durable_objects]

@@ -24,6 +24,9 @@ kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "d22debad1b2340b4879004af235b1dc7" },
 ]
+services = [
+  { binding = "SITE", service = "discohook-site-preview" },
+]
 
 [env.preview.durable_objects]
 bindings = [{ name = "COMPONENTS", class_name = "DurableComponentState" }]
@@ -44,6 +47,9 @@ route = { pattern = "bots.discohook.app", custom_domain = true }
 kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "b78274cce7d543ca952af16633c1885d" },
+]
+services = [
+  { binding = "SITE", service = "discohook-site" },
 ]
 
 [env.production.durable_objects]
