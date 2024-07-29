@@ -502,7 +502,7 @@ export const ActionRowEditor: React.FC<{
               submitData = {
                 type: ComponentType.Button,
                 style: ButtonStyle.Link,
-                url: "",
+                url: "https://discohook.app",
               };
               break;
             }
