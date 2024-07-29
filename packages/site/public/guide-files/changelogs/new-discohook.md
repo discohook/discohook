@@ -15,7 +15,7 @@ Naturally, Discohook and Discohook Utils have merged. [Read more about this here
 
 ## Editor
 
-- [Localization](https://translate.shay.cat/engage/discohook/) (thank you so much to our lovely translators who helped translate before this update released - maddy, mew, anon)
+- [Localization](https://translate.shay.cat/engage/discohook/) (thank you so much to our lovely translators who helped translate before this update released - maddymeows (dutch), mew610 (arabic), & anon (chinese))
 - Embeds now support the `attachment://` URI ([site#90](https://github.com/discohook/site/issues/90))
 - Webhooks can now be selected from your list of servers while logged in, or created straight from Discohook ([site#25](https://github.com/discohook/site/issues/25))
 - Server data like channels, emojis, and roles are now loaded for mentioning when you add a webhook ([site#35](https://github.com/discohook/site/issues/35))
