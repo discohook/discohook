@@ -415,6 +415,7 @@ export default function Index() {
         open={!!editingComponent}
         setOpen={() => setEditingComponent(undefined)}
         {...editingComponent}
+        submit={user ? editingComponent?.submit : undefined}
         setEditingFlow={setEditingFlow}
         cache={cache}
       />

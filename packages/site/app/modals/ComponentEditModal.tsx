@@ -12,6 +12,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
+import { InfoBox } from "~/components/InfoBox";
 import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
 import {
   APIButtonComponent,
@@ -592,7 +593,12 @@ export const ComponentEditModal = (
   return (
     <Modal title={t("editComponent")} {...props}>
       {error}
-      {component && setComponent && submit && (
+      {!submit && !cache && (
+        <InfoBox icon="User_02" collapsible>
+          {t("componentsNotLoggedIn")}
+        </InfoBox>
+      )}
+      {component && setComponent && (
         <div className="-mt-2">
           <ComponentEditForm
             t={t}

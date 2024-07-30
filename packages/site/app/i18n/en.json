@@ -304,6 +304,7 @@
   "componentsNoWebhook": "You need a certain type of webhook to use components. For link buttons, the webhook must be owned by a bot, but for other buttons and select menus, the webhook must be owned by Discohook (Discohook Utils#4333). Add a webhook for more info.",
   "componentsPossibleWebhook": "One or more of your webhooks are owned by an app, but not Discohook, so you can only use link buttons. Add a webhook owned by Discohook to use more types of components.",
   "componentsNoUsableWebhook": "None of your webhooks are compatibile with components. Add a webhook owned by Discohook.",
+  "componentsNotLoggedIn": "You aren't logged in, so you can't save this component to your account, and components with flows won't be executed. If you just want display buttons, feel free to check the \"$t(disabled)\" box.",
   "component": {
     "1": "Row",
     "2": "Button",
