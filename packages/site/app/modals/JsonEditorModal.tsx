@@ -59,6 +59,7 @@ export const JsonEditorModal = (
       {error}
       <TextArea
         label=""
+        dir="ltr"
         className="w-full min-h-96 text-sm font-code"
         value={value}
         onChange={(e) => {
