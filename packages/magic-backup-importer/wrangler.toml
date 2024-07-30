@@ -1,6 +1,5 @@
 name = "discohook-backup-importer"
 main = "./build/index.js"
-# https://developers.cloudflare.com/workers/platform/compatibility-dates
 compatibility_date = "2023-04-20"
 
 [site]
@@ -10,4 +9,13 @@ compatibility_date = "2023-04-20"
   command = "npm run build"
 
 [vars]
+DISCOHOOK_ORIGIN = "https://discohook.app"
+
+[env.preview]
+name = "discohook-backup-importer-preview"
+
+[env.preview.vars]
+DISCOHOOK_ORIGIN = "https://preview.discohook.app"
+
+[env.production.vars]
 DISCOHOOK_ORIGIN = "https://discohook.app"
