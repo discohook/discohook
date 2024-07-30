@@ -1,4 +1,5 @@
-import { GatewayGuildCreateDispatchData } from "discord-api-types/v10";
+import { REST } from "@discordjs/rest";
+import { GatewayGuildCreateDispatchData, Routes } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "store";
 import { discordGuilds, discordRoles, makeSnowflake } from "store/src/schema";
@@ -11,6 +12,16 @@ export const guildCreateCallback: GatewayEventCallback = async (
   if (guild.unavailable) return;
 
   const db = getDb(env.HYPERDRIVE.connectionString);
+  const moderated = await env.KV.get<{ state: "banned"; reason?: string }>(
+    `moderation-guild-${guild.id}`,
+    "json",
+  );
+  if (moderated?.state === "banned") {
+    const rest = new REST().setToken(env.DISCORD_TOKEN);
+    await rest.delete(Routes.userGuild(guild.id));
+    return;
+  }
+
   await db
     .insert(discordGuilds)
     .values({
