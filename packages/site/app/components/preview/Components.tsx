@@ -37,11 +37,9 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
   onClick,
   authorType,
 }) => {
-  const nonSendable =
-    authorType &&
-    ((data.style === ButtonStyle.Link &&
-      authorType < AuthorType.ApplicationWebhook) ||
-      authorType < AuthorType.ActionableWebhook);
+  const nonSendable = authorType
+    ? authorType < AuthorType.ApplicationWebhook
+    : undefined;
 
   const button = (
     <Button
@@ -152,7 +150,9 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
 }) => {
   const shouldLeftPad =
     "options" in data && data.options.filter((o) => o.emoji).length !== 0;
-  const nonSendable = authorType && authorType < AuthorType.ActionableWebhook;
+  const nonSendable = authorType
+    ? authorType < AuthorType.ActionableWebhook
+    : undefined;
 
   return (
     <div className="w-[90%] max-w-[400px] mr-4 relative">
