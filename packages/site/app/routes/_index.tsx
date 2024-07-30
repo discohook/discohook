@@ -203,9 +203,9 @@ export default function Index() {
       }
     };
 
-    const loadMessageComponents = async (messages: QueryData["messages"]) => {
+    const loadMessageComponents = async (data: QueryData) => {
       const allComponentsById = Object.fromEntries(
-        messages.flatMap((m) =>
+        data.messages.flatMap((m) =>
           (m.data.components ?? [])
             .flatMap((r) => r.components)
             .map((c) => {
@@ -239,8 +239,8 @@ export default function Index() {
         for (const stored of raw) {
           const local = allComponentsById[stored.id];
           if (local) {
-            // TODO edge pieces
-            Object.assign(local, stored.data);
+            // @ts-expect-error TODO: build the component for type compliance
+            allComponentsById[stored.id] = stored.data;
           }
         }
 
@@ -259,7 +259,7 @@ export default function Index() {
             }
             setData(qd);
             loadInitialTargets(qd.targets ?? []);
-            loadMessageComponents(qd.messages);
+            loadMessageComponents(qd);
           });
         } else {
           r.json().then((d: any) => {
@@ -281,7 +281,7 @@ export default function Index() {
             }
             setData({ ...qd, backup_id: backupIdParsed.data.toString() });
             loadInitialTargets(qd.targets ?? []);
-            loadMessageComponents(qd.messages);
+            loadMessageComponents(qd);
           });
         }
       });
@@ -310,7 +310,7 @@ export default function Index() {
         }
         setData({ version: "d2", ...parsed.data });
         loadInitialTargets(parsed.data.targets ?? []);
-        loadMessageComponents(parsed.data.messages);
+        loadMessageComponents(parsed.data);
       } else {
         console.error("QueryData failed parsing:", parsed.error.issues);
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
