@@ -52,53 +52,58 @@ export const getDiscordAuth = (
       extraParams,
       profile,
     }): Promise<UserAuth> => {
-      const j = profile.__json as APIUser;
-      const db = getDb(context.env.HYPERDRIVE.connectionString);
-      const user = await upsertDiscordUser(db, j, {
-        accessToken,
-        refreshToken,
-        scope: extraParams.scope,
-        expiresAt: new Date(
-          new Date().getTime() + extraParams.expires_in * 1000,
-        ),
-      });
-
-      const guilds = await getCurrentUserGuilds(accessToken);
-      await db
-        .insert(discordGuilds)
-        .values(
-          guilds.map((guild) => ({
-            id: makeSnowflake(guild.id),
-            name: guild.name,
-            icon: guild.icon,
-          })),
-        )
-        .onConflictDoUpdate({
-          target: discordGuilds.id,
-          set: {
-            name: sql`excluded.name`,
-            icon: sql`excluded.icon`,
-          },
-        });
-      await db
-        .insert(discordMembers)
-        .values(
-          guilds.map((guild) => ({
-            guildId: makeSnowflake(guild.id),
-            userId: makeSnowflake(j.id),
-            permissions: guild.permissions,
-            owner: guild.owner,
-          })),
-        )
-        .onConflictDoUpdate({
-          target: [discordMembers.guildId, discordMembers.userId],
-          set: { permissions: sql`excluded.permissions` },
+      try {
+        const j = profile.__json as APIUser;
+        const db = getDb(context.env.HYPERDRIVE.connectionString);
+        const user = await upsertDiscordUser(db, j, {
+          accessToken,
+          refreshToken,
+          scope: extraParams.scope,
+          expiresAt: new Date(
+            new Date().getTime() + extraParams.expires_in * 1000,
+          ),
         });
 
-      return {
-        id: String(user.id),
-        discordId: j.id,
-      };
+        const guilds = await getCurrentUserGuilds(accessToken);
+        await db
+          .insert(discordGuilds)
+          .values(
+            guilds.map((guild) => ({
+              id: makeSnowflake(guild.id),
+              name: guild.name,
+              icon: guild.icon,
+            })),
+          )
+          .onConflictDoUpdate({
+            target: discordGuilds.id,
+            set: {
+              name: sql`excluded.name`,
+              icon: sql`excluded.icon`,
+            },
+          });
+        await db
+          .insert(discordMembers)
+          .values(
+            guilds.map((guild) => ({
+              guildId: makeSnowflake(guild.id),
+              userId: makeSnowflake(j.id),
+              permissions: guild.permissions,
+              owner: guild.owner,
+            })),
+          )
+          .onConflictDoUpdate({
+            target: [discordMembers.guildId, discordMembers.userId],
+            set: { permissions: sql`excluded.permissions` },
+          });
+
+        return {
+          id: String(user.id),
+          discordId: j.id,
+        };
+      } catch (e) {
+        console.error(e);
+        throw e;
+      }
     },
   );
 
@@ -106,9 +111,7 @@ export const getDiscordAuth = (
   return discordAuth;
 };
 
-export type OauthInfo = NonNullable<
-  Awaited<ReturnType<DBWithSchema["query"]["oauthInfo"]["findFirst"]>>
->;
+export type OauthInfo = typeof oauthInfo.$inferSelect;
 
 export const getDiscordUserOAuth = async (
   db: DBWithSchema,
