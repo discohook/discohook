@@ -1,6 +1,11 @@
 import { REST } from "@discordjs/rest";
 import { defer, json, redirect } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import {
+  Link,
+  useActionData,
+  useLoaderData,
+  useSubmit,
+} from "@remix-run/react";
 import {
   APIActionRowComponent,
   APIChannel,
@@ -580,6 +585,14 @@ export default () => {
   const cache = useCache(false);
   const submit = useSubmit();
 
+  const [submitState, setSubmitState] = useState<"idle" | "submitting">("idle");
+  const actionData = useActionData<typeof action>();
+  useEffect(() => {
+    // `submit()` is not async so we have to reset submit state here instead
+    // of in the function where `submit` is called
+    if (actionData) setSubmitState("idle");
+  }, [actionData]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever one of these changes, which would be never right now
   useEffect(() => {
     if (component_.guildId) {
@@ -833,11 +846,14 @@ export default () => {
         <hr className="border-black/5 dark:border-gray-200/20 my-4" />
         <div className="gap-1 flex">
           <Button
+            disabled={submitState !== "idle"}
             onClick={async () => {
+              setSubmitState("submitting");
               const updated = await submitComponent(component);
               if (updated) {
                 setComponent(updated);
               }
+              setSubmitState("idle");
             }}
           >
             {t(component_.draft ? "saveDraft" : "save")}
@@ -850,10 +866,11 @@ export default () => {
           */}
           {editingMeta ? (
             <Button
-              disabled={!token}
+              disabled={!token || submitState !== "idle"}
               discordstyle={ButtonStyle.Success}
               onClick={async () => {
                 if (token) {
+                  setSubmitState("submitting");
                   submit(
                     {
                       token,
@@ -874,7 +891,8 @@ export default () => {
               disabled={
                 !component_.messageId ||
                 !component_.guildId ||
-                !message?.webhook_id
+                !message?.webhook_id ||
+                submitState !== "idle"
               }
               discordstyle={ButtonStyle.Success}
               onClick={async () => {
@@ -883,6 +901,7 @@ export default () => {
                   component_.guildId &&
                   message?.webhook_id
                 ) {
+                  setSubmitState("submitting");
                   let wt = webhookTokenFetcher.data;
                   if (!wt) {
                     wt = await webhookTokenFetcher.loadAsync(
