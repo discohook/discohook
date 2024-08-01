@@ -4,7 +4,12 @@ import {
   APIEmbedImage,
   APIWebhook,
 } from "discord-api-types/v10";
-import { UserFlags, UserFlagsBitField } from "discord-bitflag";
+import {
+  MessageFlags,
+  MessageFlagsBitField,
+  UserFlags,
+  UserFlagsBitField,
+} from "discord-bitflag";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { SetImageModalData } from "~/modals/ImageModal";
@@ -293,20 +298,25 @@ export const Message: React.FC<{
                 )}
               </div>
             )}
-            {embeds.length > 0 && (
-              <div className="space-y-1 mt-1">
-                {embeds.map((embedData, i) => (
-                  <Embed
-                    key={`message-preview-embed-${i}`}
-                    {...embedData}
-                    files={files}
-                    setImageModalData={setImageModalData}
-                    cache={cache}
-                    isLinkEmbed={isLinkEmbedEditor}
-                  />
-                ))}
-              </div>
-            )}
+            {embeds.length > 0 &&
+              (message.flags
+                ? !new MessageFlagsBitField(BigInt(message.flags)).has(
+                    MessageFlags.SuppressEmbeds,
+                  )
+                : true) && (
+                <div className="space-y-1 mt-1">
+                  {embeds.map((embedData, i) => (
+                    <Embed
+                      key={`message-preview-embed-${i}`}
+                      {...embedData}
+                      files={files}
+                      setImageModalData={setImageModalData}
+                      cache={cache}
+                      isLinkEmbed={isLinkEmbedEditor}
+                    />
+                  ))}
+                </div>
+              )}
             {message.components && message.components.length > 0 && (
               <div className="mt-1">
                 <MessageComponents
