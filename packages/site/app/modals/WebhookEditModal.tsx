@@ -193,13 +193,18 @@ export const WebhookEditModal = (
                       "--font-size": "1rem",
                     }}
                   >
-                    <Markdown
-                      content={t("webhookChannelMentionAndThreads", {
-                        replace: [webhook.channel_id],
-                      })}
-                      features="full"
-                      cache={cache}
-                    />
+                    {
+                      // Don't resolve the channel unnecessarily
+                      props.open && (
+                        <Markdown
+                          content={t("webhookChannelMentionAndThreads", {
+                            replace: [webhook.channel_id],
+                          })}
+                          features="full"
+                          cache={cache}
+                        />
+                      )
+                    }
                     <p>
                       <Trans
                         t={t}

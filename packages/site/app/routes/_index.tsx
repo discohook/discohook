@@ -192,6 +192,7 @@ export default function Index() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
     const loadInitialTargets = async (targets: { url: string }[]) => {
+      const cachingGuildIds: string[] = [];
       for (const target of targets) {
         const match = target.url.match(WEBHOOK_URL_RE);
         if (!match) continue;
@@ -199,6 +200,20 @@ export default function Index() {
         const webhook = await getWebhook(match[1], match[2]);
         if (webhook.id) {
           updateTargets({ [webhook.id]: webhook });
+        }
+        if (
+          webhook.guild_id &&
+          !cachingGuildIds.includes(webhook.guild_id) &&
+          cache
+        ) {
+          cachingGuildIds.push(webhook.guild_id);
+          cache
+            .fetchGuildCacheable(webhook.guild_id)
+            .then(() =>
+              console.log(
+                `Cached cacheables for ${webhook.guild_id} (webhook ID ${webhook.id})`,
+              ),
+            );
         }
       }
     };
