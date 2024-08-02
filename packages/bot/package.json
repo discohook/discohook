@@ -8,7 +8,6 @@
   "scripts": {
     "start": "tsx src/server.ts",
     "dev": "wrangler dev src/server.ts --persist-to=../../persistence",
-    "ngrok": "ngrok http 8787",
     "register": "tsx src/register.ts",
     "deploy": "wrangler deploy",
     "deploy-preview": "wrangler deploy --env=preview"
@@ -35,7 +34,6 @@
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
     "mocha": "^10.2.0",
-    "ngrok": "^5.0.0-beta.2",
     "sinon": "^17.0.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
