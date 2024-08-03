@@ -76,6 +76,11 @@ import {
   zxParseQuery,
 } from "~/util/zod";
 
+const ROW_MAX_WIDTH = 5;
+const MESSAGE_MAX_ROWS = 5;
+const ROW_MAX_INDEX = ROW_MAX_WIDTH - 1;
+const MESSAGE_MAX_ROWS_INDEX = MESSAGE_MAX_ROWS - 1;
+
 interface KVComponentEditorState {
   interactionId: string;
   user: {
@@ -662,10 +667,12 @@ export default () => {
       const [oY] = pos;
       let [y, x] = newPos;
 
-      if (y < 0 || y > 4 || x < 0 || x > 4) return pos;
+      if (y < 0 || y > MESSAGE_MAX_ROWS_INDEX || x < 0 || x > ROW_MAX_INDEX) {
+        return pos;
+      }
 
       let row = rows[y];
-      if (!row && rows.length < 5) {
+      if (!row && rows.length < MESSAGE_MAX_ROWS) {
         rows.splice(y, 0, {
           type: ComponentType.ActionRow,
           components: [],
@@ -675,12 +682,14 @@ export default () => {
       if (!row) {
         // No room, don't move
         return pos;
-      } else if (getRowWidth(row) >= 5) {
+      } else if (getRowWidth(row) >= ROW_MAX_WIDTH) {
         // row is full, find a different one in the same direction
         const nextEmptyRow = rows.find(
           (r, i) =>
             (y < oY ? i < y : i > y) &&
-            5 - getComponentWidth(component) - getRowWidth(r) >= 0,
+            // 5 - getComponentWidth(component) - getRowWidth(r) >= 0,
+            // getRowWidth(r) <= 0,
+            ROW_MAX_WIDTH - getRowWidth(r) >= getComponentWidth(component),
         );
         if (nextEmptyRow) {
           y = rows.indexOf(nextEmptyRow);
@@ -715,7 +724,11 @@ export default () => {
       }
     }
     if (!found) {
-      const row = rows.find((row) => getRowWidth(row) < 5);
+      const row = rows.find(
+        (row) =>
+          getRowWidth(row) < ROW_MAX_WIDTH &&
+          ROW_MAX_WIDTH - getRowWidth(row) >= getComponentWidth(component),
+      );
       if (!row) {
         // This component needs a new row, which needs to really exist
         rows.push({
