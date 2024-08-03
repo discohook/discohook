@@ -224,25 +224,25 @@ export const ZodAPIMessageActionRowComponent = z
   // I'm not the biggest fan of this, but it's the best method I could figure
   // out here. We're basically doing `discriminatedUnion` ourself since Zod
   // doesn't support nesting them.
-  .superRefine(async (val, ctx) => {
+  .superRefine((val, ctx) => {
     const schema =
       val.type === ComponentType.Button
         ? ZodAPIButtonComponent
         : ZodAPISelectMenuComponent;
 
-    const parsed = await schema.spa(val);
+    const parsed = schema.safeParse(val);
     if (!parsed.success) {
       parsed.error.issues.forEach(ctx.addIssue);
       return z.NEVER;
     }
   })
-  .transform(async (val) => {
+  .transform((val) => {
     const schema =
       val.type === ComponentType.Button
         ? ZodAPIButtonComponent
         : ZodAPISelectMenuComponent;
 
-    const parsed = await schema.parseAsync(val);
+    const parsed = schema.parse(val);
     return parsed;
   }) as unknown as z.ZodType<APIMessageActionRowComponent>;
 
