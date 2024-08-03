@@ -567,17 +567,19 @@ const getRowsWithInsertedComponent = (
       type: ComponentType.ActionRow,
       components: [cleaned],
     });
-    return cloned;
+    return cloned.filter((row) => row.components.length !== 0);
   }
-  const cloned = structuredClone(rows).map((row, i) => {
-    if (i === position[0]) {
-      const extant = !!row.components.find(
-        (c) => c.custom_id && c.custom_id === cleaned.custom_id,
-      );
-      row.components.splice(position[1], extant ? 1 : 0, cleaned);
-    }
-    return row;
-  });
+  const cloned = structuredClone(rows)
+    .map((row, i) => {
+      if (i === position[0]) {
+        const extant = !!row.components.find(
+          (c) => c.custom_id && c.custom_id === cleaned.custom_id,
+        );
+        row.components.splice(position[1], extant ? 1 : 0, cleaned);
+      }
+      return row;
+    })
+    .filter((row) => row.components.length !== 0);
   return cloned;
 };
 
