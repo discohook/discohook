@@ -265,7 +265,7 @@
   },
   "noMigratableComponents": "This message has no registered, migratable components.",
   "noContentAvailable": "No content available",
-  "noComponentFlow": "There was no flow registered for this component. Configure one [here]({{url}}).",
+  "noComponentFlow": "There was no flow registered for this component. Click the button to configure a new flow.",
   "componentWillExpire": "Please finish editing & submit this component within 2 weeks or the draft will be deleted.",
   "toggledRole": "Toggled the {{role}} role for you.",
   "welcomerCommandDeprecated": "In order to set up a welcomer, please use the **/triggers** command.",

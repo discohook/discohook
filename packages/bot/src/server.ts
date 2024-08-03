@@ -1,3 +1,4 @@
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import {
   APIApplicationCommandInteractionDataOption,
@@ -15,6 +16,7 @@ import {
   MessageFlags,
   Routes,
 } from "discord-api-types/v10";
+import { PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
@@ -26,12 +28,12 @@ import {
 } from "store/src/durable/components.js";
 import {
   backups,
-  buttons as oButtons,
   discordMessageComponents,
   flowActions,
   flows,
   generateId,
   makeSnowflake,
+  buttons as oButtons,
 } from "store/src/schema";
 import {
   Flow,
@@ -340,14 +342,27 @@ const handleInteraction = async (
       const ctx = new InteractionContext(rest, interaction, env);
       if (flows.length === 0) {
         return respond(
-          ctx.reply({
-            content: t("noComponentFlow", {
-              replace: {
-                url: `${env.DISCOHOOK_ORIGIN}/edit/component/${component.id}`,
-              },
-            }),
-            flags: MessageFlags.Ephemeral,
-          }),
+          ctx.userPermissons.has(
+            PermissionFlags.ManageMessages,
+            PermissionFlags.ManageWebhooks,
+          )
+            ? ctx.reply({
+                content: t("noComponentFlow"),
+                components: [
+                  new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(
+                      new ButtonBuilder()
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(
+                          `${env.DISCOHOOK_ORIGIN}/edit/component/${component.id}`,
+                        )
+                        .setLabel(t("customize")),
+                    )
+                    .toJSON(),
+                ],
+                flags: MessageFlags.Ephemeral,
+              })
+            : ctx.updateMessage({}),
         );
       }
 
