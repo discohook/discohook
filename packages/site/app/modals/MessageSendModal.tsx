@@ -494,10 +494,9 @@ export const MessageSendModal = (
                       {
                         type: message.reference ? "edit" : "send",
                         threadId:
-                          // This may cause issues if the webhook's channel was changed without the client being aware
-                          result.data.channel_id === webhook.channel_id
-                            ? undefined
-                            : result.data.channel_id,
+                          result.data.position !== undefined
+                            ? result.data.channel_id
+                            : undefined,
                       },
                       {
                         method: "POST",

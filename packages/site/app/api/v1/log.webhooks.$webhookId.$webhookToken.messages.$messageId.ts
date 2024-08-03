@@ -214,41 +214,40 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       );
 
       const flowsById: Record<string, string[]> = {};
-      await tx
-        .insert(flows)
-        .values(
-          components.flatMap((component) => {
-            const match = stored.find((c) =>
-              "custom_id" in component
-                ? component.custom_id === `p_${c.id}`
-                : false,
-            );
-            const id = getComponentId(component);
-            flowsById[String(id)] = [];
+      const flowsValues: (typeof flows.$inferInsert)[] = components.flatMap(
+        (component) => {
+          const match = stored.find((c) =>
+            "custom_id" in component
+              ? component.custom_id === `p_${c.id}`
+              : false,
+          );
+          const id = getComponentId(component);
+          flowsById[String(id)] = [];
 
-            if (match) {
-              // avoid conflict, later `insert` will find flow ids from match
-              return [];
-              // return match.componentsToFlows.map((ctf) => {
-              //   flowsById[String(id)].push(String(ctf.flow.id));
-              //   return { id: ctf.flow.id, name: ctf.flow.name };
-              // });
-            }
+          if (match) {
+            // avoid conflict, later `insert` will find flow ids from match
+            return [];
+            // return match.componentsToFlows.map((ctf) => {
+            //   flowsById[String(id)].push(String(ctf.flow.id));
+            //   return { id: ctf.flow.id, name: ctf.flow.name };
+            // });
+          }
 
-            if (
-              component.type === ComponentType.StringSelect ||
-              (component.type === ComponentType.Button &&
-                isLinkButton(component))
-            ) {
-              return [];
-            }
+          if (
+            component.type === ComponentType.StringSelect ||
+            (component.type === ComponentType.Button && isLinkButton(component))
+          ) {
+            return [];
+          }
 
-            const newId = generateId();
-            flowsById[String(id)].push(newId);
-            return [{ id: BigInt(newId) }];
-          }),
-        )
-        .onConflictDoNothing();
+          const newId = generateId();
+          flowsById[String(id)].push(newId);
+          return [{ id: BigInt(newId) }];
+        },
+      );
+      if (flowsValues.length !== 0) {
+        await tx.insert(flows).values(flowsValues).onConflictDoNothing();
+      }
 
       return await tx
         .insert(discordMessageComponents)

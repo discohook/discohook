@@ -26,7 +26,10 @@ import { zx } from "zodix";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
-import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
+import {
+  action as ApiAuditLogAction,
+  getComponentId,
+} from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -51,6 +54,7 @@ import {
   getDb,
   launchComponentDurableObject,
   makeSnowflake,
+  messageLogEntries,
   tokens,
 } from "~/store.server";
 import {
@@ -474,6 +478,24 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           : undefined,
       },
     );
+    await db
+      .insert(messageLogEntries)
+      .values({
+        type: "edit",
+        channelId: message.channel_id,
+        discordGuildId: webhook.guild_id
+          ? makeSnowflake(webhook.guild_id)
+          : undefined,
+        webhookId: webhook.id,
+        messageId: message.id,
+        threadId,
+        // Considered defaulting to token creator since they "authorized" this
+        // edit but I think that would be misleading since a token could have
+        // theoretically been hijacked and you don't want to pin that on the
+        // wrong user.
+        userId: user?.id,
+      })
+      .onConflictDoNothing();
   }
 
   if (built.custom_id) {
@@ -751,6 +773,9 @@ export default () => {
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
     onError: setError,
   });
+  const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
+    onError: setError,
+  });
 
   return (
     <div>
@@ -950,15 +975,34 @@ export default () => {
                       ),
                     );
                   }
-                  await submitMessage(wt, {
+                  const result = await submitMessage(wt, {
                     data: { components: rowsWithLive },
                     reference: component_.messageId.toString(),
                     thread_id: threadId,
                   });
-                  // Tell the server that something changed and it needs to
-                  // either fetch the message or ensure that the component's
-                  // durable object is up to date
-                  submit(null, { method: "PATCH", replace: true });
+                  if (result.status === "success") {
+                    setError(undefined);
+                    auditLogFetcher.submit(
+                      {
+                        type: "edit",
+                        threadId,
+                      },
+                      {
+                        method: "POST",
+                        action: apiUrl(
+                          BRoutes.messageLog(wt.id, wt.token, result.data.id),
+                        ),
+                      },
+                    );
+
+                    // Tell the server that something changed and it needs to
+                    // either fetch the message or ensure that the component's
+                    // durable object is up to date
+                    submit(null, { method: "PATCH", replace: true });
+                  } else {
+                    setError({ message: result.data.message });
+                    setSubmitState("idle");
+                  }
                 }
               }}
             >
