@@ -12,6 +12,7 @@ import {
   APIMessage,
   APIWebhook,
   ButtonStyle,
+  ChannelType,
   ComponentType,
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
@@ -262,18 +263,31 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           (await rest.get(
             Routes.guildChannels(String(component.guildId)),
           )) as APIChannel[]
-        ).map(
-          (channel) =>
-            ({
-              id: channel.id,
-              name: channel.name,
-              type: getChannelIconType(channel),
-              tags:
-                "available_tags" in channel
-                  ? channel.available_tags
-                  : undefined,
-            }) as ResolvableAPIChannel,
-        );
+        )
+          .filter((c) =>
+            [
+              ChannelType.GuildText,
+              ChannelType.GuildAnnouncement,
+              ChannelType.GuildForum,
+              ChannelType.PublicThread,
+              ChannelType.PrivateThread,
+              ChannelType.AnnouncementThread,
+              ChannelType.GuildVoice,
+              ChannelType.GuildStageVoice,
+            ].includes(c.type),
+          )
+          .map(
+            (channel) =>
+              ({
+                id: channel.id,
+                name: channel.name,
+                type: getChannelIconType(channel),
+                tags:
+                  "available_tags" in channel
+                    ? channel.available_tags
+                    : undefined,
+              }) as ResolvableAPIChannel,
+          );
       } catch {}
     }
     return [];
