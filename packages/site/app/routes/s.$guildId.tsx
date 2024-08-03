@@ -16,6 +16,7 @@ import {
   APIGuild,
   APIWebhook,
   ButtonStyle,
+  ComponentType,
   WebhookType,
 } from "discord-api-types/v10";
 import {
@@ -1014,7 +1015,14 @@ export default () => {
                                                 <GenericPreviewComponent
                                                   // @ts-expect-error the type is close enough for this component
                                                   // TODO: use `buildStorableComponent` for general completeness
-                                                  data={component.data}
+                                                  data={{
+                                                    ...component.data,
+                                                    // Easier than messing with <Button/> for now
+                                                    ...(component.data.type ===
+                                                    ComponentType.Button
+                                                      ? { disabled: false }
+                                                      : {}),
+                                                  }}
                                                   cache={cache}
                                                   t={t}
                                                   onClick={(e) => {
