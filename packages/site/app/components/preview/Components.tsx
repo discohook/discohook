@@ -161,16 +161,19 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
         data-custom-id={data.custom_id}
         data-type={data.type}
         data-open={false}
+        data-disabled={data.disabled}
         className={twJoin(
-          "peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full disabled:opacity-60 disabled:cursor-not-allowed",
+          "peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full data-[disabled=true]:opacity-60 data-[disabled=true]:cursor-not-allowed",
           nonSendable ? "hidden" : undefined,
         )}
-        disabled={data.disabled}
         onClick={(e) => {
-          e.currentTarget.dataset.open = String(
-            e.currentTarget.dataset.open === "false",
-          );
-          if (onClick) onClick(e);
+          if (onClick) {
+            onClick(e);
+          } else if (!data.disabled) {
+            e.currentTarget.dataset.open = String(
+              e.currentTarget.dataset.open === "false",
+            );
+          }
         }}
       >
         <span className="truncate text-[#5c5e66] dark:text-[#949ba4] leading-none">
@@ -288,6 +291,7 @@ export const MessageComponents: React.FC<{
         <div
           key={`action-row-${i}`}
           className="flex flex-wrap gap-x-1.5 gap-y-0"
+          data-action-row-index={i}
         >
           {row.components.map((component, ci) => (
             <div key={`action-row-${i}-component-${ci}`} className="contents">
