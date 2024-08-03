@@ -12,7 +12,10 @@ PREMIUM_SKUS = ["1249810125418397867"]
 LIFETIME_SKU = "1266826214807572542"
 
 [durable_objects]
-bindings = [{ name = "COMPONENTS", class_name = "DurableComponentState" }]
+bindings = [
+  { name = "COMPONENTS", class_name = "DurableComponentState" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site" },
+]
 
 [[migrations]]
 tag = "v1"
@@ -24,12 +27,13 @@ kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "f8f714cc2701467cacf61b203ccd933a" },
 ]
-services = [
-  { binding = "SITE", service = "discohook-site-preview" },
-]
+services = [{ binding = "SITE", service = "discohook-site-preview" }]
 
 [env.preview.durable_objects]
-bindings = [{ name = "COMPONENTS", class_name = "DurableComponentState" }]
+bindings = [
+  { name = "COMPONENTS", class_name = "DurableComponentState" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-preview" },
+]
 
 [[env.preview.migrations]]
 tag = "v1"
@@ -48,12 +52,13 @@ kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "b78274cce7d543ca952af16633c1885d" },
 ]
-services = [
-  { binding = "SITE", service = "discohook-site" },
-]
+services = [{ binding = "SITE", service = "discohook-site" }]
 
 [env.production.durable_objects]
-bindings = [{ name = "COMPONENTS", class_name = "DurableComponentState" }]
+bindings = [
+  { name = "COMPONENTS", class_name = "DurableComponentState" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site" },
+]
 
 [[env.production.migrations]]
 tag = "v1"

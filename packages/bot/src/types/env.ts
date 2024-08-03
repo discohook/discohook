@@ -1,3 +1,5 @@
+import { Service } from "@cloudflare/workers-types";
+
 export interface Env {
   ENVIRONMENT: "dev" | "preview" | "production";
   PREMIUM_SKUS: string[];
@@ -14,4 +16,6 @@ export interface Env {
   HYPERDRIVE: Hyperdrive;
   KV: KVNamespace;
   COMPONENTS: DurableObjectNamespace;
+  DRAFT_CLEANER: DurableObjectNamespace;
+  SITE: Service;
 }

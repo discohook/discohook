@@ -542,6 +542,9 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
             id: discordMessageComponents.id,
           })
       )[0];
+      const doId = ctx.env.DRAFT_CLEANER.idFromName(String(component.id));
+      const stub = ctx.env.DRAFT_CLEANER.get(doId);
+      await stub.fetch(`http://do/?id=${component.id}`);
 
       const editorToken = await generateEditorTokenForComponent(
         db,
@@ -569,8 +572,10 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         },
       );
 
+      const embed = getComponentFlowEmbed(state);
+      embed.setFooter({ text: t("componentWillExpire") });
       return ctx.updateMessage({
-        embeds: [getComponentFlowEmbed(state).toJSON()],
+        embeds: [embed.toJSON()],
         components: [
           new ActionRowBuilder<ButtonBuilder>()
             .addComponents(
@@ -730,6 +735,9 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
             id: discordMessageComponents.id,
           })
       )[0];
+      const doId = ctx.env.DRAFT_CLEANER.idFromName(String(component.id));
+      const stub = ctx.env.DRAFT_CLEANER.get(doId);
+      await stub.fetch(`http://do/?id=${component.id}`);
 
       const editorToken = await generateEditorTokenForComponent(
         db,
@@ -757,8 +765,10 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         },
       );
 
+      const embed = getComponentFlowEmbed(state);
+      embed.setFooter({ text: t("componentWillExpire") });
       return ctx.updateMessage({
-        embeds: [getComponentFlowEmbed(state).toJSON()],
+        embeds: [embed.toJSON()],
         components: [
           new ActionRowBuilder<ButtonBuilder>()
             .addComponents(

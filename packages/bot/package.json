@@ -28,7 +28,7 @@
     "store": "../store"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230518.0",
+    "@cloudflare/workers-types": "^4.20240405.0",
     "@tsconfig/node18": "^18.2.2",
     "c8": "^8.0.0",
     "chai": "^4.3.7",

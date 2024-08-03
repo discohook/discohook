@@ -1,9 +1,4 @@
 import { Service } from "@cloudflare/workers-types";
-import { WorkerEntrypoint } from "cloudflare:workers";
-
-class CDNService extends WorkerEntrypoint {
-  async upload(blob: Blob) {}
-}
 
 export interface Env {
   ENVIRONMENT: "dev" | "production";
@@ -35,7 +30,8 @@ export interface Env {
   LINK_ORIGIN?: string;
   // cdn.discohook.app - user uploaded content on B2
   CDN_ORIGIN: string;
-  CDN: Service<CDNService>;
+  CDN: Service;
   // bots.discohook.app - custom bots
   BOTS_ORIGIN?: string;
+  BOT: Service;
 }

@@ -10,7 +10,7 @@
   "dependencies": {
     "discord-api-types": "^0.37.92",
     "discord-snowflake": "^2.0.0",
-    "drizzle-orm": "^0.31.2",
+    "drizzle-orm": "^0.32.1",
     "json-bigint": "^1.0.0",
     "postgres": "^3.4.3",
     "tif-snowflake": "discohook/snowflake",
@@ -20,7 +20,7 @@
   "devDependencies": {
     "@discordjs/rest": "^2.2.0",
     "@types/json-bigint": "^1.0.4",
-    "drizzle-kit": "^0.22.8",
+    "drizzle-kit": "^0.23.1",
     "typescript": "^5.3.3"
   }
 }
