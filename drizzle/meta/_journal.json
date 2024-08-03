@@ -8,6 +8,13 @@
       "when": 1722183044599,
       "tag": "0000_flawless_william_stryker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1722720802315,
+      "tag": "0001_hot_sunspot",
+      "breakpoints": true
     }
   ]
 }

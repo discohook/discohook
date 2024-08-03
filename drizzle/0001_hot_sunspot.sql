@@ -1,0 +1,1 @@
+ALTER TABLE "DiscordGuild" ADD COLUMN "ownerDiscordId" bigint;
