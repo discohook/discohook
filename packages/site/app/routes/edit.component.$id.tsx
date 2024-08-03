@@ -18,7 +18,13 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { JWTPayload } from "jose";
-import { MouseEventHandler, useEffect, useReducer, useState } from "react";
+import {
+  MouseEventHandler,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
@@ -596,19 +602,18 @@ const getRowsWithInsertedComponent = (
       type: ComponentType.ActionRow,
       components: [cleaned],
     });
-    return cloned.filter((row) => row.components.length !== 0);
+    return cloned; //.filter((row) => row.components.length !== 0);
   }
-  const cloned = structuredClone(rows)
-    .map((row, i) => {
-      if (i === position[0]) {
-        const extant = !!row.components.find(
-          (c) => c.custom_id && c.custom_id === cleaned.custom_id,
-        );
-        row.components.splice(position[1], extant ? 1 : 0, cleaned);
-      }
-      return row;
-    })
-    .filter((row) => row.components.length !== 0);
+  const cloned = structuredClone(rows).map((row, i) => {
+    if (i === position[0]) {
+      const extant = !!row.components.find(
+        (c) => c.custom_id && c.custom_id === cleaned.custom_id,
+      );
+      row.components.splice(position[1], extant ? 1 : 0, cleaned);
+    }
+    return row;
+  });
+  //.filter((row) => row.components.length !== 0);
   return cloned;
 };
 
@@ -682,51 +687,54 @@ export default () => {
   // const [editingFlowOpen, setEditingFlowOpen] = useState(false);
   const [editingFlow, setEditingFlow] = useState<EditingFlowData | undefined>();
 
-  const [rows, setRows] = useState<
-    APIActionRowComponent<APIMessageActionRowComponent>[]
-  >(message?.components ?? []);
+  let rows: APIActionRowComponent<APIMessageActionRowComponent>[] =
+    message?.components ?? [];
+  // const [rows, setRows] = useReducer(
+  //   (
+  //     _: APIActionRowComponent<APIMessageActionRowComponent>[],
+  //     newRows: APIActionRowComponent<APIMessageActionRowComponent>[],
+  //   ) => {
+  //     return newRows.filter(
+  //       (c, i) => c.components.length !== 0 && i !== ignoreIndex,
+  //     );
+  //   },
+  //   message?.components ?? [],
+  // );
 
   const [position, setPosition] = useReducer(
     (pos: [number, number], newPos: [number, number]) => {
-      const [oY] = pos;
-      let [y, x] = newPos;
+      const [oY, oX] = pos;
+      const [y, x] = newPos;
 
-      if (y < 0 || y > MESSAGE_MAX_ROWS_INDEX || x < 0 || x > ROW_MAX_INDEX) {
-        return pos;
+      const emptyRow: (typeof rows)[number] = {
+        type: ComponentType.ActionRow,
+        components: [],
+      };
+
+      const row = rows[y];
+      if (
+        row &&
+        getRowWidth(row) + getComponentWidth(component) < ROW_MAX_WIDTH
+      ) {
+        return newPos;
+      } else if (row) {
+        // Not enough room
+        rows = rows.filter((c) => c.components.length !== 0);
+        rows.splice(y, 0, emptyRow);
+        return newPos;
       }
 
-      let row = rows[y];
-      if (!row && rows.length < MESSAGE_MAX_ROWS) {
-        rows.splice(y, 0, {
-          type: ComponentType.ActionRow,
-          components: [],
-        });
-        row = rows[y];
-      }
-      if (!row) {
-        // No room, don't move
-        return pos;
-      } else if (getRowWidth(row) >= ROW_MAX_WIDTH) {
-        // row is full, find a different one in the same direction
-        const nextEmptyRow = rows.find(
-          (r, i) =>
-            (y < oY ? i < y : i > y) &&
-            // 5 - getComponentWidth(component) - getRowWidth(r) >= 0,
-            // getRowWidth(r) <= 0,
-            ROW_MAX_WIDTH - getRowWidth(r) >= getComponentWidth(component),
-        );
-        if (nextEmptyRow) {
-          y = rows.indexOf(nextEmptyRow);
-        } else {
-          // No room, don't move
-          return pos;
-        }
+      if (!row && oY === y && oX !== x) {
+        // Not sure how this happened
+        rows = rows.filter((c) => c.components.length !== 0);
+        rows.splice(y, 0, emptyRow);
+        return newPos;
       }
 
-      return [Math.min(rows.length, y), Math.min(row.components.length, x)] as [
-        number,
-        number,
-      ];
+      return [
+        Math.min(Math.max(y, 0), MESSAGE_MAX_ROWS_INDEX, rows.length - 1),
+        Math.min(Math.max(x, 0), ROW_MAX_INDEX),
+      ] as typeof pos;
     },
     [0, 0],
   );
@@ -764,10 +772,13 @@ export default () => {
         setPosition([rows.indexOf(row), row.components.length]);
       }
     }
-    setRows([...rows]);
   }, []);
 
-  const rowsWithLive = getRowsWithInsertedComponent(rows, component, position);
+  const rowsWithLive = useMemo(
+    () => getRowsWithInsertedComponent(rows, component, position),
+    [rows, component, position],
+  );
+  console.log(position, JSON.stringify(rowsWithLive));
 
   // const [overflowMessage, setOverflowMessage] = useState(false);
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
@@ -867,12 +878,19 @@ export default () => {
               <ArrowButton
                 icon="Chevron_Up"
                 onClick={() => setPosition([position[0] - 1, position[1]])}
-                disabled={position[0] <= 0}
+                disabled={
+                  position[0] <= 0 &&
+                  rowsWithLive[position[0]]?.components?.length === 1
+                }
               />
               <ArrowButton
                 icon="Chevron_Down"
                 onClick={() => setPosition([position[0] + 1, position[1]])}
-                disabled={position[0] >= 4}
+                disabled={
+                  position[0] >= 4 ||
+                  (position[0] === rowsWithLive.length - 1 &&
+                    rowsWithLive[position[0]]?.components?.length === 1)
+                }
               />
             </div>
             {getComponentWidth(component) < ROW_MAX_WIDTH && (
