@@ -11,6 +11,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+// import { discordMessageComponents } from "./schema.js";
 
 export const message_settings = pgTable("message_settings", {
   guildId: bigint("guild_id", { mode: "bigint" }),
@@ -35,7 +36,17 @@ export const buttons = pgTable("buttons", {
   type: text("type"),
   customPublicMessageData: text("custom_public_message_data"),
   id: serial("id").notNull(),
+  // migratedComponentId: bigint("migrated_component_id", {
+  //   mode: "bigint",
+  // }),
 });
+
+// export const buttonsRelations = relations(buttons, ({ one }) => ({
+//   migratedComponent: one(discordMessageComponents, {
+//     fields: [buttons.migratedComponentId],
+//     references: [discordMessageComponents.id],
+//   }),
+// }));
 
 export const welcomer_hello = pgTable("welcomer_hello", {
   guildId: bigint("guild_id", { mode: "bigint" }).notNull(),

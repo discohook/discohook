@@ -24,6 +24,7 @@ import {
   StorableComponent,
 } from "../types/components.js";
 import { TriggerEvent } from "../types/triggers.js";
+// import { buttons } from "./schema-v1.js";
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -145,6 +146,9 @@ export const discordUsersRelations = relations(
     members: many(discordMembers, {
       relationName: "DiscordUser_DiscordMember",
     }),
+    ownedGuilds: many(discordGuilds, {
+      relationName: "DiscordUser_DiscordGuild",
+    }),
   }),
 );
 
@@ -196,24 +200,35 @@ export const discordGuilds = pgTable("DiscordGuild", {
   id: snowflake("id").primaryKey(),
   name: text("name").default("Unknown Server").notNull(),
   icon: text("icon"),
+  ownerDiscordId: snowflake("ownerDiscordId"),
 });
 
-export const discordGuildsRelations = relations(discordGuilds, ({ many }) => ({
-  members: many(discordMembers, { relationName: "DiscordGuild_DiscordMember" }),
-  roles: many(discordRoles, { relationName: "DiscordGuild_DiscordRole" }),
-  backups: many(discordGuildsToBackups),
-  webhooks: many(webhooks, { relationName: "DiscordGuild_Webhook" }),
-  triggers: many(triggers, { relationName: "DiscordGuild_Trigger" }),
-  reactionRoles: many(discordReactionRoles, {
-    relationName: "DiscordGuild_ReactionRole",
+export const discordGuildsRelations = relations(
+  discordGuilds,
+  ({ many, one }) => ({
+    members: many(discordMembers, {
+      relationName: "DiscordGuild_DiscordMember",
+    }),
+    ownerDiscordUser: one(discordUsers, {
+      fields: [discordGuilds.ownerDiscordId],
+      references: [discordUsers.id],
+      relationName: "DiscordUser_DiscordGuild",
+    }),
+    roles: many(discordRoles, { relationName: "DiscordGuild_DiscordRole" }),
+    backups: many(discordGuildsToBackups),
+    webhooks: many(webhooks, { relationName: "DiscordGuild_Webhook" }),
+    triggers: many(triggers, { relationName: "DiscordGuild_Trigger" }),
+    reactionRoles: many(discordReactionRoles, {
+      relationName: "DiscordGuild_ReactionRole",
+    }),
+    messageLogEntries: many(messageLogEntries, {
+      relationName: "DiscordGuild_MessageLogEntry",
+    }),
+    tokens: many(tokens, {
+      relationName: "Token_DiscordGuild",
+    }),
   }),
-  messageLogEntries: many(messageLogEntries, {
-    relationName: "DiscordGuild_MessageLogEntry",
-  }),
-  tokens: many(tokens, {
-    relationName: "Token_DiscordGuild",
-  }),
-}));
+);
 
 export const discordRoles = pgTable(
   "DiscordRoles",
@@ -222,7 +237,6 @@ export const discordRoles = pgTable(
     guildId: snowflake("guildId")
       .references(() => discordGuilds.id, { onDelete: "cascade" })
       .notNull(),
-
     name: text("name").notNull(),
     color: integer("color").default(0),
     permissions: text("permissions").default("0"),
@@ -494,6 +508,9 @@ export const discordMessageComponents = pgTable("DiscordMessageComponent", {
   type: integer("type").notNull().$type<ComponentType>(),
   data: json("data").notNull().$type<StorableComponent>(),
   draft: boolean("draft").notNull().default(false),
+  // oldButtonId: integer("oldButtonId").references(() => buttons.id, {
+  //   onDelete: "set null",
+  // }),
 });
 
 export const discordMessageComponentsRelations = relations(
@@ -515,6 +532,10 @@ export const discordMessageComponentsRelations = relations(
       relationName: "User_DiscordMessageComponent-updated",
     }),
     componentsToFlows: many(discordMessageComponentsToFlows),
+    // oldButton: one(buttons, {
+    //   fields: [discordMessageComponents.oldButtonId],
+    //   references: [buttons.id],
+    // }),
   }),
 );
 

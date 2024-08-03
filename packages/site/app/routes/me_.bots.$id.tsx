@@ -86,7 +86,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       ? await db.query.discordMembers.findMany({
           where: eq(discordMembers.userId, user.discordId),
           columns: { permissions: true },
-          with: { guild: true },
+          with: { guild: { columns: { id: true, name: true, icon: true } } },
         })
       : [])();
 
@@ -274,12 +274,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           id: makeSnowflake(guild.id),
           name: guild.name,
           icon: guild.icon,
+          ownerDiscordId: makeSnowflake(guild.owner_id),
         })
         .onConflictDoUpdate({
           target: [discordGuilds.id],
           set: {
             name: guild.name,
             icon: guild.icon,
+            ownerDiscordId: makeSnowflake(guild.owner_id),
           },
         });
     }

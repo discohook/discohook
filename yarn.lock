@@ -835,6 +835,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@drizzle-team/brocli@npm:^0.8.2":
+  version: 0.8.2
+  resolution: "@drizzle-team/brocli@npm:0.8.2"
+  checksum: 10c0/2c7da275f79b0bf0e8f26579c9db76748fe57ccff1e6f057c3beaecd2b9ffbe71345a5f2fc6d5b709f26ecf814a7652e7ae851a408f66f45fb7466f7c8ff9ae9
+  languageName: node
+  linkType: hard
+
 "@emoji-mart/data@npm:^1.1.2":
   version: 1.1.2
   resolution: "@emoji-mart/data@npm:1.1.2"
@@ -4050,7 +4057,7 @@ cron-parser@discohook/cron-parser:
   version: 0.0.0-use.local
   resolution: "discohook-bot@workspace:packages/bot"
   dependencies:
-    "@cloudflare/workers-types": "npm:^4.20230518.0"
+    "@cloudflare/workers-types": "npm:^4.20240405.0"
     "@discordjs/builders": "npm:^1.8.2"
     "@discordjs/formatters": "npm:^0.4.0"
     "@discordjs/rest": "npm:^2.3.0"
@@ -4143,7 +4150,7 @@ cron-parser@discohook/cron-parser:
   resolution: "discohook@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^1.5.1"
-    drizzle-kit: "npm:^0.22.8"
+    drizzle-kit: "npm:^0.23.1"
   languageName: unknown
   linkType: soft
 
@@ -4240,22 +4247,23 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
-"drizzle-kit@npm:^0.22.8":
-  version: 0.22.8
-  resolution: "drizzle-kit@npm:0.22.8"
+"drizzle-kit@npm:^0.23.1":
+  version: 0.23.1
+  resolution: "drizzle-kit@npm:0.23.1"
   dependencies:
+    "@drizzle-team/brocli": "npm:^0.8.2"
     "@esbuild-kit/esm-loader": "npm:^2.5.5"
     esbuild: "npm:^0.19.7"
     esbuild-register: "npm:^3.5.0"
   bin:
     drizzle-kit: bin.cjs
-  checksum: 10c0/e3bbda283de8d3985644d771fe773fcee3f31dd485cb3d32af077c52a088580921fcaae3f7b383279f8799b223d74701ebc4866b6e4952c8c813cd0cb5f80908
+  checksum: 10c0/ff7d9bef2ea6ba7c4d2e532487747f2ff73498d9560c9b1cffdc6fd7da3966da062a18fe270765499df8504f6a7301a7d567e08fd0c7d388128780637530ea07
   languageName: node
   linkType: hard
 
-"drizzle-orm@npm:^0.31.2":
-  version: 0.31.2
-  resolution: "drizzle-orm@npm:0.31.2"
+"drizzle-orm@npm:^0.32.1":
+  version: 0.32.1
+  resolution: "drizzle-orm@npm:0.32.1"
   peerDependencies:
     "@aws-sdk/client-rds-data": ">=3"
     "@cloudflare/workers-types": ">=3"
@@ -4265,6 +4273,7 @@ cron-parser@discohook/cron-parser:
     "@op-engineering/op-sqlite": ">=2"
     "@opentelemetry/api": ^1.4.1
     "@planetscale/database": ">=1"
+    "@prisma/client": "*"
     "@tidbcloud/serverless": "*"
     "@types/better-sqlite3": "*"
     "@types/pg": "*"
@@ -4300,6 +4309,8 @@ cron-parser@discohook/cron-parser:
       optional: true
     "@planetscale/database":
       optional: true
+    "@prisma/client":
+      optional: true
     "@tidbcloud/serverless":
       optional: true
     "@types/better-sqlite3":
@@ -4330,13 +4341,15 @@ cron-parser@discohook/cron-parser:
       optional: true
     postgres:
       optional: true
+    prisma:
+      optional: true
     react:
       optional: true
     sql.js:
       optional: true
     sqlite3:
       optional: true
-  checksum: 10c0/7fb7604dc50204047fc78745c1a956f395dd582f05db9dbf76cfcc658fb180fc3012cfec03fd669140e67184d2ca32419bb3c09aafeb5db5dbe0c2db73f2fe5a
+  checksum: 10c0/c756e014a3b77707f93c49c51d2d8a7fb034fccc1da737784bc13b15c78fa708ef27678089217e050738566b39d340fc0d106ae8f4ce3f54a5fb28758d705f14
   languageName: node
   linkType: hard
 
@@ -9229,17 +9242,17 @@ cron-parser@discohook/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=df9bf3&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=32dae8&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
-    drizzle-orm: "npm:^0.31.2"
+    drizzle-orm: "npm:^0.32.1"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/58418565f9925a89d05f961ea3e164238f4de0e08f66f550d6cd827ad141b04e530e4782b082a7edd52a64b601c1f56363db1e16a76090fbb5187baf6a186024
+  checksum: 10c0/9ddc7a07fc5dc03c2966d42d7232e4c4e072ee2e33349ba554a2fb2eb47c85e9979979a6064ed8440fdd547e90eb4d6fb122bdf05b5585823f15292051a4cd5b
   languageName: node
   linkType: hard
 
@@ -9251,8 +9264,8 @@ cron-parser@discohook/cron-parser:
     "@types/json-bigint": "npm:^1.0.4"
     discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
-    drizzle-kit: "npm:^0.22.8"
-    drizzle-orm: "npm:^0.31.2"
+    drizzle-kit: "npm:^0.23.1"
+    drizzle-orm: "npm:^0.32.1"
     json-bigint: "npm:^1.0.0"
     postgres: "npm:^3.4.3"
     tif-snowflake: discohook/snowflake

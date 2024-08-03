@@ -56,12 +56,12 @@ import {
 } from "~/util/zod";
 import {
   QueryDataVersion,
-  backups as dBackups,
   customBots,
-  getDb,
+  backups as dBackups,
   linkBackups as dLinkBackups,
-  makeSnowflake,
   shareLinks as dShareLinks,
+  getDb,
+  makeSnowflake,
 } from "../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -123,7 +123,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
             // biome-ignore lint/style/noNonNullAssertion: Checked above
             eq(discordMembers.userId, user.discordId!),
           columns: { permissions: true },
-          with: { guild: true },
+          with: { guild: { columns: { id: true, name: true, icon: true } } },
         })
       : [])();
 

@@ -28,12 +28,14 @@ export const guildCreateCallback: GatewayEventCallback = async (
       id: makeSnowflake(guild.id),
       name: guild.name,
       icon: guild.icon,
+      ownerDiscordId: makeSnowflake(guild.owner_id),
     })
     .onConflictDoUpdate({
       target: discordGuilds.id,
       set: {
         name: guild.name,
         icon: guild.icon,
+        ownerDiscordId: makeSnowflake(guild.owner_id),
       },
     });
 

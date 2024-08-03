@@ -72,6 +72,7 @@ export const getDiscordAuth = (
               id: makeSnowflake(guild.id),
               name: guild.name,
               icon: guild.icon,
+              ownerDiscordId: guild.owner ? makeSnowflake(j.id) : undefined,
             })),
           )
           .onConflictDoUpdate({
@@ -79,6 +80,7 @@ export const getDiscordAuth = (
             set: {
               name: sql`excluded.name`,
               icon: sql`excluded.icon`,
+              ownerDiscordId: sql`excluded."ownerDiscordId"`,
             },
           });
         await db
