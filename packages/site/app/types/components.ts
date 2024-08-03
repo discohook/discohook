@@ -60,6 +60,13 @@ export const ZodAPIButtonComponentWithCustomIdSuccess = z
     ZodAPIButtonComponentWithCustomIdBase,
   ) satisfies z.ZodType<APIButtonComponentWithCustomId>;
 
+export const ZodAPIButtonComponentWithCustomId = z.union([
+  ZodAPIButtonComponentWithCustomIdPrimary,
+  ZodAPIButtonComponentWithCustomIdSecondary,
+  ZodAPIButtonComponentWithCustomIdDanger,
+  ZodAPIButtonComponentWithCustomIdSuccess,
+]) satisfies z.ZodType<APIButtonComponentWithCustomId>;
+
 export const ZodAPIButtonComponentWithURL = z.object({
   type: z.literal(ComponentType.Button),
   style: z.literal(ButtonStyle.Link),
