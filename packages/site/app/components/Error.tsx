@@ -30,3 +30,5 @@ export const useError = (t?: TFunction) => {
     },
   ] as const;
 };
+
+export type SetErrorFunction = ReturnType<typeof useError>[1];

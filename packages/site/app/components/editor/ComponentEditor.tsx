@@ -29,7 +29,9 @@ import {
 } from "~/types/QueryData";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { getZodErrorMessage } from "~/util/loader";
 import { ButtonSelect } from "../ButtonSelect";
+import { SetErrorFunction } from "../Error";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon, CoolIconsGlyph } from "../icons/CoolIcon";
 
@@ -123,7 +125,10 @@ export const getComponentErrors = (
  * to change something.
  * You can also do this while logged out.
  */
-export const submitComponent = async (data: APIMessageActionRowComponent) => {
+export const submitComponent = async (
+  data: APIMessageActionRowComponent,
+  setError?: SetErrorFunction,
+) => {
   const id = getComponentId(data)?.toString();
 
   let response = await fetch(
@@ -147,6 +152,10 @@ export const submitComponent = async (data: APIMessageActionRowComponent) => {
   }
   if (!response.ok) {
     console.error(response.status, response.statusText);
+    if (setError) {
+      const data = await response.json();
+      setError({ message: getZodErrorMessage(data) });
+    }
     return;
   }
   const raw = (await response.json()) as SerializeFrom<
@@ -206,6 +215,7 @@ export const submitComponent = async (data: APIMessageActionRowComponent) => {
     default:
       break;
   }
+  if (setError) setError(undefined);
   return component;
 };
 

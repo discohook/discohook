@@ -886,7 +886,7 @@ export default () => {
             disabled={submitState !== "idle"}
             onClick={async () => {
               setSubmitState("submitting");
-              const updated = await submitComponent(component);
+              const updated = await submitComponent(component, setError);
               if (updated) {
                 setComponent(updated);
               }
