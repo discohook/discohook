@@ -443,6 +443,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const built = buildStorableComponent(updated.data, String(updated.id));
   if (tokenData && message.webhook_id) {
+    // TODO: use service binding to take advantage of the bot's token store
     const webhook = (await rest.get(
       Routes.webhook(message.webhook_id),
     )) as APIWebhook;
@@ -456,16 +457,17 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       );
     }
 
+    const components = getRowsWithInsertedComponent(
+      message.components ?? [],
+      built,
+      // biome-ignore lint/style/noNonNullAssertion: Non-nullable if token is present
+      [row!, column!],
+    );
     await rest.patch(
       Routes.webhookMessage(webhook.id, webhook.token, message.id),
       {
         body: {
-          components: getRowsWithInsertedComponent(
-            message.components ?? [],
-            built,
-            // biome-ignore lint/style/noNonNullAssertion: Non-nullable if token is present
-            [row!, column!],
-          ),
+          components,
         } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
         query: threadId
           ? new URLSearchParams({ thread_id: threadId })
@@ -829,7 +831,14 @@ export default () => {
             />
           </p>
           <div className="flex">
-            <div className="w-1/2 grid grid-cols-2 gap-1 ltr:mr-1 rtl:ml-1">
+            <div
+              className={twJoin(
+                getComponentWidth(component) < ROW_MAX_WIDTH
+                  ? "w-1/2"
+                  : "w-full",
+                "grid grid-cols-2 gap-1 ltr:mr-1 rtl:ml-1",
+              )}
+            >
               <ArrowButton
                 icon="Chevron_Up"
                 onClick={() => setPosition([position[0] - 1, position[1]])}
@@ -841,27 +850,27 @@ export default () => {
                 disabled={position[0] >= 4}
               />
             </div>
-            {/*
-              The message preview is always LTR so we force it here too since
-              we're controlling an element in the preview. A bit janky but
-              preferable to duplicating the elements.
-            */}
-            <div dir="ltr" className="w-1/2 grid grid-cols-2 gap-1">
-              <ArrowButton
-                icon="Chevron_Left"
-                onClick={() => setPosition([position[0], position[1] - 1])}
-                disabled={position[1] <= 0}
-              />
-              <ArrowButton
-                icon="Chevron_Right"
-                onClick={() => setPosition([position[0], position[1] + 1])}
-                disabled={
-                  position[1] >= 4 ||
-                  (rows[position[0]] &&
-                    position[1] === rows[position[0]].components.length)
-                }
-              />
-            </div>
+            {getComponentWidth(component) < ROW_MAX_WIDTH && (
+              // The message preview is always LTR so we force it here too since
+              // we're controlling an element in the preview. A bit janky but
+              // preferable to duplicating the elements.
+              <div dir="ltr" className="w-1/2 grid grid-cols-2 gap-1">
+                <ArrowButton
+                  icon="Chevron_Left"
+                  onClick={() => setPosition([position[0], position[1] - 1])}
+                  disabled={position[1] <= 0}
+                />
+                <ArrowButton
+                  icon="Chevron_Right"
+                  onClick={() => setPosition([position[0], position[1] + 1])}
+                  disabled={
+                    position[1] >= ROW_MAX_INDEX ||
+                    (rows[position[0]] &&
+                      position[1] === rows[position[0]].components.length)
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
         <ComponentEditForm
