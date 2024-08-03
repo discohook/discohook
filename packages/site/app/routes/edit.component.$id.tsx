@@ -470,12 +470,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
 
   if (built.custom_id) {
-    const dob = await launchComponentDurableObject(context.env, {
+    await launchComponentDurableObject(context.env, {
       messageId: message.id,
       customId: built.custom_id,
       componentId: updated.id,
     });
-    console.log(JSON.stringify(dob));
   }
   return updated;
 };
