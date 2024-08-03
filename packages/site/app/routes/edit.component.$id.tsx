@@ -915,7 +915,8 @@ export default () => {
               if (updated) {
                 setComponent(updated);
               }
-              setSubmitState("idle");
+              // Ensure that the component's durable object is up to date
+              submit(null, { method: "PATCH", replace: true });
             }}
           >
             {t(component_.draft ? "saveDraft" : "save")}
