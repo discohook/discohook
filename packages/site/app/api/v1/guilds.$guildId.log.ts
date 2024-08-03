@@ -48,7 +48,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
     limit,
     offset: page * limit,
-    orderBy: (table, { desc }) => desc(table.messageId),
+    orderBy: (table, { desc }) => desc(table.id),
   });
 
   const webhookIds = entries
