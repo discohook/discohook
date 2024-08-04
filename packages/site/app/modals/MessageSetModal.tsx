@@ -6,6 +6,7 @@ import {
 import { ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
+import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { QueryData } from "~/types/QueryData";
@@ -79,6 +80,21 @@ export const MessageSetModal = (
 
   return (
     <Modal title={t("setMessageReference")} {...props} setOpen={setOpen}>
+      <InfoBox severity="blue" icon="Info" collapsible open={false}>
+        <span>What is this?</span>
+        <p>
+          You can use this menu if you're managing a message that has already
+          been sent in Discord. To get started, right click or long press the
+          message you want to edit, select "Copy Message Link", then paste the
+          link in the box below.
+          <br />
+          If you want to overwrite what is currently written in Discohook: Add
+          the webhook that sent the message, then press "Overwrite Editor".
+          Otherwise, just select "Set Reference". The send button at the top of
+          the website will now allow you to edit the message instead of sending
+          a new one.
+        </p>
+      </InfoBox>
       <div>
         <TextInput
           label={t("messageLink")}
