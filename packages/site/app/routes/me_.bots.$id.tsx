@@ -43,7 +43,7 @@ import {
   isDiscordError,
 } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
-import { base64Encode, copyText } from "~/util/text";
+import { base64Encode, cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseParams } from "~/util/zod";
 import { KVCustomBot } from "./me";
@@ -653,8 +653,8 @@ export default function CustomBot() {
                     />
                   </div>
                   <Button
-                    onClick={() => {
-                      if (bot.url) copyText(bot.url);
+                    onClick={(e) => {
+                      if (bot.url) cycleCopyText(bot.url, t, e.currentTarget);
                     }}
                     className="ml-2 mt-auto"
                   >

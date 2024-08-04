@@ -5,7 +5,7 @@ import { ZodSchema } from "zod";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextArea } from "~/components/TextArea";
-import { copyText } from "~/util/text";
+import { cycleCopyText } from "~/util/text";
 import { Modal, ModalProps } from "./Modal";
 
 export interface JsonEditorProps<T = Record<string, any>> {
@@ -69,7 +69,7 @@ export const JsonEditorModal = (
       <div className="mt-4 space-x-2 rtl:space-x-reverse">
         <Button
           discordstyle={ButtonStyle.Secondary}
-          onClick={() => copyText(value)}
+          onClick={(e) => cycleCopyText(value, t, e.currentTarget)}
         >
           {t("copy")}
         </Button>

@@ -13,7 +13,7 @@ import { LoadedBackup } from "~/routes/me";
 import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
-import { copyText } from "~/util/text";
+import { cycleCopyText } from "~/util/text";
 import { action as ApiPostBackups } from "../api/v1/backups";
 import { action as ApiGetBackup } from "../api/v1/backups.$id";
 import { action as ApiPostShare } from "../api/v1/share";
@@ -124,9 +124,9 @@ export const MessageSaveModal = (
         </div>
         <Button
           disabled={shareFetcher.state !== "idle"}
-          onClick={() => {
+          onClick={(e) => {
             if (shareFetcher.data) {
-              copyText(shareFetcher.data.url);
+              cycleCopyText(shareFetcher.data.url, t, e.currentTarget);
             } else {
               generateShareData();
             }

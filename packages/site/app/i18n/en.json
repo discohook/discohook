@@ -24,6 +24,7 @@
   "generate": "Generate",
   "clear": "Clear",
   "copy": "Copy",
+  "copied": "Copied",
   "copyLink": "Copy Link",
   "clickGenerate": "Press \"Generate\" to generate a share link",
   "includeWebhookUrls": "Include webhook URLs",

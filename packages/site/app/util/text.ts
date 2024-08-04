@@ -1,3 +1,5 @@
+import { TFunction } from "i18next";
+
 export const copyText = (text: string) => {
   const input = document.createElement("textarea");
   input.value = text;
@@ -14,6 +16,24 @@ export const copyText = (text: string) => {
   document.execCommand("copy");
 
   input.remove();
+};
+
+export const cycleCopyText = (
+  text: string,
+  t: TFunction,
+  element: HTMLElement,
+) => {
+  copyText(text);
+
+  const inner = Array.from(element.childNodes).find(
+    (n) => n.textContent === t("copy"),
+  );
+  if (inner) {
+    inner.textContent = t("copied");
+    setTimeout(() => {
+      inner.textContent = t("copy");
+    }, 1500);
+  }
 };
 
 export const randomString = (length: number) => {
