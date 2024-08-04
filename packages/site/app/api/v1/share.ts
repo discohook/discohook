@@ -49,14 +49,14 @@ export const action = async ({ request, context }: ActionArgs) => {
     ttl: z
       .number()
       .int()
-      .default(604800000)
-      // Max 4 weeks, min 5 minutes
-      .refine((val) => val >= 300000 && val <= 2419200000),
+      .default(604800)
+      // (in seconds) max 4 weeks, min 5 minutes
+      .refine((val) => val >= 300 && val <= 2419200),
     origin: z.enum(ALLOWED_EXTERNAL_ORIGINS).optional(),
   });
 
   const userId = await getUserId(request, context);
-  const expires = new Date(new Date().getTime() + ttl);
+  const expires = new Date(new Date().getTime() + ttl * 1000);
   const origin = origin_ ?? new URL(request.url).origin;
 
   // biome-ignore lint/performance/noDelete: We don't want to store this property at all
@@ -71,9 +71,11 @@ export const action = async ({ request, context }: ActionArgs) => {
   const kv = context.env.KV;
   const { id, key } = await generateUniqueShortenKey(kv, 8);
   await kv.put(key, JSON.stringify(shortened), {
-    expirationTtl: ttl / 1000,
+    expirationTtl: ttl,
     // KV doesn't seem to provide a way to read `expirationTtl`
-    metadata: { expiresAt: new Date(new Date().valueOf() + ttl).toISOString() },
+    metadata: {
+      expiresAt: new Date(new Date().valueOf() + ttl * 1000).toISOString(),
+    },
   });
   if (userId) {
     await db.insert(shareLinks).values({
