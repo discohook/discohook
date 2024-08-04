@@ -1,14 +1,14 @@
 import {
-  APIActionRowComponent,
-  APIAttachment,
-  APIButtonComponentBase,
   APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
   APIChannelSelectComponent as _APIChannelSelectComponent,
-  APIEmbed,
+  APIEmbed as _APIEmbed,
   APIMentionableSelectComponent as _APIMentionableSelectComponent,
   APIRoleSelectComponent as _APIRoleSelectComponent,
   APIStringSelectComponent as _APIStringSelectComponent,
   APIUserSelectComponent as _APIUserSelectComponent,
+  APIActionRowComponent,
+  APIAttachment,
+  APIButtonComponentBase,
   ButtonStyle,
   MessageFlags,
   UserFlags,
@@ -18,6 +18,13 @@ import { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";
 import { ZodAPIActionRowComponent } from "./components";
 import { ZodMessageFlags } from "./discord";
+
+/**
+ * Discord may not return `null` but it will accept the value in payloads.
+ * We're modifying this type to maintain compatibility with prior Discohook
+ * versions, which used `null` instead of `undefined`.
+ */
+export type APIEmbed = Omit<_APIEmbed, "color"> & { color?: number | null };
 
 /** The version of the query data, defaults to `d2`
  *
@@ -143,7 +150,10 @@ export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
   description: z.ostring(),
   url: z.ostring(),
   timestamp: z.ostring(),
-  color: z.onumber(),
+  color: z
+    .onumber()
+    .nullable()
+    .transform((v) => (v === null ? undefined : v)),
   footer: z.object({ text: z.string(), icon_url: z.ostring() }).optional(),
   image: z.object({ url: z.string() }).optional(),
   thumbnail: z.object({ url: z.string() }).optional(),

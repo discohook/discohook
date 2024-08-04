@@ -1,13 +1,20 @@
 import {
+  APIEmbed as _APIEmbed,
   APIActionRowComponent,
   APIAttachment,
-  APIEmbed,
   APIMessageActionRowComponent,
   MessageFlags,
   UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { ZodLinkEmbed, ZodLinkQueryData } from "../zod/query.js";
+
+/**
+ * Discord may not return `null` but it will accept the value in payloads.
+ * We're modifying this type to maintain compatibility with prior Discohook
+ * versions, which used `null` instead of `undefined`.
+ */
+export type APIEmbed = Omit<_APIEmbed, "color"> & { color?: number | null };
 
 /** The version of the query data, defaults to `d2`
  *

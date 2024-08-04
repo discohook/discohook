@@ -1,6 +1,5 @@
-import { APIEmbed } from "discord-api-types/v10";
 import { z } from "zod";
-import { QueryData } from "../types/backups.js";
+import { APIEmbed, QueryData } from "../types/backups.js";
 import { randomString } from "../util/text.js";
 
 export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
@@ -8,7 +7,10 @@ export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
   description: z.ostring(),
   url: z.ostring(),
   timestamp: z.ostring(),
-  color: z.onumber(),
+  color: z
+    .onumber()
+    .nullable()
+    .transform((v) => (v === null ? undefined : v)),
   footer: z.object({ text: z.string(), icon_url: z.ostring() }).optional(),
   image: z.object({ url: z.string() }).optional(),
   thumbnail: z.object({ url: z.string() }).optional(),
