@@ -17,7 +17,10 @@ import { Button } from "./Button";
 import { CoolIcon } from "./icons/CoolIcon";
 import { Logo } from "./icons/Logo";
 
-export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
+export const Header: React.FC<{
+  user?: User | null;
+  setShowHistoryModal?: (value: React.SetStateAction<boolean>) => void;
+}> = ({ user, setShowHistoryModal }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -116,6 +119,15 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
         >
           {t("settings")}
         </Button>
+        {setShowHistoryModal && (
+          <Button
+            className="my-auto ltr:mr-2 rtl:ml-2 shrink-0"
+            onClick={() => setShowHistoryModal(true)}
+            discordstyle={ButtonStyle.Secondary}
+          >
+            {t("history")}
+          </Button>
+        )}
         <Button
           className="my-auto ltr:ml-auto rtl:mr-auto shrink-0"
           discordstyle={ButtonStyle.Secondary}

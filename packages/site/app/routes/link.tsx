@@ -254,7 +254,7 @@ export default () => {
         clear={() => setImageModalData(undefined)}
         {...imageModalData}
       />
-      <Header user={user} />
+      <Header user={user} setShowHistoryModal={setShowHistory} />
       <div className="md:flex h-[calc(100%_-_3rem)]">
         <div
           className={`p-4 md:w-1/2 h-full overflow-y-scroll ${
@@ -283,14 +283,6 @@ export default () => {
           )}
           <div className="flex mb-2">
             <Button
-              onClick={() => setShowHistory(true)}
-              discordstyle={ButtonStyle.Secondary}
-              disabled={localHistory.length === 0}
-            >
-              {t("history")}
-            </Button>
-            <Button
-              className="ml-2"
               discordstyle={ButtonStyle.Secondary}
               disabled={!backupInfo?.code}
               onClick={() => {

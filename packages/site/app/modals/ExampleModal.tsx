@@ -17,6 +17,7 @@ export const ExampleModal = (props: ModalProps) => {
           messageDisplay={settings.messageDisplay}
           compactAvatars={settings.compactAvatars}
           message={{
+            author: { name: "Profile name" },
             content: "Content",
             embeds: [
               {

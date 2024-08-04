@@ -14,6 +14,7 @@ import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { PostChannelIcon } from "~/components/icons/channel";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
@@ -542,7 +543,7 @@ export default function Index() {
         startIndex={imageModalData?.startIndex}
         clear={() => setImageModalData(undefined)}
       />
-      <Header user={user} />
+      <Header user={user} setShowHistoryModal={setShowHistory} />
       <div
         className={twJoin(
           "h-[calc(100%_-_3rem)]",
@@ -570,21 +571,9 @@ export default function Index() {
           )}
           <div className="flex mb-2">
             <Button
-              // className="ltr:ml-2 rtl:mr-2"
-              onClick={() => setShowHistory(true)}
-              discordstyle={ButtonStyle.Secondary}
-              // emoji={{ name: "📜" }}
-              // title={t("history")}
-            >
-              {t("history")}
-            </Button>
-            <Button
-              className="ltr:ml-2 rtl:mr-2"
               onClick={() => setSharing(true)}
               discordstyle={ButtonStyle.Secondary}
               disabled={data.messages.length === 0}
-              // emoji={{ name: "💾" }}
-              // title={t("saveMessage")}
             >
               {t("saveMessage")}
             </Button>
@@ -699,7 +688,10 @@ export default function Index() {
               setData({ ...data });
             }}
           >
-            {t("addMessage")}
+            <div className="flex">
+              <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
+              <span className="my-auto">{t("addMessage")}</span>
+            </div>
           </Button>
         </div>
         <div

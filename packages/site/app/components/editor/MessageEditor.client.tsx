@@ -504,18 +504,22 @@ export const MessageEditor: React.FC<{
               {t("add")}
             </ButtonSelect>
           </div>
-          <Button
-            className="shrink"
-            onClick={() => setSettingMessageIndex(i)}
-            title={t("changeReference")}
-            discordstyle={ButtonStyle.Secondary}
-          >
-            {t("edit")}
-          </Button>
           <div>
             <ButtonSelect
               discordstyle={ButtonStyle.Secondary}
               options={[
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Edit_Pencil_01"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("setReference")}</span>
+                    </p>
+                  ),
+                  value: "setReference",
+                },
                 {
                   label: (
                     <p className="flex">
@@ -542,9 +546,15 @@ export const MessageEditor: React.FC<{
                 },
               ]}
               onChange={(opt) => {
-                const val = (opt as { value: "jsonEditor" | "copyQueryData" })
-                  .value;
+                const val = (
+                  opt as {
+                    value: "setReference" | "jsonEditor" | "copyQueryData";
+                  }
+                ).value;
                 switch (val) {
+                  case "setReference":
+                    setSettingMessageIndex(i);
+                    break;
                   case "jsonEditor":
                     setJsonEditor({
                       data: message.data,
@@ -562,7 +572,7 @@ export const MessageEditor: React.FC<{
                 }
               }}
             >
-              {t("developer")}
+              {t("settings")}
             </ButtonSelect>
           </div>
         </div>
