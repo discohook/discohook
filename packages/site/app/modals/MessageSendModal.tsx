@@ -119,6 +119,7 @@ export const MessageSendModal = (
   const { t } = useTranslation();
   const { targets, setAddingTarget, data, files, cache } = props;
   const [error, setError] = useError(t);
+  const [sending, setSending] = useState(false);
 
   const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
     onError: setError,
@@ -347,7 +348,7 @@ export const MessageSendModal = (
           })
         ) : (
           <div>
-            <p>You have no webhooks to send to.</p>
+            <p>{t("sendNoWebhooks")}</p>
             <Button onClick={() => setAddingTarget(true)}>
               {t("addWebhook")}
             </Button>
@@ -359,9 +360,11 @@ export const MessageSendModal = (
           <Button
             disabled={
               countSelected(selectedWebhooks) === 0 ||
-              enabledMessagesCount === 0
+              enabledMessagesCount === 0 ||
+              sending
             }
             onClick={async () => {
+              setSending(true);
               for (const [targetId] of Object.entries(selectedWebhooks).filter(
                 ([_, v]) => v,
               )) {
@@ -518,14 +521,19 @@ export const MessageSendModal = (
                   });
                 }
               }
+
+              setSending(false);
             }}
           >
             {t(
-              countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
-                ? "sendAll"
-                : countSelected(selectedWebhooks) > 1
-                  ? "sendToAll"
-                  : "send",
+              sending
+                ? "sending"
+                : countSelected(selectedWebhooks) <= 1 &&
+                    enabledMessagesCount > 1
+                  ? "sendAll"
+                  : countSelected(selectedWebhooks) > 1
+                    ? "sendToAll"
+                    : "send",
             )}
           </Button>
           <Button
