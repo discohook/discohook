@@ -701,8 +701,8 @@ export default function Index() {
             settings.forceDualPane
               ? "flex w-1/2 border-l-2"
               : twJoin(
-                  "md:w-1/2",
-                  tab === "preview" ? "flex" : "hidden md:border-l-2 md:flex",
+                  "md:w-1/2 md:border-l-2",
+                  tab === "preview" ? "flex" : "hidden md:flex",
                 ),
           )}
         >
