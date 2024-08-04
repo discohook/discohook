@@ -272,6 +272,14 @@ export default () => {
     componentsFetcher.state,
   ]);
 
+  // Whenever openTriggerId is set but there is no openTrigger (it was just created), refresh list
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  useEffect(() => {
+    if (openTriggerId && !openTrigger && triggersFetcher.state === "idle") {
+      triggersFetcher.load(apiUrl(BRoutes.guildTriggers(guild.id)));
+    }
+  }, [openTriggerId]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (
