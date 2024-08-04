@@ -570,20 +570,34 @@ export default function Index() {
           )}
           <div className="flex mb-2">
             <Button
-              onClick={() => setAddingTarget(true)}
-              disabled={Object.keys(targets).length >= 10}
+              // className="ltr:ml-2 rtl:mr-2"
+              onClick={() => setShowHistory(true)}
+              discordstyle={ButtonStyle.Secondary}
+              // emoji={{ name: "📜" }}
+              // title={t("history")}
             >
-              {t("addWebhook")}
+              {t("history")}
+            </Button>
+            <Button
+              className="ltr:ml-2 rtl:mr-2"
+              onClick={() => setSharing(true)}
+              discordstyle={ButtonStyle.Secondary}
+              disabled={data.messages.length === 0}
+              // emoji={{ name: "💾" }}
+              // title={t("saveMessage")}
+            >
+              {t("saveMessage")}
             </Button>
             <Button
               className={twJoin(
-                "ml-auto",
+                "ltr:ml-auto rtl:mr-auto",
                 settings.forceDualPane ? "hidden" : "md:hidden",
               )}
               onClick={() => setTab("preview")}
               discordstyle={ButtonStyle.Secondary}
             >
-              {t("preview")} <CoolIcon icon="Chevron_Right" />
+              {t("preview")}{" "}
+              <CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />
             </Button>
           </div>
           {Object.values(targets).map((webhook) => (
@@ -639,23 +653,16 @@ export default function Index() {
           ))}
           <div className="flex space-x-2 rtl:space-x-reverse">
             <Button
+              onClick={() => setAddingTarget(true)}
+              disabled={Object.keys(targets).length >= 10}
+            >
+              {t("addWebhook")}
+            </Button>
+            <Button
               onClick={() => setSendingMessages(true)}
               disabled={data.messages.length === 0}
             >
               {t("send")}
-            </Button>
-            <Button
-              onClick={() => setSharing(true)}
-              discordstyle={ButtonStyle.Secondary}
-              disabled={data.messages.length === 0}
-            >
-              {t("saveMessage")}
-            </Button>
-            <Button
-              onClick={() => setShowHistory(true)}
-              discordstyle={ButtonStyle.Secondary}
-            >
-              {t("history")}
             </Button>
           </div>
           {data.messages.map((d, i) => {
@@ -712,7 +719,8 @@ export default function Index() {
                 onClick={() => setTab("editor")}
                 discordstyle={ButtonStyle.Secondary}
               >
-                <CoolIcon icon="Chevron_Left" /> {t("editor")}
+                <CoolIcon icon="Chevron_Left" rtl="Chevron_Right" />{" "}
+                {t("editor")}
               </Button>
               <hr className="border border-gray-400 dark:border-gray-600 my-4" />
             </div>

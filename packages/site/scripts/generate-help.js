@@ -13,7 +13,29 @@ const data = {
   edit: {
     title: "How do I edit messages?",
     description:
-      "To edit a message, there's a good chance you want the original message. You can get the message by with a right click or long press on the message, then opening the Apps menu and selecting **Restore to Discohook**. The bot will reply with a link, which when opened will have the Discord message opened right up in the Discohook editor!\n\nTo edit an existing message you must have two things: the Webhook URL and the Message Link. The webhook URL can be obtained using the **/webhook info** command. The message link can be obtained by right clicking or long pressing the message, and selecting **Copy Message Link**.\n\nPaste the Message Link at the very bottom of the editor, then paste the Webhook URL at the very top. If everything is done correctly, the Send button will be replaced with an **Edit** button.",
+      "This process is generally easier with [our official bot](https://discohook.app/bot), but it's not necessary.",
+    fields: [
+      {
+        name: "If you have Discohook Utils",
+        value: [
+          "1. Right click or long press on the message to edit, then open the Apps menu and select **Restore**.",
+          ' - If it\'s a webhook message that can be edited, the bot will prompt you to "include edit options". This changes whether the webhook and message link will be pre-filled and makes it easier to get right into editing.',
+          ' - You can also do this with the </restore:1> command (choose "With edit options" for the `mode` option).',
+          "2. The bot will reply with a link, which when opened will have the Discord message opened right up in the Discohook editor!",
+        ].join("\n"),
+        inline: false,
+      },
+      {
+        name: "The process on the Discohook website",
+        value: [
+          '1. Right click or long press on the message to edit, then select "Copy Message Link".',
+          '2. In Discohook, scroll down to the bottom of the website. Next to the "Add" dropdown, click the "Edit" button. Paste the copied message link in the box.',
+          "3. Select the webhook that sent the message or add it in the \"Add Webhook\" menu. If you're not logged in, you may have to copy the webhook URL using Discohook Utils's </webhook info:1> command.",
+          '4. If you would like to overwrite the current message that you see in the editor, choose "Overwrite Editor". This will pull the message data from Discord and put it into Discohook so you can edit it. Otherwise, choose "Set Reference".',
+        ].join("\n"),
+        inline: false,
+      },
+    ],
   },
   sidebar: {
     title: "How do I remove the sidebar color on an embed?",

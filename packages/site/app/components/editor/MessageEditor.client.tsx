@@ -415,16 +415,8 @@ export const MessageEditor: React.FC<{
           </>
         )}
         <div className="flex space-x-2 rtl:space-x-reverse">
-          <Button className="shrink" onClick={() => setSettingMessageIndex(i)}>
-            <span>
-              {t(message.reference ? "changeReference" : "setReference")}
-            </span>
-          </Button>
           <div>
             <ButtonSelect
-              // classNames={{
-              //   menu: (p) => twJoin(selectClassNames.menu?.(p), "!w-32"),
-              // }}
               options={[
                 {
                   label: (
@@ -512,6 +504,14 @@ export const MessageEditor: React.FC<{
               {t("add")}
             </ButtonSelect>
           </div>
+          <Button
+            className="shrink"
+            onClick={() => setSettingMessageIndex(i)}
+            title={t("changeReference")}
+            discordstyle={ButtonStyle.Secondary}
+          >
+            {t("edit")}
+          </Button>
           <div>
             <ButtonSelect
               discordstyle={ButtonStyle.Secondary}
