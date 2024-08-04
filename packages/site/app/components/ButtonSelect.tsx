@@ -69,7 +69,7 @@ export const ButtonSelect: React.FC<
           option: (p) =>
             twMerge(
               props.classNames?.option?.(p),
-              "!rounded !py-1 !px-2.5 !bg-inherit dark:hover:!bg-blurple !text-base !text-inherit !font-medium",
+              "!rounded !py-1 !px-2.5 !bg-inherit hover:!bg-blurple/40 dark:hover:!bg-blurple !text-base !text-inherit !font-medium",
               p.isDisabled
                 ? "!cursor-not-allowed opacity-60"
                 : "!cursor-pointer",
