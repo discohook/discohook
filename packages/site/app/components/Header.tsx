@@ -123,6 +123,17 @@ export const Header: React.FC<{ user?: User | null }> = ({ user }) => {
         >
           {t("help")}
         </Button>
+        {!premiumDetails?.active && (
+          <Link to="/donate" target="_blank" className="contents">
+            <Button
+              // Green link buttons are sinful, but eye-catching
+              discordstyle={ButtonStyle.Success}
+              className="my-auto ltr:ml-2 rtl:mr-2"
+              emoji={{ name: "💸" }}
+              title={t("donate")}
+            />
+          </Link>
+        )}
       </div>
     </div>
   );

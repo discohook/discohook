@@ -22,7 +22,6 @@ import {
   ComponentEditModal,
   EditingComponentData,
 } from "~/modals/ComponentEditModal";
-import { ExampleModal } from "~/modals/ExampleModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
@@ -31,7 +30,6 @@ import { MessageFlagsEditModal } from "~/modals/MesageFlagsEditModal";
 import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
-import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
@@ -400,14 +398,12 @@ export default function Index() {
       ({ ...d, ...partialD }) as Targets,
     {},
   );
-  const [showDisclaimer, setShowDisclaimer] = useState(dm === "preview");
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
   const [settingMessageIndex, setSettingMessageIndex] = useState(
     dm?.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
   );
   const [editingMessageFlags, setEditingMessageFlags] = useState<number>();
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
-  const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");
   const [authSuccessOpen, setAuthSuccessOpen] = useState(dm === "auth-success");
   const [authFailureOpen, setAuthFailureOpen] = useState(dm === "auth-failure");
   const [sendingMessages, setSendingMessages] = useState(dm === "submit");
@@ -421,11 +417,6 @@ export default function Index() {
 
   return (
     <div className="h-screen overflow-hidden">
-      <PreviewDisclaimerModal
-        open={showDisclaimer}
-        setOpen={setShowDisclaimer}
-      />
-      <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
       <ComponentEditModal
         open={!!editingComponent}
         setOpen={() => setEditingComponent(undefined)}
@@ -743,28 +734,6 @@ export default function Index() {
                 />
               );
             })}
-          </div>
-          <div className="grid gap-2 grid-cols-3 mt-auto px-4 py-2 bg-slate-50 dark:bg-[#1E1F22]">
-            <Button
-              discordstyle={ButtonStyle.Secondary}
-              onClick={() => setExampleOpen(true)}
-            >
-              {t("embedExample")}
-            </Button>
-            <Button
-              discordstyle={ButtonStyle.Secondary}
-              onClick={() => setShowDisclaimer(true)}
-            >
-              {t("previewInfo")}
-            </Button>
-            <Link to="/donate" target="_blank" className="contents">
-              <Button
-                // Green link buttons are sinful, but eye-catching
-                discordstyle={ButtonStyle.Success}
-              >
-                {t("donate")}
-              </Button>
-            </Link>
           </div>
         </div>
       </div>

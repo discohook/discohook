@@ -6,15 +6,25 @@ import { TextInput } from "~/components/TextInput";
 import { PreviewButton } from "~/components/preview/Components";
 import { Embed } from "~/components/preview/Embed";
 import tags_ from "../../public/help/en.json";
+import { ExampleModal } from "./ExampleModal";
 import { Modal, ModalProps } from "./Modal";
+import { PreviewDisclaimerModal } from "./PreviewDisclaimerModal";
 
 export const HelpModal = (props: ModalProps) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const tags: Record<string, string | APIEmbed> = tags_;
 
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [exampleOpen, setExampleOpen] = useState(false);
+
   return (
     <Modal title={t("help")} {...props}>
+      <PreviewDisclaimerModal
+        open={showDisclaimer}
+        setOpen={setShowDisclaimer}
+      />
+      <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
       <TextInput
         label={t("search")}
         value={query}
@@ -42,7 +52,7 @@ export const HelpModal = (props: ModalProps) => {
         </div>
       </div>
       <div className="flex w-full mt-4">
-        <div className="flex gap-2 mx-auto">
+        <div className="flex gap-2 mx-auto flex-wrap">
           <Button onClick={() => props.setOpen(false)}>{t("ok")}</Button>
           <PreviewButton
             data={{
@@ -52,6 +62,18 @@ export const HelpModal = (props: ModalProps) => {
               label: t("supportServer"),
             }}
           />
+          <Button
+            discordstyle={ButtonStyle.Secondary}
+            onClick={() => setExampleOpen(true)}
+          >
+            {t("embedExample")}
+          </Button>
+          <Button
+            discordstyle={ButtonStyle.Secondary}
+            onClick={() => setShowDisclaimer(true)}
+          >
+            {t("previewInfo")}
+          </Button>
         </div>
       </div>
     </Modal>

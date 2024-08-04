@@ -17,7 +17,6 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
-import { PreviewDisclaimerModal } from "~/modals/PreviewDisclaimerModal";
 import { getUser } from "~/session.server";
 import {
   LinkQueryData,
@@ -235,9 +234,7 @@ export default () => {
     }
   }, [backupInfo, data, updateCount]);
 
-  const [showDisclaimer, setShowDisclaimer] = useState(dm === "preview");
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
-  // const [exampleOpen, setExampleOpen] = useState(dm === "embed-example");
   // const [sharing, setSharing] = useState(dm === "share-create");
   const [showHistory, setShowHistory] = useState(dm === "history");
 
@@ -245,11 +242,6 @@ export default () => {
 
   return (
     <div className="h-screen overflow-hidden">
-      <PreviewDisclaimerModal
-        open={showDisclaimer}
-        setOpen={setShowDisclaimer}
-      />
-      {/* <ExampleModal open={exampleOpen} setOpen={setExampleOpen} /> */}
       <HistoryModal
         open={showHistory}
         setOpen={setShowHistory}
@@ -467,25 +459,6 @@ export default () => {
                 setImageModalData={setImageModalData}
                 isLinkEmbed
               />
-            )}
-          </div>
-          <div className="grid gap-2 grid-cols-2 mt-auto px-4 py-2 bg-slate-50 dark:bg-[#1E1F22]">
-            <Button
-              discordstyle={ButtonStyle.Secondary}
-              // TODO: This needs to be a different modal that details the limitations of link embeds
-              onClick={() => setShowDisclaimer(true)}
-            >
-              {t("previewInfo")}
-            </Button>
-            {(!user || !userIsPremium(user)) && (
-              <Link to="/donate" target="_blank" className="contents">
-                <Button
-                  // Green link buttons are sinful, but eye-catching
-                  discordstyle={ButtonStyle.Success}
-                >
-                  {t("donate")}
-                </Button>
-              </Link>
             )}
           </div>
         </div>
