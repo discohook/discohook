@@ -1,5 +1,5 @@
 import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v10";
-import { twJoin } from "tailwind-merge";
+import { twMerge } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { CoolIcon } from "./icons/CoolIcon";
 import { Twemoji } from "./icons/Twemoji";
@@ -17,7 +17,7 @@ export const Button = (
     <button
       type="button"
       {...props}
-      className={twJoin(
+      className={twMerge(
         "rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex",
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
           ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
