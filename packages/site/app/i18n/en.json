@@ -472,7 +472,7 @@
     "customize": "Channels & Roles"
   },
   "timestamp": {
-    "time": "{{ date, h:mm a }}",
+    "time": "{{ date, h:mm A }}",
     "time_verbose": "{{ date, h:mm:ss A }}",
     "full": "{{ date, MMMM D, YYYY h:mm A }}",
     "full_verbose": "{{ date, dddd, MMMM D, YYYY h:mm:ss A }}",
