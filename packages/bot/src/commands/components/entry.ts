@@ -104,9 +104,10 @@ export const autocompleteMessageCallback = async (
         authorName: m.author.username,
         label: `${
           sentToday
-            ? `Today at ${createdAt.toLocaleTimeString(undefined, {
+            ? `Today at ${createdAt.toLocaleTimeString(ctx.interaction.locale, {
                 hour: "numeric",
                 minute: "2-digit",
+                timeZoneName: "short",
               })}`
             : createdAt.toDateString()
         } | ${m.author.username} | ${m.embeds.length} embed${
