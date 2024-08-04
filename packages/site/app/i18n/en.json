@@ -288,7 +288,7 @@
   "webhook": "Webhook",
   "referenceNoWebhooks": "You haven't added any webhooks that match the message link you provided. To overwrite or edit, you will need to add the correct webhook.",
   "invalidMessageLink": "Invalid message link. They start with https://discord.com/channels/… and have three sets of numbers.",
-  "overwriteMessage": "Overwrite Message",
+  "overwriteMessage": "Overwrite Editor",
   "removeReference": "Remove Reference",
   "setReference": "Set Reference",
   "changeReference": "Change Reference",
