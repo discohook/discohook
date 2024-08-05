@@ -778,7 +778,6 @@ export default () => {
     () => getRowsWithInsertedComponent(rows, component, position),
     [rows, component, position],
   );
-  console.log(position, JSON.stringify(rowsWithLive));
 
   // const [overflowMessage, setOverflowMessage] = useState(false);
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
@@ -932,9 +931,9 @@ export default () => {
               const updated = await submitComponent(component, setError);
               if (updated) {
                 setComponent(updated);
+                // Ensure that the component's durable object is up to date
+                submit(null, { method: "PATCH", replace: true });
               }
-              // Ensure that the component's durable object is up to date
-              submit(null, { method: "PATCH", replace: true });
             }}
           >
             {t(component_.draft ? "saveDraft" : "save")}

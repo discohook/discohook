@@ -19,6 +19,7 @@ import type {
   FlowActionSendMessage,
   FlowActionSendWebhookMessage,
   FlowActionSetVariable,
+  FlowActionStop,
   FlowActionToggleRole,
   FlowActionWait,
 } from "~/store.server";
@@ -96,14 +97,14 @@ const futureSchema = <T extends z.ZodType<any>>(schema: () => T) =>
 
 export const ZodFlowActionType = z.nativeEnum(FlowActionType);
 
-export const ZodFlowActionDud: z.ZodType<FlowActionDud> = z.object({
+export const ZodFlowActionDud = z.object({
   type: z.literal(FlowActionType.Dud),
-});
+}) satisfies z.ZodType<FlowActionDud>;
 
-export const ZodFlowActionWait: z.ZodType<FlowActionWait> = z.object({
+export const ZodFlowActionWait = z.object({
   type: z.literal(FlowActionType.Wait),
   seconds: z.number().min(0).max(60),
-});
+}) satisfies z.ZodType<FlowActionWait>;
 
 export const ZodFlowActionSetVariable = z.object({
   type: z.literal(FlowActionType.SetVariable),
@@ -112,36 +113,32 @@ export const ZodFlowActionSetVariable = z.object({
   value: z.string().max(500).or(z.boolean()),
 }) satisfies z.ZodType<FlowActionSetVariable>;
 
-export const ZodAnonymousVariable: z.ZodType<AnonymousVariable> =
-  ZodFlowActionSetVariable.omit({
-    type: true,
-    name: true,
-  });
+export const ZodAnonymousVariable = ZodFlowActionSetVariable.omit({
+  type: true,
+  name: true,
+}) satisfies z.ZodType<AnonymousVariable>;
 
-export const ZodFlowActionCheckFunctionConditional: z.ZodType<FlowActionCheckFunctionConditional> =
-  z.object({
-    type: z.union([
-      z.literal(FlowActionCheckFunctionType.And),
-      z.literal(FlowActionCheckFunctionType.Or),
-      z.literal(FlowActionCheckFunctionType.Not),
-    ]),
-    conditions: futureSchema(() => ZodFlowActionCheckFunction).array(),
-  });
+export const ZodFlowActionCheckFunctionConditional = z.object({
+  type: z.union([
+    z.literal(FlowActionCheckFunctionType.And),
+    z.literal(FlowActionCheckFunctionType.Or),
+    z.literal(FlowActionCheckFunctionType.Not),
+  ]),
+  conditions: futureSchema(() => ZodFlowActionCheckFunction).array(),
+}) satisfies z.ZodType<FlowActionCheckFunctionConditional>;
 
-export const ZodFlowActionCheckFunctionIn: z.ZodType<FlowActionCheckFunctionIn> =
-  z.object({
-    type: z.literal(FlowActionCheckFunctionType.In),
-    element: ZodAnonymousVariable,
-    array: ZodAnonymousVariable,
-  });
+export const ZodFlowActionCheckFunctionIn = z.object({
+  type: z.literal(FlowActionCheckFunctionType.In),
+  element: ZodAnonymousVariable,
+  array: ZodAnonymousVariable,
+}) satisfies z.ZodType<FlowActionCheckFunctionIn>;
 
-export const ZodFlowActionCheckFunctionEquals: z.ZodType<FlowActionCheckFunctionEquals> =
-  z.object({
-    type: z.literal(FlowActionCheckFunctionType.Equals),
-    a: ZodAnonymousVariable,
-    b: ZodAnonymousVariable,
-    loose: z.oboolean(),
-  });
+export const ZodFlowActionCheckFunctionEquals = z.object({
+  type: z.literal(FlowActionCheckFunctionType.Equals),
+  a: ZodAnonymousVariable,
+  b: ZodAnonymousVariable,
+  loose: z.oboolean(),
+}) satisfies z.ZodType<FlowActionCheckFunctionEquals>;
 
 export const ZodFlowActionCheckFunction: z.ZodType<FlowActionCheckFunction> =
   z.union([
@@ -150,91 +147,100 @@ export const ZodFlowActionCheckFunction: z.ZodType<FlowActionCheckFunction> =
     ZodFlowActionCheckFunctionEquals,
   ]);
 
-export const ZodFlowActionCheck: z.ZodType<FlowActionCheck> = z.object({
+export const ZodFlowActionCheck = z.object({
   type: z.literal(FlowActionType.Check),
   function: ZodFlowActionCheckFunction,
   then: futureSchema(() => ZodFlowAction).array(),
   else: futureSchema(() => ZodFlowAction).array(),
-});
+}) satisfies z.ZodType<FlowActionCheck>;
 
-export const ZodFlowActionAddRole: z.ZodType<FlowActionAddRole> = z.object({
+export const ZodFlowActionStop = z.object({
+  type: z.literal(FlowActionType.Stop),
+  message: z
+    .object({
+      content: z.string().max(2000).optional(),
+      flags: ZodMessageFlags.optional(),
+    })
+    .optional(),
+}) satisfies z.ZodType<FlowActionStop>;
+
+export const ZodFlowActionAddRole = z.object({
   type: z.literal(FlowActionType.AddRole),
   roleId: z.string(),
-});
+}) satisfies z.ZodType<FlowActionAddRole>;
 
-export const ZodFlowActionRemoveRole: z.ZodType<FlowActionRemoveRole> =
-  z.object({
-    type: z.literal(FlowActionType.RemoveRole),
-    roleId: z.string(),
-  });
+export const ZodFlowActionRemoveRole = z.object({
+  type: z.literal(FlowActionType.RemoveRole),
+  roleId: z.string(),
+}) satisfies z.ZodType<FlowActionRemoveRole>;
 
-export const ZodFlowActionToggleRole: z.ZodType<FlowActionToggleRole> =
-  z.object({
-    type: z.literal(FlowActionType.ToggleRole),
-    roleId: z.string(),
-  });
+export const ZodFlowActionToggleRole = z.object({
+  type: z.literal(FlowActionType.ToggleRole),
+  roleId: z.string(),
+}) satisfies z.ZodType<FlowActionToggleRole>;
 
-export const ZodFlowActionSendMessage: z.ZodType<FlowActionSendMessage> =
-  z.object({
-    type: z.literal(FlowActionType.SendMessage),
-    backupId: z.string(),
-    backupMessageId: z.number().nullable().optional(),
-    // Better calculated during flow execution?
-    // response: z.oboolean(),
-    flags: ZodMessageFlags.optional(),
-  });
+export const ZodFlowActionSendMessage = z.object({
+  type: z.literal(FlowActionType.SendMessage),
+  backupId: z.string(),
+  backupMessageId: z.number().nullable().optional(),
+  // Better calculated during flow execution?
+  // response: z.oboolean(),
+  flags: ZodMessageFlags.optional(),
+}) satisfies z.ZodType<FlowActionSendMessage>;
 
-export const ZodFlowActionSendWebhookMessage: z.ZodType<FlowActionSendWebhookMessage> =
-  z.object({
-    type: z.literal(FlowActionType.SendWebhookMessage),
-    webhookId: z.string(),
-    backupId: z.string(),
-    backupMessageId: z.number().nullable().optional(),
-    flags: ZodMessageFlags.optional(),
-  });
+export const ZodFlowActionSendWebhookMessage = z.object({
+  type: z.literal(FlowActionType.SendWebhookMessage),
+  webhookId: z.string(),
+  backupId: z.string(),
+  backupMessageId: z.number().nullable().optional(),
+  flags: ZodMessageFlags.optional(),
+}) satisfies z.ZodType<FlowActionSendWebhookMessage>;
 
-export const ZodFlowActionCreateThread: z.ZodType<FlowActionCreateThread> =
-  z.object({
-    type: z.literal(FlowActionType.CreateThread),
-    channel: ZodAnonymousVariable,
-    name: z.string(),
-    autoArchiveDuration: z
-      .union([
-        z.literal(ThreadAutoArchiveDuration.OneHour),
-        z.literal(ThreadAutoArchiveDuration.OneDay),
-        z.literal(ThreadAutoArchiveDuration.ThreeDays),
-        z.literal(ThreadAutoArchiveDuration.OneWeek),
-      ])
-      .optional(),
-    rateLimitPerUser: z.onumber(),
-    threadType: z
-      .union([
-        z.literal(ChannelType.PublicThread),
-        z.literal(ChannelType.PrivateThread),
-      ])
-      .optional(),
-    invitable: z.oboolean(),
-    // message: z.any(),
-    appliedTags: z.string().array().max(5),
-  });
+export const ZodFlowActionCreateThread = z.object({
+  type: z.literal(FlowActionType.CreateThread),
+  channel: ZodAnonymousVariable,
+  name: z.string(),
+  autoArchiveDuration: z
+    .union([
+      z.literal(ThreadAutoArchiveDuration.OneHour),
+      z.literal(ThreadAutoArchiveDuration.OneDay),
+      z.literal(ThreadAutoArchiveDuration.ThreeDays),
+      z.literal(ThreadAutoArchiveDuration.OneWeek),
+    ])
+    .optional(),
+  rateLimitPerUser: z.onumber(),
+  threadType: z
+    .union([
+      z.literal(ChannelType.PublicThread),
+      z.literal(ChannelType.PrivateThread),
+    ])
+    .optional(),
+  invitable: z.oboolean(),
+  // message: z.any(),
+  appliedTags: z.string().array().max(5),
+}) satisfies z.ZodType<FlowActionCreateThread>;
 
-export const ZodFlowActionDeleteMessage: z.ZodType<FlowActionDeleteMessage> =
-  z.object({
-    type: z.literal(FlowActionType.DeleteMessage),
-  });
+export const ZodFlowActionDeleteMessage = z.object({
+  type: z.literal(FlowActionType.DeleteMessage),
+}) satisfies z.ZodType<FlowActionDeleteMessage>;
 
-export const ZodFlowAction: z.ZodType<FlowAction> = z.union([
-  ZodFlowActionDud,
-  ZodFlowActionWait,
-  ZodFlowActionSetVariable,
-  ZodFlowActionAddRole,
-  ZodFlowActionRemoveRole,
-  ZodFlowActionToggleRole,
-  ZodFlowActionSendMessage,
-  ZodFlowActionSendWebhookMessage,
-  ZodFlowActionCreateThread,
-  ZodFlowActionDeleteMessage,
-]);
+export const ZodFlowAction: z.ZodType<FlowAction> = z.discriminatedUnion(
+  "type",
+  [
+    ZodFlowActionDud,
+    ZodFlowActionCheck,
+    ZodFlowActionStop,
+    ZodFlowActionWait,
+    ZodFlowActionSetVariable,
+    ZodFlowActionAddRole,
+    ZodFlowActionRemoveRole,
+    ZodFlowActionToggleRole,
+    ZodFlowActionSendMessage,
+    ZodFlowActionSendWebhookMessage,
+    ZodFlowActionCreateThread,
+    ZodFlowActionDeleteMessage,
+  ],
+);
 
 export const ZodFlowDBAction: z.ZodType<DBFlowAction> = z.object({
   id: z.bigint(),

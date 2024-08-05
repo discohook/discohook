@@ -1,17 +1,23 @@
-import { ChannelType, MessageFlags } from "discord-api-types/v10";
+import { ButtonStyle, ChannelType, MessageFlags } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
 
+import { Link } from "@remix-run/react";
 import { MessageFlagsBitField } from "discord-bitflag";
 import { TFunction } from "i18next";
 import React from "react";
+import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { useError } from "~/components/Error";
 import { NumberInput } from "~/components/NumberInput";
+import { TextArea } from "~/components/TextArea";
 import {
+  AnonymousVariable,
   DraftFlow,
   FlowAction,
+  FlowActionCheckFunction,
+  FlowActionCheckFunctionType,
   FlowActionCreateThread,
   FlowActionSetVariable,
   FlowActionSetVariableType,
@@ -29,7 +35,7 @@ import { RoleSelect } from "../components/RoleSelect";
 import { StringSelect, selectClassNames } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
-import { mentionStyle } from "../components/preview/Markdown";
+import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { Modal, ModalProps } from "./Modal";
 
 type FlowWithPartials = DraftFlow & {
@@ -78,21 +84,29 @@ export const FlowEditModal = (
                   update={() => setFlow(structuredClone(flow))}
                   backupsFetcher={backupsFetcher}
                   cache={cache}
+                  t={t}
                 />
               ))}
             </div>
           )}
           <div className="w-full flex mt-4">
-            <Button
-              className="mx-auto"
-              onClick={() => {
-                flow.actions.push({ type: 0 });
-                setFlow(structuredClone(flow));
-              }}
-              disabled={flow.actions.length >= 10}
-            >
-              {t("addAction")}
-            </Button>
+            <div className="mx-auto space-x-2 rtl:space-x-reverse">
+              <Button
+                onClick={() => {
+                  flow.actions.push({ type: 0 });
+                  setFlow(structuredClone(flow));
+                }}
+                disabled={flow.actions.length >= 10}
+              >
+                {t("addAction")}
+              </Button>
+              <Button
+                discordstyle={ButtonStyle.Secondary}
+                onClick={() => props.setOpen(false)}
+              >
+                {t("ok")}
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -101,8 +115,12 @@ export const FlowEditModal = (
 };
 
 export const actionTypes = [
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 ] satisfies FlowActionType[];
+
+export const checkFunctionTypes = [
+  0, 1, 3, 4, 5,
+] satisfies FlowActionCheckFunctionType[];
 
 const threadTypeOptions = [
   {
@@ -236,10 +254,19 @@ const FlowActionEditor: React.FC<{
   actionIndex: number;
   update: () => void;
   backupsFetcher: SafeFetcher<typeof ApiGetUserBackups>;
+  t: TFunction;
   cache?: CacheManager;
-}> = ({ flow, action, actionIndex: i, update, backupsFetcher, cache }) => {
-  const { t } = useTranslation();
-
+  checkLevel?: number;
+}> = ({
+  flow,
+  action,
+  actionIndex: i,
+  update,
+  backupsFetcher,
+  t,
+  cache,
+  checkLevel,
+}) => {
   const localIndexMax = 9;
   const previewText = t(`actionDescription.${action.type}`, {
     replace: { action },
@@ -252,8 +279,26 @@ const FlowActionEditor: React.FC<{
     : [];
   const channels = cache ? cache.channel.getAll() : [];
 
+  const flattenAction = (a: FlowAction): FlowAction[] =>
+    a.type === 2
+      ? [...(a.then ?? []), ...(a.else ?? [])].flatMap(flattenAction)
+      : [a];
+  const allActions = flow.actions.flatMap(flattenAction);
+
+  const absoluteI = allActions.indexOf(action);
+  // const stopAction = allActions.find((a, subI): a is FlowActionStop => {
+  //   return subI < absoluteI && a.type === 11;
+  // });
+
   return (
-    <div className="rounded-lg bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg p-4 transition">
+    <div
+      className={twJoin(
+        "rounded-lg border shadow hover:shadow-lg p-4 transition",
+        // action.type === 2
+        //   ? "bg-red-500/10 hover:bg-red-500/15 border-red-500/30"
+        "bg-blurple/10 hover:bg-blurple/15 border-blurple/30",
+      )}
+    >
       <div className="flex text-sm font-semibold select-none">
         {errors.length > 0 && (
           <CoolIcon
@@ -261,7 +306,12 @@ const FlowActionEditor: React.FC<{
             className="my-auto text-rose-600 dark:text-rose-400 ltr:mr-1.5 rtl:ml-1.5"
           />
         )}
-        <span className="truncate">
+        <span
+          className={twJoin(
+            "truncate",
+            // stopAction ? "line-through" : undefined,
+          )}
+        >
           {t(previewText ? "actionNText" : "actionN", {
             replace: {
               n: i + 1,
@@ -327,8 +377,15 @@ const FlowActionEditor: React.FC<{
               name="type"
               label={t("actionTypeText")}
               options={actionTypes
-                .filter((v) => v !== 2)
-                .map((value) => ({ label: t(`actionType.${value}`), value }))}
+                .filter((type) =>
+                  checkLevel !== undefined && checkLevel !== 0
+                    ? type !== 2
+                    : true,
+                )
+                .map((value) => ({
+                  label: t(`actionType.${value}`),
+                  value,
+                }))}
               value={{
                 label: t(`actionType.${action.type}`),
                 value: action.type,
@@ -353,6 +410,71 @@ const FlowActionEditor: React.FC<{
                 update();
               }}
             />
+          ) : action.type === 2 ? (
+            <div>
+              <CheckFunctionEditor
+                t={t}
+                function={action.function}
+                setFunction={(f) => {
+                  action.function = f;
+                }}
+                update={update}
+                level={0}
+              />
+              <hr className="my-4 border-blurple/30" />
+              <p className="text-sm">{t("checkFunctionThen")}</p>
+              <div className="space-y-1">
+                {(action.then ?? []).map((a, ai) => (
+                  <FlowActionEditor
+                    key={`edit-flow-action-${i}-then-${ai}`}
+                    flow={{ actions: action.then }}
+                    action={a}
+                    actionIndex={ai}
+                    update={update}
+                    backupsFetcher={backupsFetcher}
+                    cache={cache}
+                    t={t}
+                    checkLevel={(checkLevel ?? 0) + 1}
+                  />
+                ))}
+              </div>
+              <Button
+                className="mt-1"
+                onClick={() => {
+                  action.then = action.then ?? [];
+                  action.then.push({ type: 0 });
+                  update();
+                }}
+              >
+                Add Action
+              </Button>
+              <p className="text-sm mt-2">{t("checkFunctionElse")}</p>
+              <div className="space-y-1">
+                {(action.else ?? []).map((a, ai) => (
+                  <FlowActionEditor
+                    key={`edit-flow-action-${i}-else-${ai}`}
+                    flow={{ actions: action.else }}
+                    action={a}
+                    actionIndex={ai}
+                    update={update}
+                    backupsFetcher={backupsFetcher}
+                    cache={cache}
+                    t={t}
+                    checkLevel={(checkLevel ?? 0) + 1}
+                  />
+                ))}
+              </div>
+              <Button
+                className="mt-1"
+                onClick={() => {
+                  action.else = action.else ?? [];
+                  action.else.push({ type: 0 });
+                  update();
+                }}
+              >
+                Add Action
+              </Button>
+            </div>
           ) : action.type === 3 || action.type === 4 || action.type === 5 ? (
             <>
               {roles.length === 0 && (
@@ -616,9 +738,11 @@ const FlowActionEditor: React.FC<{
             />
           ) : action.type === 10 ? (
             (() => {
-              const varAction = flow.actions.find(
+              const varAction = allActions.find(
                 (a, subI): a is FlowActionSetVariable => {
-                  return subI < i && a.type === 9 && a.name === "messageId";
+                  return (
+                    subI < absoluteI && a.type === 9 && a.name === "messageId"
+                  );
                 },
               );
               return (
@@ -647,8 +771,70 @@ const FlowActionEditor: React.FC<{
                 </p>
               );
             })()
+          ) : action.type === 11 ? (
+            <>
+              <p className="text-sm">
+                <Trans
+                  t={t}
+                  i18nKey="stopMessageNote"
+                  components={[
+                    <Link
+                      to="/guide/getting-started/formatting"
+                      className={linkClassName}
+                      target="_blank"
+                    />,
+                  ]}
+                />
+              </p>
+              <TextArea
+                name="content"
+                label={t("contentOptional")}
+                className="w-full"
+                maxLength={2000}
+                value={action.message?.content ?? ""}
+                onChange={(e) => {
+                  action.message = action.message ?? {};
+                  action.message.content = e.currentTarget.value;
+
+                  if (
+                    !action.message.content?.trim() &&
+                    !action.message.flags
+                  ) {
+                    action.message = undefined;
+                  }
+
+                  update();
+                }}
+              />
+              <StringSelect
+                name="flags"
+                label={t("flagsOptional")}
+                isMulti
+                isClearable
+                options={messageFlagOptions}
+                value={messageFlagOptions.filter((o) =>
+                  new MessageFlagsBitField(action.message?.flags ?? 0).has(
+                    o.value,
+                  ),
+                )}
+                onChange={(raw) => {
+                  const opts = raw as typeof messageFlagOptions;
+
+                  action.message = action.message ?? {};
+                  action.message.flags =
+                    Number(
+                      opts.reduce(
+                        (prev, cur) => prev.add(cur.value),
+                        new MessageFlagsBitField(),
+                      ).value,
+                    ) || undefined;
+
+                  update();
+                }}
+              />
+            </>
           ) : (
-            <></>
+            t("actionTypeUnsupported")
           )}
         </div>
       </div>
@@ -658,65 +844,243 @@ const FlowActionEditor: React.FC<{
 
 const FlowActionSetVariableEditor: React.FC<{
   t: TFunction;
-  action: FlowActionSetVariable;
+  action: FlowActionSetVariable | AnonymousVariable;
   update: () => void;
   anonymous?: boolean;
-}> = ({ t, action, update, anonymous }) => {
+  flex?: boolean;
+}> = ({ t, action, update, anonymous, flex }) => {
   return (
-    <>
-      <StringSelect
-        name="varType"
-        label={t("type")}
-        options={varTypeOptions}
-        value={
-          varTypeOptions.find((o) => o.value === action.varType) ??
-          varTypeOptions[0]
-        }
-        onChange={(opt) => {
-          action.varType = opt
-            ? (opt as { value: FlowActionSetVariableType }).value
-            : undefined;
-          update();
-        }}
-      />
-      {!anonymous && (
-        <TextInput
-          name="name"
-          label={t("name")}
-          className="w-full font-code"
-          maxLength={100}
-          value={action.name}
-          onChange={(e) => {
-            action.name = e.currentTarget.value;
+    <div className={twJoin("flex gap-1", flex ? "flex-row" : "flex-col")}>
+      <div className={twJoin(flex ? "w-1/3" : "contents")}>
+        <StringSelect
+          name="varType"
+          label={t("type")}
+          options={varTypeOptions}
+          value={
+            varTypeOptions.find((o) => o.value === action.varType) ??
+            varTypeOptions[0]
+          }
+          onChange={(opt) => {
+            action.varType = opt
+              ? (opt as { value: FlowActionSetVariableType }).value
+              : undefined;
             update();
           }}
         />
+      </div>
+      {!anonymous && (
+        <div className={twJoin(flex ? "w-1/3" : "contents")}>
+          <TextInput
+            name="name"
+            label={t("name")}
+            className={"w-full font-code"}
+            maxLength={100}
+            value={"name" in action ? action.name : ""}
+            onChange={(e) => {
+              // @ts-expect-error
+              action.name = e.currentTarget.value;
+              update();
+            }}
+          />
+        </div>
       )}
-      <TextInput
-        name="value"
-        label={t(
-          action.varType === 1
-            ? "valueFromReturn"
-            : action.varType === 2
-              ? "valueMirrorVariable"
-              : "value",
-        )}
-        className={twJoin(
-          "w-full",
-          action.varType !== 0 ? "font-code" : undefined,
-        )}
-        maxLength={action.varType === 1 ? 30 : action.varType === 2 ? 100 : 500}
-        value={String(action.value ?? "")}
-        onChange={({ currentTarget }) => {
-          const v = currentTarget.value;
-          if (["true", "false"].includes(v) && action.varType !== 1) {
-            action.value = v === "true";
-          } else {
-            action.value = currentTarget.value;
+      <div
+        className={twJoin(flex ? (anonymous ? "w-2/3" : "w-1/3") : "contents")}
+      >
+        <TextInput
+          name="value"
+          label={t(
+            action.varType === 1
+              ? "valueFromReturn"
+              : action.varType === 2
+                ? "valueMirrorVariable"
+                : "value",
+          )}
+          className={twJoin(
+            "w-full",
+            action.varType !== 0 ? "font-code" : undefined,
+          )}
+          maxLength={
+            action.varType === 1 ? 30 : action.varType === 2 ? 100 : 500
           }
+          value={String(action.value ?? "")}
+          onChange={({ currentTarget }) => {
+            const v = currentTarget.value;
+            if (["true", "false"].includes(v) && action.varType !== 1) {
+              action.value = v === "true";
+            } else {
+              action.value = currentTarget.value;
+            }
+            update();
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const checkFunctionSeed = (
+  type: FlowActionCheckFunctionType,
+): FlowActionCheckFunction =>
+  type === 0 || type === 1 || type === 3
+    ? { type, conditions: [] }
+    : type === 4
+      ? {
+          type,
+          array: { value: "" },
+          element: { value: "" },
+        }
+      : type === 5
+        ? {
+            type,
+            a: { value: "" },
+            b: { value: "" },
+          }
+        : ({ type } as unknown as FlowActionCheckFunction);
+
+const CheckFunctionEditor: React.FC<{
+  t: TFunction;
+  function: FlowActionCheckFunction;
+  setFunction: (func: FlowActionCheckFunction) => void;
+  remove?: () => void;
+  update: () => void;
+  level: number;
+}> = ({ t, function: func, setFunction, remove, update, level }) => {
+  return (
+    <>
+      {level > 0 && (
+        <div className="flex -mb-5">
+          <div className="ltr:ml-auto rtl:mr-auto text-base space-x-2.5 rtl:space-x-reverse">
+            <button
+              type="button"
+              onClick={() => {
+                if (remove) remove();
+                update();
+              }}
+            >
+              <CoolIcon icon="Trash_Full" />
+            </button>
+          </div>
+        </div>
+      )}
+      <StringSelect
+        name="functionType"
+        label={t("checkFunctionTypeText")}
+        options={checkFunctionTypes
+          // Max recursion. Could definitely be increased in the future
+          .filter(level >= 5 ? (t) => ![0, 1, 3].includes(t) : () => true)
+          .map((value) => ({
+            label: t(`checkFunctionType.${value}`),
+            value,
+          }))}
+        value={
+          func
+            ? {
+                label: t(`checkFunctionType.${func.type}`),
+                value: func.type,
+              }
+            : { value: "" }
+        }
+        required
+        menuPortalTarget={document.body}
+        onChange={(opt) => {
+          const { value } = opt as {
+            value: FlowActionCheckFunctionType;
+          };
+          setFunction(checkFunctionSeed(value));
           update();
         }}
       />
+      {!!func &&
+        (func.type === 0 || func.type === 1 || func.type === 3 ? (
+          <div>
+            {func.conditions.map((condition, i) => (
+              <div
+                key={`flow-action-check-${condition.type}-${i}`}
+                className="rounded-lg p-2 mt-2 bg-blurple/10 hover:bg-blurple/15 border border-blurple/30"
+              >
+                <CheckFunctionEditor
+                  t={t}
+                  function={condition}
+                  setFunction={(f) => func.conditions.splice(i, 1, f)}
+                  remove={() => func.conditions.splice(i, 1)}
+                  update={update}
+                  level={level + 1}
+                />
+              </div>
+            ))}
+            <ButtonSelect
+              className="mt-2"
+              options={checkFunctionTypes
+                // Max recursion, see above
+                .filter(level >= 4 ? (t) => ![0, 1, 3].includes(t) : () => true)
+                .map((value) => ({
+                  label: t(`checkFunctionType.${value}`),
+                  value,
+                }))}
+              onChange={(opt) => {
+                func.conditions.push(
+                  checkFunctionSeed(
+                    (opt as { value: FlowActionCheckFunctionType }).value,
+                  ),
+                );
+                update();
+              }}
+            >
+              {t("addCondition")}
+            </ButtonSelect>
+          </div>
+        ) : func.type === 4 ? (
+          <div className="mt-2">
+            <p className="text-sm">{t("checkInElement")}</p>
+            <FlowActionSetVariableEditor
+              t={t}
+              action={func.element}
+              update={update}
+              anonymous
+              flex
+            />
+            <p className="mt-2 text-sm">{t("checkInArray")}</p>
+            <FlowActionSetVariableEditor
+              t={t}
+              action={func.array}
+              update={update}
+              anonymous
+              flex
+            />
+          </div>
+        ) : func.type === 5 ? (
+          <div className="mt-2">
+            <p className="text-sm">{t("checkEqualA")}</p>
+            <FlowActionSetVariableEditor
+              t={t}
+              action={func.a}
+              update={update}
+              anonymous
+              flex
+            />
+            <p className="mt-2 text-sm">{t("checkEqualB")}</p>
+            <FlowActionSetVariableEditor
+              t={t}
+              action={func.b}
+              update={update}
+              anonymous
+              flex
+            />
+            {/* <div className="mt-2">
+              <Checkbox
+                label={t("checkEqualLoose")}
+                checked={func.loose ?? false}
+                onChange={(e) => {
+                  func.loose = e.currentTarget.checked;
+                  update();
+                }}
+              />
+            </div> */}
+          </div>
+        ) : (
+          <></>
+        ))}
     </>
   );
 };

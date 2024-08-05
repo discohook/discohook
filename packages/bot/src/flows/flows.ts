@@ -56,6 +56,12 @@ export class FlowFailure extends Error {
   }
 }
 
+export class FlowStop extends Error {
+  constructor() {
+    super("Halt due to stop-type action");
+  }
+}
+
 export interface FlowResult {
   status: "success" | "failure";
   message: string;
@@ -70,9 +76,8 @@ export const executeFlow = async (
   setVars?: Record<string, string | boolean>,
   ctx?: InteractionContext<APIMessageComponentInteraction>,
   recursion = 0,
+  lastReturnValue_?: any,
 ): Promise<FlowResult> => {
-  const vars = setVars ?? {};
-  let lastReturnValue: any = undefined;
   if (recursion > 50) {
     return {
       status: "failure",
@@ -80,6 +85,8 @@ export const executeFlow = async (
     };
   }
 
+  const vars = setVars ?? {};
+  let lastReturnValue: any = lastReturnValue_;
   const resolveSetVariable = (
     v: FlowActionSetVariable | AnonymousVariable,
   ): string | boolean => {
@@ -95,7 +102,7 @@ export const executeFlow = async (
       }
       return lastReturnValue[String(v.value)];
     } else if (v.varType === FlowActionSetVariableType.Get) {
-      const replacements = getReplacements(vars, {});
+      const replacements = getReplacements(liveVars, vars);
       return (
         Object.fromEntries(
           Object.entries(replacements).map((entry) => [entry[0], entry[1]]),
@@ -105,9 +112,12 @@ export const executeFlow = async (
     return v.value;
   };
 
+  let subActionsCompleted = 0;
   try {
     for (const { data: action } of flow.actions) {
       switch (action.type) {
+        case FlowActionType.Dud:
+          break;
         case FlowActionType.Wait:
           await sleep(action.seconds * 1000);
           break;
@@ -146,16 +156,11 @@ export const executeFlow = async (
                 case FlowActionCheckFunctionType.In: {
                   let arr: unknown[];
                   try {
-                    arr = JSON.parse(
-                      (func.array.varType === FlowActionSetVariableType.Static
+                    const raw =
+                      func.array.varType === FlowActionSetVariableType.Static
                         ? func.array.value
-                        : resolveSetVariable({
-                            type: FlowActionType.SetVariable,
-                            name: "array",
-                            ...func.array,
-                          })
-                      ).toString(),
-                    );
+                        : resolveSetVariable(func.array);
+                    arr = JSON.parse(raw.toString());
                     if (!Array.isArray(arr)) {
                       throw Error("Not an array");
                     }
@@ -164,28 +169,13 @@ export const executeFlow = async (
                       "Provided `array` value could not be parsed as an array.",
                     );
                   }
-                  results.push(
-                    arr.includes(
-                      resolveSetVariable({
-                        type: FlowActionType.SetVariable,
-                        name: "element",
-                        ...func.element,
-                      }),
-                    ),
-                  );
+                  const resolved = resolveSetVariable(func.element);
+                  results.push(arr.includes(resolved));
                   break;
                 }
                 case FlowActionCheckFunctionType.Equals: {
-                  const a = resolveSetVariable({
-                    type: FlowActionType.SetVariable,
-                    name: "a",
-                    ...func.a,
-                  });
-                  const b = resolveSetVariable({
-                    type: FlowActionType.SetVariable,
-                    name: "b",
-                    ...func.b,
-                  });
+                  const a = resolveSetVariable(func.a);
+                  const b = resolveSetVariable(func.b);
                   // I thought the `loose` option might be useful in the future.
                   // It defaults to false since non-strict equality can be confusing.
                   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality
@@ -204,9 +194,47 @@ export const executeFlow = async (
 
           const checkResult = recurseFunctions([action.function])[0];
           if (checkResult) {
-            // executeFlow();
+            const result = await executeFlow(
+              {
+                actions: (action.then ?? []).map((data) => ({
+                  data,
+                  type: data.type,
+                  flowId: 0n,
+                  id: 0n,
+                })),
+              },
+              rest,
+              db,
+              liveVars,
+              setVars,
+              ctx,
+              recursion + 1,
+              lastReturnValue,
+            );
+            if (result.status === "success") {
+              subActionsCompleted += action.then?.length ?? 0;
+            }
           } else {
-            // executeFlow();
+            const result = await executeFlow(
+              {
+                actions: (action.else ?? []).map((data) => ({
+                  data,
+                  type: data.type,
+                  flowId: 0n,
+                  id: 0n,
+                })),
+              },
+              rest,
+              db,
+              liveVars,
+              setVars,
+              ctx,
+              recursion + 1,
+              lastReturnValue,
+            );
+            if (result.status === "success") {
+              subActionsCompleted += action.else?.length ?? 0;
+            }
           }
           break;
         }
@@ -298,27 +326,55 @@ export const executeFlow = async (
             });
           }
           break;
+        case FlowActionType.Stop:
+          if (action.message && !!action.message.content?.trim()) {
+            try {
+              const body = await processQueryData(
+                { messages: [{ data: action.message }] },
+                liveVars,
+                vars,
+              );
+              if (ctx) {
+                await ctx.followup.send(body);
+              } else {
+                const channelId = vars.channelId;
+                if (channelId && typeof channelId === "string") {
+                  await rest.post(Routes.channelMessages(channelId), {
+                    body,
+                  });
+                }
+              }
+            } catch (e) {
+              console.error(e);
+              throw httpFlowFailure(e, "Failed to send the message.");
+            }
+          }
+          throw new FlowStop();
         default:
           break;
       }
     }
   } catch (e) {
-    if (e instanceof FlowFailure) {
+    if (!(e instanceof FlowStop)) {
+      if (e instanceof FlowFailure) {
+        return {
+          status: "failure",
+          message: e.message,
+          discordError: e.discordError,
+        };
+      }
+      console.error(e);
       return {
         status: "failure",
-        message: e.message,
-        discordError: e.discordError,
+        message: String(e),
       };
     }
-    console.error(e);
-    return {
-      status: "failure",
-      message: String(e),
-    };
   }
   return {
     status: "success",
-    message: `${flow.actions.length} actions completed successfully`,
+    message: `${
+      flow.actions.length + subActionsCompleted
+    } actions completed successfully`,
   };
 };
 

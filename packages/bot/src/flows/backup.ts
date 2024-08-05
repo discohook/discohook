@@ -1,4 +1,5 @@
 import { time } from "@discordjs/formatters";
+import { APIEmbed } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
 import type { QueryData } from "store/src/types";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
@@ -12,11 +13,14 @@ export const assertGetSnowflake = (id: string): `${bigint}` => {
 
 export const getReplacements = (
   vars: LiveVariables,
-  setVars: Record<string, string>,
+  setVars: Record<string, string | boolean>,
 ) => {
   const now = new Date();
   return {
-    ...setVars,
+    // TODO: This prevents shadowing. Do we want to allow users to shadow variables?
+    ...Object.fromEntries(
+      Object.entries(setVars).map(([k, v]) => [k, String(v)]),
+    ),
     "member.role_ids": JSON.stringify(vars.member ? vars.member.roles : []),
     // Legacy (v1) format options
     // Member
@@ -97,7 +101,7 @@ export const getReplacements = (
 export const processQueryData = async (
   queryData: QueryData,
   vars: LiveVariables,
-  setVars: Record<string, string>,
+  setVars: Record<string, string | boolean>,
   messageIndex?: number | null,
 ) => {
   const message =
@@ -112,10 +116,15 @@ export const processQueryData = async (
 
   const data = {
     content: message.data.content || undefined,
-    embeds: message.data.embeds || undefined,
+    embeds:
+      message.data.embeds?.map((e) => {
+        if (e.color === null) e.color = undefined;
+        return e as APIEmbed;
+      }) || undefined,
     components: message.data.components,
     username: message.data.author?.name,
     avatar_url: message.data.author?.icon_url,
+    flags: message.data.flags,
   };
   let stringified = JSON.stringify(data);
   const replacements = getReplacements(vars, setVars);
@@ -123,11 +132,10 @@ export const processQueryData = async (
     if (value == null || key.includes(" ") || Object.keys(data).includes(key)) {
       continue;
     }
-    // Remains to be seen if this is a good solution. Even more otherwise.
-    // I think it's sensible and reasonably "sandboxed," but I haven't yet
-    // explored the possibilities of people purposely trying to break out
-    // of it. If you are one of those people, please report to me privately!
-    // Visit /discord on the main site.
+    // Remains to be seen if this is a good solution. I think it's reasonably
+    // "sandboxed," but I haven't yet explored purposely trying to break out
+    // of it. If you can do that or know how, please report to me privately!
+    // https://discohook.app/discord
     stringified = stringified.replaceAll(`{${key}}`, String(value));
   }
   const parsed = JSON.parse(stringified) as typeof data;
