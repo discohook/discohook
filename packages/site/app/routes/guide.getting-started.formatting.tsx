@@ -1,12 +1,14 @@
-import { useLoaderData } from "@remix-run/react";
+import { MetaFunction } from "@remix-run/cloudflare";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { TFunction } from "i18next";
-import React, { useReducer } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { codeStyle } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
 import { useCache } from "~/util/cache/CacheManager";
 import {
@@ -19,11 +21,29 @@ import {
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { getUserAvatar, getUserTag } from "~/util/users";
+import { GuideFileMeta } from "./guide.$";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
   return { user };
 };
+
+export const meta: MetaFunction = () => [
+  { title: "How to format your messages - Discohook Guides" },
+  {
+    name: "og:site_name",
+    content: "Discohook",
+  },
+  {
+    name: "og:title",
+    content: "How to format your messages",
+  },
+  {
+    name: "og:description",
+    content:
+      "How to format your messages with dynamic template options and custom variables",
+  },
+];
 
 const FormatCategoryHeader: React.FC<React.PropsWithChildren> = ({
   children,
@@ -153,93 +173,121 @@ export default function FormattingPage() {
     "",
   );
 
+  const [indexData, setIndexData] = useState<Record<string, GuideFileMeta[]>>();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!indexData) {
+      fetch("/guide-index.json", { method: "GET" }).then((response) => {
+        if (response.ok)
+          response
+            .json()
+            .then((data) => setIndexData(data as typeof indexData));
+      });
+    }
+  }, [indexData]);
+
   return (
     <div>
       <Header user={user} />
       <Prose className="relative">
-        <p className="font-bold text-2xl mt-2">{t("howToFormat")}</p>
-        <p>
-          <Trans
-            t={t}
-            i18nKey="formatDescription"
-            components={[<span className={codeStyle} />]}
-          />
-        </p>
-        <details className="group mt-4">
-          <FormatCategoryHeader>
-            <img
-              className="rounded-full my-auto h-6 w-6 ml-1 border border-gray-200 dark:border-primary-700"
-              src={getCharacterAvatarUrl(characterAvatars[1])}
-              alt=""
-            />
-            <img
-              className="rounded-full my-auto h-6 w-6 -ml-2 border border-gray-200 dark:border-primary-700"
-              src={getCharacterAvatarUrl(characterAvatars[6])}
-              alt=""
-            />
-            <img
-              className="rounded-full my-auto h-6 w-6 -ml-2 border border-gray-200 dark:border-primary-700"
-              src={getCharacterAvatarUrl(characterAvatars[4])}
-              alt=""
-            />
-            <p className="font-bold ltr:ml-2 rtl:mr-2">{t("members")}</p>
-          </FormatCategoryHeader>
+        <TabsWindow
+          data={
+            indexData
+              ? Object.values(indexData["getting-started"]).map((file) => ({
+                  label: file.title,
+                  value: `getting-started/${file.file}`,
+                }))
+              : []
+          }
+          tab="getting-started/formatting"
+          setTab={(tab) => navigate(`/guide/${tab}`)}
+        >
+          <p className="font-bold text-2xl mt-2">{t("howToFormat")}</p>
           <p>
-            {t("formatMemberDescription")} {user && t("formatMemberYou")}
+            <Trans
+              t={t}
+              i18nKey="formatDescription"
+              components={[<span className={codeStyle} />]}
+            />
           </p>
-          <hr className="border-gray-200/20 my-4" />
-          <FormatCategoryBody
-            t={t}
-            paths={Object.keys(placeholders).filter((path) =>
-              path.startsWith("member."),
-            )}
-            setPreviewPath={setPreviewPath}
-          />
-        </details>
-        <details className="group mt-4">
-          <FormatCategoryHeader>
-            <img
-              className="rounded-full my-auto h-6 w-6 ltr:ml-1 rtl:mr-1 border border-transparent"
-              src={placeholders["server.icon_url"] as string}
-              alt=""
+          <details className="group mt-4">
+            <FormatCategoryHeader>
+              <img
+                className="rounded-full my-auto h-6 w-6 ml-1 border border-gray-200 dark:border-primary-700"
+                src={getCharacterAvatarUrl(characterAvatars[1])}
+                alt=""
+              />
+              <img
+                className="rounded-full my-auto h-6 w-6 -ml-2 border border-gray-200 dark:border-primary-700"
+                src={getCharacterAvatarUrl(characterAvatars[6])}
+                alt=""
+              />
+              <img
+                className="rounded-full my-auto h-6 w-6 -ml-2 border border-gray-200 dark:border-primary-700"
+                src={getCharacterAvatarUrl(characterAvatars[4])}
+                alt=""
+              />
+              <p className="font-bold ltr:ml-2 rtl:mr-2">{t("members")}</p>
+            </FormatCategoryHeader>
+            <p>
+              {t("formatMemberDescription")} {user && t("formatMemberYou")}
+            </p>
+            <hr className="border-gray-200/20 my-4" />
+            <FormatCategoryBody
+              t={t}
+              paths={Object.keys(placeholders).filter((path) =>
+                path.startsWith("member."),
+              )}
+              setPreviewPath={setPreviewPath}
             />
-            <p className="font-bold ltr:ml-2 rtl:mr-2">{t("server_one")}</p>
-          </FormatCategoryHeader>
-          <p>{t("formatServerDescription")}</p>
-          <hr className="border-gray-200/20 my-4" />
-          <FormatCategoryBody
-            t={t}
-            paths={Object.keys(placeholders).filter((path) =>
-              path.startsWith("server."),
-            )}
-            setPreviewPath={setPreviewPath}
-          />
-        </details>
-        <details className="group mt-4">
-          <FormatCategoryHeader>
-            <p className="font-bold ltr:ml-1 rtl:mr-1">{t("miscellaneous")}</p>
-          </FormatCategoryHeader>
-          <FormatCategoryBody
-            t={t}
-            paths={Object.keys(placeholders).filter(
-              (path) => !path.includes("."),
-            )}
-            setPreviewPath={setPreviewPath}
-          />
-        </details>
-        <div>
-          <div className="invisible p-4 mt-8">{previewValue}</div>
-          <div className="bg-gray-200 dark:bg-gray-900 shadow rounded-lg p-4 fixed bottom-4 ltr:mr-8 rtl:ml-8">
-            <Message
-              message={{
-                content: previewValue || t("formatOptionsNone"),
-              }}
-              cache={cache}
-              messageDisplay={settings.messageDisplay}
-              compactAvatars={settings.compactAvatars}
+          </details>
+          <details className="group mt-4">
+            <FormatCategoryHeader>
+              <img
+                className="rounded-full my-auto h-6 w-6 ltr:ml-1 rtl:mr-1 border border-transparent"
+                src={placeholders["server.icon_url"] as string}
+                alt=""
+              />
+              <p className="font-bold ltr:ml-2 rtl:mr-2">{t("server_one")}</p>
+            </FormatCategoryHeader>
+            <p>{t("formatServerDescription")}</p>
+            <hr className="border-gray-200/20 my-4" />
+            <FormatCategoryBody
+              t={t}
+              paths={Object.keys(placeholders).filter((path) =>
+                path.startsWith("server."),
+              )}
+              setPreviewPath={setPreviewPath}
             />
+          </details>
+          <details className="group mt-4">
+            <FormatCategoryHeader>
+              <p className="font-bold ltr:ml-1 rtl:mr-1">
+                {t("miscellaneous")}
+              </p>
+            </FormatCategoryHeader>
+            <FormatCategoryBody
+              t={t}
+              paths={Object.keys(placeholders).filter(
+                (path) => !path.includes("."),
+              )}
+              setPreviewPath={setPreviewPath}
+            />
+          </details>
+          <div>
+            <div className="invisible p-4 mt-8">{previewValue}</div>
+            <div className="bg-gray-200 dark:bg-gray-900 shadow rounded-lg p-4 fixed bottom-4 ltr:mr-8 rtl:ml-8">
+              <Message
+                message={{
+                  content: previewValue || t("formatOptionsNone"),
+                }}
+                cache={cache}
+                messageDisplay={settings.messageDisplay}
+                compactAvatars={settings.compactAvatars}
+              />
+            </div>
           </div>
-        </div>
+        </TabsWindow>
       </Prose>
     </div>
   );

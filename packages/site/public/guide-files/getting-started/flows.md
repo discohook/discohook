@@ -48,7 +48,7 @@ If you're creating a static variable, the literal values "true" and "false" (wit
 
 If you're creating an adaptive variable, the "Attribute of previous return" you specify should match one of the attributes documented in a return type. For example, if the previous action was **Create thread**, you might want to set a variable with the name `threadId` with attribute `id`. This will let you mention the new thread in a message with the format `<#{threadId}>`, for something like a ticketing system.
 
-If you're creating a mirror variable, "Full prior variable name" should be the fully qualified reference for the variable you want to mirror. This includes the "scope" of the variable for [nested data](discohook://formatting), so if you want to mirror the server name, use `server.name` in this field. This type of variable is mostly only useful if you are creating an anonymous (no name) variable nested inside another action. Keep in mind that a mirror variable will not be updated if the original variable being mirrored has its value changed for any reason.
+If you're creating a mirror variable, "Full prior variable name" should be the fully qualified reference for the variable you want to mirror. This includes the "scope" of the variable for [nested data](discohook://guide/getting-started/formatting), so if you want to mirror the server name, use `server.name` in this field. This type of variable is mostly only useful if you are creating an anonymous (no name) variable nested inside another action. Keep in mind that a mirror variable will not be updated if the original variable being mirrored has its value changed for any reason.
 
 **Delete message**
 Delete the message with the ID defined as the `messageId` variable.
