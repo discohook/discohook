@@ -39,7 +39,8 @@ export const getSessionStorage = (context: Context) => {
       path: "/",
       httpOnly: true,
       secrets: [context.env.SESSION_SECRET],
-      // secure: process.env.NODE_ENV === "production",
+      secure: context.env.ENVIRONMENT !== "dev",
+      maxAge: 63_072_000, // 2 years
     }),
   });
 
@@ -55,7 +56,8 @@ export const getTokenStorage = (context: Context) => {
       path: "/",
       httpOnly: true,
       secrets: [context.env.SESSION_SECRET],
-      // secure: process.env.NODE_ENV === "production",
+      secure: context.env.ENVIRONMENT !== "dev",
+      maxAge: 604_800, // 1 week
     }),
   });
 
