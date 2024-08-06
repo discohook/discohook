@@ -1,6 +1,6 @@
-import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
+import { APIEmbedField } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
-import { QueryData } from "~/types/QueryData";
+import { APIEmbed, QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
