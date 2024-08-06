@@ -459,23 +459,9 @@ export const MessageEditor: React.FC<{
                 //   value: "poll",
                 //   isDisabled: !!message.data.poll,
                 // },
-                {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Flag"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("flags")}</span>
-                    </p>
-                  ),
-                  value: "flags",
-                },
               ]}
               onChange={(opt) => {
-                const val = (
-                  opt as { value: "embed" | "row" | "poll" | "flags" }
-                ).value;
+                const val = (opt as { value: "embed" | "row" | "poll" }).value;
                 switch (val) {
                   case "embed": {
                     message.data.embeds = message.data.embeds
@@ -490,10 +476,6 @@ export const MessageEditor: React.FC<{
                       ? [...message.data.components, emptyRow]
                       : [emptyRow];
                     setData({ ...data });
-                    break;
-                  }
-                  case "flags": {
-                    setEditingMessageFlags(i);
                     break;
                   }
                   default:
@@ -524,6 +506,18 @@ export const MessageEditor: React.FC<{
                   label: (
                     <p className="flex">
                       <CoolIcon
+                        icon="Flag"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("flags")}</span>
+                    </p>
+                  ),
+                  value: "flags",
+                },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
                         icon="Terminal"
                         className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
                       />
@@ -548,13 +542,21 @@ export const MessageEditor: React.FC<{
               onChange={(opt) => {
                 const val = (
                   opt as {
-                    value: "setReference" | "jsonEditor" | "copyQueryData";
+                    value:
+                      | "setReference"
+                      | "flags"
+                      | "jsonEditor"
+                      | "copyQueryData";
                   }
                 ).value;
                 switch (val) {
                   case "setReference":
                     setSettingMessageIndex(i);
                     break;
+                  case "flags": {
+                    setEditingMessageFlags(i);
+                    break;
+                  }
                   case "jsonEditor":
                     setJsonEditor({
                       data: message.data,
