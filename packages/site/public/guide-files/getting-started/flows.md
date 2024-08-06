@@ -20,8 +20,8 @@ Depending on whether a condition is true or false, run a sub-flow. You can execu
 - `And` - all inner functions must return true
 - `Or` - at least one inner function must return true
 - `Not` - all inner functions must return false
-- `Equal` - the value of `a` must be equal to that of `b`. optionally, use [loose equality](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness#loose_equality_using), which causes things like `"0" == false` to return true. this is usually confusing and as such it's disabled by default.
-- `In` - the value of `element` must be contained within `array` (according to strict equality), which must be a string parsable to a JSON array (like `["one","two","three"]`). such arrays are also returned by variables like `member.role_ids`, which is how one might check if a member has an arbitrary role (keep in mind that member state is partial for the member removal trigger).
+- `Equal` - the value of `a` must be equal to that of `b`
+- `In` - the value of `element` must be contained within `array`, which must be a string parsable to a JSON array (like `["one","two","three"]`). such arrays are also returned by variables like `member.role_ids`, which is how one might check if a member has an arbitrary role (keep in mind that member state is partial for the member removal trigger)
 
 **Stop**
 Immediately halts the entire flow, even if this action is in a sub-flow. Optionally add a plain text string to attempt to deliver to the user - more limited than sending a backup but easier to set up and customize while editing the rest of your flow.
