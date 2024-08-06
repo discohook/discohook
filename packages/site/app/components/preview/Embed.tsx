@@ -218,7 +218,7 @@ export const Embed: React.FC<{
                         />
                       </div>
                       <div
-                        className="font-normal"
+                        className="font-normal whitespace-pre-line"
                         style={{
                           // @ts-expect-error
                           "--font-size": "1rem",
