@@ -84,7 +84,38 @@
   transform: scale(0.7);
 }
 
-/* Thanks https://stackoverflow.com/a/6202729 */
+/* Remove arrow icon - thanks https://stackoverflow.com/a/6202729 */
 details summary.marker-none::-webkit-details-marker {
   display: none;
+}
+
+/* Scrollbars - thanks https://css-tricks.com/the-current-state-of-styling-scrollbars-in-css/ */
+@layer utilities {
+  .sb-light {
+    /* foreground, background */
+    scrollbar-color: rgba(88 185 255 / 0.8) rgba(0 0 0 / 0.05);
+  }
+
+  .sb-dark {
+    scrollbar-color: rgba(219 222 225 / 0.5) rgba(0 0 0 / 0.05);
+  }
+
+  * {
+    @apply sb-light dark:sb-dark;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* Foreground */
+  *::-webkit-scrollbar-thumb {
+    @apply bg-brand-blue/80 dark:bg-gray-700/50
+  }
+
+  /* Background */
+  *::-webkit-scrollbar-track {
+    @apply bg-black/5
+  }
 }
