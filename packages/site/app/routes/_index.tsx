@@ -253,8 +253,8 @@ export default function Index() {
         for (const stored of raw) {
           const local = allComponentsById[stored.id];
           if (local) {
-            // @ts-expect-error TODO: build the component for type compliance
-            allComponentsById[stored.id] = stored.data;
+            // TODO: build the component for type compliance
+            Object.assign(local, stored.data);
           }
         }
 
