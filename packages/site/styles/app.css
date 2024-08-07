@@ -91,21 +91,25 @@ details summary.marker-none::-webkit-details-marker {
 
 /* Scrollbars - thanks https://css-tricks.com/the-current-state-of-styling-scrollbars-in-css/ */
 @layer utilities {
-  * {
-    @apply [scrollbar-color:#C5C9CD_#EBEDEF] dark:[scrollbar-color:#1A1B1E_#2B2D31];
+  :root {
+    @apply [scrollbar-color:#C5C9CD_#EBEDEF];
   }
 
-  *::-webkit-scrollbar {
+  :root.dark {
+    @apply [scrollbar-color:#1A1B1E_#2B2D31];
+  }
+
+  :root::-webkit-scrollbar {
     @apply w-[10px] h-[10px] rounded-full;
   }
 
   /* Foreground */
-  *::-webkit-scrollbar-thumb {
+  :root::-webkit-scrollbar-thumb {
     @apply bg-[#C5C9CD] dark:bg-[#1A1B1E] rounded-full
   }
 
   /* Background */
-  *::-webkit-scrollbar-track {
+  :root::-webkit-scrollbar-track {
     @apply bg-[#EBEDEF] dark:bg-[#2B2D31] rounded-full
   }
 }
