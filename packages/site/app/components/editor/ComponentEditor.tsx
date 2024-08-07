@@ -31,7 +31,7 @@ import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { getZodErrorMessage } from "~/util/loader";
 import { ButtonSelect } from "../ButtonSelect";
-import { SetErrorFunction } from "../Error";
+import { SetErrorFunction, useError } from "../Error";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon, CoolIconsGlyph } from "../icons/CoolIcon";
 
@@ -302,6 +302,7 @@ export const ActionRowEditor: React.FC<{
   const { t } = useTranslation();
   const mid = getQdMessageId(message);
   const errors = getComponentErrors(row);
+  const [error, setError] = useError(t);
 
   // if (cache) {
   //   const requests = row.components
@@ -410,6 +411,7 @@ export const ActionRowEditor: React.FC<{
           </InfoBox>
         </div>
       )}
+      {error}
       <div className="space-y-1 mb-1">
         {row.components.map((component, ci) => {
           const id = getComponentId(component)?.toString();
@@ -503,6 +505,7 @@ export const ActionRowEditor: React.FC<{
         ]}
         isDisabled={getRowWidth(row) >= 5}
         onChange={async (v) => {
+          console.log(v);
           const { value: type } = v as { value: ComponentType | "linkButton" };
           let submitData:
             | z.infer<typeof ZodAPIMessageActionRowComponent>
@@ -546,9 +549,18 @@ export const ActionRowEditor: React.FC<{
               break;
           }
           if (submitData) {
-            const component = await submitComponent(submitData);
+            const i =
+              row.components.push({
+                ...submitData,
+                _state: "submitting",
+              } as unknown as typeof submitData) - 1;
+            setData({ ...data });
+
+            const component = await submitComponent(submitData, setError);
             if (component) {
-              row.components.push(component);
+              // setError callback should reasonably handle else state
+              row.components.splice(i, 1, component);
+              // TODO: remove `_state` so user can edit unsaved component?
             }
             setData({ ...data });
           }
@@ -569,12 +581,20 @@ export const IndividualComponentEditor: React.FC<{
 }> = ({ component, index, row, updateRow, onClick }) => {
   const { t } = useTranslation();
   const previewText = getComponentText(component);
+
+  // Don't allow an index change while the component is submitting
+  // to avoid accidentally overwriting something
+  const anySubmitting =
+    row.components.filter((c) => "_state" in c && c._state === "submitting")
+      .length !== 0;
+
   return (
     <div className="flex text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none">
       <button
         type="button"
-        className="flex p-2 h-full w-full my-auto truncate"
+        className="flex p-2 h-full w-full my-auto truncate disabled:animate-pulse"
         onClick={onClick}
+        disabled={"_state" in component && component._state === "submitting"}
       >
         <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6 shrink-0">
           {component.type === ComponentType.Button ? (
@@ -628,6 +648,7 @@ export const IndividualComponentEditor: React.FC<{
         <button
           type="button"
           className={index === 0 ? "hidden" : ""}
+          disabled={anySubmitting}
           onClick={() => {
             row.components.splice(index, 1);
             row.components.splice(index - 1, 0, component);
@@ -639,6 +660,7 @@ export const IndividualComponentEditor: React.FC<{
         <button
           type="button"
           className={index === row.components.length - 1 ? "hidden" : ""}
+          disabled={anySubmitting}
           onClick={() => {
             row.components.splice(index, 1);
             row.components.splice(index + 1, 0, component);
@@ -650,6 +672,7 @@ export const IndividualComponentEditor: React.FC<{
         <button
           type="button"
           className={getRowWidth(row) >= 5 ? "hidden" : ""}
+          disabled={anySubmitting}
           onClick={async () => {
             // Don't accidentally save the current component
             const { custom_id: _, ...withoutId } = component;
@@ -665,6 +688,7 @@ export const IndividualComponentEditor: React.FC<{
         </button>
         <button
           type="button"
+          disabled={anySubmitting}
           onClick={() => {
             // TODO: delete request
             row.components.splice(index, 1);
