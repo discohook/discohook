@@ -155,8 +155,9 @@ export const LinkEmbedEditor: React.FC<{
                   }
                 />
               </div>
-              <Button
-                className="ml-2 mt-auto"
+              <button
+                type="button"
+                className="ml-2 mt-auto mb-1 text-xl"
                 onClick={() =>
                   updateEmbed({
                     provider: {
@@ -166,8 +167,8 @@ export const LinkEmbedEditor: React.FC<{
                   })
                 }
               >
-                {t("remove")}
-              </Button>
+                <CoolIcon icon="Close_MD" />
+              </button>
             </div>
           )}
         </div>
@@ -227,8 +228,9 @@ export const LinkEmbedEditor: React.FC<{
                   }
                 />
               </div>
-              <Button
-                className="ml-2 mt-auto"
+              <button
+                type="button"
+                className="ml-2 mt-auto mb-1 text-xl"
                 onClick={() =>
                   updateEmbed({
                     author: {
@@ -238,8 +240,8 @@ export const LinkEmbedEditor: React.FC<{
                   })
                 }
               >
-                {t("remove")}
-              </Button>
+                <CoolIcon icon="Close_MD" />
+              </button>
             </div>
           )}
         </div>
