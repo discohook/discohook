@@ -1,4 +1,5 @@
 import { APIEmbedField } from "discord-api-types/v10";
+import { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { APIEmbed, QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
@@ -142,7 +143,9 @@ export const EmbedEditor: React.FC<{
         )}
         {isChild ? (
           <>
-            <span className="shrink-0">Gallery Image {localIndex + 2}</span>
+            <span className="shrink-0">
+              {t("galleryImage", { replace: { n: localIndex + 2 } })}
+            </span>
             {embed.image?.url && (
               <span className="truncate ltr:ml-1 rtl:mr-1">
                 - {embed.image.url}
@@ -150,16 +153,11 @@ export const EmbedEditor: React.FC<{
             )}
           </>
         ) : (
-          <>
-            <span className="shrink-0">Embed {i + 1}</span>
-            {previewText ? (
-              <span className="truncate ltr:ml-1 rtl:mr-1">
-                - {previewText}
-              </span>
-            ) : (
-              ""
-            )}
-          </>
+          <span className="truncate">
+            {t(previewText ? "embedNText" : "embedN", {
+              replace: { n: i + 1, text: previewText },
+            })}
+          </span>
         )}
         <div className="ltr:ml-auto rtl:mr-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           {!isChild && (
@@ -220,7 +218,7 @@ export const EmbedEditor: React.FC<{
       )}
       {!isChild && (
         <>
-          <EmbedEditorSection name="Author" open={open}>
+          <EmbedEditorSection name={t("author")} open={open}>
             <div className="flex">
               <div className="grow">
                 <TextArea
@@ -251,7 +249,7 @@ export const EmbedEditor: React.FC<{
                     })
                   }
                 >
-                  Add URL
+                  {t("addUrl")}
                 </Button>
               )}
             </div>
@@ -260,7 +258,7 @@ export const EmbedEditor: React.FC<{
                 <div className="flex">
                   <div className="grow">
                     <TextInput
-                      label="Author URL"
+                      label={t("authorUrl")}
                       className="w-full"
                       type="url"
                       value={embed.author?.url ?? ""}
@@ -274,8 +272,9 @@ export const EmbedEditor: React.FC<{
                       }
                     />
                   </div>
-                  <Button
-                    className="ltr:ml-2 rtl:mr-2 mt-auto"
+                  <button
+                    type="button"
+                    className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
                     onClick={() =>
                       updateEmbed({
                         author: {
@@ -285,13 +284,12 @@ export const EmbedEditor: React.FC<{
                       })
                     }
                   >
-                    Remove
-                    <span className="hidden sm:inline"> URL</span>
-                  </Button>
+                    <CoolIcon icon="Close_MD" />
+                  </button>
                 </div>
               )}
               <TextInput
-                label="Icon URL"
+                label={t("iconUrl")}
                 className="w-full"
                 type="url"
                 value={embed.author?.icon_url ?? ""}
@@ -309,13 +307,13 @@ export const EmbedEditor: React.FC<{
           <hr className="border border-gray-500/20" />
         </>
       )}
-      <EmbedEditorSection name="Body" open={open}>
+      <EmbedEditorSection name={t("body")} open={open}>
         {!isChild && (
           <>
             <div className="flex">
               <div className="grow">
                 <TextArea
-                  label="Title"
+                  label={t("title")}
                   className="w-full"
                   maxLength={256}
                   value={embed.title ?? ""}
@@ -338,7 +336,7 @@ export const EmbedEditor: React.FC<{
                     })
                   }
                 >
-                  Add URL
+                  {t("addUrl")}
                 </Button>
               )}
             </div>
@@ -349,7 +347,7 @@ export const EmbedEditor: React.FC<{
             <div className="flex">
               <div className="grow">
                 <TextInput
-                  label="Title URL"
+                  label={t("titleUrl")}
                   description={
                     isChild
                       ? "This is set automatically by the main embed in the gallery. Only change this if you want to change which gallery this image belongs to."
@@ -368,7 +366,7 @@ export const EmbedEditor: React.FC<{
               </div>
               <Button
                 disabled={isChild}
-                className="ltr:ml-2 rtl:mr-2 mt-auto"
+                className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
                 onClick={() => {
                   embed.url = undefined;
                   message.data.embeds = messageEmbeds.filter(
@@ -377,8 +375,7 @@ export const EmbedEditor: React.FC<{
                   setData({ ...data });
                 }}
               >
-                Remove
-                <span className="hidden sm:inline"> URL</span>
+                <CoolIcon icon="Close_MD" />
               </Button>
             </div>
           )}
@@ -386,12 +383,12 @@ export const EmbedEditor: React.FC<{
             <details className="relative">
               <summary className="flex cursor-pointer">
                 <div className="grow">
-                  <p className="text-sm font-medium">Sidebar Color</p>
+                  <p className="text-sm font-medium">{t("sidebarColor")}</p>
                   <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
                     <span className="align-middle">
                       {embed.color
                         ? `#${embed.color.toString(16)}`
-                        : "Click to set"}
+                        : t("clickToSet")}
                     </span>
                   </p>
                 </div>
@@ -420,7 +417,7 @@ export const EmbedEditor: React.FC<{
         </div>
         {!isChild && (
           <TextArea
-            label="Description"
+            label={t("description")}
             className="w-full h-40"
             value={embed.description ?? ""}
             maxLength={4096}
@@ -437,7 +434,7 @@ export const EmbedEditor: React.FC<{
       <hr className="border border-gray-500/20" />
       {!isChild && (
         <>
-          <EmbedEditorSection name="Fields" open={open}>
+          <EmbedEditorSection name={t("fields")} open={open}>
             {embed.fields && (
               <div className="ltr:ml-2 ltr:md:ml-4 rtl:mr-2 rtl:md:mr-4 ltr:transition-[margin-left] rtl:transition-[margin-right]">
                 {embed.fields.map((field, fi) => (
@@ -447,6 +444,7 @@ export const EmbedEditor: React.FC<{
                     updateEmbed={updateEmbed}
                     field={field}
                     index={fi}
+                    t={t}
                     open={open}
                   >
                     <div className="flex">
@@ -467,7 +465,7 @@ export const EmbedEditor: React.FC<{
                       </div>
                       <div className="ltr:ml-2 rtl:mr-2 my-auto">
                         <Checkbox
-                          label="Inline"
+                          label={t("inline")}
                           checked={field.inline ?? false}
                           onChange={(e) => {
                             field.inline = e.currentTarget.checked;
@@ -477,7 +475,7 @@ export const EmbedEditor: React.FC<{
                       </div>
                     </div>
                     <TextArea
-                      label="Value"
+                      label={t("value")}
                       value={field.value}
                       maxLength={1024}
                       className="w-full"
@@ -500,17 +498,17 @@ export const EmbedEditor: React.FC<{
                 })
               }
             >
-              Add Field
+              {t("addField")}
             </Button>
           </EmbedEditorSection>
           <hr className="border border-gray-500/20" />
         </>
       )}
-      <EmbedEditorSection name="Images" open={isChild || open}>
+      <EmbedEditorSection name={t("images")} open={isChild || open}>
         <div className="flex">
           <div className="grow">
             <TextInput
-              label="Large Image URL"
+              label={t("largeImageUrl")}
               type="url"
               className="w-full"
               value={embed.image?.url ?? ""}
@@ -536,13 +534,13 @@ export const EmbedEditor: React.FC<{
                 setData({ ...data });
               }}
             >
-              Add Another
+              {t("addAnother")}
             </Button>
           )}
         </div>
         {!isChild && (
           <TextInput
-            label="Thumbnail URL"
+            label={t("thumbnailUrl")}
             type="url"
             className="w-full"
             value={embed.thumbnail?.url ?? ""}
@@ -555,11 +553,11 @@ export const EmbedEditor: React.FC<{
       {!isChild && (
         <>
           <hr className="border border-gray-500/20" />
-          <EmbedEditorSection name="Footer" open={open}>
+          <EmbedEditorSection name={t("footer")} open={open}>
             <div className="flex">
               <div className="grow">
                 <TextArea
-                  label="Text"
+                  label={t("text")}
                   className="w-full"
                   maxLength={2048}
                   value={embed.footer?.text ?? ""}
@@ -577,7 +575,7 @@ export const EmbedEditor: React.FC<{
             </div>
             <div className="grid gap-2 mt-2">
               <TextInput
-                label="Icon URL"
+                label={t("iconUrl")}
                 className="w-full"
                 type="url"
                 value={embed.footer?.icon_url ?? ""}
@@ -593,7 +591,7 @@ export const EmbedEditor: React.FC<{
             </div>
             <div className="grid grid-cols-2 gap-2 mt-2">
               <DatePicker
-                label="Date"
+                label={t("date")}
                 value={embed.timestamp ? new Date(embed.timestamp) : null}
                 onChange={(opt) =>
                   updateEmbed({
@@ -603,7 +601,7 @@ export const EmbedEditor: React.FC<{
                 isClearable
               />
               <TextInput
-                label="Time"
+                label={t("timeText")}
                 type="time"
                 className="w-full"
                 disabled={!embed.timestamp}
@@ -662,9 +660,10 @@ export const EmbedFieldEditorSection: React.FC<
     updateEmbed: (partialEmbed: Partial<APIEmbed>) => void;
     field: APIEmbedField;
     index: number;
+    t: TFunction;
     open?: boolean;
   }>
-> = ({ embed, updateEmbed, field, index, open, children }) => {
+> = ({ embed, updateEmbed, field, index, t, open, children }) => {
   const previewText = field.name.trim() || field.value.trim();
   const embedFields = embed.fields ?? [];
   return (
@@ -675,10 +674,11 @@ export const EmbedFieldEditorSection: React.FC<
           rtl="Chevron_Left"
           className="ltr:group-open/field:rotate-90 rtl:group-open/field:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
-        <span className="shrink-0">Field {index + 1}</span>
-        {previewText && (
-          <span className="truncate ltr:ml-1 rtl:mr-1">- {previewText}</span>
-        )}
+        <span className="truncate">
+          {t(previewText ? "fieldNText" : "fieldN", {
+            replace: { n: index + 1, text: previewText },
+          })}
+        </span>
         <div className="ml-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
           <button
             type="button"
