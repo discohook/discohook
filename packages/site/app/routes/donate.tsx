@@ -25,7 +25,8 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 export const meta: MetaFunction = () => {
   return [
     { title: "Discohook Deluxe" },
-    { name: "og:description", content: "Subscribe to Deluxe!" },
+    { name: "og:site_name", content: "Discohook" },
+    { name: "og:title", content: "Subscribe to Deluxe!" },
     { name: "theme-color", content: "#FF81FF" },
   ];
 };

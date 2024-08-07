@@ -35,6 +35,10 @@ export const meta: MetaFunction = () => [
     content: "Discohook",
   },
   {
+    name: "theme-color",
+    content: "#58b9ff",
+  },
+  {
     name: "og:title",
     content: "How to format your messages",
   },

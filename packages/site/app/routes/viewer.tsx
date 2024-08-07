@@ -20,6 +20,12 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
 export const meta: MetaFunction = () => [
   { title: "Message Viewer - Discohook" },
+  { name: "og:site_name", content: "Discohook" },
+  { name: "og:title", content: "Message Viewer" },
+  {
+    name: "theme-color",
+    content: "#58b9ff",
+  },
 ];
 
 export default () => {

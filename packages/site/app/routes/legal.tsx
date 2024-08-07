@@ -14,6 +14,12 @@ export const loader = ({ request, context }: LoaderArgs) =>
 
 export const meta: MetaFunction = () => [
   { title: "Privacy & Terms - Discohook" },
+  { name: "og:site_name", content: "Discohook" },
+  { name: "og:title", content: "Privacy & Terms" },
+  {
+    name: "theme-color",
+    content: "#58b9ff",
+  },
 ];
 
 export default function Legal() {
