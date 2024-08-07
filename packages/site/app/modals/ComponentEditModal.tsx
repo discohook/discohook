@@ -11,7 +11,7 @@ import React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
-import { useError } from "~/components/Error";
+import { SetErrorFunction, useError } from "~/components/Error";
 import { InfoBox } from "~/components/InfoBox";
 import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
 import {
@@ -32,7 +32,10 @@ import { Modal, ModalProps } from "./Modal";
 export type EditingComponentData = {
   component: APIMessageActionRowComponent;
   setComponent: (component: APIMessageActionRowComponent) => void;
-  submit: (component: APIMessageActionRowComponent) => void;
+  submit: (
+    component: APIMessageActionRowComponent,
+    setError?: SetErrorFunction,
+  ) => Promise<void>;
 };
 
 export const ButtonStylePicker: React.FC<{
@@ -127,6 +130,7 @@ export const ComponentEditForm = ({
   submit,
   cache,
   setEditingFlow,
+  setError,
 }: Omit<EditingComponentData, "submit"> &
   Partial<Pick<EditingComponentData, "submit">> & {
     t: TFunction;
@@ -134,6 +138,7 @@ export const ComponentEditForm = ({
     setEditingFlow: React.Dispatch<
       React.SetStateAction<EditingFlowData | undefined>
     >;
+    setError?: SetErrorFunction;
   }) => (
   <div>
     {component.type === ComponentType.Button ? (
@@ -569,7 +574,14 @@ export const ComponentEditForm = ({
     )}
     {submit && (
       <div className="w-full flex mt-4">
-        <Button className="mx-auto" onClick={() => submit(component)}>
+        <Button
+          className="mx-auto"
+          onClick={async ({ currentTarget }) => {
+            currentTarget.disabled = true;
+            await submit(component, setError);
+            currentTarget.disabled = false;
+          }}
+        >
           {t("save")}
         </Button>
       </div>
@@ -607,6 +619,7 @@ export const ComponentEditModal = (
             submit={submit}
             cache={cache}
             setEditingFlow={setEditingFlow}
+            setError={setError}
           />
         </div>
       )}

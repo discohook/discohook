@@ -242,7 +242,7 @@ const getSetEditingComponentProps = ({
       row.components.splice(i, 1, newComponent);
       setData({ ...data });
     },
-    submit: async (newComponent) => {
+    submit: async (newComponent, setError) => {
       const withId = { ...newComponent };
       if (
         withId.custom_id &&
@@ -256,7 +256,7 @@ const getSetEditingComponentProps = ({
         } catch {}
       }
 
-      const updated = await submitComponent(withId);
+      const updated = await submitComponent(withId, setError);
       if (updated) {
         row.components.splice(i, 1, updated);
         setData({ ...data });
