@@ -31,8 +31,8 @@ export const getReplacements = (
       vars.member?.nick ?? vars.user?.global_name ?? vars.user?.username,
     "member.tag":
       vars.user?.discriminator === "0"
-        ? `${vars.user.username}#${vars.user.discriminator}`
-        : vars.user?.username,
+        ? vars.user.username
+        : `${vars.user?.username}#${vars.user?.discriminator}`,
     "member.mention": vars.user ? `<@${vars.user.id}>` : undefined,
     "member.avatar_url":
       vars.member?.avatar && vars.guild && vars.user
