@@ -122,7 +122,7 @@ export const LinkEmbedEditor: React.FC<{
           </div>
           {embed.provider?.url === undefined && (
             <Button
-              className="ml-2 mt-auto shrink-0"
+              className="ml-2 mt-auto"
               onClick={() =>
                 updateEmbed({
                   provider: {
@@ -156,7 +156,7 @@ export const LinkEmbedEditor: React.FC<{
                 />
               </div>
               <Button
-                className="ml-2 mt-auto shrink-0"
+                className="ml-2 mt-auto"
                 onClick={() =>
                   updateEmbed({
                     provider: {
@@ -194,7 +194,7 @@ export const LinkEmbedEditor: React.FC<{
           </div>
           {embed.author?.url === undefined && (
             <Button
-              className="ml-2 mt-auto shrink-0"
+              className="ml-2 mt-auto"
               onClick={() =>
                 updateEmbed({
                   author: {
@@ -228,7 +228,7 @@ export const LinkEmbedEditor: React.FC<{
                 />
               </div>
               <Button
-                className="ml-2 mt-auto shrink-0"
+                className="ml-2 mt-auto"
                 onClick={() =>
                   updateEmbed({
                     author: {

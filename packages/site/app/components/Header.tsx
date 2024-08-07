@@ -113,7 +113,7 @@ export const Header: React.FC<{
       )}
       <div className="grow flex overflow-x-auto ltr:ml-6 rtl:mr-6">
         <Button
-          className="my-auto ltr:mr-2 rtl:ml-2 shrink-0"
+          className="my-auto ltr:mr-2 rtl:ml-2"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setSettingsOpen(true)}
         >
@@ -121,7 +121,7 @@ export const Header: React.FC<{
         </Button>
         {setShowHistoryModal && (
           <Button
-            className="my-auto ltr:mr-2 rtl:ml-2 shrink-0"
+            className="my-auto ltr:mr-2 rtl:ml-2"
             onClick={() => setShowHistoryModal(true)}
             discordstyle={ButtonStyle.Secondary}
           >
@@ -129,7 +129,7 @@ export const Header: React.FC<{
           </Button>
         )}
         <Button
-          className="my-auto ltr:ml-auto rtl:mr-auto shrink-0"
+          className="my-auto ltr:ml-auto rtl:mr-auto"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setHelpOpen(true)}
         >

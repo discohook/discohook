@@ -18,7 +18,7 @@ export const Button = (
       type="button"
       {...props}
       className={twMerge(
-        "rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex",
+        "rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex shrink-0",
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
           ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
           : [ButtonStyle.Link, ButtonStyle.Secondary].includes(

@@ -42,7 +42,7 @@ export const HistoryModal = <
           />
         </p>
         <Button
-          className="ml-auto shrink-0"
+          className="ml-auto"
           onClick={() =>
             setConfirm({
               title: t("resetEditor"),

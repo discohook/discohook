@@ -30,7 +30,7 @@ export const FileInput = (
             }
           }
           const textBox =
-            e.currentTarget.parentElement!.querySelector<HTMLParagraphElement>(
+            e.currentTarget.parentElement?.querySelector<HTMLParagraphElement>(
               "p.filenames",
             );
           if (textBox) {
@@ -53,14 +53,17 @@ export const FileInput = (
       </div>
       {props.clearable && (
         <button
+          type="button"
           className="h-9 w-9 rounded ml-2 bg-gray-300 border-gray-200 dark:border-transparent dark:bg-[#292b2f] dark:group-hover/input:border-black/5 text-rose-400 flex shrink-0 transition"
           onClick={(e) => {
-            const p = e.currentTarget.parentElement!,
-              input = p.querySelector<HTMLInputElement>(
-                // input.peer/input is invalid
-                `input[class="peer/input"]`,
-              ),
-              textBox = p.querySelector<HTMLParagraphElement>("p.filenames");
+            // biome-ignore lint/style/noNonNullAssertion: We know there is a parent
+            const p = e.currentTarget.parentElement!;
+            const input = p.querySelector<HTMLInputElement>(
+              // input.peer/input is invalid
+              `input[class="peer/input"]`,
+            );
+            const textBox =
+              p.querySelector<HTMLParagraphElement>("p.filenames");
             if (input) {
               input.value = "";
             }
@@ -73,17 +76,16 @@ export const FileInput = (
         </button>
       )}
     </div>
-    {props.errors &&
-      props.errors
-        .filter((e) => e !== undefined)
-        .map((error, i) => (
-          <p
-            key={`${props.id ?? props.label}-error-${i}`}
-            className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
-          >
-            <CoolIcon icon="Circle_Warning" className="mr-1.5" />
-            {error}
-          </p>
-        ))}
+    {props.errors
+      ?.filter((e) => e !== undefined)
+      .map((error, i) => (
+        <p
+          key={`${props.id ?? props.label}-error-${i}`}
+          className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
+        >
+          <CoolIcon icon="Circle_Warning" className="mr-1.5" />
+          {error}
+        </p>
+      ))}
   </label>
 );

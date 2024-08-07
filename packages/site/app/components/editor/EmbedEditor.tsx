@@ -241,7 +241,7 @@ export const EmbedEditor: React.FC<{
               </div>
               {embed.author?.url === undefined && (
                 <Button
-                  className="ml-2 mt-auto shrink-0"
+                  className="ml-2 mt-auto"
                   onClick={() =>
                     updateEmbed({
                       author: {
@@ -275,7 +275,7 @@ export const EmbedEditor: React.FC<{
                     />
                   </div>
                   <Button
-                    className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
+                    className="ltr:ml-2 rtl:mr-2 mt-auto"
                     onClick={() =>
                       updateEmbed({
                         author: {
@@ -331,7 +331,7 @@ export const EmbedEditor: React.FC<{
               </div>
               {embed.url === undefined && (
                 <Button
-                  className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
+                  className="ltr:ml-2 rtl:mr-2 mt-auto"
                   onClick={() =>
                     updateEmbed({
                       url: `${location.origin}#default-${randomString(8)}`,
@@ -368,7 +368,7 @@ export const EmbedEditor: React.FC<{
               </div>
               <Button
                 disabled={isChild}
-                className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
+                className="ltr:ml-2 rtl:mr-2 mt-auto"
                 onClick={() => {
                   embed.url = undefined;
                   message.data.embeds = messageEmbeds.filter(
@@ -521,7 +521,7 @@ export const EmbedEditor: React.FC<{
           </div>
           {!galleryChildren.includes(embed) && (
             <Button
-              className="ltr:ml-2 rtl:mr-2 mt-auto shrink-0"
+              className="ltr:ml-2 rtl:mr-2 mt-auto"
               disabled={
                 !embed.image?.url ||
                 messageEmbeds.length >= 10 ||
