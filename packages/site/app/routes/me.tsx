@@ -761,7 +761,7 @@ export default function Me() {
                                   )}
                                 </p>
                               </div>
-                              <div className="ml-auto pl-2 my-auto flex gap-2">
+                              <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2">
                                 <Link
                                   to={`/?backup=${backup.id}`}
                                   target="_blank"
