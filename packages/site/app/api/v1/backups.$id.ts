@@ -81,42 +81,50 @@ const fixZodQueryData = (data: QueryData): QueryData => {
 export const action = async ({ request, params, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { name, data, scheduleAt, cron, timezone } = await zxParseJson(
-    request,
-    {
-      name: z.string().max(100).optional(),
-      data: ZodQueryData.transform(fixZodQueryData).optional(),
-      scheduleAt: z
-        .string()
-        .datetime()
-        .transform((v) => new Date(v))
-        .refine(
-          (d) => d.getTime() - new Date().getTime() >= 30_000,
-          "Scheduled time must be at least 30 seconds in the future",
-        )
-        .nullable()
-        .optional(),
-      cron: z
-        .string()
-        .refine((v) => {
-          try {
-            const exp = parseExpression(v);
-            if (!exp.hasNext()) return false;
+  const {
+    name,
+    data,
+    scheduleAt,
+    cron: expression,
+    timezone,
+  } = await zxParseJson(request, {
+    name: z.string().max(100).optional(),
+    data: ZodQueryData.transform(fixZodQueryData).optional(),
+    scheduleAt: z
+      .string()
+      .datetime()
+      .transform((v) => new Date(v))
+      .refine(
+        (d) => d.getTime() - new Date().getTime() >= 30_000,
+        "Scheduled time must be at least 30 seconds in the future",
+      )
+      .nullable()
+      .optional(),
+    cron: z
+      .string()
+      .refine((v) => {
+        try {
+          const exp = parseExpression(v);
+          if (!exp.hasNext()) return false;
 
-            const next = exp.next();
-            const after = exp.next();
-            // Maximum closeness is once every two hours
-            return after.getTime() - next.getTime() >= 7_200_000;
-          } catch {
-            return false;
-          }
-        }, "Scheduled runs cannot be more frequent than once every 2 hours")
-        .transform((v) => parseExpression(v))
-        .nullable()
-        .optional(),
-      timezone: z.ostring(),
-    },
-  );
+          const next = exp.next();
+          const after = exp.next();
+          // Maximum closeness is once every two hours
+          return after.getTime() - next.getTime() >= 7_200_000;
+        } catch {
+          return false;
+        }
+      }, "Scheduled runs cannot be more frequent than once every 2 hours")
+      .nullable()
+      .optional(),
+    timezone: z.ostring(),
+  });
+  const cron =
+    expression === null
+      ? null
+      : expression
+        ? parseExpression(expression, { tz: timezone })
+        : undefined;
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backup = await db.query.backups.findFirst({

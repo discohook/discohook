@@ -44,6 +44,7 @@ export class DurableScheduler implements DurableObject {
         data: true,
         scheduled: true,
         cron: true,
+        timezone: true,
       },
     });
     if (!backup) {
@@ -113,7 +114,9 @@ export class DurableScheduler implements DurableObject {
     }
 
     const nextRunAt = backup.cron
-      ? parseExpression(backup.cron).next().toDate()
+      ? parseExpression(backup.cron, { tz: backup.timezone ?? undefined })
+          .next()
+          .toDate()
       : null;
     await db
       .update(backups)
