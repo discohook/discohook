@@ -93,7 +93,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   }
 
   const { name, data } = await zxParseJson(request, {
-    name: z.string().refine((val) => val.length <= 100),
+    name: z.string().max(100),
     data: ZodQueryData,
   });
   const backupId = generateId();

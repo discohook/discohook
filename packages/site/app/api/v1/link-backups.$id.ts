@@ -38,9 +38,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 export const action = async ({ request, params, context }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const { name, data } = await zxParseJson(request, {
-    name: z
-      .ostring()
-      .refine((val) => (val !== undefined ? val.length <= 100 : true)),
+    name: z.string().max(100).optional(),
     data: z.optional(ZodLinkQueryData),
   });
   const user = await getUser(request, context, true);
