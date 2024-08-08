@@ -752,8 +752,9 @@ export default function Me() {
                                         emoji="✨"
                                         className="grayscale"
                                       />{" "}
-                                      Imported from discohook.org on{" "}
-                                      {createdAt.toLocaleDateString()}
+                                      {t("importedFromOrgAt", {
+                                        replace: { date: createdAt },
+                                      })}
                                     </>
                                   ) : (
                                     t("createdAt", { replace: { createdAt } })

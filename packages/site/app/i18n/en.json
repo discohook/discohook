@@ -123,6 +123,7 @@
   "importBackups": "Import Backups",
   "export": "Export",
   "exportBackups": "Export Backups",
+  "importedFromOrgAt": "Imported from discohook.org on $t(timestamp.date_verbose)",
   "exportBackupsNote": "This menu is for exporting backup files to your computer. This is not really necessary, but it's a great way to copy your messages offline or for use with other bots. Your schedule setup, if any, will only be exported for repeating schedules.",
   "version": "Version: {{version}}",
   "shareLinks": "Share Links",
