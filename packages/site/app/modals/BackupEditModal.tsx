@@ -9,6 +9,7 @@ import {
   fieldsToExpression,
   parseExpression,
 } from "cron-parser";
+import { TFunction } from "i18next";
 import moment, { Moment } from "moment";
 import { useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -35,8 +36,11 @@ import {
 import { action as ApiBackupsIdAction } from "../api/v1/backups.$id";
 import { Modal, ModalProps } from "./Modal";
 
-const Inner = ({ backup }: { backup: LoadedBackup }) => {
-  const { t } = useTranslation();
+const Inner = ({
+  t,
+  backup,
+  onSave,
+}: { t: TFunction; backup: LoadedBackup; onSave?: () => void }) => {
   const [error, setError] = useError(t);
   const fetcher = useSafeFetcher<typeof ApiBackupsIdAction>({
     onError: (e) => setError({ message: e.message }),
@@ -99,7 +103,7 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
 
   return (
     <Form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
 
         const data = Object.fromEntries(
@@ -123,10 +127,11 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
           data.scheduleAt = null;
           data.cron = null;
         }
-        fetcher.submit(data, {
+        await fetcher.submitAsync(data, {
           action: apiUrl(BRoutes.backups(backup.id)),
           method: "PATCH",
         });
+        if (onSave) onSave();
       }}
     >
       {error}
@@ -412,14 +417,14 @@ const Inner = ({ backup }: { backup: LoadedBackup }) => {
 };
 
 export const BackupEditModal = (
-  props: ModalProps & { backup?: LoadedBackup },
+  props: ModalProps & { backup?: LoadedBackup; onSave?: () => void },
 ) => {
   const { t } = useTranslation();
   const { backup } = props;
 
   return (
     <Modal title={t("editBackupTitle")} {...props}>
-      {backup && <Inner backup={backup} />}
+      {backup && <Inner t={t} backup={backup} onSave={props.onSave} />}
     </Modal>
   );
 };

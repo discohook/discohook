@@ -461,6 +461,10 @@ export default function Me() {
         open={!!editingBackup}
         setOpen={() => setEditingBackup(undefined)}
         backup={editingBackup}
+        onSave={() => {
+          submit(null, { method: "GET" });
+          setEditingBackup(undefined);
+        }}
       />
       <BotCreateModal open={createBotOpen} setOpen={setCreateBotOpen} />
       {confirm}
