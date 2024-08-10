@@ -6,7 +6,7 @@ export const Logo = (props: { pink?: boolean }) => (
     <g
       clipPath="url(#clip0_0_1)"
       className={twJoin(
-        props.pink ? "text-[#8195FF]" : "text-[#6D6F78]",
+        props.pink ? "text-[#8195FF]" : "text-[#243647]",
         "dark:!text-[#DEF1FF]",
       )}
     >

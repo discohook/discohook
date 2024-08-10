@@ -105,9 +105,14 @@ const changeLanguageEffect = () => {
 export const FullscreenThrobber = () => (
   <div className="h-screen w-full flex absolute top-0 left-0">
     <img
+      src="/logos/icon-light.svg"
+      alt="Discohook"
+      className="h-32 animate-pulse m-auto block dark:hidden"
+    />
+    <img
       src="/logos/icon.svg"
       alt="Discohook"
-      className="h-32 animate-pulse m-auto"
+      className="h-32 animate-pulse m-auto hidden dark:block"
     />
   </div>
 );
