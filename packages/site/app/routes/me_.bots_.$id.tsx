@@ -46,7 +46,7 @@ import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { base64Encode, cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseParams } from "~/util/zod";
-import { KVCustomBot } from "./me";
+import { KVCustomBot } from "./me.bots";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
@@ -335,7 +335,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       await context.env.KV.delete(`custom-bot-${botId}`);
     } catch {}
     await db.delete(customBots).where(eq(customBots.id, botId));
-    throw redirect("/me?t=bots");
+    throw redirect("/me/bots");
   }
 
   throw new Response("Method Not Allowed", { status: 405 });
@@ -384,7 +384,7 @@ export default function CustomBot() {
                 </>
               ),
               value: "back",
-              onClick: () => navigate("/me?t=bots"),
+              onClick: () => navigate("/me/bots"),
             },
             {
               label: t("information"),

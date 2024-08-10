@@ -6,7 +6,7 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
-import { action } from "~/routes/me";
+import { action } from "~/routes/me.bots";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, getApplicationRpc } from "~/util/discord";
 import { Modal, ModalProps } from "./Modal";
@@ -27,20 +27,16 @@ export const BotCreateModal = (props: ModalProps) => {
   }, [props.open]);
 
   useEffect(() => {
-    if (actionData?.action === "CREATE_BOT") {
+    if (actionData?.id !== undefined) {
       props.setOpen(false);
     }
   }, [actionData, props.setOpen]);
 
   return (
     <Modal title={t("createBot.title")} {...props}>
-      <Form action="/me" method="POST">
+      <Form action="/me/bots" method="POST">
         {error}
-        <input name="action" value="CREATE_BOT" readOnly hidden />
         <div>
-          {/* <p>
-            How to create an application:
-          </p> */}
           <ul className="list-decimal list-inside mb-2">
             <li>
               <Trans

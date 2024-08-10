@@ -7,7 +7,7 @@ import { loader as ApiGetBackups } from "~/api/v1/backups";
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { LoadedBackup } from "~/routes/me";
+import { LoadedBackup } from "~/routes/me.backups";
 import {
   DiscohookBackup,
   DiscohookBackupExportDataWithBackups,
@@ -32,7 +32,7 @@ export const downloadBlob = (blob: Blob, name: string) => {
 };
 
 export const BackupExportModal = (
-  props: ModalProps & { backups: Promise<LoadedBackup[]> },
+  props: ModalProps & { backups: LoadedBackup[] },
 ) => {
   const { t } = useTranslation();
   const { backups } = props;
@@ -123,13 +123,12 @@ export const BackupExportModal = (
               typeof ApiGetBackups
             >;
 
-            const resolved = await backups;
             const blob = new Blob(
               [
                 JSON.stringify(
                   {
                     version: 8,
-                    backups: resolved
+                    backups: backups
                       .filter((b) => selectedBackups.includes(b.id))
                       .map((backup) => {
                         const data = withData.find((b) => b.id === backup.id);

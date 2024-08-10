@@ -199,7 +199,7 @@ export default function Index() {
               </div>
             </div>
             <div className="mt-2 flex relative">
-              <a className="ml-0 absolute" href={`${origin}/me?t=backups`}>
+              <a className="ml-0 absolute" href={`${origin}/me/backups`}>
                 <Button>
                   <span className="m-auto">
                     <i className="ci-Chevron_Left" /> Back

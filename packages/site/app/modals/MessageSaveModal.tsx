@@ -160,7 +160,7 @@ export const MessageSaveModal = (
       <p className="text-lg font-medium">{t("backup")}</p>
       {user ? (
         <div>
-          <Link to="/me?t=backups" target="_blank" className={linkClassName}>
+          <Link to="/me/backups" target="_blank" className={linkClassName}>
             {t("manageBackups")}
           </Link>
           {backupFetcher.state !== "idle" || backup ? (

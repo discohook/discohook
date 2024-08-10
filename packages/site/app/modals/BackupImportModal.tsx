@@ -51,7 +51,7 @@ export const backupDataAsNewest = (
 };
 
 export const BackupImportModal = (
-  props: ModalProps & { backups: Promise<{ name: string }[]> },
+  props: ModalProps & { backups: { name: string }[] },
 ) => {
   const { t } = useTranslation();
   const [fileErrors, setFileErrors] = useState<string[]>([]);
@@ -206,7 +206,6 @@ export const BackupImportModal = (
           onClick={() => {
             submit(
               {
-                action: "IMPORT_BACKUPS",
                 backups: JSON.stringify(
                   backups?.filter((b) => selectedBackups.includes(b.name)) ??
                     [],
