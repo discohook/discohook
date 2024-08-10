@@ -54,6 +54,18 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   return results;
 };
 
+const isValidImageUrl = (url: string | undefined): url is string => {
+  if (url) {
+    try {
+      const parsed = new URL(url);
+      return ["http:", "https:"].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  }
+  return false;
+};
+
 export const findMessagesPreviewImageUrl = (
   messages: QueryData["messages"],
 ) => {
@@ -69,10 +81,14 @@ export const findMessagesPreviewImageUrl = (
       footer: [] as string[],
     };
     for (const embed of message.data.embeds ?? []) {
-      if (embed.thumbnail?.url) candidates.thumbnail.push(embed.thumbnail.url);
-      if (embed.image?.url) candidates.image.push(embed.image.url);
-      if (embed.author?.icon_url) candidates.author.push(embed.author.icon_url);
-      if (embed.footer?.icon_url) candidates.footer.push(embed.footer.icon_url);
+      if (isValidImageUrl(embed.thumbnail?.url))
+        candidates.thumbnail.push(embed.thumbnail.url);
+      if (isValidImageUrl(embed.image?.url))
+        candidates.image.push(embed.image.url);
+      if (isValidImageUrl(embed.author?.icon_url))
+        candidates.author.push(embed.author.icon_url);
+      if (isValidImageUrl(embed.footer?.icon_url))
+        candidates.footer.push(embed.footer.icon_url);
     }
     previewImageUrl =
       candidates.thumbnail[0] ??
