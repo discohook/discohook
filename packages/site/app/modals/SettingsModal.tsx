@@ -9,6 +9,15 @@ import { User } from "~/session.server";
 import { LocaleCode, Settings, useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
+const languages: Record<LocaleCode, string> = {
+  ar: "🇸🇦",
+  zh: "🇨🇳",
+  nl: "🇳🇱",
+  "en-US": "🇺🇸",
+  "en-GB": "🇬🇧",
+  fr: "🇫🇷",
+};
+
 const LocaleRadio = ({
   locale,
   flag,
@@ -158,48 +167,22 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           {t("language")}
         </p>
         <div className="space-y-2 mt-2">
-          <LocaleRadio
-            locale="ar"
-            flag="🇸🇦"
-            i18n={i18n}
-            settings={settings}
-            updateSettings={updateSettings}
-          />
-          <LocaleRadio
-            locale="zh"
-            flag="🇨🇳"
-            i18n={i18n}
-            settings={settings}
-            updateSettings={updateSettings}
-          />
-          <LocaleRadio
-            locale="nl"
-            flag="🇳🇱"
-            i18n={i18n}
-            settings={settings}
-            updateSettings={updateSettings}
-          />
-          <LocaleRadio
-            locale="en-US"
-            flag="🇺🇸"
-            i18n={i18n}
-            settings={settings}
-            updateSettings={updateSettings}
-          />
-          <LocaleRadio
-            locale="en-GB"
-            flag="🇬🇧"
-            i18n={i18n}
-            settings={settings}
-            updateSettings={updateSettings}
-          />
-          <LocaleRadio
-            locale="fr"
-            flag="🇫🇷"
-            i18n={i18n}
-            settings={settings}
-            updateSettings={updateSettings}
-          />
+          {Object.entries(languages)
+            .sort(([localeA], [localeB]) => {
+              const nativeA = t(`locales.${localeA}`, { lng: localeA });
+              const nativeB = t(`locales.${localeB}`, { lng: localeB });
+              return nativeA > nativeB ? 1 : -1;
+            })
+            .map(([locale, flag]) => (
+              <LocaleRadio
+                key={`locale-radio-${locale}`}
+                locale={locale as LocaleCode}
+                flag={flag}
+                i18n={i18n}
+                settings={settings}
+                updateSettings={updateSettings}
+              />
+            ))}
         </div>
       </div>
     </Modal>
