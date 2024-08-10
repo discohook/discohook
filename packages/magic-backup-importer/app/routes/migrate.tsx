@@ -234,7 +234,7 @@ export default function Index() {
                     setError(message);
                     return;
                   }
-                  const url = new URL(`${origin}/me?t=backups`);
+                  const url = new URL(`${origin}/me/backups`);
                   if (settings) {
                     url.searchParams.set("settings", JSON.stringify(settings));
                   }
