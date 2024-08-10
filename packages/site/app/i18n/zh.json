@@ -172,5 +172,8 @@
     "cozy": "舒适型",
     "compact": "紧凑型",
     "webhookCreated": "Webhook 已创建",
-    "webhookCreateFailed": "创建 Webhook 失败"
+    "webhookCreateFailed": "创建 Webhook 失败",
+    "locales": {
+        "zh": "中文"
+    }
 }
