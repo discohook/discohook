@@ -330,6 +330,30 @@ export class InteractionContext<
     );
   }
 
+  getUserOption(name: string) {
+    return this._getResolvableOption<APIUser>(
+      name,
+      ApplicationCommandOptionType.User,
+      "users",
+    );
+  }
+
+  // Identical to `getUserOption` but asserts that the caller wants an `APIMember`
+  getMemberOption(name: string) {
+    const user = this.getUserOption(name);
+
+    if (user) {
+      const member = this._getResolvableOption<
+        Omit<APIGuildMember, "user" | "deaf" | "mute">
+      >(name, ApplicationCommandOptionType.User, "members");
+
+      return { ...member, user } as Omit<APIGuildMember, "deaf" | "mute"> & {
+        user: APIUser;
+      };
+    }
+    return null;
+  }
+
   getRoleOption(name: string) {
     return this._getResolvableOption<APIRole>(
       name,

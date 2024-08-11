@@ -127,7 +127,12 @@
       "description": "Get help with various topics",
       "options": {
         "tag": {
+          "name": "tag",
           "description": "The tag to get help for"
+        },
+        "mention": {
+          "name": "mention",
+          "description": "If you are helping someone else, mention them in the bot reply"
         }
       }
     },

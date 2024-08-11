@@ -491,12 +491,15 @@ async function main() {
       new SlashCommandBuilder()
         .setName("help")
         .setDescription("...")
-        .addStringOption(
-          new SlashCommandStringOption()
+        .addStringOption((o) =>
+          o
             .setName("tag")
             .setDescription("...")
             .setAutocomplete(true)
             .setRequired(true),
+        )
+        .addUserOption((o) =>
+          o.setName("mention").setDescription("...").setRequired(false),
         ),
     ),
     addLocalizations(

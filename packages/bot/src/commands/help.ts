@@ -29,6 +29,7 @@ const findEmbed = (
 
 export const helpEntry: ChatInputAppCommandCallback = async (ctx) => {
   const query = ctx.getStringOption("tag");
+  const mentionUser = ctx.getUserOption("mention");
 
   const tags = await fetchTags(ctx.env);
   const [, embed] = findEmbed(tags, query.value);
@@ -36,8 +37,12 @@ export const helpEntry: ChatInputAppCommandCallback = async (ctx) => {
   if (embed) {
     embed.color = embed.color ?? color;
     return ctx.reply({
+      content: mentionUser ? `<@${mentionUser.id}>` : undefined,
+      allowed_mentions: mentionUser ? { users: [mentionUser.id] } : undefined,
+      flags:
+        // These messages are ephemeral by default to reduce spam
+        mentionUser && !mentionUser.bot ? undefined : MessageFlags.Ephemeral,
       embeds: [embed],
-      flags: MessageFlags.Ephemeral,
     });
   }
 
