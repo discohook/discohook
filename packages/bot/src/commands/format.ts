@@ -10,7 +10,7 @@ import {
 import { ChatInputAppCommandCallback } from "../commands.js";
 import { InteractionContext } from "../interactions.js";
 import { color } from "../util/meta.js";
-import { emojiNameToUnicodeMap, emojiUnicodeToNameMap } from "./emojis.js";
+import { fetchEmojiData, resolveEmojiData } from "./emojis.js";
 
 const getMentionEmbed = (result: string, title: string, warning?: string) => {
   const embed = new EmbedBuilder()
@@ -88,13 +88,6 @@ export const parseEmojiOption = async (
   const query = ctx.getStringOption(emojiOptionName).value;
   const safeQuery = query.replace(/[\W-+]*/g, "");
 
-  // if (ctx.interaction.guild_id) {
-  //   const emoji =
-  //     interaction.guild.emojis.cache.get(safeQuery) ??
-  //     interaction.guild.emojis.cache.find((emoji) => emoji.name === safeQuery);
-  //   if (emoji) return emoji;
-  // }
-
   const match = FormattingPatterns.Emoji.exec(query);
   if (match) {
     // biome-ignore lint/style/noNonNullAssertion:
@@ -106,12 +99,15 @@ export const parseEmojiOption = async (
     } as APIPartialEmoji;
   }
 
-  if (Object.prototype.hasOwnProperty.call(emojiUnicodeToNameMap, query)) {
+  const emojiData = await fetchEmojiData(ctx.env);
+  const { nameToEmoji, emojiToName } = resolveEmojiData(emojiData);
+
+  if (emojiToName.has(query)) {
     return query;
   }
 
-  if (Object.prototype.hasOwnProperty.call(emojiNameToUnicodeMap, safeQuery)) {
-    return emojiNameToUnicodeMap[safeQuery];
+  if (nameToEmoji.has(safeQuery)) {
+    return nameToEmoji.get(safeQuery);
   }
 };
 

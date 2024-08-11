@@ -29,12 +29,14 @@ import {
   ChatInputAppCommandCallback,
 } from "../commands.js";
 import { AutoComponentCustomId, ButtonCallback } from "../components.js";
+import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import {
   autocompleteMessageCallback,
   resolveMessageLink,
 } from "./components/entry.js";
+import { fetchEmojiData, resolveEmojiData } from "./emojis.js";
 
 export const isSnowflakeSafe = (id: string): id is `${bigint}` => {
   try {
@@ -51,7 +53,7 @@ export const resolveEmoji = async (
   value: string,
   message: APIMessage | undefined,
   guildId: string,
-  discohookOrigin: string,
+  env: Env,
 ): Promise<APIPartialEmoji | undefined> => {
   const match = value.match(CUSTOM_EMOJI_RE);
   if (match) {
@@ -92,21 +94,21 @@ export const resolveEmoji = async (
   }
   // Try unicode emojis
   if (!emoji) {
-    // I don't really like this, TODO
     try {
-      const emojis = (await (
-        await fetch(`${discohookOrigin}/emoji.json`, {
-          method: "GET",
-        })
-      ).json()) as (string[] | [string, number])[];
-      const match = emojis.find(
-        (e): e is string[] =>
-          typeof e[1] !== "number" && e.includes(val.toLowerCase()),
-      );
-      if (match) {
+      const rawEmojiData = await fetchEmojiData(env);
+      const { nameToEmoji, emojiToName } = resolveEmojiData(rawEmojiData);
+
+      const query = val.toLowerCase();
+      if (emojiToName.has(query)) {
         emoji = {
           id: null,
-          name: match[0],
+          name: query,
+        };
+      } else if (nameToEmoji.has(query)) {
+        emoji = {
+          id: null,
+          // biome-ignore lint/style/noNonNullAssertion: map.has() was true
+          name: nameToEmoji.get(query)!,
         };
       }
     } catch (e) {
@@ -208,7 +210,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
     ctx.getStringOption("emoji").value,
     message,
     guildId,
-    ctx.env.DISCOHOOK_ORIGIN,
+    ctx.env,
   );
   if (!emoji) {
     return ctx.reply({
@@ -337,7 +339,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
       emojiValue,
       message,
       guildId,
-      ctx.env.DISCOHOOK_ORIGIN,
+      ctx.env,
     );
     if (!emoji) {
       return ctx.reply({
