@@ -168,7 +168,16 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   const me = (await ctx.rest.get(
     Routes.guildMember(guildId, ctx.env.DISCORD_APPLICATION_ID),
   )) as APIGuildMember;
-  const highestRole = guild.roles.find((r) => r.id === me.roles[0]);
+  const highestRole = guild.roles.find(
+    (r) =>
+      r.id ===
+      [...me.roles].sort((aId, bId) => {
+        const a = guild.roles.find((r) => r.id === aId);
+        const b = guild.roles.find((r) => r.id === bId);
+        console.log(aId, a?.position, bId, b?.position);
+        return a && b ? b.position - a.position : a ? 1 : -1;
+      })[0],
+  );
   if (!highestRole && guild.owner_id !== ctx.env.DISCORD_APPLICATION_ID) {
     // You could be running an instance of this bot where
     // the bot is the owner of the guild
