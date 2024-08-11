@@ -431,6 +431,7 @@ export default function Index() {
         setOpen={() => setEditingFlow(undefined)}
         {...editingFlow}
         cache={cache}
+        premium={isPremium}
       />
       <MessageSetModal
         open={settingMessageIndex !== undefined}

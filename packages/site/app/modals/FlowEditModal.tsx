@@ -21,8 +21,8 @@ import {
   FlowActionCreateThread,
   FlowActionSetVariable,
   FlowActionSetVariableType,
-  FlowActionType,
 } from "~/store.server";
+import { FlowActionType } from "~/types/flows";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
 import {
@@ -51,6 +51,7 @@ export const FlowEditModal = (
   props: ModalProps &
     Partial<EditingFlowData> & {
       cache?: CacheManager;
+      premium?: boolean;
     },
 ) => {
   const { t } = useTranslation();
@@ -60,6 +61,15 @@ export const FlowEditModal = (
   const backupsFetcher = useSafeFetcher<typeof ApiGetUserBackups>({
     onError: (e) => setError({ message: e.message }),
   });
+  const actionMax = props.premium ? 40 : 10;
+  const flattenAction = (a: FlowAction): FlowAction[] =>
+    a.type === 2
+      ? [...(a.then ?? []), ...(a.else ?? [])].flatMap(flattenAction)
+      : [a];
+  const allActions = flow ? flow.actions.flatMap(flattenAction) : [];
+  const counted = allActions.filter(
+    (a) => a.type !== FlowActionType.Check && a.type !== FlowActionType.Stop,
+  );
 
   return (
     <Modal title={t("editFlow")} {...props}>
@@ -68,11 +78,24 @@ export const FlowEditModal = (
         <div className="-mt-2 -mx-2">
           {flow.actions.length > 0 && (
             <div className="space-y-2">
-              {flow.actions.length === 10 && (
+              {counted.length >= actionMax && (
                 <InfoBox severity="yellow" icon="Circle_Warning">
-                  <Trans count={flow.actions.length}>
-                    Warning about action count limit for non-premium users
-                  </Trans>
+                  <Trans
+                    t={t}
+                    i18nKey={
+                      props.premium
+                        ? "maxActionsWarningPremium"
+                        : "maxActionsWarningFree"
+                    }
+                    values={{ limit: actionMax, premiumLimit: 40 }}
+                    components={[
+                      <Link
+                        to="/donate"
+                        className={linkClassName}
+                        target="_blank"
+                      />,
+                    ]}
+                  />
                 </InfoBox>
               )}
               {flow.actions.map((action, ai) => (
@@ -96,7 +119,6 @@ export const FlowEditModal = (
                   flow.actions.push({ type: 0 });
                   setFlow(structuredClone(flow));
                 }}
-                disabled={flow.actions.length >= 10}
               >
                 {t("addAction")}
               </Button>
@@ -257,6 +279,7 @@ const FlowActionEditor: React.FC<{
   t: TFunction;
   cache?: CacheManager;
   checkLevel?: number;
+  premium?: boolean;
 }> = ({
   flow,
   action,
@@ -266,8 +289,8 @@ const FlowActionEditor: React.FC<{
   t,
   cache,
   checkLevel,
+  premium,
 }) => {
-  const localIndexMax = 9;
   const previewText = t(`actionDescription.${action.type}`, {
     replace: { action },
     defaultValue: t(`actionType.${action.type}`),
@@ -279,11 +302,16 @@ const FlowActionEditor: React.FC<{
     : [];
   const channels = cache ? cache.channel.getAll() : [];
 
+  const actionMax = premium ? 40 : 10;
+  const localIndexMax = actionMax - 1;
   const flattenAction = (a: FlowAction): FlowAction[] =>
     a.type === 2
       ? [...(a.then ?? []), ...(a.else ?? [])].flatMap(flattenAction)
       : [a];
   const allActions = flow.actions.flatMap(flattenAction);
+  const counted = allActions.filter(
+    (a) => a.type !== FlowActionType.Check && a.type !== FlowActionType.Stop,
+  );
 
   const absoluteI = allActions.indexOf(action);
   // const stopAction = allActions.find((a, subI): a is FlowActionStop => {
@@ -377,10 +405,14 @@ const FlowActionEditor: React.FC<{
               name="type"
               label={t("actionTypeText")}
               options={actionTypes
-                .filter((type) =>
-                  checkLevel !== undefined && checkLevel !== 0
-                    ? type !== 2
-                    : true,
+                .filter(
+                  (type) =>
+                    (checkLevel !== undefined && checkLevel !== 0
+                      ? type !== 2
+                      : true) &&
+                    (counted.length > actionMax && absoluteI >= actionMax
+                      ? [2, 11].includes(type)
+                      : true),
                 )
                 .map((value) => ({
                   label: t(`actionType.${value}`),

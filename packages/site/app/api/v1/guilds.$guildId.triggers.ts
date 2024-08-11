@@ -1,11 +1,11 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { flows as dFlows, getDb, triggers as dTriggers } from "store";
+import { flows as dFlows, triggers as dTriggers, getDb } from "store";
 import { z } from "zod";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { TriggerEvent, flowActions } from "~/store.server";
-import { ZodDraftFlowWithMax } from "~/types/flows";
+import { refineZodDraftFlowMax } from "~/types/flows";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import {
@@ -97,7 +97,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const { event, flow } = await zxParseJson(request, {
     event: z.nativeEnum(TriggerEvent),
-    flow: ZodDraftFlowWithMax(premium ? 20 : 5).optional(),
+    flow: refineZodDraftFlowMax(premium).optional(),
   });
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);

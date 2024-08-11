@@ -440,6 +440,8 @@
   "actionNText": "Action {{n}} - {{text}}",
   "flowLink": "Flow (<0>what's a flow?</0>)",
   "editFlow": "Edit Flow",
+  "maxActionsWarningFree": "Flows have a maximum of {{limit}} non-check/stop actions. <0>Read more about this here</0>. Subscribe to Deluxe to add up to {{premiumLimit}} actions.",
+  "maxActionsWarningPremium": "Flows have a maximum of {{limit}} non-check/stop actions for Deluxe members.",
   "addAction": "Add Action",
   "editComponent": "Edit Component",
   "backup": "Backup",

@@ -88,19 +88,19 @@ const features: Record<string, SimpleTextModalProps> = {
     title: "Max. flow actions",
     children: (
       <>
-        Free users can have 5 actions per flow - plenty for simple designs, but
-        something more advanced could require the massive <Twemoji emoji="💪" />{" "}
-        20 <Twemoji emoji="💪" /> actions afforded to Deluxe members.
-      </>
-    ),
-  },
-  "max-messages": {
-    title: "Max. message actions per flow",
-    children: (
-      <>
-        Sending messages is a common but limited action, so free users are
-        allowed to send 2 messages per flow (as a response or as a webhook), and
-        Deluxe members can send up to 5.
+        Free users can have 10 non-check/stop actions per flow - plenty for
+        simple designs, but something more advanced could require the massive{" "}
+        <Twemoji emoji="💪" /> 40 <Twemoji emoji="💪" /> actions afforded to
+        Deluxe members.
+        <br />
+        <br />
+        Each flow can send up to 15 messages, not including a stop-type action.
+        Read more about{" "}
+        <Link to="/guide/getting-started/flows" className={linkClassName}>
+          flows and action types
+        </Link>
+        . This is not a limitation placed on the amount of messages you can send
+        with your webhooks independently of flows.
       </>
     ),
   },
@@ -113,13 +113,13 @@ const features: Record<string, SimpleTextModalProps> = {
   //   ),
   // },
   "link-embeds": {
-    title: "Use-anywhere embeds (+ embedded videos)",
+    title: "Globally usable embeds (+ embedded videos)",
     children: (
       <>
         Why limit yourself to the functionality of webhook embeds? Deluxe
-        members can create custom embeds usable anywhere on Discord, even
-        without access to a webhook. These embeds can even contain videos and up
-        to 4 images.
+        members can create custom embeds that can be posted anywhere on Discord,
+        even without access to a webhook. These embeds can even contain videos
+        and up to 4 images.
         <br />
         <br />
         Head to the{" "}
@@ -213,15 +213,8 @@ export default function DonatePage() {
               <Cell onClick={() => setFeatProps(features["max-actions"])}>
                 Max. flow actions
               </Cell>
-              <Cell>5</Cell>
-              <Cell premium>20</Cell>
-            </div>
-            <div className="table-row">
-              <Cell onClick={() => setFeatProps(features["max-messages"])}>
-                Max. message actions per flow
-              </Cell>
-              <Cell>2</Cell>
-              <Cell premium>5</Cell>
+              <Cell>10</Cell>
+              <Cell premium>40</Cell>
             </div>
             {/* <div className="table-row">
               <Cell onClick={() => setFeatProps(features["custom-bot"])}>

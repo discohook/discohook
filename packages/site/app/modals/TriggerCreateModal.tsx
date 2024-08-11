@@ -24,6 +24,7 @@ export const TriggerCreateModal = (
     guildId: string;
     cache: CacheManager;
     setOpenTriggerId: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+    premium?: boolean;
   },
 ) => {
   const { t } = useTranslation();
@@ -57,6 +58,7 @@ export const TriggerCreateModal = (
         flow={flow}
         setFlow={setFlow}
         cache={props.cache}
+        premium={props.premium}
       />
       <Form
         onSubmit={async (e) => {

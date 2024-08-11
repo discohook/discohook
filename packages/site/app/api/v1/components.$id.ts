@@ -18,7 +18,9 @@ import {
   sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
+import { refineZodDraftFlowMax } from "~/types/flows";
 import { ActionArgs } from "~/util/loader";
+import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
 export const action = async ({ request, context, params }: ActionArgs) => {
@@ -31,6 +33,48 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         request,
         ZodAPIMessageActionRowComponent,
       );
+      const premium = userIsPremium(token.user);
+      if ("flow" in component && component.flow) {
+        const parsed = await refineZodDraftFlowMax(premium).safeParseAsync(
+          component.flow,
+        );
+        if (parsed && !parsed.success) {
+          throw respond(
+            json(
+              {
+                message: parsed.error.message,
+                issues: parsed.error.format(),
+              },
+              400,
+            ),
+          );
+        }
+      }
+      if ("flows" in component && component.flows) {
+        const errors = [];
+        for (const flow of Object.values(component.flows)) {
+          const parsed =
+            await refineZodDraftFlowMax(premium).safeParseAsync(flow);
+          if (!parsed.success) {
+            errors.push(parsed.error);
+          }
+        }
+        if (errors.length !== 0) {
+          const issue = errors[0];
+          for (const error of errors.splice(1)) {
+            issue.addIssues(error.issues);
+          }
+          throw respond(
+            json(
+              {
+                message: "Bad Request",
+                issues: issue.format(),
+              },
+              400,
+            ),
+          );
+        }
+      }
 
       const db = getDb(context.env.HYPERDRIVE.connectionString);
       const current = await db.query.discordMessageComponents.findFirst({

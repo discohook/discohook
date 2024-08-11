@@ -3,7 +3,7 @@ import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { eq, flowActions, flows, triggers } from "~/store.server";
-import { ZodDraftFlowWithMax } from "~/types/flows";
+import { refineZodDraftFlowMax } from "~/types/flows";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
@@ -81,7 +81,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
 
   const { flow } = await zxParseJson(request, {
-    flow: ZodDraftFlowWithMax(premium ? 20 : 5),
+    flow: refineZodDraftFlowMax(premium),
   });
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);

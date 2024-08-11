@@ -51,7 +51,7 @@ import { Message } from "~/components/preview/Message.client";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
-import { getGuild, getUser, verifyToken } from "~/session.server";
+import { User, getGuild, getUser, verifyToken } from "~/session.server";
 import {
   Flow,
   StorableComponent,
@@ -78,7 +78,7 @@ import { cdnImgAttributes } from "~/util/discord";
 import { flowToDraftFlow } from "~/util/flow";
 import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
-import { getUserAvatar } from "~/util/users";
+import { getUserAvatar, userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
   zxParseForm,
@@ -794,6 +794,7 @@ export default () => {
         setOpen={() => setEditingFlow(undefined)}
         {...editingFlow}
         cache={cache}
+        premium={userIsPremium(user as User)}
       />
       <Header user={user} />
       <Prose className="max-w-xl">
@@ -933,6 +934,8 @@ export default () => {
                 setComponent(updated);
                 // Ensure that the component's durable object is up to date
                 submit(null, { method: "PATCH", replace: true });
+              } else {
+                setSubmitState("idle");
               }
             }}
           >

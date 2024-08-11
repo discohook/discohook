@@ -267,8 +267,41 @@ export const ZodDraftFlow: z.ZodType<DraftFlow> = z.object({
   actions: ZodFlowAction.array(),
 });
 
-export const ZodDraftFlowWithMax = (max: number): z.ZodType<DraftFlow> =>
+export const refineZodDraftFlowMax = (premium: boolean) =>
   z.object({
     name: z.string().nullable().optional(),
-    actions: ZodFlowAction.array().max(max),
+    actions: ZodFlowAction.array().superRefine((actions, ctx) => {
+      const flattenAction = (a: FlowAction): FlowAction[] =>
+        a.type === 2
+          ? [...(a.then ?? []), ...(a.else ?? [])].flatMap(flattenAction)
+          : [a];
+      const allActions = actions.flatMap(flattenAction);
+      const counted = allActions.filter(
+        (a) =>
+          a.type !== FlowActionType.Check && a.type !== FlowActionType.Stop,
+      );
+      const messageActions = allActions.filter(
+        (a) =>
+          a.type === FlowActionType.SendMessage ||
+          a.type === FlowActionType.SendWebhookMessage,
+      );
+
+      if (messageActions.length > 15) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Cannot have more than 15 message actions.",
+        });
+        return z.NEVER;
+      }
+      const max = premium ? 40 : 10;
+      if (counted.length > max) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Cannot have more than ${max} counted actions${
+            !premium ? " for non-premium users" : ""
+          }.`,
+        });
+        return z.NEVER;
+      }
+    }),
   });

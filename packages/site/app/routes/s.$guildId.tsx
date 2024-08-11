@@ -62,7 +62,7 @@ import {
 import { flowToDraftFlow } from "~/util/flow";
 import { getId } from "~/util/id";
 import { LoaderArgs, useSafeFetcher } from "~/util/loader";
-import { getUserAvatar } from "~/util/users";
+import { getUserAvatar, userIsPremium } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
 import { action as ApiDeleteComponent } from "../api/v1/components.$id";
 import { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
@@ -338,6 +338,7 @@ export default () => {
         flow={draftFlow}
         setFlow={setDraftFlow}
         cache={cache}
+        premium={userIsPremium(user)}
       />
       {confirmModal}
       <Header user={user} />
