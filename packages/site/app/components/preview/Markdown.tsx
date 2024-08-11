@@ -597,6 +597,9 @@ const autoLinkRule = defineRule({
   },
 });
 
+const INVITE_RESOLVABLE_RE =
+  /^(https:\/\/)?((?:www\.)?(discord(?:app)?\.com\/invite)|(discord\.gg))\/(?<invite>.+)/;
+
 const maskedLinkRule = defineRule({
   capture(source, _, parse) {
     const match =
@@ -604,21 +607,46 @@ const maskedLinkRule = defineRule({
         source,
       );
     if (!match) return;
+
+    const invalid = {
+      valid: false,
+      size: match[0].length,
+      // We don't want to render any markdown inside of invalid masked links
+      raw: match[0],
+      content: parse(match[1]),
+      url: match[2],
+      title: match[3],
+    };
+
+    // URLs cannot be mask text
     try {
-      new URL(match[2]);
+      new URL(match[1]);
+      return invalid;
+    } catch {}
+
+    let url: URL;
+    try {
+      url = new URL(match[2]);
     } catch {
       return;
     }
 
+    // invite links cannot be mask test
+    if (INVITE_RESOLVABLE_RE.test(match[1])) {
+      return invalid;
+    }
+
     return {
+      valid: true,
       size: match[0].length,
+      raw: match[0],
       content: parse(match[1]),
-      url: new URL(match[2]).href,
+      url: url.href,
       title: match[3],
     };
   },
   render(capture, render) {
-    return (
+    return capture.valid ? (
       <a
         href={pathize(capture.url)}
         title={capture.title}
@@ -628,6 +656,8 @@ const maskedLinkRule = defineRule({
       >
         {render(capture.content)}
       </a>
+    ) : (
+      <span>{capture.raw}</span>
     );
   },
 });
