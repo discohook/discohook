@@ -176,7 +176,6 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
       [...me.roles].sort((aId, bId) => {
         const a = guild.roles.find((r) => r.id === aId);
         const b = guild.roles.find((r) => r.id === bId);
-        console.log(aId, a?.position, bId, b?.position);
         return a && b ? b.position - a.position : a ? 1 : -1;
       })[0],
   );
