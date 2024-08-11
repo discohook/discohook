@@ -1,17 +1,12 @@
 import {
   ContextMenuCommandBuilder,
-  SlashCommandAttachmentOption,
-  SlashCommandBooleanOption,
   SlashCommandBuilder,
   SlashCommandChannelOption,
-  SlashCommandIntegerOption,
-  SlashCommandMentionableOption,
   SlashCommandOptionsOnlyBuilder,
-  SlashCommandRoleOption,
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
-  ToAPIApplicationCommandOptions,
+  ToAPIApplicationCommandOptions
 } from "@discordjs/builders";
 import {
   ApplicationCommandType,
@@ -213,57 +208,57 @@ async function main() {
           PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
         )
         .setDMPermission(false)
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("add")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("message")
                 .setDescription("...")
                 .setRequired(true)
                 .setAutocomplete(true),
             )
-            .addChannelOption(
-              new SlashCommandChannelOption()
+            .addChannelOption((opt) =>
+              opt
                 .setName("channel")
                 .setDescription("...")
                 .setRequired(false)
                 .addChannelTypes(...webhookChannelTypes),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("edit")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("message")
                 .setDescription("...")
                 .setRequired(true)
                 .setAutocomplete(true),
             )
-            .addChannelOption(
-              new SlashCommandChannelOption()
+            .addChannelOption((opt) =>
+              opt
                 .setName("channel")
                 .setDescription("...")
                 .setRequired(false)
                 .addChannelTypes(...webhookChannelTypes),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("delete")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("message")
                 .setDescription("...")
                 .setRequired(true)
                 .setAutocomplete(true),
             )
-            .addChannelOption(
-              new SlashCommandChannelOption()
+            .addChannelOption((opt) =>
+              opt
                 .setName("channel")
                 .setDescription("...")
                 .setRequired(false)
@@ -282,23 +277,20 @@ async function main() {
       new SlashCommandBuilder()
         .setName("format")
         .setDescription("...")
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("mention")
             .setDescription("...")
-            .addMentionableOption(
-              new SlashCommandMentionableOption()
-                .setName("target")
-                .setDescription("...")
-                .setRequired(true),
+            .addMentionableOption((opt) =>
+              opt.setName("target").setDescription("...").setRequired(true),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("channel")
             .setDescription("...")
-            .addChannelOption(
-              new SlashCommandChannelOption()
+            .addChannelOption((opt) =>
+              opt
                 .setName("target")
                 .setDescription("...")
                 .setRequired(true)
@@ -315,15 +307,12 @@ async function main() {
                 ),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("emoji")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
-                .setName("target")
-                .setDescription("...")
-                .setRequired(true),
+            .addStringOption((opt) =>
+              opt.setName("target").setDescription("...").setRequired(true),
             ),
         ),
     ),
@@ -331,37 +320,28 @@ async function main() {
       new SlashCommandBuilder()
         .setName("id")
         .setDescription("...")
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("mention")
             .setDescription("...")
-            .addMentionableOption(
-              new SlashCommandMentionableOption()
-                .setName("target")
-                .setDescription("...")
-                .setRequired(true),
+            .addMentionableOption((opt) =>
+              opt.setName("target").setDescription("...").setRequired(true),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("channel")
             .setDescription("...")
-            .addChannelOption(
-              new SlashCommandChannelOption()
-                .setName("target")
-                .setDescription("...")
-                .setRequired(true),
+            .addChannelOption((opt) =>
+              opt.setName("target").setDescription("...").setRequired(true),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("emoji")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
-                .setName("target")
-                .setDescription("...")
-                .setRequired(true),
+            .addStringOption((opt) =>
+              opt.setName("target").setDescription("...").setRequired(true),
             ),
         ),
     ),
@@ -374,19 +354,19 @@ async function main() {
         .setDescription("...")
         .setDMPermission(false)
         .setDefaultMemberPermissions(PermissionFlags.ManageGuild)
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("add")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("name")
                 .setDescription("...")
                 .setMaxLength(100)
                 .setRequired(true),
             )
-            .addIntegerOption(
-              new SlashCommandIntegerOption()
+            .addIntegerOption((opt) =>
+              opt
                 .setName("event")
                 .setDescription("...")
                 .setChoices(
@@ -416,8 +396,8 @@ async function main() {
           new SlashCommandSubcommandBuilder()
             .setName("view")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("name")
                 .setDescription("...")
                 .setMaxLength(100)
@@ -432,51 +412,45 @@ async function main() {
         .setDescription("...")
         .setDMPermission(false)
         .setDefaultMemberPermissions(PermissionFlags.ManageWebhooks)
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("create")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("name")
                 .setDescription("...")
                 .setRequired(true)
                 .setMaxLength(80),
             )
-            .addAttachmentOption(
-              new SlashCommandAttachmentOption()
-                .setName("avatar")
-                .setDescription("..."),
+            .addAttachmentOption((opt) =>
+              opt.setName("avatar").setDescription("..."),
             )
-            .addChannelOption(
-              new SlashCommandChannelOption()
+            .addChannelOption((opt) =>
+              opt
                 .setName("channel")
                 .setDescription("...")
                 .addChannelTypes(...webhookChannelTypes),
             )
-            .addBooleanOption(
-              new SlashCommandBooleanOption()
-                .setName("show-url")
-                .setDescription("..."),
+            .addBooleanOption((opt) =>
+              opt.setName("show-url").setDescription("..."),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("delete")
             .setDescription("...")
             .addStringOption(webhookAutocompleteOption)
             .addChannelOption(webhookFilterAutocompleteOption),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("info")
             .setDescription("...")
             .addStringOption(webhookAutocompleteOption)
             .addChannelOption(webhookFilterAutocompleteOption)
-            .addBooleanOption(
-              new SlashCommandBooleanOption()
-                .setName("show-url")
-                .setDescription("..."),
+            .addBooleanOption((opt) =>
+              opt.setName("show-url").setDescription("..."),
             ),
         ),
     ),
@@ -491,15 +465,15 @@ async function main() {
       new SlashCommandBuilder()
         .setName("help")
         .setDescription("...")
-        .addStringOption((o) =>
-          o
+        .addStringOption((opt) =>
+          opt
             .setName("tag")
             .setDescription("...")
             .setAutocomplete(true)
             .setRequired(true),
         )
-        .addUserOption((o) =>
-          o.setName("mention").setDescription("...").setRequired(false),
+        .addUserOption((opt) =>
+          opt.setName("mention").setDescription("...").setRequired(false),
         ),
     ),
     addLocalizations(
@@ -510,56 +484,50 @@ async function main() {
           PermissionFlags.ManageRoles | PermissionFlags.AddReactions,
         )
         .setDMPermission(false)
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("create")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("message")
                 .setDescription("...")
                 .setRequired(true)
                 .setAutocomplete(true),
             )
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("emoji")
                 .setDescription("...")
                 .setRequired(true)
                 .setAutocomplete(true),
             )
-            .addRoleOption(
-              new SlashCommandRoleOption()
-                .setName("role")
-                .setRequired(true)
-                .setDescription("..."),
+            .addRoleOption((opt) =>
+              opt.setName("role").setRequired(true).setDescription("..."),
             )
-            .addChannelOption(
-              new SlashCommandChannelOption()
+            .addChannelOption((opt) =>
+              opt
                 .setName("channel")
                 .setDescription("...")
                 .addChannelTypes(...messageChannelTypes),
             ),
         )
-        .addSubcommand(
-          new SlashCommandSubcommandBuilder()
+        .addSubcommand((opt) =>
+          opt
             .setName("delete")
             .setDescription("...")
-            .addStringOption(
-              new SlashCommandStringOption()
+            .addStringOption((opt) =>
+              opt
                 .setName("message")
                 .setDescription("...")
                 .setRequired(true)
                 .setAutocomplete(true),
             )
-            .addStringOption(
-              new SlashCommandStringOption()
-                .setName("emoji")
-                .setDescription("...")
-                .setAutocomplete(true),
+            .addStringOption((opt) =>
+              opt.setName("emoji").setDescription("...").setAutocomplete(true),
             )
-            .addChannelOption(
-              new SlashCommandChannelOption()
+            .addChannelOption((opt) =>
+              opt
                 .setName("channel")
                 .setDescription("...")
                 .addChannelTypes(...messageChannelTypes),

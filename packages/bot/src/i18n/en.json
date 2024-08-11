@@ -91,6 +91,7 @@
       "description": "Manage webhooks",
       "options": {
         "create": {
+          "name": "create",
           "description": "Create a webhook",
           "options": {
             "name": {
@@ -108,12 +109,33 @@
           }
         },
         "delete": {
-          "description": "Delete a webhook"
+          "name": "delete",
+          "description": "Delete a webhook",
+          "options": {
+            "webhook": {
+              "name": "webhook",
+              "description": "The webhook to delete"
+            },
+            "filter-channel": {
+              "name": "filter-channel",
+              "description": "The channel to filter autocomplete results with"
+            }
+          }
         },
         "info": {
+          "name": "info",
           "description": "Get info on a webhook",
           "options": {
+            "webhook": {
+              "name": "webhook",
+              "description": "The webhook to get info for"
+            },
+            "filter-channel": {
+              "name": "filter-channel",
+              "description": "The channel to filter autocomplete results with"
+            },
             "show-url": {
+              "name": "show-url",
               "description": "Whether to skip the \"Get URL\" step. This makes the message hidden"
             }
           }
