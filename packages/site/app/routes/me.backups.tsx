@@ -77,7 +77,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   switch (request.method) {
     case "POST": {
       const data = await zxParseForm(request, {
-        backups: ZodDiscohookBackup.array(),
+        backups: jsonAsString(ZodDiscohookBackup.array()),
       });
       const created = await db
         .insert(dBackups)
