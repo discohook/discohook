@@ -1,3 +1,4 @@
+import { TFunction } from "i18next";
 import insertTextAtCursor from "insert-text-at-cursor";
 import { ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
@@ -19,6 +20,7 @@ export const TextArea = (
     freelength?: boolean;
     markdown?: MarkdownFeatures;
     cache?: CacheManager;
+    t?: TFunction;
   },
 ) => {
   const {
@@ -29,6 +31,7 @@ export const TextArea = (
     freelength,
     markdown,
     cache,
+    t,
     ...newProps
   } = props;
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -44,10 +47,20 @@ export const TextArea = (
     <label className="block">
       <p className="text-sm font-medium">
         {label}
+        {newProps.required && (
+          <span
+            className={twJoin(
+              "align-baseline",
+              t ? "ltr:ml-2 rtl:mr-2 text-xs italic" : "text-rose-400",
+            )}
+          >
+            {t ? t("required") : "*"}
+          </span>
+        )}
         {props.maxLength && (
           <span
             className={twJoin(
-              "ml-2 italic text-xs align-baseline",
+              "ltr:ml-2 rtl:mr-2 italic text-xs align-baseline",
               length >= props.maxLength
                 ? "text-red-300"
                 : length / (props.maxLength || 1) >= 0.9

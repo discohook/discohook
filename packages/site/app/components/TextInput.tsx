@@ -1,3 +1,4 @@
+import { TFunction } from "i18next";
 import { ReactNode, useRef, useState } from "react";
 import { twJoin, twMerge } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
@@ -12,9 +13,10 @@ export const TextInput = (
     delayOnInput?: number;
     freelength?: boolean;
     errors?: ReactNode[];
+    t?: TFunction;
   },
 ) => {
-  const { label, onInput, delayOnInput } = props;
+  const { label, onInput, delayOnInput, t } = props;
   const ref = useRef<HTMLInputElement>(null);
   const length = ref.current ? ref.current.value.length : 0;
 
@@ -32,6 +34,16 @@ export const TextInput = (
     <label className="block">
       <p className="text-sm font-medium">
         {label}
+        {newProps.required && (
+          <span
+            className={twJoin(
+              "align-baseline",
+              t ? "ltr:ml-2 rtl:mr-2 text-xs italic" : "text-rose-400",
+            )}
+          >
+            {t ? t("required") : "*"}
+          </span>
+        )}
         {props.maxLength && (
           <span
             className={twJoin(

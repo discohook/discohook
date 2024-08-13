@@ -11,6 +11,7 @@
   "ok": "OK",
   "edit": "Edit",
   "delete": "Delete",
+  "required": "Required",
   "supportServer": "Support Server",
   "supportServerLanguageNote": "This is an <bold>English-only</bold> support server. While Discohook supports multiple languages for ease of use, our support and moderation teams are usually only able to provide help in English. You can use <anchor>tools like DeepL</anchor> if you are not comfortable with your grasp on the language. Check the box on the left to join the server.",
   "join": "Join",

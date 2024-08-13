@@ -227,6 +227,7 @@ export const EmbedEditor: React.FC<{
                   maxLength={256}
                   value={embed.author?.name ?? ""}
                   short
+                  t={t}
                   onInput={(e) =>
                     updateEmbed({
                       author: {
@@ -239,7 +240,7 @@ export const EmbedEditor: React.FC<{
               </div>
               {embed.author?.url === undefined && (
                 <Button
-                  className="ml-2 mt-auto"
+                  className="ltr:ml-2 rtl:mr-2 mt-auto"
                   onClick={() =>
                     updateEmbed({
                       author: {
@@ -261,6 +262,8 @@ export const EmbedEditor: React.FC<{
                       label={t("authorUrl")}
                       className="w-full"
                       type="url"
+                      required
+                      t={t}
                       value={embed.author?.url ?? ""}
                       onInput={(e) =>
                         updateEmbed({
@@ -457,6 +460,8 @@ export const EmbedEditor: React.FC<{
                           markdown="full"
                           cache={cache}
                           short
+                          required
+                          t={t}
                           onInput={(e) => {
                             field.name = e.currentTarget.value;
                             updateEmbed({});
@@ -481,6 +486,8 @@ export const EmbedEditor: React.FC<{
                       className="w-full"
                       markdown="full"
                       cache={cache}
+                      required
+                      t={t}
                       onInput={(e) => {
                         field.value = e.currentTarget.value;
                         updateEmbed({});
