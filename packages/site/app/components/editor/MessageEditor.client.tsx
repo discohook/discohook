@@ -151,17 +151,19 @@ export const MessageEditor: React.FC<{
           >
             <CoolIcon icon="Copy" />
           </button>
-          {data.messages.length > 1 && (
-            <button
-              type="button"
-              onClick={() => {
+          <button
+            type="button"
+            onClick={() => {
+              if (data.messages.length <= 1) {
+                data.messages.splice(i, 1, { data: {} });
+              } else {
                 data.messages.splice(i, 1);
-                setData({ ...data });
-              }}
-            >
-              <CoolIcon icon="Trash_Full" />
-            </button>
-          )}
+              }
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
         </div>
       </summary>
       <div className="rounded bg-gray-100 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 dark:px-3 dark:-mx-1 mt-1 space-y-2">
