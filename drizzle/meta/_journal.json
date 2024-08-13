@@ -15,6 +15,13 @@
       "when": 1722720802315,
       "tag": "0001_hot_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1723518627269,
+      "tag": "0002_mature_thing",
+      "breakpoints": true
     }
   ]
 }
