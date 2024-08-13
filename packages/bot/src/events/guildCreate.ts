@@ -10,6 +10,7 @@ export const guildCreateCallback: GatewayEventCallback = async (
   guild: GatewayGuildCreateDispatchData,
 ) => {
   if (guild.unavailable) return;
+  const now = new Date();
 
   const db = getDb(env.HYPERDRIVE.connectionString);
   const moderated = await env.KV.get<{ state: "banned"; reason?: string }>(
@@ -29,6 +30,7 @@ export const guildCreateCallback: GatewayEventCallback = async (
       name: guild.name,
       icon: guild.icon,
       ownerDiscordId: makeSnowflake(guild.owner_id),
+      botJoinedAt: now,
     })
     .onConflictDoUpdate({
       target: discordGuilds.id,
@@ -36,6 +38,7 @@ export const guildCreateCallback: GatewayEventCallback = async (
         name: guild.name,
         icon: guild.icon,
         ownerDiscordId: makeSnowflake(guild.owner_id),
+        botJoinedAt: sql`CASE WHEN ${discordGuilds.botJoinedAt} IS NULL THEN ${now} ELSE excluded."botJoinedAt" END`,
       },
     });
 

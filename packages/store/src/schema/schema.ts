@@ -201,6 +201,7 @@ export const discordGuilds = pgTable("DiscordGuild", {
   name: text("name").default("Unknown Server").notNull(),
   icon: text("icon"),
   ownerDiscordId: snowflake("ownerDiscordId"),
+  botJoinedAt: date("botJoinedAt"),
 });
 
 export const discordGuildsRelations = relations(

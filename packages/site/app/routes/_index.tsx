@@ -67,7 +67,14 @@ export const loader = async ({ request, context }: LoaderArgs) => {
               // biome-ignore lint/style/noNonNullAssertion: Checked above
               eq(discordMembers.userId, user.discordId!),
             with: {
-              guild: { columns: { id: true, name: true, icon: true } },
+              guild: {
+                columns: {
+                  id: true,
+                  name: true,
+                  icon: true,
+                  botJoinedAt: true,
+                },
+              },
             },
           })
         ).filter((m) =>

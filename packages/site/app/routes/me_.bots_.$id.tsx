@@ -4,9 +4,11 @@ import { Form, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import {
   APIApplication,
   APIGuild,
+  APIGuildMember,
   ButtonStyle,
   RESTGetAPIOAuth2CurrentApplicationResult,
   RESTGetAPIOAuth2CurrentAuthorizationResult,
+  RESTJSONErrorCodes,
   RESTPostOAuth2AccessTokenResult,
   Routes,
   TeamMemberRole,
@@ -268,6 +270,22 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
         throw json({ message: String(e) });
       }
+      let me: APIGuildMember | undefined;
+      let botIsNotMember = false;
+      try {
+        me = (await rest.get(
+          Routes.userGuildMember(guild.id),
+        )) as APIGuildMember;
+      } catch (e) {
+        if (
+          isDiscordError(e) &&
+          (e.code === RESTJSONErrorCodes.UnknownGuild ||
+            e.code === RESTJSONErrorCodes.UnknownMember)
+        ) {
+          botIsNotMember = true;
+        }
+      }
+
       await db
         .insert(discordGuilds)
         .values({
@@ -275,6 +293,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           name: guild.name,
           icon: guild.icon,
           ownerDiscordId: makeSnowflake(guild.owner_id),
+          botJoinedAt: me?.joined_at ? new Date(me.joined_at) : undefined,
         })
         .onConflictDoUpdate({
           target: [discordGuilds.id],
@@ -282,6 +301,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             name: guild.name,
             icon: guild.icon,
             ownerDiscordId: makeSnowflake(guild.owner_id),
+            botJoinedAt: me?.joined_at
+              ? new Date(me.joined_at)
+              : botIsNotMember
+                ? // We have left the server or were never in it
+                  null
+                : // Something else went wrong fetching our member
+                  undefined,
           },
         });
     }
