@@ -367,7 +367,8 @@ export const EmbedEditor: React.FC<{
                   }}
                 />
               </div>
-              <Button
+              <button
+                type="button"
                 disabled={isChild}
                 className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
                 onClick={() => {
@@ -379,7 +380,7 @@ export const EmbedEditor: React.FC<{
                 }}
               >
                 <CoolIcon icon="Close_MD" />
-              </Button>
+              </button>
             </div>
           )}
           {!isChild && (
