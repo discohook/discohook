@@ -8,7 +8,7 @@ export const TextInput = (
     React.InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
   > & {
-    label: ReactNode;
+    label?: ReactNode;
     description?: ReactNode;
     delayOnInput?: number;
     freelength?: boolean;
@@ -32,33 +32,35 @@ export const TextInput = (
 
   return (
     <label className="block">
-      <p className="text-sm font-medium">
-        {label}
-        {newProps.required && (
-          <span
-            className={twJoin(
-              "align-baseline",
-              t ? "ltr:ml-2 rtl:mr-2 text-xs italic" : "text-rose-400",
-            )}
-          >
-            {t ? t("required") : "*"}
-          </span>
-        )}
-        {props.maxLength && (
-          <span
-            className={twJoin(
-              "ml-2 italic text-xs align-baseline",
-              length >= props.maxLength
-                ? "text-red-300"
-                : length / (props.maxLength || 1) >= 0.9
-                  ? "text-yellow-300"
-                  : "",
-            )}
-          >
-            {length}/{props.maxLength}
-          </span>
-        )}
-      </p>
+      {(label || newProps.required || props.maxLength) && (
+        <p className="text-sm font-medium">
+          {label}
+          {newProps.required && (
+            <span
+              className={twJoin(
+                "align-baseline",
+                t ? "ltr:ml-2 rtl:mr-2 text-xs italic" : "text-rose-400",
+              )}
+            >
+              {t ? t("required") : "*"}
+            </span>
+          )}
+          {props.maxLength && (
+            <span
+              className={twJoin(
+                "ml-2 italic text-xs align-baseline",
+                length >= props.maxLength
+                  ? "text-red-300"
+                  : length / (props.maxLength || 1) >= 0.9
+                    ? "text-yellow-300"
+                    : "",
+              )}
+            >
+              {length}/{props.maxLength}
+            </span>
+          )}
+        </p>
+      )}
       {props.description && <p className="text-sm">{props.description}</p>}
       <input
         type="text"
@@ -88,7 +90,7 @@ export const TextInput = (
           }
         }}
         className={twMerge(
-          "rounded border-2 min-h-[36px] max-h-9 py-0 px-[14px] bg-gray-300 border-gray-200 placeholder-gray-500 focus:outline-none focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] dark:placeholder-gray-400 invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-500 disabled:cursor-not-allowed transition",
+          "rounded border-2 min-h-[36px] max-h-9 py-0 px-[14px] bg-gray-300 border-gray-200 placeholder-gray-500 focus:outline-none focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-500 disabled:cursor-not-allowed transition",
           props.className,
         )}
       />

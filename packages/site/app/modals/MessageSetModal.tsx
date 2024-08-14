@@ -17,7 +17,7 @@ import {
   getWebhookMessage,
   webhookAvatarUrl,
 } from "~/util/discord";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageSetModal = (
   props: ModalProps & {
@@ -79,7 +79,8 @@ export const MessageSetModal = (
   }, [message]);
 
   return (
-    <Modal title={t("setMessageReference")} {...props} setOpen={setOpen}>
+    <Modal {...props} setOpen={setOpen}>
+      <PlainModalHeader>{t("setMessageReference")}</PlainModalHeader>
       <InfoBox severity="blue" icon="Info" collapsible open={false}>
         <span>What is this?</span>
         <p>
@@ -97,10 +98,10 @@ export const MessageSetModal = (
       </InfoBox>
       <div>
         <TextInput
-          label={t("messageLink")}
           className="w-full"
           errors={[error]}
           defaultValue={message?.reference}
+          placeholder="https://discord.com/channels/.../.../..."
           onInput={async (e) => {
             setError(undefined);
             setMessageLink(undefined);
@@ -182,14 +183,93 @@ export const MessageSetModal = (
           </div>
         )}
       </div>
-      <div className="flex mt-4">
-        <div className="mx-auto space-x-2 rtl:space-x-reverse">
-          <Button
-            disabled={!messageLink}
-            onClick={() => {
-              if (messageLink && messageIndex !== undefined) {
+      <ModalFooter className="flex">
+        <button
+          type="button"
+          disabled={!message?.reference}
+          className="text-red-400 font-medium hover:underline my-auto cursor-pointer ltr:mr-4 rtl:ml-4 disabled:invisible"
+          onClick={() => {
+            if (message) {
+              message.data.webhook_id = undefined;
+              message.reference = undefined;
+              setData({ ...data });
+              setOpen(false);
+            }
+          }}
+        >
+          {t("removeReference")}
+        </button>
+        <Button
+          disabled={!messageLink}
+          className="my-auto ltr:ml-auto rtl:mr-2"
+          onClick={() => {
+            if (messageLink && messageIndex !== undefined) {
+              data.messages.splice(messageIndex, 1, {
+                ...data.messages[messageIndex],
+                reference: messageLink[0]
+                  ? `https://discord.com/channels/${messageLink[0]}/${messageLink[1]}/${messageLink[2]}`
+                  : messageLink[2],
+              });
+              setData({ ...data });
+              setOpen(false);
+            }
+          }}
+        >
+          {t("setReference")}
+        </Button>
+        <Button
+          disabled={!messageLink || !webhook}
+          className="my-auto ltr:ml-2 rtl:mr-2"
+          discordstyle={ButtonStyle.Secondary}
+          onClick={async () => {
+            setError(undefined);
+            if (messageLink && webhook) {
+              if (messageLink[0] && webhook.guild_id !== messageLink[0]) {
+                setError("Webhook server ID does not match message link.");
+                return;
+              }
+              if (!webhook.token) {
+                setError("Webhook had no token.");
+                return;
+              }
+
+              let msg = await getWebhookMessage(
+                webhook.id,
+                webhook.token,
+                messageLink[2],
+              );
+              let threadId: string | undefined;
+              if (
+                "code" in msg &&
+                msg.code === RESTJSONErrorCodes.UnknownMessage &&
+                messageLink[1]
+              ) {
+                console.log(
+                  `Message ID ${messageLink[2]} not found in webhook channel, trying again with ${messageLink[1]} as thread ID`,
+                );
+                msg = await getWebhookMessage(
+                  webhook.id,
+                  webhook.token,
+                  messageLink[2],
+                  messageLink[1],
+                );
+                // Success, save the thread ID in the query data so we don't
+                // need to do this again while editing
+                if (msg.id) threadId = messageLink[1];
+              }
+              if ("message" in msg) {
+                setError(msg.message as string);
+                return;
+              }
+              if (messageIndex !== undefined) {
                 data.messages.splice(messageIndex, 1, {
-                  ...data.messages[messageIndex],
+                  data: {
+                    content: msg.content,
+                    embeds: msg.embeds,
+                    attachments: msg.attachments,
+                    webhook_id: msg.webhook_id,
+                  },
+                  thread_id: threadId,
                   reference: messageLink[0]
                     ? `https://discord.com/channels/${messageLink[0]}/${messageLink[1]}/${messageLink[2]}`
                     : messageLink[2],
@@ -197,90 +277,12 @@ export const MessageSetModal = (
                 setData({ ...data });
                 setOpen(false);
               }
-            }}
-          >
-            {t("setReference")}
-          </Button>
-          <Button
-            disabled={!messageLink || !webhook}
-            discordstyle={ButtonStyle.Secondary}
-            onClick={async () => {
-              setError(undefined);
-              if (messageLink && webhook) {
-                if (messageLink[0] && webhook.guild_id !== messageLink[0]) {
-                  setError("Webhook server ID does not match message link.");
-                  return;
-                }
-                if (!webhook.token) {
-                  setError("Webhook had no token.");
-                  return;
-                }
-
-                let msg = await getWebhookMessage(
-                  webhook.id,
-                  webhook.token,
-                  messageLink[2],
-                );
-                let threadId: string | undefined;
-                if (
-                  "code" in msg &&
-                  msg.code === RESTJSONErrorCodes.UnknownMessage &&
-                  messageLink[1]
-                ) {
-                  console.log(
-                    `Message ID ${messageLink[2]} not found in webhook channel, trying again with ${messageLink[1]} as thread ID`,
-                  );
-                  msg = await getWebhookMessage(
-                    webhook.id,
-                    webhook.token,
-                    messageLink[2],
-                    messageLink[1],
-                  );
-                  // Success, save the thread ID in the query data so we don't
-                  // need to do this again while editing
-                  if (msg.id) threadId = messageLink[1];
-                }
-                if ("message" in msg) {
-                  setError(msg.message as string);
-                  return;
-                }
-                if (messageIndex !== undefined) {
-                  data.messages.splice(messageIndex, 1, {
-                    data: {
-                      content: msg.content,
-                      embeds: msg.embeds,
-                      attachments: msg.attachments,
-                      webhook_id: msg.webhook_id,
-                    },
-                    thread_id: threadId,
-                    reference: messageLink[0]
-                      ? `https://discord.com/channels/${messageLink[0]}/${messageLink[1]}/${messageLink[2]}`
-                      : messageLink[2],
-                  });
-                  setData({ ...data });
-                  setOpen(false);
-                }
-              }
-            }}
-          >
-            {t("overwriteMessage")}
-          </Button>
-          <Button
-            disabled={!message?.reference}
-            discordstyle={ButtonStyle.Danger}
-            onClick={() => {
-              if (message) {
-                message.data.webhook_id = undefined;
-                message.reference = undefined;
-                setData({ ...data });
-                setOpen(false);
-              }
-            }}
-          >
-            {t("removeReference")}
-          </Button>
-        </div>
-      </div>
+            }
+          }}
+        >
+          {t("overwriteMessage")}
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 };
