@@ -1,6 +1,12 @@
 import { Form, Link } from "@remix-run/react";
-import { APIWebhook, RESTPatchAPIWebhookJSONBody } from "discord-api-types/v10";
-import { useEffect, useReducer } from "react";
+import {
+  APIWebhook,
+  ButtonStyle,
+  RESTPatchAPIWebhookJSONBody,
+  RouteBases,
+  Routes,
+} from "discord-api-types/v10";
+import { useEffect, useMemo, useReducer } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
@@ -12,8 +18,9 @@ import { Markdown, linkClassName } from "~/components/preview/Markdown";
 import { User } from "~/session.server";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import { cdn, modifyWebhook } from "~/util/discord";
+import { cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export const WebhookEditModal = (
   props: ModalProps & {
@@ -54,8 +61,17 @@ export const WebhookEditModal = (
     }
   }, [webhook]);
 
+  const webhookUrl = useMemo(() => {
+    if (webhook) {
+      return webhook.token
+        ? `${RouteBases.api}${Routes.webhook(webhook.id, webhook.token)}`
+        : webhook.url;
+    }
+  }, [webhook]);
+
   return (
-    <Modal title={t("editWebhook")} {...props}>
+    <Modal {...props}>
+      <PlainModalHeader>{t("editWebhook")}</PlainModalHeader>
       <Form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -226,11 +242,28 @@ export const WebhookEditModal = (
             </div>
           </div>
         </div>
-        <div className="flex w-full mt-4">
-          <Button type="submit" className="mx-auto">
+        <ModalFooter className="flex">
+          {/*!!webhook?.token && (
+            <TextButton className="text-red-400" onClick={() => {}}>
+              {t("deleteWebhook")}
+            </TextButton>
+          )*/}
+          <Button type="submit" className="ltr:ml-auto rtl:mr-auto">
             {t("save")}
           </Button>
-        </div>
+          {!!webhookUrl && (
+            <Button
+              type="submit"
+              className="ltr:ml-2 rtl:mr-2"
+              discordstyle={ButtonStyle.Secondary}
+              onClick={(e) =>
+                cycleCopyText(webhookUrl, t, e.currentTarget, "copyWebhookUrl")
+              }
+            >
+              {t("copyWebhookUrl")}
+            </Button>
+          )}
+        </ModalFooter>
       </Form>
     </Modal>
   );

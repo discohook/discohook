@@ -5,7 +5,7 @@ import {
 } from "discord-api-types/v10";
 import { ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "~/components/Button";
+import { Button, TextButton } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -184,21 +184,21 @@ export const MessageSetModal = (
         )}
       </div>
       <ModalFooter className="flex">
-        <button
-          type="button"
-          disabled={!message?.reference}
-          className="text-red-400 font-medium hover:underline my-auto cursor-pointer ltr:mr-4 rtl:ml-4 disabled:invisible"
-          onClick={() => {
-            if (message) {
-              message.data.webhook_id = undefined;
-              message.reference = undefined;
-              setData({ ...data });
-              setOpen(false);
-            }
-          }}
-        >
-          {t("removeReference")}
-        </button>
+        {!!message?.reference && (
+          <TextButton
+            className="text-red-400"
+            onClick={() => {
+              if (message) {
+                message.data.webhook_id = undefined;
+                message.reference = undefined;
+                setData({ ...data });
+                setOpen(false);
+              }
+            }}
+          >
+            {t("removeReference")}
+          </TextButton>
+        )}
         <Button
           disabled={!messageLink}
           className="my-auto ltr:ml-auto rtl:mr-2"

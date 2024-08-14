@@ -22,16 +22,18 @@ export const cycleCopyText = (
   text: string,
   t: TFunction,
   element: HTMLElement,
+  originalKey?: string,
 ) => {
   copyText(text);
 
+  const key = originalKey ?? "copy";
   const inner = Array.from(element.childNodes).find(
-    (n) => n.textContent === t("copy"),
+    (n) => n.textContent === t(key),
   );
   if (inner) {
     inner.textContent = t("copied");
     setTimeout(() => {
-      inner.textContent = t("copy");
+      inner.textContent = t(key);
     }, 1500);
   }
 };

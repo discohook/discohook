@@ -70,3 +70,22 @@ export const Button = (
     </button>
   );
 };
+
+export const TextButton = (
+  props: React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  >,
+) => {
+  const { className, ...newProps } = props;
+  return (
+    <button
+      type="button"
+      {...newProps}
+      className={twMerge(
+        "font-medium hover:underline my-auto cursor-pointer ltr:mr-4 rtl:ml-4",
+        className,
+      )}
+    />
+  );
+};
