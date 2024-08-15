@@ -488,6 +488,7 @@ export default function Index() {
         setOpen={setShowBackups}
         targets={targets}
         data={data}
+        setData={setData}
         setBackupId={setBackupId}
         user={user}
       />

@@ -1,7 +1,8 @@
 import { Link } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
@@ -16,6 +17,7 @@ import { User } from "~/session.server";
 import { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
 import { action as ApiPostBackups } from "../api/v1/backups";
+import { loader as ApiGetBackup } from "../api/v1/backups.$id";
 import { BackupEditModal } from "./BackupEditModal";
 import { Modal, ModalProps, PlainModalHeader } from "./Modal";
 
@@ -24,11 +26,12 @@ export const MessageBackupsModal = (
     targets: Record<string, APIWebhook>;
     data: QueryData;
     setBackupId: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+    setData: React.Dispatch<QueryData>;
     user?: User | null;
   },
 ) => {
   const { t } = useTranslation();
-  const { targets, data, setBackupId, user } = props;
+  const { targets, data, setData, setBackupId, user } = props;
   const [error, setError] = useError(t);
 
   const dataWithTargets = useMemo(
@@ -72,7 +75,9 @@ export const MessageBackupsModal = (
   }, [meBackupsFetcher]);
 
   const [draftName, setDraftName] = useState<string>();
-  const backupFetcher = useSafeFetcher<typeof ApiPostBackups>({
+  const backupFetcher = useSafeFetcher<
+    typeof ApiPostBackups | typeof ApiGetBackup
+  >({
     onError: setError,
   });
 
@@ -109,59 +114,108 @@ export const MessageBackupsModal = (
           </Link>
           {!!backups && (
             <div className="space-y-2 mt-2 overflow-y-auto max-h-72">
-              {backups
-                .filter((b) => b.id.toString() !== data.backup_id)
-                .map((b) => (
-                  <div
-                    key={`backup-${b.id}`}
-                    className="rounded bg-gray-200 dark:bg-gray-700 p-2 flex"
-                  >
-                    {b.previewImageUrl ? (
-                      <div
-                        style={{ backgroundImage: `url(${b.previewImageUrl})` }}
-                        className="bg-cover bg-center w-7 my-auto rounded aspect-square ltr:mr-2 rtl:ml-2"
+              {backups.map((b) => (
+                <div
+                  key={`backup-${b.id}`}
+                  className={twJoin(
+                    "rounded bg-gray-200 dark:bg-gray-700 p-2 flex transition",
+                    b.id.toString() === data.backup_id
+                      ? "opacity-60 pointer-events-none cursor-not-allowed"
+                      : undefined,
+                  )}
+                >
+                  {b.previewImageUrl ? (
+                    <div
+                      style={{ backgroundImage: `url(${b.previewImageUrl})` }}
+                      className="bg-cover bg-center w-7 my-auto rounded aspect-square ltr:mr-2 rtl:ml-2"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 my-auto ltr:mr-2 rtl:ml-2 flex rounded bg-blurple">
+                      <CoolIcon
+                        icon="File_Document"
+                        className="m-auto text-lg"
                       />
-                    ) : (
-                      <div className="w-7 h-7 my-auto ltr:mr-2 rtl:ml-2 flex rounded bg-blurple">
-                        <CoolIcon
-                          icon="File_Document"
-                          className="m-auto text-lg"
-                        />
-                      </div>
-                    )}
-                    <p className="truncate my-auto">{b.name}</p>
-                    <div className="ltr:ml-auto rtl:mr-auto flex space-x-1.5 rtl:space-x-reverse text-xl my-auto">
-                      {/* <button
-                        type="button"
-                        title="Clone this backup and load it in the editor (overwrites current editor data, but saves the loaded backup if there is one)"
-                        onClick={async () => {
-                          if (backup) {
-                            await backupFetcher.submitAsync(
-                              { data: dataWithTargets },
-                              {
-                                action: apiUrl(BRoutes.backups(backup.id)),
-                                method: "PATCH",
-                              },
-                            );
-                          }
-                          // await backupFetcher.loadAsync(
-                          //   apiUrl(BRoutes.backups(b.id)),
-                          // );
-                          setBackupId(b.id);
-                        }}
-                      >
-                        <CoolIcon icon="Download_Package" />
-                      </button> */}
-                      <Link
-                        to={`/?backup=${b.id}`}
-                        title="Open this backup in a new tab"
-                        target="_blank"
-                      >
-                        <CoolIcon icon="External_Link" />
-                      </Link>
                     </div>
+                  )}
+                  <p className="truncate my-auto">{b.name}</p>
+                  <div className="ltr:ml-auto rtl:mr-auto flex space-x-1.5 rtl:space-x-reverse text-xl my-auto">
+                    <button
+                      type="button"
+                      title="Start editing this backup without opening a new tab"
+                      onClick={async () => {
+                        if (backup) {
+                          await backupFetcher.submitAsync(
+                            { data: dataWithTargets },
+                            {
+                              action: apiUrl(BRoutes.backups(backup.id)),
+                              method: "PATCH",
+                            },
+                          );
+                        }
+                        const loadedBackup = await backupFetcher.loadAsync(
+                          `${apiUrl(BRoutes.backups(b.id))}?data=true`,
+                        );
+                        // Always true, this is just a type guard
+                        if ("data" in loadedBackup && loadedBackup.data) {
+                          setData({
+                            ...loadedBackup.data,
+                            // Just in case
+                            backup_id: b.id.toString(),
+                          });
+                          setBackupId(b.id);
+                        }
+                      }}
+                    >
+                      <CoolIcon icon="File_Edit" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Clone this backup and load it in the editor (overwrites current editor data, but saves the loaded backup if there is one)"
+                      onClick={async () => {
+                        if (backup) {
+                          await backupFetcher.submitAsync(
+                            { data: dataWithTargets },
+                            {
+                              action: apiUrl(BRoutes.backups(backup.id)),
+                              method: "PATCH",
+                            },
+                          );
+                        }
+                        const loadedBackup = await backupFetcher.loadAsync(
+                          `${apiUrl(BRoutes.backups(b.id))}?data=true`,
+                        );
+                        // Always true, this is just a type guard
+                        if ("data" in loadedBackup && loadedBackup.data) {
+                          const created = await backupFetcher.submitAsync(
+                            {
+                              name: `Copy of ${b.name}`.slice(0, 100),
+                              data: loadedBackup.data,
+                            },
+                            {
+                              action: apiUrl(BRoutes.backups()),
+                              method: "POST",
+                            },
+                          );
+                          setData({
+                            ...loadedBackup.data,
+                            backup_id: created.id.toString(),
+                          });
+                          setBackupId(created.id);
+                        }
+                      }}
+                    >
+                      <CoolIcon icon="Copy" />
+                    </button>
+                    <Link
+                      to={`/?backup=${b.id}`}
+                      title="Open this backup in a new tab"
+                      target="_blank"
+                    >
+                      <CoolIcon icon="External_Link" />
+                    </Link>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           )}
           <hr className="border border-gray-400 dark:border-gray-600 my-4" />
