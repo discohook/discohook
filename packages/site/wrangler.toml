@@ -76,7 +76,7 @@ DISCORD_CLIENT_ID = "1259876010627694662"
 DISCORD_SUPPORT_INVITE_CODE = "discohook-668218342779256857"
 BOTS_ORIGIN = "https://bots.preview.discohook.app"
 LEGACY_ORIGIN = "https://discohook.org"
-LINK_ORIGIN = "https://discohook.link"
+LINK_ORIGIN = "https://preview.discohook.link"
 CDN_ORIGIN = "https://cdn.discohook.app"
 
 [env.production]

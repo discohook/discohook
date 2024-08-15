@@ -2,5 +2,15 @@ name = "discohook-link"
 main = "src/index.ts"
 compatibility_date = "2024-04-02"
 
-[vars]
+[env.preview]
+name = "discohook-link-preview"
+route = { pattern = "preview.discohook.link", custom_domain = true }
+
+[env.preview.vars]
+DISCOHOOK_ORIGIN = "https://preview.discohook.app"
+
+[env.production]
+route = { pattern = "discohook.link", custom_domain = true }
+
+[env.production.vars]
 DISCOHOOK_ORIGIN = "https://discohook.app"

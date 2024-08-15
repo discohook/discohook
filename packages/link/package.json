@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
+    "deploy-preview": "wrangler deploy --env=preview",
     "dev": "wrangler dev --port=8790"
   },
   "devDependencies": {
