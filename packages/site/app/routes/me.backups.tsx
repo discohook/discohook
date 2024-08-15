@@ -4,6 +4,7 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
+import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
@@ -42,10 +43,8 @@ export const loader = async ({ request, context }: LoaderArgs) => {
         expandSections: z.oboolean(),
       }),
     ).optional(),
-    page: z
-      .number()
-      .min(1)
-      .default(1)
+    page: zx.IntAsString.default("1")
+      .refine((i) => i > 0)
       .transform((i) => i - 1),
   });
 
@@ -67,7 +66,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     offset: page * 50,
   });
 
-  return { backups, importedSettings };
+  return { backups, importedSettings, page: page + 1 };
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -195,13 +194,20 @@ export default () => {
                 key={`backup-${backup.id}`}
                 className="rounded-lg p-4 bg-gray-100 dark:bg-gray-900 flex"
               >
-                {backup.previewImageUrl && (
+                {backup.previewImageUrl ? (
                   <div
                     style={{
                       backgroundImage: `url(${backup.previewImageUrl})`,
                     }}
-                    className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square mr-2 hidden sm:block"
+                    className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square ltr:mr-2 rtl:ml-2 hidden sm:block"
                   />
+                ) : (
+                  <div className="w-10 h-10 my-auto ltr:mr-2 rtl:ml-2 rounded-lg bg-blurple hidden sm:flex">
+                    <CoolIcon
+                      icon="File_Document"
+                      className="m-auto text-2xl"
+                    />
+                  </div>
                 )}
                 <div className="truncate my-auto">
                   <div className="flex max-w-full">

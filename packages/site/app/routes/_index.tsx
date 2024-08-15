@@ -28,9 +28,10 @@ import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
 import { MessageFlagsEditModal } from "~/modals/MesageFlagsEditModal";
-import { MessageSaveModal } from "~/modals/MessageSaveModal";
+import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
+import { MessageShareModal } from "~/modals/MessageShareModal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
@@ -416,6 +417,7 @@ export default function Index() {
   const [authFailureOpen, setAuthFailureOpen] = useState(dm === "auth-failure");
   const [sendingMessages, setSendingMessages] = useState(dm === "submit");
   const [sharing, setSharing] = useState(dm === "share-create");
+  const [showBackups, setShowBackups] = useState(dm === "backups");
   const [editingWebhook, setEditingWebhook] = useState<string>();
   const [showHistory, setShowHistory] = useState(dm === "history");
   const [jsonEditor, setJsonEditor] = useState<JsonEditorProps>();
@@ -475,9 +477,15 @@ export default function Index() {
         user={user}
         cache={cache}
       />
-      <MessageSaveModal
+      <MessageShareModal
         open={sharing}
         setOpen={setSharing}
+        targets={targets}
+        data={data}
+      />
+      <MessageBackupsModal
+        open={showBackups}
+        setOpen={setShowBackups}
         targets={targets}
         data={data}
         setBackupId={setBackupId}
@@ -547,8 +555,7 @@ export default function Index() {
       />
       <AuthFailureModal open={authFailureOpen} setOpen={setAuthFailureOpen} />
       <ImageModal
-        images={imageModalData?.images}
-        startIndex={imageModalData?.startIndex}
+        {...imageModalData}
         clear={() => setImageModalData(undefined)}
       />
       <Header user={user} setShowHistoryModal={setShowHistory} />
@@ -577,14 +584,25 @@ export default function Index() {
               {t("editingBackupNote")}
             </InfoBox>
           )}
-          <div className="flex mb-2">
-            <Button
-              onClick={() => setSharing(true)}
-              discordstyle={ButtonStyle.Secondary}
-              disabled={data.messages.length === 0}
-            >
-              {t("saveMessage")}
-            </Button>
+          <div className="flex">
+            <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 ltr:mr-2 rtl:ml-2">
+              <Button
+                onClick={() => setSharing(true)}
+                discordstyle={ButtonStyle.Secondary}
+                disabled={data.messages.length === 0}
+              >
+                {t("share")}
+              </Button>
+              <Button
+                onClick={() => setShowBackups(true)}
+                discordstyle={ButtonStyle.Secondary}
+              >
+                {t("backups")}
+              </Button>
+              {/* <Button discordstyle={ButtonStyle.Secondary}>
+                {t("resetEditor")}
+              </Button> */}
+            </div>
             <Button
               className={twJoin(
                 "ltr:ml-auto rtl:mr-auto",

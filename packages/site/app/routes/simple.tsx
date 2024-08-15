@@ -16,9 +16,9 @@ import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
-import { MessageSaveModal } from "~/modals/MessageSaveModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
+import { MessageShareModal } from "~/modals/MessageShareModal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
@@ -293,13 +293,11 @@ export default function Index() {
         webhookId={editingWebhook}
         user={user}
       />
-      <MessageSaveModal
+      <MessageShareModal
         open={sharing}
         setOpen={setSharing}
         targets={targets}
         data={data}
-        setData={setData}
-        user={user}
       />
       <HistoryModal
         open={showHistory}
