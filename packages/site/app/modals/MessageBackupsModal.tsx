@@ -141,7 +141,7 @@ export const MessageBackupsModal = (
                   <div className="ltr:ml-auto rtl:mr-auto flex space-x-1.5 rtl:space-x-reverse text-xl my-auto">
                     <button
                       type="button"
-                      title="Start editing this backup without opening a new tab"
+                      title={t("openBackupLoad")}
                       onClick={async () => {
                         if (backup) {
                           await backupFetcher.submitAsync(
@@ -170,7 +170,7 @@ export const MessageBackupsModal = (
                     </button>
                     <button
                       type="button"
-                      title="Clone this backup and load it in the editor (overwrites current editor data, but saves the loaded backup if there is one)"
+                      title={t("openBackupClone")}
                       onClick={async () => {
                         if (backup) {
                           await backupFetcher.submitAsync(
@@ -208,7 +208,7 @@ export const MessageBackupsModal = (
                     </button>
                     <Link
                       to={`/?backup=${b.id}`}
-                      title="Open this backup in a new tab"
+                      title={t("openBackupNewTab")}
                       target="_blank"
                     >
                       <CoolIcon icon="External_Link" />
