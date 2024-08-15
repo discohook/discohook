@@ -120,7 +120,7 @@ export const MessageBackupsModal = (
                   className={twJoin(
                     "rounded bg-gray-200 dark:bg-gray-700 p-2 flex transition",
                     b.id.toString() === data.backup_id
-                      ? "opacity-60 pointer-events-none cursor-not-allowed"
+                      ? "opacity-60 pointer-events-none"
                       : undefined,
                   )}
                 >
