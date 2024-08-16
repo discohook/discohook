@@ -11,7 +11,7 @@ export const PickerOverlayWrapper: React.FC<
 > = ({ open, setOpen, containerClassName, children }) => {
   const portal = useRef<HTMLDivElement>(null);
   return (
-    <div>
+    <div className="relative">
       <div
         ref={portal}
         className={twMerge("absolute z-20", containerClassName)}

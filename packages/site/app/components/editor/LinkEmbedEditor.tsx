@@ -289,25 +289,23 @@ export const LinkEmbedEditor: React.FC<{
             }}
           />
         </button>
-        <div className="relative">
-          <PickerOverlayWrapper
-            open={colorPickerOpen}
-            setOpen={setColorPickerOpen}
-            containerClassName="right-0 top-0"
-          >
-            <ColorPicker
-              color={embed.color ? `#${embed.color.toString(16)}` : undefined}
-              onChange={(color) => {
-                updateEmbed({
-                  color:
-                    color.rgb.a === 0
-                      ? undefined
-                      : parseInt(color.hex.replace("#", "0x"), 16),
-                });
-              }}
-            />
-          </PickerOverlayWrapper>
-        </div>
+        <PickerOverlayWrapper
+          open={colorPickerOpen}
+          setOpen={setColorPickerOpen}
+          containerClassName="ltr:right-0 rtl:left-0 top-0"
+        >
+          <ColorPicker
+            color={embed.color ? `#${embed.color.toString(16)}` : undefined}
+            onChange={(color) => {
+              updateEmbed({
+                color:
+                  color.rgb.a === 0
+                    ? undefined
+                    : parseInt(color.hex.replace("#", "0x"), 16),
+              });
+            }}
+          />
+        </PickerOverlayWrapper>
         {!!embed.video?.url && (
           <InfoBox severity="yellow" icon="Info">
             {t("linkEmbedsNoVideoAndDescription")}
