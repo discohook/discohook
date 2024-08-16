@@ -1,5 +1,6 @@
 import { APIEmbedField } from "discord-api-types/v10";
 import { TFunction } from "i18next";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { APIEmbed, QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
@@ -11,6 +12,7 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
 import { ColorPicker } from "./ColorPicker";
 
 export const isEmbedEmpty = (embed: APIEmbed): boolean =>
@@ -76,6 +78,8 @@ export const EmbedEditor: React.FC<{
   cache,
 }) => {
   const { t } = useTranslation();
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+
   const messageEmbeds = message.data.embeds ?? [];
 
   const updateEmbed = (partialEmbed: Partial<APIEmbed>) => {
@@ -384,8 +388,12 @@ export const EmbedEditor: React.FC<{
             </div>
           )}
           {!isChild && (
-            <details className="relative">
-              <summary className="flex cursor-pointer">
+            <>
+              <button
+                type="button"
+                className="flex cursor-pointer text-start"
+                onClick={() => setColorPickerOpen((v) => !v)}
+              >
                 <div className="grow">
                   <p className="text-sm font-medium">{t("sidebarColor")}</p>
                   <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
@@ -404,19 +412,29 @@ export const EmbedEditor: React.FC<{
                       : undefined,
                   }}
                 />
-              </summary>
-              <ColorPicker
-                color={embed.color ? `#${embed.color.toString(16)}` : undefined}
-                onChange={(color) => {
-                  updateEmbed({
-                    color:
-                      color.rgb.a === 0
-                        ? undefined
-                        : parseInt(color.hex.replace("#", "0x"), 16),
-                  });
-                }}
-              />
-            </details>
+              </button>
+              <div className="relative">
+                <PickerOverlayWrapper
+                  open={colorPickerOpen}
+                  setOpen={setColorPickerOpen}
+                  containerClassName="right-0 top-0"
+                >
+                  <ColorPicker
+                    color={
+                      embed.color ? `#${embed.color.toString(16)}` : undefined
+                    }
+                    onChange={(color) => {
+                      updateEmbed({
+                        color:
+                          color.rgb.a === 0
+                            ? undefined
+                            : parseInt(color.hex.replace("#", "0x"), 16),
+                      });
+                    }}
+                  />
+                </PickerOverlayWrapper>
+              </div>
+            </>
           )}
         </div>
         {!isChild && (
