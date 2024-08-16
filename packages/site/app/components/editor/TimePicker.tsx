@@ -69,6 +69,7 @@ export const TimePicker: React.FC<{
               return (
                 <button
                   type="button"
+                  key={`time-style-option-${style}`}
                   disabled={!date}
                   onClick={() => {
                     onTimeClick({ date, style: style as TimestampStyle });
