@@ -17,12 +17,12 @@ import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
-import DatePicker, { generateDateRange } from "~/components/DatePicker";
 import { useError } from "~/components/Error";
 import { StringSelect } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { LoadedBackup } from "~/routes/me";
+import DatePicker, { generateDateRange } from "~/components/pickers/DatePicker";
+import { LoadedBackup } from "~/routes/me.backups";
 import { useSafeFetcher } from "~/util/loader";
 import {
   cronDaysOfMonth,

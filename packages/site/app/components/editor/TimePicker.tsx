@@ -4,9 +4,9 @@ import { Trans } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { getRelativeDateFormat } from "~/util/markdown/dates";
-import DatePicker from "../DatePicker";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import DatePicker from "../pickers/DatePicker";
 import { timestampFormats } from "../preview/Markdown";
 
 // I'm sure this is exported by discord-api-types somewhere but I couldn't find it

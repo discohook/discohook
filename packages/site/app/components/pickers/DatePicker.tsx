@@ -10,7 +10,7 @@ import Select, {
   components as SelectComponents,
 } from "react-select";
 import { twJoin } from "tailwind-merge";
-import { selectClassNames } from "./StringSelect";
+import { selectClassNames } from "../StringSelect";
 
 export interface DateOption {
   date: Moment;
