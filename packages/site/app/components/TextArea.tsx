@@ -122,7 +122,7 @@ export const TextArea = (
             <CoolIcon
               icon="Keyboard"
               className={twJoin(
-                "absolute text-2xl cursor-pointer text-primary-500 dark:text-primary-300 hover:text-black dark:hover:text-white transition right-3.5",
+                "absolute text-2xl cursor-pointer text-primary-500 dark:text-primary-300 hover:text-black dark:hover:text-white transition ltr:right-3.5 rtl:left-3.5",
                 short ? "bottom-0.5" : "bottom-2",
               )}
             />
