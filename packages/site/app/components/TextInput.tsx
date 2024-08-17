@@ -16,16 +16,12 @@ export const TextInput = (
     t?: TFunction;
   },
 ) => {
-  const { label, onInput, delayOnInput, t } = props;
+  const { label, onInput, delayOnInput, t, freelength, ...newProps } = props;
   const ref = useRef<HTMLInputElement>(null);
   const length = ref.current ? ref.current.value.length : 0;
 
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
-  // React yells when providing props like this, so we remove it
-  const newProps = { ...props };
-  // biome-ignore lint/performance/noDelete: We don't want the prop to exist at all
-  delete newProps.delayOnInput;
   if (props.freelength) {
     newProps.maxLength = undefined;
   }
