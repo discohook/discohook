@@ -94,7 +94,18 @@ export const HelpModal = (props: ModalProps) => {
         </div>
       </div>
       <ModalFooter className="flex gap-2 flex-wrap">
-        <Button onClick={() => props.setOpen(false)}>{t("ok")}</Button>
+        <Button
+          className="ltr:ml-auto rtl:mr-auto"
+          onClick={() => props.setOpen(false)}
+        >
+          {t("ok")}
+        </Button>
+        <Button
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => setExampleOpen(true)}
+        >
+          {t("embedExample")}
+        </Button>
         <PreviewButton
           data={{
             type: ComponentType.Button,
@@ -103,12 +114,6 @@ export const HelpModal = (props: ModalProps) => {
             label: t("supportServer"),
           }}
         />
-        <Button
-          discordstyle={ButtonStyle.Secondary}
-          onClick={() => setExampleOpen(true)}
-        >
-          {t("embedExample")}
-        </Button>
       </ModalFooter>
     </Modal>
   );
