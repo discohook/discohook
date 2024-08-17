@@ -127,11 +127,11 @@ const Inner = ({
           data.scheduleAt = null;
           data.cron = null;
         }
-        await fetcher.submitAsync(data, {
+        const updated = await fetcher.submitAsync(data, {
           action: apiUrl(BRoutes.backups(backup.id)),
           method: "PATCH",
         });
-        if (onSave) onSave();
+        if (onSave && updated) onSave();
       }}
     >
       {error}
