@@ -55,6 +55,7 @@ export const TriggerCreateModal = (
       <FlowEditModal
         open={editingFlow}
         setOpen={setEditingFlow}
+        guildId={props.guildId}
         flow={flow}
         setFlow={setFlow}
         cache={props.cache}

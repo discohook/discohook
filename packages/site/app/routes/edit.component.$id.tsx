@@ -792,6 +792,7 @@ export default () => {
       <FlowEditModal
         open={!!editingFlow}
         setOpen={() => setEditingFlow(undefined)}
+        guildId={component_.guildId?.toString()}
         {...editingFlow}
         cache={cache}
         premium={userIsPremium(user as User)}

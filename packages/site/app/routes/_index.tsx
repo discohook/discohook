@@ -441,6 +441,8 @@ export default function Index() {
       <FlowEditModal
         open={!!editingFlow}
         setOpen={() => setEditingFlow(undefined)}
+        // confusing
+        guildId={Object.values(targets)[0]?.guild_id}
         {...editingFlow}
         cache={cache}
         premium={isPremium}

@@ -1,4 +1,9 @@
-import { ButtonStyle, ChannelType, MessageFlags } from "discord-api-types/v10";
+import {
+  APIWebhook,
+  ButtonStyle,
+  ChannelType,
+  MessageFlags,
+} from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
@@ -24,7 +29,9 @@ import {
 } from "~/store.server";
 import { FlowActionType } from "~/types/flows";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
 import { SafeFetcher, useSafeFetcher } from "~/util/loader";
+import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import {
   loader as ApiGetUserBackups,
   PartialBackupsWithMessages,
@@ -50,17 +57,22 @@ export type EditingFlowData = {
 export const FlowEditModal = (
   props: ModalProps &
     Partial<EditingFlowData> & {
+      guildId?: string;
       cache?: CacheManager;
       premium?: boolean;
     },
 ) => {
   const { t } = useTranslation();
-  const { flow, setFlow, cache } = props;
+  const { guildId, flow, setFlow, cache } = props;
   const [error, setError] = useError();
 
   const backupsFetcher = useSafeFetcher<typeof ApiGetUserBackups>({
-    onError: (e) => setError({ message: e.message }),
+    onError: setError,
   });
+  const webhooksFetcher = useSafeFetcher<typeof ApiGetGuildWebhooks>({
+    onError: setError,
+  });
+
   const actionMax = props.premium ? 40 : 10;
   const flattenAction = (a: FlowAction): FlowAction[] =>
     a.type === 2
@@ -101,11 +113,13 @@ export const FlowEditModal = (
               {flow.actions.map((action, ai) => (
                 <FlowActionEditor
                   key={`edit-flow-action-${ai}`}
+                  guildId={guildId}
                   flow={flow}
                   action={action}
                   actionIndex={ai}
                   update={() => setFlow(structuredClone(flow))}
                   backupsFetcher={backupsFetcher}
+                  webhooksFetcher={webhooksFetcher}
                   cache={cache}
                   t={t}
                 />
@@ -201,7 +215,7 @@ const varTypeOptions: {
 
 const messageFlagOptions = [
   {
-    label: "Ephemeral (hidden)",
+    label: "Hidden (ephemeral)",
     value: MessageFlags.Ephemeral,
   },
   {
@@ -219,7 +233,7 @@ const getBackupSelectOption = (backup: PartialBackupsWithMessages[number]) => ({
     <div className="flex">
       {backup.previewImageUrl && (
         <div
-          className="rounded-lg h-6 w-6 mr-1.5 block bg-contain bg-center my-auto"
+          className="rounded-lg h-6 w-6 ltr:mr-1.5 rtl:ml-1.5 block bg-contain bg-center my-auto"
           style={{
             backgroundImage: `url(${backup.previewImageUrl})`,
           }}
@@ -228,7 +242,7 @@ const getBackupSelectOption = (backup: PartialBackupsWithMessages[number]) => ({
       <p className="my-auto">{backup.name}</p>
     </div>
   ),
-  value: backup.name,
+  value: backup.id,
   backup,
 });
 
@@ -270,21 +284,42 @@ const BackupSelect = ({
   );
 };
 
+const getWebhookSelectOption = (
+  webhook: Pick<APIWebhook, "id" | "name" | "avatar">,
+) => ({
+  label: (
+    <div className="flex">
+      <img
+        {...cdnImgAttributes(32, (size) => webhookAvatarUrl(webhook, { size }))}
+        className="rounded-lg h-6 w-6 ltr:mr-1.5 rtl:ml-1.5 my-auto"
+        alt=""
+      />
+      <p className="my-auto">{webhook.name}</p>
+    </div>
+  ),
+  value: webhook.id,
+  webhook,
+});
+
 const FlowActionEditor: React.FC<{
+  guildId?: string;
   flow: FlowWithPartials;
   action: FlowAction;
   actionIndex: number;
   update: () => void;
+  webhooksFetcher: SafeFetcher<typeof ApiGetGuildWebhooks>;
   backupsFetcher: SafeFetcher<typeof ApiGetUserBackups>;
   t: TFunction;
   cache?: CacheManager;
   checkLevel?: number;
   premium?: boolean;
 }> = ({
+  guildId,
   flow,
   action,
   actionIndex: i,
   update,
+  webhooksFetcher,
   backupsFetcher,
   t,
   cache,
@@ -459,10 +494,12 @@ const FlowActionEditor: React.FC<{
                 {(action.then ?? []).map((a, ai) => (
                   <FlowActionEditor
                     key={`edit-flow-action-${i}-then-${ai}`}
+                    guildId={guildId}
                     flow={{ actions: action.then }}
                     action={a}
                     actionIndex={ai}
                     update={update}
+                    webhooksFetcher={webhooksFetcher}
                     backupsFetcher={backupsFetcher}
                     cache={cache}
                     t={t}
@@ -485,10 +522,12 @@ const FlowActionEditor: React.FC<{
                 {(action.else ?? []).map((a, ai) => (
                   <FlowActionEditor
                     key={`edit-flow-action-${i}-else-${ai}`}
+                    guildId={guildId}
                     flow={{ actions: action.else }}
                     action={a}
                     actionIndex={ai}
                     update={update}
+                    webhooksFetcher={webhooksFetcher}
                     backupsFetcher={backupsFetcher}
                     cache={cache}
                     t={t}
@@ -590,7 +629,7 @@ const FlowActionEditor: React.FC<{
                     isClearable
                     options={[
                       {
-                        label: "Ephemeral (hidden)",
+                        label: "Hidden (ephemeral)",
                         value: MessageFlags.Ephemeral,
                       },
                     ]}
@@ -633,9 +672,53 @@ const FlowActionEditor: React.FC<{
                   value: null,
                 },
               ];
+
+              const selectedWebhook = webhooksFetcher.data?.find(
+                (w) => w.id === action.webhookId,
+              );
+
               return (
                 <>
-                  <StringSelect name="webhookId" label="Webhook" options={[]} />
+                  <div>
+                    <p className="text-sm select-none">{t("webhook")}</p>
+                    <AsyncSelect
+                      cacheOptions
+                      defaultOptions
+                      isClearable={false}
+                      isDisabled={!guildId}
+                      name="webhookId"
+                      required
+                      value={
+                        selectedWebhook
+                          ? getWebhookSelectOption(selectedWebhook)
+                          : ""
+                      }
+                      loadOptions={(inputValue) =>
+                        (async () => {
+                          const data =
+                            webhooksFetcher.data ??
+                            (await webhooksFetcher.loadAsync(
+                              `/api/v1/guilds/${guildId}/webhooks`,
+                            ));
+                          return data
+                            .filter((backup) =>
+                              backup.name
+                                .toLowerCase()
+                                .includes(inputValue.toLowerCase()),
+                            )
+                            .map(getWebhookSelectOption);
+                        })()
+                      }
+                      classNames={selectClassNames}
+                      onChange={(raw) => {
+                        const opt = raw as ReturnType<
+                          typeof getWebhookSelectOption
+                        >;
+                        action.webhookId = opt.webhook.id;
+                        update();
+                      }}
+                    />
+                  </div>
                   <div>
                     <p className="text-sm select-none">{t("backup")}</p>
                     <BackupSelect

@@ -335,6 +335,7 @@ export default () => {
       <FlowEditModal
         open={editOpenTriggerFlow}
         setOpen={setEditOpenTriggerFlow}
+        guildId={guild.id}
         flow={draftFlow}
         setFlow={setDraftFlow}
         cache={cache}
