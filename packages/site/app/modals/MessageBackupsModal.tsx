@@ -292,7 +292,14 @@ export const MessageBackupsModal = (
                       method: "POST",
                     },
                   );
+                  setData({ ...data, backup_id: String(created.id) });
                   setBackupId(BigInt(created.id));
+
+                  if (!backups) {
+                    setBackups([created]);
+                  } else if (!backups.find((b) => b.id === created.id)) {
+                    setBackups([...backups, created]);
+                  }
                 }}
               >
                 {t("createBackup")}
