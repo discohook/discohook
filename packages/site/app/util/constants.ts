@@ -15,7 +15,7 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
     content: [
       "Hey, welcome to <:discohook:736648398081622016> **Discohook**! The easiest way to personalize your Discord server.",
       "",
-      "There's more info below if you want to read it. When you're ready, press **History** at the top of the editor and then **Reset Editor** to delete what's written here.",
+      "There's more info below if you want to read it. When you're ready, press **Clear All** at the top of the editor to delete what's written here.",
       "",
       "_ _",
     ].join("\n"),
