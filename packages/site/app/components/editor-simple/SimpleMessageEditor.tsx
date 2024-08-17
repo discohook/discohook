@@ -63,7 +63,7 @@ export const SimpleMessageEditor: React.FC<{
         className="w-full h-40"
         value={message.data.content ?? undefined}
         maxLength={2000}
-        freelength
+        freeLength
         markdown="full"
         cache={cache}
         onInput={(e) => {

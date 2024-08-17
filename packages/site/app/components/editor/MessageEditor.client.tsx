@@ -172,7 +172,7 @@ export const MessageEditor: React.FC<{
           className="w-full h-40"
           value={message.data.content ?? ""}
           maxLength={2000}
-          freelength
+          freeLength
           markdown="full"
           cache={cache}
           onInput={(e) => {
@@ -205,7 +205,7 @@ export const MessageEditor: React.FC<{
               className="w-full"
               value={message.data.thread_name ?? ""}
               maxLength={100}
-              freelength
+              freeLength
               required={isAllForum && !message.thread_id}
               disabled={
                 !!message.reference || isNoneForum || !!message.thread_id
@@ -222,7 +222,7 @@ export const MessageEditor: React.FC<{
               className="w-full"
               value={message.thread_id ?? ""}
               maxLength={30}
-              freelength
+              freeLength
               required={isAllForum && !message.data.thread_name}
               disabled={!!message.data.thread_name}
               onInput={(e) => {

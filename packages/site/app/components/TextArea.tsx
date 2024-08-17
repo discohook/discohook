@@ -17,7 +17,7 @@ export const TextArea = (
     delayOnInput?: number;
     errors?: ReactNode[];
     short?: boolean;
-    freelength?: boolean;
+    freeLength?: boolean;
     markdown?: MarkdownFeatures;
     cache?: CacheManager;
     t?: TFunction;
@@ -28,7 +28,7 @@ export const TextArea = (
     onInput,
     delayOnInput,
     short,
-    freelength,
+    freeLength,
     markdown,
     cache,
     t,
@@ -39,7 +39,7 @@ export const TextArea = (
 
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
-  if (freelength) {
+  if (freeLength) {
     newProps.maxLength = undefined;
   }
 

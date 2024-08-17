@@ -11,18 +11,18 @@ export const TextInput = (
     label?: ReactNode;
     description?: ReactNode;
     delayOnInput?: number;
-    freelength?: boolean;
+    freeLength?: boolean;
     errors?: ReactNode[];
     t?: TFunction;
   },
 ) => {
-  const { label, onInput, delayOnInput, t, freelength, ...newProps } = props;
+  const { label, onInput, delayOnInput, t, freeLength, ...newProps } = props;
   const ref = useRef<HTMLInputElement>(null);
   const length = ref.current ? ref.current.value.length : 0;
 
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
-  if (props.freelength) {
+  if (props.freeLength) {
     newProps.maxLength = undefined;
   }
 
