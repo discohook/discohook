@@ -1,7 +1,5 @@
-import { ButtonStyle } from "discord-api-types/v10";
 import React from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message.client";
@@ -9,7 +7,6 @@ import { HistoryItem } from "~/routes/_index";
 import { LinkHistoryItem, linkEmbedToAPIEmbed } from "~/routes/link";
 import { LinkQueryData, QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
-import { useConfirmModal } from "./ConfirmModal";
 import { Modal, ModalProps } from "./Modal";
 
 export const HistoryModal = <
@@ -20,61 +17,20 @@ export const HistoryModal = <
     localHistory: T[];
     setLocalHistory: React.Dispatch<React.SetStateAction<T[]>>;
     setData: React.Dispatch<Q> | React.Dispatch<React.SetStateAction<Q>>;
-    resetData: () => void;
   },
 ) => {
   const { t } = useTranslation();
-  const { localHistory, setLocalHistory, setData, resetData } = props;
+  const { localHistory, setLocalHistory, setData } = props;
   const [settings] = useLocalStorage();
-  const [confirm, setConfirm] = useConfirmModal();
 
   return (
     <Modal title={t("history")} {...props}>
-      {confirm}
-      <div className="flex mb-4">
-        <p className="ltr:mr-2 rtl:ml-2">
-          <Trans
-            t={t}
-            i18nKey="historyNote"
-            components={{
-              bold: <span className="font-bold" />,
-            }}
-          />
-        </p>
-        <Button
-          className="ml-auto"
-          onClick={() =>
-            setConfirm({
-              title: t("resetEditor"),
-              children: (
-                <>
-                  <p>{t("resetEditorConfirm")}</p>
-                  <div className="gap-2 mt-2">
-                    <Button
-                      onClick={() => {
-                        resetData();
-                        setConfirm(undefined);
-                      }}
-                      discordstyle={ButtonStyle.Danger}
-                    >
-                      {t("resetEditor")}
-                    </Button>
-                    <Button
-                      onClick={() => setConfirm(undefined)}
-                      discordstyle={ButtonStyle.Secondary}
-                      className="ltr:ml-2 rtl:mr-2"
-                    >
-                      {t("cancel")}
-                    </Button>
-                  </div>
-                </>
-              ),
-            })
-          }
-          discordstyle={ButtonStyle.Danger}
-        >
-          {t("resetEditor")}
-        </Button>
+      <div className="mb-4">
+        <Trans
+          t={t}
+          i18nKey="historyNote"
+          components={{ bold: <span className="font-semibold" /> }}
+        />
       </div>
       {localHistory.length === 0 ? (
         <p>{t("noHistory")}</p>

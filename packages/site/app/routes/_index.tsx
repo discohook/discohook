@@ -23,6 +23,7 @@ import {
   ComponentEditModal,
   EditingComponentData,
 } from "~/modals/ComponentEditModal";
+import { useConfirmModal } from "~/modals/ConfirmModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
@@ -32,6 +33,7 @@ import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
 import { MessageSendModal } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { MessageShareModal } from "~/modals/MessageShareModal";
+import { ModalFooter } from "~/modals/Modal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
@@ -422,6 +424,7 @@ export default function Index() {
   const [showHistory, setShowHistory] = useState(dm === "history");
   const [jsonEditor, setJsonEditor] = useState<JsonEditorProps>();
   const [showOrgMigration, setShowOrgMigration] = useState(dm === "org");
+  const [confirm, setConfirm] = useConfirmModal();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -503,12 +506,6 @@ export default function Index() {
         localHistory={localHistory}
         setLocalHistory={setLocalHistory}
         setData={setData}
-        resetData={() => {
-          setData({
-            messages: [{ data: {} }],
-            targets: undefined,
-          });
-        }}
       />
       <TargetAddModal
         open={addingTarget}
@@ -549,6 +546,7 @@ export default function Index() {
           />
         </p>
       </SimpleTextModal>
+      {confirm}
       <AuthSuccessModal
         open={authSuccessOpen}
         setOpen={setAuthSuccessOpen}
@@ -600,9 +598,62 @@ export default function Index() {
               >
                 {t("backups")}
               </Button>
-              {/* <Button discordstyle={ButtonStyle.Secondary}>
+              <Button
+                onClick={() =>
+                  setConfirm({
+                    title: t("resetEditor"),
+                    children: (
+                      <>
+                        <p>
+                          {t("resetEditorConfirm", {
+                            count: data.messages.length,
+                          })}
+                        </p>
+                        <p className="text-muted dark:text-muted-dark text-sm font-medium mt-1">
+                          <Trans
+                            t={t}
+                            i18nKey="resetEditorFootnote"
+                            components={[
+                              <button
+                                type="button"
+                                className={twJoin(linkClassName, "contents")}
+                                onClick={() => {
+                                  setShowHistory(true);
+                                  setConfirm(undefined);
+                                }}
+                              />,
+                            ]}
+                          />
+                        </p>
+                        <ModalFooter className="flex gap-2">
+                          <Button
+                            className="ltr:ml-auto rtl:mr-auto"
+                            onClick={() => {
+                              setData({
+                                messages: [{ data: {} }],
+                                targets: undefined,
+                              });
+                              setConfirm(undefined);
+                            }}
+                            discordstyle={ButtonStyle.Danger}
+                          >
+                            {t("resetEditor")}
+                          </Button>
+                          <Button
+                            onClick={() => setConfirm(undefined)}
+                            discordstyle={ButtonStyle.Secondary}
+                          >
+                            {t("cancel")}
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    ),
+                  })
+                }
+                discordstyle={ButtonStyle.Secondary}
+              >
                 {t("resetEditor")}
-              </Button> */}
+              </Button>
             </div>
             <Button
               className={twJoin(

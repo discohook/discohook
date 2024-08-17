@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalProps, PlainModalHeader } from "./Modal";
 
 export interface ConfirmModalProps {
   title: string;
@@ -10,9 +10,9 @@ export const ConfirmModal = (
   props: ModalProps & Partial<ConfirmModalProps>,
 ) => {
   const { title, children, ...rest } = props;
-  // const { t } = useTranslation();
   return (
-    <Modal title={title} {...rest}>
+    <Modal {...rest}>
+      <PlainModalHeader>{title}</PlainModalHeader>
       {children}
     </Modal>
   );
