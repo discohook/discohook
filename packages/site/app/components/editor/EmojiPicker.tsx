@@ -28,6 +28,7 @@ import {
   EmojiIconSymbols,
   EmojiIconTravel,
 } from "../icons/emoji";
+import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
 
 // Dec x 2023
 // We were originally using emoji-mart since it seemed more fit for our
@@ -546,15 +547,9 @@ export const PopoutEmojiPicker: React.FC<{
 }> = ({ emoji, setEmoji, emojis, cache }) => {
   const id = randomString(10);
   const [open, setOpen] = useState(false);
-  // const close = () => {
-  //   const parent = document.querySelector<HTMLDetailsElement>(`#${id}`);
-  //   if (parent) parent.open = false;
-  // };
+
   return (
-    <div
-      className="relative group/emoji"
-      // id={id}
-    >
+    <div>
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -581,38 +576,40 @@ export const PopoutEmojiPicker: React.FC<{
           </div>
         </div>
       </button>
-      {open && (
-        <div className="absolute z-20 pb-8">
-          <EmojiPicker
-            id={id}
-            cache={cache}
-            customEmojis={emojis}
-            onEmojiClick={(selectedEmoji) => {
-              // close();
-              const newEmoji: APIMessageComponentEmoji =
-                selectedEmoji.keywords.includes("discord")
-                  ? {
-                      id: selectedEmoji.id.replace(/^discord_/, ""),
-                      name: selectedEmoji.name,
-                      animated: selectedEmoji.keywords.includes("animated"),
-                    }
-                  : {
-                      name: selectedEmoji.skin.native,
-                    };
-              if (
-                emoji &&
-                emoji.id === newEmoji.id &&
-                emoji.name === newEmoji.name
-              ) {
-                // Clear on double click
-                setEmoji(undefined);
-              } else {
-                setEmoji(newEmoji);
-              }
-            }}
-          />
-        </div>
-      )}
+      <PickerOverlayWrapper
+        open={open}
+        setOpen={setOpen}
+        containerClassName="pb-8"
+      >
+        <EmojiPicker
+          id={id}
+          cache={cache}
+          customEmojis={emojis}
+          onEmojiClick={(selectedEmoji) => {
+            const newEmoji: APIMessageComponentEmoji =
+              selectedEmoji.keywords.includes("discord")
+                ? {
+                    id: selectedEmoji.id.replace(/^discord_/, ""),
+                    name: selectedEmoji.name,
+                    animated: selectedEmoji.keywords.includes("animated"),
+                  }
+                : {
+                    name: selectedEmoji.skin.native,
+                  };
+            if (
+              emoji &&
+              emoji.id === newEmoji.id &&
+              emoji.name === newEmoji.name
+            ) {
+              // Clear on double click
+              setEmoji(undefined);
+            } else {
+              setEmoji(newEmoji);
+            }
+            setOpen(false);
+          }}
+        />
+      </PickerOverlayWrapper>
     </div>
   );
 };
