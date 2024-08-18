@@ -695,6 +695,8 @@ const FlowActionEditor: React.FC<{
                       }
                       loadOptions={(inputValue) =>
                         (async () => {
+                          if (!guildId) return [];
+
                           const data =
                             webhooksFetcher.data ??
                             (await webhooksFetcher.loadAsync(
