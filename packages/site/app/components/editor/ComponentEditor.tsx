@@ -304,41 +304,6 @@ export const ActionRowEditor: React.FC<{
   const errors = getComponentErrors(row);
   const [error, setError] = useError(t);
 
-  // if (cache) {
-  //   const requests = row.components
-  //     .filter(
-  //       (
-  //         component,
-  //       ): component is
-  //         | APIRoleSelectComponent
-  //         | APIUserSelectComponent
-  //         | APIMentionableSelectComponent
-  //         | APIChannelSelectComponent =>
-  //         [
-  //           ComponentType.RoleSelect,
-  //           ComponentType.UserSelect,
-  //           ComponentType.MentionableSelect,
-  //           ComponentType.ChannelSelect,
-  //         ].includes(component.type),
-  //     )
-  //     .map(
-  //       (component) =>
-  //         component.default_values
-  //           ?.filter((val) => isSnowflake(val.id))
-  //           .map((val) =>
-  //             val.type === SelectMenuDefaultValueType.User
-  //               ? `member:@global-${val.id}`
-  //               : `${val.type}:${val.id}`,
-  //           ) ?? [],
-  //     )
-  //     .reduce((prev, cur) => {
-  //       prev.push(...cur);
-  //       return prev;
-  //     }, []);
-
-  //   cache.resolveMany(new Set(requests));
-  // }
-
   return (
     <details
       className="group/action-row rounded p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow"
@@ -505,7 +470,6 @@ export const ActionRowEditor: React.FC<{
         ]}
         isDisabled={getRowWidth(row) >= 5}
         onChange={async (v) => {
-          console.log(v);
           const { value: type } = v as { value: ComponentType | "linkButton" };
           let submitData:
             | z.infer<typeof ZodAPIMessageActionRowComponent>
