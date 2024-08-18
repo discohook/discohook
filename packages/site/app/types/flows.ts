@@ -182,7 +182,7 @@ export const ZodFlowActionToggleRole = z.object({
 export const ZodFlowActionSendMessage = z.object({
   type: z.literal(FlowActionType.SendMessage),
   backupId: z.string(),
-  backupMessageId: z.number().nullable().optional(),
+  backupMessageIndex: z.number().nullable().optional(),
   // Better calculated during flow execution?
   // response: z.oboolean(),
   flags: ZodMessageFlags.optional(),
@@ -192,7 +192,7 @@ export const ZodFlowActionSendWebhookMessage = z.object({
   type: z.literal(FlowActionType.SendWebhookMessage),
   webhookId: z.string(),
   backupId: z.string(),
-  backupMessageId: z.number().nullable().optional(),
+  backupMessageIndex: z.number().nullable().optional(),
   flags: ZodMessageFlags.optional(),
 }) satisfies z.ZodType<FlowActionSendWebhookMessage>;
 
