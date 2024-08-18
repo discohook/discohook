@@ -629,6 +629,7 @@ export const EmbedEditor: React.FC<{
                 type="time"
                 className="w-full"
                 disabled={!embed.timestamp}
+                step={1}
                 value={
                   embed.timestamp
                     ? new Date(embed.timestamp).toLocaleTimeString("en-US", {
