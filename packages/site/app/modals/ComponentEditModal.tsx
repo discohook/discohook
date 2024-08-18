@@ -289,7 +289,7 @@ export const ComponentEditForm = ({
             </div>
             <div className="ltr:ml-2 rtl:mr-2 my-auto">
               <Checkbox
-                label="Disabled"
+                label={t("disabled")}
                 checked={component.disabled ?? false}
                 onChange={(e) => {
                   component.disabled = e.currentTarget.checked;
