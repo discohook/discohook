@@ -37,6 +37,17 @@ Naturally, Discohook and Discohook Utils have merged. [Read more about this here
 - Now stored by Discohook rather than in the user's browser storage ([site#23](https://github.com/discohook/site/issues/23))
 - Can be scheduled to send at specific times as well as on repeating schedules ([site#10](https://github.com/discohook/site/issues/10))
 
+## Components (buttons)
+
+- Can now be created in the Discohook editor as well as through the bot
+- Select menus can now be created
+- Can now send messages with other components already attached
+- Can now do [a lot more stuff](discohook://guide/getting-started/flows)
+
+## Deluxe
+
+We now offer a [premium subscription](discohook://donate)! It's completely optional and nothing has been paywalled that was previously free.
+
 # Fixed Bugs
 
 - Creating a webhook with </webhook create:1> while in a forum thread will no longer error, instead it will create the webhook in the parent forum channel.
@@ -45,3 +56,4 @@ Naturally, Discohook and Discohook Utils have merged. [Read more about this here
 # Changes
 
 - The confirmation for deleting a webhook with </webhook delete:1> is now hidden.
+- The two-pane (traditionally desktop-only) editor layout is now dependent on screen width, not device, and can be forcibly enabled
