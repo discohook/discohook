@@ -423,12 +423,22 @@ export class CacheManager {
   }
 }
 
+const defaultCache: Resolutions = {
+  "member:@global-792842038332358656": {
+    user: {
+      id: "792842038332358656",
+      username: "Discohook Utils",
+      global_name: null,
+    },
+  },
+};
+
 export const useCache = <T extends boolean>(
   invalid?: T,
 ): T extends true ? undefined : CacheManager => {
   const [state, setState] = useReducer(
     (d: Resolutions, partialD: Partial<Resolutions>) => ({ ...d, ...partialD }),
-    {},
+    defaultCache,
   );
   const cache = new CacheManager(state, setState);
   return (invalid ? undefined : cache) as T extends true
