@@ -133,22 +133,6 @@ const GridEmoji: React.FC<{
   </button>
 );
 
-const elementPartiallyVisible = (e: Element) => {
-  const rect = e.getBoundingClientRect();
-  const parentBottomEdge = e.parentElement
-    ? e.parentElement.getBoundingClientRect().right
-    : window.innerHeight || document.documentElement.clientHeight;
-  const parentRightEdge = e.parentElement
-    ? e.parentElement.getBoundingClientRect().bottom
-    : window.innerWidth || document.documentElement.clientWidth;
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= parentBottomEdge &&
-    rect.right <= parentRightEdge
-  );
-};
-
 const findCustomEmojiSubstring = (
   text: string,
 ): { id: string; name?: string; animated?: boolean } | undefined => {
