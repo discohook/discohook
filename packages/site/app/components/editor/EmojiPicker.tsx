@@ -105,19 +105,10 @@ const GridEmoji: React.FC<{
 }> = ({ emoji, onEmojiClick, setHoverEmoji }) => (
   <button
     type="button"
-    className='rounded p-1 h-11 w-11 hover:bg-white/10 transition invisible data-[visible="true"]:visible'
+    className="rounded p-1 h-11 w-11 hover:bg-black/10 hover:dark:bg-white/10 transition"
     onClick={(ev) => onEmojiClick(emoji, ev)}
     onMouseOver={() => setHoverEmoji(emoji)}
     onFocus={() => setHoverEmoji(emoji)}
-    data-visible={true}
-    // onLoad={({ currentTarget }) => {
-    //   currentTarget.dataset.visible =
-    //     elementPartiallyVisible(currentTarget).toString();
-    // }}
-    // onScroll={({ currentTarget }) => {
-    //   currentTarget.dataset.visible =
-    //     elementPartiallyVisible(currentTarget).toString();
-    // }}
   >
     {emoji.keywords.includes("discord") ? (
       <img
@@ -133,6 +124,10 @@ const GridEmoji: React.FC<{
         emoji={emoji.skin.native}
         className="h-full w-full"
         title={emoji.id}
+        loading="lazy"
+        lazyPlaceholder={
+          <div className="w-full h-full rounded-lg bg-black/10 dark:bg-white/10" />
+        }
       />
     )}
   </button>

@@ -3,6 +3,10 @@ import twemoji, {
   TwemojiOptions,
 } from "@twemoji/api";
 import { memo } from "react";
+import {
+  LazyLoadImage,
+  LazyLoadImageProps,
+} from "react-lazy-load-image-component";
 import { twMerge } from "tailwind-merge";
 
 const t = twemoji as TTwemoji;
@@ -29,8 +33,9 @@ const Twemoji_: React.FC<
     className?: string;
     title?: string;
     loading?: "lazy" | "eager";
+    lazyPlaceholder?: LazyLoadImageProps["placeholder"];
   }
-> = ({ emoji, unified, className, title, loading }) => {
+> = ({ emoji, unified, className, title, loading, lazyPlaceholder }) => {
   const icon = emoji
     ? // twemoji - grabTheRightIcon
       t.convert.toCodePoint(
@@ -45,20 +50,24 @@ const Twemoji_: React.FC<
       "1f441-fe0f-200d-1f5e8-fe0f": "1f441-200d-1f5e8",
     }[icon] ?? icon;
 
+  const props: React.DetailedHTMLProps<
+    React.ImgHTMLAttributes<HTMLImageElement>,
+    HTMLImageElement
+  > = {
+    src: generateTwemojiSrc(replaced, {
+      folder: "svg",
+      ext: ".svg",
+    }),
+    className: twMerge("inline-block w-auto h-4 align-[-0.125em]", className),
+  };
+
   return (
     <span title={title}>
-      <img
-        alt=""
-        src={generateTwemojiSrc(replaced, {
-          folder: "svg",
-          ext: ".svg",
-        })}
-        className={twMerge(
-          "inline-block w-auto h-4 align-[-0.125em]",
-          className,
-        )}
-        loading={loading}
-      />
+      {loading === "lazy" ? (
+        <LazyLoadImage {...props} placeholder={lazyPlaceholder} />
+      ) : (
+        <img {...props} alt="" />
+      )}
     </span>
   );
 };
