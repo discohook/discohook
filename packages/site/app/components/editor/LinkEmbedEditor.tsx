@@ -276,16 +276,21 @@ export const LinkEmbedEditor: React.FC<{
             <p className="text-sm font-medium">{t("sidebarColor")}</p>
             <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
               <span className="align-middle">
-                {embed.color ? `#${embed.color.toString(16)}` : t("clickToSet")}
+                {typeof embed.color === "number"
+                  ? embed.color === 0
+                    ? "#000000"
+                    : `#${embed.color.toString(16)}`
+                  : t("clickToSet")}
               </span>
             </p>
           </div>
           <div
             className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
             style={{
-              backgroundColor: embed.color
-                ? `#${embed.color.toString(16)}`
-                : undefined,
+              backgroundColor:
+                typeof embed.color === "number"
+                  ? `#${embed.color.toString(16)}`
+                  : undefined,
             }}
           />
         </button>
@@ -295,11 +300,15 @@ export const LinkEmbedEditor: React.FC<{
           containerClassName="ltr:right-0 rtl:left-0 top-0"
         >
           <ColorPicker
-            color={embed.color ? `#${embed.color.toString(16)}` : undefined}
+            color={
+              typeof embed.color === "number"
+                ? `#${embed.color.toString(16)}`
+                : undefined
+            }
             onChange={(color) => {
               updateEmbed({
                 color:
-                  color.rgb.a === 0
+                  color.rgb.a === -1
                     ? undefined
                     : parseInt(color.hex.replace("#", "0x"), 16),
               });
