@@ -224,7 +224,7 @@ export const MessageSendModal = (
                       className={`text-2xl my-auto mr-1 ${
                         messages[id]?.result?.status === "success"
                           ? "text-green-600"
-                          : "text-rose-600"
+                          : "text-rose-400"
                       }`}
                     />
                   )}
@@ -235,7 +235,7 @@ export const MessageSendModal = (
                       })}
                     </p>
                     {messages[id]?.result?.status === "error" && (
-                      <p className="text-rose-500 text-sm leading-none">
+                      <p className="text-rose-400 text-sm leading-none">
                         <CoolIcon
                           icon="Circle_Warning"
                           className="ltr:mr-1 rtl:ml-1"

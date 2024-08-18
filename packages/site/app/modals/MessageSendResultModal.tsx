@@ -19,7 +19,7 @@ export const MessageSendResultModal = (
             <CoolIcon
               icon={success ? "Check" : "Close_MD"}
               className={`mr-1 text-2xl ${
-                success ? "text-green-600" : "text-rose-600"
+                success ? "text-green-600" : "text-rose-400"
               }`}
             />
             <span className="my-auto">{t(result.status)}</span>
