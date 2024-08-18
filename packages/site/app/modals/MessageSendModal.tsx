@@ -442,7 +442,7 @@ export const MessageSendModal = (
                     const raw = (await response.json()) as SerializeFrom<
                       typeof ApiPostValidateFlows
                     >;
-                    if (raw.success) {
+                    if (!raw.success) {
                       result = {
                         status: "error",
                         data: {
