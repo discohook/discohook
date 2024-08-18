@@ -537,36 +537,53 @@ export const ComponentEditForm = ({
                   );
                 })}
               </div>
-              <Button
-                // Is there not a limit for this?
-                // disabled={component.options.length >= 25}
-                className="mt-2"
-                onClick={() => {
-                  component.default_values = component.default_values ?? [];
-                  component.default_values.push(
-                    // @ts-expect-error
-                    // This is perfectly cromulent
-                    component.type === ComponentType.UserSelect ||
-                      component.type === ComponentType.MentionableSelect
-                      ? {
-                          id: "",
-                          type: SelectMenuDefaultValueType.User,
-                        }
-                      : component.type === ComponentType.RoleSelect
+              <div className="mt-2 flex gap-1">
+                <Button
+                  // Is there not a limit for this?
+                  // disabled={component.options.length >= 25}
+                  discordstyle={ButtonStyle.Secondary}
+                  onClick={() => {
+                    component.default_values = component.default_values ?? [];
+                    component.default_values.push(
+                      // @ts-expect-error
+                      // This is perfectly cromulent
+                      component.type === ComponentType.UserSelect ||
+                        component.type === ComponentType.MentionableSelect
                         ? {
                             id: "",
                             type: SelectMenuDefaultValueType.User,
                           }
-                        : {
-                            id: "",
-                            type: SelectMenuDefaultValueType.Channel,
-                          },
-                  );
-                  setComponent(component);
-                }}
-              >
-                {t("addDefaultValue")}
-              </Button>
+                        : component.type === ComponentType.RoleSelect
+                          ? {
+                              id: "",
+                              type: SelectMenuDefaultValueType.User,
+                            }
+                          : {
+                              id: "",
+                              type: SelectMenuDefaultValueType.Channel,
+                            },
+                    );
+                    setComponent(component);
+                  }}
+                >
+                  {t("addDefaultValue")}
+                </Button>
+                <Button
+                  discordstyle={ButtonStyle.Secondary}
+                  onClick={async () => {
+                    const flow = component.flow ?? { actions: [] };
+                    setEditingFlow({
+                      flow,
+                      setFlow: (newFlow) => {
+                        component.flow = newFlow;
+                        setComponent(component);
+                      },
+                    });
+                  }}
+                >
+                  {t("editFlow")}
+                </Button>
+              </div>
             </>
           )}
         </>
