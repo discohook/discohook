@@ -422,7 +422,9 @@ export const executeSendMessage = async (
     );
     if (
       ctx &&
-      (!setVars.channelId || setVars.channelId === ctx.interaction.channel.id)
+      (!setVars.channelId ||
+        setVars.channelId === ctx.interaction.channel.id) &&
+      !ctx.isExpired()
     ) {
       message = await ctx.followup.send({ ...body, flags: action.flags });
     } else {

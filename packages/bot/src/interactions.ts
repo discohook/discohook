@@ -158,6 +158,18 @@ export class InteractionContext<
     return this.premium.active;
   }
 
+  get expiresAt(): Date {
+    return new Date(
+      // 15 minutes
+      getDate(this.interaction.id as Snowflake).getTime() + 900_000,
+    );
+  }
+
+  isExpired(): boolean {
+    // assume 100ms margin of error
+    return new Date().getTime() > this.expiresAt.getTime() - 100;
+  }
+
   getMessage(): T extends APIMessageApplicationCommandInteraction
     ? APIMessage
     : undefined;
