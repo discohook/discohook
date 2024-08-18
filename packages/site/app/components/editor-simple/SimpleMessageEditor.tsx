@@ -215,7 +215,7 @@ export const SimpleMessageEditor: React.FC<{
                 </>
               ) : (
                 <>
-                  None of your webhooks are compatibile with components. Add a
+                  None of your webhooks are compatible with components. Add a
                   webhook owned by the Discohook bot.
                 </>
               )}
