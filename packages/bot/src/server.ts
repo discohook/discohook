@@ -16,7 +16,7 @@ import {
   MessageFlags,
   Routes,
 } from "discord-api-types/v10";
-import { PermissionFlags } from "discord-bitflag";
+import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
@@ -58,7 +58,11 @@ import { eventNameToCallback } from "./events.js";
 import { LiveVariables, executeFlow } from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
 import { Env } from "./types/env.js";
-import { hasCustomId, parseAutoComponentId } from "./util/components.js";
+import {
+  getComponentId,
+  hasCustomId,
+  parseAutoComponentId,
+} from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";
 
@@ -246,34 +250,57 @@ const handleInteraction = async (
         // In case a durable object does not exist for this component for
         // whatever reason. Usually because of migrated components that have
         // not yet actually been activated.
-        const dbComponent = await db.query.discordMessageComponents.findFirst({
-          where: eq(
-            discordMessageComponents.messageId,
-            makeSnowflake(interaction.message.id),
-          ),
-          columns: {
-            id: true,
-            data: true,
-            draft: true,
-          },
-          with: {
-            componentsToFlows: {
-              with: {
-                flow: {
-                  with: { actions: true },
-                },
-              },
-            },
-          },
+        const componentId = getComponentId(
+          type === ComponentType.Button
+            ? { type, style: ButtonStyle.Primary, custom_id: customId }
+            : { type, custom_id: customId },
+        );
+
+        if (componentId === undefined) {
+          return respond({ error: "Bad Request", status: 400 });
+        }
+
+        // Don't allow component data to leak into other servers
+        const dryComponent = await db.query.discordMessageComponents.findFirst({
+          where: (table, { eq }) => eq(table.id, componentId),
+          columns: { guildId: true },
         });
-        if (!dbComponent) {
+        if (
+          !dryComponent ||
+          !dryComponent.guildId ||
+          dryComponent.guildId.toString() !== interaction.guild_id
+        ) {
           return respond({
             error: response.statusText,
             status: response.status,
           });
         }
-        await stub.fetch(`http://do/?id=${dbComponent.id}`, { method: "PUT" });
-        component = dbComponent;
+
+        const params = new URLSearchParams({ id: componentId.toString() });
+        if (
+          new MessageFlagsBitField(interaction.message.flags ?? 0).has(
+            MessageFlags.Ephemeral,
+          )
+        ) {
+          // Ephemeral buttons last one hour to avoid durable object clutter.
+          // To be honest, this is not necessary at all, but if someone spams
+          // any button then we would rather the requests go to Cloudflare and
+          // not the database.
+          params.set(
+            "expireAt",
+            new Date(new Date().getTime() + 3_600_000).toISOString(),
+          );
+        }
+        const doResponse = await stub.fetch(`http://do/?${params}`, {
+          method: "PUT",
+        });
+        if (!doResponse.ok) {
+          return respond({
+            error: doResponse.statusText,
+            status: doResponse.status,
+          });
+        }
+        component = await doResponse.json();
       } else if (!response.ok) {
         return respond({
           error: response.statusText,
@@ -282,9 +309,9 @@ const handleInteraction = async (
       } else {
         component = (await response.json()) as DurableStoredComponent;
       }
-      if (component.draft) {
-        return respond({ error: "Component is marked as draft" });
-      }
+      // if (component.draft) {
+      //   return respond({ error: "Component is marked as draft" });
+      // }
       const guildId = interaction.guild_id;
       if (!guildId) {
         return respond({ error: "No guild ID" });

@@ -19,6 +19,10 @@ export interface DurableStoredComponent {
   draft?: boolean;
 }
 
+enum AlarmType {
+  Expiration = 0,
+}
+
 export class DurableComponentState implements DurableObject {
   constructor(
     private state: DurableObjectState,
@@ -31,7 +35,14 @@ export class DurableComponentState implements DurableObject {
 
     switch (request.method) {
       case "PUT": {
-        const { id } = zx.parseQuery(request, { id: z.string() });
+        const { id, expireAt } = zx.parseQuery(request, {
+          id: z.string(),
+          expireAt: z
+            .string()
+            .datetime()
+            .transform((v) => new Date(v))
+            .optional(),
+        });
         const db = getDb(connectionString);
         const component = await db.query.discordMessageComponents.findFirst({
           where: (table, { eq }) => eq(table.id, makeSnowflake(id)),
@@ -59,6 +70,10 @@ export class DurableComponentState implements DurableObject {
           "component",
           component satisfies DurableStoredComponent,
         );
+        if (expireAt) {
+          await this.state.storage.put("alarmType", AlarmType.Expiration);
+          await this.state.storage.setAlarm(expireAt);
+        }
         return new Response(JSON.stringify(component), {
           status: 201,
           headers: { "Content-Type": "application/json" },
@@ -82,6 +97,19 @@ export class DurableComponentState implements DurableObject {
       }
       default:
         return new Response(undefined, { status: 405 });
+    }
+  }
+
+  async alarm() {
+    const type = await this.state.storage.get<AlarmType>("alarmType");
+    if (type === undefined) return;
+
+    switch (type) {
+      case AlarmType.Expiration:
+        await this.fetch(new Request("http://do/", { method: "DELETE" }));
+        break;
+      default:
+        break;
     }
   }
 }
