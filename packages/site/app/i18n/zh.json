@@ -66,7 +66,7 @@
     "resetEditor": "重置编辑器",
     "resetEditorWarning": "点击以确认",
     "resetFinished": "重置完成",
-    "todayAt": "今天 {{time}}",
+    "todayAt": "今天 {{ date, h:mm A }}",
     "mention": {
         "guide": "服务器指南",
         "browse": "浏览频道",
@@ -155,7 +155,8 @@
         "KickMembers": "踢除用户",
         "BanMembers": "封锁用户",
         "Administrator": "管理员",
-        "ManageChannels": "管理频道"
+        "ManageChannels": "管理频道",
+        "AttachFiles": "附加文件"
     },
     "user": "用户",
     "sidebarColor": "侧栏颜色",
@@ -175,5 +176,18 @@
     "webhookCreateFailed": "创建 Webhook 失败",
     "locales": {
         "zh": "中文"
-    }
+    },
+    "cancel": "取消",
+    "sendNoWebhooks": "您没有可发送的 Webhook。",
+    "clear": "清除",
+    "copied": "已复制",
+    "addRow": "添加行",
+    "addPoll": "添加投票",
+    "join": "加入",
+    "addEmbed": "添加嵌入",
+    "regenerate": "重新生成",
+    "createBackup": "创建备份",
+    "share": "分享",
+    "shareMessage": "分享消息",
+    "add": "添加"
 }
