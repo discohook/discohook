@@ -402,6 +402,9 @@ export const MessageSendModal = (
                   }
 
                   const flows: DraftFlow[] = [];
+                  const rowsWithFlows = message.data.components
+                    ? structuredClone(message.data.components)
+                    : undefined;
                   for (const row of message.data.components ?? []) {
                     for (const component of row.components) {
                       if ("flow" in component && component.flow) {
@@ -516,6 +519,8 @@ export const MessageSendModal = (
                     );
                   }
 
+                  // re-add flow data that was removed for the submission
+                  message.data.components = rowsWithFlows;
                   updateMessages({
                     [id]: { result, enabled: true },
                   });
