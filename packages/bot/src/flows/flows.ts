@@ -420,7 +420,10 @@ export const executeSendMessage = async (
       setVars,
       action.backupMessageIndex,
     );
-    if (ctx && action.response) {
+    if (
+      ctx &&
+      (!setVars.channelId || setVars.channelId === ctx.interaction.channel.id)
+    ) {
       message = await ctx.followup.send({ ...body, flags: action.flags });
     } else {
       message = (await rest.post(Routes.channelMessages(setVars.channelId), {
