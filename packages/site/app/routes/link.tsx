@@ -15,8 +15,10 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
+import { ModalFooter } from "~/modals/Modal";
 import { getUser } from "~/session.server";
 import {
   LinkQueryData,
@@ -98,6 +100,7 @@ export default () => {
 
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
+  const [confirm, setConfirm] = useConfirmModal();
 
   interface BackupInfo {
     id: bigint;
@@ -248,12 +251,12 @@ export default () => {
         localHistory={localHistory}
         setLocalHistory={setLocalHistory}
         setData={setData}
-        resetData={() => setData({ embed: { data: {} } })}
       />
       <ImageModal
         clear={() => setImageModalData(undefined)}
         {...imageModalData}
       />
+      {confirm}
       <Header user={user} setShowHistoryModal={setShowHistory} />
       <div className="md:flex h-[calc(100%_-_3rem)]">
         <div
@@ -281,19 +284,73 @@ export default () => {
               </InfoBox>
             )
           )}
-          <div className="flex mb-2">
+          <div className="flex">
+            <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 ltr:mr-2 rtl:ml-2">
+              <Button
+                discordstyle={ButtonStyle.Secondary}
+                disabled={!backupInfo?.code}
+                onClick={() => {
+                  if (!backupInfo) return;
+                  copyText(linkEmbedUrl(backupInfo.code, linkOrigin));
+                }}
+              >
+                {t("copyLink")}
+              </Button>
+              <Button
+                onClick={() =>
+                  setConfirm({
+                    title: t("resetEditor"),
+                    children: (
+                      <>
+                        <p>{t("resetEditorConfirmEmbed")}</p>
+                        <p className="text-muted dark:text-muted-dark text-sm font-medium mt-1">
+                          <Trans
+                            t={t}
+                            i18nKey="resetEditorFootnote"
+                            components={[
+                              <button
+                                type="button"
+                                className={twJoin(linkClassName, "contents")}
+                                onClick={() => {
+                                  setShowHistory(true);
+                                  setConfirm(undefined);
+                                }}
+                              />,
+                            ]}
+                          />
+                        </p>
+                        <ModalFooter className="flex gap-2">
+                          <Button
+                            className="ltr:ml-auto rtl:mr-auto"
+                            onClick={() => {
+                              setData({ embed: { data: {} } });
+                              setConfirm(undefined);
+                            }}
+                            discordstyle={ButtonStyle.Danger}
+                          >
+                            {t("resetEditor")}
+                          </Button>
+                          <Button
+                            onClick={() => setConfirm(undefined)}
+                            discordstyle={ButtonStyle.Secondary}
+                          >
+                            {t("cancel")}
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    ),
+                  })
+                }
+                discordstyle={ButtonStyle.Secondary}
+              >
+                {t("resetEditor")}
+              </Button>
+            </div>
             <Button
-              discordstyle={ButtonStyle.Secondary}
-              disabled={!backupInfo?.code}
-              onClick={() => {
-                if (!backupInfo) return;
-                copyText(linkEmbedUrl(backupInfo.code, linkOrigin));
-              }}
-            >
-              {t("copyLink")}
-            </Button>
-            <Button
-              className="ml-auto md:hidden"
+              className={twJoin(
+                "ltr:ml-auto rtl:mr-auto",
+                settings.forceDualPane ? "hidden" : "md:hidden",
+              )}
               onClick={() => setTab("preview")}
               discordstyle={ButtonStyle.Secondary}
             >
