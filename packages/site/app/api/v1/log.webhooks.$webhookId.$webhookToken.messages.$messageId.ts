@@ -43,7 +43,12 @@ export const getComponentId = (
     component.type === ComponentType.Button &&
     component.style === ButtonStyle.Link
   ) {
-    const url = new URL(component.url);
+    let url: URL;
+    try {
+      url = new URL(component.url);
+    } catch {
+      return undefined;
+    }
     const id = url.searchParams.get("dhc-id");
     if (id) {
       try {
