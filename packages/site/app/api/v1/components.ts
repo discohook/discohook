@@ -62,12 +62,17 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       const data = d as DraftComponent & StorableComponent;
       switch (data.type) {
         case ComponentType.Button: {
-          if (data.style !== ButtonStyle.Link) {
+          if (
+            data.style !== ButtonStyle.Link &&
+            data.style !== ButtonStyle.Premium
+          ) {
             const flow = componentsToFlows[0].flow;
-            data.flow = {
-              name: flow.name,
-              actions: flow.actions.map((a) => a.data),
-            };
+            if (flow) {
+              data.flow = {
+                name: flow.name,
+                actions: flow.actions.map((a) => a.data),
+              };
+            }
           }
           break;
         }
