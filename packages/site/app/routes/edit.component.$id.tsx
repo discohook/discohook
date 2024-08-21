@@ -51,7 +51,7 @@ import { Message } from "~/components/preview/Message.client";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
-import { User, getGuild, getUser, verifyToken } from "~/session.server";
+import { getGuild, getUser, verifyToken } from "~/session.server";
 import {
   Flow,
   StorableComponent,
@@ -795,7 +795,7 @@ export default () => {
         guildId={component_.guildId?.toString()}
         {...editingFlow}
         cache={cache}
-        premium={userIsPremium(user as User)}
+        premium={user ? userIsPremium(user) : false}
       />
       <Header user={user} />
       <Prose className="max-w-xl">
