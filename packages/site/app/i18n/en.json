@@ -339,6 +339,7 @@
   "linkButton": "Link Button",
   "addComponentType": "Add $t(componentShort.{{type}})",
   "editingComponentFromUser": "Editing a $t(component.{{type}}, lowercase) from",
+  "messageMaxRowsNote": "The maximum number of rows per message is {{count}}.",
   "message": "Message",
   "messageN": "Message {{n}}",
   "messageNText": "Message {{n}} - {{text}}",

@@ -6,10 +6,12 @@ import {
   useLoaderData,
   useSubmit,
 } from "@remix-run/react";
+import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIActionRowComponent,
   APIChannel,
   APIMessage,
+  APIModalActionRowComponent,
   APIWebhook,
   ButtonStyle,
   ChannelType,
@@ -18,13 +20,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { JWTPayload } from "jose";
-import {
-  MouseEventHandler,
-  useEffect,
-  useMemo,
-  useReducer,
-  useState,
-} from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
@@ -41,6 +37,7 @@ import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import {
+  getComponentText,
   getComponentWidth,
   getRowWidth,
   submitComponent,
@@ -617,6 +614,13 @@ const getRowsWithInsertedComponent = (
   return cloned;
 };
 
+const rowHasSpace = <
+  T extends APIMessageActionRowComponent | APIModalActionRowComponent,
+>(
+  row: APIActionRowComponent<T>,
+  component: T,
+) => ROW_MAX_WIDTH - getRowWidth(row) >= getComponentWidth(component);
+
 export default () => {
   const {
     user,
@@ -675,6 +679,7 @@ export default () => {
   // }, [params, setParams]);
 
   const [settings] = useLocalStorage();
+
   const [component, setComponent] = useState(
     buildStorableComponent(
       component_.data,
@@ -686,98 +691,88 @@ export default () => {
   // TODO: use this to reduce "flicker" when opening/closing modal
   // const [editingFlowOpen, setEditingFlowOpen] = useState(false);
   const [editingFlow, setEditingFlow] = useState<EditingFlowData | undefined>();
+  const [position, setPosition] = useState<[number, number]>([0, 0]);
 
-  let rows: APIActionRowComponent<APIMessageActionRowComponent>[] =
-    message?.components ?? [];
-  // const [rows, setRows] = useReducer(
-  //   (
-  //     _: APIActionRowComponent<APIMessageActionRowComponent>[],
-  //     newRows: APIActionRowComponent<APIMessageActionRowComponent>[],
-  //   ) => {
-  //     return newRows.filter(
-  //       (c, i) => c.components.length !== 0 && i !== ignoreIndex,
-  //     );
-  //   },
-  //   message?.components ?? [],
-  // );
-
-  const [position, setPosition] = useReducer(
-    (pos: [number, number], newPos: [number, number]) => {
-      const [oY, oX] = pos;
-      const [y, x] = newPos;
-
-      const emptyRow: (typeof rows)[number] = {
-        type: ComponentType.ActionRow,
-        components: [],
-      };
-
-      const row = rows[y];
-      if (
-        row &&
-        getRowWidth(row) + getComponentWidth(component) < ROW_MAX_WIDTH
-      ) {
-        return newPos;
-      } else if (row) {
-        // Not enough room
-        rows = rows.filter((c) => c.components.length !== 0);
-        rows.splice(y, 0, emptyRow);
-        return newPos;
-      }
-
-      if (!row && oY === y && oX !== x) {
-        // Not sure how this happened
-        rows = rows.filter((c) => c.components.length !== 0);
-        rows.splice(y, 0, emptyRow);
-        return newPos;
-      }
-
-      return [
-        Math.min(Math.max(y, 0), MESSAGE_MAX_ROWS_INDEX, rows.length - 1),
-        Math.min(Math.max(x, 0), ROW_MAX_INDEX),
-      ] as typeof pos;
-    },
-    [0, 0],
-  );
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  useEffect(() => {
-    let found = false;
-    for (const row of rows) {
-      let i = -1;
-      for (const child of row.components) {
-        i += 1;
-        if (component.custom_id && child.custom_id === component.custom_id) {
-          // It will later be replaced with the stateful value
-          row.components.splice(i, 1);
-          found = true;
-          setPosition([rows.indexOf(row), i]);
+  type Data = Pick<APIMessage, "webhook_id" | "resolved"> & {
+    components: NonNullable<
+      APIActionRowComponent<APIMessageActionRowComponent>[]
+    >;
+  };
+  const [data, setData] = useReducer(
+    (current: Data, newData: Partial<Data>) => {
+      const compiled = { ...current, ...newData } as Data;
+      let y = 0;
+      let x = 0;
+      for (const row of compiled.components) {
+        const live = row.components.find(
+          (c) => c.custom_id && c.custom_id === component_.id.toString(),
+        );
+        if (live) {
+          x = row.components.indexOf(live);
+          setComponent(live);
           break;
         }
+        y += 1;
       }
-    }
-    if (!found) {
-      const row = rows.find(
-        (row) =>
-          getRowWidth(row) < ROW_MAX_WIDTH &&
-          ROW_MAX_WIDTH - getRowWidth(row) >= getComponentWidth(component),
-      );
-      if (!row) {
-        // This component needs a new row, which needs to really exist
-        rows.push({
-          type: ComponentType.ActionRow,
-          components: [component],
-        });
-        setPosition([rows.length - 1, 0]);
-      } else {
-        setPosition([rows.indexOf(row), row.components.length]);
-      }
-    }
-  }, []);
 
-  const rowsWithLive = useMemo(
-    () => getRowsWithInsertedComponent(rows, component, position),
-    [rows, component, position],
+      setPosition([y, x]);
+      return compiled;
+    },
+    message
+      ? { ...message, components: message.components ?? [] }
+      : { components: [] },
   );
+  // Insert live component
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once
+  useEffect(() => {
+    let y = -1;
+    let x = -1;
+    if (message) {
+      const rows = message.components ?? [];
+      const maybeY = rows.findIndex((r) => {
+        const maybeX = r.components.findIndex(
+          (c) =>
+            getComponentId(c) !== undefined &&
+            getComponentId(c) === component_.id,
+        );
+        if (maybeX !== -1) {
+          x = maybeX;
+          return true;
+        }
+        return false;
+      });
+      if (maybeY !== -1 && x !== -1) {
+        y = maybeY;
+        rows[y].components.splice(x, 1, component);
+        setData({ components: rows });
+        return;
+      }
+    }
+    y = 0;
+    x = 0;
+
+    const rows = data.components;
+    let nextAvailableRow = rows.find((c, i) => {
+      const valid = rowHasSpace(c, component);
+      if (valid) y = i;
+      return valid;
+    });
+    if (!nextAvailableRow && rows.length < MESSAGE_MAX_ROWS) {
+      nextAvailableRow = { type: ComponentType.ActionRow, components: [] };
+      rows.push(nextAvailableRow);
+      y = rows.length - 1;
+    } else if (!nextAvailableRow) {
+      const requiredWidth = getComponentWidth(component);
+      setError({
+        message: `No available slots for this component (need at least ${requiredWidth}).`,
+      });
+      return;
+    }
+    nextAvailableRow.components.push(component);
+    x = nextAvailableRow.components.length - 1;
+
+    setData({ components: rows });
+  }, []);
 
   // const [overflowMessage, setOverflowMessage] = useState(false);
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
@@ -847,7 +842,7 @@ export default () => {
           )}
         >
           <Message
-            message={{ components: rowsWithLive }}
+            message={{ components: data.components }}
             cache={cache}
             messageDisplay={settings.messageDisplay}
             compactAvatars={settings.compactAvatars}
@@ -867,60 +862,264 @@ export default () => {
               ]}
             />
           </p>
-          <div className="flex">
-            <div
-              className={twJoin(
-                getComponentWidth(component) < ROW_MAX_WIDTH
-                  ? "w-1/2"
-                  : "w-full",
-                "grid grid-cols-2 gap-1 ltr:mr-1 rtl:ml-1",
-              )}
-            >
-              <ArrowButton
-                icon="Chevron_Up"
-                onClick={() => setPosition([position[0] - 1, position[1]])}
-                disabled={
-                  position[0] <= 0 &&
-                  rowsWithLive[position[0]]?.components?.length === 1
-                }
-              />
-              <ArrowButton
-                icon="Chevron_Down"
-                onClick={() => setPosition([position[0] + 1, position[1]])}
-                disabled={
-                  position[0] >= 4 ||
-                  (position[0] === rowsWithLive.length - 1 &&
-                    rowsWithLive[position[0]]?.components?.length === 1)
-                }
-              />
-            </div>
-            {getComponentWidth(component) < ROW_MAX_WIDTH && (
-              // The message preview is always LTR so we force it here too since
-              // we're controlling an element in the preview. A bit janky but
-              // preferable to duplicating the elements.
-              <div dir="ltr" className="w-1/2 grid grid-cols-2 gap-1">
-                <ArrowButton
-                  icon="Chevron_Left"
-                  onClick={() => setPosition([position[0], position[1] - 1])}
-                  disabled={position[1] <= 0}
-                />
-                <ArrowButton
-                  icon="Chevron_Right"
-                  onClick={() => setPosition([position[0], position[1] + 1])}
-                  disabled={
-                    position[1] >= ROW_MAX_INDEX ||
-                    (rows[position[0]] &&
-                      position[1] === rows[position[0]].components.length)
-                  }
-                />
-              </div>
+          <div className="space-y-1 text-base">
+            {data.components.map((row, i) => {
+              const hasLiveComponent = !!row.components.find(
+                (c) =>
+                  c.custom_id === component.custom_id && component.custom_id,
+              );
+              return (
+                <div key={`row-${i}`}>
+                  <details
+                    className="group/action-row rounded-lg p-2 pl-4 bg-gray-100 dark:bg-primary-630 border border-gray-300 dark:border-gray-700 shadow"
+                    open={hasLiveComponent}
+                  >
+                    <summary className="group-open/action-row:mb-2 transition-[margin] marker:content-none marker-none flex text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
+                      <CoolIcon
+                        icon="Chevron_Right"
+                        className="group-open/action-row:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+                      />
+                      <span className="my-auto">
+                        {t("rowN", { replace: { n: i + 1 } })}
+                      </span>
+                    </summary>
+                    <div className="space-y-1">
+                      {row.components.map((child, ci) => {
+                        const id = getComponentId(child)?.toString();
+                        const previewText = getComponentText(child);
+                        const isLiveComponent = id === component_.id.toString();
+
+                        return (
+                          <div
+                            key={`row-${i}-child-${id}-${ci}`}
+                            className="flex text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none ltr:-ml-2 rtl:-mr-2"
+                          >
+                            <div className="flex p-2 h-full w-full my-auto truncate disabled:animate-pulse">
+                              <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6 shrink-0">
+                                {child.type === ComponentType.Button ? (
+                                  <div
+                                    className={twJoin(
+                                      "rounded text-gray-50",
+                                      isLinkButton(child)
+                                        ? "p-[5px_5px_4px_4px]"
+                                        : "w-full h-full",
+                                      {
+                                        [ButtonStyle.Primary]: "bg-blurple",
+                                        [ButtonStyle.Premium]: "bg-blurple",
+                                        [ButtonStyle.Secondary]:
+                                          "bg-[#6d6f78] dark:bg-[#4e5058]",
+                                        [ButtonStyle.Link]:
+                                          "bg-[#6d6f78] dark:bg-[#4e5058]",
+                                        [ButtonStyle.Success]:
+                                          "bg-[#248046] dark:bg-[#248046]",
+                                        [ButtonStyle.Danger]: "bg-[#da373c]",
+                                      }[child.style],
+                                    )}
+                                  >
+                                    {isLinkButton(child) && (
+                                      <CoolIcon
+                                        icon="External_Link"
+                                        className="block"
+                                      />
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="rounded bg-[#6d6f78] dark:bg-[#4e5058] p-[5px_5px_4px_4px]">
+                                    <CoolIcon
+                                      icon={
+                                        (
+                                          {
+                                            [ComponentType.StringSelect]:
+                                              "Chevron_Down",
+                                            [ComponentType.UserSelect]: "Users",
+                                            [ComponentType.RoleSelect]: "Tag",
+                                            [ComponentType.MentionableSelect]:
+                                              "Mention",
+                                            [ComponentType.ChannelSelect]:
+                                              "Chat",
+                                          } as Record<
+                                            (typeof child)["type"],
+                                            CoolIconsGlyph
+                                          >
+                                        )[child.type]
+                                      }
+                                      className="block"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                              <p className="truncate my-auto">
+                                {previewText ||
+                                  `${t(`component.${child.type}`)} ${
+                                    child.type === 2 ? ci + 1 : ""
+                                  }`}
+                              </p>
+                            </div>
+                            <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
+                              <button
+                                type="button"
+                                className={
+                                  !isLiveComponent ||
+                                  (i === 0 &&
+                                    ci === 0 &&
+                                    row.components.length === 1)
+                                    ? "hidden"
+                                    : ""
+                                }
+                                onClick={() => {
+                                  if (ci === 0) {
+                                    const newRow: Data["components"][number] = {
+                                      type: ComponentType.ActionRow,
+                                      components: [child],
+                                    };
+                                    if (row.components.length === 1) {
+                                      const nextAvailableRow = data.components
+                                        .filter(
+                                          (r, ri) =>
+                                            ri < i && rowHasSpace(r, child),
+                                        )
+                                        .reverse()[0];
+                                      if (!nextAvailableRow) {
+                                        if (i <= 0) return;
+                                        // Move other rows down if we're not already on top
+                                        if (i - 2 < 0) {
+                                          data.components = [
+                                            newRow,
+                                            ...data.components.filter(
+                                              (_, ri) => ri !== i,
+                                            ),
+                                          ];
+                                        } else if (
+                                          data.components.length <
+                                          MESSAGE_MAX_ROWS
+                                        ) {
+                                          data.components.splice(
+                                            i - 2,
+                                            0,
+                                            newRow,
+                                          );
+                                        }
+                                        setData({});
+                                        return;
+                                      }
+
+                                      nextAvailableRow.components.splice(
+                                        nextAvailableRow.components.length,
+                                        0,
+                                        child,
+                                      );
+                                      // remove now-empty row
+                                      data.components.splice(i, 1);
+                                    } else {
+                                      row.components.splice(ci, 1);
+                                      data.components.splice(i - 1, 0, newRow);
+                                    }
+                                  } else {
+                                    row.components.splice(ci, 1);
+                                    row.components.splice(ci - 1, 0, child);
+                                  }
+                                  setData({});
+                                }}
+                              >
+                                <CoolIcon icon="Chevron_Up" />
+                              </button>
+                              <button
+                                type="button"
+                                className={
+                                  (i === MESSAGE_MAX_ROWS_INDEX &&
+                                    ci === row.components.length - 1) ||
+                                  !isLiveComponent
+                                    ? "hidden"
+                                    : ""
+                                }
+                                onClick={() => {
+                                  if (ci === row.components.length - 1) {
+                                    const newRow: Data["components"][number] = {
+                                      type: ComponentType.ActionRow,
+                                      components: [child],
+                                    };
+                                    if (row.components.length === 1) {
+                                      const nextAvailableRow =
+                                        data.components.filter(
+                                          (r, ri) =>
+                                            ri > i && rowHasSpace(r, child),
+                                        )[0];
+                                      if (!nextAvailableRow) {
+                                        if (i >= MESSAGE_MAX_ROWS_INDEX) return;
+                                        // Move other rows up if we're not already on the bottom
+                                        if (i + 2 > MESSAGE_MAX_ROWS_INDEX) {
+                                          data.components = [
+                                            ...data.components.filter(
+                                              (_, ri) => ri !== i,
+                                            ),
+                                            newRow,
+                                          ];
+                                        } else if (
+                                          data.components.length <
+                                          MESSAGE_MAX_ROWS
+                                        ) {
+                                          data.components.splice(
+                                            i + 2,
+                                            0,
+                                            newRow,
+                                          );
+                                          data.components.splice(i, 1);
+                                        }
+                                        setData({});
+                                        return;
+                                      }
+
+                                      nextAvailableRow.components.splice(
+                                        nextAvailableRow.components.length,
+                                        0,
+                                        child,
+                                      );
+                                      // remove now-empty row
+                                      data.components.splice(i, 1);
+                                    } else {
+                                      row.components.splice(ci, 1);
+                                      data.components.splice(i + 1, 0, newRow);
+                                    }
+                                  } else {
+                                    row.components.splice(ci, 1);
+                                    row.components.splice(ci + 1, 0, child);
+                                  }
+                                  setData({});
+                                }}
+                              >
+                                <CoolIcon icon="Chevron_Down" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </details>
+                </div>
+              );
+            })}
+            {data.components.length >= MESSAGE_MAX_ROWS && (
+              <p className="text-sm text-yellow-500 dark:text-yellow-200">
+                <CoolIcon icon="Triangle_Warning" />{" "}
+                {t("messageMaxRowsNote", { count: MESSAGE_MAX_ROWS })}
+              </p>
             )}
           </div>
         </div>
+        <hr className="border-black/5 dark:border-gray-200/20 my-4" />
         <ComponentEditForm
           t={t}
           component={component}
-          setComponent={(newComponent) => setComponent({ ...newComponent })}
+          setComponent={(newComponent) => {
+            setData({
+              components: data.components.map((row, ri) => {
+                if (ri === position[0]) {
+                  row.components[position[1]] = newComponent;
+                }
+                return row;
+              }),
+            });
+          }}
           cache={cache}
           setEditingFlow={setEditingFlow}
         />
@@ -932,7 +1131,13 @@ export default () => {
               setSubmitState("submitting");
               const updated = await submitComponent(component, setError);
               if (updated) {
-                setComponent(updated);
+                try {
+                  data.components[position[0]].components[position[1]] =
+                    updated;
+                  setData({});
+                } catch (e) {
+                  console.error(e);
+                }
                 // Ensure that the component's durable object is up to date
                 submit(null, { method: "PATCH", replace: true });
               } else {
@@ -998,7 +1203,7 @@ export default () => {
                     );
                   }
                   const result = await submitMessage(wt, {
-                    data: { components: rowsWithLive },
+                    data: { components: data.components },
                     reference: component_.messageId.toString(),
                     thread_id: threadId,
                   });
@@ -1041,18 +1246,3 @@ export default () => {
     </div>
   );
 };
-
-const ArrowButton: React.FC<{
-  icon: CoolIconsGlyph;
-  onClick: MouseEventHandler<HTMLButtonElement>;
-  disabled?: boolean;
-}> = ({ icon, onClick, disabled }) => (
-  <Button
-    className="w-full"
-    discordstyle={ButtonStyle.Secondary}
-    onClick={onClick}
-    disabled={disabled}
-  >
-    <CoolIcon icon={icon} />
-  </Button>
-);
