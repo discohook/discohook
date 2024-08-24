@@ -4,6 +4,7 @@ import {
   Link,
   useActionData,
   useLoaderData,
+  useLocation,
   useSubmit,
 } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
@@ -48,7 +49,12 @@ import { Message } from "~/components/preview/Message.client";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
-import { getGuild, getUser, verifyToken } from "~/session.server";
+import {
+  getEditorTokenStorage,
+  getGuild,
+  getUser,
+  verifyToken,
+} from "~/session.server";
 import {
   Flow,
   StorableComponent,
@@ -82,6 +88,7 @@ import {
   zxParseParams,
   zxParseQuery,
 } from "~/util/zod";
+import { safePushState } from "./_index";
 
 const ROW_MAX_WIDTH = 5;
 const MESSAGE_MAX_ROWS = 5;
@@ -115,6 +122,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const user = await getUser(request, context);
   let needUserAuth = false;
 
+  const headers = new Headers();
   let editingMeta: KVComponentEditorState | undefined;
   if (editorToken) {
     // This is kind of weird but it's the best method I could think of to fall
@@ -146,6 +154,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       );
       if (cached) {
         editingMeta = cached;
+
+        const storage = getEditorTokenStorage(context);
+        const session = await storage.getSession(request.headers.get("Cookie"));
+        session.set("Authorization", `Editor ${editorToken}`);
+        headers.append("Set-Cookie", await storage.commitSession(session));
       } else {
         // Token does not have permission data for this component. At the moment
         // this means the token is expired, since we don't generate multiple
@@ -305,17 +318,20 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     return [];
   })();
 
-  return defer({
-    user,
-    component,
-    token: editorToken,
-    editingMeta,
-    message,
-    emojis,
-    roles,
-    channels,
-    threadId,
-  });
+  return defer(
+    {
+      user,
+      component,
+      token: editorToken,
+      editingMeta,
+      message,
+      emojis,
+      roles,
+      channels,
+      threadId,
+    },
+    { headers },
+  );
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
@@ -668,15 +684,17 @@ export default () => {
     }
   }, [emojis, roles, channels]);
 
-  // Temp disabled until we create a session cookie
-  // const [params, setParams] = useSearchParams();
-  // useEffect(() => {
-  //   // Don't allow the token to persist in the page address
-  //   if (params.get("token")) {
-  //     params.delete("token");
-  //     setParams(params, { replace: true });
-  //   }
-  // }, [params, setParams]);
+  // Don't allow the token to persist in the page address
+  const location = useLocation();
+  useEffect(() => {
+    const url = new URL(
+      origin + location.pathname + location.search + location.hash,
+    );
+    if (url.searchParams.has("token")) {
+      url.searchParams.delete("token");
+      safePushState({ path: url.href }, url.href);
+    }
+  }, [location]);
 
   const [settings] = useLocalStorage();
 

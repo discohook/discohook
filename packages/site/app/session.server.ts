@@ -65,6 +65,23 @@ export const getTokenStorage = (context: Context) => {
   return { getSession, commitSession, destroySession, sessionStorage };
 };
 
+export const getEditorTokenStorage = (context: Context) => {
+  const sessionStorage = createWorkersKVSessionStorage({
+    kv: context.env.KV,
+    cookie: createCookie("__discohook_editor_token", {
+      sameSite: "lax",
+      path: "/",
+      httpOnly: true,
+      secrets: [context.env.SESSION_SECRET],
+      secure: context.env.ENVIRONMENT !== "dev",
+      maxAge: 7_200_000, // 2 hours
+    }),
+  });
+
+  const { getSession, commitSession, destroySession } = sessionStorage;
+  return { getSession, commitSession, destroySession, sessionStorage };
+};
+
 export type Jsonify<T> = SerializeFrom<() => Promise<T>>;
 
 export const doubleDecode = <T>(data: T) => {
