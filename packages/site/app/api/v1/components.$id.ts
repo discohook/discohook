@@ -2,8 +2,13 @@ import { json } from "@remix-run/cloudflare";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import {
+  TokenWithUser,
+  User,
   authorizeRequest,
+  doubleDecode,
+  getEditorTokenStorage,
   getTokenGuildChannelPermissions,
+  verifyToken,
 } from "~/session.server";
 import {
   StorableComponent,
@@ -15,6 +20,7 @@ import {
   generateId,
   getDb,
   inArray,
+  makeSnowflake,
   sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
@@ -25,7 +31,81 @@ import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const [token, respond] = await authorizeRequest(request, context);
+
+  let [token, respond]:
+    | Awaited<ReturnType<typeof authorizeRequest>>
+    | [undefined, undefined] = [undefined, undefined];
+
+  try {
+    [token, respond] = await authorizeRequest(request, context);
+  } catch (e) {
+    // We need to accept temporary editor tokens as authentication here, but
+    // we don't want to patch those in site-wide for API authentication.
+    const storage = getEditorTokenStorage(context);
+    const session = await storage.getSession(request.headers.get("Cookie"));
+    const auth = session.get("Authorization");
+    if (!auth) throw e;
+
+    const [, tokenValue] = auth.split(" ");
+    const { payload } = await verifyToken(
+      tokenValue,
+      context.env,
+      context.origin,
+    );
+    if (payload.scp !== "editor") {
+      throw json({ message: "Invalid token" }, 401);
+    }
+    // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
+    const tokenId = payload.jti!;
+
+    const key = `token-${tokenId}-component-${id}`;
+    if (!(await context.env.KV.get(key))) {
+      throw e;
+    }
+
+    const db = getDb(context.env.HYPERDRIVE.connectionString);
+    const dbToken = await db.query.tokens.findFirst({
+      where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
+      columns: {
+        id: true,
+        prefix: true,
+      },
+      with: {
+        user: {
+          columns: {
+            id: true,
+            name: true,
+            firstSubscribed: true,
+            subscribedSince: true,
+            subscriptionExpiresAt: true,
+            lifetime: true,
+            discordId: true,
+          },
+          with: {
+            discordUser: {
+              columns: {
+                id: true,
+                name: true,
+                globalName: true,
+                discriminator: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!dbToken || !dbToken.user) {
+      throw e;
+    }
+
+    token = doubleDecode<TokenWithUser>({
+      id: dbToken.id,
+      prefix: dbToken.prefix,
+      user: dbToken.user as User,
+    });
+    respond = (response) => response;
+  }
 
   switch (request.method) {
     case "PUT": {

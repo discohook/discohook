@@ -124,7 +124,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const headers = new Headers();
   let editingMeta: KVComponentEditorState | undefined;
-  if (editorToken) {
+
+  const processEditorToken = async (tokenValue: string) => {
     // This is kind of weird but it's the best method I could think of to fall
     // back to user auth if the editor token is invalid in any way. This block
     // should always execute exactly one time.
@@ -132,7 +133,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       let payload: JWTPayload;
       try {
         ({ payload } = await verifyToken(
-          editorToken,
+          tokenValue,
           context.env,
           context.origin,
         ));
@@ -157,7 +158,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
         const storage = getEditorTokenStorage(context);
         const session = await storage.getSession(request.headers.get("Cookie"));
-        session.set("Authorization", `Editor ${editorToken}`);
+        session.set("Authorization", `Editor ${tokenValue}`);
         headers.append("Set-Cookie", await storage.commitSession(session));
       } else {
         // Token does not have permission data for this component. At the moment
@@ -183,8 +184,20 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       }
       break;
     }
+  };
+
+  if (editorToken) {
+    await processEditorToken(editorToken);
   } else if (!user) {
-    throw redirect(redirectUrl);
+    const storage = getEditorTokenStorage(context);
+    const session = await storage.getSession(request.headers.get("Cookie"));
+    const auth = session.get("Authorization");
+    if (!auth) {
+      needUserAuth = true;
+    } else {
+      const [, tokenValue] = auth.split(" ");
+      await processEditorToken(tokenValue);
+    }
   }
 
   const component = await db.query.discordMessageComponents.findFirst({
