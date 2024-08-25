@@ -2883,6 +2883,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ua-parser-js@npm:^0.7.39":
+  version: 0.7.39
+  resolution: "@types/ua-parser-js@npm:0.7.39"
+  checksum: 10c0/fea522f42dfc2854d9c93144a13c3db3bbe1c791458451db06d46bec7e1dbbe945d1542e02bb38378e39a04bdb7810b43e2ead26f9e6c250832e187312522708
+  languageName: node
+  linkType: hard
+
 "@types/unist@npm:^2, @types/unist@npm:^2.0.0":
   version: 2.0.10
   resolution: "@types/unist@npm:2.0.10"
@@ -4121,6 +4128,7 @@ cron-parser@discohook/cron-parser:
     "@types/react-lazy-load-image-component": "npm:^1.6.4"
     "@types/react-modal": "npm:^3.16.3"
     "@types/showdown": "npm:^2.0.6"
+    "@types/ua-parser-js": "npm:^0.7.39"
     chrono-node: "npm:^2.7.5"
     cron-parser: discohook/cron-parser
     discord-api-types: "npm:^0.37.92"
@@ -4151,6 +4159,7 @@ cron-parser@discohook/cron-parser:
     tailwindcss: "npm:^3.3.6"
     tif-snowflake: discohook/snowflake
     typescript: "npm:^5.1.6"
+    ua-parser-js: "npm:^1.0.38"
     wrangler: "npm:^3.67.1"
     zod: "npm:^3.22.4"
     zodix: "npm:^0.4.4"
@@ -9876,6 +9885,13 @@ tif-snowflake@discohook/snowflake:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10c0/5a437c416251334deeaf29897157032311f3f126547cfdc4b133768b606cb0e62bcee733bb97cf74c42fe7268801aea1392d8e40988cdef112e9546eba4c03c5
+  languageName: node
+  linkType: hard
+
+"ua-parser-js@npm:^1.0.38":
+  version: 1.0.38
+  resolution: "ua-parser-js@npm:1.0.38"
+  checksum: 10c0/b1dd11b87e1784c79f7129e9aec679753fccf8a9b22f5202b79b19492635b5b46b779607a3cfae0270999a0d48da223bf94015642d2abee69d83c9069ab37bd0
   languageName: node
   linkType: hard
 

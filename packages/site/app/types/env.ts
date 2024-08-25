@@ -7,6 +7,7 @@ export interface Env {
   DRAFT_CLEANER: DurableObjectNamespace;
   COMPONENTS: DurableObjectNamespace;
   __STATIC_CONTENT: Fetcher;
+  VERSION: WorkerVersionMetadata;
   // __STATIC_CONTENT_MANIFEST: Object;
   SESSION_SECRET: string;
   TOKEN_SECRET: string;

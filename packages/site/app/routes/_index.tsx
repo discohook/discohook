@@ -6,6 +6,7 @@ import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
+import { UAParser } from "ua-parser-js";
 import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { InvalidShareIdData } from "~/api/v1/share.$shareId";
@@ -14,6 +15,7 @@ import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { Logo } from "~/components/icons/Logo";
 import { PostChannelIcon } from "~/components/icons/channel";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
@@ -54,7 +56,12 @@ import {
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
-import { base64Decode, base64UrlEncode, randomString } from "~/util/text";
+import {
+  base64Decode,
+  base64UrlEncode,
+  copyText,
+  randomString,
+} from "~/util/text";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import { loader as ApiGetComponents } from "../api/v1/components";
@@ -92,6 +99,9 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     user,
     memberships,
     discordApplicationId: context.env.DISCORD_CLIENT_ID,
+    debug: {
+      version: context.env.VERSION,
+    },
   });
 };
 
@@ -143,7 +153,7 @@ export const getQdMessageId = (message: QueryData["messages"][number]) => {
 
 export default function Index() {
   const { t } = useTranslation();
-  const { user, memberships, discordApplicationId } =
+  const { user, memberships, discordApplicationId, debug } =
     useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
@@ -427,6 +437,8 @@ export default function Index() {
   const [confirm, setConfirm] = useConfirmModal();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
+
+  const ua = new UAParser(navigator.userAgent).getResult();
 
   return (
     <div className="h-screen overflow-hidden">
@@ -773,6 +785,66 @@ export default function Index() {
               <span className="my-auto">{t("addMessage")}</span>
             </div>
           </Button>
+          <hr className="border border-gray-400 dark:border-gray-600 my-6" />
+          <div className="grayscale hover:grayscale-0 group flex text-sm opacity-60 hover:opacity-100 transition-opacity">
+            <div className="mb-auto mt-1 ltr:ml-2 rtl:mr-2">
+              <Logo pink={isPremium} />
+            </div>
+            <div className="ltr:ml-6 rtl:mr-6">
+              <p>
+                Discohook is brought to you free of charge by me (shay) and a
+                history of contributors.{" "}
+                <Link
+                  to="/donate"
+                  target="_blank"
+                  className="underline hover:no-underline"
+                >
+                  Consider donating
+                </Link>{" "}
+                if you would like to support the project.
+              </p>
+              <hr className="border-gray-400 dark:border-gray-600 mb-1 mt-2" />
+              <button
+                type="button"
+                className="text-muted dark:text-muted-dark text-xs text-start"
+                title={t("clickToCopy")}
+                onClick={(e) => copyText(e.currentTarget.textContent ?? "")}
+              >
+                Discohook {debug.version.id.split("-")[0]}
+                {"\n"}
+                <br />
+                {ua.browser.name} {ua.browser.version} ({ua.engine.name}){"\n"}
+                <br />
+                {ua.os.name} {ua.os.version}
+              </button>
+              <hr className="border-gray-400 dark:border-gray-600 mt-1 mb-2" />
+              <p className="flex flex-wrap gap-2">
+                <Link
+                  to="/bot"
+                  className="underline hover:no-underline"
+                  target="_blank"
+                >
+                  {t("inviteBot")}
+                </Link>
+                <a
+                  href="https://github.com/discohook/discohook"
+                  className="underline hover:no-underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  GitHub
+                </a>
+                <a
+                  href="https://docs.discohook.app"
+                  className="underline hover:no-underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  API Docs
+                </a>
+              </p>
+            </div>
+          </div>
         </div>
         <div
           className={twMerge(

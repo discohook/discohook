@@ -21,6 +21,9 @@ bindings = [
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
 ]
 
+[version_metadata]
+binding = "VERSION"
+
 [[migrations]]
 tag = "v1"
 new_classes = [

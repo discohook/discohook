@@ -54,6 +54,7 @@
     "robots-parser": "^3.0.1",
     "tailwind-merge": "^2.2.0",
     "tif-snowflake": "discohook/snowflake",
+    "ua-parser-js": "^1.0.38",
     "zod": "^3.22.4",
     "zodix": "^0.4.4"
   },
@@ -67,6 +68,7 @@
     "@types/react-dom": "^18.2.7",
     "@types/react-lazy-load-image-component": "^1.6.4",
     "@types/react-modal": "^3.16.3",
+    "@types/ua-parser-js": "^0.7.39",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.1.6",
     "wrangler": "^3.67.1"
