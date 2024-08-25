@@ -732,13 +732,14 @@ export default () => {
   const [data, setData] = useReducer(
     (current: Data, newData: Partial<Data>) => {
       const compiled = { ...current, ...newData } as Data;
-      let y = 0;
-      let x = 0;
+      let y = -1;
+      let x = -1;
       for (const row of compiled.components) {
         const live = row.components.find(
-          (c) => c.custom_id && c.custom_id === component_.id.toString(),
+          (c) => getComponentId(c) === BigInt(component_.id),
         );
         if (live) {
+          y = Math.max(y, 0);
           x = row.components.indexOf(live);
           setComponent(live);
           break;
@@ -746,7 +747,13 @@ export default () => {
         y += 1;
       }
 
-      setPosition([y, x]);
+      if (y === -1 || x === -1) {
+        console.log(`Missing position (Y${y} X${x})`);
+        return compiled;
+      }
+
+      console.log("New position:", y + 1, x);
+      setPosition([y + 1, x]);
       return compiled;
     },
     message
@@ -762,9 +769,7 @@ export default () => {
       const rows = message.components ?? [];
       const maybeY = rows.findIndex((r) => {
         const maybeX = r.components.findIndex(
-          (c) =>
-            getComponentId(c) !== undefined &&
-            getComponentId(c) === component_.id,
+          (c) => getComponentId(c) === BigInt(component_.id),
         );
         if (maybeX !== -1) {
           x = maybeX;
@@ -774,6 +779,7 @@ export default () => {
       });
       if (maybeY !== -1 && x !== -1) {
         y = maybeY;
+        console.log("spliced", [y, x]);
         rows[y].components.splice(x, 1, component);
         setData({ components: rows });
         return;
@@ -799,6 +805,7 @@ export default () => {
       });
       return;
     }
+    console.log("insert", [y, x]);
     nextAvailableRow.components.push(component);
     x = nextAvailableRow.components.length - 1;
 
@@ -1145,7 +1152,7 @@ export default () => {
             setData({
               components: data.components.map((row, ri) => {
                 if (ri === position[0]) {
-                  row.components[position[1]] = newComponent;
+                  row.components.splice(position[1], 1, newComponent);
                 }
                 return row;
               }),
@@ -1163,8 +1170,11 @@ export default () => {
               const updated = await submitComponent(component, setError);
               if (updated) {
                 try {
-                  data.components[position[0]].components[position[1]] =
-                    updated;
+                  data.components[position[0]].components.splice(
+                    position[1],
+                    1,
+                    updated,
+                  );
                   setData({});
                 } catch (e) {
                   console.error(e);
