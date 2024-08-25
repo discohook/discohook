@@ -1019,20 +1019,13 @@ export default () => {
                                         .reverse()[0];
                                       if (!nextAvailableRow) {
                                         if (i <= 0) return;
-                                        // Move other rows down if we're not already on top
-                                        if (i - 2 < 0) {
-                                          data.components = [
-                                            newRow,
-                                            ...data.components.filter(
-                                              (_, ri) => ri !== i,
-                                            ),
-                                          ];
-                                        } else if (
+                                        if (
                                           data.components.length <
                                           MESSAGE_MAX_ROWS
                                         ) {
+                                          data.components.splice(i, 1);
                                           data.components.splice(
-                                            i - 2,
+                                            Math.max(i - 2, 0),
                                             0,
                                             newRow,
                                           );
@@ -1086,10 +1079,9 @@ export default () => {
                                         if (i >= MESSAGE_MAX_ROWS_INDEX) return;
                                         // Move other rows up if we're not already on the bottom
                                         if (i + 2 > MESSAGE_MAX_ROWS_INDEX) {
+                                          data.components.splice(i, 1);
                                           data.components = [
-                                            ...data.components.filter(
-                                              (_, ri) => ri !== i,
-                                            ),
+                                            ...data.components,
                                             newRow,
                                           ];
                                         } else if (
