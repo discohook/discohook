@@ -10,7 +10,7 @@
     "deploy": "wrangler deploy",
     "deploy-preview": "wrangler deploy --env=preview",
     "dev": "remix dev --manual -c \"npm start\"",
-    "start": "wrangler dev ./build/index.js --port=8788 --persist-to=../../persistence",
+    "start": "wrangler dev ./build/index.js --ip=0.0.0.0 --port=8788 --persist-to=../../persistence",
     "typecheck": "tsc",
     "generate-help": "node scripts/generate-help.js",
     "generate-emoji": "node scripts/generate-emoji.js",
