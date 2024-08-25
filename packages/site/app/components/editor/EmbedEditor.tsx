@@ -634,24 +634,23 @@ export const EmbedEditor: React.FC<{
                 type="time"
                 className="w-full"
                 disabled={!embed.timestamp}
-                step={1}
+                step={60}
                 value={
-                  embed.timestamp
-                    ? new Date(embed.timestamp).toLocaleTimeString("en-US", {
+                  !embed.timestamp
+                    ? ""
+                    : new Date(embed.timestamp).toLocaleTimeString("en-US", {
                         hour: "numeric",
                         minute: "2-digit",
-                        second: "2-digit",
                         hour12: false,
                       })
-                    : ""
                 }
                 onChange={(e) => {
                   if (embed.timestamp) {
-                    const [hours, minutes, seconds] = e.currentTarget.value
+                    const [hours, minutes] = e.currentTarget.value
                       .split(":")
                       .map(Number);
                     const timestamp = new Date(embed.timestamp);
-                    timestamp.setHours(hours, minutes, seconds, 0);
+                    timestamp.setHours(hours, minutes, 0, 0);
                     updateEmbed({
                       timestamp: timestamp.toISOString(),
                     });
