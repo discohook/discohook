@@ -83,6 +83,9 @@ export const getShareEmbed = (
       name: "Expires",
       value: `${time(data.expires, "d")} (${time(data.expires, "R")})`,
       inline: true,
+    })
+    .setFooter({
+      text: "It may take a few minutes for your link to become accessible.",
     });
   if (safe !== undefined) {
     embed.addFields({
@@ -118,7 +121,7 @@ export const createLongDiscohookUrl = (origin: string, data: QueryData) =>
     data: base64UrlEncode(JSON.stringify(data)),
   })}`;
 
-export const createShareLink = async (
+const createShareLink = async (
   env: Env,
   data: QueryData,
   options?: {
