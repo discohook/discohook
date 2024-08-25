@@ -1,7 +1,7 @@
 import { Service } from "@cloudflare/workers-types";
 
 export interface Env {
-  ENVIRONMENT: "dev" | "production";
+  ENVIRONMENT: "dev" | "preview" | "production";
   KV: KVNamespace;
   SCHEDULER: DurableObjectNamespace;
   DRAFT_CLEANER: DurableObjectNamespace;

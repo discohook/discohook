@@ -19,7 +19,7 @@ export default {
     request: Request,
     env: {
       __STATIC_CONTENT: Fetcher;
-      ENVIRONMENT: "dev" | "production";
+      ENVIRONMENT: "dev" | "preview" | "production";
       HYPERDRIVE: Hyperdrive;
       DATABASE_URL: string;
     },
