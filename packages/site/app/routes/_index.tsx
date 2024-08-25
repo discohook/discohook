@@ -100,6 +100,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     memberships,
     discordApplicationId: context.env.DISCORD_CLIENT_ID,
     debug: {
+      environment: context.env.ENVIRONMENT,
       version: context.env.VERSION,
     },
   });
@@ -811,6 +812,9 @@ export default function Index() {
                 onClick={(e) => copyText(e.currentTarget.textContent ?? "")}
               >
                 Discohook {debug.version.id.split("-")[0]}
+                {debug.environment === "production"
+                  ? ""
+                  : ` (${debug.environment})`}
                 {"\n"}
                 <br />
                 {ua.browser.name} {ua.browser.version} ({ua.engine.name}){"\n"}
