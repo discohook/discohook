@@ -131,27 +131,35 @@ export const useSafeFetcher = <TData = any>({
         },
       })
         .then((response) => {
-          response
-            .json()
-            .then((raw) => {
-              if (!response.ok) {
-                if (onError) {
-                  onError({
-                    status: response.status,
-                    message: getZodErrorMessage(raw),
-                  });
+          if (response.status === 204) {
+            setState("idle");
+            return;
+          }
+          const contentType = response.headers.get("Content-Type");
+          if (contentType?.startsWith("application/json")) {
+            response
+              .json()
+              .then((raw) => {
+                if (!response.ok) {
+                  if (onError) {
+                    onError({
+                      status: response.status,
+                      message: getZodErrorMessage(raw),
+                    });
+                  }
+                  setState("idle");
+                  return;
                 }
+                const responseData = raw as SerializeFrom<TData>;
+                setData(responseData);
                 setState("idle");
-                return;
-              }
-              const responseData = raw as SerializeFrom<TData>;
-              setData(responseData);
-              setState("idle");
-            })
-            .catch((e) => {
-              setState("idle");
-              throw e;
-            });
+              })
+              .catch((e) => {
+                setState("idle");
+                throw e;
+              });
+          }
+          throw Error(`Unhandled content type: ${contentType}`);
         })
         .catch((e) => {
           setState("idle");
@@ -179,8 +187,8 @@ export const useSafeFetcher = <TData = any>({
           },
         });
 
-        const raw = await response.json();
         if (!response.ok) {
+          const raw = await response.json();
           if (onError) {
             onError({
               status: response.status,
@@ -190,10 +198,19 @@ export const useSafeFetcher = <TData = any>({
           setState("idle");
           return;
         }
-        const responseData = raw as SerializeFrom<TData>;
-        setData(responseData);
-        setState("idle");
-        return responseData;
+        if (response.status === 204) {
+          setState("idle");
+          return undefined;
+        }
+        const resContentType = response.headers.get("Content-Type");
+        if (resContentType?.startsWith("application/json")) {
+          const raw = await response.json();
+          const responseData = raw as SerializeFrom<TData>;
+          setData(responseData);
+          setState("idle");
+          return responseData;
+        }
+        throw Error(`Unhandled content type: ${contentType}`);
       } catch (e) {
         setState("idle");
         throw e;
