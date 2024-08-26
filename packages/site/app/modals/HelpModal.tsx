@@ -40,7 +40,7 @@ export const HelpModal = (props: ModalProps) => {
         className="w-full mb-2"
         placeholder={t("helpSearchPlaceholder")}
       />
-      <div className="overflow-y-auto max-h-96 flex flex-col">
+      <div className="overflow-y-auto max-h-[32rem] flex flex-col">
         <div className="mx-auto space-y-4">
           {Object.entries(tags)
             .filter(

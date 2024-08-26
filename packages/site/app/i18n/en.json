@@ -98,6 +98,7 @@
   "developer": "Developer",
   "jsonEditor": "JSON Editor",
   "jsonPrettify": "Prettify JSON",
+  "wordWrap": "Word Wrap",
   "copyQueryData": "Copy Query Data",
   "editResource": "Edit {{0}}",
   "removeResource": "Remove {{0}}",
