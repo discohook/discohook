@@ -1,5 +1,13 @@
+import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
-import { ButtonStyle, ComponentType } from "discord-api-types/v10";
+import {
+  APIMessage,
+  APIWebhook,
+  ButtonStyle,
+  ComponentType,
+  Routes,
+  WebhookType
+} from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import {
   TokenWithUser,
@@ -24,10 +32,50 @@ import {
   sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
+import { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
+import { isDiscordError } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
+import { getComponentId } from "./log.webhooks.$webhookId.$webhookToken.messages.$messageId";
+
+// TODO: RPC function in discohook-bot to use stored tokens
+export const getWebhook = async (
+  webhookId: string,
+  env: Env,
+): Promise<APIWebhook> => {
+  const db = getDb(env.HYPERDRIVE.connectionString);
+  const dbWebhook = await db.query.webhooks.findFirst({
+    where: (webhooks, { eq, and }) =>
+      and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)),
+    columns: {
+      id: true,
+      name: true,
+      avatar: true,
+      channelId: true,
+      token: true,
+      applicationId: true,
+      discordGuildId: true,
+    },
+  });
+  if (dbWebhook) {
+    return {
+      type: WebhookType.Incoming, // hopefully we are not storing non-incoming webhooks
+      id: dbWebhook.id,
+      name: dbWebhook.name,
+      channel_id: dbWebhook.channelId,
+      avatar: dbWebhook.avatar,
+      token: dbWebhook.token ?? undefined,
+      guild_id: dbWebhook.discordGuildId?.toString(),
+      application_id: dbWebhook.applicationId,
+    } satisfies APIWebhook;
+  }
+
+  const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
+  const webhook = (await rest.get(Routes.webhook(webhookId))) as APIWebhook;
+  return webhook;
+};
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
@@ -314,7 +362,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             break;
         }
         if (!data) {
-          tx.rollback();
           throw json(
             { message: "Failed to compile data structure for the component" },
             500,
@@ -360,6 +407,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         columns: {
           createdById: true,
           channelId: true,
+          messageId: true,
         },
       });
       if (current?.channelId) {
@@ -386,6 +434,73 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         throw respond(json({ message: "Unknown Component" }, 404));
       }
 
+      if (current.channelId && current.messageId) {
+        const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+        const message = (await rest.get(
+          Routes.channelMessage(
+            String(current.channelId),
+            String(current.messageId),
+          ),
+        )) as APIMessage;
+        let columnIndex = 0;
+        const row = message.components?.find((row) => {
+          const x = row.components.findIndex((c) => getComponentId(c) === id);
+          columnIndex = x;
+          return x !== -1;
+        });
+        if (message.components && row) {
+          if (!message.webhook_id) {
+            throw respond(
+              json(
+                {
+                  message: "The associated message is not a webhook message.",
+                },
+                400,
+              ),
+            );
+          }
+          const webhook = await getWebhook(message.webhook_id, context.env);
+          if (!webhook.token) {
+            throw respond(
+              json(
+                {
+                  message:
+                    "Could not obtain the token for the associated webhook. Try deleting through Discord.",
+                },
+                400,
+              ),
+            );
+          }
+          row.components.splice(columnIndex, 1);
+          if (row.components.length === 0) {
+            message.components.splice(message.components.indexOf(row), 1);
+          }
+          try {
+            await rest.patch(
+              Routes.webhookMessage(webhook.id, webhook.token, message.id),
+              {
+                body: { components: message.components },
+                query:
+                  message.position !== undefined
+                    ? new URLSearchParams({ thread_id: message.channel_id })
+                    : undefined,
+              },
+            );
+          } catch (e) {
+            if (isDiscordError(e) && e.status !== 404) {
+              throw respond(
+                json(
+                  {
+                    message: `The component removal was rejected by Discord. You may have to edit or remove other components before removing this one. The error from Discord was: ${e.code} ${e.rawError.message}`,
+                    raw: e.rawError,
+                  },
+                  400,
+                ),
+              );
+            }
+          }
+        }
+      }
       await db
         .delete(discordMessageComponents)
         .where(eq(discordMessageComponents.id, id));

@@ -1083,10 +1083,12 @@ export default () => {
                                                               discordstyle={
                                                                 ButtonStyle.Danger
                                                               }
-                                                              onClick={(e) => {
+                                                              onClick={async (
+                                                                e,
+                                                              ) => {
                                                                 const callback =
-                                                                  () =>
-                                                                    componentDeleteFetcher.submit(
+                                                                  async () => {
+                                                                    await componentDeleteFetcher.submitAsync(
                                                                       undefined,
                                                                       {
                                                                         method:
@@ -1099,11 +1101,19 @@ export default () => {
                                                                           ),
                                                                       },
                                                                     );
+                                                                    await componentsFetcher.loadAsync(
+                                                                      apiUrl(
+                                                                        BRoutes.guildComponents(
+                                                                          guild.id,
+                                                                        ),
+                                                                      ),
+                                                                    );
+                                                                  };
 
                                                                 if (
                                                                   e.shiftKey
                                                                 ) {
-                                                                  callback();
+                                                                  await callback();
                                                                   return;
                                                                 }
 
@@ -1137,8 +1147,8 @@ export default () => {
                                                                         discordstyle={
                                                                           ButtonStyle.Danger
                                                                         }
-                                                                        onClick={() => {
-                                                                          callback();
+                                                                        onClick={async () => {
+                                                                          await callback();
                                                                           setConfirm(
                                                                             undefined,
                                                                           );
