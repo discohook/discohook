@@ -1,4 +1,5 @@
 {
     "defaultPlaceholder": "Haz una selección",
-    "todayAt": "hoy a las {{time}}"
+    "todayAt": "hoy a las {{time}}",
+    "saveMessageTitle": "Guardar Mensaje"
 }
