@@ -34,7 +34,7 @@ export const resolveAttachmentUri = (
 };
 
 const getImageUri = (uri: string, files?: DraftFile[] | undefined) => {
-  const file = resolveAttachmentUri(uri, files);
+  const file = resolveAttachmentUri(uri.trim(), files);
   if (file) {
     return file.url ?? "";
   } else if (!uri.startsWith("https://") && !uri.startsWith("http://")) {

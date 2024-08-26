@@ -185,10 +185,10 @@ export default function Index() {
                 !!d.data.embeds &&
                 d.data.embeds?.filter(
                   (e) =>
-                    e.author?.icon_url === uri ||
-                    e.image?.url === uri ||
-                    e.thumbnail?.url === uri ||
-                    e.footer?.icon_url === uri,
+                    e.author?.icon_url?.trim() === uri ||
+                    e.image?.url?.trim() === uri ||
+                    e.thumbnail?.url?.trim() === uri ||
+                    e.footer?.icon_url?.trim() === uri,
                 ).length !== 0;
               return f;
             }) ?? [],
