@@ -17,7 +17,6 @@
   "join": "Join",
   "editBackupTitle": "Edit Backup Details",
   "editBackupMessages": "To edit the messages in a backup, click the <0/> button.",
-  "saveMessageTitle": "Save Message",
   "temporaryShareUrl": "Share URL",
   "temporaryShareUrlExpires": "Share URL (expires <0>$t(timestamp.relative.days_future)</0>)",
   "expiresIn": "Expires {{0}}",
