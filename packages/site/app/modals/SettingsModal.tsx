@@ -202,6 +202,35 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           />
         </p>
       </div>
+      <div className="mt-8">
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
+          {t("webhookInput")}
+        </p>
+        <div className="space-y-2 mt-2">
+          <Radio
+            name="webhookInput"
+            label={t("modern")}
+            checked={
+              !settings.webhookInput || settings.webhookInput === "modern"
+            }
+            onChange={(e) => {
+              if (e.currentTarget.checked) {
+                updateSettings({ webhookInput: "modern" });
+              }
+            }}
+          />
+          <Radio
+            name="webhookInput"
+            label={t("classic")}
+            checked={settings.webhookInput === "classic"}
+            onChange={(e) => {
+              if (e.currentTarget.checked) {
+                updateSettings({ webhookInput: "classic" });
+              }
+            }}
+          />
+        </div>
+      </div>
     </Modal>
   );
 };

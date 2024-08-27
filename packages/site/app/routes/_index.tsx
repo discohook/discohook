@@ -13,6 +13,7 @@ import { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
+import { TextInput } from "~/components/TextInput";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Logo } from "~/components/icons/Logo";
@@ -682,66 +683,150 @@ export default function Index() {
               <CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />
             </Button>
           </div>
-          {Object.values(targets).map((webhook) => (
-            <div
-              key={`target-${webhook.id}`}
-              className="rounded-lg py-2 px-3 mb-2 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
-            >
-              <img
-                {...cdnImgAttributes(64, (size) =>
-                  webhookAvatarUrl(webhook, { size }),
-                )}
-                className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
-                alt=""
-              />
-              <div className="truncate my-auto">
-                <div className="flex max-w-full">
-                  <p className="font-semibold truncate dark:text-primary-230 text-lg">
-                    <span className="align-baseline">{webhook.name}</span>
-                    {webhook.application_id === discordApplicationId && (
-                      <span
-                        className="ml-1 inline-block"
-                        title={t("createdByDiscohook")}
+          {settings.webhookInput === "classic" ? (
+            <>
+              <p className="text-sm font-medium">{t("webhookUrl")}</p>
+              {[
+                ...Object.values(targets),
+                {
+                  id: "0",
+                  url: "",
+                  name: "Placeholder",
+                  avatar: null,
+                } as APIWebhook,
+              ].map((webhook) => (
+                <div key={`target-${webhook.id}`} className="flex mb-2">
+                  <button
+                    type="button"
+                    className="my-auto rounded w-[36px] h-[36px] ltr:mr-1 rtl:ml-1 p-0.5 border-2 bg-gray-300 border-gray-200 dark:border-transparent dark:bg-[#292b2f]"
+                    onClick={() => setEditingWebhook(webhook.id)}
+                    disabled={webhook.id === "0"}
+                  >
+                    <img
+                      {...cdnImgAttributes(64, (size) =>
+                        webhookAvatarUrl(webhook, { size }),
+                      )}
+                      className="rounded-full w-full h-full"
+                      title={webhook.name ?? ""}
+                      alt={webhook.name ?? ""}
+                    />
+                  </button>
+                  <div className="grow">
+                    <TextInput
+                      className="w-full text-base"
+                      defaultValue={webhook.url ?? ""}
+                      disabled={webhook.id !== "0"}
+                      onChange={async ({ currentTarget }) => {
+                        const { value } = currentTarget;
+                        if (!value.trim()) return;
+
+                        const match = WEBHOOK_URL_RE.exec(value);
+                        if (!match) {
+                          return;
+                        }
+
+                        const live = await getWebhook(match[1], match[2]);
+                        if (live.id) {
+                          if (cache && live.guild_id) {
+                            cache.fetchGuildCacheable(live.guild_id);
+                          }
+                          updateTargets({ [live.id]: live });
+                          currentTarget.value = "";
+                        } else if ("message" in live) {
+                          // setUrlError(live.message as string);
+                        }
+                      }}
+                      placeholder="https://discord.com/api/webhooks/..."
+                    />
+                  </div>
+                  <div className="ltr:ml-2 rtl:mr-2 my-auto shrink-0 text-xl">
+                    {webhook.id !== "0" ? (
+                      <button
+                        type="button"
+                        title={t("removeResource", { replace: [webhook.name] })}
+                        onClick={() => {
+                          delete targets[webhook.id];
+                          updateTargets({ ...targets });
+                        }}
                       >
-                        <CoolIcon
-                          icon="Circle_Check"
-                          className="text-blurple-500 dark:text-blurple-400"
-                        />
-                      </span>
+                        <CoolIcon icon="Close_MD" />
+                      </button>
+                    ) : (
+                      <div className="w-5 h-0" />
                     )}
-                  </p>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            Object.values(targets).map((webhook) => (
+              <div
+                key={`target-${webhook.id}`}
+                className="rounded-lg py-2 px-3 mb-2 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
+              >
+                <img
+                  {...cdnImgAttributes(64, (size) =>
+                    webhookAvatarUrl(webhook, { size }),
+                  )}
+                  className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
+                  alt=""
+                />
+                <div className="truncate my-auto">
+                  <div className="flex max-w-full">
+                    <p className="font-semibold truncate dark:text-primary-230 text-lg">
+                      <span className="align-baseline">{webhook.name}</span>
+                      {webhook.application_id === discordApplicationId && (
+                        <span
+                          className="ml-1 inline-block"
+                          title={t("createdByDiscohook")}
+                        >
+                          <CoolIcon
+                            icon="Circle_Check"
+                            className="text-blurple-500 dark:text-blurple-400"
+                          />
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="ltr:ml-auto rtl:mr-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
+                  <button
+                    type="button"
+                    title={t("editResource", { replace: [webhook.name] })}
+                    onClick={() => setEditingWebhook(webhook.id)}
+                  >
+                    <CoolIcon icon="Edit_Pencil_01" />
+                  </button>
+                  <button
+                    type="button"
+                    title={t("removeResource", { replace: [webhook.name] })}
+                    onClick={() => {
+                      delete targets[webhook.id];
+                      updateTargets({ ...targets });
+                    }}
+                  >
+                    <CoolIcon icon="Trash_Full" />
+                  </button>
                 </div>
               </div>
-              <div className="ltr:ml-auto rtl:mr-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
-                <button
-                  type="button"
-                  title={t("editResource", { replace: [webhook.name] })}
-                  onClick={() => setEditingWebhook(webhook.id)}
-                >
-                  <CoolIcon icon="Edit_Pencil_01" />
-                </button>
-                <button
-                  type="button"
-                  title={t("removeResource", { replace: [webhook.name] })}
-                  onClick={() => {
-                    delete targets[webhook.id];
-                    updateTargets({ ...targets });
-                  }}
-                >
-                  <CoolIcon icon="Trash_Full" />
-                </button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
           <div className="flex space-x-2 rtl:space-x-reverse">
+            {settings.webhookInput !== "classic" && (
+              <Button
+                onClick={() => setAddingTarget(true)}
+                disabled={Object.keys(targets).length >= 10}
+              >
+                {t("addWebhook")}
+              </Button>
+            )}
             <Button
-              onClick={() => setAddingTarget(true)}
-              disabled={Object.keys(targets).length >= 10}
-            >
-              {t("addWebhook")}
-            </Button>
-            <Button
-              onClick={() => setSendingMessages(true)}
+              onClick={() => {
+                if (settings.webhookInput !== "classic") {
+                  setSendingMessages(true);
+                  return;
+                }
+              }}
               disabled={data.messages.length === 0}
             >
               {t("send")}

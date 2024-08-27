@@ -5,6 +5,7 @@ export type LocaleCode = "en-US" | "en-GB" | "ar" | "zh" | "fr" | "nl" | "es";
 export interface Settings {
   theme?: "light" | "dark" | "sync";
   messageDisplay?: "cozy" | "compact";
+  webhookInput?: "modern" | "classic";
   compactAvatars?: boolean;
   skinTone?: 0 | 1 | 2 | 3 | 4;
   forceDualPane?: boolean;
