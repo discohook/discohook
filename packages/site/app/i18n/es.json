@@ -19,5 +19,8 @@
     "supportServerLanguageNote": "Este es un servidor de soporte <bold>solo en Inglés</bold>. A pesar de que Discohook ofrece múltiples idiomas para facilidad de uso, nuestros equipos de soporte y moderación usualmente solo pueden ofrecer ayuda en Inglés. Puedes usar <anchor>herramientas como DeepL</anchor> si no te sientes cómodo con tu dominio del lenguage. Marca la casilla en la izquierda para unirte al servidor.",
     "join": "Unirse",
     "hourTime": "Hora ({{timezone}})",
-    "minute": "Minuto"
+    "minute": "Minuto",
+    "locales": {
+        "es": "Español"
+    }
 }
