@@ -73,7 +73,8 @@
     "nl": "Dutch",
     "en-US": "English, US",
     "en-GB": "English, UK",
-    "fr": "French"
+    "fr": "French",
+    "es": "Spanish"
   },
   "webhookUrl": "Webhook URL",
   "invalidWebhookUrl": "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",

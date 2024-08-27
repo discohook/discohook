@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type LocaleCode = "en-US" | "en-GB" | "ar" | "zh" | "fr" | "nl";
+export type LocaleCode = "en-US" | "en-GB" | "ar" | "zh" | "fr" | "nl" | "es";
 
 export interface Settings {
   theme?: "light" | "dark" | "sync";
@@ -24,7 +24,9 @@ export const useLocalStorage = (): [
   const settings = JSON.parse(
     localStorage.getItem("discohook_settings") ?? "{}",
   );
+  // biome-ignore lint/correctness/useHookAtTopLevel: server/client case
   const [state, setState] = useState(settings as Settings);
+  // biome-ignore lint/correctness/useHookAtTopLevel: ^
   useEffect(() => {
     const listenStorageChange = () => {
       setState(JSON.parse(localStorage.getItem("discohook_settings") ?? "{}"));
