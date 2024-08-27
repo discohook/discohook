@@ -1,5 +1,23 @@
 {
     "defaultPlaceholder": "Haz una selección",
     "todayAt": "hoy a las {{time}}",
-    "saveMessageTitle": "Guardar Mensaje"
+    "saveMessageTitle": "Guardar Mensaje",
+    "dayOfMonth": "Día del Mes",
+    "settings": "Ajustes",
+    "help": "Ayuda",
+    "logIn": "Iniciar Sesión",
+    "logOut": "Cerrar Sesión",
+    "name": "Nombre",
+    "save": "Guardar",
+    "edit": "Editar",
+    "day": "Día",
+    "channel": "Canal",
+    "webhookChannelMentionAndThreads": "<#{{0}}> (y sus hilos)",
+    "month": "Mes",
+    "weekday": "Día de la Semana",
+    "cancel": "Cancelar",
+    "supportServerLanguageNote": "Este es un servidor de soporte <bold>solo en Inglés</bold>. A pesar de que Discohook ofrece múltiples idiomas para facilidad de uso, nuestros equipos de soporte y moderación usualmente solo pueden ofrecer ayuda en Inglés. Puedes usar <anchor>herramientas como DeepL</anchor> si no te sientes cómodo con tu dominio del lenguage. Marca la casilla en la izquierda para unirte al servidor.",
+    "join": "Unirse",
+    "hourTime": "Hora ({{timezone}})",
+    "minute": "Minuto"
 }
