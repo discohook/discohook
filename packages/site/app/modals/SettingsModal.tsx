@@ -1,10 +1,12 @@
+import { Link } from "@remix-run/react";
 import { type i18n as i18nT } from "i18next";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
 import { Radio } from "~/components/Radio";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
+import { linkClassName } from "~/components/preview/Markdown";
 import { User } from "~/session.server";
 import { LocaleCode, Settings, useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
@@ -185,6 +187,20 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
               />
             ))}
         </div>
+        <p className="text-sm text-muted dark:text-muted-dark">
+          <Trans
+            t={t}
+            i18nKey="translatePrompt"
+            components={[
+              <Link
+                to="https://translate.shay.cat/engage/discohook/"
+                target="_blank"
+                className={linkClassName}
+              />,
+              <Link to="/discord" target="_blank" className={linkClassName} />,
+            ]}
+          />
+        </p>
       </div>
     </Modal>
   );

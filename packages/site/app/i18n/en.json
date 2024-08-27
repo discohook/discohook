@@ -76,6 +76,7 @@
     "fr": "French",
     "es": "Spanish"
   },
+  "translatePrompt": "Want to help translate Discohook into your language? Check out <0>the translation portal</0> and join <1>the support server</1> to coordinate with us.",
   "webhookUrl": "Webhook URL",
   "invalidWebhookUrl": "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
   "createdAtBy": "Created on {{ createdAt, MMM D, YYYY }} by {{username}}",
