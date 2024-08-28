@@ -33,7 +33,10 @@ import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
 import { MessageFlagsEditModal } from "~/modals/MesageFlagsEditModal";
 import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
-import { MessageSendModal } from "~/modals/MessageSendModal";
+import {
+  MessageSendModal,
+  useMessageSubmissionManager,
+} from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { MessageShareModal } from "~/modals/MessageShareModal";
 import { ModalFooter } from "~/modals/Modal";
@@ -422,6 +425,14 @@ export default function Index() {
     {},
   );
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
+  const {
+    sending,
+    setShowingResult,
+    resultModal,
+    submitMessages,
+    ...restSubmission
+  } = useMessageSubmissionManager(t, data, files);
+
   const [settingMessageIndex, setSettingMessageIndex] = useState(
     dm?.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
   );
@@ -483,10 +494,15 @@ export default function Index() {
         setOpen={setSendingMessages}
         setAddingTarget={setAddingTarget}
         targets={targets}
+        sending={sending}
         data={data}
-        files={files}
         cache={cache}
+        messages={restSubmission.messages}
+        updateMessages={restSubmission.updateMessages}
+        setShowingResult={setShowingResult}
+        submitMessages={submitMessages}
       />
+      {resultModal}
       <WebhookEditModal
         open={editingWebhook !== undefined}
         setOpen={() => setEditingWebhook(undefined)}
@@ -683,35 +699,6 @@ export default function Index() {
               <CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />
             </Button>
           </div>
-          {settings.webhookInput === "classic" && (
-            <>
-              <p className="text-sm font-medium">{t("webhookUrl")}</p>
-              <TextInput
-                className="w-full text-base mb-2"
-                onChange={async ({ currentTarget }) => {
-                  const { value } = currentTarget;
-                  if (!value.trim()) return;
-
-                  const match = WEBHOOK_URL_RE.exec(value);
-                  if (!match) {
-                    return;
-                  }
-
-                  const live = await getWebhook(match[1], match[2]);
-                  if (live.id) {
-                    if (cache && live.guild_id && !targets[live.id]) {
-                      cache.fetchGuildCacheable(live.guild_id);
-                    }
-                    updateTargets({ [live.id]: live });
-                    currentTarget.value = "";
-                  } else if ("message" in live) {
-                    // setUrlError(live.message as string);
-                  }
-                }}
-                placeholder="https://discord.com/api/webhooks/..."
-              />
-            </>
-          )}
           {Object.values(targets).map((webhook) => (
             <div
               key={`target-${webhook.id}`}
@@ -763,6 +750,40 @@ export default function Index() {
               </div>
             </div>
           ))}
+          {settings.webhookInput === "classic" && (
+            <div className="flex mb-2">
+              {/* <CoolIcon
+                icon="Add_Plus_Circle"
+                className="my-auto text-2xl ltr:mr-2 rtl:ml-2 text-muted dark:text-muted-dark"
+              /> */}
+              <div className="grow">
+                <TextInput
+                  className="w-full text-base"
+                  onChange={async ({ currentTarget }) => {
+                    const { value } = currentTarget;
+                    if (!value.trim()) return;
+
+                    const match = WEBHOOK_URL_RE.exec(value);
+                    if (!match) {
+                      return;
+                    }
+
+                    const live = await getWebhook(match[1], match[2]);
+                    if (live.id) {
+                      if (cache && live.guild_id && !targets[live.id]) {
+                        cache.fetchGuildCacheable(live.guild_id);
+                      }
+                      updateTargets({ [live.id]: live });
+                      currentTarget.value = "";
+                    } else if ("message" in live) {
+                      // setUrlError(live.message as string);
+                    }
+                  }}
+                  placeholder="https://discord.com/api/webhooks/..."
+                />
+              </div>
+            </div>
+          )}
           <div className="flex space-x-2 rtl:space-x-reverse">
             {settings.webhookInput !== "classic" && (
               <Button
@@ -773,15 +794,33 @@ export default function Index() {
               </Button>
             )}
             <Button
-              onClick={() => {
+              disabled={data.messages.length === 0 || sending}
+              onClick={async () => {
                 if (settings.webhookInput !== "classic") {
                   setSendingMessages(true);
                   return;
                 }
+                const results = await submitMessages(Object.values(targets));
+                const errors = results.filter((r) => r.status === "error");
+                if (errors.length === 1) {
+                  setShowingResult(errors[0]);
+                } else if (errors.length !== 0) {
+                  setSendingMessages(true);
+                }
               }}
-              disabled={data.messages.length === 0}
             >
-              {t("send")}
+              {t(
+                settings.webhookInput !== "classic"
+                  ? "send"
+                  : sending
+                    ? "sending"
+                    : Object.keys(targets).length <= 1 &&
+                        data.messages.length > 1
+                      ? "sendAll"
+                      : Object.keys(targets).length > 1
+                        ? "sendToAll"
+                        : "send",
+              )}
             </Button>
           </div>
           {data.messages.map((d, i) => {
