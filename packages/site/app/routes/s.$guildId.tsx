@@ -1011,195 +1011,171 @@ export default () => {
                                           className="flex p-2 text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition"
                                         >
                                           <div className="flex flex-wrap gap-x-1.5 gap-y-0 mt-1 ltr:mr-4 rtl:ml-4">
-                                            {components.map((component) => {
-                                              const onClick =
-                                                () =>
-                                                (
-                                                  e: React.MouseEvent<
-                                                    HTMLButtonElement,
-                                                    MouseEvent
-                                                  >,
-                                                ) => {
-                                                  if (e.shiftKey) {
-                                                    navigate(
-                                                      `/edit/component/${component.id}`,
-                                                    );
-                                                    return;
-                                                  }
+                                            {components.map((component) => (
+                                              <div
+                                                key={`component-${component.id}`}
+                                                className={twJoin(
+                                                  getComponentWidth(
+                                                    component.data,
+                                                  ) >= 5
+                                                    ? "block w-full my-1 first:mt-0"
+                                                    : "contents",
+                                                )}
+                                              >
+                                                <GenericPreviewComponent
+                                                  // @ts-expect-error the type is close enough for this component
+                                                  // TODO: use `buildStorableComponent` for general completeness
+                                                  data={{
+                                                    ...component.data,
+                                                    // Easier than messing with <Button/> for now
+                                                    ...(component.data.type ===
+                                                    ComponentType.Button
+                                                      ? {
+                                                          url: "",
+                                                          disabled: false,
+                                                        }
+                                                      : {}),
+                                                  }}
+                                                  cache={cache}
+                                                  t={t}
+                                                  onClick={(e) => {
+                                                    if (e.shiftKey) {
+                                                      navigate(
+                                                        `/edit/component/${component.id}`,
+                                                      );
+                                                      return;
+                                                    }
 
-                                                  setConfirm({
-                                                    title:
-                                                      t("messageComponent"),
-                                                    children: (
-                                                      <>
-                                                        <div className="flex w-full">
-                                                          <div className="mx-auto">
-                                                            <GenericPreviewComponent
-                                                              // @ts-expect-error
-                                                              data={
-                                                                component.data
-                                                              }
-                                                              cache={cache}
-                                                              t={t}
-                                                            />
+                                                    setConfirm({
+                                                      title:
+                                                        t("messageComponent"),
+                                                      children: (
+                                                        <>
+                                                          <div className="flex w-full">
+                                                            <div className="mx-auto">
+                                                              <GenericPreviewComponent
+                                                                // @ts-expect-error
+                                                                data={
+                                                                  component.data
+                                                                }
+                                                                cache={cache}
+                                                                t={t}
+                                                              />
+                                                            </div>
                                                           </div>
-                                                        </div>
-                                                        <hr className="border border-gray-500/20 mt-4 mb-1" />
-                                                        <p className="text-muted dark:text-muted-dark text-sm font-medium">
-                                                          {t(
-                                                            "componentEditShiftSkipTip",
-                                                          )}
-                                                        </p>
-                                                        <div className="space-x-1.5 rtl:space-x-reverse mt-4">
-                                                          <Link
-                                                            to={`/edit/component/${component.id}`}
-                                                            className="contents"
-                                                          >
+                                                          <hr className="border border-gray-500/20 mt-4 mb-1" />
+                                                          <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                                                            {t(
+                                                              "componentEditShiftSkipTip",
+                                                            )}
+                                                          </p>
+                                                          <div className="space-x-1.5 rtl:space-x-reverse mt-4">
+                                                            <Link
+                                                              to={`/edit/component/${component.id}`}
+                                                              className="contents"
+                                                            >
+                                                              <Button
+                                                                discordstyle={
+                                                                  ButtonStyle.Link
+                                                                }
+                                                              >
+                                                                {t("edit")}
+                                                              </Button>
+                                                            </Link>
                                                             <Button
                                                               discordstyle={
-                                                                ButtonStyle.Link
+                                                                ButtonStyle.Danger
                                                               }
-                                                            >
-                                                              {t("edit")}
-                                                            </Button>
-                                                          </Link>
-                                                          <Button
-                                                            discordstyle={
-                                                              ButtonStyle.Danger
-                                                            }
-                                                            onClick={async (
-                                                              e,
-                                                            ) => {
-                                                              const callback =
-                                                                async () => {
-                                                                  await componentDeleteFetcher.submitAsync(
-                                                                    undefined,
-                                                                    {
-                                                                      method:
-                                                                        "DELETE",
-                                                                      action:
-                                                                        apiUrl(
-                                                                          BRoutes.component(
-                                                                            component.id.toString(),
+                                                              onClick={async (
+                                                                e,
+                                                              ) => {
+                                                                const callback =
+                                                                  async () => {
+                                                                    await componentDeleteFetcher.submitAsync(
+                                                                      undefined,
+                                                                      {
+                                                                        method:
+                                                                          "DELETE",
+                                                                        action:
+                                                                          apiUrl(
+                                                                            BRoutes.component(
+                                                                              component.id.toString(),
+                                                                            ),
                                                                           ),
+                                                                      },
+                                                                    );
+                                                                    await componentsFetcher.loadAsync(
+                                                                      apiUrl(
+                                                                        BRoutes.guildComponents(
+                                                                          guild.id,
                                                                         ),
-                                                                    },
-                                                                  );
-                                                                  await componentsFetcher.loadAsync(
-                                                                    apiUrl(
-                                                                      BRoutes.guildComponents(
-                                                                        guild.id,
                                                                       ),
+                                                                    );
+                                                                  };
+
+                                                                if (
+                                                                  e.shiftKey
+                                                                ) {
+                                                                  await callback();
+                                                                  return;
+                                                                }
+
+                                                                setConfirm({
+                                                                  title:
+                                                                    t(
+                                                                      "deleteComponent",
                                                                     ),
-                                                                  );
-                                                                };
-
-                                                              if (e.shiftKey) {
-                                                                await callback();
-                                                                return;
-                                                              }
-
-                                                              setConfirm({
-                                                                title:
-                                                                  t(
-                                                                    "deleteComponent",
+                                                                  children: (
+                                                                    <>
+                                                                      <p>
+                                                                        {t(
+                                                                          "deleteComponentConfirm",
+                                                                          {
+                                                                            replace:
+                                                                              {
+                                                                                type: component
+                                                                                  .data
+                                                                                  .type,
+                                                                              },
+                                                                          },
+                                                                        )}
+                                                                      </p>
+                                                                      <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                                                                        {t(
+                                                                          "shiftSkipTip",
+                                                                        )}
+                                                                      </p>
+                                                                      <Button
+                                                                        className="mt-4"
+                                                                        discordstyle={
+                                                                          ButtonStyle.Danger
+                                                                        }
+                                                                        onClick={async () => {
+                                                                          await callback();
+                                                                          setConfirm(
+                                                                            undefined,
+                                                                          );
+                                                                        }}
+                                                                      >
+                                                                        {t(
+                                                                          "delete",
+                                                                        )}
+                                                                      </Button>
+                                                                    </>
                                                                   ),
-                                                                children: (
-                                                                  <>
-                                                                    <p>
-                                                                      {t(
-                                                                        "deleteComponentConfirm",
-                                                                        {
-                                                                          replace:
-                                                                            {
-                                                                              type: component
-                                                                                .data
-                                                                                .type,
-                                                                            },
-                                                                        },
-                                                                      )}
-                                                                    </p>
-                                                                    <p className="text-muted dark:text-muted-dark text-sm font-medium">
-                                                                      {t(
-                                                                        "shiftSkipTip",
-                                                                      )}
-                                                                    </p>
-                                                                    <Button
-                                                                      className="mt-4"
-                                                                      discordstyle={
-                                                                        ButtonStyle.Danger
-                                                                      }
-                                                                      onClick={async () => {
-                                                                        await callback();
-                                                                        setConfirm(
-                                                                          undefined,
-                                                                        );
-                                                                      }}
-                                                                    >
-                                                                      {t(
-                                                                        "delete",
-                                                                      )}
-                                                                    </Button>
-                                                                  </>
-                                                                ),
-                                                              });
-                                                            }}
-                                                          >
-                                                            {t("delete")}
-                                                          </Button>
-                                                        </div>
-                                                      </>
-                                                    ),
-                                                  });
-                                                };
-
-                                              return (
-                                                <div
-                                                  key={`component-${component.id}`}
-                                                  className={twJoin(
-                                                    getComponentWidth(
-                                                      component.data,
-                                                    ) >= 5
-                                                      ? "block w-full my-1 first:mt-0"
-                                                      : "contents",
-                                                  )}
-                                                >
-                                                  {component.data.type ===
-                                                    ComponentType.Button &&
-                                                  component.data.style ===
-                                                    ButtonStyle.Link ? (
-                                                    <Button
-                                                      emoji={
-                                                        component.data.emoji
-                                                      }
-                                                      discordstyle={
-                                                        component.data.style
-                                                      }
-                                                      onClick={onClick}
-                                                    >
-                                                      {component.data.label}
-                                                    </Button>
-                                                  ) : (
-                                                    <GenericPreviewComponent
-                                                      // @ts-expect-error the type is close enough for this component
-                                                      // TODO: use `buildStorableComponent` for general completeness
-                                                      data={{
-                                                        ...component.data,
-                                                        // Easier than messing with <Button/> for now
-                                                        ...(component.data
-                                                          .type ===
-                                                        ComponentType.Button
-                                                          ? { disabled: false }
-                                                          : {}),
-                                                      }}
-                                                      cache={cache}
-                                                      t={t}
-                                                      onClick={onClick}
-                                                    />
-                                                  )}
-                                                </div>
-                                              );
-                                            })}
+                                                                });
+                                                              }}
+                                                            >
+                                                              {t("delete")}
+                                                            </Button>
+                                                          </div>
+                                                        </>
+                                                      ),
+                                                    });
+                                                  }}
+                                                />
+                                              </div>
+                                            ))}
                                           </div>
                                           {channelId && messageId && (
                                             <div className="border-l border-l-blurple/30 ltr:ml-auto rtl:mr-auto ltr:pl-4 ltr:pr-1 rtl:pr-4 rtl:pl-1 flex">

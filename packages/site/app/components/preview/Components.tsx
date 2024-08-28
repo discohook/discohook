@@ -52,7 +52,7 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
       {data.style !== ButtonStyle.Premium ? data.label : `SKU ${data.sku_id}`}
     </Button>
   );
-  return data.style === ButtonStyle.Link ? (
+  return data.style === ButtonStyle.Link && data.url !== "" ? (
     <a href={data.url} target="_blank" rel="noreferrer">
       {button}
     </a>
