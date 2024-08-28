@@ -23,7 +23,7 @@ export const useError = (t?: TFunction) => {
         return;
       }
       if (params.code && t) {
-        setText(t(`errors.${params.code}`));
+        setText(t(params.code));
       } else {
         setText(params.message);
       }

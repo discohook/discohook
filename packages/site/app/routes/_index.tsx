@@ -11,6 +11,7 @@ import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import { Button } from "~/components/Button";
+import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
@@ -163,6 +164,7 @@ export default function Index() {
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
   const cache = useCache(!user);
+  const [error, setError] = useError(t);
 
   const [searchParams] = useSearchParams();
   const dm = searchParams.get("m");
@@ -431,7 +433,7 @@ export default function Index() {
     resultModal,
     submitMessages,
     ...restSubmission
-  } = useMessageSubmissionManager(t, data, files);
+  } = useMessageSubmissionManager(t, data, files, setError);
 
   const [settingMessageIndex, setSettingMessageIndex] = useState(
     dm?.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
@@ -604,6 +606,7 @@ export default function Index() {
               : twJoin("md:w-1/2", tab === "editor" ? "" : "hidden md:block"),
           )}
         >
+          {error}
           {urlTooLong && (
             <InfoBox icon="Triangle_Warning" severity="yellow">
               Your message data is too large to be shown in the page URL. If you
@@ -760,11 +763,13 @@ export default function Index() {
                 <TextInput
                   className="w-full text-base"
                   onChange={async ({ currentTarget }) => {
+                    setError(undefined);
                     const { value } = currentTarget;
                     if (!value.trim()) return;
 
                     const match = WEBHOOK_URL_RE.exec(value);
                     if (!match) {
+                      setError({ code: "invalidWebhookUrl" });
                       return;
                     }
 
@@ -776,7 +781,7 @@ export default function Index() {
                       updateTargets({ [live.id]: live });
                       currentTarget.value = "";
                     } else if ("message" in live) {
-                      // setUrlError(live.message as string);
+                      setError({ message: live.message as string });
                     }
                   }}
                   placeholder="https://discord.com/api/webhooks/..."
