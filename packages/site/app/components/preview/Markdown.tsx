@@ -1196,7 +1196,7 @@ const extendable: Record<MarkdownFeatures, RuleOptionKey[]> = {
     .map((pair) => pair[0] as RuleOptionKey),
 };
 
-function getRules(features: FeatureConfig) {
+const getRules = (features: FeatureConfig) => {
   let rules: Rule[];
   if (typeof features === "string") {
     rules = extendable[features].map((key) => ruleOptions[key].rule);
@@ -1219,7 +1219,28 @@ function getRules(features: FeatureConfig) {
   }
 
   return rules;
-}
+};
+
+export const getEnabledRuleKeys = (features: FeatureConfig): RuleOptionKey[] => {
+  let keys: RuleOptionKey[];
+  if (typeof features === "string") {
+    keys = extendable[features];
+  } else {
+    const { extend, ...ft } = features;
+    keys = extend
+      ? [
+          ...extendable[extend].filter((key) => ft[key] !== false),
+          ...Object.keys(ruleOptions).filter(
+            (key): key is RuleOptionKey => ft[key as RuleOptionKey] === true,
+          ),
+        ]
+      : Object.entries(ft)
+          .filter((pair) => pair[1])
+          .map((pair) => pair[0] as RuleOptionKey);
+  }
+
+  return keys;
+};
 
 export const Markdown: React.FC<{
   content: string;

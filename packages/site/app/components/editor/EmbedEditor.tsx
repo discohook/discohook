@@ -479,7 +479,7 @@ export const EmbedEditor: React.FC<{
                           value={field.name}
                           maxLength={256}
                           className="w-full"
-                          markdown="full"
+                          markdown="title"
                           cache={cache}
                           short
                           required

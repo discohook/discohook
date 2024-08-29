@@ -11,14 +11,19 @@ export const PopoutRichPicker: React.FC<
   React.PropsWithChildren<{
     insertText: (text: string) => void;
     cache?: CacheManager;
+    mentionsTab?: boolean;
+    timeTab?: boolean;
+    emojiTab?: boolean;
   }>
-> = ({ insertText, cache, children }) => {
+> = ({ insertText, cache, children, mentionsTab, timeTab, emojiTab }) => {
   const id = randomString(10);
   const [open, setOpen] = useState(false);
 
   // Do we want a gif picker too?
   type Tab = "mentions" | "time" | "emoji";
-  const [tab, setTab] = useState<Tab>("mentions");
+  const [tab, setTab] = useState<Tab>(
+    mentionsTab === false ? (timeTab === false ? "emoji" : "time") : "mentions",
+  );
 
   return (
     <div>
@@ -36,38 +41,46 @@ export const PopoutRichPicker: React.FC<
       >
         <div className="bg-gray-300 dark:bg-gray-800 border border-black/5 dark:border-gray-200/20 rounded shadow-md w-[385px]">
           <div className="font-semibold space-x-1 rtl:space-x-reverse px-2 pt-2 text-sm">
-            <button
-              type="button"
-              className={twJoin(
-                "inline-block rounded px-1.5 py-px hover:bg-primary-300 dark:hover:bg-primary-500 transition",
-                tab === "mentions" ? "bg-primary-300 dark:bg-primary-500" : "",
-              )}
-              onClick={() => setTab("mentions")}
-            >
-              Mentions
-            </button>
-            <button
-              type="button"
-              className={twJoin(
-                "inline-block rounded px-1.5 py-px hover:bg-primary-300 dark:hover:bg-primary-500 transition",
-                tab === "time" ? "bg-primary-300 dark:bg-primary-500" : "",
-              )}
-              onClick={() => setTab("time")}
-            >
-              Time
-            </button>
-            <button
-              type="button"
-              className={twJoin(
-                "inline-block rounded px-1.5 py-px hover:bg-primary-300 dark:hover:bg-primary-500 transition",
-                tab === "emoji" ? "bg-primary-300 dark:bg-primary-500" : "",
-              )}
-              onClick={() => setTab("emoji")}
-            >
-              Emojis
-            </button>
+            {mentionsTab !== false && (
+              <button
+                type="button"
+                className={twJoin(
+                  "inline-block rounded px-1.5 py-px hover:bg-primary-300 dark:hover:bg-primary-500 transition",
+                  tab === "mentions"
+                    ? "bg-primary-300 dark:bg-primary-500"
+                    : "",
+                )}
+                onClick={() => setTab("mentions")}
+              >
+                Mentions
+              </button>
+            )}
+            {timeTab !== false && (
+              <button
+                type="button"
+                className={twJoin(
+                  "inline-block rounded px-1.5 py-px hover:bg-primary-300 dark:hover:bg-primary-500 transition",
+                  tab === "time" ? "bg-primary-300 dark:bg-primary-500" : "",
+                )}
+                onClick={() => setTab("time")}
+              >
+                Time
+              </button>
+            )}
+            {emojiTab !== false && (
+              <button
+                type="button"
+                className={twJoin(
+                  "inline-block rounded px-1.5 py-px hover:bg-primary-300 dark:hover:bg-primary-500 transition",
+                  tab === "emoji" ? "bg-primary-300 dark:bg-primary-500" : "",
+                )}
+                onClick={() => setTab("emoji")}
+              >
+                Emojis
+              </button>
+            )}
           </div>
-          {tab === "mentions" ? (
+          {tab === "mentions" && mentionsTab !== false ? (
             <MentionsPicker
               id={id}
               className="border-none shadow-none w-full"
@@ -93,7 +106,7 @@ export const PopoutRichPicker: React.FC<
                 }
               }}
             />
-          ) : tab === "time" ? (
+          ) : tab === "time" && timeTab !== false ? (
             <TimePicker
               id={id}
               className="border-none shadow-none w-full"
@@ -108,7 +121,7 @@ export const PopoutRichPicker: React.FC<
                 setOpen(false);
               }}
             />
-          ) : tab === "emoji" ? (
+          ) : tab === "emoji" && emojiTab !== false ? (
             <EmojiPicker
               id={id}
               cache={cache}

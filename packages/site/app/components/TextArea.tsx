@@ -5,7 +5,10 @@ import { twJoin } from "tailwind-merge";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { PopoutRichPicker } from "./editor/RichPicker";
 import { CoolIcon } from "./icons/CoolIcon";
-import { MarkdownFeatures } from "./preview/Markdown";
+import {
+  FeatureConfig,
+  getEnabledRuleKeys
+} from "./preview/Markdown";
 
 export const TextArea = (
   props: React.DetailedHTMLProps<
@@ -18,7 +21,7 @@ export const TextArea = (
     errors?: ReactNode[];
     short?: boolean;
     freeLength?: boolean;
-    markdown?: MarkdownFeatures;
+    markdown?: FeatureConfig;
     cache?: CacheManager;
     t?: TFunction;
   },
@@ -43,6 +46,7 @@ export const TextArea = (
     newProps.maxLength = undefined;
   }
 
+  const mdKeys = markdown ? getEnabledRuleKeys(markdown) : [];
   return (
     <label className="block">
       <p className="text-sm font-medium">
@@ -118,6 +122,17 @@ export const TextArea = (
                 insertTextAtCursor(ref.current, text);
               }
             }}
+            mentionsTab={
+              mdKeys.includes("channelMentions") &&
+              mdKeys.includes("guildSectionMentions") &&
+              mdKeys.includes("memberMentions") &&
+              mdKeys.includes("roleMentions")
+            }
+            timeTab={mdKeys.includes("timestamps")}
+            emojiTab={
+              mdKeys.includes("customEmojis") ||
+              mdKeys.includes("unicodeEmojis")
+            }
           >
             <CoolIcon
               icon="Keyboard"
