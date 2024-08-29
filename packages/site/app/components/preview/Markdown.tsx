@@ -1165,7 +1165,7 @@ export const ruleOptions: Record<
   strikethrough: { rule: strikethroughRule, title: true, full: true },
   breaks: { rule: breakRule, title: true, full: true },
   spoilers: { rule: spoilerRule, title: true, full: true },
-  timestamps: { rule: timestampRule, full: true },
+  timestamps: { rule: timestampRule, title: true, full: true },
   globalMentions: { rule: globalMentionRule, full: true },
   guildSectionMentions: {
     rule: guildSectionMentionRule,
