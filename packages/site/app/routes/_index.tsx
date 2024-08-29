@@ -433,7 +433,7 @@ export default function Index() {
     resultModal,
     submitMessages,
     ...restSubmission
-  } = useMessageSubmissionManager(t, data, files, setError);
+  } = useMessageSubmissionManager(t, data, setData, files, setError);
 
   const [settingMessageIndex, setSettingMessageIndex] = useState(
     dm?.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,

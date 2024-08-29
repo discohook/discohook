@@ -195,11 +195,6 @@ export const BRoutes = {
   unfurl() {
     return "/unfurl" as const;
   },
-
-  /** - POST /validate/flows */
-  validateFlows() {
-    return "/validate/flows" as const;
-  },
 };
 
 export type ApiRoute = ReturnType<(typeof BRoutes)[keyof typeof BRoutes]>;

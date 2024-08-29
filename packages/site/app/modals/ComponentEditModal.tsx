@@ -35,7 +35,7 @@ export type EditingComponentData = {
   submit: (
     component: APIMessageActionRowComponent,
     setError?: SetErrorFunction,
-  ) => Promise<void>;
+  ) => Promise<APIMessageActionRowComponent>;
 };
 
 export const ButtonStylePicker: React.FC<{
@@ -184,24 +184,6 @@ export const ComponentEditForm = ({
             label={t("url")}
             type="url"
             className="w-full"
-            // value={(() => {
-            //   try {
-            //     const url = new URL(component.url);
-            //     url.searchParams.delete("dhc-id", id);
-            //   } catch {
-            //     return component.url;
-            //   }
-            // })()}
-            // onInput={({ currentTarget }) => {
-            //   try {
-            //     const url = new URL(currentTarget.value);
-            //     url.searchParams.set("dhc-id", id);
-            //     component.url = url.href;
-            //   } catch {
-            //     component.url = currentTarget.value;
-            //   }
-            //   setComponent(component);
-            // }}
             value={component.url}
             onInput={({ currentTarget }) => {
               component.url = currentTarget.value;

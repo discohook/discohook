@@ -1,7 +1,7 @@
 import { DiscordErrorData, REST } from "@discordjs/rest";
-import { SerializeFrom } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
+  APIActionRowComponent,
   APIMessage,
   APIWebhook,
   ButtonStyle,
@@ -14,10 +14,10 @@ import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { SetErrorFunction } from "~/components/Error";
+import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import type { DraftFlow } from "~/store.server";
-import { QueryData } from "~/types/QueryData";
+import { APIMessageActionRowComponent, QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
@@ -29,7 +29,6 @@ import {
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
 import { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
-import type { action as ApiPostValidateFlows } from "../api/v1/validate.flows";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
 import { Modal, ModalProps } from "./Modal";
@@ -111,6 +110,7 @@ export const submitMessage = async (
 export const useMessageSubmissionManager = (
   t: TFunction,
   data: QueryData,
+  setData: React.Dispatch<QueryData>,
   files?: Record<string, DraftFile[]>,
   setError?: SetErrorFunction,
 ) => {
@@ -140,10 +140,10 @@ export const useMessageSubmissionManager = (
     />
   );
 
-  const submitMessages = async (selectedWebhooks: APIWebhook[]) => {
+  const submitMessages = async (webhooks: APIWebhook[]) => {
     setSending(true);
     const results: SubmitMessageResult[] = [];
-    for (const webhook of selectedWebhooks) {
+    for (const webhook of webhooks) {
       // If a message created a forum thread, assume subsequent
       // messages with no thread_id or thread_name set are intended
       // to send into the new thread. This should be a reasonably
@@ -173,63 +173,77 @@ export const useMessageSubmissionManager = (
           continue;
         }
 
-        const flows: DraftFlow[] = [];
-        const rowsWithFlows = message.data.components
-          ? structuredClone(message.data.components)
-          : undefined;
+        let result: SubmitMessageResult | undefined;
+        const rowsWithoutFlows: APIActionRowComponent<APIMessageActionRowComponent>[] =
+          [];
         for (const row of message.data.components ?? []) {
+          rowsWithoutFlows.push({
+            type: ComponentType.ActionRow,
+            components: [],
+          });
+          let ci = -1;
           for (const component of row.components) {
-            if ("flow" in component && component.flow) {
-              flows.push(component.flow);
-              component.flow = undefined;
+            ci += 1;
+            // Make sure everything is saved before sending the message
+            const editingProps = getSetEditingComponentProps({
+              component,
+              row,
+              componentIndex: ci,
+              data,
+              setData,
+              setEditingComponent: () => {},
+            });
+            let updated: APIMessageActionRowComponent;
+            try {
+              updated = await editingProps.submit(component, setError);
+            } catch (e) {
+              result = {
+                status: "error",
+                data: {
+                  code: 0,
+                  message: `Invalid Component: ${e}`,
+                },
+              };
+              break;
             }
-            if ("flows" in component && component.flows) {
-              flows.push(...Object.values(component.flows));
-              component.flows = undefined;
+            const withoutFlow = structuredClone(updated);
+            rowsWithoutFlows[rowsWithoutFlows.length - 1].components.push(
+              withoutFlow,
+            );
+
+            if ("flow" in withoutFlow && withoutFlow.flow) {
+              withoutFlow.flow = undefined;
+            }
+            if ("flows" in withoutFlow && withoutFlow.flows) {
+              withoutFlow.flows = undefined;
             }
             if (
-              component.type === ComponentType.Button &&
-              isLinkButton(component) &&
-              component.custom_id
+              withoutFlow.type === ComponentType.Button &&
+              isLinkButton(withoutFlow) &&
+              withoutFlow.custom_id
             ) {
-              const url = new URL(component.url);
+              const url = new URL(withoutFlow.url);
               url.searchParams.set(
                 "dhc-id",
-                component.custom_id.replace(/^p_/, ""),
+                withoutFlow.custom_id.replace(/^p_/, ""),
               );
-              component.url = url.href;
-              component.custom_id = undefined;
+              withoutFlow.url = url.href;
+              withoutFlow.custom_id = undefined;
             }
-          }
-        }
-        let result: SubmitMessageResult | undefined;
-        if (flows.length !== 0) {
-          const response = await fetch(apiUrl(BRoutes.validateFlows()), {
-            method: "POST",
-            body: JSON.stringify(flows),
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          const raw = (await response.json()) as SerializeFrom<
-            typeof ApiPostValidateFlows
-          >;
-          if (!raw.success) {
-            result = {
-              status: "error",
-              data: {
-                code: 0,
-                message: "Invalid Flow",
-                errors: raw.error,
-              },
-            };
           }
         }
 
+        const msgWithoutFlows = {
+          ...message,
+          data: {
+            ...message.data,
+            components: rowsWithoutFlows,
+          },
+        };
         if (!result || result.status === "success") {
           result = await submitMessage(
             webhook,
-            message,
+            msgWithoutFlows,
             files?.[id],
             undefined,
             forumThreadId,
@@ -249,7 +263,7 @@ export const useMessageSubmissionManager = (
               `Message ID ${match[3]} not found in webhook channel, trying again with ${match[2]} as thread ID`,
             );
             message.thread_id = match[2];
-            result = await submitMessage(webhook, message, files?.[id]);
+            result = await submitMessage(webhook, msgWithoutFlows, files?.[id]);
             if (result.status === "error") {
               // Unmutate the state since our guess was wrong
               message.thread_id = undefined;
@@ -284,8 +298,6 @@ export const useMessageSubmissionManager = (
           );
         }
 
-        // re-add flow data that was removed for the submission
-        message.data.components = rowsWithFlows;
         updateMessages({
           [id]: { result, enabled: true },
         });

@@ -164,15 +164,6 @@ export const submitComponent = async (
   let component: APIMessageActionRowComponent | undefined;
   switch (raw.data.type) {
     case ComponentType.Button: {
-      // if (raw.data.style === ButtonStyle.Link) {
-      //   component = {
-      //     ...raw.data,
-      //     custom_id: `p_${raw.id}`,
-      //     // url: (() => {new URL(raw.data.url).searchParams.set("dhc-id", String(raw.id))})()
-      //   };
-      //   break;
-      // }
-
       component = {
         ...raw.data,
         custom_id: `p_${raw.id}`,
@@ -219,17 +210,17 @@ export const submitComponent = async (
   return component;
 };
 
-const getSetEditingComponentProps = ({
+export const getSetEditingComponentProps = ({
   component,
   row,
-  i,
+  componentIndex,
   data,
   setData,
   setEditingComponent,
 }: {
   component: APIMessageActionRowComponent;
   row: APIActionRowComponent<APIMessageActionRowComponent>;
-  i: number;
+  componentIndex: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   setEditingComponent: React.Dispatch<
@@ -239,7 +230,7 @@ const getSetEditingComponentProps = ({
   return {
     component,
     setComponent: (newComponent) => {
-      row.components.splice(i, 1, newComponent);
+      row.components.splice(componentIndex, 1, newComponent);
       setData({ ...data });
     },
     submit: async (newComponent, setError) => {
@@ -251,14 +242,14 @@ const getSetEditingComponentProps = ({
       ) {
         try {
           const url = new URL(withId.url);
-          url.searchParams.set("dhc-id", withId.custom_id);
+          url.searchParams.set("dhc-id", withId.custom_id.replace(/^p_/, ""));
           withId.url = url.href;
         } catch {}
       }
 
       const updated = await submitComponent(withId, setError);
       if (updated) {
-        row.components.splice(i, 1, updated);
+        row.components.splice(componentIndex, 1, updated);
         setData({ ...data });
 
         // Reset state with new component so that subsequent saves
@@ -267,13 +258,15 @@ const getSetEditingComponentProps = ({
           getSetEditingComponentProps({
             component: updated,
             row,
-            i,
+            componentIndex,
             data,
             setData,
             setEditingComponent,
           }),
         );
+        return updated;
       }
+      throw Error("Component could not be updated");
     },
   };
 };
@@ -380,19 +373,6 @@ export const ActionRowEditor: React.FC<{
       <div className="space-y-1 mb-1">
         {row.components.map((component, ci) => {
           const id = getComponentId(component)?.toString();
-          // const id =
-          //   ("custom_id" in component
-          //     ? component.custom_id?.replace(/^p_/, "")
-          //     : // : (() => {
-          //       //     try {
-          //       //       const url = new URL(component.url);
-          //       //       return url.searchParams.get("dhc-id") ?? randomString(10);
-          //       //     } catch {
-          //       //       return component.url;
-          //       //     }
-          //       //   })();
-          //       undefined) ?? `${i}:${ci}`;
-
           return (
             <IndividualComponentEditor
               key={`edit-message-${mid}-component-${id}-${ci}`}
@@ -418,7 +398,7 @@ export const ActionRowEditor: React.FC<{
                   getSetEditingComponentProps({
                     component,
                     row,
-                    i: ci,
+                    componentIndex: ci,
                     data,
                     setData,
                     setEditingComponent,
