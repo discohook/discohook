@@ -65,38 +65,40 @@ export const getDiscordAuth = (
         });
 
         const guilds = await getCurrentUserGuilds(accessToken);
-        await db
-          .insert(discordGuilds)
-          .values(
-            guilds.map((guild) => ({
-              id: makeSnowflake(guild.id),
-              name: guild.name,
-              icon: guild.icon,
-              ownerDiscordId: guild.owner ? makeSnowflake(j.id) : undefined,
-            })),
-          )
-          .onConflictDoUpdate({
-            target: discordGuilds.id,
-            set: {
-              name: sql`excluded.name`,
-              icon: sql`excluded.icon`,
-              ownerDiscordId: sql`excluded."ownerDiscordId"`,
-            },
-          });
-        await db
-          .insert(discordMembers)
-          .values(
-            guilds.map((guild) => ({
-              guildId: makeSnowflake(guild.id),
-              userId: makeSnowflake(j.id),
-              permissions: guild.permissions,
-              owner: guild.owner,
-            })),
-          )
-          .onConflictDoUpdate({
-            target: [discordMembers.guildId, discordMembers.userId],
-            set: { permissions: sql`excluded.permissions` },
-          });
+        if (guilds.length !== 0) {
+          await db
+            .insert(discordGuilds)
+            .values(
+              guilds.map((guild) => ({
+                id: makeSnowflake(guild.id),
+                name: guild.name,
+                icon: guild.icon,
+                ownerDiscordId: guild.owner ? makeSnowflake(j.id) : undefined,
+              })),
+            )
+            .onConflictDoUpdate({
+              target: discordGuilds.id,
+              set: {
+                name: sql`excluded.name`,
+                icon: sql`excluded.icon`,
+                ownerDiscordId: sql`excluded."ownerDiscordId"`,
+              },
+            });
+          await db
+            .insert(discordMembers)
+            .values(
+              guilds.map((guild) => ({
+                guildId: makeSnowflake(guild.id),
+                userId: makeSnowflake(j.id),
+                permissions: guild.permissions,
+                owner: guild.owner,
+              })),
+            )
+            .onConflictDoUpdate({
+              target: [discordMembers.guildId, discordMembers.userId],
+              set: { permissions: sql`excluded.permissions` },
+            });
+        }
 
         return {
           id: String(user.id),
