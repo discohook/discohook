@@ -2,6 +2,7 @@ import { REST } from "@discordjs/rest";
 import {
   APIUser,
   APIWebhook,
+  GatewayDispatchEvents,
   GatewayGuildMemberAddDispatchData,
   Routes,
 } from "discord-api-types/v10";
@@ -276,35 +277,34 @@ export const getWelcomerConfigurations = async (
   return configs;
 };
 
+export type Trigger = Awaited<
+  ReturnType<typeof getWelcomerConfigurations>
+>[number];
+
 export const guildMemberAddCallback: GatewayEventCallback = async (
   env,
   payload: GatewayGuildMemberAddDispatchData,
 ) => {
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
-  const db = getDb(env.HYPERDRIVE.connectionString);
   const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
 
-  // Store member relation data. This isn't *super* important so we
-  // skip it if necessary in order to let triggers succeed
-  // try {
-  //   // biome-ignore lint/style/noNonNullAssertion: Only absent for message_create and message_update
-  //   const user = payload.user!;
-  //   await upsertGuild(db, guild);
-  //   await upsertDiscordUser(db, user);
-  //   await db
-  //     .insert(discordMembers)
-  //     .values({
-  //       userId: makeSnowflake(user.id),
-  //       guildId: makeSnowflake(payload.guild_id),
-  //     })
-  //     .onConflictDoNothing();
-  // } catch {}
+  // Don't like this. We really should store all triggers per guild id,
+  // but I did this to fit with the way getWelcomerConfiguration works
+  const key = `cache-triggers-${GatewayDispatchEvents.GuildMemberAdd}-${payload.guild_id}`;
+  const raw = await env.KV.get<{ triggers: Trigger[] | null }>(key, "json");
+  let triggers = raw?.triggers;
+  if (triggers === null) {
+    return;
+  }
 
-  // Get & execute triggers
-  const triggers = await getWelcomerConfigurations(db, "add", rest, guild);
+  const db = getDb(env.HYPERDRIVE.connectionString);
+  if (!triggers) {
+    triggers = await getWelcomerConfigurations(db, "add", rest, guild);
+    await env.KV.put(key, JSON.stringify({ triggers }), { expirationTtl: 600 });
+  }
+
   const applicable = triggers.filter((t) => !!t.flow && !t.disabled);
-
   for (const trigger of applicable) {
     await executeFlow(trigger.flow, rest, db, {
       member: payload,

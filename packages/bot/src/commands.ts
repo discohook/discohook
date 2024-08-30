@@ -209,10 +209,6 @@ export const appCommands: Record<
         BASE: restoreMessageEntry,
       },
     },
-    // repeat: {
-    //   handlers: {
-    //   },
-    // },
     "webhook info": {
       handlers: {
         BASE: webhookInfoMsgCallback,
