@@ -4,7 +4,6 @@
             "name": "ajouter"
         },
         "webhook": {
-            "description": "Webhooks beheren",
             "options": {
                 "create": {
                     "name": "créer",
@@ -23,15 +22,6 @@
                 "delete": {
                     "name": "supprimer",
                     "description": "Supprimer un webhook"
-                },
-                "info": {
-                    "description": "Verkrijg informatie over een webhook",
-                    "options": {
-                        "show-url": {
-                            "name": "toon-url",
-                            "description": "Of je de \"Verkrijg URL\" stap over wilt slaan. Dit maakt het bericht verborgen."
-                        }
-                    }
                 }
             }
         },
