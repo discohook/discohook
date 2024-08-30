@@ -107,7 +107,7 @@ export const TargetAddModal = (
       {!manualWebhook ? (
         <div>
           {error}
-          <p className="text-sm">Choose a server</p>
+          <p className="text-sm">{t("chooseServer")}</p>
           <AsyncGuildSelect
             guilds={(async () =>
               // biome-ignore lint/style/noNonNullAssertion: Must not be null to arrive at this point
@@ -281,7 +281,7 @@ export const TargetAddModal = (
               onClick={() => setManualWebhook(false)}
               type="button"
             >
-              Back to server selection
+              {t("backToServerSelection")}
             </button>
           )}
           <hr className="border border-gray-400 dark:border-gray-600 my-4" />
