@@ -2,7 +2,14 @@ import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { eq, flowActions, flows, triggers } from "~/store.server";
+import {
+  DBWithSchema,
+  TriggerEvent,
+  eq,
+  flowActions,
+  flows,
+  triggers,
+} from "~/store.server";
 import { refineZodDraftFlowMax } from "~/types/flows";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
@@ -46,6 +53,37 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   return respond(json(trigger));
 };
 
+const updateKvTriggers = async (
+  db: DBWithSchema,
+  kv: KVNamespace,
+  event: TriggerEvent,
+  guildId: string | bigint,
+) => {
+  const triggers = await db.query.triggers.findMany({
+    where: (triggers, { and, eq }) =>
+      and(
+        eq(triggers.discordGuildId, BigInt(guildId)),
+        eq(triggers.event, event),
+      ),
+    columns: {
+      id: true,
+      disabled: true,
+    },
+    with: {
+      flow: {
+        columns: {
+          name: true,
+        },
+        with: {
+          actions: true,
+        },
+      },
+    },
+  });
+  const key = `cache-triggers-${event}-${guildId}`;
+  await kv.put(key, JSON.stringify(triggers), { expirationTtl: 600 });
+};
+
 export const action = async ({ request, context, params }: ActionArgs) => {
   if (request.method !== "PATCH" && request.method !== "DELETE") {
     throw json({ message: "Method Not Allowed" }, 405);
@@ -70,13 +108,19 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     const db = getDb(context.env.HYPERDRIVE.connectionString);
     const trigger = await db.query.triggers.findFirst({
       where: (triggers, { eq }) => eq(triggers.id, triggerId),
-      columns: { discordGuildId: true },
+      columns: { discordGuildId: true, event: true },
     });
     if (!trigger || trigger.discordGuildId !== guildId) {
       throw json({ message: "Unknown Trigger" }, 404);
     }
 
     await db.delete(triggers).where(eq(triggers.id, triggerId));
+    await updateKvTriggers(
+      db,
+      context.env.KV,
+      trigger.event,
+      trigger.discordGuildId,
+    );
     return respond(json({ id: triggerId }));
   }
 
@@ -89,6 +133,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     where: (triggers, { eq }) => eq(triggers.id, triggerId),
     columns: {
       discordGuildId: true,
+      event: true,
       flowId: true,
     },
   });
@@ -99,13 +144,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   await db.transaction(async (tx) => {
     // if (flow) {
     await tx.delete(flowActions).where(eq(flowActions.flowId, trigger.flowId));
-    await tx.insert(flowActions).values(
-      flow.actions.map((action) => ({
-        flowId: trigger.flowId,
-        type: action.type,
-        data: action,
-      })),
-    );
+    if (flow.actions.length !== 0) {
+      await tx.insert(flowActions).values(
+        flow.actions.map((action) => ({
+          flowId: trigger.flowId,
+          type: action.type,
+          data: action,
+        })),
+      );
+    }
     await tx
       .update(flows)
       .set({ name: flow.name })
@@ -113,5 +160,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     // }
   });
 
+  await updateKvTriggers(
+    db,
+    context.env.KV,
+    trigger.event,
+    trigger.discordGuildId,
+  );
   return respond(json({ id: triggerId }));
 };

@@ -2,9 +2,8 @@ import { REST } from "@discordjs/rest";
 import {
   APIUser,
   APIWebhook,
-  GatewayDispatchEvents,
   GatewayGuildMemberAddDispatchData,
-  Routes,
+  Routes
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import {
@@ -291,17 +290,16 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
 
   // Don't like this. We really should store all triggers per guild id,
   // but I did this to fit with the way getWelcomerConfiguration works
-  const key = `cache-triggers-${GatewayDispatchEvents.GuildMemberAdd}-${payload.guild_id}`;
-  const raw = await env.KV.get<{ triggers: Trigger[] | null }>(key, "json");
-  let triggers = raw?.triggers;
-  if (triggers === null) {
+  const key = `cache-triggers-${TriggerEvent.MemberAdd}-${payload.guild_id}`;
+  let triggers = await env.KV.get<Trigger[]>(key, "json");
+  if (triggers && triggers.length === 0) {
     return;
   }
 
   const db = getDb(env.HYPERDRIVE.connectionString);
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "add", rest, guild);
-    await env.KV.put(key, JSON.stringify({ triggers }), { expirationTtl: 600 });
+    await env.KV.put(key, JSON.stringify(triggers), { expirationTtl: 600 });
   }
 
   const applicable = triggers.filter((t) => !!t.flow && !t.disabled);
