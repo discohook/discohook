@@ -51,7 +51,7 @@
     "cozy": "Gemütlich",
     "compact": "Kompakt",
     "regenerate": "Neugenerieren",
-    "forceDualPane": "Nutze immer Dual-feld bearbeitung.",
+    "forceDualPane": "Nutze immer Dual-feld bearbeitung",
     "successResultTroubleshoot": "Solltest du deine gesendete nachricht nicht sehen können, stelle sicher das diese nicht von anderen Bots gelöscht wird. Einige Moderations-Bots löschen Webhook Nachrichten als Spam als Standardeinstellung.",
     "editorPanes": "Editer Feld",
     "orgRedirectTitle": "Du wurdest weitergeleiten von discohook.org",
