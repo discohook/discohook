@@ -28,13 +28,14 @@ Along with some shared packages:
 
 ### Translations
 
-| Thanks to  | Language(s) | Progress |
-|------------|-------------|----------|
-| anonymous  | Chinese     | [![](https://translate.shay.cat/widget/discohook/-/zh_Hans/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/zh_Hans/) |
-| mew610     | Arabic      | [![](https://translate.shay.cat/widget/discohook/-/ar/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/ar/)           |
-| maddymeows | Dutch       | [![](https://translate.shay.cat/widget/discohook/-/nl/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/nl/)           |
-| yaraej_    | Spanish     | [![](https://translate.shay.cat/widget/discohook/-/es/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/es/)           |
-|            | French      | [![](https://translate.shay.cat/widget/discohook/-/fr/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/fr/)           |
+| Thanks to    | Language(s) | Progress |
+|--------------|-------------|----------|
+| anonymous    | Chinese     | [![](https://translate.shay.cat/widget/discohook/-/zh_Hans/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/zh_Hans/) |
+| mew610       | Arabic      | [![](https://translate.shay.cat/widget/discohook/-/ar/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/ar/)           |
+| maddymeows   | Dutch       | [![](https://translate.shay.cat/widget/discohook/-/nl/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/nl/)           |
+| yaraej_      | Spanish     | [![](https://translate.shay.cat/widget/discohook/-/es/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/es/)           |
+|              | French      | [![](https://translate.shay.cat/widget/discohook/-/fr/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/fr/)           |
+| dustytheonly | German      | [![](https://translate.shay.cat/widget/discohook/-/de/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/de/)           |
 
 ### Original Project
 
