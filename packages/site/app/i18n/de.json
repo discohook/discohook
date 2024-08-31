@@ -65,5 +65,16 @@
     "sendToAll": "Zu Allen Senden",
     "sending": "Am senden",
     "sendNoWebhooks": "Du hast keine Webhooks um an zu senden.",
-    "createdAtTime": "Erstellt Am {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}"
+    "createdAtTime": "Erstellt Am {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
+    "locales": {
+        "es": "Spanisch",
+        "zh": "Chinesisch, China",
+        "nl": "Niederländisch",
+        "en-US": "Englisch, US",
+        "en-GB": "Englisch, UK",
+        "fr": "Französisch",
+        "ar": "Arabisch"
+    },
+    "translatePrompt": "Willst du uns helfen Discohook in deiner Sprache zu Übersetzen? Schau unter <0>dem Übersetzungs-Portal</0> und trete <1> den Support-Server bei</1> um dich mit uns zu kordinieren.",
+    "language": "Sprache"
 }
