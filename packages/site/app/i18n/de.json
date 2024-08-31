@@ -1,5 +1,22 @@
 {
     "defaultPlaceholder": "Triff eine Auswahl",
     "donate": "Spenden",
-    "todayAt": "heute um {{time}} Uhr"
+    "todayAt": "heute um {{time}} Uhr",
+    "delete": "Löschen",
+    "settings": "Einstellungen",
+    "help": "Hilfe",
+    "supportServer": "Support-Server",
+    "search": "Suche",
+    "helpSearchPlaceholder": "Wie can ich …",
+    "logIn": "Einloggen",
+    "logOut": "Ausloggen",
+    "name": "Name",
+    "save": "Speichern",
+    "ok": "OK",
+    "editBackupTitle": "Bearbeite Sicherungskopien Details",
+    "editBackupMessages": "Um die Nachricht in den Sicherungskopien zu bearbeiten, Klick auf den <0/> Knopf",
+    "cancel": "Abbrechen",
+    "supportServerLanguageNote": "Diese ist ein <bold>Nur-Englisch</bold> Support-Server. Auch wenn Discohook mehrere sprachen unterstützt für einfachere bendienung, ist unser Offizieles Support- und Moderations- Team meist nur in der lage hilfe auf Englisch anzubieten. Du kannst auch Hilfestellungen nutzen wie <anchor>DeepL</anchor> wenn du dir unsicher bist mit deinen Englischkenntnissen. Check das Feld links, um dem Server beizutreten.",
+    "required": "Erforderlich",
+    "join": "Beitreten"
 }
