@@ -136,6 +136,7 @@
   "shiftSkipTip": "TIP: Hold down shift to skip this confirmation next time.",
   "import": "Import",
   "importBackups": "Import Backups",
+  "importDiscoscheduler": "Import Discoscheduler posts ({{ count }})",
   "export": "Export",
   "exportBackups": "Export Backups",
   "importedFromOrgAt": "Imported from discohook.org on $t(timestamp.date_verbose)",

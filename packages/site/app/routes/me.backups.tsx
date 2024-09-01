@@ -5,23 +5,28 @@ import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
-import { getUserId } from "~/session.server";
+import { getUser, getUserId } from "~/session.server";
 import {
   QueryDataVersion,
+  count,
   backups as dBackups,
+  eq,
   getDb,
   inArray,
+  scheduled_posts,
 } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import { getId } from "~/util/id";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { relativeTime } from "~/util/time";
 import {
@@ -30,9 +35,10 @@ import {
   zxParseForm,
   zxParseQuery,
 } from "~/util/zod";
+import type { action as ApiPostBackupsImportDiscoscheduler } from "../api/v1/backups.import.discoscheduler";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
-  const userId = await getUserId(request, context, true);
+  const user = await getUser(request, context, true);
   const { page, settings: importedSettings } = zxParseQuery(request, {
     settings: jsonAsString(
       z.object({
@@ -50,7 +56,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE.connectionString);
   const backups = await db.query.backups.findMany({
-    where: (backups, { eq }) => eq(backups.ownerId, userId),
+    where: (backups, { eq }) => eq(backups.ownerId, user.id),
     columns: {
       id: true,
       name: true,
@@ -66,7 +72,19 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     offset: page * 50,
   });
 
-  return { backups, importedSettings, page: page + 1 };
+  const legacyPosts = user.discordId
+    ? await db
+        .select({ count: count(scheduled_posts.messageData) })
+        .from(scheduled_posts)
+        .where(eq(scheduled_posts.userId, BigInt(user.discordId)))
+    : [{ count: 0 }];
+
+  return {
+    backups,
+    importedSettings,
+    page: page + 1,
+    legacyPostsCount: legacyPosts[0]?.count ?? 0,
+  };
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -127,7 +145,8 @@ export type LoadedBackup = Awaited<
 
 export default () => {
   const { t } = useTranslation();
-  const { backups, importedSettings } = useLoaderData<typeof loader>();
+  const { backups, importedSettings, legacyPostsCount } =
+    useLoaderData<typeof loader>();
   const submit = useSubmit();
 
   const [settings, updateSettings] = useLocalStorage();
@@ -140,6 +159,11 @@ export default () => {
       });
     }
   }, []);
+
+  const [error, setError] = useError(t);
+  const legacyImportFetcher = useSafeFetcher<
+    typeof ApiPostBackupsImportDiscoscheduler
+  >({ onError: setError });
 
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -169,18 +193,39 @@ export default () => {
       />
       {confirm}
       <div className="mb-4 flex">
+        {error}
         <p className="text-xl font-semibold dark:text-gray-100 my-auto">
           {t("backups")}
         </p>
         <Button
           className="ltr:ml-auto rtl:mr-auto my-auto"
+          discordstyle={ButtonStyle.Secondary}
           onClick={() => setImportModalOpen(true)}
+          disabled={legacyImportFetcher.state !== "idle"}
         >
           {t("import")}
         </Button>
+        {legacyPostsCount !== 0 && (
+          <Button
+            className="ltr:ml-2 rtl:mr-2 my-auto"
+            discordstyle={ButtonStyle.Secondary}
+            onClick={async () => {
+              await legacyImportFetcher.submitAsync(null, {
+                method: "POST",
+                action: apiUrl(BRoutes.importDiscoschedulerPosts()),
+              });
+              submit(null, { method: "GET" });
+            }}
+            disabled={legacyImportFetcher.state !== "idle"}
+          >
+            {t("importDiscoscheduler", { count: legacyPostsCount })}
+          </Button>
+        )}
         <Button
           className="ltr:ml-2 rtl:mr-2 my-auto"
+          discordstyle={ButtonStyle.Secondary}
           onClick={() => setExportModalOpen(true)}
+          disabled={legacyImportFetcher.state !== "idle"}
         >
           {t("export")}
         </Button>

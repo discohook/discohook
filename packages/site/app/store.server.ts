@@ -1,4 +1,4 @@
 export * from "store";
 
-export { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
+export { and, asc, count, desc, eq, inArray, or, sql } from "drizzle-orm";
 

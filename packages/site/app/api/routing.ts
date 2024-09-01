@@ -12,6 +12,13 @@ export const BRoutes = {
   },
 
   /**
+   * - POST /backups/import/discoscheduler
+   */
+  importDiscoschedulerPosts() {
+    return "/backups/import/discoscheduler" as const;
+  },
+
+  /**
    * - GET /channels/:id
    *
    * Accepts token auth.

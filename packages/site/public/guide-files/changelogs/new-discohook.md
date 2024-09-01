@@ -3,11 +3,11 @@ title: "New Discohook - 2024 rewrite"
 description: "The good times are here"
 ---
 
-Here's a list of every single thing that was changed in this update (draft).
+Here's a list of things that happened in this update.
 
 # Meta
 
-Discohook is now maintained by @catshay. You may know me from Discohook Utils, which is another thing I created. Also, the entire project was completely rewritten, and the source is now available at [discohook/discohook](https://github.com/discohook/discohook). The old [site](https://github.com/discohook/site) and [bot](https://github.com/discohook/bot) repositories have been archived.
+Discohook is now maintained by @catshay (you may know me from Discohook Utils!). Also, the entire project was completely rewritten, and the source is now available at [discohook/discohook](https://github.com/discohook/discohook). The old [site](https://github.com/discohook/site) and [bot](https://github.com/discohook/bot) repositories have been archived.
 
 Naturally, Discohook and Discohook Utils have merged. [Read more about this here](discohook://guide/deprecated/migrate-utils).
 

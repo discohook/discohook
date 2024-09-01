@@ -6,6 +6,7 @@ import {
   bigint,
   boolean,
   integer,
+  json,
   pgTable,
   serial,
   text,
@@ -81,4 +82,15 @@ export const welcomer_goodbye = pgTable("welcomer_goodbye", {
   ignoreBots: boolean("ignore_bots"),
   deleteMessagesAfter: integer("delete_messages_after"),
   id: serial("id").notNull(),
+});
+
+export const scheduled_posts = pgTable("scheduled_posts", {
+  id: serial("id").notNull(),
+  userId: bigint("user_id", { mode: "bigint" }),
+  guildId: bigint("guild_id", { mode: "bigint" }),
+  messageData: json("message_data"),
+  webhookId: bigint("webhook_id", { mode: "bigint" }),
+  webhookToken: text("webhook_token"),
+  future: timestamp("future", { mode: "string" }),
+  error: text("error"),
 });
