@@ -106,7 +106,6 @@ export default function FormattingPage() {
   const placeholders: Record<string, string | number> = {
     ...(user?.discordUser
       ? {
-          "member.id": user.discordUser.id.toString(),
           "member.name": user.discordUser.name,
           "member.discriminator": user.discordUser.discriminator ?? "0",
           "member.display_name":
@@ -130,9 +129,10 @@ export default function FormattingPage() {
             getSnowflakeDate(String(user.discordUser.id)),
             "F",
           ),
+          "member.id": user.discordUser.id.toString(),
+          "member.role_ids": '["123456789012345678","234567890123456789"]',
         }
       : {
-          "member.id": "792842038332358656",
           "member.name": "Discohook Utils",
           "member.discriminator": "4333",
           "member.display_name": "Discohook Utils",
@@ -150,8 +150,9 @@ export default function FormattingPage() {
             getSnowflakeDate("792842038332358656"),
             "F",
           ),
+          "member.id": "792842038332358656",
+          "member.role_ids": '["123456789012345678","234567890123456789"]',
         }),
-    "server.id": "668218342779256857",
     "server.name": "Discohook",
     "server.icon_url": "/discord-avatars/discohook.webp",
     "server.members": 17377,
@@ -165,6 +166,7 @@ export default function FormattingPage() {
       "R",
     ),
     "server.created_long": time(getSnowflakeDate("668218342779256857"), "F"),
+    "server.id": "668218342779256857",
     now: time(now, "d"),
     now_relative: time(now, "R"),
     now_long: time(now, "F"),

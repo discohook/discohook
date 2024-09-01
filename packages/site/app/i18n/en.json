@@ -581,7 +581,6 @@
   "formatOptionsNone": "Hover over an option above to see an example.",
   "formatOptionDescription": {
     "member": {
-      "id": "The member's ID",
       "name": "The member's username",
       "discriminator": "The member's discriminator (old username system)",
       "display_name": "The member's display name",
@@ -592,10 +591,11 @@
       "bot": "Whether the member is a bot",
       "created": "When the account was created",
       "created_relative": "When the account was created, relative",
-      "created_long": "When the account was created, long-form"
+      "created_long": "When the account was created, long-form",
+      "id": "The member's ID",
+      "role_ids": "The member's role IDs as an array (for flows)"
     },
     "server": {
-      "id": "The server ID",
       "name": "The server name",
       "icon_url": "The server icon URL",
       "members": "The number of members in the server",
@@ -605,7 +605,8 @@
       "sticker_limit": "The maximum number of stickers the server can have",
       "created": "When the server was created",
       "created_relative": "When the server was created, relative",
-      "created_long": "When the server was created, long-form"
+      "created_long": "When the server was created, long-form",
+      "id": "The server ID"
     },
     "now": "The current time upon formatting",
     "now_relative": "The current time, relative",
