@@ -9,7 +9,7 @@
     "start": "tsx src/server.ts",
     "dev": "wrangler dev src/server.ts --persist-to=../../persistence",
     "register": "tsx src/register.ts",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --env=production",
     "deploy-preview": "wrangler deploy --env=preview"
   },
   "keywords": [],
