@@ -18,7 +18,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
         where: (discordMembers, { eq }) =>
           // biome-ignore lint/style/noNonNullAssertion: Checked above
           eq(discordMembers.userId, user.discordId!),
-        columns: { permissions: true },
+        columns: { owner: true, permissions: true },
         with: { guild: { columns: { id: true, name: true, icon: true } } },
       })
     : [];
@@ -48,6 +48,7 @@ export default () => {
                 BigInt(m.permissions ?? "0"),
               );
               return (
+                m.owner ||
                 perm.has(PermissionFlags.ManageMessages) ||
                 perm.has(PermissionFlags.ManageWebhooks)
               );

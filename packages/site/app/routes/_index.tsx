@@ -92,10 +92,12 @@ export const loader = async ({ request, context }: LoaderArgs) => {
               },
             },
           })
-        ).filter((m) =>
-          new PermissionsBitField(BigInt(m.permissions ?? "0")).has(
-            PermissionFlags.ManageWebhooks,
-          ),
+        ).filter(
+          (m) =>
+            m.owner ||
+            new PermissionsBitField(BigInt(m.permissions ?? "0")).has(
+              PermissionFlags.ManageWebhooks,
+            ),
         )
       : [];
   })();
