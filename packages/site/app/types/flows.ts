@@ -217,7 +217,7 @@ export const ZodFlowActionCreateThread = z.object({
     .optional(),
   invitable: z.oboolean(),
   // message: z.any(),
-  appliedTags: z.string().array().max(5),
+  appliedTags: z.string().array().max(5).optional(),
 }) satisfies z.ZodType<FlowActionCreateThread>;
 
 export const ZodFlowActionDeleteMessage = z.object({
