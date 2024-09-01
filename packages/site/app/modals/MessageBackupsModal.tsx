@@ -249,7 +249,7 @@ export const MessageBackupsModal = (
                 <p className="text-sm">{t("savedAutomatically")}</p>
               </div>
               <Button
-                disabled={!backup}
+                disabled={!backup || backupFetcher.state !== "idle"}
                 className="my-auto ml-auto"
                 discordstyle={ButtonStyle.Success}
                 onClick={() => {
