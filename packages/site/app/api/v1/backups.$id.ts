@@ -181,6 +181,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
         updatedAt: backups.updatedAt,
         scheduled: backups.scheduled,
         nextRunAt: backups.nextRunAt,
+        previewImageUrl: backups.previewImageUrl,
       })
   )[0];
 
