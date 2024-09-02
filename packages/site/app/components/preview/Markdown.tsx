@@ -1221,7 +1221,9 @@ const getRules = (features: FeatureConfig) => {
   return rules;
 };
 
-export const getEnabledRuleKeys = (features: FeatureConfig): RuleOptionKey[] => {
+export const getEnabledRuleKeys = (
+  features: FeatureConfig,
+): RuleOptionKey[] => {
   let keys: RuleOptionKey[];
   if (typeof features === "string") {
     keys = extendable[features];
@@ -1242,6 +1244,13 @@ export const getEnabledRuleKeys = (features: FeatureConfig): RuleOptionKey[] => 
   return keys;
 };
 
+/**
+ * Emulate what Discord silently does to strings before saving the data
+ */
+const trimContent = (text: string) => {
+  return text.trim();
+};
+
 export const Markdown: React.FC<{
   content: string;
   features?: FeatureConfig;
@@ -1249,7 +1258,7 @@ export const Markdown: React.FC<{
 }> = ({ content, features, cache }) => {
   const { t } = useTranslation();
   const parse = createMarkdownParser(getRules(features ?? "full"));
-  const result = parse(content);
+  const result = parse(trimContent(content));
 
   const resolver = {
     resolved: cache?.state,
