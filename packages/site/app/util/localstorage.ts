@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 
-export type LocaleCode = "en-US" | "en-GB" | "ar" | "zh" | "fr" | "nl" | "es";
+export type LocaleCode =
+  | "en-US"
+  | "en-GB"
+  | "ar"
+  | "zh"
+  | "fr"
+  | "nl"
+  | "es"
+  | "de";
 
 export interface Settings {
   theme?: "light" | "dark" | "sync";

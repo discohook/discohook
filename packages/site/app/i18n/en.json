@@ -74,7 +74,8 @@
     "en-US": "English, US",
     "en-GB": "English, UK",
     "fr": "French",
-    "es": "Spanish"
+    "es": "Spanish",
+    "de": "German"
   },
   "translatePrompt": "Want to help translate Discohook into your language? Check out <0>the translation portal</0> and join <1>the support server</1> to coordinate with us.",
   "webhookInput": "Webhook Input",
