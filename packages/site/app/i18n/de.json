@@ -79,7 +79,7 @@
     "language": "Sprache",
     "copyQueryData": "Abfragedaten kopieren",
     "openBackupLoad": "Starte die bearbeitung dieser Sicherheitkopie ohne einen neuen Browser-tab zu öffnen",
-    "openBackupClone": "Klone diese Sicherheitkopie und lade die duplizierten daten in denn aktuellen Tab.",
+    "openBackupClone": "Klone diese Sicherheitkopie und lade die duplizierten daten in denn aktuellen Tab",
     "share": "Teilen",
     "chooseServer": "Wähle ein Server aus",
     "backToServerSelection": "Zurück zur Server auswahl",
