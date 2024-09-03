@@ -15,9 +15,9 @@
   "keywords": [],
   "license": "MIT",
   "dependencies": {
-    "@discordjs/builders": "^1.8.2",
-    "@discordjs/formatters": "^0.4.0",
-    "@discordjs/rest": "^2.3.0",
+    "@discordjs/builders": "^1.9.0",
+    "@discordjs/formatters": "^0.5.0",
+    "@discordjs/rest": "^2.4.0",
     "dedent-js": "^1.0.1",
     "discord-api-types": "^0.37.92",
     "discord-bitflag": "^1.0.2",

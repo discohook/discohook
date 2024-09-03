@@ -559,12 +559,6 @@ const handleInteraction = async (
             if (old) {
               oldIdMap[old] = newId;
             }
-            // const newCustomId = old
-            //   ? `p_${old}-${getCustomId(false).replace(/^p_/, "")}`.slice(
-            //       0,
-            //       100,
-            //     )
-            //   : undefined;
 
             values.push({
               id: BigInt(newId),
