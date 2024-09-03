@@ -126,5 +126,7 @@
     "profile": "Profil",
     "shareMessage": "Nachricht Teilen",
     "editingLinkBackupNote": "Du bist eine Sicherheitkopie am bearbeiten, also wird deine bearbeitung regelmäßig gespeichert.",
-    "linkEmbedCacheNote": "Discord speichert Link-Einbettungen 30 Minuten lang im Cache. <0>Kopieren Sie diesen teilweise zufälligen Link</0>, um Discord zu zwingen, die Daten erneut abzurufen. Linkeinbettungen werden für frühere Nachrichten nicht aktualisiert (Sie müssen die Nachricht bearbeiten)."
+    "linkEmbedCacheNote": "Discord speichert Link-Einbettungen 30 Minuten lang im Cache. <0>Kopieren Sie diesen teilweise zufälligen Link</0>, um Discord zu zwingen, die Daten erneut abzurufen. Linkeinbettungen werden für frühere Nachrichten nicht aktualisiert (Sie müssen die Nachricht bearbeiten).",
+    "openBackupNewTab": "Öffne diese Sicherheitskopie in einen neuen Tab",
+    "deleteBackup": "Lösch Sicherheitskopie"
 }
