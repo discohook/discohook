@@ -73,7 +73,8 @@
         "en-US": "Englisch, US",
         "en-GB": "Englisch, UK",
         "fr": "Französisch",
-        "ar": "Arabisch"
+        "ar": "Arabisch",
+        "de": "Deutsch"
     },
     "translatePrompt": "Willst du uns helfen Discohook in deiner Sprache zu Übersetzen? Schau unter <0>dem Übersetzungs-Portal</0> und trete <1> den Support-Server bei</1> um dich mit uns zu kordinieren.",
     "language": "Sprache",
