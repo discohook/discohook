@@ -157,6 +157,7 @@ export const migrateLegacyButtons = async (
                     content: t("toggledRole", {
                       replace: { role: `<@&${button.roleId}>` },
                     }),
+                    flags: MessageFlags.Ephemeral,
                   },
                 } satisfies FlowActionStop,
               ]
@@ -165,10 +166,13 @@ export const migrateLegacyButtons = async (
                   {
                     type: FlowActionType.SendMessage,
                     backupId: backupId.toString(),
+                    backupMessageIndex: 0,
                     response: true,
-                    flags: button.customEphemeralMessageData
-                      ? MessageFlags.Ephemeral
-                      : undefined,
+                    flags:
+                      button.customEphemeralMessageData ||
+                      button.customDmMessageData
+                        ? MessageFlags.Ephemeral
+                        : undefined,
                   } satisfies FlowActionSendMessage,
                 ]
               : []),
