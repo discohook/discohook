@@ -43,6 +43,17 @@
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
+        },
+        "migrate": {
+          "description": "Migrate all legacy buttons",
+          "options": {
+            "message": {
+              "description": "Migrate components on this message. A message link is also accepted here"
+            },
+            "channel": {
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
         }
       }
     },

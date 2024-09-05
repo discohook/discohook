@@ -1,11 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import {
+  APIActionRowComponent,
   APIApplicationCommandInteractionDataOption,
   APIInteraction,
+  APIMessageActionRowComponent,
   APIMessageComponentInteraction,
   APIMessageStringSelectInteractionData,
-  APIUser,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ButtonStyle,
@@ -14,37 +15,20 @@ import {
   InteractionResponseType,
   InteractionType,
   MessageFlags,
-  Routes,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
-import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
 import { IRequest, Router } from "itty-router";
-import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
+import { getDb, getchTriggerGuild } from "store";
 import {
   DurableStoredComponent,
   launchComponentDurableObject,
 } from "store/src/durable/components.js";
-import {
-  backups,
-  discordMessageComponents,
-  flowActions,
-  flows,
-  generateId,
-  makeSnowflake,
-  buttons as oButtons,
-} from "store/src/schema";
-import {
-  Flow,
-  FlowActionSendMessage,
-  FlowActionStop,
-  FlowActionToggleRole,
-  FlowActionType,
-  QueryData,
-  StorableComponent,
-} from "store/src/types";
+import { discordMessageComponents } from "store/src/schema";
+import { Flow, TriggerKVGuild } from "store/src/types";
 import { AppCommandCallbackT, appCommands, respond } from "./commands.js";
+import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import {
   ComponentCallbackT,
   ComponentRoutingId,
@@ -58,11 +42,7 @@ import { eventNameToCallback } from "./events.js";
 import { LiveVariables, executeFlow } from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
 import { Env } from "./types/env.js";
-import {
-  getComponentId,
-  hasCustomId,
-  parseAutoComponentId,
-} from "./util/components.js";
+import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";
 
@@ -456,240 +436,38 @@ const handleInteraction = async (
     } else if (interaction.data.component_type === ComponentType.Button) {
       // Check for unmigrated buttons and migrate them
       const db = getDb(env.HYPERDRIVE.connectionString);
-      const oldMessageButtons = await db.query.buttons.findMany({
-        where: eq(oButtons.messageId, makeSnowflake(interaction.message.id)),
-        columns: {
-          id: true,
-          roleId: true,
-          customId: true,
-          customLabel: true,
-          emoji: true,
-          style: true,
-          customDmMessageData: true,
-          customEphemeralMessageData: true,
-          customPublicMessageData: true,
-          type: true,
-          url: true,
-        },
-      });
-
       const ctx = new InteractionContext(rest, interaction, env);
-      if (oldMessageButtons.length === 0) {
-        return respond(
-          ctx.reply({
-            content: t("noMigratableComponents"),
-            flags: MessageFlags.Ephemeral,
-          }),
-        );
+      const guildId = interaction.guild_id;
+      if (!guildId) {
+        return respond({ error: "No guild ID" });
       }
-
-      const getOldCustomId = (button: {
-        roleId: bigint | null;
-        customId: string | null;
-      }): string | undefined => {
-        if (button.roleId) {
-          return `button_role:${interaction.message.id}-${button.roleId}`;
-        } else if (button.customId) {
-          // const match = /^button_role:\d+-(\d+)$/.exec(button.customId);
-          // if (match) {
-          // }
-          return button.customId;
-        }
-      };
 
       eCtx.waitUntil(
         (async () => {
-          const guildId = interaction.guild_id;
-          if (!guildId) {
-            return respond({ error: "No guild ID" });
+          let inserted: Pick<
+            typeof discordMessageComponents.$inferSelect,
+            "id" | "data"
+          >[];
+          let rows: APIActionRowComponent<APIMessageActionRowComponent>[];
+          let guild: TriggerKVGuild;
+          let oldIdMap: Record<string, string>;
+          try {
+            ({ inserted, rows, guild, oldIdMap } = await migrateLegacyButtons(
+              env,
+              rest,
+              db,
+              guildId,
+              interaction.message,
+            ));
+          } catch (e) {
+            return respond(
+              ctx.reply({
+                content: String(e),
+                flags: MessageFlags.Ephemeral,
+              }),
+            );
           }
-
-          const guild = await getchTriggerGuild(rest, env.KV, guildId);
-          // Not sure if it's better for RL reasons to use guildMember instead?
-          const owner = (await rest.get(
-            Routes.user(guild.owner_id),
-          )) as APIUser;
-          const ownerUser = await upsertDiscordUser(db, owner);
-          const customIdToTempId: Record<string, string> = Object.fromEntries(
-            oldMessageButtons
-              .filter((b) => !!getOldCustomId(b))
-              .map((b) => [
-                getOldCustomId(b),
-                `Button: ${Math.floor(Math.random() * 10000000000)}`,
-              ]),
-          );
-          const insertedBackups = await db
-            .insert(backups)
-            .values(
-              oldMessageButtons
-                .filter(
-                  (b) =>
-                    !!getOldCustomId(b) &&
-                    !!(
-                      b.customPublicMessageData ||
-                      b.customEphemeralMessageData ||
-                      b.customDmMessageData
-                    ),
-                )
-                .map((b) => {
-                  // biome-ignore lint/style/noNonNullAssertion: At least one must be non-null according to filter
-                  const dataStr = (b.customPublicMessageData ??
-                    b.customEphemeralMessageData ??
-                    b.customDmMessageData)!;
-                  return {
-                    // biome-ignore lint/style/noNonNullAssertion: Filter
-                    name: customIdToTempId[getOldCustomId(b)!],
-                    ownerId: ownerUser.id,
-                    data: {
-                      messages: [{ data: JSON.parse(dataStr) }],
-                    } satisfies QueryData,
-                    dataVersion: "d2",
-                  };
-                }),
-            )
-            .returning({ id: backups.id, name: backups.name });
-
-          const oldIdMap: Record<string, string> = {};
-
-          const values: (typeof discordMessageComponents.$inferInsert)[] = [];
-          for (const button of oldMessageButtons) {
-            const old = getOldCustomId(button);
-            const newId = generateId();
-            const newCustomId = `p_${newId}`;
-            if (old) {
-              oldIdMap[old] = newId;
-            }
-
-            values.push({
-              id: BigInt(newId),
-              channelId: makeSnowflake(interaction.channel.id),
-              guildId: makeSnowflake(guildId),
-              messageId: makeSnowflake(interaction.message.id),
-              draft: false,
-              type: ComponentType.Button,
-              data: {
-                type: ComponentType.Button,
-                label: button.customLabel ?? undefined,
-                emoji: button.emoji
-                  ? button.emoji.startsWith("<")
-                    ? {
-                        id: button.emoji.split(":")[2].replace(/\>$/, ""),
-                        name: button.emoji.split(":")[1],
-                        animated: button.emoji.split(":")[0] === "<a",
-                      }
-                    : {
-                        name: button.emoji,
-                      }
-                  : undefined,
-                ...(button.url
-                  ? {
-                      url: button.url,
-                      style: ButtonStyle.Link,
-                    }
-                  : await (async () => {
-                      const backupId = insertedBackups.find(
-                        // biome-ignore lint/style/noNonNullAssertion:
-                        (b) => b.name === customIdToTempId[old!],
-                      )?.id;
-
-                      const flowId = BigInt(generateId());
-                      await db.insert(flows).values({ id: flowId });
-
-                      const actions = [
-                        ...(button.roleId
-                          ? [
-                              {
-                                type: FlowActionType.ToggleRole,
-                                roleId: String(button.roleId),
-                              } satisfies FlowActionToggleRole,
-                              {
-                                type: FlowActionType.Stop,
-                                message: {
-                                  content: t("toggledRole", {
-                                    replace: { role: `<@${button.roleId}>` },
-                                  }),
-                                },
-                              } satisfies FlowActionStop,
-                            ]
-                          : backupId
-                            ? [
-                                {
-                                  type: FlowActionType.SendMessage,
-                                  backupId: backupId.toString(),
-                                  response: true,
-                                  flags: button.customEphemeralMessageData
-                                    ? MessageFlags.Ephemeral
-                                    : undefined,
-                                } satisfies FlowActionSendMessage,
-                              ]
-                            : []),
-                      ];
-                      if (actions.length !== 0) {
-                        await db.insert(flowActions).values(
-                          actions.map((action) => ({
-                            flowId,
-                            type: action.type,
-                            data: action,
-                          })),
-                        );
-                      }
-
-                      return {
-                        customId: newCustomId,
-                        flowId: String(flowId),
-                        style:
-                          (
-                            {
-                              primary: ButtonStyle.Primary,
-                              secondary: ButtonStyle.Secondary,
-                              success: ButtonStyle.Success,
-                              danger: ButtonStyle.Danger,
-                            } as const
-                          )[button.style ?? "primary"] ?? ButtonStyle.Primary,
-                      };
-                    })()),
-              } satisfies StorableComponent,
-            });
-          }
-
-          const inserted = await db
-            .insert(discordMessageComponents)
-            .values(values)
-            .onConflictDoNothing()
-            .returning({
-              id: discordMessageComponents.id,
-              data: discordMessageComponents.data,
-            });
-
-          // TODO verify emojis for this
-          const rows = interaction.message.components?.map((row) => ({
-            ...row,
-            components: row.components.map((component) => {
-              if (
-                component.type !== ComponentType.Button ||
-                !hasCustomId(component)
-              ) {
-                return component;
-              }
-
-              const button = inserted.find(
-                (b) => String(b.id) === oldIdMap[component.custom_id],
-              );
-              return {
-                ...component,
-                disabled: !button,
-                // This shouldn't happen, but fall back anyway to avoid failure
-                custom_id: button ? `p_${button.id}` : component.custom_id,
-              };
-            }),
-          }));
           await ctx.followup.editOriginalMessage({ components: rows });
-          // Free up space. Not 100% sure about this
-          // await db
-          //   .delete(oButtons)
-          //   .where(
-          //     eq(oButtons.messageId, makeSnowflake(interaction.message.id)),
-          //   );
 
           const thisButton = inserted.find(
             (b) => String(b.id) === oldIdMap[customId],

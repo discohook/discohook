@@ -264,6 +264,25 @@ async function main() {
                 .setRequired(false)
                 .addChannelTypes(...webhookChannelTypes),
             ),
+        )
+        .addSubcommand((opt) =>
+          opt
+            .setName("migrate")
+            .setDescription("...")
+            .addStringOption((opt) =>
+              opt
+                .setName("message")
+                .setDescription("...")
+                .setRequired(true)
+                .setAutocomplete(true),
+            )
+            .addChannelOption((opt) =>
+              opt
+                .setName("channel")
+                .setDescription("...")
+                .setRequired(false)
+                .addChannelTypes(...webhookChannelTypes),
+            ),
         ),
     ),
     addLocalizations(

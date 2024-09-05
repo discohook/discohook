@@ -23,6 +23,10 @@ import {
   editComponentFlowModeCallback,
   editComponentFlowPickCallback,
 } from "./commands/components/edit.js";
+import {
+  migrateComponentsCancel,
+  migrateComponentsConfirm,
+} from "./commands/components/migrate.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import {
@@ -87,7 +91,9 @@ export type ComponentRoutingId =
   | "webhook-info-use"
   | "webhook-info-show-url"
   | "webhook-delete-confirm"
-  | "webhook-delete-cancel";
+  | "webhook-delete-cancel"
+  | "migrate-buttons-confirm"
+  | "migrate-buttons-cancel";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
 
@@ -136,6 +142,8 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "webhook-info-show-url": { handler: webhookInfoShowUrlCallback },
   "webhook-delete-confirm": { handler: webhookDeleteConfirm },
   "webhook-delete-cancel": { handler: webhookDeleteCancel },
+  "migrate-buttons-confirm": { handler: migrateComponentsConfirm },
+  "migrate-buttons-cancel": { handler: migrateComponentsCancel },
 };
 
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {

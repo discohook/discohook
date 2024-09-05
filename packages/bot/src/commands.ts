@@ -21,6 +21,7 @@ import {
   addComponentMessageEntry,
   autocompleteMessageCallback,
 } from "./commands/components/entry.js";
+import { migrateComponentsChatEntry } from "./commands/components/migrate.js";
 import { debugMessageCallback } from "./commands/debug.js";
 import { deluxeInfoCallback, deluxeSyncCallback } from "./commands/deluxe.js";
 import {
@@ -109,11 +110,13 @@ export const appCommands: Record<
         add: addComponentChatEntry,
         edit: editComponentChatEntry,
         delete: deleteComponentChatEntry,
+        migrate: migrateComponentsChatEntry,
       },
       autocompleteHandlers: {
         add: addComponentMessageAutocomplete,
         edit: addComponentMessageAutocomplete,
         delete: addComponentMessageAutocomplete,
+        migrate: addComponentMessageAutocomplete,
       },
     },
     format: {
