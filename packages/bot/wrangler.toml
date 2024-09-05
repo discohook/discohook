@@ -51,7 +51,7 @@ DISCOHOOK_ORIGIN = "https://preview.discohook.app"
 route = { pattern = "bots.discohook.app", custom_domain = true }
 kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 hyperdrive = [
-  { binding = "HYPERDRIVE", id = "b78274cce7d543ca952af16633c1885d" },
+  { binding = "HYPERDRIVE", id = "9568cd870bee47f3801c862de747ca94" },
 ]
 services = [{ binding = "SITE", service = "discohook-site" }]
 
