@@ -12,7 +12,7 @@ import {
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq, notInArray } from "drizzle-orm";
 import { t } from "i18next";
 import {
   DBWithSchema,
@@ -155,7 +155,7 @@ export const migrateLegacyButtons = async (
                   type: FlowActionType.Stop,
                   message: {
                     content: t("toggledRole", {
-                      replace: { role: `<@${button.roleId}>` },
+                      replace: { role: `<@&${button.roleId}>` },
                     }),
                   },
                 } satisfies FlowActionStop,
@@ -420,6 +420,18 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
           } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
         },
       );
+      // Clean up
+      const insertedIds = inserted.map((i) => i.id);
+      if (insertedIds.length !== 0) {
+        await db
+          .delete(discordMessageComponents)
+          .where(
+            and(
+              eq(discordMessageComponents.messageId, BigInt(message.id)),
+              notInArray(discordMessageComponents.id, insertedIds),
+            ),
+          );
+      }
       await ctx.followup.editOriginalMessage({
         content: "Migrated successfully - enjoy!",
         components: [],

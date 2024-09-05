@@ -82,6 +82,8 @@ const handleInteraction = async (
   await i18next.init({
     lng: interaction.locale,
     resources,
+    // These are all plaintext strings passed to Discord (or another service that sanitizes afterward)
+    interpolation: { escapeValue: false },
   });
 
   if (
