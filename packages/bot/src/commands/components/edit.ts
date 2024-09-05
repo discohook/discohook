@@ -692,7 +692,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
             emojiRaw,
             undefined,
             guildId,
-            ctx.env.DISCOHOOK_ORIGIN,
+            ctx.env,
           );
           if (!emoji) {
             return ctx.reply({

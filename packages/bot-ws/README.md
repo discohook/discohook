@@ -4,7 +4,7 @@ A minimal application designed to fulfill the gaps left by the Discohook bot aft
 
 ## Manifesto
 
-I didn't want to create a tertiary portion of this application that relies on the gateway due to complications with the previous iteration (née Discohook Utils). As mentioned above, most of the bot is no longer on the gateway and thusly relies very little on the type of caching that was being done by my library. Nonetheless, some offerings of this application can only be fulfilled by a gateway connected process, and I would much rather continue offering them than cut them out entirely.
+I didn't want to create a tertiary portion of this application that relies on the gateway due to complications with the previous iteration. As mentioned above, most of the bot is no longer on the gateway and thusly relies very little on the type of caching that was being done by my library. Nonetheless, some offerings of this application can only be fulfilled by a gateway connected process, and I would much rather continue offering them than cut them out entirely.
 
 I have attempted to turn this *situation* into an ✨ opportunity ✨ to take advantage of the niceties that come with having a gateway connection.
 
@@ -15,7 +15,7 @@ I have attempted to turn this *situation* into an ✨ opportunity ✨ to take ad
 
 ## Current Features
 
-- Custom status showcasing the bot site (nice-to-have)
+- Custom status advertising helpful guides (nice-to-have)
 - Selective gateway event proxy to a sibling worker instance
 
 ## Setup

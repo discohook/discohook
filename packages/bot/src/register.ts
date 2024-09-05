@@ -6,7 +6,7 @@ import {
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
-  ToAPIApplicationCommandOptions
+  ToAPIApplicationCommandOptions,
 } from "@discordjs/builders";
 import {
   ApplicationCommandType,
@@ -525,6 +525,24 @@ async function main() {
             )
             .addStringOption((opt) =>
               opt.setName("emoji").setDescription("...").setAutocomplete(true),
+            )
+            .addChannelOption((opt) =>
+              opt
+                .setName("channel")
+                .setDescription("...")
+                .addChannelTypes(...messageChannelTypes),
+            ),
+        )
+        .addSubcommand((opt) =>
+          opt
+            .setName("list")
+            .setDescription("...")
+            .addStringOption((opt) =>
+              opt
+                .setName("message")
+                .setDescription("...")
+                .setRequired(true)
+                .setAutocomplete(true),
             )
             .addChannelOption((opt) =>
               opt

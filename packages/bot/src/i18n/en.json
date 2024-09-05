@@ -190,6 +190,17 @@
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
+        },
+        "list": {
+          "description": "List all reaction roles on a message",
+          "options": {
+            "message": {
+              "description": "The message to list reaction roles on. A message link is also accepted here"
+            },
+            "channel": {
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
         }
       }
     },

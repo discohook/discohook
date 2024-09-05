@@ -18,7 +18,7 @@ import {
   MessageFlags,
   RESTGetAPIGuildEmojisResult,
   RouteBases,
-  Routes,
+  Routes
 } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { and, eq } from "drizzle-orm";
@@ -510,4 +510,61 @@ export const deleteReactionRoleButtonCallback: ButtonCallback = async (ctx) => {
     .filter((row) => row.components.length !== 0);
 
   return ctx.updateMessage({ components });
+};
+
+export const listReactionRolesHandler: ChatInputAppCommandCallback = async (
+  ctx,
+) => {
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) throw Error("Guild-only command");
+
+  const message = await resolveMessageLink(
+    ctx.rest,
+    ctx.getStringOption("message").value,
+  );
+  if (typeof message === "string") {
+    return ctx.reply({
+      content: message,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const entries = await db.query.discordReactionRoles.findMany({
+    where: eq(discordReactionRoles.messageId, makeSnowflake(message.id)),
+  });
+
+  if (entries.length === 0) {
+    return ctx.reply({
+      content: "This message has no reaction roles registered.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  return ctx.reply({
+    embeds: [
+      new EmbedBuilder()
+        .setTitle(
+          `Reaction roles on ${messageLink(
+            message.channel_id,
+            message.id,
+            guildId,
+          )}`,
+        )
+        .setColor(color)
+        .setDescription(
+          entries
+            .slice(0, 25)
+            .map((entry) => {
+              const emoji = isSnowflakeSafe(entry.reaction)
+                ? `<:_:${entry.reaction}>`
+                : entry.reaction;
+              return `- ${emoji} - <@&${entry.roleId}>`;
+            })
+            .join("\n"),
+        )
+        .toJSON(),
+    ],
+    flags: MessageFlags.Ephemeral,
+  });
 };

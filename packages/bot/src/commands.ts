@@ -38,6 +38,7 @@ import { inviteCallback } from "./commands/invite.js";
 import {
   createReactionRoleHandler,
   deleteReactionRoleHandler,
+  listReactionRolesHandler,
   messageAndEmojiAutocomplete,
 } from "./commands/reactionRoles.js";
 import {
@@ -171,6 +172,7 @@ export const appCommands: Record<
       handlers: {
         create: createReactionRoleHandler,
         delete: deleteReactionRoleHandler,
+        list: listReactionRolesHandler,
       },
       autocompleteHandlers: {
         create: messageAndEmojiAutocomplete,
@@ -178,6 +180,7 @@ export const appCommands: Record<
         // filtered by messages that have registered reaction roles, but I
         // can't think of a particularly efficient way to do that right now
         delete: messageAndEmojiAutocomplete,
+        list: autocompleteMessageCallback,
       },
     },
     restore: {

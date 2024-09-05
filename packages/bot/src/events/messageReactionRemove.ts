@@ -7,10 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { getDb } from "store";
 import { discordReactionRoles, makeSnowflake } from "store/src/schema";
 import { GatewayEventCallback } from "../events.js";
-
-export interface DiscordReactionRoleData {
-  roleId: string;
-}
+import { DiscordReactionRoleData } from "./messageReactionAdd.js";
 
 export const messageReactionRemoveCallback: GatewayEventCallback = async (
   env,
@@ -30,12 +27,18 @@ export const messageReactionRemoveCallback: GatewayEventCallback = async (
         eq(discordReactionRoles.reaction, reaction),
       ),
     });
-    if (!stored) return;
+    if (!stored) {
+      await env.KV.put(key, JSON.stringify({ roleId: null }), {
+        expirationTtl: 604800,
+      });
+      return;
+    }
     data = {
       roleId: String(stored.roleId),
     };
     await env.KV.put(key, JSON.stringify(data), { expirationTtl: 604800 });
   }
+  if (!data.roleId) return;
 
   const rest = new REST().setToken(env.DISCORD_TOKEN);
   try {

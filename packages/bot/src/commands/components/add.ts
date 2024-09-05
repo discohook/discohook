@@ -827,7 +827,7 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
           emojiRaw,
           undefined,
           state.message.guildId,
-          ctx.env.DISCOHOOK_ORIGIN,
+          ctx.env,
         );
         if (!emoji) {
           return ctx.reply({

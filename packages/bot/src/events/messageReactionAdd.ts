@@ -9,7 +9,7 @@ import { discordReactionRoles, makeSnowflake } from "store/src/schema";
 import { GatewayEventCallback } from "../events.js";
 
 export interface DiscordReactionRoleData {
-  roleId: string;
+  roleId: string | null;
 }
 
 export const messageReactionAddCallback: GatewayEventCallback = async (
@@ -30,12 +30,16 @@ export const messageReactionAddCallback: GatewayEventCallback = async (
         eq(discordReactionRoles.reaction, reaction),
       ),
     });
-    if (!stored) return;
-    data = {
-      roleId: String(stored.roleId),
-    };
+    if (!stored) {
+      await env.KV.put(key, JSON.stringify({ roleId: null }), {
+        expirationTtl: 604800,
+      });
+      return;
+    }
+    data = { roleId: String(stored.roleId) };
     await env.KV.put(key, JSON.stringify(data), { expirationTtl: 604800 });
   }
+  if (!data.roleId) return;
 
   const rest = new REST().setToken(env.DISCORD_TOKEN);
   try {
