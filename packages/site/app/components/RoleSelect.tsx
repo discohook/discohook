@@ -3,7 +3,7 @@ import { ResolvableAPIRole } from "~/util/cache/CacheManager";
 import { selectClassNames } from "./StringSelect";
 import { RoleShield } from "./icons/role";
 
-const getOption = (role: ResolvableAPIRole) => ({
+const getOption = (role: ResolvableAPIRole, assignable?: boolean) => ({
   label: (
     <div className="flex">
       <RoleShield style={{ color: `#${role.color.toString(16)}` }} />
@@ -12,6 +12,7 @@ const getOption = (role: ResolvableAPIRole) => ({
   ),
   value: role.id,
   role,
+  isDisabled: assignable === false,
 });
 
 export const RoleSelect = (props: {
@@ -22,15 +23,35 @@ export const RoleSelect = (props: {
   isDisabled?: boolean;
   isMulti?: boolean;
   onChange?: (channel: ResolvableAPIRole | null) => void;
+  unassignable?: "disable" | "omit";
+  guildId?: string;
+  userHighestPosition?: number;
 }) => {
+  const getRoleAssignable = (role: ResolvableAPIRole) =>
+    props.unassignable
+      ? !role.managed &&
+        (props.guildId ? role.id !== props.guildId : true) &&
+        (props.userHighestPosition !== undefined
+          ? role.position < props.userHighestPosition
+          : true)
+      : true;
+
   return (
     <ReactSelect
       isClearable={props.isClearable}
       isDisabled={props.isDisabled}
       isMulti={props.isMulti}
       name={props.name}
-      value={props.value ? getOption(props.value) : undefined}
-      options={props.roles.map(getOption)}
+      value={
+        props.value
+          ? getOption(props.value, getRoleAssignable(props.value))
+          : undefined
+      }
+      options={props.roles
+        .filter(
+          (r) => !(props.unassignable === "omit" && !getRoleAssignable(r)),
+        )
+        .map((r) => getOption(r, getRoleAssignable(r)))}
       classNames={selectClassNames}
       onChange={(raw) => {
         const opt = raw as ReturnType<typeof getOption> | null;

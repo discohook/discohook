@@ -569,6 +569,8 @@ const FlowActionEditor: React.FC<{
                     update();
                   }
                 }}
+                unassignable="omit"
+                guildId={guildId}
               />
               {/* <TextArea label="Reason" maxLength={512} className="w-full" /> */}
             </>
