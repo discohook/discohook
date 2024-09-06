@@ -38,6 +38,7 @@ import {
 import {
   FlowActionCheck,
   FlowActionCheckFunctionType,
+  FlowActionDud,
   FlowActionSendMessage,
   FlowActionSetVariableType,
   FlowActionStop,
@@ -100,24 +101,30 @@ export const migrateLegacyButtons = async (
 
   const oldIdMap: Record<string, string> = {};
   const inserted = await db.transaction(async (tx) => {
+    const oldIdToBackupName: Record<string, string> = {};
     const backupInsertValues: (typeof backups.$inferInsert)[] =
       oldMessageButtons
         .filter(
-          (b) =>
-            !!getOldCustomId(b) &&
+          (button) =>
+            !!getOldCustomId(button) &&
             !!(
-              b.customPublicMessageData ||
-              b.customEphemeralMessageData ||
-              b.customDmMessageData
+              button.customPublicMessageData ||
+              button.customEphemeralMessageData ||
+              button.customDmMessageData
             ),
         )
-        .map((b) => {
+        .map((button) => {
+          const name = `Button (${
+            button.customPublicMessageData ? "public" : "hidden"
+          } message) ${Math.floor(Math.random() * 1000000)}`;
+          // biome-ignore lint/style/noNonNullAssertion: Filter
+          oldIdToBackupName[getOldCustomId(button)!] = name;
           // biome-ignore lint/style/noNonNullAssertion: At least one must be non-null according to filter
-          const dataStr = (b.customPublicMessageData ??
-            b.customEphemeralMessageData ??
-            b.customDmMessageData)!;
+          const dataStr = (button.customPublicMessageData ??
+            button.customEphemeralMessageData ??
+            button.customDmMessageData)!;
           return {
-            name: `Button: ${b.id}`,
+            name,
             ownerId: ownerUser.id,
             data: {
               messages: [{ data: JSON.parse(dataStr) }],
@@ -145,7 +152,9 @@ export const migrateLegacyButtons = async (
       let flowId: string | undefined;
       if (!button.url) {
         const backupId = insertedBackups.find(
-          (b) => b.name === `Button: ${b.id}`,
+          old && oldIdToBackupName[old]
+            ? (backup) => backup.name === oldIdToBackupName[old]
+            : () => false,
         )?.id;
 
         flowId = generateId();
