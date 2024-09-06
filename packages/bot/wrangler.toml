@@ -53,12 +53,12 @@ kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "9568cd870bee47f3801c862de747ca94" },
 ]
-services = [{ binding = "SITE", service = "discohook-site" }]
+services = [{ binding = "SITE", service = "discohook-site-production" }]
 
 [env.production.durable_objects]
 bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState" },
-  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-production" },
 ]
 
 [[env.production.migrations]]

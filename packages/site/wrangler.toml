@@ -93,7 +93,7 @@ hyperdrive = [
 kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
-  { binding = "BOT", service = "discohook-bot" },
+  { binding = "BOT", service = "discohook-bot-production" },
 ]
 
 [env.production.version_metadata]
@@ -102,7 +102,7 @@ binding = "VERSION"
 [env.production.durable_objects]
 bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
-  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
+  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-production" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
 ]
 
