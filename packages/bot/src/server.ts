@@ -660,6 +660,41 @@ router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
   return respond({ error: "No event callback found.", status: 404 });
 });
 
+router.post("/ws/bulk", async (request, env: Env, eCtx: ExecutionContext) => {
+  const auth = request.headers.get("Authorization");
+  if (!auth || !env.DISCORD_TOKEN) {
+    return new Response(null, { status: 401 });
+  }
+  const [scope, token] = auth.split(" ");
+  if (scope !== "Bot" || token !== env.DISCORD_TOKEN) {
+    return new Response(null, { status: 403 });
+  }
+
+  const data = (
+    (await request.json()) as {
+      t: GatewayDispatchEvents;
+      d: any;
+      ms: number;
+    }[]
+  ).sort((p) => p.ms);
+
+  const callbacks: (() => Promise<void>)[] = [];
+  for (const payload of data) {
+    const callback = eventNameToCallback[payload.t];
+    if (callback) {
+      callbacks.push(async () => callback(env, payload.d).catch(console.error));
+    }
+  }
+
+  if (callbacks.length === 0) {
+    return respond({ error: "No event callback found.", status: 404 });
+  }
+
+  console.log(`[/ws/bulk] Handling ${callbacks.length} events`);
+  eCtx.waitUntil(Promise.all(callbacks.map((c) => c())));
+  return new Response(null, { status: 204 });
+});
+
 router.all("*", () => new Response("Not Found.", { status: 404 }));
 
 async function verifyDiscordRequest(request: Request, env: Env) {

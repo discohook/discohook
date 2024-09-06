@@ -28,6 +28,14 @@ if (!env.DISCORD_TOKEN || !env.WORKER_ORIGIN) {
 // );
 
 let guildIds: string[] = [];
+
+interface BulkEvent {
+  t: GatewayDispatchEvents;
+  d: any;
+  ms: number;
+}
+const eventQueue: BulkEvent[] = [];
+
 const rest = new REST().setToken(env.DISCORD_TOKEN);
 const manager = new WebSocketManager({
   token: env.DISCORD_TOKEN,
@@ -89,14 +97,14 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       const alreadyMember = guildIds.includes(event.data.d.id);
       guildIds.push(event.data.d.id);
       if (alreadyMember) return;
-      break;
+      return; //break;
     }
     case GatewayDispatchEvents.GuildDelete: {
       // It's just unavailable, ignore but let the bot worker handle it
       if (event.data.d.unavailable) break;
       const index = guildIds.indexOf(event.data.d.id);
       if (index !== -1) guildIds.splice(index, 1);
-      break;
+      return; //break;
     }
     default:
       break;
@@ -117,13 +125,32 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       GatewayDispatchEvents.MessageReactionRemove,
     ].includes(event.data.t)
   ) {
+    const now = new Date().getTime();
+    const asPayload: BulkEvent = {
+      t: event.data.t,
+      d: event.data.d,
+      ms: now,
+    };
+
+    // bulk events every 2 seconds
+    let processEvents: typeof eventQueue = [];
+    const firstInQueue = eventQueue[0];
+    if (firstInQueue && now - firstInQueue.ms >= 2000) {
+      processEvents = [...eventQueue.splice(0, eventQueue.length), asPayload];
+    }
+
+    if (processEvents.length === 0) {
+      // Fewer than 2 seconds of events have accumulated
+      eventQueue.push(asPayload);
+      return;
+    }
+
     try {
-      const response = await fetch(`${env.WORKER_ORIGIN}/ws`, {
+      const response = await fetch(`${env.WORKER_ORIGIN}/ws/bulk`, {
         method: "POST",
-        body: JSON.stringify(event.data.d),
+        body: JSON.stringify(processEvents),
         headers: {
           Authorization: `Bot ${env.DISCORD_TOKEN}`,
-          "X-Discohook-Event": event.data.t,
           "X-Discohook-Shard": String(event.shardId),
           // "X-Discohook-Cluster": String(cluster),
           "Content-Type": "application/json",
@@ -131,7 +158,10 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
             "discohook-bot-ws/1.0.0 (+https://github.com/discohook/discohook)",
         },
       });
-      console.log(`${event.data.t} returned ${response.status}`);
+      console.log(
+        `Bulk processing (${processEvents.length} events) returned ${response.status}`,
+        // `> ${processEvents.map((e) => e.t).join(", ")}`,
+      );
     } catch (e) {
       console.error(e);
     }
