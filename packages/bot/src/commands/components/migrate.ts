@@ -1,4 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  messageLink,
+} from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import {
   APIActionRowComponent,
@@ -32,7 +36,10 @@ import {
   makeSnowflake,
 } from "store/src/schema";
 import {
+  FlowActionCheck,
+  FlowActionCheckFunctionType,
   FlowActionSendMessage,
+  FlowActionSetVariableType,
   FlowActionStop,
   FlowActionToggleRole,
   FlowActionType,
@@ -241,10 +248,16 @@ export const migrateLegacyButtons = async (
               style:
                 (
                   {
+                    // ??? what was I on?
                     primary: ButtonStyle.Primary,
+                    blurple: ButtonStyle.Primary,
                     secondary: ButtonStyle.Secondary,
+                    gray: ButtonStyle.Secondary,
+                    link: ButtonStyle.Secondary,
                     success: ButtonStyle.Success,
+                    green: ButtonStyle.Success,
                     danger: ButtonStyle.Danger,
+                    red: ButtonStyle.Danger,
                   } as const
                 )[button.style ?? "primary"] ?? ButtonStyle.Primary,
             }),
@@ -289,27 +302,42 @@ export const migrateLegacyButtons = async (
     return inserted;
   });
 
-  // TODO verify emojis for this
+  const emojis = (await rest.get(
+    Routes.guildEmojis(guildId),
+  )) as RESTGetAPIGuildEmojisResult;
   const rows = message.components?.map((row) => ({
     ...row,
     components: row.components.map((component) => {
-      if (component.type !== ComponentType.Button || !hasCustomId(component)) {
+      if (
+        component.type !== ComponentType.Button ||
+        component.style === ButtonStyle.Premium
+      ) {
         return component;
       }
 
+      // Remove likely-inaccessible emojis
+      const subdata = { ...component };
+      if (
+        subdata.emoji?.id &&
+        !emojis.find((e) => e.id === subdata.emoji?.id)
+      ) {
+        subdata.emoji = subdata.label ? undefined : { name: "🌫️" };
+      }
+      if (!hasCustomId(subdata)) return subdata;
+
       const button = inserted.find(
-        (b) => String(b.id) === oldIdMap[component.custom_id],
+        (b) => String(b.id) === oldIdMap[subdata.custom_id],
       );
       return {
-        ...component,
+        ...subdata,
         disabled: !button,
         // This shouldn't happen, but fall back anyway to avoid failure
-        custom_id: button ? `p_${button.id}` : component.custom_id,
+        custom_id: button ? `p_${button.id}` : subdata.custom_id,
       };
     }),
   })) as APIActionRowComponent<APIMessageActionRowComponent>[];
   // await ctx.followup.editOriginalMessage({ components: rows });
-  return { inserted, rows, guild, oldIdMap };
+  return { inserted, rows, guild, emojis, oldIdMap };
 };
 
 export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
@@ -331,7 +359,7 @@ export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
       });
     }
 
-    const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+    const db = getDb(ctx.env.HYPERDRIVE);
     const result = (
       await db
         .select({
@@ -347,7 +375,13 @@ export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
       });
     }
     return ctx.reply({
-      content: `This will replace ALL components on this message with ${result.count} migrated legacy buttons. Positions may be altered, but can be changed later. Are you sure you want to do this?`,
+      content: `This will replace ALL components on ${messageLink(
+        message.channel_id,
+        message.id,
+        ctx.interaction.guild_id,
+      )} with ${
+        result.count
+      } migrated legacy buttons. Positions may be altered, but can be changed later. Are you sure you want to do this?`,
       components: [
         new ActionRowBuilder<ButtonBuilder>()
           .addComponents(
@@ -379,71 +413,74 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
   const guildId = ctx.interaction.guild_id;
   if (!guildId) throw Error();
 
-  const db = getDb(ctx.env.DATABASE_URL);
+  const message = (await ctx.rest.get(
+    Routes.channelMessage(channelId, messageId),
+  )) as APIMessage;
+
+  // biome-ignore lint/style/noNonNullAssertion: Checked before this callback
+  const webhook = await getWebhook(message.webhook_id!, ctx.env);
+  if (!webhook.token) {
+    return ctx.updateMessage({
+      content: "The webhook's token was inaccessible.",
+      components: [],
+    });
+  }
+
+  const db = getDb(ctx.env.HYPERDRIVE);
   return [
-    ctx.defer(),
+    ctx.updateMessage({ content: "Migrating...", components: [] }),
     async () => {
-      const message = (await ctx.rest.get(
-        Routes.channelMessage(channelId, messageId),
-      )) as APIMessage;
-
-      // biome-ignore lint/style/noNonNullAssertion: Checked before this callback
-      const webhook = await getWebhook(message.webhook_id!, ctx.env);
-      if (!webhook.token) {
-        await ctx.followup.editOriginalMessage({
-          content: "The webhook's token was inaccessible.",
-          components: [],
-        });
-        return;
-      }
-
-      const { inserted } = await migrateLegacyButtons(
+      const { inserted, emojis } = await migrateLegacyButtons(
         ctx.env,
         ctx.rest,
         db,
         guildId,
         message,
       );
-      const emojis = (await ctx.rest.get(
-        Routes.guildEmojis(guildId),
-      )) as RESTGetAPIGuildEmojisResult;
 
       const rows: ActionRowBuilder<ButtonBuilder>[] = [];
-      let i = -1;
       for (const component of inserted) {
-        i += 1;
         if (rows.length >= 5) break;
         if (component.data.type === ComponentType.Button) {
-          if (!rows[i] || rows[i].components.length >= 5) {
-            rows.push(new ActionRowBuilder());
+          let row = rows[rows.length - 1];
+          if (!row || row.components.length >= 5) {
+            row = new ActionRowBuilder();
+            rows.push(row);
           }
-          const data = { ...component.data };
-          if (
-            "emoji" in data &&
-            data.emoji?.id &&
-            !emojis.find((e) => e.id === data.emoji?.id)
-          ) {
-            data.emoji = data.label ? undefined : { name: "🌫️" };
+          const button = new ButtonBuilder().setStyle(component.data.style);
+          const { data } = component;
+          if ("emoji" in data && data.emoji) {
+            if (
+              data.emoji.id &&
+              !emojis.find((e) => e.id === data.emoji?.id) &&
+              !data.label
+            ) {
+              button.setEmoji({ name: "🌫️" });
+            } else {
+              button.setEmoji(data.emoji);
+            }
           }
-          let customId: string | undefined;
+          if (data.style !== ButtonStyle.Premium && data.label) {
+            button.setLabel(data.label);
+          }
           if (
             component.data.style !== ButtonStyle.Link &&
             component.data.style !== ButtonStyle.Premium
           ) {
-            customId = `p_${component.id}`;
-            // @ts-expect-error
-            data.custom_id = customId;
+            const customId = `p_${component.id}`;
+            button.setCustomId(customId);
             await launchComponentDurableObject(ctx.env, {
               messageId: message.id,
               componentId: component.id,
               customId,
             });
           }
-          rows[i].addComponents(new ButtonBuilder(data));
+          row.addComponents(button);
         }
       }
       await ctx.rest.patch(
-        Routes.webhookMessage(webhook.id, webhook.token, message.id),
+        // biome-ignore lint/style/noNonNullAssertion: Stopped if null
+        Routes.webhookMessage(webhook.id, webhook.token!, message.id),
         {
           body: {
             components: rows.map((r) => r.toJSON()),
@@ -464,7 +501,6 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
       }
       await ctx.followup.editOriginalMessage({
         content: "Migrated successfully - enjoy!",
-        components: [],
       });
     },
   ];
