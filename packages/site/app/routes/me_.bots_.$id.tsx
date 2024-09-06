@@ -54,7 +54,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const user = await getUser(request, context, true);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const bot = (
     await db
       .select({
@@ -98,7 +98,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id: botId } = zxParseParams(params, { id: snowflakeAsString() });
   const user = await getUser(request, context, true);
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
 
   if (request.method === "PATCH") {
     const {

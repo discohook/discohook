@@ -49,7 +49,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   //   owner = guild.owner_id === member.user?.id;
   // }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   await db
     .insert(discordRoles)
     .values(

@@ -23,7 +23,7 @@ export const messageReactionAddCallback: GatewayEventCallback = async (
   const key = `discord-reaction-role-${event.message_id}-${reaction}`;
   let data = await env.KV.get<DiscordReactionRoleData>(key, "json");
   if (!data) {
-    const db = getDb(env.HYPERDRIVE.connectionString);
+    const db = getDb(env.HYPERDRIVE);
     const stored = await db.query.discordReactionRoles.findFirst({
       where: and(
         eq(discordReactionRoles.messageId, makeSnowflake(event.message_id)),

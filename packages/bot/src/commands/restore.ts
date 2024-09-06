@@ -152,7 +152,7 @@ const createShareLink = async (
     metadata: { expiresAt: new Date(new Date().valueOf() + ttl).toISOString() },
   });
   if (userId) {
-    const db = getDb(env.HYPERDRIVE.connectionString);
+    const db = getDb(env.HYPERDRIVE);
     await db.insert(shareLinks).values({
       userId,
       shareId: id,
@@ -170,10 +170,7 @@ const createShareLink = async (
 };
 
 export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
-  const user = await upsertDiscordUser(
-    getDb(ctx.env.HYPERDRIVE.connectionString),
-    ctx.user,
-  );
+  const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
   const message = ctx.getMessage();
 
   if (!message.webhook_id || message.interaction_metadata) {
@@ -387,10 +384,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
     | "edit"
     | "link";
 
-  const user = await upsertDiscordUser(
-    getDb(ctx.env.HYPERDRIVE.connectionString),
-    ctx.user,
-  );
+  const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
   // if (!userIsPremium(user) && mode === "link") {}
   if (
     mode === "edit" &&

@@ -24,7 +24,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const dbWebhook = await db.query.webhooks.findFirst({
     where: (webhooks, { and, eq }) =>
       and(eq(webhooks.platform, "discord"), eq(webhooks.id, String(webhookId))),

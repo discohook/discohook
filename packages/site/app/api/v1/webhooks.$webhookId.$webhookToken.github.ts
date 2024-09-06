@@ -125,7 +125,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     Routes.webhook(webhookId, webhookToken),
   )) as RESTGetAPIWebhookWithTokenResult;
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const extantPost = await db.query.githubPosts.findFirst({
     where: (githubPosts, { and, eq }) =>
       and(

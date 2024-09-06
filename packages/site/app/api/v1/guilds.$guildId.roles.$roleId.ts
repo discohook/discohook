@@ -27,7 +27,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const cached = await context.env.KV.get<ResolvableAPIRole>(key, "json");
   if (cached) return cached;
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const dbRole = await db.query.discordRoles.findFirst({
     where: (discordRoles, { eq }) => eq(discordRoles.id, roleId),
     columns: {

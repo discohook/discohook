@@ -37,7 +37,7 @@ export class DurableScheduler implements DurableObject {
       return;
     }
 
-    const db = getDb(this.env.HYPERDRIVE.connectionString);
+    const db = getDb(this.env.HYPERDRIVE);
     const backup = await db.query.backups.findFirst({
       where: (backups, { eq }) => eq(backups.id, makeSnowflake(backupId)),
       columns: {

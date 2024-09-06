@@ -115,7 +115,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     throw json(webhook, 404);
   }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   if (type === "send" || type === "delete") {
     const entry = await db.query.messageLogEntries.findFirst({
       where: (messageLogEntries, { eq, and }) =>

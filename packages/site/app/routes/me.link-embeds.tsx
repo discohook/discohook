@@ -31,7 +31,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       .transform((i) => i - 1),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const linkBackups = await db.query.linkBackups.findMany({
     where: (linkBackups, { eq }) => eq(linkBackups.ownerId, user.id),
     columns: {
@@ -55,7 +55,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 export const action = async ({ request, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   switch (request.method) {
     case "DELETE": {
       const { ids } = await zxParseForm(request, {

@@ -28,7 +28,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       .transform((v) => v.split(",").map(BigInt)),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const results = await db.query.backups.findMany({
     where: inArray(backups.id, ids),
     columns: {
@@ -156,7 +156,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   //   console.log(uploadData);
   // }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   return (
     await db
       .insert(backups)

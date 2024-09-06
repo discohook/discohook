@@ -6,7 +6,7 @@ import {
   ButtonStyle,
   ComponentType,
   Routes,
-  WebhookType
+  WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import {
@@ -45,7 +45,7 @@ export const getWebhook = async (
   webhookId: string,
   env: Env,
 ): Promise<APIWebhook> => {
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   const dbWebhook = await db.query.webhooks.findFirst({
     where: (webhooks, { eq, and }) =>
       and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)),
@@ -111,7 +111,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       throw e;
     }
 
-    const db = getDb(context.env.HYPERDRIVE.connectionString);
+    const db = getDb(context.env.HYPERDRIVE);
     const dbToken = await db.query.tokens.findFirst({
       where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
       columns: {
@@ -204,7 +204,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
       }
 
-      const db = getDb(context.env.HYPERDRIVE.connectionString);
+      const db = getDb(context.env.HYPERDRIVE);
       const current = await db.query.discordMessageComponents.findFirst({
         where: (table, { eq }) => eq(table.id, id),
         columns: {
@@ -401,7 +401,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       return respond(json(updated));
     }
     case "DELETE": {
-      const db = getDb(context.env.HYPERDRIVE.connectionString);
+      const db = getDb(context.env.HYPERDRIVE);
       const current = await db.query.discordMessageComponents.findFirst({
         where: (table, { eq }) => eq(table.id, id),
         columns: {

@@ -11,7 +11,7 @@ const JSONbig = JSONbig_({ useNativeBigInt: true, alwaysParseAsBig: true });
 const getDbWithClient = (client: postgres.Sql) =>
   drizzle(client, { schema: { ...schema, ...schemaV1 } });
 
-export const getDb = (connectionString: string) => {
+export const getDb = ({ connectionString }: Hyperdrive) => {
   const client = postgres(connectionString, {
     prepare: false,
     // Thanks https://github.com/drizzle-team/drizzle-orm/issues/989#issuecomment-1936564267

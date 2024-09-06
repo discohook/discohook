@@ -31,7 +31,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const trigger = await db.query.triggers.findFirst({
     where: (triggers, { eq }) => eq(triggers.id, triggerId),
     columns: {
@@ -105,7 +105,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   const premium = userIsPremium(token.user);
 
   if (request.method === "DELETE") {
-    const db = getDb(context.env.HYPERDRIVE.connectionString);
+    const db = getDb(context.env.HYPERDRIVE);
     const trigger = await db.query.triggers.findFirst({
       where: (triggers, { eq }) => eq(triggers.id, triggerId),
       columns: { discordGuildId: true, event: true },
@@ -128,7 +128,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     flow: refineZodDraftFlowMax(premium),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const trigger = await db.query.triggers.findFirst({
     where: (triggers, { eq }) => eq(triggers.id, triggerId),
     columns: {

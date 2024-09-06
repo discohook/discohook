@@ -221,7 +221,7 @@ const handleInteraction = async (
         });
       }
     } else if (customId.startsWith("p_")) {
-      const db = getDb(env.HYPERDRIVE.connectionString);
+      const db = getDb(env.HYPERDRIVE);
       const doId = env.COMPONENTS.idFromName(
         `${interaction.message.id}-${customId}`,
       );
@@ -437,7 +437,7 @@ const handleInteraction = async (
       }
     } else if (interaction.data.component_type === ComponentType.Button) {
       // Check for unmigrated buttons and migrate them
-      const db = getDb(env.HYPERDRIVE.connectionString);
+      const db = getDb(env.HYPERDRIVE);
       const ctx = new InteractionContext(rest, interaction, env);
       const guildId = interaction.guild_id;
       if (!guildId) {

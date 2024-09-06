@@ -22,7 +22,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   });
   const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const backup = await db.query.backups.findFirst({
     where: (backups, { eq }) => eq(backups.id, id),
     columns: {
@@ -126,7 +126,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
         ? parseExpression(expression, { tz: timezone })
         : undefined;
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const backup = await db.query.backups.findFirst({
     where: (backups, { eq }) => eq(backups.id, id),
     columns: {

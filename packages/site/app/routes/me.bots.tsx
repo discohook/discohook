@@ -10,12 +10,7 @@ import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
 import { BotCreateModal } from "~/modals/BotCreateModal";
 import { getUser, getUserId } from "~/session.server";
-import {
-  customBots,
-  desc,
-  getDb,
-  makeSnowflake
-} from "~/store.server";
+import { customBots, desc, getDb, makeSnowflake } from "~/store.server";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, isDiscordError } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -38,7 +33,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       .transform((i) => i - 1),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const bots = user.discordId
     ? await db
         .select({
@@ -63,7 +58,7 @@ export type LoadedBot = Awaited<SerializeFrom<typeof loader>["bots"]>[number];
 
 export const action = async ({ request, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
 
   const { applicationId } = await zxParseForm(request, {
     applicationId: snowflakeAsString().transform(String),

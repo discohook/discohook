@@ -18,7 +18,7 @@ export const action = async ({ request, context }: LoaderArgs) => {
     throw json({ message: "You have no linked Discord account" }, 400);
   }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const created = await db.transaction(async (tx) => {
     const posts = await tx.query.scheduled_posts.findMany({
       where: (table, { eq }) => eq(table.userId, discordId),

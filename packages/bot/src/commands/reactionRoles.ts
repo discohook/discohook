@@ -18,7 +18,7 @@ import {
   MessageFlags,
   RESTGetAPIGuildEmojisResult,
   RouteBases,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { and, eq } from "drizzle-orm";
@@ -250,7 +250,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
     JSON.stringify({ roleId: role.id }),
     { expirationTtl: 604800 },
   );
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   await upsertGuild(db, guild);
   await db
     .insert(discordReactionRoles)
@@ -350,7 +350,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
     // biome-ignore lint/style/noNonNullAssertion: Must have at least one
     const reaction = (emoji.id ?? emoji.name)!;
 
-    const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+    const db = getDb(ctx.env.HYPERDRIVE);
     const deleted = (
       await db
         .delete(discordReactionRoles)
@@ -397,7 +397,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
     });
   }
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const entries = await db.query.discordReactionRoles.findMany({
     where: eq(discordReactionRoles.messageId, makeSnowflake(message.id)),
   });
@@ -464,7 +464,7 @@ export const deleteReactionRoleButtonCallback: ButtonCallback = async (ctx) => {
     "reaction",
   );
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const deleted = (
     await db
       .delete(discordReactionRoles)
@@ -529,7 +529,7 @@ export const listReactionRolesHandler: ChatInputAppCommandCallback = async (
     });
   }
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const entries = await db.query.discordReactionRoles.findMany({
     where: eq(discordReactionRoles.messageId, makeSnowflake(message.id)),
   });

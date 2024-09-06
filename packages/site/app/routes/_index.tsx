@@ -73,7 +73,7 @@ import { loader as ApiGetComponents } from "../api/v1/components";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const memberships = (async () => {
     return user?.discordId
       ? (

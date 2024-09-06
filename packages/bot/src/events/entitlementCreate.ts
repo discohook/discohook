@@ -9,7 +9,7 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
   env,
   entitlement: APIEntitlement,
 ) => {
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   if (entitlement.application_id !== env.DISCORD_APPLICATION_ID) return;
   if (!entitlement.user_id) return;
 

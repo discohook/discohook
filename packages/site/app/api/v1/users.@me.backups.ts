@@ -6,7 +6,7 @@ import { getMessageText } from "~/util/message";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const userId = await getUserId(request, context, true);
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const userBackups = await db.query.backups.findMany({
     where: (backups, { eq }) => eq(backups.ownerId, userId),
     columns: {

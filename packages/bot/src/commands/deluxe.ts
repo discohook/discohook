@@ -31,7 +31,7 @@ export const deluxeInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
 };
 
 export const deluxeSyncCallback: ChatInputAppCommandCallback = async (ctx) => {
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const user = await upsertDiscordUser(db, ctx.user);
 
   // Make sure we don't accidentally do this for users if we ever introduce a guild-level subscription

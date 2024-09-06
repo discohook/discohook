@@ -31,7 +31,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       .transform((i) => i - 1),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const shareLinks = await db.query.shareLinks.findMany({
     where: (shareLinks, { eq }) => eq(shareLinks.userId, user.id),
     orderBy: (shareLinks, { desc }) => desc(shareLinks.expiresAt),
@@ -45,7 +45,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 export const action = async ({ request, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   switch (request.method) {
     case "PUT": {
       const data = await zxParseForm(request, {
@@ -64,7 +64,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         );
       }
 
-      const db = getDb(context.env.HYPERDRIVE.connectionString);
+      const db = getDb(context.env.HYPERDRIVE);
       const share = await db.query.shareLinks.findFirst({
         where: (shareLinks, { eq }) => eq(shareLinks.id, data.id),
         columns: {

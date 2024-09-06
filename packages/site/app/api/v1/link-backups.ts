@@ -17,7 +17,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   const user = await getUser(request, context, true);
   requirePremiumOrThrow(user);
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
 
   // Roughly 99.7m combinations of 62 characters at a length of 6
   let length = 6;

@@ -12,7 +12,7 @@ export const guildCreateCallback: GatewayEventCallback = async (
   if (guild.unavailable) return;
   const now = new Date();
 
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   const moderated = await env.KV.get<{ state: "banned"; reason?: string }>(
     `moderation-guild-${guild.id}`,
     "json",

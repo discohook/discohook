@@ -145,7 +145,7 @@ export async function getUser(
     return null;
   }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.id, userId),
     columns: {
@@ -228,7 +228,7 @@ export interface KVTokenGuildChannelPermissions {
 
 const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
   const token = await createToken(env, origin, userId);
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.id, userId),
     columns: {
@@ -319,7 +319,7 @@ export async function authorizeRequest(
     const token = await regenerateToken(context.env, context.origin, user.id);
     const countryCode = request.headers.get("CF-IPCountry") ?? undefined;
 
-    const db = getDb(context.env.HYPERDRIVE.connectionString);
+    const db = getDb(context.env.HYPERDRIVE);
     await db.insert(tokens).values({
       platform: "discord",
       prefix: "user",
@@ -387,7 +387,7 @@ export async function authorizeRequest(
     const tokenId = payload.jti!;
     // const userId = BigInt(payload.uid as string);
 
-    const db = getDb(context.env.HYPERDRIVE.connectionString);
+    const db = getDb(context.env.HYPERDRIVE);
     const token = await db.query.tokens.findFirst({
       where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
       columns: {
@@ -474,7 +474,7 @@ export const getTokenGuildPermissions = async (
       permissions: new PermissionsBitField(BigInt(cached.permissions)),
     };
   } else {
-    const db = getDb(env.HYPERDRIVE.connectionString);
+    const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
       throw json({ message: "User has no linked Discord user" }, 401);
     }
@@ -582,7 +582,7 @@ export const getTokenGuildChannelPermissions = async (
       permissions: new PermissionsBitField(BigInt(cached.permissions)),
     };
   } else {
-    const db = getDb(env.HYPERDRIVE.connectionString);
+    const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
       throw json({ message: "User has no linked Discord user" }, 401);
     }

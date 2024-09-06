@@ -29,7 +29,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   );
   const userId = await getUserId(request, context);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const components = await db.query.discordMessageComponents.findMany({
     where: inArray(discordMessageComponents.id, ids),
     columns: {
@@ -121,7 +121,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   const component = await zxParseJson(request, ZodAPIMessageActionRowComponent);
   const userId = await getUserId(request, context);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
 
   const createdFlow = (
     await db.insert(flows).values({}).returning({ id: flows.id })

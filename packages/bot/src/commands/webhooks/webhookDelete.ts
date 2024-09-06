@@ -26,7 +26,7 @@ export const webhookDeleteEntryCallback: ChatInputAppCommandCallback = async (
   // quickly that it completed before Discord had downloaded the initial
   // response. This will definitely change in production, but I think it
   // should be fine to keep in the response.
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const { logs } = (
     await db
       .select({ logs: count() })
@@ -86,7 +86,7 @@ export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
   );
   await ctx.rest.delete(Routes.webhook(webhookId));
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   await db
     .delete(webhooks)
     .where(and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)));

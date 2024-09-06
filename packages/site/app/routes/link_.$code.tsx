@@ -26,7 +26,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     code: z.string(),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const linkBackup = await db.query.linkBackups.findFirst({
     where: (linkBackups, { eq }) => eq(linkBackups.code, code),
     columns: {

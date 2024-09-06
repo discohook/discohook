@@ -237,7 +237,7 @@ const registerComponent = async (
   }
   nextAvailableRow.components.push(built);
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const returned = await db
     .insert(discordMessageComponents)
     .values({
@@ -294,7 +294,7 @@ export const startComponentFlow = async (
   message: APIMessage,
   components?: APIActionRowComponent<APIMessageActionRowComponent>[],
 ): Promise<InteractionInstantOrDeferredResponse> => {
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const user = await upsertDiscordUser(db, ctx.user);
 
   if (!message.webhook_id) {
@@ -512,7 +512,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
 
   switch (value) {
     case "button": {
-      const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+      const db = getDb(ctx.env.HYPERDRIVE);
 
       const { id: flowId } = (
         await db.insert(flows).values({}).returning({ id: flows.id })
@@ -693,7 +693,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     case "role-select":
     case "mentionable-select":
     case "channel-select": {
-      const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+      const db = getDb(ctx.env.HYPERDRIVE);
       const { id: flowId } =
         state.component ?? value === "string-select"
           ? { id: 0 }

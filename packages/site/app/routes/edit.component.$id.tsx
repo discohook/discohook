@@ -111,7 +111,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { token: editorToken } = zxParseQuery(request, {
     token: z.ostring(),
   });
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
 
   const redirectUrl = `/auth/discord?${new URLSearchParams({
     // We're purposely trimming the original request's query because it
@@ -411,7 +411,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const user = await getUser(request, context);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
     where: (table, { eq }) => eq(table.id, id),
     columns: {

@@ -279,7 +279,7 @@ const processUseWebhookButtonBoilerplate = async (
     "webhookId",
   );
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const dbWebhook = await db.query.webhooks.findFirst({
     where: and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)),
     columns: {

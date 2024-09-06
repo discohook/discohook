@@ -241,7 +241,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
     "messageId",
   );
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
 
   const [scope, key] = ctx.interaction.data.values[0].split(":");
   switch (scope as "id" | "link" | "unknown") {
@@ -439,7 +439,7 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
   );
   const mode = ctx.interaction.data.values[0] as "internal" | "external";
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
     where: (table, { eq }) => eq(table.id, BigInt(componentId)),
     columns: {
@@ -520,7 +520,7 @@ const registerComponentUpdate = async (
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
 ) => {
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const user = await upsertDiscordUser(db, ctx.user);
 
   const customId =
@@ -611,7 +611,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
     "componentId",
   );
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
     where: (table, { eq }) => eq(table.id, BigInt(componentId)),
     columns: {
@@ -766,7 +766,7 @@ export const editComponentFlowModalResendCallback: ButtonCallback = async (
     "componentId",
   );
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
     where: (table, { eq }) => eq(table.id, BigInt(componentId)),
     columns: {

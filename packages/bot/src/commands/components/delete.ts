@@ -136,7 +136,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
     "messageId",
   );
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
 
   const [scope, key] = ctx.interaction.data.values[0].split(":");
   switch (scope as "id" | "link" | "unknown") {
@@ -201,7 +201,7 @@ const registerComponentDelete = async (
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
 ) => {
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const customId = `p_${id}`;
 
   const components = message.components ?? [
@@ -259,7 +259,7 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
     "componentId",
   );
 
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
     where: (table, { eq }) => eq(table.id, BigInt(componentId)),
     columns: {

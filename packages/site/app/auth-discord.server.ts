@@ -54,7 +54,7 @@ export const getDiscordAuth = (
     }): Promise<UserAuth> => {
       try {
         const j = profile.__json as APIUser;
-        const db = getDb(context.env.HYPERDRIVE.connectionString);
+        const db = getDb(context.env.HYPERDRIVE);
         const user = await upsertDiscordUser(db, j, {
           accessToken,
           refreshToken,

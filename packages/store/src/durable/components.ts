@@ -30,8 +30,9 @@ export class DurableComponentState implements DurableObject {
   ) {}
 
   async fetch(request: Request) {
-    const connectionString =
-      this.env.HYPERDRIVE?.connectionString ?? this.env.DATABASE_URL;
+    const hyperdrive = this.env.HYPERDRIVE ?? {
+      connectionString: this.env.DATABASE_URL,
+    };
 
     switch (request.method) {
       case "PUT": {
@@ -43,7 +44,7 @@ export class DurableComponentState implements DurableObject {
             .transform((v) => new Date(v))
             .optional(),
         });
-        const db = getDb(connectionString);
+        const db = getDb(hyperdrive);
         const component = await db.query.discordMessageComponents.findFirst({
           where: (table, { eq }) => eq(table.id, makeSnowflake(id)),
           columns: {

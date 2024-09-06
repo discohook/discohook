@@ -16,7 +16,7 @@ export const guildDeleteCallback: GatewayEventCallback = async (
   // We only care about this event if the bot has been removed.
   if ("unavailable" in guild) return;
 
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   await db
     .delete(discordGuilds)
     .where(

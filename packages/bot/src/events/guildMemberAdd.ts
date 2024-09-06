@@ -3,7 +3,7 @@ import {
   APIUser,
   APIWebhook,
   GatewayGuildMemberAddDispatchData,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import {
@@ -296,7 +296,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
     return;
   }
 
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "add", rest, guild);
     await env.KV.put(key, JSON.stringify(triggers), { expirationTtl: 600 });

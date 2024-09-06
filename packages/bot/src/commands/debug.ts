@@ -31,7 +31,7 @@ const getMessageDebugEmbed = async (
   ctx: InteractionContext<APIMessageApplicationCommandGuildInteraction>,
   message: APIMessage,
 ) => {
-  const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+  const db = getDb(ctx.env.HYPERDRIVE);
   let webhook: APIWebhook | undefined;
   let logEntries: LogEntry[] | undefined;
   if (message.webhook_id) {

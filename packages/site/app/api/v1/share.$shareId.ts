@@ -24,7 +24,7 @@ export const loader = async ({ params, context }: LoaderArgs) => {
   if (!shortened) {
     let expiredAt: Date | undefined;
     try {
-      const db = getDb(context.env.HYPERDRIVE.connectionString);
+      const db = getDb(context.env.HYPERDRIVE);
       const link = await db.query.shareLinks.findFirst({
         where: (shareLinks, { and, eq, lt }) =>
           and(eq(shareLinks.shareId, id), lt(shareLinks.expiresAt, new Date())),

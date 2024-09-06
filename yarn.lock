@@ -9223,7 +9223,7 @@ cron-parser@discohook/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=34b1ef&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=682658&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
@@ -9233,7 +9233,7 @@ cron-parser@discohook/cron-parser:
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/9525caf127dc29fed543980f683d378cb80c72a8b145664a08afc3982c3e894b9270a04d89444cc17c09cb1804ae77e1ca0ec88c2f8fd25b410938c99521ce0c
+  checksum: 10c0/0965990f44ba76bc1fe9bf8d31c19af072d82c4c908b3bff0e3d6eac43396df3bea7086ce1588784e662886c6407f5304a01b35c8db17d1b56b9b2b8c5b17409
   languageName: node
   linkType: hard
 

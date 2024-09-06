@@ -5,10 +5,7 @@ import { twJoin } from "tailwind-merge";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { PopoutRichPicker } from "./editor/RichPicker";
 import { CoolIcon } from "./icons/CoolIcon";
-import {
-  FeatureConfig,
-  getEnabledRuleKeys
-} from "./preview/Markdown";
+import { FeatureConfig, getEnabledRuleKeys } from "./preview/Markdown";
 
 export const TextArea = (
   props: React.DetailedHTMLProps<

@@ -28,7 +28,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const entries = await db.query.messageLogEntries.findMany({
     where: (table, { eq }) => eq(table.discordGuildId, guildId),
     columns: {

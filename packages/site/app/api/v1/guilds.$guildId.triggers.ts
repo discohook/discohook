@@ -34,7 +34,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const triggers = await db.query.triggers.findMany({
     where: (triggers, { and, eq }) =>
       and(
@@ -100,7 +100,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     flow: refineZodDraftFlowMax(premium).optional(),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
 
   const curTriggers = await db.query.triggers.findMany({
     where: (triggers, { eq, and }) =>

@@ -180,7 +180,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
         //   .setStyle(ButtonStyle.Secondary),
       );
 
-      const db = getDb(ctx.env.HYPERDRIVE.connectionString);
+      const db = getDb(ctx.env.HYPERDRIVE);
       const guild = await getchGuild(
         ctx.rest,
         ctx.env.KV,

@@ -30,7 +30,7 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
     (w) => w.type === WebhookType.Incoming,
   );
 
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   if (incoming.length === 0) {
     await db
       .delete(webhooks)

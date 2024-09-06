@@ -1,7 +1,5 @@
 import { REST } from "@discordjs/rest";
-import {
-  GatewayGuildMemberRemoveDispatchData
-} from "discord-api-types/v10";
+import { GatewayGuildMemberRemoveDispatchData } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { getDb, getchTriggerGuild } from "store";
 import { discordMembers, makeSnowflake } from "store/src/schema";
@@ -22,7 +20,7 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
     return;
   }
 
-  const db = getDb(env.HYPERDRIVE.connectionString);
+  const db = getDb(env.HYPERDRIVE);
   // Remove member relation data. This is slightly more important than storing
   // the data initially but it's still skippable
   try {

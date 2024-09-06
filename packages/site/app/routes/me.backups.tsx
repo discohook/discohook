@@ -54,7 +54,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       .transform((i) => i - 1),
   });
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const backups = await db.query.backups.findMany({
     where: (backups, { eq }) => eq(backups.ownerId, user.id),
     columns: {
@@ -90,7 +90,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 export const action = async ({ request, context }: ActionArgs) => {
   const userId = await getUserId(request, context, true);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   switch (request.method) {
     case "POST": {
       const data = await zxParseForm(request, {

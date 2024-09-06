@@ -12,7 +12,7 @@ import { LoaderArgs } from "~/util/loader";
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
 
-  const db = getDb(context.env.HYPERDRIVE.connectionString);
+  const db = getDb(context.env.HYPERDRIVE);
   const memberships = user.discordId
     ? await db.query.discordMembers.findMany({
         where: (discordMembers, { eq }) =>
