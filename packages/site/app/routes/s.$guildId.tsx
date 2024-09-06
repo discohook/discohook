@@ -17,6 +17,7 @@ import {
   APIWebhook,
   ButtonStyle,
   ComponentType,
+  RESTJSONErrorCodes,
   WebhookType,
 } from "discord-api-types/v10";
 import {
@@ -98,7 +99,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     }
   } catch (e) {
     if (isDiscordError(e)) {
-      if (e.code === 10004) {
+      if (e.code === RESTJSONErrorCodes.UnknownGuild) {
         throw redirect(`/bot?guildId=${guildId}`);
       }
       throw respond(json(e, e.status));
