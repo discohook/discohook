@@ -739,7 +739,7 @@ export default () => {
           (c) => getComponentId(c) === BigInt(component_.id),
         );
         if (live) {
-          y = Math.max(y, 0);
+          y = Math.max(y, 0) - 1;
           x = row.components.indexOf(live);
           setComponent(live);
           break;
