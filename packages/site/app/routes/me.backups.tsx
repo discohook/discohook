@@ -67,7 +67,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       cron: true,
       timezone: true,
     },
-    orderBy: (backups, { desc }) => desc(backups.name),
+    orderBy: (backups, { asc }) => asc(backups.name),
     limit: 50,
     offset: page * 50,
   });
