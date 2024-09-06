@@ -12,6 +12,7 @@ import { Link } from "@remix-run/react";
 import { MessageFlagsBitField } from "discord-bitflag";
 import { TFunction } from "i18next";
 import React from "react";
+import { BRoutes, apiUrl } from "~/api/routing";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
@@ -258,17 +259,19 @@ const BackupSelect = ({
 }) => {
   return (
     <AsyncSelect
-      cacheOptions
-      defaultOptions
       isClearable={false}
       name="backupId"
+      isDisabled={fetcher.state !== "idle"}
       required
       value={value ? getBackupSelectOption(value) : ""}
+      defaultOptions={
+        fetcher.data ? fetcher.data.map(getBackupSelectOption) : []
+      }
       loadOptions={(inputValue) =>
         (async () => {
           const data =
             fetcher.data ??
-            (await fetcher.loadAsync("/api/v1/users/@me/backups"));
+            (await fetcher.loadAsync(apiUrl(BRoutes.currentUserBackups())));
           return data
             .filter((backup) =>
               backup.name.toLowerCase().includes(inputValue.toLowerCase()),
@@ -276,6 +279,7 @@ const BackupSelect = ({
             .map(getBackupSelectOption);
         })()
       }
+      className="w-full"
       classNames={selectClassNames}
       onChange={(raw) => {
         const opt = raw as ReturnType<typeof getBackupSelectOption>;
@@ -607,15 +611,29 @@ const FlowActionEditor: React.FC<{
                   </p>
                   <div>
                     <p className="text-sm select-none">{t("backup")}</p>
-                    <BackupSelect
-                      fetcher={backupsFetcher}
-                      value={selected}
-                      onChange={(backup) => {
-                        action.backupId = backup.id;
-                        action.backupMessageIndex = 0;
-                        update();
-                      }}
-                    />
+                    <div className="flex">
+                      <BackupSelect
+                        fetcher={backupsFetcher}
+                        value={selected}
+                        onChange={(backup) => {
+                          action.backupId = backup.id;
+                          action.backupMessageIndex = 0;
+                          update();
+                        }}
+                      />
+                      <Button
+                        className="ltr:ml-2 rtl:mr-2 my-auto"
+                        onClick={() =>
+                          backupsFetcher.load(
+                            apiUrl(BRoutes.currentUserBackups()),
+                          )
+                        }
+                        disabled={backupsFetcher.state !== "idle"}
+                        discordstyle={ButtonStyle.Secondary}
+                      >
+                        <CoolIcon icon="Redo" />
+                      </Button>
+                    </div>
                   </div>
                   {
                     // incl. the random option
@@ -707,58 +725,93 @@ const FlowActionEditor: React.FC<{
                   </p>
                   <div>
                     <p className="text-sm select-none">{t("webhook")}</p>
-                    <AsyncSelect
-                      cacheOptions
-                      defaultOptions
-                      isClearable={false}
-                      isDisabled={!guildId}
-                      name="webhookId"
-                      required
-                      value={
-                        selectedWebhook
-                          ? getWebhookSelectOption(selectedWebhook)
-                          : ""
-                      }
-                      loadOptions={(inputValue) =>
-                        (async () => {
-                          if (!guildId) return [];
+                    <div className="flex">
+                      <AsyncSelect
+                        isClearable={false}
+                        isDisabled={
+                          !guildId || webhooksFetcher.state !== "idle"
+                        }
+                        name="webhookId"
+                        required
+                        value={
+                          selectedWebhook
+                            ? getWebhookSelectOption(selectedWebhook)
+                            : ""
+                        }
+                        defaultOptions={
+                          webhooksFetcher.data
+                            ? webhooksFetcher.data.map(getWebhookSelectOption)
+                            : []
+                        }
+                        loadOptions={(inputValue) =>
+                          (async () => {
+                            if (!guildId) return [];
 
-                          const data =
-                            webhooksFetcher.data ??
-                            (await webhooksFetcher.loadAsync(
-                              `/api/v1/guilds/${guildId}/webhooks`,
-                            ));
-                          return data
-                            .filter((backup) =>
-                              backup.name
-                                .toLowerCase()
-                                .includes(inputValue.toLowerCase()),
-                            )
-                            .map(getWebhookSelectOption);
-                        })()
-                      }
-                      classNames={selectClassNames}
-                      onChange={(raw) => {
-                        const opt = raw as ReturnType<
-                          typeof getWebhookSelectOption
-                        >;
-                        action.webhookId = opt.webhook.id;
-                        update();
-                      }}
-                    />
+                            const data =
+                              webhooksFetcher.data ??
+                              (await webhooksFetcher.loadAsync(
+                                apiUrl(BRoutes.guildWebhooks(guildId)),
+                              ));
+                            return data
+                              .filter((backup) =>
+                                backup.name
+                                  .toLowerCase()
+                                  .includes(inputValue.toLowerCase()),
+                              )
+                              .map(getWebhookSelectOption);
+                          })()
+                        }
+                        className="w-full"
+                        classNames={selectClassNames}
+                        onChange={(raw) => {
+                          const opt = raw as ReturnType<
+                            typeof getWebhookSelectOption
+                          >;
+                          action.webhookId = opt.webhook.id;
+                          update();
+                        }}
+                      />
+                      <Button
+                        className="ltr:ml-2 rtl:mr-2 my-auto"
+                        onClick={() => {
+                          if (!guildId) return;
+                          webhooksFetcher.load(
+                            apiUrl(BRoutes.guildWebhooks(guildId)),
+                          );
+                        }}
+                        disabled={!guildId || webhooksFetcher.state !== "idle"}
+                        discordstyle={ButtonStyle.Secondary}
+                      >
+                        <CoolIcon icon="Redo" />
+                      </Button>
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm select-none">{t("backup")}</p>
-                    <BackupSelect
-                      fetcher={backupsFetcher}
-                      value={backupsFetcher.data?.find(
-                        (b) => b.id === action.backupId,
-                      )}
-                      onChange={(backup) => {
-                        action.backupId = backup.id;
-                        update();
-                      }}
-                    />
+                    <div className="flex">
+                      <BackupSelect
+                        fetcher={backupsFetcher}
+                        value={backupsFetcher.data?.find(
+                          (b) => b.id === action.backupId,
+                        )}
+                        onChange={(backup) => {
+                          action.backupId = backup.id;
+                          update();
+                        }}
+                      />
+                      <Button
+                        className="ltr:ml-2 rtl:mr-2 my-auto"
+                        onClick={() =>
+                          backupsFetcher.load(
+                            apiUrl(BRoutes.currentUserBackups()),
+                          )
+                        }
+                        disabled={backupsFetcher.state !== "idle"}
+                        discordstyle={ButtonStyle.Secondary}
+                      >
+                        <CoolIcon icon="Redo" />
+                      </Button>
+                    </div>
                   </div>
                   {
                     // incl. the random option

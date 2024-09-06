@@ -28,6 +28,13 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /users/@me/backups
+   */
+  currentUserBackups() {
+    return "/users/@me/backups" as const;
+  },
+
+  /**
    * - PATCH /components/:id
    * - DELETE /components/:id
    */

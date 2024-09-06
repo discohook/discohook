@@ -66,7 +66,10 @@ export const loader = async ({ request, context }: LoaderArgs) => {
             data.style !== ButtonStyle.Link &&
             data.style !== ButtonStyle.Premium
           ) {
-            const flow = componentsToFlows[0].flow;
+            const flow = componentsToFlows[0]?.flow ?? {
+              name: null,
+              actions: [],
+            };
             if (flow) {
               data.flow = {
                 name: flow.name,
@@ -99,7 +102,10 @@ export const loader = async ({ request, context }: LoaderArgs) => {
         case ComponentType.RoleSelect:
         case ComponentType.MentionableSelect:
         case ComponentType.ChannelSelect: {
-          const flow = componentsToFlows[0].flow;
+          const flow = componentsToFlows[0]?.flow ?? {
+            name: null,
+            actions: [],
+          };
           data.flow = {
             name: flow.name,
             actions: flow.actions.map((a) => a.data),
