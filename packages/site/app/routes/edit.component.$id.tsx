@@ -732,28 +732,29 @@ export default () => {
   const [data, setData] = useReducer(
     (current: Data, newData: Partial<Data>) => {
       const compiled = { ...current, ...newData } as Data;
+      let found = false;
       let y = -1;
       let x = -1;
       for (const row of compiled.components) {
+        y += 1;
         const live = row.components.find(
           (c) => getComponentId(c) === BigInt(component_.id),
         );
         if (live) {
-          y = Math.max(y, 0) - 1;
+          found = true;
           x = row.components.indexOf(live);
           setComponent(live);
           break;
         }
-        y += 1;
       }
 
-      if (y === -1 || x === -1) {
-        console.log(`Missing position (Y${y} X${x})`);
+      if (!found || y === -1 || x === -1) {
+        console.log(`Missing position (got to Y${y} X${x})`);
         return compiled;
       }
 
-      console.log("New position:", y + 1, x);
-      setPosition([y + 1, x]);
+      console.log("New position:", y, x);
+      setPosition([y, x]);
       return compiled;
     },
     message
