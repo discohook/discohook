@@ -148,15 +148,41 @@ export const migrateLegacyButtons = async (
           ...(button.roleId
             ? [
                 {
+                  type: FlowActionType.Check,
+                  function: {
+                    type: FlowActionCheckFunctionType.In,
+                    array: {
+                      varType: FlowActionSetVariableType.Get,
+                      value: "member.role_ids",
+                    },
+                    element: {
+                      varType: FlowActionSetVariableType.Static,
+                      value: String(button.roleId),
+                    },
+                  },
+                  then: [
+                    {
+                      type: FlowActionType.SetVariable,
+                      name: "response",
+                      value: `Removed the <@&${button.roleId}> role from you.`,
+                    },
+                  ],
+                  else: [
+                    {
+                      type: FlowActionType.SetVariable,
+                      name: "response",
+                      value: `Gave you the <@&${button.roleId}> role.`,
+                    },
+                  ],
+                } satisfies FlowActionCheck,
+                {
                   type: FlowActionType.ToggleRole,
                   roleId: String(button.roleId),
                 } satisfies FlowActionToggleRole,
                 {
                   type: FlowActionType.Stop,
                   message: {
-                    content: t("toggledRole", {
-                      replace: { role: `<@&${button.roleId}>` },
-                    }),
+                    content: "{response}",
                     flags: MessageFlags.Ephemeral,
                   },
                 } satisfies FlowActionStop,
