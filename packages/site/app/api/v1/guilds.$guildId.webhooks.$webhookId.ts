@@ -99,7 +99,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         );
       } catch (e) {
         if (isDiscordError(e)) {
-          throw respond(json(e.rawError));
+          throw respond(json(e.rawError, e.status));
         }
         throw respond(json({ message: String(e) }, 500));
       }

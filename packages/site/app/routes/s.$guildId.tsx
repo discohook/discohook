@@ -102,7 +102,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       if (e.code === RESTJSONErrorCodes.UnknownGuild) {
         throw redirect(`/bot?guildId=${guildId}`);
       }
-      throw respond(json(e, e.status));
+      throw respond(json(e.rawError, e.status));
     }
     throw e;
   }

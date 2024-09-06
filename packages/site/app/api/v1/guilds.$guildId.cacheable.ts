@@ -18,6 +18,7 @@ import {
   ResolvableAPIRole,
   tagToResolvableTag,
 } from "~/util/cache/CacheManager";
+import { isDiscordError } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 import { getChannelIconType } from "./channels.$channelId";
@@ -39,7 +40,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   if (!guild) {
-    guild = await getGuild(guildId, rest, context.env);
+    try {
+      guild = await getGuild(guildId, rest, context.env);
+    } catch (e) {
+      if (isDiscordError(e)) throw respond(json(e.rawError, e.status));
+      throw e;
+    }
     // owner = guild.owner_id === String(token.user.discordUser?.id);
   }
   // if (!member) {

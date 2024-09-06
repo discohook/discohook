@@ -28,7 +28,6 @@ import {
   upsertDiscordUser,
 } from "./store.server";
 import { Env } from "./types/env";
-import { isDiscordError } from "./util/discord";
 import { Context } from "./util/loader";
 
 export const getSessionStorage = (context: Context) => {
@@ -735,15 +734,7 @@ export const getGuild = async (
   rest: REST,
   env: Pick<Env, "KV">,
 ) => {
-  let guild: APIGuild;
-  try {
-    guild = (await rest.get(Routes.guild(String(guildId)))) as APIGuild;
-  } catch (e) {
-    if (isDiscordError(e)) {
-      throw json(e.rawError, e.status);
-    }
-    throw e;
-  }
+  const guild = (await rest.get(Routes.guild(String(guildId)))) as APIGuild;
   await env.KV.put(
     `cache-guild-${guildId}`,
     JSON.stringify({
