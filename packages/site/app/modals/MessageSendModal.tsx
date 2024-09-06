@@ -155,7 +155,11 @@ export const useMessageSubmissionManager = (
         return !messages[id] || messages[id].enabled;
       })) {
         const id = getQdMessageId(message);
-        if (message.data.webhook_id && webhook.id !== message.data.webhook_id) {
+        if (
+          message.reference &&
+          message.data.webhook_id &&
+          webhook.id !== message.data.webhook_id
+        ) {
           const result: SubmitMessageResult = {
             status: "error",
             data: {
