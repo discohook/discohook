@@ -516,7 +516,7 @@ const FlowActionEditor: React.FC<{
                   update();
                 }}
               >
-                Add Action
+                {t("addAction")}
               </Button>
               <p className="text-sm mt-2">{t("checkFunctionElse")}</p>
               <div className="space-y-1">
@@ -544,7 +544,7 @@ const FlowActionEditor: React.FC<{
                   update();
                 }}
               >
-                Add Action
+                {t("addAction")}
               </Button>
             </div>
           ) : action.type === 3 || action.type === 4 || action.type === 5 ? (
@@ -957,32 +957,44 @@ const FlowActionEditor: React.FC<{
                   update();
                 }}
               />
-              <StringSelect
-                name="flags"
-                label={t("flagsOptional")}
-                isMulti
-                isClearable
-                options={messageFlagOptions}
-                value={messageFlagOptions.filter((o) =>
-                  new MessageFlagsBitField(action.message?.flags ?? 0).has(
-                    o.value,
-                  ),
-                )}
-                onChange={(raw) => {
-                  const opts = raw as typeof messageFlagOptions;
+              <div>
+                <p className="text-sm font-medium">{t("flagsOptional")}</p>
+                <div className="space-y-0.5">
+                  {[
+                    MessageFlags.Ephemeral,
+                    MessageFlags.SuppressNotifications,
+                    MessageFlags.SuppressEmbeds,
+                  ].map((flag) => {
+                    const flags = new MessageFlagsBitField(
+                      action.message?.flags ?? 0,
+                    );
+                    return (
+                      <Checkbox
+                        key={`edit-flow-action-${i}-${action.type}-flag-${flag}`}
+                        label={t(`messageFlag.${flag}`)}
+                        checked={flags.has(flag)}
+                        onChange={({ currentTarget }) => {
+                          currentTarget.checked
+                            ? flags.add(flag)
+                            : flags.remove(flag);
 
-                  action.message = action.message ?? {};
-                  action.message.flags =
-                    Number(
-                      opts.reduce(
-                        (prev, cur) => prev.add(cur.value),
-                        new MessageFlagsBitField(),
-                      ).value,
-                    ) || undefined;
+                          action.message = action.message ?? {};
+                          action.message.flags =
+                            Number(flags.value) || undefined;
+                          if (
+                            !action.message.content?.trim() &&
+                            !action.message.flags
+                          ) {
+                            action.message = undefined;
+                          }
 
-                  update();
-                }}
-              />
+                          update();
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             </>
           ) : (
             t("actionTypeUnsupported")
