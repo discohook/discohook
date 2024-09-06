@@ -114,10 +114,9 @@ const data = {
   schedule: {
     title: "How do I schedule a message to be sent later?",
     description: [
-      "- First, create a backup by clicking **Save Message** and then **Save Backup**.",
-      "- Tap on your name in the page header to visit your user page.",
-      '- Visit the "Backups" tab, then click the pencil icon on the backup you just created, which is named the current date by default.',
-      "- Configure your schedule or repeating schedule in the menu that appears.",
+      "- First, create a backup by clicking **Backups** on the main page, typing in a name, then pressing **Create Backup**.",
+      "- Click the pencil icon on the backup you just created (you can also do this on your [user page](https://discohook.app/me/backups)).",
+      "- Configure your schedule in the menu that appears.",
       '- Click "Save"',
       "",
       'To remove a schedule, simply uncheck the "Schedule this backup" box, then save.',
