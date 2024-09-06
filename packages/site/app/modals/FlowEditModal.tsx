@@ -14,6 +14,7 @@ import { TFunction } from "i18next";
 import React from "react";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
+import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { NumberInput } from "~/components/NumberInput";
 import { TextArea } from "~/components/TextArea";
@@ -588,8 +589,22 @@ const FlowActionEditor: React.FC<{
                   value: null,
                 },
               ];
+              const flags = new MessageFlagsBitField(action.flags ?? 0);
               return (
                 <>
+                  <p className="text-sm">
+                    <Trans
+                      t={t}
+                      i18nKey="messageActionGuideNote"
+                      components={[
+                        <Link
+                          to="/guide/recipes/message-buttons"
+                          target="_blank"
+                          className={linkClassName}
+                        />,
+                      ]}
+                    />
+                  </p>
                   <div>
                     <p className="text-sm select-none">{t("backup")}</p>
                     <BackupSelect
@@ -597,57 +612,55 @@ const FlowActionEditor: React.FC<{
                       value={selected}
                       onChange={(backup) => {
                         action.backupId = backup.id;
+                        action.backupMessageIndex = 0;
                         update();
                       }}
                     />
                   </div>
-                  <StringSelect
-                    name="backupMessageIndex"
-                    label={t("message")}
-                    required
-                    options={messageOptions}
-                    value={
-                      messageOptions.find(
-                        (o) => o.value === action.backupMessageIndex,
-                      ) ?? ""
-                    }
-                    onChange={(raw) => {
-                      const opt = raw as {
-                        label: string;
-                        value: number | null;
-                      } | null;
-                      if (opt) {
-                        action.backupMessageIndex = opt.value;
+                  {
+                    // incl. the random option
+                    messageOptions.length > 2 && (
+                      <StringSelect
+                        name="backupMessageIndex"
+                        label={t("message")}
+                        required
+                        options={messageOptions}
+                        value={
+                          messageOptions.find(
+                            (o) => o.value === action.backupMessageIndex,
+                          ) ?? ""
+                        }
+                        isDisabled={
+                          !selected || selected.data.messages.length <= 1
+                        }
+                        onChange={(raw) => {
+                          const opt = raw as {
+                            label: string;
+                            value: number | null;
+                          } | null;
+                          if (opt) {
+                            action.backupMessageIndex = opt.value;
+                            update();
+                          }
+                        }}
+                      />
+                    )
+                  }
+                  <div>
+                    <p className="text-sm font-medium">{t("flags")}</p>
+                    <Checkbox
+                      label={t(`messageFlag.${MessageFlags.Ephemeral}`)}
+                      checked={flags.has(MessageFlags.Ephemeral)}
+                      onChange={({ currentTarget }) => {
+                        currentTarget.checked
+                          ? flags.add(MessageFlags.Ephemeral)
+                          : flags.remove(MessageFlags.Ephemeral);
+
+                        action.flags = Number(flags.value) || undefined;
                         update();
-                      }
-                    }}
-                  />
-                  <StringSelect
-                    name="flags"
-                    label={t("flagsOptional")}
-                    isMulti
-                    isClearable
-                    options={[
-                      {
-                        label: "Hidden (ephemeral)",
-                        value: MessageFlags.Ephemeral,
-                      },
-                    ]}
-                    value={messageFlagOptions.filter((o) =>
-                      new MessageFlagsBitField(action.flags ?? 0).has(o.value),
-                    )}
-                    onChange={(raw) => {
-                      const opts = raw as typeof messageFlagOptions;
-                      action.flags =
-                        Number(
-                          opts.reduce(
-                            (prev, cur) => prev.add(cur.value),
-                            new MessageFlagsBitField(),
-                          ).value,
-                        ) || undefined;
-                      update();
-                    }}
-                  />
+                      }}
+                    />
+                  </div>
                 </>
               );
             })()
@@ -679,6 +692,19 @@ const FlowActionEditor: React.FC<{
 
               return (
                 <>
+                  <p className="text-sm">
+                    <Trans
+                      t={t}
+                      i18nKey="messageActionGuideNote"
+                      components={[
+                        <Link
+                          to="/guide/recipes/message-buttons"
+                          target="_blank"
+                          className={linkClassName}
+                        />,
+                      ]}
+                    />
+                  </p>
                   <div>
                     <p className="text-sm select-none">{t("webhook")}</p>
                     <AsyncSelect
@@ -734,27 +760,35 @@ const FlowActionEditor: React.FC<{
                       }}
                     />
                   </div>
-                  <StringSelect
-                    name="backupMessageIndex"
-                    label={t("message")}
-                    required
-                    options={messageOptions}
-                    value={
-                      messageOptions.find(
-                        (o) => o.value === action.backupMessageIndex,
-                      ) ?? ""
-                    }
-                    onChange={(raw) => {
-                      const opt = raw as {
-                        label: string;
-                        value: number | null;
-                      } | null;
-                      if (opt) {
-                        action.backupMessageIndex = opt.value;
-                        update();
-                      }
-                    }}
-                  />
+                  {
+                    // incl. the random option
+                    messageOptions.length > 2 && (
+                      <StringSelect
+                        name="backupMessageIndex"
+                        label={t("message")}
+                        required
+                        options={messageOptions}
+                        value={
+                          messageOptions.find(
+                            (o) => o.value === action.backupMessageIndex,
+                          ) ?? ""
+                        }
+                        isDisabled={
+                          !selected || selected.data.messages.length <= 1
+                        }
+                        onChange={(raw) => {
+                          const opt = raw as {
+                            label: string;
+                            value: number | null;
+                          } | null;
+                          if (opt) {
+                            action.backupMessageIndex = opt.value;
+                            update();
+                          }
+                        }}
+                      />
+                    )
+                  }
                 </>
               );
             })()

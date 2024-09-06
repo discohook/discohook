@@ -483,11 +483,12 @@
   "messageFlag": {
     "4": "Hide embeds",
     "32": "Has thread",
-    "64": "Ephemeral",
+    "64": "Hidden (ephemeral)",
     "4096": "Silent",
     "8192": "Is voice message"
   },
   "random": "Random",
+  "messageActionGuideNote": "Confused? Check out <0>recipes - message buttons</0>.",
   "autoArchiveDuration": "Auto Archive Duration",
   "rowEmpty": "Must contain at least one component (button/select)",
   "labelEmpty": "Must have a label or emoji, or both",

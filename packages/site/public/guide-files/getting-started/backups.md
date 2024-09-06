@@ -7,13 +7,13 @@ description: "A primer on Discohook's long-term message storage system"
 
 ## Saving Backups
 
-When using Discohook, click the "Save Message" button, right next to "Send". You'll see an option to save the current editor contents as a backup (if you are not already editing one). This data is stored on Discohook's server, and can be accessed on any device as long as you use the same Discord account.
+When using Discohook, click the "Backups" button, right in between "Share" and "Clear All". You'll see a list of backups you already have, plus an option to save the current editor contents as a backup (if you are not already editing one) by typing a name and clicking "Create Backup". This data is stored on Discohook's server, and can be accessed on any device as long as you use the same Discord account.
 
 ## View & Edit Backups
 
-On your [user page](discohook://me/backups), you can see a list of all the backups you have saved. If one of your old button messages has been migrated, you may already have a few backups with names that look like "Button: <numbers>". This is because previously-named "custom message buttons" are now linked to Discohook backups, which you can edit at any time to modify the message sent by the component.
+On your [user page](discohook://me/backups), you can see a list of all the backups you have saved. If one of your old button messages has been migrated, you may already have a few backups with names that look like "Button (public/hidden message) <numbers>". This is because previously-named "custom message buttons" are now linked to Discohook backups, which you can edit at any time to modify the message sent by the component.
 
-Click the pencil icon on any of your backups to edit the name and schedule. To edit the content of the backup, click the link button on the right to open it. As the notice at the top explains, autosave is enabled when editing backups. To manually save a backup (always a good idea before closing the tab), go back into the "Save Message" menu and select "Save".
+Click the pencil icon on any of your backups to edit the name and schedule. To edit the content of the backup, click the link button on the right to open it. As the notice at the top explains, autosave is enabled when editing backups. To manually save a backup (always a good idea before closing the tab), go back into the "Backups" menu and select "Save".
 
 ## Scheduling
 
