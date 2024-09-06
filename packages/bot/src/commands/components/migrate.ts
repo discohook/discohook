@@ -217,7 +217,9 @@ export const migrateLegacyButtons = async (
                         : undefined,
                   } satisfies FlowActionSendMessage,
                 ]
-              : []),
+              : button.type === "do_nothings"
+                ? [{ type: FlowActionType.Dud } satisfies FlowActionDud]
+                : []),
         ];
         if (actions.length !== 0) {
           await tx.insert(flowActions).values(
