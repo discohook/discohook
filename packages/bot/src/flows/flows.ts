@@ -207,7 +207,7 @@ export const executeFlow = async (
               rest,
               db,
               liveVars,
-              setVars,
+              vars,
               ctx,
               recursion + 1,
               lastReturnValue,
@@ -229,7 +229,7 @@ export const executeFlow = async (
               rest,
               db,
               liveVars,
-              setVars,
+              vars,
               ctx,
               recursion + 1,
               lastReturnValue,
@@ -340,7 +340,7 @@ export const executeFlow = async (
               if (ctx) {
                 await ctx.followup.send(body);
               } else {
-                const channelId = vars.channelId;
+                const { channelId } = vars;
                 if (channelId && typeof channelId === "string") {
                   await rest.post(Routes.channelMessages(channelId), {
                     body,
