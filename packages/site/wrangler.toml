@@ -12,6 +12,7 @@ kv_namespaces = [
 
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
+  { binding = "BOT", service = "discohook-bot" },
 ]
 
 [durable_objects]

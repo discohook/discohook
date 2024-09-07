@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TriggerEvent } from "~/store.server";
 import { ZodDonateKeyType } from "./v1/donate.$type";
 
 export const BRoutes = {
@@ -136,6 +137,15 @@ export const BRoutes = {
    */
   guildTrigger(id: bigint | string, triggerId: bigint | string) {
     return `/guilds/${String(id)}/triggers/${String(triggerId)}` as const;
+  },
+
+  /**
+   * - PUT /guilds/:guildId/trigger-events/:event
+   *
+   * Accepts token or cookie auth.
+   */
+  guildTriggerEvent(id: bigint | string, event: TriggerEvent) {
+    return `/guilds/${String(id)}/trigger-events/${event}` as const;
   },
 
   /**

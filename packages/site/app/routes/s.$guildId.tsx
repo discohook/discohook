@@ -69,6 +69,7 @@ import { action as ApiDeleteComponent } from "../api/v1/components.$id";
 import { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
 import { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
 import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
+import { action as ApiPutGuildTriggerEvent } from "../api/v1/guilds.$guildId.trigger-events.$event";
 import { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
 import { action as ApiPatchGuildTrigger } from "../api/v1/guilds.$guildId.triggers.$triggerId";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
@@ -205,6 +206,11 @@ export default () => {
     onError: setError,
   });
   const triggerSaveFetcher = useSafeFetcher<typeof ApiPatchGuildTrigger>({
+    onError: setError,
+  });
+  const triggerEventTestFetcher = useSafeFetcher<
+    typeof ApiPutGuildTriggerEvent
+  >({
     onError: setError,
   });
   const [openTriggerId, setOpenTriggerId] = useState<bigint>();
@@ -829,31 +835,55 @@ export default () => {
                   {t("backToTriggers")}
                 </button>
                 <TabHeader>{t(`triggerEvent.${openTrigger.event}`)}</TabHeader>
-                <div className="rounded px-4 py-3 bg-gray-200 dark:bg-gray-900 shadow flex">
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t("createTrigger.when")}
-                    </p>
-                    <p className="font-semibold text-lg">
-                      {t(`triggerEventDescription.${openTrigger.event}`)}
-                    </p>
+                <div className="rounded px-4 py-3 bg-gray-200 dark:bg-gray-900 shadow">
+                  <div className="flex">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t("createTrigger.when")}
+                      </p>
+                      <p className="font-semibold text-lg">
+                        {t(`triggerEventDescription.${openTrigger.event}`)}
+                      </p>
+                    </div>
+                    <CoolIcon
+                      icon={flowEventsDetails[openTrigger.event].icon}
+                      className="text-4xl my-auto ml-auto"
+                    />
                   </div>
-                  <CoolIcon
-                    icon={flowEventsDetails[openTrigger.event].icon}
-                    className="text-4xl my-auto ml-auto"
-                  />
-                </div>
-                <div className="mt-2 rounded px-4 py-3 bg-gray-200 dark:bg-gray-900 shadow">
+                  <hr className="border border-gray-400 dark:border-gray-600 my-2" />
                   <p className="text-sm font-medium">
                     {t("createTrigger.then")}
                   </p>
-                  <Button onClick={() => setEditOpenTriggerFlow(true)}>
-                    {t("editFlow")}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setEditOpenTriggerFlow(true)}>
+                      {t("editFlow")}
+                    </Button>
+                    <Button
+                      discordstyle={ButtonStyle.Secondary}
+                      disabled={
+                        triggerSaveFetcher.state !== "idle" ||
+                        triggerEventTestFetcher.state !== "idle"
+                      }
+                      onClick={() =>
+                        triggerEventTestFetcher.submit(null, {
+                          action: apiUrl(
+                            BRoutes.guildTriggerEvent(
+                              guild.id,
+                              openTrigger.event,
+                            ),
+                          ),
+                          method: "PUT",
+                        })
+                      }
+                    >
+                      {t("sendTestEvent")}
+                    </Button>
+                  </div>
                 </div>
                 <Button
                   className="mt-2"
                   discordstyle={ButtonStyle.Success}
+                  disabled={triggerSaveFetcher.state !== "idle"}
                   onClick={async () => {
                     if (draftFlow) {
                       await triggerSaveFetcher.submitAsync(
@@ -873,6 +903,7 @@ export default () => {
                 <Button
                   className="ltr:ml-2 rtl:mr-2"
                   discordstyle={ButtonStyle.Danger}
+                  disabled={triggerSaveFetcher.state !== "idle"}
                   onClick={() =>
                     setConfirm({
                       title: t("deleteTrigger"),
