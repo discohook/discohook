@@ -35,7 +35,9 @@ export const getchTriggerGuild = async (
     "json",
   );
   if (!cached) {
-    const guild = (await rest.get(Routes.guild(guildId))) as APIGuild;
+    const guild = (await rest.get(Routes.guild(guildId), {
+      query: new URLSearchParams({ with_counts: "true" }),
+    })) as APIGuild;
     const reduced: TriggerKVGuild = {
       id: guild.id,
       name: guild.name,
