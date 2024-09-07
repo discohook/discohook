@@ -11,6 +11,7 @@ import {
 import { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { SetErrorFunction } from "~/components/Error";
@@ -421,21 +422,28 @@ export const MessageSendModal = (
             const previewText = getMessageText(message.data);
             return (
               <div key={`message-send-${id}`} className="flex">
-                <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer overflow-hidden">
-                  {!!messages[id]?.result && (
+                {messages[id]?.result && (
+                  <button
+                    type="button"
+                    className={twJoin(
+                      "flex ltr:mr-1 rtl:ml-1 px-3 rounded transition",
+                      messages[id].result.status === "error"
+                        ? "bg-rose-400/20 hover:bg-rose-400/30 text-rose-500 dark:text-rose-400 hover:dark:text-rose-100"
+                        : "bg-blurple/20 hover:bg-blurple/30 text-blurple dark:text-blurple-400 hover:dark:text-blurple-100",
+                    )}
+                    onClick={() => setShowingResult(messages[id].result)}
+                  >
                     <CoolIcon
                       icon={
-                        messages[id]?.result?.status === "success"
-                          ? "Check"
-                          : "Close_MD"
+                        messages[id].result.status === "error"
+                          ? "Octagon_Warning"
+                          : "Info"
                       }
-                      className={`text-2xl my-auto mr-1 ${
-                        messages[id]?.result?.status === "success"
-                          ? "text-green-600"
-                          : "text-rose-400"
-                      }`}
+                      className="m-auto text-3xl"
                     />
-                  )}
+                  </button>
+                )}
+                <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer overflow-hidden">
                   <div className="my-auto grow text-left ltr:mr-2 rtl:ml-2 truncate">
                     <p className="font-semibold text-base truncate">
                       {t(previewText ? "messageNText" : "messageN", {
@@ -444,10 +452,6 @@ export const MessageSendModal = (
                     </p>
                     {messages[id]?.result?.status === "error" && (
                       <p className="text-rose-400 text-sm leading-none">
-                        <CoolIcon
-                          icon="Circle_Warning"
-                          className="ltr:mr-1 rtl:ml-1"
-                        />
                         {
                           (messages[id].result?.data as DiscordErrorData)
                             .message
@@ -485,15 +489,6 @@ export const MessageSendModal = (
                     />
                   </div>
                 </label>
-                {messages[id]?.result && (
-                  <button
-                    type="button"
-                    className="flex ml-2 p-2 text-2xl rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-gray-600 text-blurple dark:text-blurple-400 hover:text-blurple-400 hover:dark:text-blurple-300 transition"
-                    onClick={() => setShowingResult(messages[id].result)}
-                  >
-                    <CoolIcon icon="Info" className="m-auto" />
-                  </button>
-                )}
               </div>
             );
           })
