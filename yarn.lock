@@ -4095,7 +4095,7 @@ cron-parser@discohook/cron-parser:
     chrono-node: "npm:^2.7.5"
     cron-parser: discohook/cron-parser
     discord-api-types: "npm:^0.37.92"
-    discord-bitflag: "npm:^1.0.1"
+    discord-bitflag: "npm:^1.0.2"
     discord-snowflake: "npm:^2.0.0"
     emoji-mart: "npm:^5.5.2"
     front-matter: "npm:^4.0.2"
@@ -4163,15 +4163,6 @@ cron-parser@discohook/cron-parser:
   version: 0.37.92
   resolution: "discord-api-types@npm:0.37.92"
   checksum: 10c0/23b29a996f5d6f7cae116c91601a9420290a24c3b18d062ad049644437e70d946e0fc00f51104221b32643e938905c305cc06de97ec10947e46e06d6e413915d
-  languageName: node
-  linkType: hard
-
-"discord-bitflag@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "discord-bitflag@npm:1.0.1"
-  dependencies:
-    bitflag-js: "npm:^1.0.0"
-  checksum: 10c0/2d951b4a042c976a15f288d7fa1d17c412216062e200f507fc4cee4cfbfde3565e60ed57c5b6f19e814ea16ad125f5d323ec4954ab06c02f5fcea257401fe630
   languageName: node
   linkType: hard
 
