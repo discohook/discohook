@@ -64,6 +64,7 @@ export class FlowStop extends Error {
 
 export interface FlowResult {
   status: "success" | "failure";
+  stopped?: boolean;
   message: string;
   discordError?: RESTError;
 }
@@ -213,6 +214,7 @@ export const executeFlow = async (
             );
             if (result.status === "success") {
               subActionsCompleted += action.then?.length ?? 0;
+              if (result.stopped) throw new FlowStop();
             }
           } else {
             const result = await executeFlow(
@@ -234,6 +236,7 @@ export const executeFlow = async (
             );
             if (result.status === "success") {
               subActionsCompleted += action.else?.length ?? 0;
+              if (result.stopped) throw new FlowStop();
             }
           }
           break;
@@ -355,7 +358,15 @@ export const executeFlow = async (
       }
     }
   } catch (e) {
-    if (!(e instanceof FlowStop)) {
+    if (e instanceof FlowStop) {
+      return {
+        status: "success",
+        stopped: true,
+        message: `${
+          flow.actions.length + subActionsCompleted
+        } actions completed successfully`,
+      };
+    } else {
       if (e instanceof FlowFailure) {
         return {
           status: "failure",
