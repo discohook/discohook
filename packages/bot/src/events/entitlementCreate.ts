@@ -16,6 +16,23 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
   const rest = new REST().setToken(env.DISCORD_TOKEN);
   const user = (await rest.get(Routes.user(entitlement.user_id))) as APIUser;
 
+  if (env.GUILD_ID) {
+    try {
+      if (env.DONATOR_ROLE_ID) {
+        await rest.put(
+          Routes.guildMemberRole(env.GUILD_ID, user.id, env.DONATOR_ROLE_ID),
+          { reason: `Entitlement created: ${entitlement.id}` },
+        );
+      }
+      if (env.SUBSCRIBER_ROLE_ID) {
+        await rest.put(
+          Routes.guildMemberRole(env.GUILD_ID, user.id, env.SUBSCRIBER_ROLE_ID),
+          { reason: `Entitlement created: ${entitlement.id}` },
+        );
+      }
+    } catch {}
+  }
+
   await db
     .insert(discordUsers)
     .values({
