@@ -438,7 +438,7 @@ export default () => {
                           `homePermission.${
                             member.owner
                               ? "owner"
-                              : permissions.has(PermissionFlags.Administrator)
+                              : has(PermissionFlags.Administrator)
                                 ? "admin"
                                 : "roles"
                           }`,
@@ -492,7 +492,7 @@ export default () => {
                       <Cell>
                         <CoolIcon
                           icon={
-                            permissions.has(
+                            has(
                               PermissionFlags.ManageMessages,
                               PermissionFlags.ManageWebhooks,
                             )
@@ -508,7 +508,7 @@ export default () => {
                       <Cell>
                         <CoolIcon
                           icon={
-                            permissions.has(PermissionFlags.ManageWebhooks)
+                            has(PermissionFlags.ManageWebhooks)
                               ? "Check"
                               : "Close_MD"
                           }
@@ -527,7 +527,7 @@ export default () => {
                       <Cell>
                         <CoolIcon
                           icon={
-                            permissions.has(
+                            has(
                               PermissionFlags.ViewAuditLog,
                               PermissionFlags.ManageGuild,
                             )
@@ -543,7 +543,7 @@ export default () => {
                       <Cell className="rounded-br-lg">
                         <CoolIcon
                           icon={
-                            permissions.has(PermissionFlags.ManageGuild)
+                            has(PermissionFlags.ManageGuild)
                               ? "Check"
                               : "Close_MD"
                           }
