@@ -1,6 +1,5 @@
 import { REST } from "@discordjs/rest";
 import { APIEntitlement, APIUser, Routes } from "discord-api-types/v10";
-import { sql } from "drizzle-orm";
 import { getDb } from "store";
 import { discordUsers, makeSnowflake, users } from "store/src/schema";
 import { GatewayEventCallback } from "../events.js";
@@ -52,23 +51,33 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
       },
     });
 
-  const lifetimeSKU =
+  const isLifetimeSKU =
     !!env.LIFETIME_SKU && entitlement.sku_id === env.LIFETIME_SKU;
+
+  const endsAt = entitlement.ends_at
+    ? new Date(entitlement.ends_at)
+    : entitlement.starts_at
+      ? // + 30 days
+        new Date(new Date(entitlement.starts_at).getTime() + 2_592_000_000)
+      : undefined;
+
+  const dbUser = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.discordId, makeSnowflake(user.id)),
+    columns: { lifetime: true, firstSubscribed: true },
+  });
   await db
     .insert(users)
     .values({
       discordId: makeSnowflake(user.id),
       name: user.global_name ?? user.username,
-      lifetime: lifetimeSKU,
+      lifetime: isLifetimeSKU,
       subscribedSince: entitlement.starts_at
         ? new Date(entitlement.starts_at)
         : undefined,
       firstSubscribed: entitlement.starts_at
         ? new Date(entitlement.starts_at)
         : undefined,
-      subscriptionExpiresAt: entitlement.ends_at
-        ? new Date(entitlement.ends_at)
-        : undefined,
+      subscriptionExpiresAt: isLifetimeSKU || dbUser?.lifetime ? null : endsAt,
     })
     .onConflictDoUpdate({
       target: users.discordId,
@@ -76,22 +85,20 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
         name: user.global_name ?? user.username,
         // Keep lifetime if it's already true
         lifetime: env.LIFETIME_SKU
-          ? sql`CASE WHEN ${users.lifetime} = true THEN true ELSE ${lifetimeSKU} END`
+          ? dbUser?.lifetime
+            ? true
+            : isLifetimeSKU
           : undefined,
         subscribedSince: entitlement.starts_at
           ? new Date(entitlement.starts_at)
           : undefined,
         // Only override `firstSubscribed` if it isn't already defined
-        firstSubscribed: entitlement.starts_at
-          ? sql`CASE WHEN ${users.firstSubscribed} IS NULL THEN ${new Date(
-              entitlement.starts_at,
-            )} ELSE ${users.firstSubscribed} END`
-          : undefined,
-        subscriptionExpiresAt: lifetimeSKU
-          ? null
-          : entitlement.ends_at
-            ? new Date(entitlement.ends_at)
+        firstSubscribed:
+          entitlement.starts_at && !dbUser?.firstSubscribed
+            ? new Date(entitlement.starts_at)
             : undefined,
+        subscriptionExpiresAt:
+          isLifetimeSKU || dbUser?.lifetime ? null : endsAt,
       },
     });
 };

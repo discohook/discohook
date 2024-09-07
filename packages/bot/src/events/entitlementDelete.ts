@@ -30,14 +30,14 @@ export const entitlementDeleteCallback: GatewayEventCallback = async (
   }
 
   const db = getDb(env.HYPERDRIVE);
-  const lifetimeSKU =
+  const isLifetimeSKU =
     !!env.LIFETIME_SKU && entitlement.sku_id === env.LIFETIME_SKU;
   await db
     .update(users)
     .set({
-      lifetime: lifetimeSKU ? false : undefined,
-      subscribedSince: lifetimeSKU ? undefined : null,
-      subscriptionExpiresAt: lifetimeSKU ? undefined : null,
+      lifetime: isLifetimeSKU ? false : undefined,
+      subscribedSince: isLifetimeSKU ? undefined : null,
+      subscriptionExpiresAt: isLifetimeSKU ? undefined : null,
     })
     .where(eq(users.discordId, makeSnowflake(entitlement.user_id)));
 };
