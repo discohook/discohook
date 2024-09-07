@@ -467,7 +467,11 @@ const FlowActionEditor: React.FC<{
                 const { value } = opt as { value: number };
                 flow.actions.splice(i, 1, {
                   type: value,
-                  ...(value === 1 ? { seconds: 1 } : {}),
+                  ...(value === 1
+                    ? { seconds: 1 }
+                    : value === 2
+                      ? { then: [], else: [] }
+                      : {}),
                 });
                 update();
               }}
