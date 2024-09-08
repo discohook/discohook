@@ -20,7 +20,6 @@ import {
   APIModalInteractionResponseCallbackData,
   APISelectMenuComponent,
   APIStringSelectComponent,
-  APIWebhook,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -66,6 +65,7 @@ import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
 import { getUserPremiumDetails } from "../../util/user.js";
 import { resolveEmoji } from "../reactionRoles.js";
+import { getWebhook } from "../webhooks/webhookInfo.js";
 import { partialEmojiToComponentEmoji } from "./edit.js";
 
 export const buildStorableComponent = (
@@ -303,9 +303,34 @@ export const startComponentFlow = async (
       flags: MessageFlags.Ephemeral,
     });
   }
-  const webhook = (await ctx.rest.get(
-    Routes.webhook(message.webhook_id),
-  )) as APIWebhook;
+  if (
+    !message.application_id ||
+    message.application_id !== ctx.env.DISCORD_APPLICATION_ID
+  ) {
+    return ctx.reply({
+      // content:
+      //   "This message's webhook is not owned by Discohook Utils. You can create a bot-owned webhook with </webhook create:908884724087410732>. Would you like to automatically clone the message using a new webhook?",
+      content:
+        "This message's webhook is not owned by Discohook Utils. You can create a bot-owned webhook with </webhook create:908884724087410732>, then re-send the message from Discohook (use </restore:979811266073878560> to load the message).",
+      flags: MessageFlags.Ephemeral,
+      // components: [
+      //   new ActionRowBuilder<ButtonBuilder>()
+      //     .addComponents(
+      //       new ButtonBuilder()
+      //         .setCustomId(
+      //           `a_clone-webhook-message_${message.id}:${message.webhook_id}` satisfies AutoComponentCustomId,
+      //         )
+      //         .setLabel("Create webhook & re-send message"),
+      //     )
+      //     .toJSON(),
+      // ],
+    });
+  }
+  const webhook = await getWebhook(
+    message.webhook_id,
+    ctx.env,
+    message.application_id,
+  );
   const webhookToken = webhook.token;
   if (!webhookToken) {
     return ctx.reply({
