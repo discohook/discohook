@@ -38,7 +38,7 @@
     "clickToCopy": "Premi per Copiare",
     "sendMessageN_one": "Invia il Messaggio",
     "sendMessageN_many": "Invia i Messaggi",
-    "sendMessageN_other": "",
+    "sendMessageN_other": "Invia i Messaggi",
     "sendNoMessages": "Non hai messaggi da inviare.",
     "willBeEdited": "Questo messaggio ha un riferimento impostato, quindi sarà modificato.",
     "skippedEdit": "Saltata la modifica a causa degli ID di webhook non corrispondenti.",
