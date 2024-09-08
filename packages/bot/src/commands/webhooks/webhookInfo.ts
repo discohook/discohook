@@ -180,10 +180,24 @@ export const getWebhook = async (
     tryAppId = env.DISCORD_APPLICATION_ID;
     token = env.DISCORD_TOKEN;
   }
+  const key = `cache-webhook-${webhookId}`;
+  const cached = await env.KV.get<APIWebhook>(key, "json");
+  // Only return cached result if we already have the token
+  // or wouldn't be able to retrieve it
+  if (
+    cached &&
+    (cached.token ||
+      cached.type !== WebhookType.Incoming ||
+      (cached.application_id && !env.APPLICATIONS[cached.application_id]))
+  ) {
+    return cached;
+  }
+
   const rest = new REST().setToken(token);
   const webhook = (await rest.get(Routes.webhook(webhookId))) as APIWebhook;
   if (webhook.token || webhook.type !== WebhookType.Incoming) {
     // Non-incoming webhooks don't have tokens
+    await env.KV.put(key, JSON.stringify(webhook), { expirationTtl: 600 });
     return webhook;
   }
 
@@ -192,6 +206,8 @@ export const getWebhook = async (
       // env check ensures we don't enter infinite recursion
       return await getWebhook(webhook.id, env, webhook.application_id);
     }
+    // 10 minutes
+    await env.KV.put(key, JSON.stringify(webhook), { expirationTtl: 600 });
     return webhook;
   }
 

@@ -144,6 +144,7 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "webhook-delete-cancel": { handler: webhookDeleteCancel },
   "migrate-buttons-confirm": { handler: migrateComponentsConfirm },
   "migrate-buttons-cancel": { handler: migrateComponentsCancel },
+  // "clone-webhook-message": { handler: cloneWebhookMessage },
 };
 
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {
