@@ -9,6 +9,7 @@ import { Button, TextButton } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { loadMessageComponents } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
@@ -268,13 +269,15 @@ export const MessageSetModal = (
                     embeds: msg.embeds,
                     attachments: msg.attachments,
                     webhook_id: msg.webhook_id,
+                    components: msg.components,
                   },
                   thread_id: threadId,
                   reference: messageLink[0]
                     ? `https://discord.com/channels/${messageLink[0]}/${messageLink[1]}/${messageLink[2]}`
                     : messageLink[2],
                 });
-                setData({ ...data });
+
+                await loadMessageComponents(data, setData);
                 setOpen(false);
               }
             }

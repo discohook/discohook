@@ -3,7 +3,7 @@ import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
@@ -163,6 +163,64 @@ export const getQdMessageId = (message: QueryData["messages"][number]) => {
   return id;
 };
 
+export const loadMessageComponents = async (
+  data: QueryData,
+  setData: React.Dispatch<QueryData>,
+) => {
+  const allComponentsById = Object.fromEntries(
+    data.messages.flatMap((m) =>
+      (m.data.components ?? [])
+        .flatMap((r) => r.components)
+        .map((c) => {
+          if (!!c.custom_id && /^p_\d+/.test(c.custom_id)) {
+            return [c.custom_id.replace(/^p_/, ""), c];
+          }
+          if (c.type === ComponentType.Button && isLinkButton(c)) {
+            try {
+              const url = new URL(c.url);
+              const id = url.searchParams.get("dhc-id");
+              if (id && /\d+/.test(id)) {
+                return [id, c];
+              }
+            } catch {}
+          }
+          return undefined;
+        })
+        .filter((pair): pair is NonNullable<typeof pair> => Boolean(pair)),
+    ),
+  ) as Record<string, APIMessageActionRowComponent>;
+
+  if (Object.keys(allComponentsById).length !== 0) {
+    const params = new URLSearchParams();
+    for (const id of Object.keys(allComponentsById)) {
+      params.append("id", id);
+    }
+
+    const response = await fetch(`${apiUrl(BRoutes.components())}?${params}`, {
+      method: "GET",
+    });
+    const raw = (await response.json()) as SerializeFrom<
+      typeof ApiGetComponents
+    >;
+    for (const stored of raw) {
+      const local = allComponentsById[stored.id];
+      if (local) {
+        const unresolved = unresolveStorableComponent(stored.data);
+        Object.assign(
+          local,
+          buildStorableComponent(
+            unresolved.component,
+            stored.id,
+            unresolved.flows,
+          ),
+        );
+      }
+    }
+
+    setData({ ...data });
+  }
+};
+
 export default function Index() {
   const { t } = useTranslation();
   const { user, memberships, discordApplicationId, debug } =
@@ -250,58 +308,6 @@ export default function Index() {
       }
     };
 
-    const loadMessageComponents = async (data: QueryData) => {
-      const allComponentsById = Object.fromEntries(
-        data.messages.flatMap((m) =>
-          (m.data.components ?? [])
-            .flatMap((r) => r.components)
-            .map((c) => {
-              if (!!c.custom_id && /^p_\d+/.test(c.custom_id)) {
-                return [c.custom_id.replace(/^p_/, ""), c];
-              }
-              if (c.type === ComponentType.Button && isLinkButton(c)) {
-                try {
-                  const url = new URL(c.url);
-                  const id = url.searchParams.get("dhc-id");
-                  if (id && /\d+/.test(id)) {
-                    return [id, c];
-                  }
-                } catch {}
-              }
-              return undefined;
-            })
-            .filter((pair): pair is NonNullable<typeof pair> => Boolean(pair)),
-        ),
-      ) as Record<string, APIMessageActionRowComponent>;
-
-      if (Object.keys(allComponentsById).length !== 0) {
-        const url = new URL(origin + apiUrl(BRoutes.components()));
-        for (const id of Object.keys(allComponentsById)) {
-          url.searchParams.append("id", id);
-        }
-        const response = await fetch(url, { method: "GET" });
-        const raw = (await response.json()) as SerializeFrom<
-          typeof ApiGetComponents
-        >;
-        for (const stored of raw) {
-          const local = allComponentsById[stored.id];
-          if (local) {
-            const unresolved = unresolveStorableComponent(stored.data);
-            Object.assign(
-              local,
-              buildStorableComponent(
-                unresolved.component,
-                stored.id,
-                unresolved.flows,
-              ),
-            );
-          }
-        }
-
-        setData({ ...data });
-      }
-    };
-
     if (shareId) {
       fetch(apiUrl(BRoutes.share(shareId)), { method: "GET" }).then((r) => {
         if (r.status === 200) {
@@ -311,9 +317,8 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               qd.messages = [];
             }
-            setData(qd);
             loadInitialTargets(qd.targets ?? []);
-            loadMessageComponents(qd);
+            loadMessageComponents(qd, setData);
           });
         } else {
           r.json().then((d: any) => {
@@ -333,9 +338,9 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               qd.messages = [];
             }
-            setData({ ...qd, backup_id: backupIdParsed.data.toString() });
+            qd.backup_id = backupIdParsed.data.toString();
             loadInitialTargets(qd.targets ?? []);
-            loadMessageComponents(qd);
+            loadMessageComponents(qd, setData);
           });
         }
       });
@@ -362,9 +367,9 @@ export default function Index() {
         if (parsed.data?.backup_id !== undefined) {
           setBackupId(BigInt(parsed.data.backup_id));
         }
-        setData({ version: "d2", ...parsed.data });
+        parsed.data.version = "d2";
         loadInitialTargets(parsed.data.targets ?? []);
-        loadMessageComponents(parsed.data);
+        loadMessageComponents(parsed.data, setData);
       } else {
         console.error("QueryData failed parsing:", parsed.error.issues);
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
