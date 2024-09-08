@@ -304,7 +304,6 @@ const handleInteraction = async (
         member: interaction.member,
         user: interaction.member?.user,
       };
-      console.log(component);
 
       const allFlows = component.componentsToFlows.map((ctf) => ctf.flow);
       let flows: Flow[] = [];
@@ -657,6 +656,7 @@ router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
   const query = new URL(request.url).searchParams;
   const wait = query.get("wait") === "true";
 
+  console.log(`[/ws] Handling ${eventName}`);
   const callback = eventNameToCallback[eventName as GatewayDispatchEvents];
   if (callback && wait) {
     try {
