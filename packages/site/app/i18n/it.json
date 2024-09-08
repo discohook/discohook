@@ -35,5 +35,8 @@
     "regenerate": "Rigenera",
     "createBackup": "Crea un Backup",
     "required": "Obbligatorio",
-    "clickToCopy": "Premi per Copiare"
+    "clickToCopy": "Premi per Copiare",
+    "sendMessageN_one": "",
+    "sendMessageN_many": "",
+    "sendMessageN_other": "Invia i Messaggi"
 }
