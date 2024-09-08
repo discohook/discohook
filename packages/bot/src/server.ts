@@ -652,8 +652,19 @@ router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
     return new Response(null, { status: 400 });
   }
 
+  const query = new URL(request.url).searchParams;
+  const wait = query.get("wait") === "true";
+
   const callback = eventNameToCallback[eventName as GatewayDispatchEvents];
-  if (callback) {
+  if (callback && wait) {
+    try {
+      await callback(env, await request.json());
+    } catch (e) {
+      console.error(e);
+      return respond({ error: String(e), status: 500 });
+    }
+    return new Response(null, { status: 204 });
+  } else if (callback) {
     eCtx.waitUntil(callback(env, await request.json()));
     return new Response(null, { status: 204 });
   }

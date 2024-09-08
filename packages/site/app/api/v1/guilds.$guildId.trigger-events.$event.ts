@@ -91,17 +91,28 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       );
   }
 
-  const response = await context.env.BOT.fetch("http://localhost/ws", {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: {
-      Authorization: `Bot ${context.env.DISCORD_BOT_TOKEN}`,
-      "X-Discohook-Event": triggerEventToDispatchEvent[event],
-      "X-Discohook-Shard": "-1",
-      "Content-Type": "application/json",
-      "User-Agent":
-        "discohook-site/1.0.0 (+https://github.com/discohook/discohook)",
+  const response = await context.env.BOT.fetch(
+    "http://localhost/ws?wait=true",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: {
+        Authorization: `Bot ${context.env.DISCORD_BOT_TOKEN}`,
+        "X-Discohook-Event": triggerEventToDispatchEvent[event],
+        "X-Discohook-Shard": "-1",
+        "Content-Type": "application/json",
+        "User-Agent":
+          "discohook-site/1.0.0 (+https://github.com/discohook/discohook)",
+      },
     },
-  });
-  return respond(new Response(undefined, { status: response.status }));
+  );
+  return respond(
+    new Response(
+      response.status === 204 ? null : await response.arrayBuffer(),
+      {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+      },
+    ),
+  );
 };
