@@ -70,6 +70,10 @@ import {
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import { loader as ApiGetComponents } from "../api/v1/components";
+import {
+  buildStorableComponent,
+  unresolveStorableComponent,
+} from "./edit.component.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
@@ -282,8 +286,15 @@ export default function Index() {
         for (const stored of raw) {
           const local = allComponentsById[stored.id];
           if (local) {
-            // TODO: build the component for type compliance
-            Object.assign(local, stored.data);
+            const unresolved = unresolveStorableComponent(stored.data);
+            Object.assign(
+              local,
+              buildStorableComponent(
+                unresolved.component,
+                stored.id,
+                unresolved.flows,
+              ),
+            );
           }
         }
 

@@ -1,12 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { defer, json, redirect } from "@remix-run/cloudflare";
-import {
-  Link,
-  useActionData,
-  useLoaderData,
-  useLocation,
-  useSubmit,
-} from "@remix-run/react";
+import { Link, useLoaderData, useLocation } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIActionRowComponent,
@@ -25,7 +19,6 @@ import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
-import { zx } from "zodix";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
@@ -56,6 +49,7 @@ import {
   verifyToken,
 } from "~/session.server";
 import {
+  DraftComponent,
   Flow,
   StorableComponent,
   discordMessageComponents,
@@ -78,13 +72,13 @@ import {
   useCache,
 } from "~/util/cache/CacheManager";
 import { cdnImgAttributes, isDiscordError } from "~/util/discord";
-import { flowToDraftFlow } from "~/util/flow";
+import { draftFlowToFlow, flowToDraftFlow } from "~/util/flow";
 import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
-  zxParseForm,
+  zxParseJson,
   zxParseParams,
   zxParseQuery,
 } from "~/util/zod";
@@ -349,16 +343,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { token, row, column } = await zxParseForm(request, {
+  const { token, row, column } = await zxParseJson(request, {
     token: z.ostring(),
-    row: zx.IntAsString.refine(
-      (v) => v >= 0 && v <= 4,
-      "Must be between 0-4 inclusive",
-    ).optional(),
-    column: zx.IntAsString.refine(
-      (v) => v >= 0 && v <= 4,
-      "Must be between 0-4 inclusive",
-    ).optional(),
+    row: z.number().int().min(0).max(MESSAGE_MAX_ROWS_INDEX).optional(),
+    column: z.number().int().min(0).max(ROW_MAX_INDEX).optional(),
   });
   let tokenData: KVComponentEditorState | undefined;
   if (token) {
@@ -463,21 +451,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     }
   }
 
-  const updated = (
-    await db
-      .update(discordMessageComponents)
-      .set({
-        draft: isDraft,
-      })
-      .where(eq(discordMessageComponents.id, id))
-      .returning({
-        id: discordMessageComponents.id,
-        data: discordMessageComponents.data,
-        draft: discordMessageComponents.draft,
-      })
-  )[0];
-
-  const built = buildStorableComponent(updated.data, String(updated.id));
+  const built = buildStorableComponent(component.data, String(component.id));
   if (tokenData && message.webhook_id) {
     // TODO: use service binding to take advantage of the bot's token store
     const webhook = (await rest.get(
@@ -500,7 +474,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       [row!, column!],
     );
     try {
-      await rest.patch(
+      const edited = (await rest.patch(
         Routes.webhookMessage(webhook.id, webhook.token, message.id),
         {
           body: {
@@ -510,7 +484,18 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             ? new URLSearchParams({ thread_id: threadId })
             : undefined,
         },
-      );
+      )) as APIMessage;
+      for (const row of edited.components ?? []) {
+        for (const rowComponent of row.components) {
+          if (
+            getComponentId(rowComponent) === component.id &&
+            rowComponent.type === component.data.type
+          ) {
+            isDraft = false;
+            break;
+          }
+        }
+      }
     } catch (e) {
       if (isDiscordError(e)) {
         throw json(e.rawError, e.status);
@@ -537,17 +522,29 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       .onConflictDoNothing();
   }
 
+  const updated = (
+    await db
+      .update(discordMessageComponents)
+      .set({ draft: isDraft })
+      .where(eq(discordMessageComponents.id, id))
+      .returning({
+        id: discordMessageComponents.id,
+        data: discordMessageComponents.data,
+        draft: discordMessageComponents.draft,
+      })
+  )[0];
+
   if (built.custom_id) {
     await launchComponentDurableObject(context.env, {
       messageId: message.id,
       customId: built.custom_id,
-      componentId: updated.id,
+      componentId: component.id,
     });
   }
   return updated;
 };
 
-const buildStorableComponent = (
+export const buildStorableComponent = (
   component: StorableComponent,
   id: string,
   flows: Flow[] = [],
@@ -615,6 +612,65 @@ const buildStorableComponent = (
   throw Error("Unsupported storable component type.");
 };
 
+export const unresolveStorableComponent = (
+  component: DraftComponent,
+): { component: StorableComponent; flows: Flow[] } => {
+  switch (component.type) {
+    case ComponentType.Button: {
+      if (
+        component.style === ButtonStyle.Link ||
+        component.style === ButtonStyle.Premium
+      ) {
+        return { component, flows: [] };
+      }
+      const { flow, ...rest } = component;
+      return {
+        component: {
+          ...rest,
+          flowId: "0",
+        },
+        flows: [draftFlowToFlow(flow)],
+      };
+    }
+    case ComponentType.StringSelect: {
+      const { flows, ...rest } = component;
+      const flowIds: Record<string, string> = {};
+      const undraftedFlows: Flow[] = [];
+      Object.entries(flows).forEach(([optionValue, flow], i) => {
+        const undrafted = draftFlowToFlow(flow);
+        undrafted.id = BigInt(i);
+        for (const a of undrafted.actions) {
+          a.flowId = BigInt(i);
+        }
+        flowIds[optionValue] = String(i);
+        undraftedFlows.push(undrafted);
+      });
+      return {
+        component: {
+          ...rest,
+          flowIds,
+        },
+        flows: undraftedFlows,
+      };
+    }
+    case ComponentType.RoleSelect:
+    case ComponentType.UserSelect:
+    case ComponentType.ChannelSelect:
+    case ComponentType.MentionableSelect: {
+      const { flow, ...rest } = component;
+      return {
+        component: {
+          ...rest,
+          flowId: "0",
+        },
+        flows: [draftFlowToFlow(flow)],
+      };
+    }
+    default:
+      throw new Error("Unhandled component type");
+  }
+};
+
 const getRowsWithInsertedComponent = (
   rows: APIActionRowComponent<APIMessageActionRowComponent>[],
   component: APIMessageActionRowComponent,
@@ -647,6 +703,12 @@ const getRowsWithInsertedComponent = (
     return row;
   });
   //.filter((row) => row.components.length !== 0);
+  if (cloned.length - 1 < position[0] && cloned.length <= MESSAGE_MAX_ROWS) {
+    cloned.push({
+      type: ComponentType.ActionRow,
+      components: [cleaned],
+    });
+  }
   return cloned;
 };
 
@@ -672,15 +734,17 @@ export default () => {
   const { t } = useTranslation();
   const [error, setError] = useError(t);
   const cache = useCache(false);
-  const submit = useSubmit();
 
   const [submitState, setSubmitState] = useState<"idle" | "submitting">("idle");
-  const actionData = useActionData<typeof action>();
-  useEffect(() => {
-    // `submit()` is not async so we have to reset submit state here instead
-    // of in the function where `submit` is called
-    if (actionData) setSubmitState("idle");
-  }, [actionData]);
+  const actionPath = `/edit/component/${component_.id}?_data=routes/edit.component.$id`;
+  const fetcher = useSafeFetcher<typeof action>({ onError: setError });
+  useEffect(
+    () =>
+      setSubmitState(
+        fetcher.state === "loading" ? "submitting" : fetcher.state,
+      ),
+    [fetcher.state],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever one of these changes, which would be never right now
   useEffect(() => {
@@ -1180,7 +1244,10 @@ export default () => {
                   console.error(e);
                 }
                 // Ensure that the component's durable object is up to date
-                submit(null, { method: "PATCH", replace: true });
+                fetcher.submit(null, {
+                  method: "PATCH",
+                  action: actionPath,
+                });
               } else {
                 setSubmitState("idle");
               }
@@ -1215,13 +1282,13 @@ export default () => {
                 }
 
                 if (token) {
-                  submit(
+                  fetcher.submit(
                     {
                       token,
                       row: position[0],
                       column: position[1],
                     },
-                    { method: "PATCH", replace: true },
+                    { method: "PATCH", action: actionPath },
                   );
                 }
               }}
@@ -1280,9 +1347,15 @@ export default () => {
                     // Tell the server that something changed and it needs to
                     // either fetch the message or ensure that the component's
                     // durable object is up to date
-                    submit(null, { method: "PATCH", replace: true });
+                    fetcher.submit(null, {
+                      method: "PATCH",
+                      action: actionPath,
+                    });
                   } else {
-                    setError({ message: result.data.message });
+                    setError({
+                      message: result.data.message,
+                      raw: JSON.stringify(result.data),
+                    });
                     setSubmitState("idle");
                   }
                 }

@@ -51,7 +51,9 @@ export const getZodErrorMessage = (e: any) => {
 
 export const useSafeFetcher = <TData = any>({
   onError,
-}: { onError?: (error: { status: number; message: string }) => void }) => {
+}: {
+  onError?: (error: { status: number; message: string; raw?: string }) => void;
+}) => {
   const [data, setData] = useState<SerializeFrom<TData>>();
   const [state, setState] = useState<"idle" | "loading" | "submitting">("idle");
   return {
@@ -71,6 +73,7 @@ export const useSafeFetcher = <TData = any>({
                   onError({
                     status: response.status,
                     message: getZodErrorMessage(raw),
+                    raw: JSON.stringify(raw),
                   });
                 }
                 setState("idle");
@@ -100,6 +103,7 @@ export const useSafeFetcher = <TData = any>({
             onError({
               status: response.status,
               message: getZodErrorMessage(raw),
+              raw: JSON.stringify(raw),
             });
           }
           setState("idle");
@@ -145,6 +149,7 @@ export const useSafeFetcher = <TData = any>({
                     onError({
                       status: response.status,
                       message: getZodErrorMessage(raw),
+                      raw: JSON.stringify(raw),
                     });
                   }
                   setState("idle");
@@ -193,6 +198,7 @@ export const useSafeFetcher = <TData = any>({
             onError({
               status: response.status,
               message: getZodErrorMessage(raw),
+              raw: JSON.stringify(raw),
             });
           }
           setState("idle");

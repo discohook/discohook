@@ -1,19 +1,22 @@
 import { TFunction } from "i18next";
 import { useState } from "react";
 import { InfoBox } from "./InfoBox";
+import { codeBlockStyle } from "./preview/Markdown";
 
 type ErrorParams =
-  | { code: string; message?: string }
-  | { code?: string; message: string };
+  | { code: string; message?: string; raw?: string }
+  | { code?: string; message: string; raw?: string };
 
 export const useError = (t?: TFunction) => {
   const [text, setText] = useState<string>();
+  const [raw, setRaw] = useState<string>();
 
   return [
     <>
       {text && (
-        <InfoBox severity="red" icon="Triangle_Warning">
+        <InfoBox severity="red" icon="Triangle_Warning" collapsible={!!raw}>
           {text}
+          {!!raw && <pre className={codeBlockStyle}>{raw}</pre>}
         </InfoBox>
       )}
     </>,
@@ -27,6 +30,7 @@ export const useError = (t?: TFunction) => {
       } else {
         setText(params.message);
       }
+      if (params.raw) setRaw(params.raw);
     },
   ] as const;
 };
