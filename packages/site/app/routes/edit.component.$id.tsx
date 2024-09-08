@@ -1244,10 +1244,7 @@ export default () => {
                   console.error(e);
                 }
                 // Ensure that the component's durable object is up to date
-                fetcher.submit(null, {
-                  method: "PATCH",
-                  action: actionPath,
-                });
+                fetcher.submit({}, { method: "PATCH", action: actionPath });
               } else {
                 setSubmitState("idle");
               }
@@ -1347,10 +1344,7 @@ export default () => {
                     // Tell the server that something changed and it needs to
                     // either fetch the message or ensure that the component's
                     // durable object is up to date
-                    fetcher.submit(null, {
-                      method: "PATCH",
-                      action: actionPath,
-                    });
+                    fetcher.submit({}, { method: "PATCH", action: actionPath });
                   } else {
                     setError({
                       message: result.data.message,

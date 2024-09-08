@@ -140,7 +140,7 @@ export const useSafeFetcher = <TData = any>({
             return;
           }
           const contentType = response.headers.get("Content-Type");
-          if (contentType?.startsWith("application/json")) {
+          if (contentType?.trim().startsWith("application/json")) {
             response
               .json()
               .then((raw) => {
@@ -209,7 +209,7 @@ export const useSafeFetcher = <TData = any>({
           return undefined;
         }
         const resContentType = response.headers.get("Content-Type");
-        if (resContentType?.startsWith("application/json")) {
+        if (resContentType?.trim().startsWith("application/json")) {
           const raw = await response.json();
           const responseData = raw as SerializeFrom<TData>;
           setData(responseData);
