@@ -1192,8 +1192,22 @@ export default () => {
               disabled={!token || submitState !== "idle"}
               discordstyle={ButtonStyle.Success}
               onClick={async () => {
+                setSubmitState("submitting");
+                const updated = await submitComponent(component, setError);
+                if (updated) {
+                  try {
+                    data.components[position[0]].components.splice(
+                      position[1],
+                      1,
+                      updated,
+                    );
+                    setData({});
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+
                 if (token) {
-                  setSubmitState("submitting");
                   submit(
                     {
                       token,
