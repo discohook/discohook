@@ -21,6 +21,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { page, limit } = zxParseQuery(request, {
     limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
     page: zx.IntAsString.refine((v) => v >= 0).default("0"),
+    // force: zx.BoolAsString.default("false"),
   });
 
   const [token, respond] = await authorizeRequest(request, context);

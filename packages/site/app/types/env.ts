@@ -6,6 +6,7 @@ export interface Env {
   SCHEDULER: DurableObjectNamespace;
   DRAFT_CLEANER: DurableObjectNamespace;
   COMPONENTS: DurableObjectNamespace;
+  RATE_LIMITER: DurableObjectNamespace;
   __STATIC_CONTENT: Fetcher;
   VERSION: WorkerVersionMetadata;
   // __STATIC_CONTENT_MANIFEST: Object;

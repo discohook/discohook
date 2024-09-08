@@ -1,5 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
+import { getBucket } from "~/durable/rate-limits";
 import { getDb } from "~/store.server";
 import { QueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
@@ -11,8 +12,9 @@ export interface InvalidShareIdData {
   expiredAt: string | undefined;
 }
 
-export const loader = async ({ params, context }: LoaderArgs) => {
+export const loader = async ({ request, params, context }: LoaderArgs) => {
   const { shareId: id } = zxParseParams(params, { shareId: z.string() });
+  await getBucket(request, context, "share");
 
   const key = `share-${id}`;
   const { value: shortened, metadata } =

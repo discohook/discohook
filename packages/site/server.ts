@@ -5,6 +5,7 @@ import * as build from "@remix-run/dev/server-build";
 import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
 export { DurableComponentState } from "store";
 export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
+export { RateLimiter } from "./app/durable/rate-limits";
 export { DurableScheduler } from "./app/durable/scheduler";
 
 const MANIFEST = JSON.parse(__STATIC_CONTENT_MANIFEST);

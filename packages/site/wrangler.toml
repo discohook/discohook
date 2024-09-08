@@ -20,6 +20,7 @@ bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter" },
 ]
 
 [version_metadata]
@@ -32,6 +33,10 @@ new_classes = [
   "DurableComponentState",
   "DurableDraftComponentCleaner",
 ]
+
+[[migrations]]
+tag = "v2"
+new_classes = ["RateLimiter"]
 
 [site]
 bucket = "./public"
@@ -67,6 +72,7 @@ bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-preview" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter" },
 ]
 
 [[env.preview.migrations]]
@@ -76,6 +82,10 @@ new_classes = [
   "DurableComponentState",
   "DurableDraftComponentCleaner",
 ]
+
+[[env.preview.migrations]]
+tag = "v2"
+new_classes = ["RateLimiter"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -105,6 +115,7 @@ bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-production" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter" },
 ]
 
 [[env.production.migrations]]
@@ -114,6 +125,10 @@ new_classes = [
   "DurableComponentState",
   "DurableDraftComponentCleaner",
 ]
+
+[[env.production.migrations]]
+tag = "v2"
+new_classes = ["RateLimiter"]
 
 [env.production.vars]
 ENVIRONMENT = "production"
