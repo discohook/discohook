@@ -376,48 +376,45 @@ export const startComponentFlow = async (
                 options: [
                   {
                     label: "Button",
-                    description: "One press to execute one or several actions",
+                    description:
+                      "A simple button that runs a flow (add roles/send messages/etc)",
                     value: "button",
                     emoji: { name: "🟦" },
                   },
                   {
                     label: "Link Button",
-                    description: "Direct a user to a specified URL",
+                    description: "Direct a user to a webpage",
                     value: "link-button",
                     emoji: { name: "🌐" },
                   },
                   {
                     label: "String Select",
                     description:
-                      "Select from a custom list of options to execute actions",
+                      "Select from a custom list of options (up to 25)",
                     value: "string-select",
                     emoji: { name: "🔽" },
                   },
                   {
                     label: "User Select",
-                    description:
-                      "Select from a list of users to execute actions",
+                    description: "Select from a list of all server members",
                     value: "user-select",
                     emoji: { name: "👤" },
                   },
                   {
                     label: "Role Select",
-                    description:
-                      "Select from a list of roles to execute actions",
+                    description: "Select from a list of all server roles",
                     value: "role-select",
                     emoji: { name: "🏷️" },
                   },
                   {
                     label: "User/Role Select",
-                    description:
-                      "Select from a list of users and roles to execute actions",
+                    description: "Select from a list of all members and roles",
                     value: "mentionable-select",
                     emoji: { name: "*️⃣" },
                   },
                   {
                     label: "Channel Select",
-                    description:
-                      "Select from a list of channels to execute actions",
+                    description: "Select from a list of all server channels",
                     value: "channel-select",
                     emoji: { name: "#️⃣" },
                   },
