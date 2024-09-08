@@ -65,5 +65,25 @@
     "orgRedirectBody": "Discohook è orsa disponibile su <bold>discohook.app</bold>. Per migrare i tuoi backup, <importLink>premi qui</importLink>. Per leggere più informazioni su questo aggiornamento, <infoLink>premi qui</infoLink>.",
     "sending": "Inviando",
     "sendNoWebhooks": "Non hai nessun webhook a cui inviare.",
-    "orgRedirectTitle": "Sei stato appena reindirizzato da discohook.org"
+    "orgRedirectTitle": "Sei stato appena reindirizzato da discohook.org",
+    "locales": {
+        "en-US": "Inglese, US",
+        "en-GB": "Inglese, UK",
+        "zh": "Cinese, Cina",
+        "nl": "Olandese",
+        "ar": "Arabo",
+        "fr": "Francese",
+        "es": "Spagnolo",
+        "de": "Tedesco"
+    },
+    "chooseServer": "Seleziona un server",
+    "editorPanes": "Pannelli di Modifica",
+    "forceDualPane": "Utilizza sempre un doppio pannello di modifica",
+    "language": "Lingua",
+    "webhookUrl": "URL del Webhook",
+    "invalidWebhookUrl": "URL del webhook non valido. Iniziano con https://discord.com/api/webhooks/...",
+    "translatePrompt": "Vuoi aiutare a tradurre Discohook nella tua lingua? Controlla <0>il portale di traduzione</0> ed entra <1>nel server di supporto</1> per coordinarti con noi.",
+    "webhookInput": "Input del Webhook",
+    "modern": "Moderno",
+    "classic": "Classico"
 }
