@@ -3,10 +3,13 @@
         "buttons": {
             "options": {
                 "add": {
-                    "description": "添加按钮"
+                    "description": "添加组件"
+                },
+                "delete": {
+                    "description": "删除组件"
                 }
             },
-            "description": "添加、删除和管理按钮"
+            "description": "添加、删除和管理组件"
         },
         "_ctx": {
             "edit": {
@@ -34,7 +37,24 @@
                         "avatar": {
                             "description": "Webhook 的头像"
                         }
+                    },
+                    "name": "创建"
+                },
+                "info": {
+                    "options": {
+                        "webhook": {
+                            "name": "webhook"
+                        }
                     }
+                },
+                "delete": {
+                    "options": {
+                        "webhook": {
+                            "name": "webhook"
+                        }
+                    },
+                    "name": "删除",
+                    "description": "删除 Webhook"
                 }
             }
         },
@@ -49,6 +69,13 @@
                             }
                         }
                     }
+                }
+            }
+        },
+        "deluxe": {
+            "options": {
+                "sync": {
+                    "name": "同步"
                 }
             }
         }
