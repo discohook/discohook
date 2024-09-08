@@ -304,7 +304,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
 
   const applicable = triggers.filter((t) => !!t.flow && !t.disabled);
   for (const trigger of applicable) {
-    await executeFlow(trigger.flow, rest, db, {
+    await executeFlow(env, trigger.flow, rest, db, {
       member: payload,
       user: payload.user,
       guild,

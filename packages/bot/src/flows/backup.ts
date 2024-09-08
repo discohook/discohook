@@ -114,6 +114,11 @@ export const processQueryData = async (
     throw new FlowFailure("No message at the specified position.");
   }
 
+  const query = new URLSearchParams();
+  if (message.thread_id) {
+    // TODO: should be templatable?
+    query.set("thread_id", message.thread_id);
+  }
   const data = {
     content: message.data.content || undefined,
     embeds:
@@ -124,6 +129,7 @@ export const processQueryData = async (
     components: message.data.components,
     username: message.data.author?.name,
     avatar_url: message.data.author?.icon_url,
+    thread_name: message.data.thread_name,
     flags: message.data.flags,
   };
   let stringified = JSON.stringify(data);
@@ -139,5 +145,5 @@ export const processQueryData = async (
     stringified = stringified.replaceAll(`{${key}}`, String(value));
   }
   const parsed = JSON.parse(stringified) as typeof data;
-  return parsed;
+  return { body: parsed, query };
 };

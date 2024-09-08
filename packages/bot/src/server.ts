@@ -381,6 +381,7 @@ const handleInteraction = async (
         (async () => {
           for (const flow of flows) {
             const result = await executeFlow(
+              env,
               flow,
               rest,
               db,
@@ -492,6 +493,7 @@ const handleInteraction = async (
               user: interaction.member?.user,
             };
             const result = await executeFlow(
+              env,
               thisButtonData.componentsToFlows[0].flow,
               rest,
               db,

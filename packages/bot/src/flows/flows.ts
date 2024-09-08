@@ -36,7 +36,9 @@ import {
   FlowActionType,
   TriggerKVGuild,
 } from "store/src/types";
+import { getWebhook } from "../commands/webhooks/webhookInfo.js";
 import { InteractionContext } from "../interactions.js";
+import { Env } from "../types/env.js";
 import { isDiscordError } from "../util/error.js";
 import { sleep } from "../util/sleep.js";
 import { getReplacements, processQueryData } from "./backup.js";
@@ -69,12 +71,15 @@ export interface FlowResult {
   discordError?: RESTError;
 }
 
+type SetVariables = Record<string, string | boolean>;
+
 export const executeFlow = async (
+  env: Env,
   flow: Pick<Flow, "actions">,
   rest: REST,
   db: DBWithSchema,
   liveVars: LiveVariables,
-  setVars?: Record<string, string | boolean>,
+  setVars?: SetVariables,
   ctx?: InteractionContext<APIMessageComponentInteraction>,
   recursion = 0,
   lastReturnValue_?: any,
@@ -196,6 +201,7 @@ export const executeFlow = async (
           const checkResult = recurseFunctions([action.function])[0];
           if (checkResult) {
             const result = await executeFlow(
+              env,
               {
                 actions: (action.then ?? []).map((data) => ({
                   data,
@@ -218,6 +224,7 @@ export const executeFlow = async (
             }
           } else {
             const result = await executeFlow(
+              env,
               {
                 actions: (action.else ?? []).map((data) => ({
                   data,
@@ -263,6 +270,7 @@ export const executeFlow = async (
             db,
             vars,
             liveVars,
+            env,
           );
           break;
         case FlowActionType.DeleteMessage:
@@ -332,7 +340,7 @@ export const executeFlow = async (
         case FlowActionType.Stop:
           if (action.message && !!action.message.content?.trim()) {
             try {
-              const body = await processQueryData(
+              const { body } = await processQueryData(
                 { messages: [{ data: action.message }] },
                 liveVars,
                 vars,
@@ -425,7 +433,7 @@ export const executeSendMessage = async (
 
   let message: APIMessage;
   try {
-    const body = await processQueryData(
+    const { body } = await processQueryData(
       backup.data,
       liveVars,
       setVars,
@@ -454,13 +462,11 @@ export const executeSendWebhookMessage = async (
   action: FlowActionSendWebhookMessage,
   rest: REST,
   db: DBWithSchema,
-  vars: {
-    threadId?: string;
-    threadName?: string;
-  },
+  vars: SetVariables,
   liveVars: LiveVariables,
+  env: Env,
 ): Promise<APIMessage> => {
-  const webhook = await db.query.webhooks.findFirst({
+  let webhook = await db.query.webhooks.findFirst({
     where: and(
       eq(webhooks.platform, "discord"),
       eq(webhooks.id, action.webhookId),
@@ -470,13 +476,46 @@ export const executeSendWebhookMessage = async (
       token: true,
       discordGuildId: true,
       channelId: true,
+      applicationId: true,
     },
   });
+  if (!webhook || !webhook.token) {
+    try {
+      const retryWebhook = await getWebhook(
+        action.webhookId,
+        env,
+        webhook?.applicationId ?? undefined,
+      );
+      webhook = {
+        id: retryWebhook.id,
+        token: retryWebhook.token ?? null,
+        discordGuildId: retryWebhook.guild_id
+          ? BigInt(retryWebhook.guild_id)
+          : null,
+        channelId: retryWebhook.channel_id,
+        applicationId: retryWebhook.application_id,
+      };
+      if (webhook?.token) {
+        await db
+          .insert(webhooks)
+          .values({
+            ...webhook,
+            name: retryWebhook.name ?? "Webhook",
+            platform: "discord",
+          })
+          .onConflictDoUpdate({
+            target: [webhooks.platform, webhooks.id],
+            set: webhook,
+          });
+      }
+    } catch {}
+  }
   if (!webhook || !webhook.token) {
     throw new FlowFailure(
       "No webhook was found with the stored ID or it did not have a token associated with it.",
     );
   }
+
   const backup = await db.query.backups.findFirst({
     where: eq(backups.id, makeSnowflake(action.backupId)),
     columns: {
@@ -492,25 +531,22 @@ export const executeSendWebhookMessage = async (
     throw new FlowFailure("The backup contains no messages.");
   }
 
-  const query = new URLSearchParams({
-    wait: "true",
-  });
-  if (vars.threadId) {
-    query.set("thread_id", vars.threadId);
-  }
-  if (vars.threadName) {
-    query.set("thread_name", vars.threadName);
-  }
   let message: APIMessage;
   try {
+    const { query, body } = await processQueryData(
+      backup.data,
+      liveVars,
+      vars,
+      action.backupMessageIndex,
+    );
+    query.set("wait", "true");
+    if (typeof vars.threadId === "string" && vars.threadId) {
+      query.set("thread_id", vars.threadId);
+    }
+
     message = (await rest.post(Routes.webhook(webhook.id, webhook.token), {
       query,
-      body: await processQueryData(
-        backup.data,
-        liveVars,
-        vars,
-        action.backupMessageIndex,
-      ),
+      body,
     })) as APIMessage;
   } catch (e) {
     console.error(e);
@@ -524,7 +560,8 @@ export const executeSendWebhookMessage = async (
         webhookId: webhook.id,
         channelId: webhook.channelId,
         messageId: message.id,
-        threadId: vars.threadId,
+        threadId:
+          message.position !== undefined ? message.channel_id : undefined,
         discordGuildId: webhook.discordGuildId,
         hasContent: !!msg.content,
         embedCount: msg.embeds?.length,
