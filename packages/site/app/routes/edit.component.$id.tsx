@@ -77,7 +77,7 @@ import {
   ResolvableAPIRole,
   useCache,
 } from "~/util/cache/CacheManager";
-import { cdnImgAttributes } from "~/util/discord";
+import { cdnImgAttributes, isDiscordError } from "~/util/discord";
 import { flowToDraftFlow } from "~/util/flow";
 import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
@@ -499,17 +499,24 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       // biome-ignore lint/style/noNonNullAssertion: Non-nullable if token is present
       [row!, column!],
     );
-    await rest.patch(
-      Routes.webhookMessage(webhook.id, webhook.token, message.id),
-      {
-        body: {
-          components,
-        } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
-        query: threadId
-          ? new URLSearchParams({ thread_id: threadId })
-          : undefined,
-      },
-    );
+    try {
+      await rest.patch(
+        Routes.webhookMessage(webhook.id, webhook.token, message.id),
+        {
+          body: {
+            components,
+          } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
+          query: threadId
+            ? new URLSearchParams({ thread_id: threadId })
+            : undefined,
+        },
+      );
+    } catch (e) {
+      if (isDiscordError(e)) {
+        throw json(e.rawError, e.status);
+      }
+      throw e;
+    }
     await db
       .insert(messageLogEntries)
       .values({
