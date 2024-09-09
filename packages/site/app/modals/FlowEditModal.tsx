@@ -257,6 +257,9 @@ const BackupSelect = ({
   value?: PartialBackupsWithMessages[number];
   onChange: (backup: PartialBackupsWithMessages[number]) => void;
 }) => {
+  if (!fetcher.data && fetcher.state === "idle") {
+    fetcher.load(apiUrl(BRoutes.currentUserBackups()));
+  }
   return (
     <AsyncSelect
       isClearable={false}
@@ -269,14 +272,13 @@ const BackupSelect = ({
       }
       loadOptions={(inputValue) =>
         (async () => {
-          const data =
-            fetcher.data ??
-            (await fetcher.loadAsync(apiUrl(BRoutes.currentUserBackups())));
-          return data
-            .filter((backup) =>
-              backup.name.toLowerCase().includes(inputValue.toLowerCase()),
-            )
-            .map(getBackupSelectOption);
+          return fetcher.data
+            ? fetcher.data
+                .filter((backup) =>
+                  backup.name.toLowerCase().includes(inputValue.toLowerCase()),
+                )
+                .map(getBackupSelectOption)
+            : [];
         })()
       }
       className="w-full"
@@ -732,51 +734,63 @@ const FlowActionEditor: React.FC<{
                   <div>
                     <p className="text-sm select-none">{t("webhook")}</p>
                     <div className="flex">
-                      <AsyncSelect
-                        isClearable={false}
-                        isDisabled={
-                          !guildId || webhooksFetcher.state !== "idle"
+                      {(() => {
+                        if (
+                          !webhooksFetcher.data &&
+                          webhooksFetcher.state === "idle" &&
+                          guildId
+                        ) {
+                          webhooksFetcher.load(
+                            apiUrl(BRoutes.guildWebhooks(guildId)),
+                          );
                         }
-                        name="webhookId"
-                        required
-                        value={
-                          selectedWebhook
-                            ? getWebhookSelectOption(selectedWebhook)
-                            : ""
-                        }
-                        defaultOptions={
-                          webhooksFetcher.data
-                            ? webhooksFetcher.data.map(getWebhookSelectOption)
-                            : []
-                        }
-                        loadOptions={(inputValue) =>
-                          (async () => {
-                            if (!guildId) return [];
+                        return (
+                          <AsyncSelect
+                            isClearable={false}
+                            isDisabled={
+                              !guildId || webhooksFetcher.state !== "idle"
+                            }
+                            name="webhookId"
+                            required
+                            value={
+                              selectedWebhook
+                                ? getWebhookSelectOption(selectedWebhook)
+                                : ""
+                            }
+                            defaultOptions={
+                              webhooksFetcher.data
+                                ? webhooksFetcher.data.map(
+                                    getWebhookSelectOption,
+                                  )
+                                : []
+                            }
+                            loadOptions={(inputValue) =>
+                              (async () => {
+                                if (!guildId) return [];
 
-                            const data =
-                              webhooksFetcher.data ??
-                              (await webhooksFetcher.loadAsync(
-                                apiUrl(BRoutes.guildWebhooks(guildId)),
-                              ));
-                            return data
-                              .filter((backup) =>
-                                backup.name
-                                  .toLowerCase()
-                                  .includes(inputValue.toLowerCase()),
-                              )
-                              .map(getWebhookSelectOption);
-                          })()
-                        }
-                        className="w-full"
-                        classNames={selectClassNames}
-                        onChange={(raw) => {
-                          const opt = raw as ReturnType<
-                            typeof getWebhookSelectOption
-                          >;
-                          action.webhookId = opt.webhook.id;
-                          update();
-                        }}
-                      />
+                                return webhooksFetcher.data
+                                  ? webhooksFetcher.data
+                                      .filter((webhook) =>
+                                        webhook.name
+                                          .toLowerCase()
+                                          .includes(inputValue.toLowerCase()),
+                                      )
+                                      .map(getWebhookSelectOption)
+                                  : [];
+                              })()
+                            }
+                            className="w-full"
+                            classNames={selectClassNames}
+                            onChange={(raw) => {
+                              const opt = raw as ReturnType<
+                                typeof getWebhookSelectOption
+                              >;
+                              action.webhookId = opt.webhook.id;
+                              update();
+                            }}
+                          />
+                        );
+                      })()}
                       <Button
                         className="ltr:ml-2 rtl:mr-2 my-auto"
                         onClick={() => {
