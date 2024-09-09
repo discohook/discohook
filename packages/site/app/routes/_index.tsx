@@ -317,6 +317,7 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               qd.messages = [];
             }
+            setData({ ...data });
             loadInitialTargets(qd.targets ?? []);
             loadMessageComponents(qd, setData);
           });
@@ -338,7 +339,7 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               qd.messages = [];
             }
-            qd.backup_id = backupIdParsed.data.toString();
+            setData({ ...qd, backup_id: backupIdParsed.data.toString() });
             loadInitialTargets(qd.targets ?? []);
             loadMessageComponents(qd, setData);
           });
@@ -367,7 +368,7 @@ export default function Index() {
         if (parsed.data?.backup_id !== undefined) {
           setBackupId(BigInt(parsed.data.backup_id));
         }
-        parsed.data.version = "d2";
+        setData({ version: "d2", ...parsed.data });
         loadInitialTargets(parsed.data.targets ?? []);
         loadMessageComponents(parsed.data, setData);
       } else {
