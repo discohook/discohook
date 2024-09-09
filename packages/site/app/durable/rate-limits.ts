@@ -19,7 +19,11 @@ const apiBuckets: Record<
   >
 > = {
   global: {
+    POST: { capacity: 50, seconds: 5 },
     GET: { capacity: 50, seconds: 5 },
+    PATCH: { capacity: 50, seconds: 5 },
+    PUT: { capacity: 50, seconds: 5 },
+    DELETE: { capacity: 50, seconds: 5 },
     "*": { capacity: 50, seconds: 5 },
   },
   share: {
