@@ -6,18 +6,16 @@ import { Context } from "~/util/loader";
 
 // Modified from https://developers.cloudflare.com/durable-objects/examples/build-a-rate-limiter
 
-const apiBuckets: Record<
-  keyof typeof BRoutes | "global",
-  Record<
-    string,
-    {
-      /** Max. requests in the bucket */
-      capacity: number;
-      /** Bucket time limit (`capacity` requests per `seconds`) */
-      seconds: number;
-    }
-  >
-> = {
+interface BucketConfig {
+  /** Max. requests in the bucket */
+  capacity: number;
+  /** Bucket time limit (`capacity` requests per `seconds`) */
+  seconds: number;
+}
+
+const apiBuckets: Partial<
+  Record<keyof typeof BRoutes, Record<string, BucketConfig>>
+> & { global: Record<string, BucketConfig> } = {
   global: {
     POST: { capacity: 50, seconds: 5 },
     GET: { capacity: 50, seconds: 5 },
