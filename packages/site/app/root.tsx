@@ -32,7 +32,7 @@ export const meta: MetaFunction = () => {
     },
     {
       property: "og:image",
-      content: "logos/discohook_512w.png",
+      content: "/logos/discohook_144w.png",
     },
     {
       name: "theme-color",
