@@ -20,6 +20,7 @@ const languages: Record<LocaleCode, string> = {
   fr: "🇫🇷",
   es: "🇪🇸",
   de: "🇩🇪",
+  it: "🇮🇹",
 };
 
 const LocaleRadio = ({
