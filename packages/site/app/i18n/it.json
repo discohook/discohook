@@ -131,7 +131,7 @@
     "deleteShareLinkConfirm": "Sei sicuro di voler eliminare questo link di condivisione? Questa azione non può essere annullata.",
     "id": "ID: {{id}}",
     "importedFromOrgAt": "Importato da discohook.org il $t(timestamp.date_verbose)",
-    "linkEmbedsPremiumReadOnly": "Sei al momento in modalità sola lettura. Puoi provare le funzioni nell'editor, ma per salvare il link, dovrai iscriverti a <0>Discohook Deluxe</Link>.",
+    "linkEmbedsPremiumReadOnly": "Sei al momento in modalità sola lettura. Puoi provare le funzioni nell'editor, ma per salvare il link, dovrai iscriverti a <0>Discohook Deluxe</0>.",
     "embedExample": "Esempio",
     "jsonEditor": "Editor JSON",
     "importDiscoscheduler": "Importa i post di Discoscheduler ({{ count }})",
