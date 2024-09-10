@@ -29,7 +29,9 @@ import {
 } from "./commands/components/migrate.js";
 import {
   addComponentQuickEntry,
+  addComponentQuickSendMessageCallback,
   addComponentQuickToggleRoleCallback,
+  submitButtonQuickStyle,
 } from "./commands/components/quick.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
@@ -83,7 +85,9 @@ export type ComponentRoutingId =
   | "add-component-flow"
   | "add-component-flow-customize-modal-resend"
   | "add-component-quick-entry"
+  | "add-component-quick-style"
   | "add-component-quick-toggle-role"
+  | "add-component-quick-send-message"
   | "edit-component-flow-ctx"
   | "edit-component-flow-pick"
   | "edit-component-flow-mode"
@@ -111,7 +115,9 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "add-component-flow": continueComponentFlow,
   "add-component-flow-customize-modal-resend": reopenCustomizeModal,
   "add-component-quick-entry": addComponentQuickEntry,
+  "add-component-quick-style": submitButtonQuickStyle,
   "add-component-quick-toggle-role": addComponentQuickToggleRoleCallback,
+  "add-component-quick-send-message": addComponentQuickSendMessageCallback,
   "edit-component-flow-ctx": editComponentButtonEntry,
   "edit-component-flow-pick": editComponentFlowPickCallback,
   "edit-component-flow-mode": editComponentFlowModeCallback,

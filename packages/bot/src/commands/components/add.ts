@@ -936,6 +936,9 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
       return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
     }
 
+    state.stepTitle = "Finished!";
+    state.step = state.steps?.length ?? 0;
+    state.totalSteps = state.steps?.length;
     return ctx.updateMessage({
       embeds: [getComponentFlowEmbed(state).toJSON()],
       components: [],
