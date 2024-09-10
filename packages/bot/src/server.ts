@@ -184,17 +184,16 @@ const handleInteraction = async (
         return respond({ error: "Unknown component" });
       }
 
-      const stored =
-        componentStore[state.componentRoutingId as ComponentRoutingId];
-      if (!stored) {
+      const handler = componentStore[
+        state.componentRoutingId as ComponentRoutingId
+      ] as ComponentCallbackT<APIMessageComponentInteraction>;
+      if (!handler) {
         return respond({ error: "Unknown routing ID" });
       }
 
       const ctx = new InteractionContext(rest, interaction, env, state);
       try {
-        const response = await (
-          stored.handler as ComponentCallbackT<APIMessageComponentInteraction>
-        )(ctx);
+        const response = await handler(ctx);
         if (state.componentOnce) {
           try {
             await env.KV.delete(`component-${type}-${customId}`);
@@ -405,16 +404,16 @@ const handleInteraction = async (
       // Example: `a_delete-reaction-role_123456789012345679:✨`
       //           auto  routing id       message id         reaction
       const { routingId } = parseAutoComponentId(customId);
-      const stored = componentStore[routingId as ComponentRoutingId];
-      if (!stored) {
+      const handler = componentStore[
+        routingId as ComponentRoutingId
+      ] as ComponentCallbackT<APIMessageComponentInteraction>;
+      if (!handler) {
         return respond({ error: "Unknown routing ID" });
       }
 
       const ctx = new InteractionContext(rest, interaction, env);
       try {
-        const response = await (
-          stored.handler as ComponentCallbackT<APIMessageComponentInteraction>
-        )(ctx);
+        const response = await handler(ctx);
         if (Array.isArray(response)) {
           eCtx.waitUntil(response[1]());
           return respond(response[0]);
@@ -534,14 +533,14 @@ const handleInteraction = async (
         return respond({ error: "Unknown modal" });
       }
 
-      const stored = modalStore[state.componentRoutingId as ModalRoutingId];
-      if (!stored) {
+      const handler = modalStore[state.componentRoutingId as ModalRoutingId];
+      if (!handler) {
         return respond({ error: "Unknown routing ID" });
       }
 
       const ctx = new InteractionContext(rest, interaction, env, state);
       try {
-        const response = await stored.handler(ctx);
+        const response = await handler(ctx);
         if (state.componentOnce) {
           try {
             await env.KV.delete(`modal-${customId}`);
@@ -569,14 +568,14 @@ const handleInteraction = async (
       }
     } else if (customId.startsWith("a_")) {
       const { routingId } = parseAutoComponentId(customId);
-      const stored = modalStore[routingId as ModalRoutingId];
-      if (!stored) {
+      const handler = modalStore[routingId as ModalRoutingId];
+      if (!handler) {
         return respond({ error: "Unknown routing ID" });
       }
 
       const ctx = new InteractionContext(rest, interaction, env);
       try {
-        const response = await stored.handler(ctx);
+        const response = await handler(ctx);
         if (Array.isArray(response)) {
           eCtx.waitUntil(response[1]());
           return respond(response[0]);

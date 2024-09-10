@@ -1,67 +1,69 @@
 import {
-  ButtonStyle,
-  ChannelType,
-  ComponentType,
-  SelectMenuDefaultValueType
-} from "discord-api-types/v10";
-import { z } from "zod";
-import {
   APIButtonComponentWithCustomId,
-  APIButtonComponentWithSkuId,
+  APIButtonComponentWithSKUId,
   APIButtonComponentWithURL,
   APIChannelSelectComponent,
   APIMentionableSelectComponent,
   APIMessageActionRowComponent,
+  APIMessageComponentEmoji,
   APIRoleSelectComponent,
   APIStringSelectComponent,
   APIUserSelectComponent,
-} from "./QueryData";
-import { ZodPartialEmoji } from "./components-raw";
-import { ZodDraftFlow } from "./flows";
+  ButtonStyle,
+  ChannelType,
+  ComponentType,
+  SelectMenuDefaultValueType,
+} from "discord-api-types/v10";
+import { z } from "zod";
 
-export const ZodAPIButtonComponentWithCustomIdBase = z.object({
+export const ZodPartialEmoji: z.ZodType<APIMessageComponentEmoji> = z.object({
+  id: z.ostring(),
+  name: z.ostring(),
+  animated: z.oboolean(),
+});
+
+export const ZodAPIButtonComponentWithCustomIdBaseRaw = z.object({
   type: z.literal(ComponentType.Button),
   label: z.ostring(),
   emoji: ZodPartialEmoji.optional(),
   custom_id: z.string(),
   disabled: z.oboolean(),
-  flow: ZodDraftFlow.optional(),
 }) satisfies z.ZodType<Omit<APIButtonComponentWithCustomId, "style">>;
 
-export const ZodAPIButtonComponentWithCustomIdPrimary = z
+export const ZodAPIButtonComponentWithCustomIdPrimaryRaw = z
   .object({ style: z.literal(ButtonStyle.Primary) })
   .merge(
-    ZodAPIButtonComponentWithCustomIdBase,
+    ZodAPIButtonComponentWithCustomIdBaseRaw,
   ) satisfies z.ZodType<APIButtonComponentWithCustomId>;
 
-export const ZodAPIButtonComponentWithCustomIdSecondary = z
+export const ZodAPIButtonComponentWithCustomIdSecondaryRaw = z
   .object({ style: z.literal(ButtonStyle.Secondary) })
   .merge(
-    ZodAPIButtonComponentWithCustomIdBase,
+    ZodAPIButtonComponentWithCustomIdBaseRaw,
   ) satisfies z.ZodType<APIButtonComponentWithCustomId>;
 
-export const ZodAPIButtonComponentWithCustomIdDanger = z
+export const ZodAPIButtonComponentWithCustomIdDangerRaw = z
   .object({ style: z.literal(ButtonStyle.Danger) })
   .merge(
-    ZodAPIButtonComponentWithCustomIdBase,
+    ZodAPIButtonComponentWithCustomIdBaseRaw,
   ) satisfies z.ZodType<APIButtonComponentWithCustomId>;
 
-export const ZodAPIButtonComponentWithCustomIdSuccess = z
+export const ZodAPIButtonComponentWithCustomIdSuccessRaw = z
   .object({
     style: z.literal(ButtonStyle.Success),
   })
   .merge(
-    ZodAPIButtonComponentWithCustomIdBase,
+    ZodAPIButtonComponentWithCustomIdBaseRaw,
   ) satisfies z.ZodType<APIButtonComponentWithCustomId>;
 
 export const ZodAPIButtonComponentWithCustomId = z.union([
-  ZodAPIButtonComponentWithCustomIdPrimary,
-  ZodAPIButtonComponentWithCustomIdSecondary,
-  ZodAPIButtonComponentWithCustomIdDanger,
-  ZodAPIButtonComponentWithCustomIdSuccess,
+  ZodAPIButtonComponentWithCustomIdPrimaryRaw,
+  ZodAPIButtonComponentWithCustomIdSecondaryRaw,
+  ZodAPIButtonComponentWithCustomIdDangerRaw,
+  ZodAPIButtonComponentWithCustomIdSuccessRaw,
 ]) satisfies z.ZodType<APIButtonComponentWithCustomId>;
 
-export const ZodAPIButtonComponentWithURL = z.object({
+export const ZodAPIButtonComponentWithURLRaw = z.object({
   type: z.literal(ComponentType.Button),
   style: z.literal(ButtonStyle.Link),
   label: z.ostring(),
@@ -71,24 +73,24 @@ export const ZodAPIButtonComponentWithURL = z.object({
   disabled: z.oboolean(),
 }) satisfies z.ZodType<APIButtonComponentWithURL>;
 
-export const ZodAPIButtonComponentWithSkuId = z.object({
+export const ZodAPIButtonComponentWithSkuIdRaw = z.object({
   type: z.literal(ComponentType.Button),
   style: z.literal(ButtonStyle.Premium),
   sku_id: z.string(),
   custom_id: z.ostring(),
   disabled: z.oboolean(),
-}) satisfies z.ZodType<APIButtonComponentWithSkuId>;
+}) satisfies z.ZodType<APIButtonComponentWithSKUId>;
 
 export const ZodAPIButtonComponent = z.discriminatedUnion("style", [
-  ZodAPIButtonComponentWithCustomIdPrimary,
-  ZodAPIButtonComponentWithCustomIdSecondary,
-  ZodAPIButtonComponentWithCustomIdDanger,
-  ZodAPIButtonComponentWithCustomIdSuccess,
-  ZodAPIButtonComponentWithURL,
-  ZodAPIButtonComponentWithSkuId,
+  ZodAPIButtonComponentWithCustomIdPrimaryRaw,
+  ZodAPIButtonComponentWithCustomIdSecondaryRaw,
+  ZodAPIButtonComponentWithCustomIdDangerRaw,
+  ZodAPIButtonComponentWithCustomIdSuccessRaw,
+  ZodAPIButtonComponentWithURLRaw,
+  ZodAPIButtonComponentWithSkuIdRaw,
 ]);
 
-export const ZodAPIStringSelectMenuComponent = z.object({
+export const ZodAPIStringSelectMenuComponentRaw = z.object({
   type: z.literal(ComponentType.StringSelect),
   custom_id: z.string(),
   options: z.array(
@@ -104,10 +106,9 @@ export const ZodAPIStringSelectMenuComponent = z.object({
   min_values: z.onumber(),
   max_values: z.onumber(),
   disabled: z.oboolean(),
-  flows: z.record(z.string(), ZodDraftFlow).optional(),
 }) satisfies z.ZodType<APIStringSelectComponent>;
 
-export const ZodAPIRoleSelectMenuComponent = z.object({
+export const ZodAPIRoleSelectMenuComponentRaw = z.object({
   type: z.literal(ComponentType.RoleSelect),
   custom_id: z.string(),
   default_values: z
@@ -121,10 +122,9 @@ export const ZodAPIRoleSelectMenuComponent = z.object({
   min_values: z.onumber(),
   max_values: z.onumber(),
   disabled: z.oboolean(),
-  flow: ZodDraftFlow.optional(),
 }) satisfies z.ZodType<APIRoleSelectComponent>;
 
-export const ZodAPIUserSelectMenuComponent = z.object({
+export const ZodAPIUserSelectMenuComponentRaw = z.object({
   type: z.literal(ComponentType.UserSelect),
   custom_id: z.string(),
   default_values: z
@@ -138,10 +138,9 @@ export const ZodAPIUserSelectMenuComponent = z.object({
   min_values: z.onumber(),
   max_values: z.onumber(),
   disabled: z.oboolean(),
-  flow: ZodDraftFlow.optional(),
 }) satisfies z.ZodType<APIUserSelectComponent>;
 
-export const ZodAPIMentionableSelectMenuComponent = z.object({
+export const ZodAPIMentionableSelectMenuComponentRaw = z.object({
   type: z.literal(ComponentType.MentionableSelect),
   custom_id: z.string(),
   default_values: z
@@ -158,10 +157,9 @@ export const ZodAPIMentionableSelectMenuComponent = z.object({
   min_values: z.onumber(),
   max_values: z.onumber(),
   disabled: z.oboolean(),
-  flow: ZodDraftFlow.optional(),
 }) satisfies z.ZodType<APIMentionableSelectComponent>;
 
-export const ZodAPIChannelSelectMenuComponent = z.object({
+export const ZodAPIChannelSelectMenuComponentRaw = z.object({
   type: z.literal(ComponentType.ChannelSelect),
   custom_id: z.string(),
   channel_types: z
@@ -192,18 +190,17 @@ export const ZodAPIChannelSelectMenuComponent = z.object({
   min_values: z.onumber(),
   max_values: z.onumber(),
   disabled: z.oboolean(),
-  flow: ZodDraftFlow.optional(),
 }) satisfies z.ZodType<APIChannelSelectComponent>;
 
-export const ZodAPISelectMenuComponent = z.discriminatedUnion("type", [
-  ZodAPIStringSelectMenuComponent,
-  ZodAPIRoleSelectMenuComponent,
-  ZodAPIUserSelectMenuComponent,
-  ZodAPIMentionableSelectMenuComponent,
-  ZodAPIChannelSelectMenuComponent,
+export const ZodAPISelectMenuComponentRaw = z.discriminatedUnion("type", [
+  ZodAPIStringSelectMenuComponentRaw,
+  ZodAPIRoleSelectMenuComponentRaw,
+  ZodAPIUserSelectMenuComponentRaw,
+  ZodAPIMentionableSelectMenuComponentRaw,
+  ZodAPIChannelSelectMenuComponentRaw,
 ]);
 
-export const ZodAPIMessageActionRowComponent = z
+export const ZodAPIMessageActionRowComponentRaw = z
   .object({
     type: z.union([
       z.literal(ComponentType.Button),
@@ -222,7 +219,7 @@ export const ZodAPIMessageActionRowComponent = z
     const schema =
       val.type === ComponentType.Button
         ? ZodAPIButtonComponent
-        : ZodAPISelectMenuComponent;
+        : ZodAPISelectMenuComponentRaw;
 
     const parsed = schema.safeParse(val);
     if (!parsed.success) {
@@ -234,13 +231,13 @@ export const ZodAPIMessageActionRowComponent = z
     const schema =
       val.type === ComponentType.Button
         ? ZodAPIButtonComponent
-        : ZodAPISelectMenuComponent;
+        : ZodAPISelectMenuComponentRaw;
 
     const parsed = schema.parse(val);
     return parsed;
   }) as unknown as z.ZodType<APIMessageActionRowComponent>;
 
-export const ZodAPIActionRowComponent = z.object({
+export const ZodAPIActionRowComponentRaw = z.object({
   type: z.literal(ComponentType.ActionRow),
-  components: ZodAPIMessageActionRowComponent.array(),
+  components: ZodAPIMessageActionRowComponentRaw.array(),
 });

@@ -1,29 +1,32 @@
 import { ChannelType, ThreadAutoArchiveDuration } from "discord-api-types/v10";
 import { z } from "zod";
-import type {
-  AnonymousVariable,
-  DBFlowAction,
-  DraftFlow,
-  Flow,
-  FlowAction,
-  FlowActionAddRole,
-  FlowActionCheck,
-  FlowActionCheckFunction,
-  FlowActionCheckFunctionConditional,
-  FlowActionCheckFunctionEquals,
-  FlowActionCheckFunctionIn,
-  FlowActionCreateThread,
-  FlowActionDeleteMessage,
-  FlowActionDud,
-  FlowActionRemoveRole,
-  FlowActionSendMessage,
-  FlowActionSendWebhookMessage,
-  FlowActionSetVariable,
-  FlowActionStop,
-  FlowActionToggleRole,
-  FlowActionWait,
+import {
+  type AnonymousVariable,
+  type DBFlowAction,
+  type DraftFlow,
+  type Flow,
+  type FlowAction,
+  type FlowActionAddRole,
+  type FlowActionCheck,
+  type FlowActionCheckFunction,
+  type FlowActionCheckFunctionConditional,
+  type FlowActionCheckFunctionEquals,
+  type FlowActionCheckFunctionIn,
+  type FlowActionCreateThread,
+  type FlowActionDeleteMessage,
+  type FlowActionDud,
+  type FlowActionRemoveRole,
+  type FlowActionSendMessage,
+  type FlowActionSendRawMessage,
+  type FlowActionSendWebhookMessage,
+  type FlowActionSetVariable,
+  type FlowActionStop,
+  type FlowActionToggleRole,
+  type FlowActionWait,
 } from "~/store.server";
+import { ZodQueryDataMessageDataRaw } from "./QueryData-raw";
 import { ZodMessageFlags } from "./discord";
+import { futureSchema } from "./zod";
 
 // This should match FlowActionType from the store package
 // We can't import it at runtime in the client so we re-implement it here
@@ -47,6 +50,8 @@ export enum FlowActionType {
   SendMessage = 6,
   /** Send a custom message as a webhook */
   SendWebhookMessage = 7,
+  /** Send a custom message using raw data (no backup) */
+  SendRawMessage = 12,
   /** Create a new thread */
   CreateThread = 8,
   /** Delete a message with ID `messageId` */
@@ -87,13 +92,6 @@ export enum FlowActionCheckFunctionType {
   // Greater,
   // Sum,
 }
-
-// For when we can't use the schema directly because it's used to construct the type we're parsing with
-const futureSchema = <T extends z.ZodType<any>>(schema: () => T) =>
-  z
-    .any()
-    .refine((obj) => schema().safeParse(obj).success)
-    .transform((obj) => schema().parse(obj));
 
 export const ZodFlowActionType = z.nativeEnum(FlowActionType);
 
@@ -195,6 +193,14 @@ export const ZodFlowActionSendWebhookMessage = z.object({
   backupMessageIndex: z.number().nullable().optional(),
   flags: ZodMessageFlags.optional(),
 }) satisfies z.ZodType<FlowActionSendWebhookMessage>;
+
+export const ZodFlowActionSendRawMessage = z.object({
+  type: z.literal(FlowActionType.SendRawMessage),
+  webhookId: z.ostring(),
+  channelId: z.ostring(),
+  message: ZodQueryDataMessageDataRaw,
+  flags: ZodMessageFlags.optional(),
+}) satisfies z.ZodType<FlowActionSendRawMessage>;
 
 export const ZodFlowActionCreateThread = z.object({
   type: z.literal(FlowActionType.CreateThread),

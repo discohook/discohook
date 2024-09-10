@@ -27,6 +27,10 @@ import {
   migrateComponentsCancel,
   migrateComponentsConfirm,
 } from "./commands/components/migrate.js";
+import {
+  addComponentQuickEntry,
+  addComponentQuickToggleRoleCallback,
+} from "./commands/components/quick.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import {
@@ -68,8 +72,8 @@ export type ModalCallback = (
 
 export type ComponentCallback = ButtonCallback | SelectMenuCallback;
 
-export type StoredComponentData = { handler: ComponentCallback };
-export type StoredModalData = { handler: ModalCallback };
+export type StoredComponentData = ComponentCallback;
+export type StoredModalData = ModalCallback;
 
 export type ModalRoutingId =
   | "add-component-flow-customize-modal"
@@ -78,6 +82,8 @@ export type ModalRoutingId =
 export type ComponentRoutingId =
   | "add-component-flow"
   | "add-component-flow-customize-modal-resend"
+  | "add-component-quick-entry"
+  | "add-component-quick-toggle-role"
   | "edit-component-flow-ctx"
   | "edit-component-flow-pick"
   | "edit-component-flow-mode"
@@ -102,56 +108,30 @@ export type AutoComponentCustomId = `a_${ComponentRoutingId}_${string}`;
 export type AutoModalCustomId = `a_${ModalRoutingId}_${string}`;
 
 export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
-  "add-component-flow": {
-    handler: continueComponentFlow,
-  },
-  "add-component-flow-customize-modal-resend": {
-    handler: reopenCustomizeModal,
-  },
-  "edit-component-flow-ctx": {
-    handler: editComponentButtonEntry,
-  },
-  "edit-component-flow-pick": {
-    handler: editComponentFlowPickCallback,
-  },
-  "edit-component-flow-mode": {
-    handler: editComponentFlowModeCallback,
-  },
-  "edit-component-flow-modal-resend": {
-    handler: editComponentFlowModalResendCallback,
-  },
-  "delete-component-pick": {
-    handler: deleteComponentFlowPickCallback,
-  },
-  "delete-component-pick-ctx": {
-    handler: deleteComponentButtonEntry,
-  },
-  "delete-component-confirm": {
-    handler: deleteComponentConfirm,
-  },
-  "delete-component-cancel": {
-    handler: deleteComponentCancel,
-  },
-  "delete-reaction-role": {
-    handler: deleteReactionRoleButtonCallback,
-  },
-  "select-restore-options": {
-    handler: selectRestoreOptionsCallback,
-  },
-  "webhook-info-use": { handler: webhookInfoUseCallback },
-  "webhook-info-show-url": { handler: webhookInfoShowUrlCallback },
-  "webhook-delete-confirm": { handler: webhookDeleteConfirm },
-  "webhook-delete-cancel": { handler: webhookDeleteCancel },
-  "migrate-buttons-confirm": { handler: migrateComponentsConfirm },
-  "migrate-buttons-cancel": { handler: migrateComponentsCancel },
-  // "clone-webhook-message": { handler: cloneWebhookMessage },
+  "add-component-flow": continueComponentFlow,
+  "add-component-flow-customize-modal-resend": reopenCustomizeModal,
+  "add-component-quick-entry": addComponentQuickEntry,
+  "add-component-quick-toggle-role": addComponentQuickToggleRoleCallback,
+  "edit-component-flow-ctx": editComponentButtonEntry,
+  "edit-component-flow-pick": editComponentFlowPickCallback,
+  "edit-component-flow-mode": editComponentFlowModeCallback,
+  "edit-component-flow-modal-resend": editComponentFlowModalResendCallback,
+  "delete-component-pick": deleteComponentFlowPickCallback,
+  "delete-component-pick-ctx": deleteComponentButtonEntry,
+  "delete-component-confirm": deleteComponentConfirm,
+  "delete-component-cancel": deleteComponentCancel,
+  "delete-reaction-role": deleteReactionRoleButtonCallback,
+  "select-restore-options": selectRestoreOptionsCallback,
+  "webhook-info-use": webhookInfoUseCallback,
+  "webhook-info-show-url": webhookInfoShowUrlCallback,
+  "webhook-delete-confirm": webhookDeleteConfirm,
+  "webhook-delete-cancel": webhookDeleteCancel,
+  "migrate-buttons-confirm": migrateComponentsConfirm,
+  "migrate-buttons-cancel": migrateComponentsCancel,
+  // "clone-webhook-message": cloneWebhookMessage,
 };
 
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {
-  "add-component-flow-customize-modal": {
-    handler: submitCustomizeModal,
-  },
-  "edit-component-flow-modal": {
-    handler: editComponentFlowModalCallback,
-  },
+  "add-component-flow-customize-modal": submitCustomizeModal,
+  "edit-component-flow-modal": editComponentFlowModalCallback,
 };

@@ -12,6 +12,7 @@ import {
   APIGuildMember,
   APIMessage,
   APIPartialEmoji,
+  APIRole,
   ButtonStyle,
   CDNRoutes,
   ImageFormat,
@@ -158,6 +159,17 @@ export const messageAndEmojiAutocomplete: AppCommandAutocompleteCallback =
       });
   };
 
+export const getHighestRole = (guildRoles: APIRole[], roleIds: string[]) =>
+  guildRoles.find(
+    (r) =>
+      r.id ===
+      [...roleIds].sort((aId, bId) => {
+        const a = guildRoles.find((r) => r.id === aId);
+        const b = guildRoles.find((r) => r.id === bId);
+        return a && b ? b.position - a.position : a ? 1 : -1;
+      })[0],
+  );
+
 export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   ctx,
 ) => {
@@ -167,28 +179,43 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
 
   // biome-ignore lint/style/noNonNullAssertion: Required option
   const role = ctx.getRoleOption("role")!;
+  if (role.managed) {
+    return ctx.reply({
+      content: `<@&${role.id}> can't be assigned to members.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   const me = (await ctx.rest.get(
     Routes.guildMember(guildId, ctx.env.DISCORD_APPLICATION_ID),
   )) as APIGuildMember;
-  const highestRole = guild.roles.find(
-    (r) =>
-      r.id ===
-      [...me.roles].sort((aId, bId) => {
-        const a = guild.roles.find((r) => r.id === aId);
-        const b = guild.roles.find((r) => r.id === bId);
-        return a && b ? b.position - a.position : a ? 1 : -1;
-      })[0],
-  );
-  if (!highestRole && guild.owner_id !== ctx.env.DISCORD_APPLICATION_ID) {
+  const botHighestRole = getHighestRole(guild.roles, me.roles);
+  if (!botHighestRole && guild.owner_id !== ctx.env.DISCORD_APPLICATION_ID) {
     // You could be running an instance of this bot where
     // the bot is the owner of the guild
     return ctx.reply({
       content: `I can't assign <@&${role.id}> to members because I don't have any roles.`,
       flags: MessageFlags.Ephemeral,
     });
-  } else if (highestRole && role.position >= highestRole.position) {
+  } else if (botHighestRole && role.position >= botHighestRole.position) {
     return ctx.reply({
-      content: `<@&${role.id}> is higher than my highest role (<@&${highestRole.id}>), so I can't assign it to members. <@&${role.id}> needs to be lower in the role list, or my highest role needs to be higher.`,
+      content: `<@&${role.id}> is higher than my highest role (<@&${botHighestRole.id}>), so I can't assign it to members. <@&${role.id}> needs to be lower in the role list, or my highest role needs to be higher.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+  // biome-ignore lint/style/noNonNullAssertion: guild-only
+  const member = ctx.interaction.member!;
+  const memberHighestRole = getHighestRole(guild.roles, member.roles);
+  if (!memberHighestRole && guild.owner_id !== ctx.user.id) {
+    // Guild owner has all permissions. This message should never be seen
+    // unless someone messes with permissions.
+    return ctx.reply({
+      content: `You can't assign <@&${role.id}> to members because you don't have any roles.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  } else if (memberHighestRole && role.position >= memberHighestRole.position) {
+    return ctx.reply({
+      content: `<@&${role.id}> is higher than your highest role (<@&${memberHighestRole.id}>), so you can't select it to be assigned to members. <@&${role.id}> needs to be lower in the role list, or your highest role needs to be higher.`,
       flags: MessageFlags.Ephemeral,
     });
   }

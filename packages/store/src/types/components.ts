@@ -11,6 +11,7 @@ import type {
   ThreadAutoArchiveDuration,
 } from "discord-api-types/v10";
 import type { flowActions, flows } from "../schema/schema.js";
+import { QueryData } from "./backups.js";
 
 export interface StorableButtonWithCustomId {
   type: ComponentType.Button;
@@ -137,6 +138,8 @@ export enum FlowActionType {
   SendMessage = 6,
   /** Send a custom message as a webhook */
   SendWebhookMessage = 7,
+  /** Send a custom message using raw data (no backup) */
+  SendRawMessage = 12,
   /** Create a new thread */
   CreateThread = 8,
   /** Delete a message with ID `messageId` */
@@ -268,6 +271,14 @@ export interface FlowActionSendWebhookMessage extends FlowActionBase {
   flags?: MessageFlags;
 }
 
+export interface FlowActionSendRawMessage extends FlowActionBase {
+  type: FlowActionType.SendRawMessage;
+  webhookId?: string;
+  channelId?: string;
+  message: QueryData["messages"][number]["data"];
+  flags?: MessageFlags;
+}
+
 export interface FlowActionCreateThread extends FlowActionBase {
   type: FlowActionType.CreateThread;
   channel: AnonymousVariable;
@@ -302,6 +313,7 @@ export type FlowAction =
   | FlowActionToggleRole
   | FlowActionSendMessage
   | FlowActionSendWebhookMessage
+  | FlowActionSendRawMessage
   | FlowActionCreateThread
   | FlowActionDeleteMessage
   | FlowActionStop;

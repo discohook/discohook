@@ -24,6 +24,7 @@ import { MESSAGE_REF_RE } from "~/util/constants";
 import {
   cdnImgAttributes,
   executeWebhook,
+  hasCustomId,
   updateWebhookMessage,
   webhookAvatarUrl,
 } from "~/util/discord";
@@ -65,6 +66,17 @@ export const submitMessage = async (
     };
   }
   let data: APIMessage | DiscordErrorData;
+  const components = message.data.components
+    ? structuredClone(message.data.components).map((row) => {
+        for (const child of row.components) {
+          if (!hasCustomId(child)) {
+            child.custom_id = undefined;
+          }
+        }
+        return row;
+      })
+    : [];
+
   if (message.reference) {
     const match = message.reference.match(MESSAGE_REF_RE);
     if (!match) {
@@ -77,7 +89,7 @@ export const submitMessage = async (
       {
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
-        components: message.data.components,
+        components,
       },
       files,
       message.thread_id ?? orThreadId,
@@ -93,7 +105,7 @@ export const submitMessage = async (
         avatar_url: message.data.author?.icon_url,
         content: message.data.content?.trim() || undefined,
         embeds: message.data.embeds || undefined,
-        components: message.data.components,
+        components,
         flags: message.data.flags,
         thread_name: threadName || undefined,
       },

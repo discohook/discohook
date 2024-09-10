@@ -5,6 +5,7 @@ import {
   MessageActionRowComponentBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   TextInputBuilder,
   escapeMarkdown,
   formatEmoji,
@@ -39,6 +40,7 @@ import {
 } from "store";
 import {
   discordMessageComponents,
+  discordMessageComponentsToFlows,
   flows,
   generateId,
   makeSnowflake,
@@ -67,6 +69,7 @@ import { getUserPremiumDetails } from "../../util/user.js";
 import { resolveEmoji } from "../reactionRoles.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import { partialEmojiToComponentEmoji } from "./edit.js";
+import { quickButtonConfigs } from "./quick.js";
 
 export const buildStorableComponent = (
   component: StorableComponent,
@@ -115,7 +118,7 @@ export const buildStorableComponent = (
   }
 };
 
-interface ComponentFlow extends MinimumKVComponentState {
+export interface ComponentFlow extends MinimumKVComponentState {
   step: number;
   stepTitle: string;
   totalSteps?: number;
@@ -135,10 +138,11 @@ interface ComponentFlow extends MinimumKVComponentState {
     id: string;
     premium: ReturnType<typeof getUserPremiumDetails>;
   };
+  componentId?: string;
   component?: StorableComponent;
 }
 
-const getComponentFlowEmbed = (flow: ComponentFlow) => {
+export const getComponentFlowEmbed = (flow: ComponentFlow) => {
   const embed = new EmbedBuilder({
     title:
       flow.stepTitle +
@@ -564,6 +568,15 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
             id: discordMessageComponents.id,
           })
       )[0];
+      await db
+        .insert(discordMessageComponentsToFlows)
+        .values({
+          discordMessageComponentId: component.id,
+          flowId,
+        })
+        .onConflictDoNothing();
+
+      state.componentId = String(component.id);
       const doId = ctx.env.DRAFT_CLEANER.idFromName(String(component.id));
       const stub = ctx.env.DRAFT_CLEANER.get(doId);
       await stub.fetch(`http://do/?id=${component.id}`);
@@ -582,40 +595,45 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         },
       );
 
-      state.stepTitle = "Finish in the editor";
-      // state.totalSteps = 3;
-      state.steps.push(
-        {
-          label:
-            'Click "Customize" to set details and flows **<--- you are here**',
-        },
-        {
-          label: 'Finish editing and click "Add Button" in the tab',
-        },
-      );
+      state.stepTitle = "Finish in the editor or choose a quick setup";
+      state.steps.push({
+        label:
+          'For a quick setup, choose from the select menu. For more in-depth configuration, click "Customize", then "Add Button" when you\'re finished.',
+      });
 
       const embed = getComponentFlowEmbed(state);
       embed.setFooter({ text: t("componentWillExpire") });
       return ctx.updateMessage({
         embeds: [embed.toJSON()],
         components: [
+          new ActionRowBuilder<StringSelectMenuBuilder>()
+            .addComponents(
+              await storeComponents(ctx.env.KV, [
+                new StringSelectMenuBuilder()
+                  .setPlaceholder("Select a quick setup configuration")
+                  .addOptions(
+                    quickButtonConfigs.map((config) =>
+                      new StringSelectMenuOptionBuilder()
+                        .setValue(config.id)
+                        .setLabel(config.name)
+                        .setEmoji(config.emoji),
+                    ),
+                  ),
+                {
+                  ...state,
+                  componentTimeout: 600,
+                  componentRoutingId: "add-component-quick-entry",
+                  componentOnce: true,
+                },
+              ]),
+            )
+            .toJSON(),
           new ActionRowBuilder<ButtonBuilder>()
             .addComponents(
               new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
                 .setLabel(t("customize"))
                 .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
-              // new ButtonBuilder()
-              //   .setStyle(ButtonStyle.Success)
-              //   .setLabel("Add Button")
-              //   .setDisabled(true)
-              //   .setCustomId(
-              //     // We use the login token to temporarily transmit the
-              //     // position of the button in the message. We don't like to
-              //     // store this info in the database because it's hard to keep
-              //     // track of - we match components to real Discord state instead.
-              //     `a_submit-component_${component.id}:${editorToken.id}` satisfies AutoComponentCustomId,
-              //   ),
             )
             .toJSON(),
         ],
@@ -822,6 +840,7 @@ export const reopenCustomizeModal: ButtonCallback = async (ctx) => {
 
 export const submitCustomizeModal: ModalCallback = async (ctx) => {
   const state = ctx.state as ComponentFlow;
+  const id = state.componentId ?? generateId();
 
   if (state.component?.type === ComponentType.Button) {
     const label = ctx.getModalComponent("label").value;
@@ -904,24 +923,23 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
         });
       }
 
-      const id = generateId();
       url.searchParams.set("dhc-id", id);
       state.component.url = url.href;
       state.step += 1;
       state.steps?.push({ label: "Set URL" });
-
-      try {
-        await registerComponent(ctx, state, BigInt(id));
-      } catch (e) {
-        console.error(e);
-        return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
-      }
-
-      return ctx.updateMessage({
-        embeds: [getComponentFlowEmbed(state).toJSON()],
-        components: [],
-      });
     }
+
+    try {
+      await registerComponent(ctx, state, BigInt(id));
+    } catch (e) {
+      console.error(e);
+      return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
+    }
+
+    return ctx.updateMessage({
+      embeds: [getComponentFlowEmbed(state).toJSON()],
+      components: [],
+    });
   }
 
   return ctx.reply({

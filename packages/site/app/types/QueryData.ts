@@ -1,7 +1,6 @@
 import {
   APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
   APIChannelSelectComponent as _APIChannelSelectComponent,
-  APIEmbed as _APIEmbed,
   APIMentionableSelectComponent as _APIMentionableSelectComponent,
   APIRoleSelectComponent as _APIRoleSelectComponent,
   APIStringSelectComponent as _APIStringSelectComponent,
@@ -11,32 +10,14 @@ import {
   APIButtonComponentBase,
   ButtonStyle,
   MessageFlags,
-  UserFlags,
+  UserFlags
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";
+import { APIEmbed, QueryDataVersion, ZodAPIEmbed } from "./QueryData-raw";
 import { ZodAPIActionRowComponent } from "./components";
 import { ZodMessageFlags } from "./discord";
-
-/**
- * Discord may not return `null` but it will accept the value in payloads.
- * We're modifying this type to maintain compatibility with prior Discohook
- * versions, which used `null` instead of `undefined`.
- */
-export type APIEmbed = Omit<_APIEmbed, "color"> & { color?: number | null };
-
-/** The version of the query data, defaults to `d2`
- *
- * `d2` is based on Discohook's ~2023 data format, which supports multiple
- * messages and targets. `d2`-versioned data can also include:
- * - `messages[n].webhook_id`
- * - `messages[n].components`
- * - `backup_id`
- *
- * All of these are backwards compatible with pre-2024 Discohook.
- */
-export type QueryDataVersion = "d2";
 
 export interface APIButtonComponentWithURL
   extends APIButtonComponentBase<ButtonStyle.Link> {
@@ -134,84 +115,39 @@ export interface QueryData {
   targets?: { url: string }[];
 }
 
-export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
-  // type: z
-  //   .enum([
-  //     EmbedType.Rich,
-  //     EmbedType.Image,
-  //     EmbedType.Video,
-  //     EmbedType.GIFV,
-  //     EmbedType.Article,
-  //     EmbedType.Link,
-  //     EmbedType.AutoModerationMessage,
-  //   ])
-  //   .optional(),
-  title: z.ostring(),
-  description: z.ostring(),
-  url: z.ostring(),
-  timestamp: z.ostring(),
-  color: z
-    .onumber()
-    .nullable()
-    .transform((v) => (v === null ? undefined : v)),
-  footer: z.object({ text: z.string(), icon_url: z.ostring() }).optional(),
-  image: z.object({ url: z.string() }).optional(),
-  thumbnail: z.object({ url: z.string() }).optional(),
-  video: z.object({ url: z.string() }).optional(),
-  provider: z
-    .object({
-      name: z.ostring(),
-      url: z.ostring(),
-    })
-    .optional(),
+export const ZodQueryDataMessageData = z.object({
   author: z
     .object({
-      name: z.string(),
-      url: z.ostring(),
+      name: z.ostring(),
       icon_url: z.ostring(),
+      badge: z.ostring().nullable(),
     })
     .optional(),
-  fields: z
+  content: z.ostring().nullable(),
+  embeds: ZodAPIEmbed.array().nullable().optional(),
+  attachments: z
     .object({
-      name: z.string(),
-      value: z.string(),
-      inline: z.oboolean(),
+      id: z.string(),
+      filename: z.string(),
+      description: z.ostring(),
+      content_type: z.ostring(),
+      size: z.number(),
+      url: z.string(),
+      proxy_url: z.string(),
+      height: z.onumber().nullable(),
+      weight: z.onumber().nullable(),
     })
     .array()
     .optional(),
-});
+  webhook_id: z.ostring(),
+  components: ZodAPIActionRowComponent.array().optional(),
+  flags: ZodMessageFlags.optional(),
+  thread_name: z.ostring(),
+}) satisfies z.ZodType<QueryData["messages"][number]["data"]>;
 
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),
-  data: z.object({
-    author: z
-      .object({
-        name: z.ostring(),
-        icon_url: z.ostring(),
-        badge: z.ostring().nullable(),
-      })
-      .optional(),
-    content: z.ostring().nullable(),
-    embeds: ZodAPIEmbed.array().nullable().optional(),
-    attachments: z
-      .object({
-        id: z.string(),
-        filename: z.string(),
-        description: z.ostring(),
-        content_type: z.ostring(),
-        size: z.number(),
-        url: z.string(),
-        proxy_url: z.string(),
-        height: z.onumber().nullable(),
-        weight: z.onumber().nullable(),
-      })
-      .array()
-      .optional(),
-    webhook_id: z.ostring(),
-    components: ZodAPIActionRowComponent.array().optional(),
-    flags: ZodMessageFlags.optional(),
-    thread_name: z.ostring(),
-  }),
+  data: ZodQueryDataMessageData,
   reference: z.ostring(),
   thread_id: z.ostring(),
 }) satisfies z.ZodType<QueryData["messages"][number]>;
