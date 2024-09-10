@@ -1,5 +1,5 @@
 import { time } from "@discordjs/formatters";
-import { APIEmbed } from "discord-api-types/v10";
+import { APIEmbed, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
 import type { QueryData } from "store/src/types";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
@@ -126,7 +126,21 @@ export const processQueryData = async (
         if (e.color === null) e.color = undefined;
         return e as APIEmbed;
       }) || undefined,
-    components: message.data.components,
+    components: message.data.components
+      ? structuredClone(message.data.components).map((row) => {
+          for (const child of row.components) {
+            if (
+              child.type === ComponentType.Button &&
+              (child.style === ButtonStyle.Link ||
+                child.style === ButtonStyle.Premium)
+            ) {
+              // @ts-expect-error Prevent doublekeying due to site state
+              child.custom_id = undefined;
+            }
+          }
+          return row;
+        })
+      : [],
     username: message.data.author?.name,
     avatar_url: message.data.author?.icon_url,
     thread_name: message.data.thread_name,
