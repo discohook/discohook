@@ -349,10 +349,11 @@ const handleInteraction = async (
       const ctx = new InteractionContext(rest, interaction, env);
       if (flows.length === 0) {
         return respond(
-          ctx.userPermissons.has(
-            PermissionFlags.ManageMessages,
-            PermissionFlags.ManageWebhooks,
-          )
+          liveVars.guild?.owner_id === ctx.user.id ||
+            ctx.userPermissons.has(
+              PermissionFlags.ManageMessages,
+              PermissionFlags.ManageWebhooks,
+            )
             ? ctx.reply({
                 content: t("noComponentFlow"),
                 components: [
