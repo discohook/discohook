@@ -441,6 +441,7 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
   return [
     ctx.updateMessage({ content: "Migrating...", components: [] }),
     async () => {
+      console.log("[migrating] Start followup");
       const { inserted, emojis } = await migrateLegacyButtons(
         ctx.env,
         ctx.rest,
@@ -489,15 +490,22 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
           row.addComponents(button);
         }
       }
+      console.log("[migrating] Compiled rows");
       await ctx.rest.patch(
         // biome-ignore lint/style/noNonNullAssertion: Stopped if null
         Routes.webhookMessage(webhook.id, webhook.token!, message.id),
         {
+          query:
+            message.position !== undefined
+              ? new URLSearchParams({ thread_id: message.channel_id })
+              : undefined,
           body: {
             components: rows.map((r) => r.toJSON()),
           } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
         },
       );
+      console.log("[migrating] Updated message");
+
       // Clean up
       const insertedIds = inserted.map((i) => i.id);
       if (insertedIds.length !== 0) {
@@ -510,9 +518,12 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
             ),
           );
       }
+      console.log("[migrating] Cleaned up residue");
+
       await ctx.followup.editOriginalMessage({
         content: "Migrated successfully - enjoy!",
       });
+      console.log("[migrating] End followup");
     },
   ];
 };
