@@ -314,7 +314,7 @@
   },
   "noMigratableComponents": "This message has no registered, migratable components.",
   "noContentAvailable": "No content available",
-  "noComponentFlow": "There was no flow registered for this component. Click the button to configure a new flow.",
+  "noComponentFlow": "There was no flow registered for this component. Click the button to configure a new flow. If this message has buttons from before September 5, 2024, you may need to run </buttons migrate:908884724087410729>.",
   "componentWillExpire": "Please finish editing & submit this component within 2 weeks or the draft will be deleted.",
   "welcomerCommandDeprecated": "In order to set up a welcomer, please use the **/triggers** command.",
   "noTrigger": "This server has no trigger with that name.",
