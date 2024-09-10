@@ -206,18 +206,23 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   // biome-ignore lint/style/noNonNullAssertion: guild-only
   const member = ctx.interaction.member!;
   const memberHighestRole = getHighestRole(guild.roles, member.roles);
-  if (!memberHighestRole && guild.owner_id !== ctx.user.id) {
-    // Guild owner has all permissions. This message should never be seen
-    // unless someone messes with permissions.
-    return ctx.reply({
-      content: `You can't assign <@&${role.id}> to members because you don't have any roles.`,
-      flags: MessageFlags.Ephemeral,
-    });
-  } else if (memberHighestRole && role.position >= memberHighestRole.position) {
-    return ctx.reply({
-      content: `<@&${role.id}> is higher than your highest role (<@&${memberHighestRole.id}>), so you can't select it to be assigned to members. <@&${role.id}> needs to be lower in the role list, or your highest role needs to be higher.`,
-      flags: MessageFlags.Ephemeral,
-    });
+  if (guild.owner_id !== ctx.user.id) {
+    // Guild owner can always do everything
+    if (!memberHighestRole) {
+      // This message should never be seen unless someone messes with permissions
+      return ctx.reply({
+        content: `You can't assign <@&${role.id}> to members because you don't have any roles.`,
+        flags: MessageFlags.Ephemeral,
+      });
+    } else if (
+      memberHighestRole &&
+      role.position >= memberHighestRole.position
+    ) {
+      return ctx.reply({
+        content: `<@&${role.id}> is higher than your highest role (<@&${memberHighestRole.id}>), so you can't select it to be assigned to members. <@&${role.id}> needs to be lower in the role list, or your highest role needs to be higher.`,
+        flags: MessageFlags.Ephemeral,
+      });
+    }
   }
 
   const message = await resolveMessageLink(
