@@ -85,5 +85,22 @@
     "translatePrompt": "Vuoi aiutare a tradurre Discohook nella tua lingua? Controlla <0>il portale di traduzione</0> ed entra <1>nel server di supporto</1> per coordinarti con noi.",
     "webhookInput": "Input del Webhook",
     "modern": "Moderno",
-    "classic": "Classico"
+    "classic": "Classico",
+    "createdByDiscohook": "Questo webhook è di proprietà di Discohook",
+    "selectWebhookGuildMissing": "Non vedi un server nel quale hai dei permessi? <0>Prova ad accedere di nuovo</0>",
+    "backToServerSelection": "Torna alla selezione del server",
+    "selectWebhookGuildNote": "Seleziona un server nel quale è presente Discohook Utils per vedere i suoi webhook, o crea un nuovo webhook in qualsiasi dei tuoi server selezionando il bottone qui sotto.",
+    "selectWebhookGuildNoWebhooks": "Il server selezionato non ha webhook accessibili a Dischook Utils. Prova a crearne uno con il bottone sotto.",
+    "selectWebhookGuildManual": "Puoi anche <0>inserire un URL di un webhook manualmente</0> (avanzato)",
+    "editor": "Editor",
+    "createWebhook": "Crea un Webhook",
+    "editWebhook": "Modifica Webhook",
+    "copyWebhookUrl": "Copia URL (avanzato)",
+    "createdAtBy": "Creato il {{ createdAt, MMM D, YYYY }} da {{username}}",
+    "someone": "qualcuno",
+    "addWebhook": "Aggiungi un Webhook",
+    "preview": "Anteprima",
+    "share": "Condividi",
+    "previewAll": "Visualizza un'anteprima di tutti",
+    "shareMessage": "Condividi il Messafggio"
 }
