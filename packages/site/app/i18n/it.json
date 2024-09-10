@@ -234,7 +234,7 @@
     "permissions": "Permessi",
     "auditLogSubtitle": "Qui sotto c'è un elenco di azioni che è stata eseguita attraverso Discohook per <0>{{guild.name}}</0>. Alcune azioni previste potrebbero non essere presenti--ad esempio se un URL di un webhook è stato ottenuto da esterni, probabilmente chi lo ha ottenuto non utilizzerà Discohook. <br /><br />Se non riconosci un utente, potrebbe essere meglio eliminare il webhook.",
     "linkEmbedsImageLimit": "Gli embed dei Link ora hanno una copertina o fino a 4 immagini grandi, ma non entrambe.",
-    "repeatingSchedule": "Schedule di Ripetizione",
+    "repeatingSchedule": "Schedule di Ripetizione - {{description}}",
     "noServers": "Non sembra che tu abbia nessun server in comune con Discohook Utils.",
     "inviteBot": "Invita il Bot",
     "justBeAMember": "Serve solo essere un membro",
