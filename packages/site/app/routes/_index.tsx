@@ -317,7 +317,7 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               qd.messages = [];
             }
-            setData({ ...data });
+            setData(qd);
             loadInitialTargets(qd.targets ?? []);
             loadMessageComponents(qd, setData);
           });

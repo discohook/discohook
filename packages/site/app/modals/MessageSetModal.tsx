@@ -277,6 +277,7 @@ export const MessageSetModal = (
                     : messageLink[2],
                 });
 
+                setData({ ...data });
                 await loadMessageComponents(data, setData);
                 setOpen(false);
               }
