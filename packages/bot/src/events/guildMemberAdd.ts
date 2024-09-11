@@ -195,6 +195,12 @@ export const getWelcomerConfigurations = async (
                     webhookId: String(oldConfiguration[0].webhookId),
                     backupId: backupId.toString(),
                   } satisfies FlowActionSendWebhookMessage,
+                  {
+                    type: FlowActionType.SetVariable,
+                    varType: FlowActionSetVariableType.Adaptive,
+                    name: "channelId",
+                    value: "channel_id",
+                  } satisfies FlowActionSetVariable,
                 ]
               : [
                   {
