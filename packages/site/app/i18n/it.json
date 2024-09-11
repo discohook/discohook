@@ -55,7 +55,7 @@
     "createdAt": "Creato il {{ createdAt, MMM D, YYYY }}",
     "theme": "Tema",
     "compact": "Compatto",
-    "compactAvatars": "Mostra gli avatar in modalità Compatta-.",
+    "compactAvatars": "Mostra gli avatar in modalità Compatta",
     "send": "Invia",
     "sendToAll": "Invia a Tutti",
     "createdAtTime": "Creato {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
