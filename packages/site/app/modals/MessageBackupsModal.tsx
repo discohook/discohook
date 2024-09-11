@@ -157,6 +157,7 @@ export const MessageBackupsModal = (
                         );
                         // Always true, this is just a type guard
                         if ("data" in loadedBackup && loadedBackup.data) {
+                          document.title = `${b.name} - Discohook`;
                           setData({
                             ...loadedBackup.data,
                             // Just in case
@@ -196,6 +197,7 @@ export const MessageBackupsModal = (
                               method: "POST",
                             },
                           );
+                          document.title = `${created.name} - Discohook`;
                           setData({
                             ...loadedBackup.data,
                             backup_id: created.id.toString(),
@@ -292,6 +294,7 @@ export const MessageBackupsModal = (
                       method: "POST",
                     },
                   );
+                  document.title = `${created.name} - Discohook`;
                   setData({ ...data, backup_id: String(created.id) });
                   setBackupId(BigInt(created.id));
 
