@@ -265,6 +265,7 @@ const BackupSelect = ({
       isClearable={false}
       name="backupId"
       isDisabled={fetcher.state !== "idle"}
+      aria-live="off"
       required
       value={value ? getBackupSelectOption(value) : ""}
       defaultOptions={
@@ -751,6 +752,7 @@ const FlowActionEditor: React.FC<{
                               !guildId || webhooksFetcher.state !== "idle"
                             }
                             name="webhookId"
+                            aria-live="off"
                             required
                             value={
                               selectedWebhook

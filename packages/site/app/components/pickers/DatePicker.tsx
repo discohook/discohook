@@ -281,6 +281,7 @@ const DatePicker = (props: DatePickerProps) => {
             : false
         }
         maxMenuHeight={380}
+        aria-live="off"
         menuPlacement="auto"
         onChange={props.onChange}
         onInputChange={handleInputChange}

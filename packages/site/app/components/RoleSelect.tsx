@@ -42,6 +42,7 @@ export const RoleSelect = (props: {
       isDisabled={props.isDisabled}
       isMulti={props.isMulti}
       name={props.name}
+      aria-live="off"
       value={
         props.value
           ? getOption(props.value, getRoleAssignable(props.value))
