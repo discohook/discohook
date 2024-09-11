@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { SerializeFrom, json } from "@remix-run/cloudflare";
 import { parseExpression } from "cron-parser";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -53,6 +53,12 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
         ? doubleDecode<QueryData>(backup.data as QueryData)
         : null,
   };
+};
+
+export type ApiGetBackup = SerializeFrom<typeof loader>;
+
+export type ApiGetBackupWithData = ApiGetBackup & {
+  data: QueryData;
 };
 
 const fixZodQueryData = (data: QueryData): QueryData => {

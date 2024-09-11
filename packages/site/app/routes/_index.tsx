@@ -69,6 +69,7 @@ import {
 } from "~/util/text";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
+import { type ApiGetBackupWithData } from "../api/v1/backups.$id";
 import { loader as ApiGetComponents } from "../api/v1/components";
 import {
   buildStorableComponent,
@@ -333,15 +334,16 @@ export default function Index() {
       }).then((r) => {
         if (r.status === 200) {
           setBackupId(backupIdParsed.data);
-          r.json().then((d: any) => {
-            const qd: QueryData = d.data;
-            if (!qd.messages) {
+          r.json().then((d: unknown) => {
+            const raw = d as ApiGetBackupWithData;
+            document.title = `${raw.name} - Discohook`;
+            if (!raw.data.messages) {
               // This shouldn't happen but it could if something was saved wrong
-              qd.messages = [];
+              raw.data.messages = [];
             }
-            setData({ ...qd, backup_id: backupIdParsed.data.toString() });
-            loadInitialTargets(qd.targets ?? []);
-            loadMessageComponents(qd, setData);
+            setData({ ...raw.data, backup_id: backupIdParsed.data.toString() });
+            loadInitialTargets(raw.data.targets ?? []);
+            loadMessageComponents(raw.data, setData);
           });
         }
       });
