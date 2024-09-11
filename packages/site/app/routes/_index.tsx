@@ -948,6 +948,9 @@ export default function Index() {
                 >
                   API Docs
                 </a>
+                {location.hostname === "discohook.app" && (
+                  <span>Email: "hello" at {location.hostname}</span>
+                )}
               </p>
             </div>
           </div>
