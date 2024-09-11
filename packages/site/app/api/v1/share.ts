@@ -1,5 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
+import { getBucket } from "~/durable/rate-limits";
 import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
@@ -55,6 +56,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     origin: z.enum(ALLOWED_EXTERNAL_ORIGINS).optional(),
   });
 
+  const headers = await getBucket(request, context, "share");
   const userId = await getUserId(request, context);
   const expires = new Date(new Date().getTime() + ttl * 1000);
   const origin = origin_ ?? new URL(request.url).origin;
@@ -86,11 +88,14 @@ export const action = async ({ request, context }: ActionArgs) => {
     });
   }
 
-  return {
-    id,
-    origin,
-    url: `${new URL(request.url).origin}/?share=${id}`,
-    expires,
-    userId: userId ?? undefined,
-  };
+  return json(
+    {
+      id,
+      origin,
+      url: `${new URL(request.url).origin}/?share=${id}`,
+      expires,
+      userId: userId ?? undefined,
+    },
+    { headers },
+  );
 };

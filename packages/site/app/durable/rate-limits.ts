@@ -44,6 +44,9 @@ const getBucketInfo = (method: string, bucket: string) => {
   return inner ?? null;
 };
 
+const getRps = (bucket: BucketConfig): number =>
+  bucket.capacity / (bucket.seconds ?? 1);
+
 const KEY_RE =
   /^(?<method>\w+):(?<bucket>\w+):(?<idScope>id|ip):(?<idValue>.+)$/;
 
@@ -63,50 +66,89 @@ export const getBucket = async (
   const idKey = userId ? `id:${userId}` : `ip:${ip}`;
 
   const globalKey = `${request.method === "GET" ? "GET" : "*"}:global:${idKey}`;
-  const bucketKey = bucket ? `${request.method}:${bucket}:${idKey}` : undefined;
+  const globalId = context.env.RATE_LIMITER.idFromName(globalKey);
+  const globalStub = context.env.RATE_LIMITER.get(globalId);
+  const globalResponse = await globalStub.fetch(
+    `http://do/?${new URLSearchParams({ key: globalKey })}`,
+    { method: "GET" },
+  );
+  // biome-ignore lint/style/noNonNullAssertion: Global always exists
+  const globalBucketInfo = getBucketInfo(request.method, "global")!;
 
-  const keys = [globalKey];
-  if (bucketKey) keys.splice(0, 0, bucketKey);
+  const { ms: gMs, remaining: gRemaining } = (await globalResponse.json()) as {
+    ms: number;
+    remaining: number;
+  };
 
-  let headers: Record<string, string> = {};
-  for (const key of keys) {
-    if (key !== globalKey && bucket && !apiBuckets[bucket]) {
-      // Don't double-trigger the global bucket when a local bucket couldn't be found
-      continue;
-    }
+  const globalHeaders = {
+    "Retry-After": String(Math.ceil(gMs / 1000)),
+    "X-RateLimit-Limit": globalBucketInfo.capacity.toString(),
+    "X-RateLimit-Remaining": gRemaining.toString(),
+    "X-RateLimit-Name": "global",
+  };
+  const routeHeaders: Record<string, string> = {};
 
+  const body = { message: "Rate limit exceeded" };
+
+  if (bucket && apiBuckets[bucket]) {
+    // Don't double-trigger the global bucket when a local bucket can't be found
+
+    const key = `${request.method}:${bucket}:${idKey}`;
     const id = context.env.RATE_LIMITER.idFromName(key);
     const stub = context.env.RATE_LIMITER.get(id);
     const response = await stub.fetch(
       `http://do/?${new URLSearchParams({ key })}`,
       { method: "GET" },
     );
-    const {
-      ms,
-      bucket: parsedBucket,
-      remaining,
-    } = (await response.json()) as {
+    const { ms, remaining } = (await response.json()) as {
       ms: number;
-      bucket: string;
       remaining: number;
     };
-    const bucketInfo = getBucketInfo(request.method, parsedBucket);
-    headers = {
-      "Retry-After": String(Math.ceil(ms / 1000)),
-      "X-RateLimit-Limit": bucketInfo?.capacity.toString() ?? "",
-      "X-RateLimit-Remaining": remaining.toString(),
-    };
+    // biome-ignore lint/style/noNonNullAssertion: If check above
+    const bucketInfo = getBucketInfo(request.method, bucket)!;
+
+    routeHeaders["Retry-After"] = String(Math.ceil(ms / 1000));
+    routeHeaders["X-RateLimit-Limit"] = Math.min(
+      bucketInfo.capacity,
+      globalBucketInfo.capacity,
+    ).toString();
+    routeHeaders["X-RateLimit-Remaining"] = Math.min(
+      remaining,
+      gRemaining,
+    ).toString();
+    routeHeaders["X-RateLimit-Name"] = bucket;
+
+    if (gMs > 0 && gMs > ms) {
+      throw json(body, {
+        status: 429,
+        headers: globalHeaders,
+      });
+    }
     if (ms > 0) {
-      throw json(
-        { message: "Rate limit exceeded" },
-        {
-          status: 429,
-          headers,
-        },
-      );
+      throw json(body, {
+        status: 429,
+        headers: routeHeaders,
+      });
+    }
+    if (ms === gMs) {
+      if (getRps(bucketInfo) < getRps(globalBucketInfo)) {
+        return routeHeaders;
+      } else {
+        return globalHeaders;
+      }
+    } else if (ms > gMs) {
+      return routeHeaders;
     }
   }
-  return headers;
+
+  if (gMs > 0) {
+    throw json(body, {
+      status: 429,
+      headers: globalHeaders,
+    });
+  }
+
+  return globalHeaders;
 };
 
 export class RateLimiter implements DurableObject {
@@ -157,7 +199,7 @@ export class RateLimiter implements DurableObject {
       return json({
         ms: milliseconds_to_next_request,
         bucket: this.bucket,
-        remaining: this.capacity - (this.tokens ?? 0),
+        remaining: this.tokens ?? 0,
       });
     }
     return new Response(null, { status: 204 });

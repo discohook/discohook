@@ -14,7 +14,7 @@ export interface InvalidShareIdData {
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const { shareId: id } = zxParseParams(params, { shareId: z.string() });
-  await getBucket(request, context, "share");
+  const headers = await getBucket(request, context, "share");
 
   const key = `share-${id}`;
   const { value: shortened, metadata } =
@@ -40,14 +40,17 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
         message: "No shortened data with that ID. It may have expired.",
         expiredAt: expiredAt?.toISOString(),
       } satisfies InvalidShareIdData,
-      404,
+      { status: 404, headers },
     );
   }
 
   const { expiresAt } = metadata as { expiresAt?: string };
-  return {
-    data: JSON.parse(shortened.data) as QueryData,
-    origin: shortened.origin,
-    expires: expiresAt ? new Date(expiresAt) : new Date(),
-  };
+  return json(
+    {
+      data: JSON.parse(shortened.data) as QueryData,
+      origin: shortened.origin,
+      expires: expiresAt ? new Date(expiresAt) : new Date(),
+    },
+    { headers },
+  );
 };
