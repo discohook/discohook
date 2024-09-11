@@ -11,11 +11,11 @@ In 2024, Discohook and Discohook Utils merged into one service. "Discohook" may 
 
 # Do I need to do anything if I already use Discohook Utils?
 
-As far as your buttons go, nope! Just bask in the new and improved suite of functionality at your disposal.
+As far as your buttons go, you may need to run </buttons migrate:1> to manually migrate your messages, but it may be done automatically as well. After you have ensured a successful migration, you can bask in the new and improved suite of functionality at your disposal.
 
 # I still have reaction roles with Discobot, not Discohook Utils
 
-Simply invite Discohook Utils to your server and remove Discobot. Your reaction roles will continue working, but the Discohook Utils bot will be used to manage them instead.
+Simply invite Discohook Utils to your server, ensure it has proper permissions (role position is above all reaction roles, has the manage roles permission), then remove Discobot. Your reaction roles will continue working, but the Discohook Utils bot will be used to manage them instead.
 
 # Can I still use the old Discohook?
 
