@@ -9,8 +9,7 @@ import {
   backups,
   generateId,
   getDb,
-  inArray,
-  makeSnowflake,
+  makeSnowflake
 } from "../../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -30,7 +29,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE);
   const results = await db.query.backups.findMany({
-    where: inArray(backups.id, ids),
+    where: (backups, { inArray }) => inArray(backups.id, ids),
     columns: {
       id: true,
       name: true,
