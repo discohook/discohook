@@ -65,10 +65,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cloudflare/workers-shared@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@cloudflare/workers-shared@npm:0.3.0"
-  checksum: 10c0/1708871348abc2162b0683c9738faf64c6c1fbeb0b77ece1467f64d048b53bfd7542b149ef78f1b70fdafdc3dc47892b727d97e4642bbf644e0936794cf447cd
+"@cloudflare/workers-shared@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@cloudflare/workers-shared@npm:0.4.1"
+  checksum: 10c0/c5315c255661dd778a7f0a8d6501b149380b6301fc7d18fcde30baa920ac2cb8b0111ba50c50b926a1962982f5d1b86eeecb6fef6606bd0f05c7833a869ace1c
   languageName: node
   linkType: hard
 
@@ -1146,13 +1146,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"consola@npm:^3.2.3":
-  version: 3.2.3
-  resolution: "consola@npm:3.2.3"
-  checksum: 10c0/c606220524ec88a05bb1baf557e9e0e04a0c08a9c35d7a08652d99de195c4ddcb6572040a7df57a18ff38bbc13ce9880ad032d56630cef27bef72768ef0ac078
-  languageName: node
-  linkType: hard
-
 "convert-source-map@npm:^2.0.0":
   version: 2.0.0
   resolution: "convert-source-map@npm:2.0.0"
@@ -1272,7 +1265,7 @@ __metadata:
     store: ../store
     tsx: "npm:^4.7.0"
     typescript: "npm:^5.3.3"
-    wrangler: "npm:^3.72.2"
+    wrangler: "npm:^3.76.0"
   languageName: unknown
   linkType: soft
 
@@ -2263,9 +2256,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"miniflare@npm:3.20240821.0":
-  version: 3.20240821.0
-  resolution: "miniflare@npm:3.20240821.0"
+"miniflare@npm:3.20240821.2":
+  version: 3.20240821.2
+  resolution: "miniflare@npm:3.20240821.2"
   dependencies:
     "@cspotcode/source-map-support": "npm:0.8.1"
     acorn: "npm:^8.8.0"
@@ -2281,7 +2274,7 @@ __metadata:
     zod: "npm:^3.22.3"
   bin:
     miniflare: bootstrap.js
-  checksum: 10c0/397bb5ca8116821f464aa49ab61535b2347ebcf68b2cc07212ccf93d18c2e533d45c656f9a7f8bf726cc3e18bdcc23ad1b64cbc6496b67801501204f19bc2ae7
+  checksum: 10c0/c4b84f5c0d64ab2eab8e2c0ca210bf52d620b99b4610963ebec8cd8e4750f34bbac59eb97926a8a56237bd01089b83dafd5c9f69a1bdbeaafb1ce3184b71cb9c
   languageName: node
   linkType: hard
 
@@ -2498,13 +2491,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch-native@npm:^1.6.4":
-  version: 1.6.4
-  resolution: "node-fetch-native@npm:1.6.4"
-  checksum: 10c0/78334dc6def5d1d95cfe87b33ac76c4833592c5eb84779ad2b0c23c689f9dd5d1cfc827035ada72d6b8b218f717798968c5a99aeff0a1a8bf06657e80592f9c3
-  languageName: node
-  linkType: hard
-
 "node-forge@npm:^1":
   version: 1.3.1
   resolution: "node-forge@npm:1.3.1"
@@ -2547,6 +2533,13 @@ __metadata:
   version: 3.0.0
   resolution: "normalize-path@npm:3.0.0"
   checksum: 10c0/e008c8142bcc335b5e38cf0d63cfd39d6cf2d97480af9abdbe9a439221fd4d749763bab492a8ee708ce7a194bb00c9da6d0a115018672310850489137b3da046
+  languageName: node
+  linkType: hard
+
+"ohash@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "ohash@npm:1.1.3"
+  checksum: 10c0/928f5bdbd8cd73f90cf544c0533dbda8e0a42d9b8c7454ab89e64e4d11bc85f85242830b4e107426ce13dc4dd3013286f8f5e0c84abd8942a014b907d9692540
   languageName: node
   linkType: hard
 
@@ -3178,7 +3171,7 @@ tif-snowflake@discohook/snowflake:
   languageName: node
   linkType: hard
 
-"ufo@npm:^1.5.3":
+"ufo@npm:^1.5.4":
   version: 1.5.4
   resolution: "ufo@npm:1.5.4"
   checksum: 10c0/b5dc4dc435c49c9ef8890f1b280a19ee4d0954d1d6f9ab66ce62ce64dd04c7be476781531f952a07c678d51638d02ad4b98e16237be29149295b0f7c09cda765
@@ -3208,17 +3201,15 @@ tif-snowflake@discohook/snowflake:
   languageName: node
   linkType: hard
 
-"unenv@npm:unenv-nightly@1.10.0-1717606461.a117952":
-  version: 1.10.0-1717606461.a117952
-  resolution: "unenv-nightly@npm:1.10.0-1717606461.a117952"
+"unenv@npm:unenv-nightly@2.0.0-1724863496.70db6f1":
+  version: 2.0.0-1724863496.70db6f1
+  resolution: "unenv-nightly@npm:2.0.0-1724863496.70db6f1"
   dependencies:
-    consola: "npm:^3.2.3"
     defu: "npm:^6.1.4"
-    mime: "npm:^3.0.0"
-    node-fetch-native: "npm:^1.6.4"
+    ohash: "npm:^1.1.3"
     pathe: "npm:^1.1.2"
-    ufo: "npm:^1.5.3"
-  checksum: 10c0/69c72d43a2b04358398e82ffd2e22f604ff37a737f5cd77d8a56c8f445de84af04b151f64c6467692a18308d6e50bab67b183f9dd20f5c58ab482e32df0189ba
+    ufo: "npm:^1.5.4"
+  checksum: 10c0/9413810a5eb53c7dc9c3e55ab51c40844a8e91c91fa78868fd367ba6f63b2cba4b13d26bfca88a96a5cac2ae8d0a6e066b39584a50463e65c62ea153a1d146eb
   languageName: node
   linkType: hard
 
@@ -3306,12 +3297,12 @@ tif-snowflake@discohook/snowflake:
   languageName: node
   linkType: hard
 
-"wrangler@npm:^3.72.2":
-  version: 3.72.2
-  resolution: "wrangler@npm:3.72.2"
+"wrangler@npm:^3.76.0":
+  version: 3.76.0
+  resolution: "wrangler@npm:3.76.0"
   dependencies:
     "@cloudflare/kv-asset-handler": "npm:0.3.4"
-    "@cloudflare/workers-shared": "npm:0.3.0"
+    "@cloudflare/workers-shared": "npm:0.4.1"
     "@esbuild-plugins/node-globals-polyfill": "npm:^0.2.3"
     "@esbuild-plugins/node-modules-polyfill": "npm:^0.2.2"
     blake3-wasm: "npm:^2.1.5"
@@ -3319,14 +3310,14 @@ tif-snowflake@discohook/snowflake:
     date-fns: "npm:^3.6.0"
     esbuild: "npm:0.17.19"
     fsevents: "npm:~2.3.2"
-    miniflare: "npm:3.20240821.0"
+    miniflare: "npm:3.20240821.2"
     nanoid: "npm:^3.3.3"
     path-to-regexp: "npm:^6.2.0"
     resolve: "npm:^1.22.8"
     resolve.exports: "npm:^2.0.2"
     selfsigned: "npm:^2.0.1"
     source-map: "npm:^0.6.1"
-    unenv: "npm:unenv-nightly@1.10.0-1717606461.a117952"
+    unenv: "npm:unenv-nightly@2.0.0-1724863496.70db6f1"
     workerd: "npm:1.20240821.1"
     xxhash-wasm: "npm:^1.0.1"
   peerDependencies:
@@ -3340,7 +3331,7 @@ tif-snowflake@discohook/snowflake:
   bin:
     wrangler: bin/wrangler.js
     wrangler2: bin/wrangler.js
-  checksum: 10c0/f309fad517ec21f10e18e62d56ee65625e69a48335ba93f26019246b2839af3eb42f558677ca32ef42ab3906df2c694735d111b165b147e880368563dfa9e47d
+  checksum: 10c0/75861566be836a2eba827df381c6752b33968a093635c1c2426dff0777273190989339ccf1d6c25b03e92f63598fe261f4eac15c326007233db01edcddf1573d
   languageName: node
   linkType: hard
 

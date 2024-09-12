@@ -21,11 +21,7 @@ bindings = [
 
 [[migrations]]
 tag = "v1"
-new_classes = ["DurableComponentState", "DurableDraftComponentCleaner"]
-
-[[migrations]]
-tag = "v2"
-new_classes = ["ShareLinks"]
+new_classes = ["DurableComponentState"]
 
 [env.preview]
 route = { pattern = "bots.preview.discohook.app", custom_domain = true }
@@ -44,11 +40,7 @@ bindings = [
 
 [[env.preview.migrations]]
 tag = "v1"
-new_classes = ["DurableComponentState", "DurableDraftComponentCleaner"]
-
-[[env.preview.migrations]]
-tag = "v2"
-new_classes = ["ShareLinks"]
+new_classes = ["DurableComponentState"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -74,11 +66,7 @@ bindings = [
 
 [[env.production.migrations]]
 tag = "v1"
-new_classes = ["DurableComponentState", "DurableDraftComponentCleaner"]
-
-[[env.production.migrations]]
-tag = "v2"
-new_classes = ["ShareLinks"]
+new_classes = ["DurableComponentState"]
 
 [env.production.vars]
 ENVIRONMENT = "production"
