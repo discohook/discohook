@@ -1,9 +1,11 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
+import { getShareLinkExists, putShareLink } from "~/durable/share-links";
 import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
+import { Env } from "~/types/env";
 import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { zxParseJson } from "~/util/zod";
@@ -17,18 +19,18 @@ export interface ShortenedData {
 }
 
 export const generateUniqueShortenKey = async (
-  kv: KVNamespace,
+  env: Env,
   length: number,
   tries = 10,
-): Promise<{ id: string; key: string }> => {
+): Promise<string> => {
   for (const _ of Array(tries)) {
-    const id = randomString(length);
-    const key = `share-${id}`;
-    if (!(await kv.get(key))) {
-      return { id, key };
+    const shareId = randomString(length);
+    const exists = await getShareLinkExists(env, shareId);
+    if (!exists) {
+      return shareId;
     }
   }
-  return await generateUniqueShortenKey(kv, length + 1);
+  return await generateUniqueShortenKey(env, length + 1, tries);
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -60,29 +62,17 @@ export const action = async ({ request, context }: ActionArgs) => {
   const userId = await getUserId(request, context);
   const expires = new Date(new Date().getTime() + ttl * 1000);
   const origin = origin_ ?? new URL(request.url).origin;
-
   // biome-ignore lint/performance/noDelete: We don't want to store this property at all
   delete data.backup_id;
-  const shortened: ShortenedData = {
-    data: JSON.stringify(data),
-    origin,
-    userId: userId?.toString(),
-  };
+
+  const shareId = await generateUniqueShortenKey(context.env, 8);
+  await putShareLink(context.env, shareId, data, expires, origin_);
 
   const db = getDb(context.env.HYPERDRIVE);
-  const kv = context.env.KV;
-  const { id, key } = await generateUniqueShortenKey(kv, 8);
-  await kv.put(key, JSON.stringify(shortened), {
-    expirationTtl: ttl,
-    // KV doesn't seem to provide a way to read `expirationTtl`
-    metadata: {
-      expiresAt: new Date(new Date().valueOf() + ttl * 1000).toISOString(),
-    },
-  });
   if (userId) {
     await db.insert(shareLinks).values({
       userId,
-      shareId: id,
+      shareId,
       expiresAt: expires,
       origin: origin_,
     });
@@ -90,9 +80,9 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   return json(
     {
-      id,
+      id: shareId,
       origin,
-      url: `${new URL(request.url).origin}/?share=${id}`,
+      url: `${new URL(request.url).origin}/?share=${shareId}`,
       expires,
       userId: userId ?? undefined,
     },

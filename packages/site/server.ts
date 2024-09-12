@@ -7,6 +7,7 @@ export { DurableComponentState } from "store";
 export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
 export { RateLimiter } from "./app/durable/rate-limits";
 export { DurableScheduler } from "./app/durable/scheduler";
+export { ShareLinks } from "./app/durable/share-links";
 
 const MANIFEST = JSON.parse(__STATIC_CONTENT_MANIFEST);
 const handleRemixRequest = createRequestHandler(build, process.env.NODE_ENV);

@@ -21,6 +21,7 @@ bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
+  { name = "SHARE_LINKS", class_name = "ShareLinks" },
 ]
 
 [version_metadata]
@@ -36,7 +37,7 @@ new_classes = [
 
 [[migrations]]
 tag = "v2"
-new_classes = ["RateLimiter"]
+new_classes = ["RateLimiter", "ShareLinks"]
 
 [site]
 bucket = "./public"
@@ -73,6 +74,7 @@ bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-preview" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
+  { name = "SHARE_LINKS", class_name = "ShareLinks" },
 ]
 
 [[env.preview.migrations]]
@@ -85,7 +87,7 @@ new_classes = [
 
 [[env.preview.migrations]]
 tag = "v2"
-new_classes = ["RateLimiter"]
+new_classes = ["RateLimiter", "ShareLinks"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -116,6 +118,7 @@ bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-production" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
+  { name = "SHARE_LINKS", class_name = "ShareLinks" },
 ]
 
 [[env.production.migrations]]
@@ -128,7 +131,7 @@ new_classes = [
 
 [[env.production.migrations]]
 tag = "v2"
-new_classes = ["RateLimiter"]
+new_classes = ["RateLimiter", "ShareLinks"]
 
 [env.production.vars]
 ENVIRONMENT = "production"

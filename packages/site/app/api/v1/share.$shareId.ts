@@ -1,11 +1,10 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
-import { getDb } from "~/store.server";
+import { getShareLink } from "~/durable/share-links";
 import { QueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
-import { ShortenedData } from "./share";
 
 export interface InvalidShareIdData {
   message: string;
@@ -13,44 +12,24 @@ export interface InvalidShareIdData {
 }
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
-  const { shareId: id } = zxParseParams(params, { shareId: z.string() });
+  const { shareId } = zxParseParams(params, { shareId: z.string() });
   const headers = await getBucket(request, context, "share");
 
-  const key = `share-${id}`;
-  const { value: shortened, metadata } =
-    await context.env.KV.getWithMetadata<ShortenedData>(key, {
-      type: "json",
-      // 15 minutes
-      cacheTtl: 900,
-    });
-  if (!shortened) {
-    let expiredAt: Date | undefined;
-    try {
-      const db = getDb(context.env.HYPERDRIVE);
-      const link = await db.query.shareLinks.findFirst({
-        where: (shareLinks, { and, eq, lt }) =>
-          and(eq(shareLinks.shareId, id), lt(shareLinks.expiresAt, new Date())),
-        columns: { expiresAt: true },
-      });
-      if (link) expiredAt = link.expiresAt;
-    } catch {}
-
-    throw json(
-      {
-        message: "No shortened data with that ID. It may have expired.",
-        expiredAt: expiredAt?.toISOString(),
-      } satisfies InvalidShareIdData,
-      { status: 404, headers },
-    );
+  let data: QueryData;
+  let alarm: number;
+  try {
+    ({ data, alarm } = await getShareLink(context.env, shareId));
+  } catch (e) {
+    if (e instanceof Response) {
+      // e.headers is immutable
+      const h = new Headers(e.headers);
+      for (const [k, v] of Object.entries(headers)) {
+        h.set(k, v);
+      }
+      throw new Response(e.body, { headers: h, status: e.status });
+    }
+    throw e;
   }
 
-  const { expiresAt } = metadata as { expiresAt?: string };
-  return json(
-    {
-      data: JSON.parse(shortened.data) as QueryData,
-      origin: shortened.origin,
-      expires: expiresAt ? new Date(expiresAt) : new Date(),
-    },
-    { headers },
-  );
+  return json({ data, expires: new Date(alarm) }, { headers });
 };

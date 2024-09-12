@@ -7,6 +7,12 @@ import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import {
+  deleteShareLink,
+  getShareLink,
+  getShareLinkExists,
+  putShareLink,
+} from "~/durable/share-links";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import { shareLinks as dShareLinks, eq, getDb, inArray } from "~/store.server";
@@ -76,19 +82,15 @@ export const action = async ({ request, context }: ActionArgs) => {
         throw json({ message: "Unknown Share Link" }, 404);
       }
 
-      const key = `share-${share.shareId}`;
-      const current = await context.env.KV.get(key);
-      if (!current) {
+      const exists = await getShareLinkExists(context.env, share.shareId);
+      if (!exists) {
         throw json({ message: "Share link is already expired" }, 400);
       }
 
+      const { data: current } = await getShareLink(context.env, share.shareId);
       const expires = new Date(new Date().getTime() + data.ttl * 1000);
-      await context.env.KV.put(key, current, {
-        expirationTtl: data.ttl,
-        metadata: {
-          expiresAt: expires.toISOString(),
-        },
-      });
+      // Don't need to re-set origin because we're re-using the same durable object
+      await putShareLink(context.env, share.shareId, current, expires);
       await db
         .update(dShareLinks)
         .set({ expiresAt: expires })
@@ -118,10 +120,10 @@ export const action = async ({ request, context }: ActionArgs) => {
             ownIds.map((b) => b.id),
           ),
         );
-      }
-      for (const link of shareLinks) {
-        const key = `share-${link.shareId}`;
-        await context.env.KV.delete(key);
+        for (const link of ownIds) {
+          console.log("deleting", link.shareId);
+          await deleteShareLink(context.env, link.shareId);
+        }
       }
 
       return json({ deleted: ownIds.length });
