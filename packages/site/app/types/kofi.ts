@@ -42,3 +42,29 @@ export const ZodKofiDonationPayload = z.object({
 });
 
 export type KofiDonationPayload = z.infer<typeof ZodKofiDonationPayload>;
+
+export const ZodKofiSupporter = z.object({
+  Avatar: z.string(),
+  Name: z.string(),
+  Email: z.ostring(),
+  PageId: z.string(),
+  UserId: z.string(),
+});
+
+export const ZodKofiSupporterDetail = z.object({
+  Supporter: ZodKofiSupporter,
+  SupportType: z.string().array(),
+  LastSupportedDate: z.bigint(),
+  LastestTransactionId: z.string(),
+  TotalString: z.string(),
+  /** Value in USD */
+  Total: z.number(),
+  Reference: z.string(),
+  SupporterType: z.number(),
+  SupporterTypeAsString: z.string(),
+});
+
+export const ZodKofiGetSupporterDetails = z.object({
+  List: ZodKofiSupporterDetail.array(),
+  TotalSupporters: z.number(),
+});
