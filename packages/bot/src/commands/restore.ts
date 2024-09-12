@@ -84,9 +84,6 @@ export const getShareEmbed = (
       name: "Expires",
       value: `${time(data.expires, "d")} (${time(data.expires, "R")})`,
       inline: true,
-    })
-    .setFooter({
-      text: "It may take a few minutes for your link to become accessible.",
     });
   if (safe !== undefined) {
     embed.addFields({
