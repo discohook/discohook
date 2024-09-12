@@ -21,5 +21,6 @@ export interface Env {
   KV: KVNamespace;
   COMPONENTS: DurableObjectNamespace;
   DRAFT_CLEANER: DurableObjectNamespace;
+  SHARE_LINKS: DurableObjectNamespace;
   SITE: Service;
 }

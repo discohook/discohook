@@ -27,6 +27,7 @@ import {
   MessageAppCommandCallback,
 } from "../commands.js";
 import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
+import { getShareLinkExists, putShareLink } from "../share-links.js";
 import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { isThread } from "../util/guards.js";
@@ -102,18 +103,18 @@ export const getShareEmbed = (
 };
 
 export const generateUniqueShortenKey = async (
-  kv: KVNamespace,
+  env: Env,
   length: number,
   tries = 10,
-): Promise<{ id: string; key: string }> => {
+): Promise<string> => {
   for (const _ of Array(tries)) {
-    const id = randomString(length);
-    const key = `share-${id}`;
-    if (!(await kv.get(key))) {
-      return { id, key };
+    const shareId = randomString(length);
+    const exists = await getShareLinkExists(env, shareId);
+    if (!exists) {
+      return shareId;
     }
   }
-  return await generateUniqueShortenKey(kv, length + 1);
+  return await generateUniqueShortenKey(env, length + 1);
 };
 
 export const createLongDiscohookUrl = (origin: string, data: QueryData) =>
@@ -132,39 +133,29 @@ const createShareLink = async (
   },
 ) => {
   const { userId } = options ?? {};
-  const ttl = options?.ttl ?? 604800000;
   const origin = options?.origin ?? env.DISCOHOOK_ORIGIN;
+  const ttl = options?.ttl ?? 604800000;
   const expires = new Date(new Date().getTime() + ttl);
 
   // biome-ignore lint/performance/noDelete: We don't want to store this property at all
   delete data.backup_id;
-  const shortened = {
-    data: JSON.stringify(data),
-    origin,
-    userId: userId?.toString(),
-  };
 
-  const kv = env.KV;
-  const { id, key } = await generateUniqueShortenKey(kv, 8);
-  await kv.put(key, JSON.stringify(shortened), {
-    expirationTtl: ttl / 1000,
-    // KV doesn't seem to provide a way to read `expirationTtl`
-    metadata: { expiresAt: new Date(new Date().valueOf() + ttl).toISOString() },
-  });
+  const shareId = await generateUniqueShortenKey(env, 8);
+  await putShareLink(env, shareId, data, expires, options?.origin);
   if (userId) {
     const db = getDb(env.HYPERDRIVE);
     await db.insert(shareLinks).values({
       userId,
-      shareId: id,
+      shareId,
       expiresAt: expires,
       origin: options?.origin,
     });
   }
 
   return {
-    id,
+    id: shareId,
     origin,
-    url: `${origin}/?share=${id}`,
+    url: `${origin}/?share=${shareId}`,
     expires,
   };
 };
