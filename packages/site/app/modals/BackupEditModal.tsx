@@ -36,6 +36,9 @@ import {
 import { action as ApiBackupsIdAction } from "../api/v1/backups.$id";
 import { Modal, ModalProps } from "./Modal";
 
+const isSameCalendarDay = (a: Moment, b: Moment) =>
+  a.date() === b.date() && a.month() === b.month() && a.year() === b.year();
+
 const Inner = ({
   t,
   backup,
@@ -385,9 +388,7 @@ const Inner = ({
                   }
                 }}
                 min={
-                  !scheduleDate ||
-                  scheduleDate.toISOString().split("T")[0] ===
-                    now.toISOString().split("T")[0]
+                  !scheduleDate || isSameCalendarDay(scheduleDate, moment(now))
                     ? now.toLocaleTimeString("en-US", {
                         hour: "2-digit",
                         minute: "2-digit",
