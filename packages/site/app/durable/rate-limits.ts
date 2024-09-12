@@ -65,7 +65,7 @@ export const getBucket = async (
   }
   const idKey = userId ? `id:${userId}` : `ip:${ip}`;
 
-  const globalKey = `${request.method === "GET" ? "GET" : "*"}:global:${idKey}`;
+  const globalKey = `${request.method}:global:${idKey}`;
   const globalId = context.env.RATE_LIMITER.idFromName(globalKey);
   const globalStub = context.env.RATE_LIMITER.get(globalId);
   const globalResponse = await globalStub.fetch(
