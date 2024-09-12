@@ -1,7 +1,5 @@
 # Discohook Bot (formerly Discohook Utils)
 
-Prose here
-
 ## Setup
 
 Due to the complexity of this project, I recommend that you do not do this, *especially* if you have not done something similar before! Instead, invite the instance of the bot that I host. [It's quick and easy!](https://discohook.app/bot)
