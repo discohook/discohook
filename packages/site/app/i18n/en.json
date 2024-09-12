@@ -427,7 +427,6 @@
   "addCondition": "Add Condition",
   "checkEqualA": "This value (A):",
   "checkEqualB": "Equal to this value (B):",
-  "checkEqualLoose": "Loose equality (not recommended)",
   "stopMessageNote": "Stop actions can optionally show a message to the user. These messages can be <0>formatted</0> like normal message actions.",
   "checkFunctionType": {
     "0": "AND",

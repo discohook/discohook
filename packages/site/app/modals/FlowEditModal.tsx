@@ -1305,16 +1305,6 @@ const CheckFunctionEditor: React.FC<{
               anonymous
               flex
             />
-            {/* <div className="mt-2">
-              <Checkbox
-                label={t("checkEqualLoose")}
-                checked={func.loose ?? false}
-                onChange={(e) => {
-                  func.loose = e.currentTarget.checked;
-                  update();
-                }}
-              />
-            </div> */}
           </div>
         ) : (
           <></>
