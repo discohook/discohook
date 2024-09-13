@@ -398,6 +398,13 @@ export const MessageSendModal = (
     const id = getQdMessageId(m);
     return !messages[id] || messages[id].enabled;
   }).length;
+  const withReferenceCount = Object.values(data.messages).filter((m) => {
+    const id = getQdMessageId(m);
+    return (
+      (!messages[id] || messages[id].enabled) &&
+      !!data.messages.find((m) => m._id === id)?.reference
+    );
+  }).length;
 
   const setOpen = (s: boolean) => {
     props.setOpen(s);
@@ -588,13 +595,25 @@ export const MessageSendModal = (
           >
             {t(
               sending
-                ? "sending"
+                ? withReferenceCount === 0
+                  ? "sending"
+                  : withReferenceCount === enabledMessagesCount
+                    ? "editing"
+                    : "submitting"
                 : countSelected(selectedWebhooks) <= 1 &&
                     enabledMessagesCount > 1
-                  ? "sendAll"
+                  ? withReferenceCount === 0
+                    ? "sendAll"
+                    : "submitAll"
                   : countSelected(selectedWebhooks) > 1
-                    ? "sendToAll"
-                    : "send",
+                    ? withReferenceCount === 0
+                      ? "sendToAll"
+                      : "submitToAll"
+                    : withReferenceCount === 0
+                      ? "send"
+                      : withReferenceCount === enabledMessagesCount
+                        ? "edit"
+                        : "submit",
             )}
           </Button>
           <Button

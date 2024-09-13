@@ -81,7 +81,7 @@ export const MessageSetModal = (
 
   return (
     <Modal {...props} setOpen={setOpen}>
-      <PlainModalHeader>{t("setMessageReference")}</PlainModalHeader>
+      <PlainModalHeader>{t("setMessageLink")}</PlainModalHeader>
       <InfoBox severity="blue" icon="Info" collapsible open={false}>
         <span>What is this?</span>
         <p>
@@ -90,11 +90,11 @@ export const MessageSetModal = (
           message you want to edit, select "Copy Message Link", then paste the
           link in the box below.
           <br />
+          <br />
           If you want to overwrite what is currently written in Discohook: Add
           the webhook that sent the message, then press "Overwrite Editor".
-          Otherwise, just select "Set Reference". The send button at the top of
-          the website will now allow you to edit the message instead of sending
-          a new one.
+          Otherwise, just select "Set Message Link". The submit button at the
+          top of the page will now allow you to edit the message.
         </p>
       </InfoBox>
       <div>
@@ -197,7 +197,7 @@ export const MessageSetModal = (
               }
             }}
           >
-            {t("removeReference")}
+            {t("removeMessageLink")}
           </TextButton>
         )}
         <Button
@@ -216,7 +216,7 @@ export const MessageSetModal = (
             }
           }}
         >
-          {t("setReference")}
+          {t("setMessageLink")}
         </Button>
         <Button
           disabled={!messageLink || !webhook}

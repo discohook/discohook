@@ -440,6 +440,9 @@ export default function Index() {
       safePushState({ path: fullUrl.toString() }, fullUrl.toString());
     }
   }, [backupId, data, updateCount]);
+  const messagesWithReference = data.messages.filter(
+    (m) => !!m.reference,
+  ).length;
 
   type Targets = Record<string, APIWebhook>;
   const [targets, updateTargets] = useReducer(
@@ -836,16 +839,33 @@ export default function Index() {
               }}
             >
               {t(
+                // This is so awkward
                 settings.webhookInput !== "classic"
-                  ? "send"
+                  ? messagesWithReference === 0
+                    ? "send"
+                    : messagesWithReference === data.messages.length
+                      ? "edit"
+                      : "submit"
                   : sending
-                    ? "sending"
+                    ? messagesWithReference === 0
+                      ? "sending"
+                      : messagesWithReference === data.messages.length
+                        ? "editing"
+                        : "submitting"
                     : Object.keys(targets).length <= 1 &&
                         data.messages.length > 1
-                      ? "sendAll"
+                      ? messagesWithReference === 0
+                        ? "sendAll"
+                        : "submitAll"
                       : Object.keys(targets).length > 1
-                        ? "sendToAll"
-                        : "send",
+                        ? messagesWithReference === 0
+                          ? "sendToAll"
+                          : "submitToAll"
+                        : messagesWithReference === 0
+                          ? "send"
+                          : messagesWithReference === data.messages.length
+                            ? "edit"
+                            : "submit",
               )}
             </Button>
           </div>
