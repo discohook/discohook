@@ -117,6 +117,9 @@ services = [
   { binding = "BOT", service = "discohook-bot-production" },
 ]
 
+[env.production.placement]
+mode = "smart"
+
 [env.production.version_metadata]
 binding = "VERSION"
 

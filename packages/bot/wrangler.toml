@@ -57,6 +57,9 @@ hyperdrive = [
 ]
 services = [{ binding = "SITE", service = "discohook-site-production" }]
 
+[env.production.placement]
+mode = "smart"
+
 [env.production.durable_objects]
 bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState" },
