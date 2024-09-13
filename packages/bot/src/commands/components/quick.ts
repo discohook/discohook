@@ -40,13 +40,6 @@ interface QuickButtonConfig {
   id: string;
   name: string;
   emoji: APIMessageComponentEmoji;
-  // description: string;
-  // arguments: {
-  //   id: string;
-  //   name: string;
-  //   description: string;
-  //   component: APIMessageActionRowComponent | APIModalActionRowComponent;
-  // }[];
   build: (props: any) => FlowAction[];
 }
 

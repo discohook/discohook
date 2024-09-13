@@ -5,6 +5,7 @@ import {
   APIWebhook,
   ButtonStyle,
   ComponentType,
+  RESTJSONErrorCodes,
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
@@ -37,7 +38,11 @@ import { refineZodDraftFlowMax } from "~/types/flows";
 import { isDiscordError } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
-import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
+import {
+  snowflakeAsString,
+  zxParseJson,
+  zxParseParams
+} from "~/util/zod";
 import { getComponentId } from "./log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 
 // TODO: RPC function in discohook-bot to use stored tokens
@@ -436,67 +441,82 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
       if (current.channelId && current.messageId) {
         const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-        const message = (await rest.get(
-          Routes.channelMessage(
-            String(current.channelId),
-            String(current.messageId),
-          ),
-        )) as APIMessage;
-        let columnIndex = 0;
-        const row = message.components?.find((row) => {
-          const x = row.components.findIndex((c) => getComponentId(c) === id);
-          columnIndex = x;
-          return x !== -1;
-        });
-        if (message.components && row) {
-          if (!message.webhook_id) {
-            throw respond(
-              json(
-                {
-                  message: "The associated message is not a webhook message.",
-                },
-                400,
-              ),
-            );
+        let message: APIMessage | undefined;
+        try {
+          message = (await rest.get(
+            Routes.channelMessage(
+              String(current.channelId),
+              String(current.messageId),
+            ),
+          )) as APIMessage;
+        } catch (e) {
+          if (
+            !isDiscordError(e) ||
+            e.code !== RESTJSONErrorCodes.UnknownMessage
+          ) {
+            // If the message no longer exists, we want to
+            // still allow the user to delete the component
+            throw e;
           }
-          const webhook = await getWebhook(message.webhook_id, context.env);
-          if (!webhook.token) {
-            throw respond(
-              json(
-                {
-                  message:
-                    "Could not obtain the token for the associated webhook. Try deleting through Discord.",
-                },
-                400,
-              ),
-            );
-          }
-          row.components.splice(columnIndex, 1);
-          if (row.components.length === 0) {
-            message.components.splice(message.components.indexOf(row), 1);
-          }
-          try {
-            await rest.patch(
-              Routes.webhookMessage(webhook.id, webhook.token, message.id),
-              {
-                body: { components: message.components },
-                query:
-                  message.position !== undefined
-                    ? new URLSearchParams({ thread_id: message.channel_id })
-                    : undefined,
-              },
-            );
-          } catch (e) {
-            if (isDiscordError(e) && e.status !== 404) {
+        }
+
+        if (message) {
+          let columnIndex = 0;
+          const row = message.components?.find((row) => {
+            const x = row.components.findIndex((c) => getComponentId(c) === id);
+            columnIndex = x;
+            return x !== -1;
+          });
+          if (message.components && row) {
+            if (!message.webhook_id) {
               throw respond(
                 json(
                   {
-                    message: `The component removal was rejected by Discord. You may have to edit or remove other components before removing this one. The error from Discord was: ${e.code} ${e.rawError.message}`,
-                    raw: e.rawError,
+                    message: "The associated message is not a webhook message.",
                   },
                   400,
                 ),
               );
+            }
+            const webhook = await getWebhook(message.webhook_id, context.env);
+            if (!webhook.token) {
+              throw respond(
+                json(
+                  {
+                    message:
+                      "Could not obtain the token for the associated webhook. Try deleting through Discord.",
+                  },
+                  400,
+                ),
+              );
+            }
+            row.components.splice(columnIndex, 1);
+            if (row.components.length === 0) {
+              message.components.splice(message.components.indexOf(row), 1);
+            }
+            try {
+              await rest.patch(
+                Routes.webhookMessage(webhook.id, webhook.token, message.id),
+                {
+                  body: { components: message.components },
+                  query:
+                    message.position !== undefined
+                      ? new URLSearchParams({ thread_id: message.channel_id })
+                      : undefined,
+                },
+              );
+            } catch (e) {
+              if (isDiscordError(e) && e.status !== 404) {
+                throw respond(
+                  json(
+                    {
+                      message: `The component removal was rejected by Discord. You may have to edit or remove other components before removing this one. The error from Discord was: ${e.code} ${e.rawError.message}`,
+                      raw: e.rawError,
+                    },
+                    400,
+                  ),
+                );
+              }
             }
           }
         }
