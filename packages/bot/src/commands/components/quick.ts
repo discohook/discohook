@@ -53,7 +53,7 @@ interface QuickButtonConfig {
 export const quickButtonConfigs: QuickButtonConfig[] = [
   {
     id: "toggle-role",
-    name: "Togglable Role",
+    name: "Toggle Role",
     emoji: { name: "🏷️" },
     build(props: { roleId: string }) {
       const { roleId } = props;
