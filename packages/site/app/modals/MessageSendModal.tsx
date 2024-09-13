@@ -471,10 +471,16 @@ export const MessageSendModal = (
                     </p>
                     {messages[id]?.result?.status === "error" && (
                       <p className="text-rose-400 text-sm leading-none">
-                        {
-                          (messages[id].result?.data as DiscordErrorData)
-                            .message
-                        }
+                        {(() => {
+                          const { result } = messages[id];
+                          return result.data.code ===
+                            RESTJSONErrorCodes.UnknownMessage
+                            ? "Message link does not match webhook. Did you forget to provide a thread ID?"
+                            : result.data.code ===
+                                RESTJSONErrorCodes.UnknownChannel
+                              ? "Unknown thread ID. The webhook should be in the thread's parent channel."
+                              : result.data.message;
+                        })()}
                       </p>
                     )}
                   </div>
