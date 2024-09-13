@@ -30,6 +30,7 @@ import {
 import {
   addComponentQuickEntry,
   addComponentQuickSendMessageCallback,
+  addComponentQuickSendMessageVisibilityCallback,
   addComponentQuickToggleRoleCallback,
   submitButtonQuickStyle,
 } from "./commands/components/quick.js";
@@ -79,7 +80,8 @@ export type StoredModalData = ModalCallback;
 
 export type ModalRoutingId =
   | "add-component-flow-customize-modal"
-  | "edit-component-flow-modal";
+  | "edit-component-flow-modal"
+  | "add-component-quick-send-message-modal";
 
 export type ComponentRoutingId =
   | "add-component-flow"
@@ -87,7 +89,7 @@ export type ComponentRoutingId =
   | "add-component-quick-entry"
   | "add-component-quick-style"
   | "add-component-quick-toggle-role"
-  | "add-component-quick-send-message"
+  | "add-component-quick-send-message-visibility"
   | "edit-component-flow-ctx"
   | "edit-component-flow-pick"
   | "edit-component-flow-mode"
@@ -117,7 +119,8 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "add-component-quick-entry": addComponentQuickEntry,
   "add-component-quick-style": submitButtonQuickStyle,
   "add-component-quick-toggle-role": addComponentQuickToggleRoleCallback,
-  "add-component-quick-send-message": addComponentQuickSendMessageCallback,
+  "add-component-quick-send-message-visibility":
+    addComponentQuickSendMessageVisibilityCallback,
   "edit-component-flow-ctx": editComponentButtonEntry,
   "edit-component-flow-pick": editComponentFlowPickCallback,
   "edit-component-flow-mode": editComponentFlowModeCallback,
@@ -140,4 +143,6 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {
   "add-component-flow-customize-modal": submitCustomizeModal,
   "edit-component-flow-modal": editComponentFlowModalCallback,
+  "add-component-quick-send-message-modal":
+    addComponentQuickSendMessageCallback,
 };

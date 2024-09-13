@@ -7,6 +7,7 @@ import {
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
 } from "@discordjs/builders";
+import dedent from "dedent-js";
 import {
   APIButtonComponentWithCustomId,
   APIGuild,
@@ -20,7 +21,7 @@ import {
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { eq } from "drizzle-orm";
 import { getDb } from "store";
-import { flowActions } from "store/src/schema";
+import { backups, flowActions, generateId } from "store/src/schema";
 import {
   type FlowAction,
   FlowActionCheckFunctionType,
@@ -28,8 +29,9 @@ import {
   FlowActionType,
   type StorableButtonWithCustomId,
 } from "store/src/types";
-import type { SelectMenuCallback } from "../../components.js";
+import type { ModalCallback, SelectMenuCallback } from "../../components.js";
 import type { InteractionContext } from "../../interactions.js";
+import { getShareLink, getShareLinkExists } from "../../share-links.js";
 import { storeComponents } from "../../util/components.js";
 import { getHighestRole } from "../reactionRoles.js";
 import { type ComponentFlow, getComponentFlowEmbed } from "./add.js";
@@ -104,34 +106,24 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
       ];
     },
   },
-  // {
-  //   id: "send-message",
-  //   name: "Send Message",
-  //   emoji: { name: "✉️" },
-  //   build(props: {
-  //     backupId: string | undefined;
-  //     message: QueryData["messages"][number]["data"] | undefined;
-  //     flags: MessageFlagsBitField;
-  //   }) {
-  //     return props.backupId
-  //       ? [
-  //           {
-  //             type: FlowActionType.SendMessage,
-  //             backupId: props.backupId,
-  //             flags: Number(props.flags.value),
-  //             response: true,
-  //           },
-  //         ]
-  //       : [
-  //           {
-  //             type: FlowActionType.SendRawMessage,
-  //             // biome-ignore lint/style/noNonNullAssertion: One is required
-  //             message: props.message!,
-  //             flags: Number(props.flags.value),
-  //           },
-  //         ];
-  //   },
-  // },
+  {
+    id: "send-message",
+    name: "Send Message",
+    emoji: { name: "✉️" },
+    build(props: {
+      backupId: string;
+      flags: MessageFlagsBitField;
+    }) {
+      return [
+        {
+          type: FlowActionType.SendMessage,
+          backupId: props.backupId,
+          flags: Number(props.flags.value),
+          response: true,
+        },
+      ];
+    },
+  },
 ];
 
 export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
@@ -147,6 +139,7 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
 
   switch (value) {
     case "toggle-role": {
+      state.totalSteps = 5;
       if (!ctx.userPermissons.has(PermissionFlags.ManageRoles)) {
         return ctx.reply({
           content: "You need the **Manage Roles** permission",
@@ -175,39 +168,59 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
       });
     }
     case "send-message": {
-      return ctx.updateMessage({
-        embeds: [getComponentFlowEmbed(state).toJSON()],
-        components: [
-          new ActionRowBuilder<StringSelectMenuBuilder>()
-            .addComponents(
-              await storeComponents(ctx.env.KV, [
-                new StringSelectMenuBuilder()
-                  .setPlaceholder("Select whether the message should be hidden")
-                  .addOptions(
-                    new StringSelectMenuOptionBuilder()
-                      .setValue("0")
-                      .setLabel("Public")
-                      .setDescription(
-                        "The message is visible to everyone in the channel",
-                      ),
-                    new StringSelectMenuOptionBuilder()
-                      .setValue(String(MessageFlags.Ephemeral))
-                      .setLabel("Hidden")
-                      .setDescription(
-                        "Only the person who pressed the button can see the message",
-                      ),
-                  ),
-                {
-                  ...state,
-                  componentTimeout: 600,
-                  componentRoutingId: `add-component-quick-${value}`,
-                  componentOnce: false,
-                },
-              ]),
-            )
-            .toJSON(),
-        ],
-      });
+      state.totalSteps = 6;
+      state.stepTitle = "Set share link";
+      state.step = 3;
+      const modal = new ModalBuilder()
+        .setTitle("Button message")
+        .addComponents(
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+              .setCustomId("share-link")
+              .setLabel("Share Link")
+              .setStyle(TextInputStyle.Short)
+              .setPlaceholder("https://discohook.app/?share=...")
+              .setMaxLength(40)
+              .setMinLength(30),
+          ),
+        );
+      await storeComponents(ctx.env.KV, [
+        modal,
+        {
+          ...state,
+          componentTimeout: 600,
+          componentRoutingId: `add-component-quick-${value}-modal`,
+          componentOnce: false,
+        },
+      ]);
+
+      return [
+        ctx.modal(modal.toJSON()),
+        async () => {
+          await ctx.followup.editOriginalMessage({
+            embeds: [getComponentFlowEmbed(state).toJSON()],
+            components: [
+              new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                  await storeComponents(ctx.env.KV, [
+                    new ButtonBuilder()
+                      .setStyle(ButtonStyle.Primary)
+                      .setLabel("Open modal"),
+                    {
+                      ...state,
+                      modal,
+                      componentTimeout: 600,
+                      componentRoutingId:
+                        "add-component-flow-customize-modal-resend",
+                      componentOnce: false,
+                    },
+                  ]),
+                )
+                .toJSON(),
+            ],
+          });
+        },
+      ];
     }
     default:
       break;
@@ -257,73 +270,51 @@ const getCustomButtonValuesModal = () =>
 export const addComponentSetStylePrompt = async (ctx: InteractionContext) => {
   const state = ctx.state as ComponentFlow;
   state.stepTitle = "Choose a button style";
+  state.step += 1;
 
   return ctx.updateMessage({
     embeds: [getComponentFlowEmbed(state).toJSON()],
     components: [
       new ActionRowBuilder<StringSelectMenuBuilder>()
         .addComponents(
-          await storeComponents(
-            ctx.env.KV,
-            [
-              new StringSelectMenuBuilder().addOptions(
-                (
-                  [
-                    ButtonStyle.Primary,
-                    ButtonStyle.Secondary,
-                    ButtonStyle.Success,
-                    ButtonStyle.Danger,
-                  ] as const
-                ).map((style) =>
-                  new StringSelectMenuOptionBuilder()
-                    .setLabel(
-                      {
-                        [ButtonStyle.Primary]: "Blurple",
-                        [ButtonStyle.Secondary]: "Gray",
-                        [ButtonStyle.Success]: "Green",
-                        [ButtonStyle.Danger]: "Red",
-                      }[style],
-                    )
-                    .setDescription(ButtonStyle[style])
-                    .setValue(String(style))
-                    .setEmoji({
-                      name: {
-                        [ButtonStyle.Primary]: "🟦",
-                        [ButtonStyle.Secondary]: "⬜",
-                        [ButtonStyle.Success]: "🟩",
-                        [ButtonStyle.Danger]: "🟥",
-                      }[style],
-                    }),
-                ),
+          await storeComponents(ctx.env.KV, [
+            new StringSelectMenuBuilder().addOptions(
+              (
+                [
+                  ButtonStyle.Primary,
+                  ButtonStyle.Secondary,
+                  ButtonStyle.Success,
+                  ButtonStyle.Danger,
+                ] as const
+              ).map((style) =>
+                new StringSelectMenuOptionBuilder()
+                  .setLabel(
+                    {
+                      [ButtonStyle.Primary]: "Blurple",
+                      [ButtonStyle.Secondary]: "Gray",
+                      [ButtonStyle.Success]: "Green",
+                      [ButtonStyle.Danger]: "Red",
+                    }[style],
+                  )
+                  .setDescription(ButtonStyle[style])
+                  .setValue(String(style))
+                  .setEmoji({
+                    name: {
+                      [ButtonStyle.Primary]: "🟦",
+                      [ButtonStyle.Secondary]: "⬜",
+                      [ButtonStyle.Success]: "🟩",
+                      [ButtonStyle.Danger]: "🟥",
+                    }[style],
+                  }),
               ),
-              {
-                ...state,
-                componentOnce: true,
-                componentTimeout: 300,
-                componentRoutingId: "add-component-quick-style",
-              },
-            ],
-            // ...[
-            //   ButtonStyle.Primary,
-            //   ButtonStyle.Secondary,
-            //   ButtonStyle.Success,
-            //   ButtonStyle.Danger,
-            // ].map(
-            //   (style) =>
-            //     [
-            //       new ButtonBuilder({
-            //         emoji: { name: "🌫️" },
-            //         style,
-            //       }),
-            //       {
-            //         ...state,
-            //         componentOnce: true,
-            //         componentTimeout: 300,
-            //         componentRoutingId: "add-component-quick-style",
-            //       },
-            //     ] as [ButtonBuilder, typeof state],
-            // ),
-          ),
+            ),
+            {
+              ...state,
+              componentOnce: true,
+              componentTimeout: 300,
+              componentRoutingId: "add-component-quick-style",
+            },
+          ]),
         )
         .toJSON(),
     ],
@@ -464,7 +455,6 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
   }
 
   const state = ctx.state as ComponentFlow;
-  state.totalSteps = 5;
   state.step = 4;
   state.steps = state.steps ?? [];
   state.steps.push({ label: `Select role (<@&${role.id}>)` });
@@ -488,43 +478,156 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
   return await addComponentSetStylePrompt(ctx);
 };
 
-export const addComponentQuickSendMessageCallback: SelectMenuCallback = async (
+export const addComponentQuickSendMessageCallback: ModalCallback = async (
   ctx,
 ) => {
   const guildId = ctx.interaction.guild_id;
   if (!guildId) throw Error("Guild-only");
 
-  const flags = new MessageFlagsBitField(
-    Number(ctx.interaction.data.values[0]),
-  );
+  const invalidShareLinkMessage = `Invalid share link. They look like this: \`${ctx.env.DISCOHOOK_ORIGIN}/?share=...\``;
+  const shareLink = ctx.getModalComponent("share-link").value;
+  let shareUrl: URL;
+  try {
+    shareUrl = new URL(shareLink);
+  } catch {
+    return ctx.reply({
+      content: invalidShareLinkMessage,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+  const shareId = shareUrl.searchParams.get("share");
+  if (shareUrl.origin !== ctx.env.DISCOHOOK_ORIGIN || !shareId) {
+    if (shareUrl.host === "share.discohook.app") {
+      return ctx.reply({
+        content: dedent`
+          This is an old-style share link. You must use a share link created on <${ctx.env.DISCOHOOK_ORIGIN}>. They look like this: \`${ctx.env.DISCOHOOK_ORIGIN}/?share=...\`
 
-  // biome-ignore lint/style/noNonNullAssertion: Options generated from this array
-  const config = quickButtonConfigs.find((c) => c.id === "send-message")!;
+          -# TIP: Just [open the share link](${shareUrl.href}), change the address from \`discohook.org\` to \`discohook.app\`, then press "Share" again to generate a new link.
+        `,
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    return ctx.reply({
+      content: invalidShareLinkMessage,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  if (!(await getShareLinkExists(ctx.env, shareId))) {
+    return ctx.reply({
+      content:
+        "Share link does not exist. Keep in mind that they expire after a week by default.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
 
   const state = ctx.state as ComponentFlow;
-  state.steps = state.steps ?? [];
-  state.steps.push({ label: "Set message visibility" });
+  state.steps?.push({
+    label: `Set share link ([${shareId}](${ctx.env.DISCOHOOK_ORIGIN}/?share=${shareId}))`,
+  });
+  state.stepTitle = "Set visibility";
+  state.step += 1;
 
   return ctx.updateMessage({
     embeds: [getComponentFlowEmbed(state).toJSON()],
-    components: [],
+    components: [
+      new ActionRowBuilder<StringSelectMenuBuilder>()
+        .addComponents(
+          await storeComponents(ctx.env.KV, [
+            new StringSelectMenuBuilder()
+              .setPlaceholder("Select whether the message should be hidden")
+              .addOptions(
+                new StringSelectMenuOptionBuilder()
+                  .setValue("0")
+                  .setLabel("Public")
+                  .setEmoji({ name: "🦺" })
+                  .setDescription(
+                    "The message is visible to everyone in the channel",
+                  ),
+                new StringSelectMenuOptionBuilder()
+                  .setValue(String(MessageFlags.Ephemeral))
+                  .setLabel("Hidden")
+                  .setEmoji({ name: "😶‍🌫️" })
+                  .setDescription(
+                    "Only the person who pressed the button can see the message",
+                  ),
+              ),
+            {
+              ...state,
+              shareId,
+              componentRoutingId: "add-component-quick-send-message-visibility",
+              componentTimeout: 600,
+              componentOnce: true,
+            },
+          ]),
+        )
+        .toJSON(),
+    ],
   });
-
-  // Assume button
-  // const { flowId } = state.component as StorableButtonWithCustomId;
-  // const actions = config.build({ flags });
-
-  // const db = getDb(ctx.env.HYPERDRIVE);
-  // await db.transaction(async (tx) => {
-  //   await tx.delete(flowActions).where(eq(flowActions.flowId, BigInt(flowId)));
-  //   await tx.insert(flowActions).values(
-  //     actions.map((action) => ({
-  //       flowId: BigInt(flowId),
-  //       type: action.type,
-  //       data: action,
-  //     })),
-  //   );
-  // });
-
-  // return await addComponentSetStylePrompt(ctx);
 };
+
+export const addComponentQuickSendMessageVisibilityCallback: SelectMenuCallback =
+  async (ctx) => {
+    const guildId = ctx.interaction.guild_id;
+    if (!guildId) throw Error("Guild-only");
+
+    const flags = new MessageFlagsBitField(
+      Number(ctx.interaction.data.values[0]),
+    );
+
+    const { shareId, ...state } = ctx.state as ComponentFlow & {
+      shareId: string;
+    };
+    const { data } = await getShareLink(ctx.env, shareId);
+
+    // Assume button
+    const { flowId } = state.component as StorableButtonWithCustomId;
+
+    // biome-ignore lint/style/noNonNullAssertion: Options generated from this array
+    const config = quickButtonConfigs.find((c) => c.id === "send-message")!;
+    const backupId = generateId();
+    const backupName = `Button in #${
+      ctx.interaction.channel.name ?? "unknown"
+    } (share ${shareId})`.slice(0, 100);
+    const actions = config.build({ flags, backupId });
+
+    const db = getDb(ctx.env.HYPERDRIVE);
+    await db.transaction(async (tx) => {
+      await tx.insert(backups).values({
+        id: BigInt(backupId),
+        ownerId: BigInt(state.user.id),
+        name: backupName,
+        dataVersion: "d2",
+        data,
+      });
+      await tx
+        .delete(flowActions)
+        .where(eq(flowActions.flowId, BigInt(flowId)));
+      await tx.insert(flowActions).values(
+        actions.map((action) => ({
+          flowId: BigInt(flowId),
+          type: action.type,
+          data: action,
+        })),
+      );
+    });
+
+    state.steps?.splice(
+      // Remove share link step and replace it with editable backup link now
+      // that we have fetched the data and created the backup
+      state.steps.length - 1,
+      1,
+      {
+        label: `Set [message data](${ctx.env.DISCOHOOK_ORIGIN}/?backup=${backupId} "${backupName}") (${shareId})`,
+      },
+      {
+        label: `Set message visibility (${
+          flags.has(MessageFlags.Ephemeral) ? "hidden" : "public"
+        })`,
+      },
+    );
+    state.stepTitle = "Set visibility";
+    state.step += 1;
+
+    return await addComponentSetStylePrompt(ctx);
+  };
