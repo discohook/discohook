@@ -39,16 +39,16 @@ export const TargetAddModal = (
   const [guildId, setGuildId] = useState<string>();
   const guildWebhooksFetcher = useSafeFetcher<typeof ApiGetGuildWebhooks>({
     onError(e) {
-      setError({ message: e.message });
+      if (e.status === 404) {
+        setError({ ...e, message: "Discohook Utils is not in this server." });
+      } else {
+        setError(e);
+      }
     },
   });
   const guildWebhookTokenFetcher = useSafeFetcher<
     typeof ApiGetGuildWebhookToken
-  >({
-    onError(e) {
-      setError({ message: e.message });
-    },
-  });
+  >({ onError: setError });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {

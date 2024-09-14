@@ -323,7 +323,6 @@ export default () => {
             method: "PATCH",
             action: apiUrl(BRoutes.guildWebhook(guild.id, openWebhookId)),
           });
-          // webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
         }}
         channels={cache.channel.getAll()}
         webhookId={openWebhookId}
