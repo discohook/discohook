@@ -49,6 +49,25 @@ export const getZodErrorMessage = (e: any) => {
   return String(e);
 };
 
+const returnRawIf = (raw: unknown): string | undefined => {
+  try {
+    JSON.parse(JSON.stringify(raw));
+  } catch {
+    return;
+  }
+
+  const stringified = JSON.stringify(raw);
+  const data = raw as Record<string, unknown>;
+  const keys = Object.keys(data).length;
+  if (data.message) {
+    if ("code" in data) {
+      return keys === 2 ? undefined : stringified;
+    }
+    return keys === 1 ? undefined : stringified;
+  }
+  return stringified;
+};
+
 export const useSafeFetcher = <TData = any>({
   onError,
 }: {
@@ -73,7 +92,7 @@ export const useSafeFetcher = <TData = any>({
                   onError({
                     status: response.status,
                     message: getZodErrorMessage(raw),
-                    raw: JSON.stringify(raw),
+                    raw: returnRawIf(raw),
                   });
                 }
                 setState("idle");
@@ -103,7 +122,7 @@ export const useSafeFetcher = <TData = any>({
             onError({
               status: response.status,
               message: getZodErrorMessage(raw),
-              raw: JSON.stringify(raw),
+              raw: returnRawIf(raw),
             });
           }
           setState("idle");
@@ -149,7 +168,7 @@ export const useSafeFetcher = <TData = any>({
                     onError({
                       status: response.status,
                       message: getZodErrorMessage(raw),
-                      raw: JSON.stringify(raw),
+                      raw: returnRawIf(raw),
                     });
                   }
                   setState("idle");
@@ -198,7 +217,7 @@ export const useSafeFetcher = <TData = any>({
             onError({
               status: response.status,
               message: getZodErrorMessage(raw),
-              raw: JSON.stringify(raw),
+              raw: returnRawIf(raw),
             });
           }
           setState("idle");
