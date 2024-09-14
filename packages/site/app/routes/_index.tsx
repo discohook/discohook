@@ -571,6 +571,7 @@ export default function Index() {
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
         memberships={memberships}
+        discordApplicationId={discordApplicationId}
         cache={cache}
       />
       <ShareExpiredModal

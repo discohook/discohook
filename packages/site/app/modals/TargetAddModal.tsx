@@ -9,6 +9,7 @@ import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { LoadedMembership } from "~/routes/_index";
 import { CacheManager } from "~/util/cache/CacheManager";
@@ -22,6 +23,7 @@ import { Modal, ModalProps } from "./Modal";
 
 export const TargetAddModal = (
   props: ModalProps & {
+    discordApplicationId: string;
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
     hasAuthentication?: boolean;
     memberships?: Promise<LoadedMembership[]>;
@@ -203,6 +205,18 @@ export const TargetAddModal = (
                           <p className="font-semibold truncate dark:text-primary-230 text-base">
                             {gWebhook.name}
                           </p>
+                          {gWebhook.applicationId ===
+                            props.discordApplicationId && (
+                            <span
+                              className="ml-1 inline-block"
+                              title={t("createdByDiscohook")}
+                            >
+                              <CoolIcon
+                                icon="Circle_Check"
+                                className="text-blurple-500 dark:text-blurple-400"
+                              />
+                            </span>
+                          )}
                         </div>
                         <p className="text-gray-600 dark:text-gray-500 text-xs">
                           {t(gWebhook.user ? "createdAtBy" : "createdAt", {
