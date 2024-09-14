@@ -29,10 +29,10 @@ import {
   FlowActionSetVariable,
   FlowActionSetVariableType,
 } from "~/store.server";
-import { FlowActionType } from "~/types/flows";
+import { FlowActionType, ZodDraftFlow } from "~/types/flows";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
-import { SafeFetcher, useSafeFetcher } from "~/util/loader";
+import { SafeFetcher, getZodErrorMessage, useSafeFetcher } from "~/util/loader";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import {
   loader as ApiGetUserBackups,
@@ -85,8 +85,23 @@ export const FlowEditModal = (
     (a) => a.type !== FlowActionType.Check && a.type !== FlowActionType.Stop,
   );
 
+  const parsed = ZodDraftFlow.safeParse(flow);
+
   return (
-    <Modal title={t("editFlow")} {...props}>
+    <Modal
+      title={t("editFlow")}
+      {...props}
+      // setOpen={(v) => {
+      //   if (parsed.success) props.setOpen(v);
+      // }}
+    >
+      {!parsed.success && (
+        <InfoBox severity="yellow" icon="Info" collapsible open>
+          {getZodErrorMessage(parsed.error)}
+          <br />
+          {t("flowParseNotice")}
+        </InfoBox>
+      )}
       {error}
       {flow && setFlow && (
         <div className="-mt-2 -mx-2">
@@ -141,6 +156,7 @@ export const FlowEditModal = (
               <Button
                 discordstyle={ButtonStyle.Secondary}
                 onClick={() => props.setOpen(false)}
+                // disabled={!parsed.success}
               >
                 {t("ok")}
               </Button>

@@ -461,6 +461,7 @@
   "valueMirrorVariable": "Full prior variable name",
   "actionN": "Action {{n}}",
   "actionNText": "Action {{n}} - {{text}}",
+  "flowParseNotice": "Please resolve these issues before attempting to save the component or submit the message. If you just added a new action, nothing is wrong, you likely just need to populate a required value.",
   "flowLink": "Flow (<0>what's a flow?</0>)",
   "editFlow": "Edit Flow",
   "maxActionsWarningFree": "Flows have a maximum of {{limit}} non-check/stop actions. <0>Read more about this here</0>. Subscribe to Deluxe to add up to {{premiumLimit}} actions.",
