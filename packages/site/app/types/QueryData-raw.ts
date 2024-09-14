@@ -1,10 +1,10 @@
 import {
-    APIEmbed as _APIEmbed,
-    APIActionRowComponent,
-    APIAttachment,
-    APIMessageActionRowComponent,
-    MessageFlags,
-    UserFlags,
+  APIEmbed as _APIEmbed,
+  APIActionRowComponent,
+  APIAttachment,
+  APIMessageActionRowComponent,
+  MessageFlags,
+  UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { ZodAPIActionRowComponentRaw } from "./components-raw";

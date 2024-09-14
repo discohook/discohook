@@ -2,7 +2,7 @@ import {
   ButtonStyle,
   ChannelType,
   ComponentType,
-  SelectMenuDefaultValueType
+  SelectMenuDefaultValueType,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import {

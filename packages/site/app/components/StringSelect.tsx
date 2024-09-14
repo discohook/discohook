@@ -34,7 +34,6 @@ export const StringSelect: React.FC<StringSelectProps> = (props) => {
       <Select
         menuPlacement="auto"
         menuPosition="absolute"
-        aria-live="off"
         {...props}
         placeholder={props.placeholder ?? t("defaultPlaceholder")}
         classNames={{

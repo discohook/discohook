@@ -66,7 +66,6 @@ export const AsyncGuildSelect = (props: {
       isMulti={props.isMulti}
       name={props.name}
       value={props.value ? getOption(props.value) : undefined}
-      aria-live="off"
       loadOptions={(inputValue) =>
         (async () =>
           (await props.guilds)

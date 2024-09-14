@@ -32,7 +32,6 @@ export const ChannelSelect = (props: {
       value={props.value ? getOption(props.value) : undefined}
       options={props.channels.map(getOption)}
       classNames={selectClassNames}
-      aria-live="off"
       onChange={(raw) => {
         const opt = raw as ReturnType<typeof getOption> | null;
         if (props.onChange) {

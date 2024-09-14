@@ -9,7 +9,7 @@ import {
   backups,
   generateId,
   getDb,
-  makeSnowflake
+  makeSnowflake,
 } from "../../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
