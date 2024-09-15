@@ -185,8 +185,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                       "A token may only be set for a custom bot if it can",
                       "already be accessed by that user through Discord.",
                       "\n\n",
-                      `Token: ${token}\n`,
-                      `Username: ${
+                      `- Token: ${token}\n`,
+                      `- Username: ${
                         user.discordUser ? getUserTag(user) : "unknown"
                       }`,
                     ].join(" "),
@@ -201,6 +201,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                 "User-Agent": "Discohook",
               },
             });
+            if (!response.ok) {
+              console.error(await response.text());
+            }
             reset = response.ok;
           }
           throw json(
@@ -209,7 +212,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                 ? "You do not own this token. It has been reset and the owner has been notified"
                 : "Invalid token",
             },
-            400,
+            reset ? 403 : 400,
           );
         }
         if (application.id !== String(bot.applicationId)) {
