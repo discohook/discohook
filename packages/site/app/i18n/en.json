@@ -389,6 +389,7 @@
   "body": "Body",
   "title": "Title",
   "titleUrl": "Title URL",
+  "titleUrlManaged": "This is set automatically by the main embed in the gallery. Only change this if you want to change which gallery this image belongs to.",
   "redirectUrl": "Redirect URL",
   "images": "Images",
   "largeImageUrl": "Large Image URL",

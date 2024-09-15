@@ -354,11 +354,7 @@ export const EmbedEditor: React.FC<{
               <div className="grow">
                 <TextInput
                   label={t("titleUrl")}
-                  description={
-                    isChild
-                      ? "This is set automatically by the main embed in the gallery. Only change this if you want to change which gallery this image belongs to."
-                      : undefined
-                  }
+                  description={isChild ? t("titleUrlManaged") : ""}
                   className="w-full"
                   type="url"
                   value={embed.url ?? ""}
