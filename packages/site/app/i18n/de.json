@@ -129,5 +129,19 @@
     "editingLinkBackupNote": "Du bist eine Sicherheitkopie am bearbeiten, also wird deine bearbeitung regelmäßig gespeichert.",
     "linkEmbedCacheNote": "Discord speichert Link-Einbettungen 30 Minuten lang im Cache. <0>Kopieren Sie diesen teilweise zufälligen Link</0>, um Discord zu zwingen, die Daten erneut abzurufen. Linkeinbettungen werden für frühere Nachrichten nicht aktualisiert (Sie müssen die Nachricht bearbeiten).",
     "openBackupNewTab": "Öffne diese Sicherheitskopie in einen neuen Tab",
-    "deleteBackup": "Lösch Sicherheitskopie"
+    "deleteBackup": "Lösch Sicherheitskopie",
+    "deleteShareLinkConfirm": "Bist du dir sicher diesen Freigabelink zu löschen? Dies kann nicht rückgängig gemacht werden.",
+    "noLinks": "Du hast keine Freigabelinks erstellt.",
+    "version": "Version: {{version}}",
+    "shareLinks": "Freigabelinks",
+    "exportBackupsNote": "Dieses Menü dient zum Exportieren von Sicherungsdateien auf Ihren Computer. Dies ist nicht wirklich notwendig, aber es ist eine großartige Möglichkeit, Ihre Nachrichten offline zu kopieren oder für die Verwendung mit anderen Bots. Ihre Zeitplaneinstellungen (sofern vorhanden) werden nur für wiederkehrende Zeitpläne exportiert.",
+    "importedFromOrgAt": "Importiert von discohook.org am $t(timestamp.date_verbose)",
+    "refreshShareLink": "Frische dein Freigabelink für weitere 2 Wochen auf. (Luxus-Feature!)",
+    "importBackups": "Importiere Sicherheitkopie",
+    "export": "Exportieren",
+    "shiftSkipTip": "Tipp: Halte deine Umschalttaste (Shift) gedrückt um diese meldung beim nächsten mal zu überspringen.",
+    "import": "Importieren",
+    "exportBackups": "Exportiere Sicherheitskopie",
+    "deleteShareLink": "Freigabelink Löschen",
+    "deleteBackupConfirm": "Bist du dir sicher das du die Sicherheitskopie löschen möchtest? Dieser vorgang kann nicht rückgängig gemacht werden."
 }
