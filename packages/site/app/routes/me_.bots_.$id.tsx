@@ -87,7 +87,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     user.discordId
       ? await db.query.discordMembers.findMany({
           where: eq(discordMembers.userId, user.discordId),
-          columns: { permissions: true },
+          columns: { owner: true, permissions: true },
           with: { guild: { columns: { id: true, name: true, icon: true } } },
         })
       : [])();
@@ -620,10 +620,12 @@ export default function CustomBot() {
                         isClearable
                         guilds={(async () =>
                           (await memberships)
-                            .filter((m) =>
-                              new PermissionsBitField(
-                                BigInt(m.permissions),
-                              ).has(PermissionFlags.ManageGuild),
+                            .filter(
+                              (m) =>
+                                m.owner ||
+                                new PermissionsBitField(
+                                  BigInt(m.permissions),
+                                ).has(PermissionFlags.ManageGuild),
                             )
                             .map((m) => m.guild))()}
                         value={guild ?? null}
