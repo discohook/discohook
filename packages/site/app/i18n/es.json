@@ -21,5 +21,16 @@
     "minute": "Minuto",
     "locales": {
         "es": "Español"
-    }
+    },
+    "search": "Busqueda",
+    "helpSearchPlaceholder": "Como hago…",
+    "editBackupTitle": "Editar Detalles de la copia de seguridad",
+    "ok": "OK",
+    "delete": "Borrar",
+    "supportServer": "Servidor de Ayuda",
+    "expiresIn": "Expira",
+    "temporaryShareUrlExpires": "Comparta la URL (expires <0>$t(timestamp.relative.days_future)</0>)",
+    "editBackupMessages": "Para editar mensajes en la copia de seguridad, presiona el <0/> boton.",
+    "temporaryShareUrl": "Comparta la URL",
+    "required": "Necesitario"
 }
