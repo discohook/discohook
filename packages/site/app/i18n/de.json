@@ -1,7 +1,7 @@
 {
     "defaultPlaceholder": "Triff eine Auswahl",
     "donate": "Spenden",
-    "todayAt": "heute um {{time}} Uhr",
+    "todayAt": "heute um {{ date, h:mm A }} Uhr",
     "delete": "Löschen",
     "settings": "Einstellungen",
     "help": "Hilfe",
@@ -143,5 +143,19 @@
     "import": "Importieren",
     "exportBackups": "Exportiere Sicherheitskopie",
     "deleteShareLink": "Freigabelink Löschen",
-    "deleteBackupConfirm": "Bist du dir sicher das du die Sicherheitskopie löschen möchtest? Dieser vorgang kann nicht rückgängig gemacht werden."
+    "deleteBackupConfirm": "Bist du dir sicher das du die Sicherheitskopie löschen möchtest? Dieser vorgang kann nicht rückgängig gemacht werden.",
+    "idMention": "ID - {{mention}}",
+    "linkEmbedsPremiumReadOnly": "Sie befinden sich derzeit im schreibgeschützten Modus. Sie können im Editor herumspielen, aber um einen Link zu speichern, müssen Sie <0>Discohook Deluxe</Link> abonnieren.",
+    "subscribedSince": "Abonniert seit",
+    "firstSubscribed": "Erstmals abonniert",
+    "never": "Nie",
+    "id": "ID: {{id}}",
+    "permission": {
+        "ModerateMembers": "Timeout Nutzer"
+    },
+    "noShareLinkData": "Freigabelinkdaten werden nicht gespeichert nach ablauf. Wenn du eine permante speicherlösung brauchst, nutze <backups>Sicherheitskopien</backups>.",
+    "notSubscribed": "Kein Abo",
+    "idText": "ID",
+    "joinedDiscohook": "Discohook Beigetretten",
+    "linkEmbedsPremiumNote": "Sie haben eine Deluxe-Funktion entdeckt! <0>Lesen Sie hier mehr über Link-Einbettungen.</0>"
 }
