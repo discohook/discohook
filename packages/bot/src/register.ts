@@ -11,6 +11,7 @@ import {
 import {
   ApplicationCommandType,
   ChannelType,
+  InteractionContextType,
   LocaleString,
   LocalizationMap,
   RouteBases,
@@ -67,18 +68,15 @@ if (!applicationId) {
  */
 const url = RouteBases.api + Routes.applicationCommands(applicationId);
 
-async function loadLocalization(lang: string) {
-  return (
-    JSON.parse(await fs.readFile(`./src/i18n/${lang}.json`, "utf8")).commands ??
-    {}
-  );
-}
+const loadLocalization = async (lang: string) =>
+  JSON.parse(await fs.readFile(`./src/i18n/${lang}.json`, "utf8")).commands ??
+  {};
 
-function localizeProp(
+const localizeProp = (
   languages: Partial<Record<LocaleString, any>>,
   key: string,
   maxLength?: number,
-) {
+) => {
   const drill = key.split(".");
   return Object.fromEntries(
     Object.keys(languages)
@@ -104,9 +102,9 @@ function localizeProp(
       })
       .filter((pair) => Boolean(pair[1])),
   ) as LocalizationMap;
-}
+};
 
-async function main() {
+const main = async () => {
   const languages = {
     nl: await loadLocalization("nl"),
     fr: await loadLocalization("fr"),
@@ -204,10 +202,10 @@ async function main() {
       new SlashCommandBuilder()
         .setName("buttons")
         .setDescription("...")
+        .setContexts(InteractionContextType.Guild)
         .setDefaultMemberPermissions(
           PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
         )
-        .setDMPermission(false)
         .addSubcommand((opt) =>
           opt
             .setName("add")
@@ -289,6 +287,11 @@ async function main() {
       new SlashCommandBuilder()
         .setName("deluxe")
         .setDescription("...")
+        .setContexts(
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        )
         .addSubcommand((c) => c.setName("info").setDescription("..."))
         .addSubcommand((c) => c.setName("sync").setDescription("...")),
     ),
@@ -296,6 +299,11 @@ async function main() {
       new SlashCommandBuilder()
         .setName("format")
         .setDescription("...")
+        .setContexts(
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        )
         .addSubcommand((opt) =>
           opt
             .setName("mention")
@@ -339,6 +347,11 @@ async function main() {
       new SlashCommandBuilder()
         .setName("id")
         .setDescription("...")
+        .setContexts(
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        )
         .addSubcommand((opt) =>
           opt
             .setName("mention")
@@ -365,13 +378,20 @@ async function main() {
         ),
     ),
     addLocalizations(
-      new SlashCommandBuilder().setName("invite").setDescription("..."),
+      new SlashCommandBuilder()
+        .setName("invite")
+        .setDescription("...")
+        .setContexts(
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ),
     ),
     addLocalizations(
       new SlashCommandBuilder()
         .setName("triggers")
         .setDescription("...")
-        .setDMPermission(false)
+        .setContexts(InteractionContextType.Guild)
         .setDefaultMemberPermissions(PermissionFlags.ManageGuild)
         .addSubcommand((opt) =>
           opt
@@ -429,7 +449,7 @@ async function main() {
       new SlashCommandBuilder()
         .setName("webhook")
         .setDescription("...")
-        .setDMPermission(false)
+        .setContexts(InteractionContextType.Guild)
         .setDefaultMemberPermissions(PermissionFlags.ManageWebhooks)
         .addSubcommand((opt) =>
           opt
@@ -476,13 +496,18 @@ async function main() {
     addLocalizations(
       new SlashCommandBuilder()
         .setName("welcomer")
-        .setDMPermission(false)
+        .setContexts(InteractionContextType.Guild)
         .setDefaultMemberPermissions(PermissionFlags.ManageGuild)
         .setDescription("..."),
     ),
     addLocalizations(
       new SlashCommandBuilder()
         .setName("help")
+        .setContexts(
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        )
         .setDescription("...")
         .addStringOption((opt) =>
           opt
@@ -502,7 +527,7 @@ async function main() {
         .setDefaultMemberPermissions(
           PermissionFlags.ManageRoles | PermissionFlags.AddReactions,
         )
-        .setDMPermission(false)
+        .setContexts(InteractionContextType.Guild)
         .addSubcommand((opt) =>
           opt
             .setName("create")
@@ -576,7 +601,7 @@ async function main() {
         .setName("restore")
         .setDescription("...")
         .setDefaultMemberPermissions(PermissionFlags.ViewChannel)
-        .setDMPermission(false)
+        .setContexts(InteractionContextType.Guild)
         .addStringOption((opt) =>
           opt
             .setName("message")
@@ -611,7 +636,7 @@ async function main() {
       .setType(ApplicationCommandType.Message)
       .setName(getEnglish("_ctx.components.name"))
       .setNameLocalizations(localize("_ctx.components.name"))
-      .setDMPermission(false)
+      .setContexts(InteractionContextType.Guild)
       .setDefaultMemberPermissions(
         PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
       ),
@@ -619,7 +644,7 @@ async function main() {
     //   .setType(ApplicationCommandType.Message)
     //   .setName(getEnglish("_ctx.edit.name"))
     //   .setNameLocalizations(localize("_ctx.edit.name"))
-    //   .setDMPermission(false)
+    //   .setContexts(InteractionContextType.Guild)
     //   .setDefaultMemberPermissions(
     //     PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
     //   ),
@@ -627,19 +652,19 @@ async function main() {
       .setType(ApplicationCommandType.Message)
       .setName(getEnglish("_ctx.restore.name"))
       .setNameLocalizations(localize("_ctx.restore.name"))
-      .setDMPermission(false)
+      .setContexts(InteractionContextType.Guild)
       .setDefaultMemberPermissions(PermissionFlags.ViewChannel),
     new ContextMenuCommandBuilder()
       .setType(ApplicationCommandType.Message)
       .setName(getEnglish("_ctx.webhook.name"))
       .setNameLocalizations(localize("_ctx.webhook.name"))
-      .setDMPermission(false)
+      .setContexts(InteractionContextType.Guild)
       .setDefaultMemberPermissions(PermissionFlags.ViewChannel),
     new ContextMenuCommandBuilder()
       .setType(ApplicationCommandType.Message)
       .setName(getEnglish("_ctx.debug.name"))
       .setNameLocalizations(localize("_ctx.debug.name"))
-      .setDMPermission(false)
+      .setContexts(InteractionContextType.Guild)
       .setDefaultMemberPermissions(PermissionFlags.ManageMessages),
   ];
 
@@ -670,6 +695,6 @@ async function main() {
     }
     console.error(errorText);
   }
-}
+};
 
 await main();
