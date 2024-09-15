@@ -128,9 +128,7 @@ export const EmbedEditor: React.FC<{
       open={open}
       style={
         embed.color
-          ? {
-              borderLeftColor: `#${embed.color.toString(16)}`,
-            }
+          ? { borderLeftColor: `#${embed.color.toString(16)}` }
           : undefined
       }
     >
@@ -149,7 +147,7 @@ export const EmbedEditor: React.FC<{
         {isChild ? (
           <>
             <span className="shrink-0">
-              {t("galleryImage", { replace: { n: localIndex + 2 } })}
+              {t("galleryImageN", { replace: { n: localIndex + 2 } })}
             </span>
             {embed.image?.url && (
               <span className="truncate ltr:ml-1 rtl:mr-1">
@@ -365,10 +363,17 @@ export const EmbedEditor: React.FC<{
                   type="url"
                   value={embed.url ?? ""}
                   onInput={(e) => {
-                    for (const emb of galleryEmbeds) {
-                      emb.url = e.currentTarget.value;
+                    if (galleryEmbeds.length > 1) {
+                      const defaultUrl = `${
+                        location.origin
+                      }#default-${randomString(8)}`;
+                      for (const emb of galleryEmbeds) {
+                        emb.url = e.currentTarget.value || defaultUrl;
+                      }
+                      setData({ ...data });
+                    } else {
+                      updateEmbed({ url: e.currentTarget.value });
                     }
-                    setData({ ...data });
                   }}
                 />
               </div>
