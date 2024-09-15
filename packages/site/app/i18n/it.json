@@ -74,7 +74,8 @@
         "ar": "Arabo",
         "fr": "Francese",
         "es": "Spagnolo",
-        "de": "Tedesco"
+        "de": "Tedesco",
+        "it": "Italiano"
     },
     "chooseServer": "Seleziona un server",
     "editorPanes": "Pannelli di Modifica",
@@ -411,5 +412,10 @@
     "addField": "Aggiungi Sezione",
     "inline": "In Linea",
     "footer": "Pié dell'embed",
-    "video": "Video"
+    "video": "Video",
+    "galleryImageN": "Immagine di Galleria {{n}}",
+    "provider": "Provider",
+    "providerUrl": "URL del Provider",
+    "redirectUrl": "URL di Reindirizzamento",
+    "images": "Immagini"
 }
