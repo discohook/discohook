@@ -136,7 +136,7 @@
     "shareLinks": "Freigabelinks",
     "exportBackupsNote": "Dieses Menü dient zum Exportieren von Sicherungsdateien auf Ihren Computer. Dies ist nicht wirklich notwendig, aber es ist eine großartige Möglichkeit, Ihre Nachrichten offline zu kopieren oder für die Verwendung mit anderen Bots. Ihre Zeitplaneinstellungen (sofern vorhanden) werden nur für wiederkehrende Zeitpläne exportiert.",
     "importedFromOrgAt": "Importiert von discohook.org am $t(timestamp.date_verbose)",
-    "refreshShareLink": "Frische dein Freigabelink für weitere 2 Wochen auf. (Luxus-Feature!)",
+    "refreshShareLink": "Frische dein Freigabelink für weitere 2 Wochen auf. (Deluxe-Feature!)",
     "importBackups": "Importiere Sicherheitkopie",
     "export": "Exportieren",
     "shiftSkipTip": "Tipp: Halte deine Umschalttaste (Shift) gedrückt um diese meldung beim nächsten mal zu überspringen.",
