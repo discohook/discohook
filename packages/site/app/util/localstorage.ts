@@ -9,7 +9,8 @@ export type LocaleCode =
   | "nl"
   | "es"
   | "de"
-  | "it";
+  | "it"
+  | "cs";
 
 export interface Settings {
   theme?: "light" | "dark" | "sync";
