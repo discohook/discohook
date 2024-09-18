@@ -11,11 +11,11 @@
         },
         "buttons": {
             "name": "knoppen",
-            "description": "Knoppen toevoegen, verwijderen, en beheren",
+            "description": "Onderdelen toevoegen, verwijderen, en beheren",
             "options": {
                 "add": {
                     "name": "toevoegen",
-                    "description": "Voeg een knop toe",
+                    "description": "Voeg een onderdeel toe",
                     "options": {
                         "message": {
                             "description": "Het bericht om de knop toe te voegen, een berichtenlink wordt hier geaccepteerd"
@@ -25,6 +25,28 @@
                             "description": "Het kanaal waar het bericht is, voor het automatisch aanvullen van resultaten"
                         }
                     }
+                },
+                "edit": {
+                    "description": "Bewerk onderdeel",
+                    "options": {
+                        "message": {
+                            "description": "Bewerk een onderdeel van dit bericht, een berichtenlink is hier ook toegestaan"
+                        },
+                        "channel": {
+                            "description": "The kanaal waar het bericht in staat, voor autosuggestie resultaat"
+                        }
+                    }
+                },
+                "delete": {
+                    "options": {
+                        "channel": {
+                            "description": "Het kanaal waar het bericht in staat, voor autosuggestie resultaten"
+                        },
+                        "message": {
+                            "description": "Verwijder een onderdeel van dit bericht. Een berichtenlink is hier ook toegestaan"
+                        }
+                    },
+                    "description": "Verwijder een onderdeel"
                 }
             }
         },
