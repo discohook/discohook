@@ -314,8 +314,11 @@ export const startComponentFlow = async (
     return ctx.reply({
       // content:
       //   "This message's webhook is not owned by Discohook Utils. You can create a bot-owned webhook with </webhook create:908884724087410732>. Would you like to automatically clone the message using a new webhook?",
-      content:
-        "This message's webhook is not owned by Discohook Utils. You can create a bot-owned webhook with </webhook create:908884724087410732>, then re-send the message from Discohook (use </restore:979811266073878560> to load the message).",
+      content: `This message's webhook is ${
+        message.application_id
+          ? `owned by <@${message.application_id}>, not Discohook Utils`
+          : "not owned by Discohook Utils"
+      }. You can create a bot-owned webhook with </webhook create:908884724087410732>, then re-send the message from Discohook (use </restore:979811266073878560> to load the message).`,
       flags: MessageFlags.Ephemeral,
       // components: [
       //   new ActionRowBuilder<ButtonBuilder>()
