@@ -17,11 +17,16 @@ bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site" },
+  { name = "EMOJIS", class_name = "EmojiManager" },
 ]
 
 [[migrations]]
 tag = "v1"
 new_classes = ["DurableComponentState"]
+
+[[migrations]]
+tag = "v2"
+new_classes = ["EmojiManager"]
 
 [env.preview]
 route = { pattern = "bots.preview.discohook.app", custom_domain = true }
@@ -36,11 +41,16 @@ bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-preview" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-preview" },
+  { name = "EMOJIS", class_name = "EmojiManager" },
 ]
 
 [[env.preview.migrations]]
 tag = "v1"
 new_classes = ["DurableComponentState"]
+
+[[env.preview.migrations]]
+tag = "v2"
+new_classes = ["EmojiManager"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -65,11 +75,16 @@ bindings = [
   { name = "COMPONENTS", class_name = "DurableComponentState" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-production" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-production" },
+  { name = "EMOJIS", class_name = "EmojiManager" },
 ]
 
 [[env.production.migrations]]
 tag = "v1"
 new_classes = ["DurableComponentState"]
+
+[[env.production.migrations]]
+tag = "v2"
+new_classes = ["EmojiManager"]
 
 [env.production.vars]
 ENVIRONMENT = "production"

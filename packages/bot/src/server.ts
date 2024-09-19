@@ -45,6 +45,7 @@ import { Env } from "./types/env.js";
 import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";
+export { EmojiManager } from "./emojis.js";
 
 const resources = {
   en: { translation: require("./i18n/en.json") },
