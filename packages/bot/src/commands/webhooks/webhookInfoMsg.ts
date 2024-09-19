@@ -1,4 +1,12 @@
-import { APIWebhook, MessageFlags, Routes } from "discord-api-types/v10";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import {
+  APIWebhook,
+  ButtonStyle,
+  MessageFlags,
+  Routes,
+  WebhookType,
+} from "discord-api-types/v10";
+import { PermissionFlags } from "discord-bitflag";
 import { MessageAppCommandCallback } from "../../commands.js";
 import { getWebhookInfoEmbed } from "./webhookInfo.js";
 
@@ -16,8 +24,32 @@ export const webhookInfoMsgCallback: MessageAppCommandCallback = async (
   const webhook = (await ctx.rest.get(
     Routes.webhook(msg.webhook_id),
   )) as APIWebhook;
+  const tokenAccessible = webhook.application_id
+    ? !!ctx.env.APPLICATIONS[webhook.application_id]
+    : webhook.type === WebhookType.Incoming;
+
+  const components = ctx.userPermissons.has(PermissionFlags.ManageWebhooks)
+    ? [
+        new ActionRowBuilder<ButtonBuilder>()
+          .addComponents(
+            new ButtonBuilder()
+              .setCustomId(`a_webhook-info-use_${webhook.id}`)
+              .setLabel("Use Webhook")
+              .setDisabled(!webhook.token && !tokenAccessible)
+              .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+              .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
+              .setLabel("Show URL (advanced)")
+              .setDisabled(!webhook.token && !tokenAccessible)
+              .setStyle(ButtonStyle.Secondary),
+          )
+          .toJSON(),
+      ]
+    : undefined;
+
   return ctx.reply({
     embeds: [getWebhookInfoEmbed(webhook).toJSON()],
+    components,
     flags: MessageFlags.Ephemeral,
   });
 };
