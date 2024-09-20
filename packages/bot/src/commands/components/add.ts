@@ -129,6 +129,7 @@ export interface ComponentFlow extends MinimumKVComponentState {
   message: {
     id: string;
     channelId: string;
+    isInThread?: boolean;
     guildId: string;
     webhookId: string;
     webhookName: string;
@@ -212,6 +213,11 @@ const registerComponent = async (
         flow.webhookToken,
         flow.message.id,
       ),
+      {
+        query: flow.message.isInThread
+          ? new URLSearchParams({ thread_id: flow.message.channelId })
+          : undefined,
+      },
     )) as APIMessage;
   } catch {
     throw new Error(dedent`
@@ -274,7 +280,12 @@ const registerComponent = async (
         flow.webhookToken,
         flow.message.id,
       ),
-      { body: { components } },
+      {
+        body: { components },
+        query: flow.message.isInThread
+          ? new URLSearchParams({ thread_id: flow.message.channelId })
+          : undefined,
+      },
     )) as APIMessage;
   } catch (e) {
     if (isDiscordError(e)) {
@@ -359,6 +370,7 @@ export const startComponentFlow = async (
     message: {
       id: message.id,
       channelId: message.channel_id,
+      isInThread: message.position !== undefined,
       // biome-ignore lint/style/noNonNullAssertion: Guild-only command
       guildId: ctx.interaction.guild_id!,
       webhookId: message.webhook_id,

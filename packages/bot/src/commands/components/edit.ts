@@ -15,6 +15,7 @@ import {
   APIActionRowComponent,
   APIEmoji,
   APIInteraction,
+  APIInteractionResponseCallbackData,
   APIMessage,
   APIMessageActionRowComponent,
   APIMessageComponentEmoji,
@@ -26,13 +27,18 @@ import {
   Routes,
   TextInputStyle,
 } from "discord-api-types/v10";
+import { sql } from "drizzle-orm";
 import { t } from "i18next";
 import { getDb, launchComponentDurableObject, upsertDiscordUser } from "store";
 import {
   discordMessageComponents,
   makeSnowflake,
+  webhooks,
 } from "store/src/schema/schema.js";
-import { StorableComponent } from "store/src/types/components.js";
+import {
+  StorableButtonWithUrl,
+  StorableComponent,
+} from "store/src/types/components.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import {
   AutoComponentCustomId,
@@ -52,7 +58,7 @@ import {
   generateEditorTokenForComponent,
   getEditorTokenComponentUrl,
 } from "./add.js";
-import { resolveMessageLink } from "./entry.js";
+import { getWebhookMessage, resolveMessageLink } from "./entry.js";
 
 export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
   ctx,
@@ -67,8 +73,59 @@ export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
       flags: MessageFlags.Ephemeral,
     });
   }
+  if (
+    !message.webhook_id ||
+    !message.application_id ||
+    !ctx.env.APPLICATIONS[message.application_id]
+  ) {
+    return ctx.reply({
+      content: !message.webhook_id
+        ? "This is not a webhook message."
+        : !message.application_id
+          ? `This message's webhook is owned by a user, so it cannot have components.`
+          : `This message's webhook is owned by <@${message.application_id}>, so I cannot edit it.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
 
-  return await pickWebhookMessageComponentToEdit(ctx, message);
+  const webhook = await getWebhook(
+    message.webhook_id,
+    ctx.env,
+    message.application_id,
+  );
+
+  const response = await pickWebhookMessageComponentToEdit(ctx, message);
+  return [
+    response,
+    async () => {
+      const db = getDb(ctx.env.HYPERDRIVE);
+      await db
+        .insert(webhooks)
+        .values({
+          platform: "discord",
+          id: webhook.id,
+          token: webhook.token,
+          applicationId: webhook.application_id,
+          name: webhook.name ?? "Webhook",
+          avatar: webhook.avatar,
+          channelId: webhook.channel_id,
+          discordGuildId: webhook.guild_id
+            ? BigInt(webhook.guild_id)
+            : undefined,
+        })
+        .onConflictDoUpdate({
+          target: [webhooks.platform, webhooks.id],
+          set: {
+            token: sql`excluded.token`,
+            applicationId: sql`excluded."applicationId"`,
+            name: sql`excluded.name`,
+            avatar: sql`excluded.avatar`,
+            channelId: sql`excluded."channelId"`,
+            discordGuildId: sql`excluded."discordGuildId"`,
+          },
+        });
+    },
+  ];
 };
 
 export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
@@ -77,21 +134,19 @@ export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
     return ctx.reply("Guild-only");
   }
 
-  const { channelId, messageId } = parseAutoComponentId(
+  const { webhookId, messageId, threadId } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
-    "channelId",
+    "webhookId",
     "messageId",
+    "threadId",
   );
-  const message = await resolveMessageLink(
+  const { message } = await getWebhookMessage(
+    ctx.env,
+    webhookId,
+    messageId,
+    threadId,
     ctx.rest,
-    messageLink(channelId, messageId, guildId),
   );
-  if (typeof message === "string") {
-    return ctx.reply({
-      content: message,
-      flags: MessageFlags.Ephemeral,
-    });
-  }
 
   const response = await pickWebhookMessageComponentToEdit(ctx, message);
   return ctx.updateMessage(response.data);
@@ -106,7 +161,7 @@ export const getComponentsAsOptions = (
       .map((component, ci): APISelectMenuOption | undefined => {
         const id = getComponentId(component);
         const value = id
-          ? `id:${id}`
+          ? `id:${id}:${ri}-${ci}`
           : component.type === ComponentType.Button && isLinkButton(component)
             ? `link:${ri}-${ci}`
             : `unknown:${ri}-${ci}`;
@@ -201,9 +256,10 @@ const pickWebhookMessageComponentToEdit = async (
     });
   }
 
+  const threadId = message.position === undefined ? "" : message.channel_id;
   const select = new StringSelectMenuBuilder()
     .setCustomId(
-      `a_edit-component-flow-pick_${message.id}` satisfies AutoComponentCustomId,
+      `a_edit-component-flow-pick_${message.webhook_id}:${message.id}:${threadId}` satisfies AutoComponentCustomId,
     )
     .setPlaceholder("Select a component to edit")
     .addOptions(options);
@@ -233,13 +289,53 @@ const pickWebhookMessageComponentToEdit = async (
   });
 };
 
+export const getComponentPickCallbackData = (
+  messageId: string,
+  componentId: bigint,
+): APIInteractionResponseCallbackData => ({
+  content:
+    "What aspect of this component would you like to edit? Surface details are what users can see before clicking on the component.",
+  embeds: [],
+  components: [
+    new ActionRowBuilder<SelectMenuBuilder>()
+      .addComponents(
+        new SelectMenuBuilder()
+          .setCustomId(
+            `a_edit-component-flow-mode_${messageId}:${componentId}` satisfies AutoComponentCustomId,
+          )
+          .addOptions(
+            new SelectMenuOptionBuilder()
+              .setLabel("Details")
+              .setValue("internal")
+              .setDescription(
+                "Just change the surface details without leaving Discord",
+              ),
+            new SelectMenuOptionBuilder()
+              .setLabel("Everything")
+              .setValue("external")
+              .setDescription(
+                "Change what happens when this component is used",
+              ),
+          ),
+      )
+      .toJSON(),
+  ],
+});
+
 export const editComponentFlowPickCallback: SelectMenuCallback = async (
   ctx,
 ) => {
-  const { messageId } = parseAutoComponentId(
+  const {
+    webhookId,
+    messageId,
+    threadId: threadId_,
+  } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
+    "webhookId",
     "messageId",
+    "threadId",
   );
+  const threadId = threadId_ || undefined;
 
   const db = getDb(ctx.env.HYPERDRIVE);
 
@@ -247,6 +343,11 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
   switch (scope as "id" | "link" | "unknown") {
     case "id": {
       const id = BigInt(key);
+      // const position = ctx.interaction.data.values[0]
+      //   .split(":")[2]
+      //   .split("-")
+      //   .map(Number) as [number, number];
+
       const component = await db.query.discordMessageComponents.findFirst({
         where: (table, { eq }) => eq(table.id, id),
         columns: {
@@ -266,35 +367,93 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
         });
       }
 
-      return ctx.updateMessage({
-        content:
-          "What aspect of this component would you like to edit? Surface details are what users can see before clicking on the component.",
-        embeds: [],
-        components: [
-          new ActionRowBuilder<SelectMenuBuilder>()
-            .addComponents(
-              new SelectMenuBuilder()
-                .setCustomId(
-                  `a_edit-component-flow-mode_${messageId}:${component.id}` satisfies AutoComponentCustomId,
-                )
-                .addOptions(
-                  new SelectMenuOptionBuilder()
-                    .setLabel("Details")
-                    .setValue("internal")
-                    .setDescription(
-                      "Just change the surface details without leaving Discord",
-                    ),
-                  new SelectMenuOptionBuilder()
-                    .setLabel("Everything")
-                    .setValue("external")
-                    .setDescription(
-                      "Change what happens when this component is used",
-                    ),
-                ),
-            )
-            .toJSON(),
-        ],
+      return ctx.updateMessage(
+        getComponentPickCallbackData(messageId, component.id),
+      );
+    }
+    case "link": {
+      const [row, column] = key.split("-").map(Number);
+      const { message } = await getWebhookMessage(
+        ctx.env,
+        webhookId,
+        messageId,
+        threadId,
+        ctx.rest,
+      );
+      const rows = message.components ?? [];
+      const foundComponent = rows[row]?.components?.[column];
+      if (
+        !foundComponent ||
+        foundComponent.type !== ComponentType.Button ||
+        foundComponent.style !== ButtonStyle.Link
+      ) {
+        return ctx.updateMessage({
+          content:
+            "A button was referenced by its position but it is now missing.",
+          components: [],
+        });
+      }
+
+      const dbComponents = await db.query.discordMessageComponents.findMany({
+        where: (table, { eq, and }) =>
+          and(
+            eq(table.messageId, BigInt(messageId)),
+            eq(table.type, ComponentType.Button),
+          ),
+        columns: {
+          id: true,
+          data: true,
+        },
       });
+      let dbComponent = dbComponents.find(
+        (c) =>
+          c.data.type === ComponentType.Button &&
+          c.data.style === ButtonStyle.Link &&
+          c.data.url === foundComponent.url,
+      );
+      if (!dbComponent) {
+        dbComponent = (
+          await db
+            .insert(discordMessageComponents)
+            .values({
+              channelId: makeSnowflake(message.channel_id),
+              messageId: makeSnowflake(message.id),
+              // biome-ignore lint/style/noNonNullAssertion: Guild only
+              guildId: makeSnowflake(ctx.interaction.guild_id!),
+              type: ComponentType.Button,
+              data: foundComponent satisfies StorableButtonWithUrl,
+            })
+            .returning({
+              id: discordMessageComponents.id,
+              data: discordMessageComponents.data,
+            })
+        )[0];
+      }
+
+      const modal = getComponentEditModal(dbComponent, messageId, [
+        row,
+        column,
+      ]);
+      return [
+        ctx.modal(modal.toJSON()),
+        async () => {
+          await ctx.followup.editOriginalMessage({
+            content: "Click the button to resume editing the button.",
+            components: [
+              new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                  new ButtonBuilder()
+                    .setCustomId(
+                      `a_edit-component-flow-modal-resend_${messageId}:${dbComponent.id}:${row},${column}` satisfies AutoComponentCustomId,
+                    )
+                    .setStyle(ButtonStyle.Secondary)
+                    .setLabel(t("customize")),
+                )
+                .toJSON(),
+            ],
+          });
+        },
+      ];
     }
     default:
       // As far as we know, this component doesn't exist in the database or
@@ -313,10 +472,13 @@ const getComponentEditModal = (
     data: StorableComponent;
   },
   messageId: string,
+  position?: [number, number],
 ) => {
   const modal = new ModalBuilder()
     .setCustomId(
-      `a_edit-component-flow-modal_${messageId}:${component.id}` satisfies AutoModalCustomId,
+      `a_edit-component-flow-modal_${messageId}:${component.id}${
+        position ? `:${position[0]},${position[1]}` : ""
+      }` satisfies AutoModalCustomId,
     )
     .setTitle("Edit Component");
 
@@ -519,6 +681,7 @@ const registerComponentUpdate = async (
   data: StorableComponent,
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
+  position?: [y: number, x: number],
 ) => {
   const db = getDb(ctx.env.HYPERDRIVE);
   const user = await upsertDiscordUser(db, ctx.user);
@@ -537,15 +700,22 @@ const registerComponentUpdate = async (
   const components = message.components ?? [
     new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
   ];
-  const row = components.find((c) =>
-    c.components
-      .filter((c) => c.type === built.type)
-      .map(getComponentId)
-      .includes(id),
-  );
-  const current = row?.components.find(
-    (c) => c.type === built.type && getComponentId(c) === id,
-  );
+  let row: APIActionRowComponent<APIMessageActionRowComponent> | undefined;
+  let current: APIMessageActionRowComponent | undefined;
+  if (position) {
+    row = components[position[0]];
+    current = row?.components?.[position[1]];
+  } else {
+    row = components.find((c) =>
+      c.components
+        .filter((c) => c.type === built.type)
+        .map(getComponentId)
+        .includes(id),
+    );
+    current = row?.components.find(
+      (c) => c.type === built.type && getComponentId(c) === id,
+    );
+  }
   if (!row || !current) {
     throw new Error(
       `Couldn't find the row that this component is on. Try editing via the site instead (choose "Everything")`,
@@ -605,11 +775,19 @@ export const partialEmojiToComponentEmoji = (
 });
 
 export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
-  const { messageId, componentId } = parseAutoComponentId(
+  const {
+    messageId,
+    componentId,
+    position: position_,
+  } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "messageId",
     "componentId",
+    "position",
   );
+  const position = position_
+    ? (position_.split(",").map(Number) as [number, number])
+    : undefined;
 
   const db = getDb(ctx.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
@@ -745,6 +923,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
       guild_id: guildId,
     },
     message,
+    position,
   );
 
   return ctx.updateMessage({
@@ -760,10 +939,15 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
 export const editComponentFlowModalResendCallback: ButtonCallback = async (
   ctx,
 ) => {
-  const { messageId, componentId } = parseAutoComponentId(
+  const {
+    messageId,
+    componentId,
+    position: position_,
+  } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "messageId",
     "componentId",
+    "position",
   );
 
   const db = getDb(ctx.env.HYPERDRIVE);
@@ -786,5 +970,13 @@ export const editComponentFlowModalResendCallback: ButtonCallback = async (
     return ctx.updateMessage({ content: "Unknown component", components: [] });
   }
 
-  return ctx.modal(getComponentEditModal(component, messageId).toJSON());
+  return ctx.modal(
+    getComponentEditModal(
+      component,
+      messageId,
+      position_
+        ? (position_.split(",").map(Number) as [number, number])
+        : undefined,
+    ).toJSON(),
+  );
 };

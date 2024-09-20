@@ -5,6 +5,7 @@ import dedent from "dedent-js";
 import {
   APIApplicationCommandAutocompleteInteraction,
   APIMessage,
+  APIWebhook,
   ApplicationCommandOptionType,
   ButtonStyle,
   MessageFlags,
@@ -18,6 +19,8 @@ import {
 } from "../../commands.js";
 import { AutoComponentCustomId } from "../../components.js";
 import { InteractionContext } from "../../interactions.js";
+import { Env } from "../../types/env.js";
+import { getWebhook } from "../webhooks/webhookInfo.js";
 import { startComponentFlow } from "./add.js";
 
 const MESSAGE_LINK_RE =
@@ -42,6 +45,33 @@ export const resolveMessageLink = async (
   } catch (e) {
     return "Unable to resolve that message. Make sure you are pasting a valid message link in a channel that I can access.";
   }
+};
+
+type APIWebhookWithToken = APIWebhook & Required<Pick<APIWebhook, "token">>;
+
+export const getWebhookMessage = async (
+  env: Env,
+  webhookId: string,
+  messageId: string,
+  threadId?: string,
+  rest_?: REST,
+): Promise<{ webhook: APIWebhookWithToken; message: APIMessage }> => {
+  const webhook = await getWebhook(webhookId, env);
+  if (!webhook.token) {
+    throw Error("Webhook token is inaccessible.");
+  }
+
+  const rest = rest_ ?? new REST();
+  const message = (await rest.get(
+    Routes.webhookMessage(webhook.id, webhook.token, messageId),
+    {
+      auth: false,
+      query: threadId
+        ? new URLSearchParams({ thread_id: threadId })
+        : undefined,
+    },
+  )) as APIMessage;
+  return { webhook: webhook as APIWebhookWithToken, message };
 };
 
 export const addComponentChatEntry: ChatInputAppCommandCallback<true> = async (
@@ -155,10 +185,11 @@ export const addComponentMessageAutocomplete: AppCommandAutocompleteCallback = (
 
 export const addComponentMessageEntry: MessageAppCommandCallback = (ctx) => {
   const message = ctx.getMessage();
+  const threadId = message.position === undefined ? "" : message.channel_id;
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId(
-        `a_edit-component-flow-ctx_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
+        `a_edit-component-flow-ctx_${message.webhook_id}:${message.id}:${threadId}` satisfies AutoComponentCustomId,
       )
       .setLabel("Edit mode")
       .setStyle(ButtonStyle.Secondary),
@@ -170,7 +201,7 @@ export const addComponentMessageEntry: MessageAppCommandCallback = (ctx) => {
       ),
     new ButtonBuilder()
       .setCustomId(
-        `a_delete-component-pick-ctx_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
+        `a_delete-component-pick-ctx_${message.webhook_id}:${message.id}:${threadId}` satisfies AutoComponentCustomId,
       )
       .setLabel("Delete mode")
       .setStyle(ButtonStyle.Danger),
