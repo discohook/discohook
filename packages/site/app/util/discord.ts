@@ -188,6 +188,7 @@ export const updateWebhookMessage = async (
     return (await rest.patch(
       Routes.webhookMessage(webhookId, webhookToken, messageId),
       {
+        query,
         body: payload,
         files: rawFiles.length === 0 ? undefined : rawFiles,
       },
