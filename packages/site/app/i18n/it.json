@@ -417,5 +417,8 @@
     "provider": "Provider",
     "providerUrl": "URL del Provider",
     "redirectUrl": "URL di Reindirizzamento",
-    "images": "Immagini"
+    "images": "Immagini",
+    "submit": "Invia",
+    "submitToAll": "Invia a Tutti",
+    "submitAll": "Invia Tutti"
 }
