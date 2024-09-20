@@ -12,7 +12,7 @@ import { LocaleCode, Settings, useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
 const languages: Record<LocaleCode, string> = {
-  ar: "🇸🇦",
+  ar: "🇪🇬",
   zh: "🇨🇳",
   nl: "🇳🇱",
   "en-US": "🇺🇸",
