@@ -22,10 +22,12 @@ import {
   APIModalInteractionResponse,
   APIModalInteractionResponseCallbackData,
   APIModalSubmitInteraction,
+  APIPartialChannel,
   APIRole,
   APIUser,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  ChannelType,
   EntitlementType,
   InteractionResponseType,
   InteractionType,
@@ -335,11 +337,28 @@ export class InteractionContext<
   }
 
   getChannelOption(name: string) {
-    return this._getResolvableOption<APIPartialResolvedChannel>(
-      name,
-      ApplicationCommandOptionType.Channel,
-      "channels",
-    );
+    if (this.interaction.type === InteractionType.ApplicationCommand) {
+      return this._getResolvableOption<APIPartialResolvedChannel>(
+        name,
+        ApplicationCommandOptionType.Channel,
+        "channels",
+      );
+    } else if (
+      this.interaction.type === InteractionType.ApplicationCommandAutocomplete
+    ) {
+      // Autocomplete options are not resolved
+      const option = this._getOption(name);
+      if (!option || option.type !== ApplicationCommandOptionType.Channel) {
+        return null;
+      }
+      return {
+        id: option.value,
+        name: "unknown",
+        // I don't like this. We should at least pick one from channel_types
+        type: ChannelType.GuildText,
+      } satisfies APIPartialChannel;
+    }
+    return null;
   }
 
   getUserOption(name: string) {
