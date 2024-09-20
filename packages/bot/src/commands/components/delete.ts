@@ -210,7 +210,6 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
           }
         }
 
-        console.log(rows, position, row, column);
         rows[row]?.components.splice(column, 1);
         const components = rows.filter((r) => r.components.length !== 0);
         await ctx.rest.patch(
