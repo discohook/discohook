@@ -99,6 +99,9 @@ export const TargetAddModal = (
   useEffect(() => {
     // @ts-expect-error
     window.handlePopupClose = (result: APIWebhook) => {
+      if (props.cache && result.guild_id) {
+        props.cache.fetchGuildCacheable(result.guild_id);
+      }
       props.updateTargets({ [result.id]: result });
       setOpen(false);
     };
