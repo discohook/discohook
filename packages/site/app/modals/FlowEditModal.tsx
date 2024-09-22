@@ -634,7 +634,23 @@ const FlowActionEditor: React.FC<{
                     />
                   </p>
                   <div>
-                    <p className="text-sm select-none">{t("backup")}</p>
+                    <p className="text-sm select-none">
+                      {t("backup")}
+                      {selected && (
+                        <>
+                          {" "}
+                          (
+                          <Link
+                            to={`/?backup=${selected.id}`}
+                            target="_blank"
+                            className={linkClassName}
+                          >
+                            {t("edit")}
+                          </Link>
+                          )
+                        </>
+                      )}
+                    </p>
                     <div className="flex">
                       <BackupSelect
                         fetcher={backupsFetcher}
@@ -823,7 +839,23 @@ const FlowActionEditor: React.FC<{
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm select-none">{t("backup")}</p>
+                    <p className="text-sm select-none">
+                      {t("backup")}
+                      {selected && (
+                        <>
+                          {" "}
+                          (
+                          <Link
+                            to={`/?backup=${selected.id}`}
+                            target="_blank"
+                            className={linkClassName}
+                          >
+                            {t("edit")}
+                          </Link>
+                          )
+                        </>
+                      )}
+                    </p>
                     <div className="flex">
                       <BackupSelect
                         fetcher={backupsFetcher}
