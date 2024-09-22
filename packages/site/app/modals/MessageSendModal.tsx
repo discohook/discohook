@@ -88,12 +88,12 @@ export const submitMessage = async (
       token,
       match[3],
       {
-        content: message.data.content?.trim() ?? undefined,
+        content: message.data.content?.trim() ?? "",
         embeds:
           message.data.embeds?.map((e) => {
             e.color = e.color ?? undefined;
             return e as APIEmbed;
-          }) ?? undefined,
+          }) ?? [],
         components,
       },
       files,
@@ -108,12 +108,12 @@ export const submitMessage = async (
       {
         username: message.data.author?.name,
         avatar_url: message.data.author?.icon_url,
-        content: message.data.content?.trim() ?? undefined,
+        content: message.data.content?.trim() ?? "",
         embeds:
           message.data.embeds?.map((e) => {
             e.color = e.color ?? undefined;
             return e as APIEmbed;
-          }) ?? undefined,
+          }) ?? [],
         components,
         flags: message.data.flags,
         thread_name: threadName || undefined,
