@@ -2,6 +2,7 @@ import { DiscordErrorData, REST } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIActionRowComponent,
+  APIEmbed,
   APIMessage,
   APIWebhook,
   ButtonStyle,
@@ -87,8 +88,12 @@ export const submitMessage = async (
       token,
       match[3],
       {
-        content: message.data.content?.trim() || undefined,
-        embeds: message.data.embeds || undefined,
+        content: message.data.content?.trim() ?? undefined,
+        embeds:
+          message.data.embeds?.map((e) => {
+            e.color = e.color ?? undefined;
+            return e as APIEmbed;
+          }) ?? undefined,
         components,
       },
       files,
@@ -103,8 +108,12 @@ export const submitMessage = async (
       {
         username: message.data.author?.name,
         avatar_url: message.data.author?.icon_url,
-        content: message.data.content?.trim() || undefined,
-        embeds: message.data.embeds || undefined,
+        content: message.data.content?.trim() ?? undefined,
+        embeds:
+          message.data.embeds?.map((e) => {
+            e.color = e.color ?? undefined;
+            return e as APIEmbed;
+          }) ?? undefined,
         components,
         flags: message.data.flags,
         thread_name: threadName || undefined,
@@ -366,31 +375,27 @@ export const MessageSendModal = (
     cache,
   } = props;
 
-  const [selectedWebhooks, updateSelectedWebhooks] = useReducer(
-    (d: Record<string, boolean>, partialD: Record<string, boolean>) => ({
-      ...d,
-      ...partialD,
-    }),
-    {},
-  );
+  const [selectedWebhooks, setSelectedWebhooks] = useState<
+    Record<string, boolean>
+  >({});
 
   // We don't want to execute this hook every time selectedWebhooks updates
   // (which is also every time this hook runs)
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
-    // Set new targets to be enabled by default,
-    // but don't affect manually updated ones
-    updateSelectedWebhooks(
-      Object.keys(targets)
-        .filter((targetId) => !Object.keys(selectedWebhooks).includes(targetId))
-        .reduce(
-          (o, targetId) => ({
-            // biome-ignore lint/performance/noAccumulatingSpread:
-            ...o,
-            [targetId]: true,
-          }),
-          {},
-        ),
+    setSelectedWebhooks(
+      Object.keys(targets).reduce(
+        (o, targetId) => ({
+          // biome-ignore lint/performance/noAccumulatingSpread:
+          ...o,
+          // Set new targets to be enabled by default,
+          // but don't affect manually updated ones
+          [targetId]: Object.keys(selectedWebhooks).includes(targetId)
+            ? selectedWebhooks[targetId]
+            : true,
+        }),
+        {},
+      ),
     );
   }, [targets]);
 
@@ -557,7 +562,8 @@ export const MessageSendModal = (
                   name="webhook"
                   checked={!!selectedWebhooks[target.id]}
                   onChange={(e) =>
-                    updateSelectedWebhooks({
+                    setSelectedWebhooks({
+                      ...selectedWebhooks,
                       [target.id]: e.currentTarget.checked,
                     })
                   }
