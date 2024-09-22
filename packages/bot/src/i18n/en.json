@@ -2,55 +2,70 @@
   "commands": {
     "_options": {
       "webhook": {
+        "name": "webhook",
         "description": "The target webhook"
       },
       "filter-channel": {
+        "name": "filter-channel",
         "description": "The channel to filter autocomplete results with"
       }
     },
     "buttons": {
-      "description": "Add, remove, and manage components",
+      "name": "buttons",
+      "description": "Add, remove, and manage components (buttons/selects)",
       "options": {
         "add": {
+          "name": "add",
           "description": "Add a component",
           "options": {
             "message": {
+              "name": "message",
               "description": "Add a component to this message. A message link is also accepted here"
             },
             "channel": {
+              "name": "channel",
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
         },
         "edit": {
+          "name": "edit",
           "description": "Edit a component",
           "options": {
             "message": {
+              "name": "message",
               "description": "Edit a component on this message. A message link is also accepted here"
             },
             "channel": {
+              "name": "channel",
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
         },
         "delete": {
+          "name": "delete",
           "description": "Delete a component",
           "options": {
             "message": {
+              "name": "message",
               "description": "Delete a component on this message. A message link is also accepted here"
             },
             "channel": {
+              "name": "channel",
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
         },
         "migrate": {
+          "name": "migrate",
           "description": "Migrate all legacy buttons",
           "options": {
             "message": {
+              "name": "message",
               "description": "Migrate components on this message. A message link is also accepted here"
             },
             "channel": {
+              "name": "channel",
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
@@ -59,6 +74,7 @@
     },
     "deluxe": {
       "name": "deluxe",
+      "description": "Synchronize your Deluxe subscription",
       "options": {
         "info": {
           "name": "info",
@@ -74,12 +90,15 @@
       "description": "Set up triggers to respond to events in your server",
       "options": {
         "add": {
+          "name": "add",
           "description": "Add a new trigger",
           "options": {
             "name": {
+              "name": "name",
               "description": "The name of the trigger"
             },
             "event": {
+              "name": "event",
               "description": "The event that will set off the trigger",
               "choices": {
                 "0": "Member Join",
@@ -89,9 +108,11 @@
           }
         },
         "view": {
+          "name": "view",
           "description": "View & manage a trigger",
           "options": {
             "name": {
+              "name": "name",
               "description": "The name of the trigger"
             }
           }
@@ -99,6 +120,7 @@
       }
     },
     "webhook": {
+      "name": "webhook",
       "description": "Manage webhooks",
       "options": {
         "create": {
@@ -106,15 +128,19 @@
           "description": "Create a webhook",
           "options": {
             "name": {
+              "name": "name",
               "description": "The webhook's name"
             },
             "avatar": {
+              "name": "avatar",
               "description": "The webhook's avatar"
             },
             "channel": {
+              "name": "channel",
               "description": "The channel to create the webhook in"
             },
             "show-url": {
+              "name": "show-url",
               "description": "Only enable this if you need the URL for an external application"
             }
           }
@@ -170,39 +196,51 @@
       }
     },
     "reaction-role": {
+      "name": "reaction-role",
+      "description": "Add, remove, and manage reaction roles",
       "options": {
         "create": {
+          "name": "create",
           "description": "Create a new reaction role",
           "options": {
             "message": {
+              "name": "message",
               "description": "The message to create the reaction on. A message link is also accepted here"
             },
             "emoji": {
+              "name": "emoji",
               "description": "The emoji that the reaction should show. For external emojis, react before the bot"
             },
             "role": {
+              "name": "role",
               "description": "The role that should be assigned/removed when the reaction is clicked"
             },
             "channel": {
+              "name": "channel",
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
         },
         "delete": {
+          "name": "delete",
           "description": "Delete a reaction role from a message",
           "options": {
             "message": {
+              "name": "message",
               "description": "The message to delete the reaction role from. A message link is also accepted here"
             },
             "emoji": {
+              "name": "emoji",
               "description": "The emoji that the reaction shows. Omit this parameter to view a deletion menu"
             },
             "channel": {
+              "name": "channel",
               "description": "The channel that the message is in, for autocomplete results"
             }
           }
         },
         "list": {
+          "name": "list",
           "description": "List all reaction roles on a message",
           "options": {
             "message": {
@@ -234,27 +272,35 @@
       }
     },
     "format": {
+      "name": "format",
+      "description": "Get markdown formatting for users, roles, channels, and emojis",
       "options": {
         "mention": {
+          "name": "mention",
           "description": "Outputs the mention format for a user or role",
           "options": {
             "target": {
+              "name": "target",
               "description": "The user or role to mention"
             }
           }
         },
         "channel": {
+          "name": "channel",
           "description": "Outputs the mention format for a channel",
           "options": {
             "target": {
+              "name": "target",
               "description": "The channel to mention"
             }
           }
         },
         "emoji": {
+          "name": "emoji",
           "description": "Outputs the usage format for a server emoji",
           "options": {
             "target": {
+              "name": "target",
               "description": "The emoji to use"
             }
           }
@@ -262,6 +308,7 @@
       }
     },
     "invite": {
+      "name": "invite",
       "description": "Invite URL for this bot"
     },
     "id": {
@@ -269,25 +316,31 @@
       "description": "Get the numeric ID of a Discord resource",
       "options": {
         "mention": {
+          "name": "mention",
           "description": "Outputs the ID for a user or role",
           "options": {
             "target": {
+              "name": "target",
               "description": "The user or role"
             }
           }
         },
         "channel": {
+          "name": "channel",
           "description": "Outputs the ID for a channel or thread",
           "options": {
             "target": {
+              "name": "target",
               "description": "The channel or thread"
             }
           }
         },
         "emoji": {
+          "name": "emoji",
           "description": "Outputs the ID for a server emoji",
           "options": {
             "target": {
+              "name": "target",
               "description": "The emoji"
             }
           }
