@@ -95,7 +95,7 @@ export const FlowEditModal = (
       //   if (parsed.success) props.setOpen(v);
       // }}
     >
-      {!parsed.success && (
+      {!parsed.success && flow && flow.actions.length !== 0 && (
         <InfoBox severity="yellow" icon="Info" collapsible open>
           {getZodErrorMessage(parsed.error)}
           <br />
