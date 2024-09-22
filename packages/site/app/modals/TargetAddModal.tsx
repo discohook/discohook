@@ -222,6 +222,7 @@ export const TargetAddModal = (
                           )}
                         </div>
                         <p className="text-gray-600 dark:text-gray-500 text-xs">
+                          #{gWebhook.channel?.name ?? "unknown"} •{" "}
                           {t(gWebhook.user ? "createdAtBy" : "createdAt", {
                             replace: {
                               createdAt: new Date(createdAt),

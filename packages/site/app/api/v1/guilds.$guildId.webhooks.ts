@@ -1,6 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
+  APIChannel,
   RESTGetAPIGuildWebhooksResult,
   Routes,
   WebhookType,
@@ -34,92 +35,110 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const db = getDb(context.env.HYPERDRIVE);
-  let guildWebhooks = await db.query.webhooks.findMany({
-    where: (webhooks, { and, eq }) =>
-      and(
-        eq(webhooks.discordGuildId, guildId),
-        eq(webhooks.platform, "discord"),
-      ),
-    columns: {
-      id: true,
-      name: true,
-      avatar: true,
-      channelId: true,
-      applicationId: true,
-    },
-    with: {
-      user: {
-        columns: {
-          name: true,
-        },
-      },
-    },
-    limit,
-    offset: page * limit,
-    orderBy: (webhooks, { desc }) => desc(webhooks.name),
-  });
+  const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
 
-  if (guildWebhooks.length === 0) {
-    const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-    let freshWebhooks: RESTGetAPIGuildWebhooksResult | undefined;
-    try {
-      freshWebhooks = (await rest.get(
-        Routes.guildWebhooks(String(guildId)),
-      )) as RESTGetAPIGuildWebhooksResult;
-    } catch (e) {
-      if (isDiscordError(e)) {
-        throw respond(json(e.rawError, e.status));
-      }
-    }
-    if (freshWebhooks) {
-      guildWebhooks = (
-        await db
-          .insert(webhooks)
-          .values(
-            freshWebhooks
-              .filter((w) => w.type === WebhookType.Incoming)
-              .map((webhook) => ({
-                platform: "discord" as const,
-                id: webhook.id,
-                discordGuildId: guildId,
-                channelId: webhook.channel_id,
-                name: webhook.name ?? "",
-                avatar: webhook.avatar,
-                applicationId: webhook.application_id,
-                token: webhook.token,
-              })),
-          )
-          .onConflictDoUpdate({
-            target: [webhooks.platform, webhooks.id],
-            set: {
-              name: sql`excluded.name`,
-              avatar: sql`excluded.avatar`,
-              channelId: sql`excluded."channelId"`,
-              discordGuildId: sql`excluded."discordGuildId"`,
-              applicationId: sql`excluded."applicationId"`,
-              token: sql`excluded.token`,
+  const [guildWebhooks, channels] = await Promise.all([
+    (async () => {
+      const db = getDb(context.env.HYPERDRIVE);
+      let guildWebhooks = await db.query.webhooks.findMany({
+        where: (webhooks, { and, eq }) =>
+          and(
+            eq(webhooks.discordGuildId, guildId),
+            eq(webhooks.platform, "discord"),
+          ),
+        columns: {
+          id: true,
+          name: true,
+          avatar: true,
+          channelId: true,
+          applicationId: true,
+        },
+        with: {
+          user: {
+            columns: {
+              name: true,
             },
-          })
-          .returning({
-            id: webhooks.id,
-            name: webhooks.name,
-            avatar: webhooks.avatar,
-            channelId: webhooks.channelId,
-            applicationId: webhooks.applicationId,
-          })
-      ).map((d) => ({ ...d, user: null }));
-    }
-  }
+          },
+        },
+        limit,
+        offset: page * limit,
+        orderBy: (webhooks, { desc }) => desc(webhooks.name),
+      });
+
+      if (guildWebhooks.length === 0) {
+        let freshWebhooks: RESTGetAPIGuildWebhooksResult | undefined;
+        try {
+          freshWebhooks = (await rest.get(
+            Routes.guildWebhooks(String(guildId)),
+          )) as RESTGetAPIGuildWebhooksResult;
+        } catch (e) {
+          if (isDiscordError(e)) {
+            throw respond(json(e.rawError, e.status));
+          }
+        }
+        if (freshWebhooks) {
+          guildWebhooks = (
+            await db
+              .insert(webhooks)
+              .values(
+                freshWebhooks
+                  .filter((w) => w.type === WebhookType.Incoming)
+                  .map((webhook) => ({
+                    platform: "discord" as const,
+                    id: webhook.id,
+                    discordGuildId: guildId,
+                    channelId: webhook.channel_id,
+                    name: webhook.name ?? "",
+                    avatar: webhook.avatar,
+                    applicationId: webhook.application_id,
+                    token: webhook.token,
+                  })),
+              )
+              .onConflictDoUpdate({
+                target: [webhooks.platform, webhooks.id],
+                set: {
+                  name: sql`excluded.name`,
+                  avatar: sql`excluded.avatar`,
+                  channelId: sql`excluded."channelId"`,
+                  discordGuildId: sql`excluded."discordGuildId"`,
+                  applicationId: sql`excluded."applicationId"`,
+                  token: sql`excluded.token`,
+                },
+              })
+              .returning({
+                id: webhooks.id,
+                name: webhooks.name,
+                avatar: webhooks.avatar,
+                channelId: webhooks.channelId,
+                applicationId: webhooks.applicationId,
+              })
+          ).map((d) => ({ ...d, user: null }));
+        }
+      }
+      return guildWebhooks;
+    })(),
+    rest.get(Routes.guildChannels(String(guildId))).catch(() => []) as Promise<
+      APIChannel[]
+    >,
+  ]);
 
   return respond(
     json(
-      guildWebhooks.map((gw) => ({
-        ...gw,
-        canAccessToken:
-          gw.applicationId === context.env.DISCORD_CLIENT_ID ||
-          !gw.applicationId,
-      })),
+      guildWebhooks.map((gw) => {
+        const channel = channels.find((c) => c.id === gw.channelId);
+        return {
+          ...gw,
+          canAccessToken:
+            gw.applicationId === context.env.DISCORD_CLIENT_ID ||
+            !gw.applicationId,
+          channel: channel
+            ? {
+                name: channel.name,
+                // type: channel.type,
+              }
+            : undefined,
+        };
+      }),
     ),
   );
 };
