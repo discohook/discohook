@@ -1,8 +1,8 @@
 import {
   APIInteraction,
-  APIInteractionResponse,
+  APIInteractionResponseChannelMessageWithSource,
   MessageFlags,
-  RESTError,
+  RESTError
 } from "discord-api-types/v10";
 import { InteractionContext } from "./interactions.js";
 
@@ -20,7 +20,7 @@ const invalidX = (x: string, reason?: string) =>
 export const getErrorMessage = (
   ctx: InteractionContext<APIInteraction>,
   error: RESTError,
-): APIInteractionResponse | undefined => {
+): APIInteractionResponseChannelMessageWithSource | undefined => {
   const message = (() => {
     switch (error.code) {
       case 10003:
