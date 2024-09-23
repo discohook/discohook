@@ -421,5 +421,28 @@
     "submit": "Invia",
     "submitToAll": "Invia a Tutti",
     "submitAll": "Invia Tutti",
-    "editing": "Modificando"
+    "editing": "Modificando",
+    "flagsOptional": "Flag (facoltativi)",
+    "urlEmpty": "I pulsanti dei link devono avere un URL",
+    "messageFlag": {
+        "32": "Ha thread",
+        "64": "Nascosto (effimero)",
+        "8192": "È un messaggio vocale",
+        "4": "Nascondi gli embed"
+    },
+    "content": "Contenuto",
+    "contentOptional": "Contenuto (facoltativo)",
+    "filesCount": "File ({{ count }}/10)",
+    "avatarUrl": "URL dell'avatar",
+    "profileImmutable": "Le informazioni del profilo non possono essere modificate per i messaggi esistenti.",
+    "addFile": "Aggiungi un File",
+    "messageFlagsNote": "I Flag sono opzioni facoltative per i messaggi che possono essere attivate o disattivate.",
+    "messageFlagsNoteSuppressNotifications": "Qualsiasi menzione presente nel messaggio non sarà notificata agli utenti.",
+    "labelEmpty": "Deve avere un label o un emoji, o entrambe",
+    "messageFlagsNoteSuppressEmbeds": "Tutti gli embed, inclusi gli embed dei link, non saranno mostrati.",
+    "autoArchiveDuration": "Durata dell'Archivio Automatico",
+    "random": "Casuale",
+    "flags": "Flag",
+    "rowEmpty": "Deve essere presente almeno un componente (bottone/tendina)",
+    "optionsEmpty": "Deve essere presente almeno un'opzione di selezione"
 }
