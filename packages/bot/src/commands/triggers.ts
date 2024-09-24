@@ -1,9 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import {
+  APIEmbed,
   ButtonStyle,
   ComponentType,
-  MessageFlags,
+  MessageFlags
 } from "discord-api-types/v10";
+import { PermissionFlags } from "discord-bitflag";
+import { inArray } from "drizzle-orm";
 import { t } from "i18next";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { flows, makeSnowflake, triggers } from "store/src/schema";
@@ -13,7 +16,9 @@ import {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
 } from "../commands.js";
+import { ButtonCallback } from "../components.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
+import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import { spaceEnum } from "../util/regex.js";
 
@@ -84,6 +89,28 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   ];
 };
 
+export const getFlowEmbed = (
+  flow: Awaited<ReturnType<typeof getWelcomerConfigurations>>[number]["flow"],
+): APIEmbed => ({
+  title: flow.name ?? t("unnamedTrigger"),
+  color,
+  description:
+    flow.actions?.length === 0
+      ? t("noActions")
+      : flow.actions
+          .map(
+            ({ data: action }, i) =>
+              `${i + 1}. ${spaceEnum(FlowActionType[action.type])}${
+                action.type === FlowActionType.Wait
+                  ? ` ${action.seconds}s`
+                  : action.type === FlowActionType.SetVariable
+                    ? ` \`${action.name}\``
+                    : ""
+              }`,
+          )
+          .join("\n"),
+});
+
 export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   const name = ctx.getStringOption("name").value;
 
@@ -116,27 +143,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   }
 
   return ctx.reply({
-    embeds: [
-      {
-        title: trigger.flow?.name ?? t("unnamedTrigger"),
-        color,
-        description:
-          trigger.flow?.actions?.length === 0
-            ? t("noActions")
-            : trigger.flow?.actions
-                .map(
-                  ({ data: action }, i) =>
-                    `${i + 1}. ${spaceEnum(FlowActionType[action.type])}${
-                      action.type === FlowActionType.Wait
-                        ? ` ${action.seconds}s`
-                        : action.type === FlowActionType.SetVariable
-                          ? ` \`${action.name}\``
-                          : ""
-                    }`,
-                )
-                .join("\n"),
-      },
-    ],
+    embeds: [getFlowEmbed(trigger.flow)],
     components: [
       new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
@@ -191,3 +198,55 @@ export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
       value: `_id:${trigger.id}`,
     }));
   };
+
+export const triggersDeleteConfirm: ButtonCallback = async (ctx) => {
+  if (!ctx.userPermissons.has(PermissionFlags.ManageGuild)) {
+    return ctx.updateMessage({
+      content: "You don't have the Manage Guild permission.",
+      embeds: [],
+      components: [],
+    });
+  }
+  const parsed = parseAutoComponentId(ctx.interaction.data.custom_id, "event");
+  const event = Number(parsed.event) as TriggerEvent;
+
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) throw Error("Guild-only");
+
+  const db = getDb(ctx.env.HYPERDRIVE);
+  const results = await db.query.triggers.findMany({
+    where: (triggers, { and, eq }) =>
+      and(
+        eq(triggers.platform, "discord"),
+        eq(triggers.discordGuildId, makeSnowflake(guildId)),
+        eq(triggers.event, event),
+      ),
+    columns: { id: true },
+  });
+  const triggerIds = results.map((t) => t.id);
+  if (triggerIds.length === 0) {
+    return ctx.updateMessage({
+      content: `There are no triggers in this server with the event ${TriggerEvent[event]}.`,
+      embeds: [],
+      components: [],
+    });
+  }
+
+  await db.delete(triggers).where(inArray(triggers.id, triggerIds));
+
+  return ctx.updateMessage({
+    content: `Deleted ${triggerIds.length} trigger${
+      triggerIds.length === 1 ? "" : "s"
+    } successfully.`,
+    embeds: [],
+    components: [],
+  });
+};
+
+export const triggersDeleteCancel: ButtonCallback = async (ctx) => {
+  return ctx.updateMessage({
+    content: "The triggers are safe and sound.",
+    embeds: [],
+    components: [],
+  });
+};

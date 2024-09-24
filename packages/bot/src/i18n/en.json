@@ -180,7 +180,60 @@
       }
     },
     "welcomer": {
-      "description": "Welcomer functionality has been moved to /triggers!"
+      "name": "welcomer",
+      "description": "Set up a simple welcomer (Also see /triggers)",
+      "options": {
+        "set": {
+          "name": "set",
+          "description": "Set up a new welcomer or overwrite an existing one",
+          "options": {
+            "event": {
+              "name": "event",
+              "description": "What event should cause this welcomer to trigger",
+              "choices": {
+                "0": "Member Join (hello)",
+                "1": "Member Remove (goodbye)"
+              }
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel to send the message in if a webhook is not provided"
+            },
+            "webhook": {
+              "name": "webhook",
+              "description": "The webhook to use to send the message"
+            },
+            "share-link": {
+              "name": "share-link",
+              "description": "The share link to use for the message"
+            },
+            "delete-after": {
+              "name": "delete-after",
+              "description": "How long to wait in seconds before deleting the message (0 for never)"
+            }
+          }
+        },
+        "view": {
+          "name": "view",
+          "description": "View a summary of your current welcomer configuration",
+          "options": {
+            "event": {
+              "name": "event",
+              "description": "The event of the welcomer"
+            }
+          }
+        },
+        "delete": {
+          "name": "delete",
+          "description": "Delete a welcomer configuration",
+          "options": {
+            "event": {
+              "name": "event",
+              "description": "The event of the welcomer"
+            }
+          }
+        }
+      }
     },
     "help": {
       "description": "Get help with various topics",
@@ -369,7 +422,6 @@
   "noContentAvailable": "No content available",
   "noComponentFlow": "There was no flow registered for this component. Click the button to configure a new flow. If this message has buttons from before September 5, 2024, you may need to run </buttons migrate:908884724087410729>.",
   "componentWillExpire": "Please finish editing & submit this component within 2 weeks or the draft will be deleted.",
-  "welcomerCommandDeprecated": "In order to set up a welcomer, please use the **/triggers** command.",
   "noTrigger": "This server has no trigger with that name.",
   "unnamedTrigger": "Unnamed trigger",
   "triggerDuplicate": "This server already has a trigger for that event.",

@@ -10,9 +10,7 @@ import {
   APIMessageApplicationCommandGuildInteraction,
   APIUserApplicationCommandInteraction,
   ApplicationCommandType,
-  MessageFlags,
 } from "discord-api-types/v10";
-import { t } from "i18next";
 import { deleteComponentChatEntry } from "./commands/components/delete.js";
 import { editComponentChatEntry } from "./commands/components/edit.js";
 import {
@@ -56,6 +54,9 @@ import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
 import { webhookDeleteEntryCallback } from "./commands/webhooks/webhookDelete.js";
 import { webhookInfoCallback } from "./commands/webhooks/webhookInfo.js";
 import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
+import { welcomerDeleteEntry } from "./commands/welcomer/delete.js";
+import { welcomerSetupEntry } from "./commands/welcomer/set.js";
+import { welcomerViewEntry } from "./commands/welcomer/view.js";
 import { InteractionContext } from "./interactions.js";
 
 export type InteractionInstantOrDeferredResponse =
@@ -160,11 +161,9 @@ export const appCommands: Record<
     },
     welcomer: {
       handlers: {
-        BASE: (async (ctx) =>
-          ctx.reply({
-            content: t("welcomerCommandDeprecated"),
-            flags: MessageFlags.Ephemeral,
-          })) as ChatInputAppCommandCallback,
+        set: welcomerSetupEntry,
+        view: welcomerViewEntry,
+        delete: welcomerDeleteEntry,
       },
     },
     help: {

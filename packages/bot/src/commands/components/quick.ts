@@ -32,6 +32,7 @@ import {
 import type { ModalCallback, SelectMenuCallback } from "../../components.js";
 import type { InteractionContext } from "../../interactions.js";
 import { getShareLink, getShareLinkExists } from "../../share-links.js";
+import { Env } from "../../types/env.js";
 import { storeComponents } from "../../util/components.js";
 import { getHighestRole } from "../reactionRoles.js";
 import { type ComponentFlow, getComponentFlowEmbed } from "./add.js";
@@ -471,47 +472,48 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
   return await addComponentSetStylePrompt(ctx);
 };
 
+export const parseShareLink = async (env: Env, raw: string) => {
+  const invalidShareLinkMessage = `Invalid share link. They look like this: \`${env.DISCOHOOK_ORIGIN}/?share=...\``;
+  let shareUrl: URL;
+  try {
+    shareUrl = new URL(raw);
+  } catch {
+    throw Error(invalidShareLinkMessage);
+  }
+  const shareId = shareUrl.searchParams.get("share");
+  if (shareUrl.origin !== env.DISCOHOOK_ORIGIN || !shareId) {
+    if (shareUrl.host === "share.discohook.app") {
+      throw Error(dedent`
+        This is an old-style share link. You must use a share link created on <${env.DISCOHOOK_ORIGIN}>. They look like this: \`${env.DISCOHOOK_ORIGIN}/?share=...\`
+
+        -# TIP: Just [open the share link](${shareUrl.href}), change the address from \`discohook.org\` to \`discohook.app\`, then press "Share" again to generate a new link.
+      `);
+    }
+    throw Error(invalidShareLinkMessage);
+  }
+
+  if (!(await getShareLinkExists(env, shareId))) {
+    throw Error(
+      "Share link does not exist. Keep in mind that they expire after a week by default.",
+    );
+  }
+  return shareId;
+};
+
 export const addComponentQuickSendMessageCallback: ModalCallback = async (
   ctx,
 ) => {
   const guildId = ctx.interaction.guild_id;
   if (!guildId) throw Error("Guild-only");
 
-  const invalidShareLinkMessage = `Invalid share link. They look like this: \`${ctx.env.DISCOHOOK_ORIGIN}/?share=...\``;
-  const shareLink = ctx.getModalComponent("share-link").value;
-  let shareUrl: URL;
+  let shareId: string;
   try {
-    shareUrl = new URL(shareLink);
-  } catch {
-    return ctx.reply({
-      content: invalidShareLinkMessage,
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-  const shareId = shareUrl.searchParams.get("share");
-  if (shareUrl.origin !== ctx.env.DISCOHOOK_ORIGIN || !shareId) {
-    if (shareUrl.host === "share.discohook.app") {
-      return ctx.reply({
-        content: dedent`
-          This is an old-style share link. You must use a share link created on <${ctx.env.DISCOHOOK_ORIGIN}>. They look like this: \`${ctx.env.DISCOHOOK_ORIGIN}/?share=...\`
-
-          -# TIP: Just [open the share link](${shareUrl.href}), change the address from \`discohook.org\` to \`discohook.app\`, then press "Share" again to generate a new link.
-        `,
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-    return ctx.reply({
-      content: invalidShareLinkMessage,
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  if (!(await getShareLinkExists(ctx.env, shareId))) {
-    return ctx.reply({
-      content:
-        "Share link does not exist. Keep in mind that they expire after a week by default.",
-      flags: MessageFlags.Ephemeral,
-    });
+    shareId = await parseShareLink(
+      ctx.env,
+      ctx.getModalComponent("share-link").value,
+    );
+  } catch (e) {
+    return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
   }
 
   const state = ctx.state as ComponentFlow;

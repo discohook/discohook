@@ -9,6 +9,7 @@ import {
   ToAPIApplicationCommandOptions,
 } from "@discordjs/builders";
 import {
+  APIApplicationCommandOptionChoice,
   ApplicationCommandType,
   ChannelType,
   InteractionContextType,
@@ -196,6 +197,23 @@ const main = async () => {
     )
     .setRequired(false)
     .addChannelTypes(...webhookChannelTypes);
+
+  const welcomerEventChoices: APIApplicationCommandOptionChoice<number>[] = [
+    {
+      name: getEnglish("welcomer.options.set.options.event.choices.0"),
+      name_localizations: localize(
+        "welcomer.options.set.options.event.choices.0",
+      ),
+      value: TriggerEvent.MemberAdd,
+    },
+    {
+      name: getEnglish("welcomer.options.set.options.event.choices.1"),
+      name_localizations: localize(
+        "welcomer.options.set.options.event.choices.1",
+      ),
+      value: TriggerEvent.MemberRemove,
+    },
+  ];
 
   const allAppCommands = [
     addLocalizations(
@@ -498,7 +516,66 @@ const main = async () => {
         .setName("welcomer")
         .setContexts(InteractionContextType.Guild)
         .setDefaultMemberPermissions(PermissionFlags.ManageGuild)
-        .setDescription("..."),
+        .setDescription("...")
+        .addSubcommand((o) =>
+          o
+            .setName("set")
+            .setDescription("...")
+            .addIntegerOption((o) =>
+              o
+                .setName("event")
+                .setDescription("...")
+                .addChoices(welcomerEventChoices)
+                .setRequired(true),
+            )
+            .addChannelOption((o) =>
+              o
+                .setName("channel")
+                .setDescription("...")
+                .addChannelTypes(...messageChannelTypes),
+            )
+            .addStringOption((o) =>
+              o.setName("webhook").setDescription("...").setAutocomplete(true),
+            )
+            .addStringOption((o) =>
+              o
+                .setName("share-link")
+                .setDescription("...")
+                .setMinLength(30)
+                .setMaxLength(40),
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName("delete-after")
+                .setDescription("...")
+                .setMinValue(0)
+                .setMaxValue(60),
+            ),
+        )
+        .addSubcommand((o) =>
+          o
+            .setName("view")
+            .setDescription("...")
+            .addIntegerOption((o) =>
+              o
+                .setName("event")
+                .setDescription("...")
+                .addChoices(welcomerEventChoices)
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((o) =>
+          o
+            .setName("delete")
+            .setDescription("...")
+            .addIntegerOption((o) =>
+              o
+                .setName("event")
+                .setDescription("...")
+                .addChoices(welcomerEventChoices)
+                .setRequired(true),
+            ),
+        ),
     ),
     addLocalizations(
       new SlashCommandBuilder()

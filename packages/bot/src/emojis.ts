@@ -1,3 +1,4 @@
+import { formatEmoji } from "@discordjs/formatters";
 import { REST } from "@discordjs/rest";
 import {
   APIEmoji,
@@ -144,3 +145,7 @@ export const getEmojis = async (env: Env, guildId?: string) => {
   const manager = new EmojiManagerCache(emojis);
   return manager;
 };
+
+export const emojiToString = (
+  emoji: APIPartialEmoji | APIMessageComponentEmoji,
+) => (emoji.id ? formatEmoji(emoji.id, emoji.animated) : emoji.name ?? "");

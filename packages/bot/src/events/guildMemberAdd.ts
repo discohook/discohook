@@ -54,6 +54,7 @@ export const getWelcomerConfigurations = async (
     with: {
       flow: {
         columns: {
+          id: true,
           name: true,
         },
         with: {
