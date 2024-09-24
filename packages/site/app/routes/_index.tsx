@@ -45,7 +45,7 @@ import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
-import { getUser } from "~/session.server";
+import { getSessionStorage, getUser } from "~/session.server";
 import { getDb } from "~/store.server";
 import {
   APIMessageActionRowComponent,
@@ -107,6 +107,14 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       : [];
   })();
 
+  let authFailure: string | undefined;
+  const defaultModal = new URL(request.url).searchParams.get("m");
+  if (!user && defaultModal === "auth-failure") {
+    const storage = getSessionStorage(context);
+    const session = await storage.getSession(request.headers.get("Cookie"));
+    authFailure = session.get("auth:error") ?? undefined;
+  }
+
   return defer({
     user,
     memberships,
@@ -114,6 +122,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     debug: {
       environment: context.env.ENVIRONMENT,
       version: context.env.VERSION,
+      authFailure,
     },
   });
 };
@@ -611,7 +620,11 @@ export default function Index() {
         setOpen={setAuthSuccessOpen}
         user={user}
       />
-      <AuthFailureModal open={authFailureOpen} setOpen={setAuthFailureOpen} />
+      <AuthFailureModal
+        open={authFailureOpen}
+        setOpen={setAuthFailureOpen}
+        message={debug.authFailure}
+      />
       <ImageModal
         {...imageModalData}
         clear={() => setImageModalData(undefined)}

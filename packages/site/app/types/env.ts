@@ -8,6 +8,7 @@ export interface Env {
   COMPONENTS: DurableObjectNamespace;
   RATE_LIMITER: DurableObjectNamespace;
   SHARE_LINKS: DurableObjectNamespace;
+  SESSIONS: DurableObjectNamespace;
   __STATIC_CONTENT: Fetcher;
   VERSION: WorkerVersionMetadata;
   // __STATIC_CONTENT_MANIFEST: Object;

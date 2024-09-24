@@ -1,8 +1,9 @@
 import { REST } from "@discordjs/rest";
 import {
+  Cookie,
   SerializeFrom,
   createCookie,
-  createWorkersKVSessionStorage,
+  createSessionStorage,
   json,
   redirect,
 } from "@remix-run/cloudflare";
@@ -19,6 +20,7 @@ import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { getDiscordUserOAuth } from "./auth-discord.server";
+import { getSessionManagerStub } from "./durable/sessions";
 import {
   discordMembers,
   generateId,
@@ -30,16 +32,58 @@ import {
 import { Env } from "./types/env";
 import { Context } from "./util/loader";
 
+const createWorkersDOSessionStorage = ({
+  env,
+  cookie,
+}: { env: Env; cookie: Cookie }) =>
+  createSessionStorage({
+    cookie,
+    async createData(data, expires) {
+      const id = generateId();
+      const stub = getSessionManagerStub(env, id);
+      await stub.fetch("http://do/", {
+        method: "PUT",
+        body: JSON.stringify({ data, expires }),
+        headers: { "Content-Type": "application/json" },
+      });
+      // console.log("[Create Session]", id, data);
+      return id;
+    },
+    async readData(id) {
+      const stub = getSessionManagerStub(env, id);
+      const response = await stub.fetch("http://do/", { method: "GET" });
+      const { data } = response.ok
+        ? ((await response.json()) as { data: any })
+        : { data: null };
+      // console.log("[Read Session]", id, data);
+      return data;
+    },
+    async updateData(id, data, expires) {
+      const stub = getSessionManagerStub(env, id);
+      await stub.fetch("http://do/", {
+        method: "PUT",
+        body: JSON.stringify({ data, expires }),
+        headers: { "Content-Type": "application/json" },
+      });
+      // console.log("[Update Session]", id, data);
+    },
+    async deleteData(id) {
+      const stub = getSessionManagerStub(env, id);
+      await stub.fetch("http://do/", { method: "DELETE" });
+      // console.log("[Destroy Session]", id);
+    },
+  });
+
 export const getSessionStorage = (context: Context) => {
-  const sessionStorage = createWorkersKVSessionStorage({
-    kv: context.env.KV,
+  const sessionStorage = createWorkersDOSessionStorage({
+    env: context.env,
     cookie: createCookie("__discohook_session", {
       sameSite: "lax",
       path: "/",
       httpOnly: true,
       secrets: [context.env.SESSION_SECRET],
       secure: context.env.ENVIRONMENT !== "dev",
-      maxAge: 63_072_000, // 2 years
+      maxAge: 31_536_000, // 1 year
     }),
   });
 
@@ -48,8 +92,8 @@ export const getSessionStorage = (context: Context) => {
 };
 
 export const getTokenStorage = (context: Context) => {
-  const sessionStorage = createWorkersKVSessionStorage({
-    kv: context.env.KV,
+  const sessionStorage = createWorkersDOSessionStorage({
+    env: context.env,
     cookie: createCookie("__discohook_token", {
       sameSite: "lax",
       path: "/",
@@ -65,8 +109,8 @@ export const getTokenStorage = (context: Context) => {
 };
 
 export const getEditorTokenStorage = (context: Context) => {
-  const sessionStorage = createWorkersKVSessionStorage({
-    kv: context.env.KV,
+  const sessionStorage = createWorkersDOSessionStorage({
+    env: context.env,
     cookie: createCookie("__discohook_editor_token", {
       sameSite: "lax",
       path: "/",

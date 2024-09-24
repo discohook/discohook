@@ -70,6 +70,6 @@ If you want to develop `magic-backup-importer`, also run `yarn dev:backups` afte
 
 ## Deployment
 
-This project relies on [Durable Objects](https://developers.cloudflare.com/durable-objects/), which is a feature exclusive to accounts on the Workers Paid plan, for message scheduling and persistent component callbacks (defined by users). If you do not want to subscribe to Workers Paid, you will have to remove these features in your fork.
+This project relies on [Durable Objects](https://developers.cloudflare.com/durable-objects/) for many core features, which is a product exclusive to accounts on the Workers Paid plan. If you do not want to subscribe to Workers Paid, you will have to remove these features in your fork.
 
 Or, if you don't want to do either of those, consider joining the [support server](https://discohook.app/discord) and letting me know what you want to see in the main instance.

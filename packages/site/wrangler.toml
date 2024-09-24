@@ -22,6 +22,7 @@ bindings = [
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
   { name = "SHARE_LINKS", class_name = "ShareLinks" },
+  { name = "SESSIONS", class_name = "SessionManager" },
 ]
 
 [version_metadata]
@@ -42,6 +43,10 @@ new_classes = ["RateLimiter"]
 [[migrations]]
 tag = "v3"
 new_classes = ["ShareLinks"]
+
+[[migrations]]
+tag = "v4"
+new_classes = ["SessionManager"]
 
 [site]
 bucket = "./public"
@@ -79,6 +84,7 @@ bindings = [
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
   { name = "SHARE_LINKS", class_name = "ShareLinks" },
+  { name = "SESSIONS", class_name = "SessionManager" },
 ]
 
 [[env.preview.migrations]]
@@ -96,6 +102,10 @@ new_classes = ["RateLimiter"]
 [[env.preview.migrations]]
 tag = "v3"
 new_classes = ["ShareLinks"]
+
+[[env.preview.migrations]]
+tag = "v4"
+new_classes = ["SessionManager"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -130,6 +140,7 @@ bindings = [
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
   { name = "SHARE_LINKS", class_name = "ShareLinks" },
+  { name = "SESSIONS", class_name = "SessionManager" },
 ]
 
 [[env.production.migrations]]
@@ -147,6 +158,10 @@ new_classes = ["RateLimiter"]
 [[env.production.migrations]]
 tag = "v3"
 new_classes = ["ShareLinks"]
+
+[[env.production.migrations]]
+tag = "v4"
+new_classes = ["SessionManager"]
 
 [env.production.vars]
 ENVIRONMENT = "production"

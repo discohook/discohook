@@ -7,6 +7,7 @@ export { DurableComponentState } from "store";
 export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
 export { RateLimiter } from "./app/durable/rate-limits";
 export { DurableScheduler } from "./app/durable/scheduler";
+export { SessionManager } from "./app/durable/sessions";
 export { ShareLinks } from "./app/durable/share-links";
 
 const MANIFEST = JSON.parse(__STATIC_CONTENT_MANIFEST);
