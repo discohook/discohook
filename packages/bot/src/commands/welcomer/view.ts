@@ -16,7 +16,7 @@ import { color } from "../../util/meta.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import { WelcomerTriggerEvent } from "./set.js";
 
-interface AutoWelcomerConfig {
+export interface AutoWelcomerConfig {
   webhookId?: string;
   channelId?: string;
   backupId?: string;
