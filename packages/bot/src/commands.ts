@@ -165,6 +165,9 @@ export const appCommands: Record<
         view: welcomerViewEntry,
         delete: welcomerDeleteEntry,
       },
+      autocompleteHandlers: {
+        set: webhookAutocomplete,
+      },
     },
     help: {
       handlers: { BASE: helpEntry },
