@@ -101,10 +101,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
 ) => {
   const event = ctx.getIntegerOption("event").value as WelcomerTriggerEvent;
   const channel = ctx.getChannelOption("channel") ?? undefined;
-  let deleteAfter = ctx.getIntegerOption("delete-after")?.value || undefined;
-  if (deleteAfter && deleteAfter < 0) {
-    deleteAfter = 0;
-  }
+  const deleteAfter = ctx.getIntegerOption("delete-after").value;
 
   const shareLink = ctx.getStringOption("share-link").value || undefined;
   let shareId: string | undefined;
@@ -215,7 +212,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
 
   if (deleteAfter === 0) {
     current.deleteAfter = undefined;
-  } else if (deleteAfter) {
+  } else if (deleteAfter && deleteAfter > 0) {
     current.deleteAfter = deleteAfter;
   }
 
