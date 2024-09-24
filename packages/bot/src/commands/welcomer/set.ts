@@ -16,7 +16,7 @@ import {
 import {
   FlowAction,
   FlowActionSetVariableType,
-  FlowActionType
+  FlowActionType,
 } from "store/src/types/components.js";
 import { TriggerEvent } from "store/src/types/triggers.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
@@ -29,6 +29,7 @@ import { isDiscordError } from "../../util/error.js";
 import { parseShareLink } from "../components/quick.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import {
+  AutoWelcomerConfig,
   getWelcomerConfigEmbed,
   getWelcomerConfigFromActions,
 } from "./view.js";
@@ -37,14 +38,9 @@ export type WelcomerTriggerEvent =
   | TriggerEvent.MemberAdd
   | TriggerEvent.MemberRemove;
 
-const buildSimpleWelcomer = (props: {
-  webhookId?: string;
-  channelId?: string;
-  backupId: string;
-  backupMessageIndex?: number | null;
-  flags?: MessageFlags;
-  deleteAfter?: number;
-}) => {
+const buildSimpleWelcomer = (
+  props: AutoWelcomerConfig & { backupId: string },
+) => {
   const {
     webhookId,
     channelId,
@@ -55,21 +51,7 @@ const buildSimpleWelcomer = (props: {
   } = props;
 
   const actions: FlowAction[] = [];
-  if (channelId) {
-    actions.push(
-      {
-        type: FlowActionType.SetVariable,
-        name: "channelId",
-        value: channelId,
-      },
-      {
-        type: FlowActionType.SendMessage,
-        backupId,
-        backupMessageIndex,
-        flags,
-      },
-    );
-  } else if (webhookId) {
+  if (webhookId) {
     actions.push({
       type: FlowActionType.SendWebhookMessage,
       webhookId,
@@ -85,9 +67,29 @@ const buildSimpleWelcomer = (props: {
         value: "channel_id",
       });
     }
+  } else if (channelId) {
+    actions.push(
+      {
+        type: FlowActionType.SetVariable,
+        name: "channelId",
+        value: channelId,
+      },
+      {
+        type: FlowActionType.SendMessage,
+        backupId,
+        backupMessageIndex,
+        flags,
+      },
+    );
   }
   if (deleteAfter) {
     actions.push(
+      {
+        type: FlowActionType.SetVariable,
+        varType: FlowActionSetVariableType.Adaptive,
+        name: "messageId",
+        value: "id",
+      },
       { type: FlowActionType.Wait, seconds: deleteAfter },
       { type: FlowActionType.DeleteMessage },
     );
@@ -225,8 +227,10 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
 
   if (webhook) {
     current.webhookId = webhook.id;
+    current.channelId = undefined;
   } else if (channel) {
     current.channelId = channel.id;
+    current.webhookId = undefined;
   }
   if (!current.webhookId && !current.channelId) {
     return ctx.reply({
