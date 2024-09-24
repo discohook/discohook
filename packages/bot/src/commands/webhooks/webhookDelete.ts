@@ -84,6 +84,15 @@ export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
     ctx.interaction.data.custom_id,
     "webhookId",
   );
+  const webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
+  if (!webhook.guild_id || webhook.guild_id !== ctx.interaction.guild_id) {
+    return ctx.updateMessage({
+      content: "Webhook does not exist or it is not in this server.",
+      embeds: [],
+      components: [],
+    });
+  }
+
   await ctx.rest.delete(Routes.webhook(webhookId));
 
   const db = getDb(ctx.env.HYPERDRIVE);
