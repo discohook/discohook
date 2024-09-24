@@ -37,6 +37,10 @@ import {
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import {
+  triggersDeleteCancel,
+  triggersDeleteConfirm,
+} from "./commands/triggers.js";
+import {
   webhookDeleteCancel,
   webhookDeleteConfirm,
 } from "./commands/webhooks/webhookDelete.js";
@@ -105,7 +109,9 @@ export type ComponentRoutingId =
   | "webhook-delete-confirm"
   | "webhook-delete-cancel"
   | "migrate-buttons-confirm"
-  | "migrate-buttons-cancel";
+  | "migrate-buttons-cancel"
+  | "delete-triggers-confirm"
+  | "delete-triggers-cancel";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
 
@@ -137,6 +143,8 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "webhook-delete-cancel": webhookDeleteCancel,
   "migrate-buttons-confirm": migrateComponentsConfirm,
   "migrate-buttons-cancel": migrateComponentsCancel,
+  "delete-triggers-confirm": triggersDeleteConfirm,
+  "delete-triggers-cancel": triggersDeleteCancel,
   // "clone-webhook-message": cloneWebhookMessage,
 };
 

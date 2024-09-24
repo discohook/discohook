@@ -118,7 +118,7 @@ export const getWelcomerConfigEmbed = (
         value: config.backupId
           ? `${trueEmoji} ${
               rich?.backup
-                ? `**${rich.backup.name}** ([edit](${backupUrl}))`
+                ? `${rich.backup.name} ([edit](${backupUrl}))`
                 : `[Edit](${backupUrl})`
             }`
           : `${falseEmoji} Not set`,
