@@ -27,25 +27,23 @@ export class ShareLinks implements DurableObject {
             .transform((v) => new Date(v)),
           origin: z.ostring().nullable(),
         });
-        await this.state.storage.put(
-          origin ? { data, expiresAt, origin } : { data, expiresAt },
-        );
+        await this.state.storage.put("data", data);
+        await this.state.storage.put("expiresAt", expiresAt);
         await this.state.storage.setAlarm(expiresAt);
-        if (origin === null) {
-          await this.state.storage.delete("origin");
-        }
+
+        if (origin === null) await this.state.storage.delete("origin");
+        else if (origin) await this.state.storage.put("origin", origin);
 
         return new Response(undefined, { status: 201 });
       }
       case "HEAD": {
-        const expiresAt = await this.state.storage.get("expiresAt");
-        return new Response(undefined, {
-          status: expiresAt !== null ? 200 : 404,
-        });
+        const alarm = await this.state.storage.getAlarm();
+        return new Response(undefined, { status: alarm !== null ? 200 : 404 });
       }
       case "GET": {
-        const values = await this.state.storage.get(["data", "origin"]);
-        if (!values.has("data")) {
+        const data = await this.state.storage.get<QueryData>("data");
+        const origin = await this.state.storage.get<string>("origin");
+        if (!data) {
           const { shareId: id } = zxParseQuery(request, {
             shareId: z.string(),
           });
@@ -75,11 +73,7 @@ export class ShareLinks implements DurableObject {
           );
         }
         const alarm = await this.state.storage.getAlarm();
-        return json({
-          data: values.get("data") as QueryData,
-          origin: values.get("origin") as string | undefined,
-          alarm,
-        });
+        return json({ data, alarm, origin });
       }
       case "DELETE": {
         await this.alarm();
