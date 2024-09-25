@@ -40,10 +40,16 @@ export const getReplacements = (
             vars.guild.id,
             vars.user.id,
             vars.member.avatar,
-            { size: 2048 },
+            {
+              size: 2048,
+              extension: vars.member.avatar.startsWith("a_") ? "gif" : "webp",
+            },
           )
         : vars.user?.avatar
-          ? cdn.avatar(vars.user.id, vars.user.avatar)
+          ? cdn.avatar(vars.user.id, vars.user.avatar, {
+              size: 2048,
+              extension: vars.user.avatar.startsWith("a_") ? "gif" : "webp",
+            })
           : cdn.defaultAvatar(
               vars.user
                 ? vars.user.discriminator === "0"
