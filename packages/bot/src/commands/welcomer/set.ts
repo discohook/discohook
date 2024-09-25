@@ -138,6 +138,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
     }
   }
 
+  const isModified = !!channel || !!webhook || deleteAfter !== -1 || !!shareId;
   const guild = await getchTriggerGuild(
     ctx.rest,
     ctx.env.KV,
@@ -256,43 +257,63 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
     });
   }
 
-  const actions = buildSimpleWelcomer({
-    ...current,
-    // biome-ignore lint/style/noNonNullAssertion: Checked above or re-assigned
-    backupId: current.backupId!,
-  });
-  await db.transaction(async (tx) => {
-    const flowId = currentFlow.id;
-    if (triggers.length === 0) {
-      await tx
-        .insert(flows)
-        .values({ id: flowId, name: currentFlow.name })
-        .onConflictDoNothing();
-      await tx.insert(dTriggers).values({
-        platform: "discord",
-        discordGuildId: BigInt(ctx.interaction.guild_id),
-        flowId,
-        event,
+  if (isModified) {
+    const actions = buildSimpleWelcomer({
+      ...current,
+      // biome-ignore lint/style/noNonNullAssertion: Checked above or re-assigned
+      backupId: current.backupId!,
+    });
+    await db.transaction(async (tx) => {
+      const flowId = currentFlow.id;
+      if (triggers.length === 0) {
+        await tx
+          .insert(flows)
+          .values({ id: flowId, name: currentFlow.name })
+          .onConflictDoNothing();
+        const created = (
+          await tx
+            .insert(dTriggers)
+            .values({
+              platform: "discord",
+              discordGuildId: BigInt(ctx.interaction.guild_id),
+              flowId,
+              event,
+            })
+            .returning({ id: dTriggers.id, disabled: dTriggers.disabled })
+        )[0];
+      } else {
+        await tx
+          .update(dTriggers)
+          .set({
+            flowId,
+            updatedAt: sql`NOW()`,
+            updatedById: user.id,
+          })
+          .where(eq(dTriggers.id, triggers[0].id));
+      }
+      await tx.delete(flowActions).where(eq(flowActions.flowId, flowId));
+      const newActions = await tx
+        .insert(flowActions)
+        .values(
+          actions.map((action) => ({
+            flowId,
+            type: action.type,
+            data: action,
+          })),
+        )
+        .returning();
+
+      triggers.splice(0, 1, {
+        ...(triggers[0] ?? { id: flowId, disabled: false }),
+        flow: { ...currentFlow, actions: newActions },
       });
-    } else {
-      await tx
-        .update(dTriggers)
-        .set({
-          flowId,
-          updatedAt: sql`NOW()`,
-          updatedById: user.id,
-        })
-        .where(eq(dTriggers.id, triggers[0].id));
-    }
-    await tx.delete(flowActions).where(eq(flowActions.flowId, flowId));
-    await tx.insert(flowActions).values(
-      actions.map((action) => ({
-        flowId,
-        type: action.type,
-        data: action,
-      })),
-    );
-  });
+      await ctx.env.KV.put(
+        `cache-triggers-${event}-${ctx.interaction.guild_id}`,
+        JSON.stringify(triggers),
+        { expirationTtl: 600 },
+      );
+    });
+  }
 
   return ctx.reply({
     embeds: [
