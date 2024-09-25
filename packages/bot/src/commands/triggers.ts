@@ -1,9 +1,18 @@
-import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+} from "@discordjs/builders";
 import {
   APIEmbed,
+  APIInteractionGuildMember,
   ButtonStyle,
   ComponentType,
-  MessageFlags
+  GatewayDispatchEvents,
+  GatewayGuildMemberAddDispatchData,
+  GatewayGuildMemberRemoveDispatchData,
+  GuildMemberFlags,
+  MessageFlags,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
@@ -17,7 +26,10 @@ import {
   ChatInputAppCommandCallback,
 } from "../commands.js";
 import { ButtonCallback } from "../components.js";
+import { emojiToString, getEmojis } from "../emojis.js";
+import { eventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
+import { FlowResult } from "../flows/flows.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import { spaceEnum } from "../util/regex.js";
@@ -250,3 +262,168 @@ export const triggersDeleteCancel: ButtonCallback = async (ctx) => {
     components: [],
   });
 };
+
+// Replicating `/api/v1/guilds/:id/trigger-events/:event` here
+// We need a lower level function so this duplication isn't necessary (or
+// rather we would have an async function in the bot and call it from the
+// site)
+const triggerEventToDispatchEvent: Record<TriggerEvent, GatewayDispatchEvents> =
+  {
+    [TriggerEvent.MemberAdd]: GatewayDispatchEvents.GuildMemberAdd,
+    [TriggerEvent.MemberRemove]: GatewayDispatchEvents.GuildMemberRemove,
+  };
+
+interface EventExecutionResult {
+  event: GatewayDispatchEvents;
+  name?: string;
+  status: "success" | "failure" | "timeout";
+  message?: string;
+}
+
+export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) throw Error("Guild-only");
+
+  const parsed = parseAutoComponentId(ctx.interaction.data.custom_id, "event");
+  const event = Number(parsed.event) as TriggerEvent;
+  const eventName = triggerEventToDispatchEvent[event];
+
+  if (!ctx.userPermissons.has(PermissionFlags.ManageGuild)) {
+    return ctx.reply({
+      content:
+        "You must have the Manage Server permission to send test events.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  let payload: any = {};
+  const func = eventNameToCallback[eventName];
+  switch (event) {
+    case TriggerEvent.MemberAdd: {
+      payload = {
+        ...(ctx.interaction.member ??
+          ({
+            user: ctx.user,
+            deaf: false,
+            mute: false,
+            joined_at: new Date().toISOString(),
+            permissions: "0",
+            roles: [],
+            flags: 0 as GuildMemberFlags,
+          } satisfies APIInteractionGuildMember)),
+        guild_id: guildId,
+      } satisfies GatewayGuildMemberAddDispatchData;
+      break;
+    }
+    case TriggerEvent.MemberRemove: {
+      payload = {
+        user: ctx.user,
+        guild_id: guildId,
+      } satisfies GatewayGuildMemberRemoveDispatchData;
+      break;
+    }
+    default:
+      return ctx.reply({
+        content: "No dispatch data could be formed for the event",
+        flags: MessageFlags.Ephemeral,
+      });
+  }
+  if (!func) {
+    return ctx.reply({
+      content: `There was no function for the event \`${eventName}\``,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const emojis = await getEmojis(ctx.env);
+  const trueEmoji = emojiToString(emojis.get("true", true));
+  const falseEmoji = emojiToString(emojis.get("false", true));
+
+  return [
+    ctx.defer({ thinking: true, ephemeral: true }),
+    async () => {
+      const started = new Date().getTime();
+      const results = await Promise.race([
+        (async (): Promise<EventExecutionResult[]> => {
+          try {
+            const flowResults = <FlowResult[] | undefined>(
+              await func(ctx.env, payload)
+            );
+            if (flowResults) {
+              return flowResults.map((result) => ({
+                event: eventName,
+                status: result.status,
+                message:
+                  result.message +
+                  (result.discordError
+                    ? `\nDiscord error: ${result.discordError.message}${
+                        result.discordError.errors
+                          ? ` | ${result.discordError.errors}`
+                          : ""
+                      }`
+                    : ""),
+              }));
+            }
+            return [];
+          } catch (e) {
+            return [
+              {
+                event: eventName,
+                status: "failure",
+                message: `Function failed to complete: ${e}`,
+              },
+            ];
+          }
+        })(),
+        promiseTimeout<EventExecutionResult[]>(840_000, [
+          {
+            event: eventName,
+            status: "timeout",
+            message: "Timeout after 14m",
+          },
+        ]),
+      ]);
+      const ended = new Date().getTime();
+      await ctx.followup.editOriginalMessage({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("Results")
+            .setColor(color)
+            .setDescription(
+              results
+                .map(
+                  (r) =>
+                    `${results.length === 1 ? "" : "- "}${
+                      r.status === "success" ? trueEmoji : falseEmoji
+                    } ${r.message ?? "no message"}`,
+                )
+                .join("\n")
+                .slice(0, 4096),
+            )
+            .setFields(
+              {
+                name: "Diagnostic",
+                value: `${results.length} result${
+                  results.length === 1 ? "" : "s"
+                } in ${Math.ceil(ended - started)}ms`,
+                inline: true,
+              },
+              {
+                name: "Management",
+                value:
+                  "View all actions in this trigger with </triggers view:1281305550340096033>",
+                inline: true,
+              },
+            )
+            .toJSON(),
+        ],
+      });
+    },
+  ];
+};
+
+// https://stackoverflow.com/a/48578424
+const promiseTimeout = <T = any>(ms: number, val: T) =>
+  new Promise<T>((resolve) => {
+    setTimeout(resolve.bind(null, val), ms);
+  });

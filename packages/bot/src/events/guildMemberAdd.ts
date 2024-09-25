@@ -38,7 +38,7 @@ import {
   TriggerKVGuild,
 } from "store/src/types";
 import { GatewayEventCallback } from "../events.js";
-import { executeFlow } from "../flows/flows.js";
+import { FlowResult, executeFlow } from "../flows/flows.js";
 
 export const getWelcomerConfigurations = async (
   db: DBWithSchema,
@@ -310,11 +310,15 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   }
 
   const applicable = triggers.filter((t) => !!t.flow && !t.disabled);
+  const results: FlowResult[] = [];
   for (const trigger of applicable) {
-    await executeFlow(env, trigger.flow, rest, db, {
-      member: payload,
-      user: payload.user,
-      guild,
-    });
+    results.push(
+      await executeFlow(env, trigger.flow, rest, db, {
+        member: payload,
+        user: payload.user,
+        guild,
+      }),
+    );
   }
+  return results;
 };

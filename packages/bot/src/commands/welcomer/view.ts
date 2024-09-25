@@ -1,6 +1,11 @@
-import { EmbedBuilder, bold } from "@discordjs/builders";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+  bold,
+} from "@discordjs/builders";
 import dedent from "dedent-js";
-import { APIWebhook, MessageFlags } from "discord-api-types/v10";
+import { APIWebhook, ButtonStyle, MessageFlags } from "discord-api-types/v10";
 import { getDb, getchTriggerGuild } from "store";
 import {
   FlowAction,
@@ -116,11 +121,7 @@ export const getWelcomerConfigEmbed = (
       {
         name: "Message data",
         value: config.backupId
-          ? `${trueEmoji} ${
-              rich?.backup
-                ? `${rich.backup.name} ([edit](${backupUrl}))`
-                : `[Edit](${backupUrl})`
-            }`
+          ? `${trueEmoji} ${rich?.backup ? rich.backup.name : "Set"}`
           : `${falseEmoji} Not set`,
         inline: true,
       },
@@ -155,6 +156,35 @@ export const getWelcomerConfigEmbed = (
         inline: false,
       },
     );
+};
+
+export const getWelcomerConfigComponents = (
+  env: Env,
+  config: AutoWelcomerConfig,
+  event: WelcomerTriggerEvent,
+  guildId: string,
+) => {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`a_trigger-test_${event}`)
+      .setLabel("Send Test")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(
+        !config.backupId || (!config.channelId && !config.webhookId),
+      ),
+    new ButtonBuilder()
+      .setLabel("Edit Message")
+      .setStyle(ButtonStyle.Link)
+      .setURL(
+        env.DISCOHOOK_ORIGIN +
+          (config.backupId ? `/?backup=${config.backupId}` : ""),
+      )
+      .setDisabled(!config.backupId),
+    new ButtonBuilder()
+      .setLabel("View Triggers")
+      .setStyle(ButtonStyle.Link)
+      .setURL(`${env.DISCOHOOK_ORIGIN}/s/${guildId}?t=triggers`),
+  );
 };
 
 export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
@@ -202,6 +232,14 @@ export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
       getWelcomerConfigEmbed(ctx.env, config, { webhook, emojis })
         .setTitle(`Welcomer (${addRemove})`)
         .toJSON(),
+    ],
+    components: [
+      getWelcomerConfigComponents(
+        ctx.env,
+        config,
+        event,
+        ctx.interaction.guild_id,
+      ).toJSON(),
     ],
     flags: MessageFlags.Ephemeral,
   });

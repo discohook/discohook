@@ -13,7 +13,7 @@ import { messageReactionRemoveCallback } from "./events/messageReactionRemove.js
 import { webhooksUpdateCallback } from "./events/webhooksUpdate.js";
 import { Env } from "./types/env.js";
 
-export type GatewayEventCallback = (env: Env, payload: any) => Promise<void>;
+export type GatewayEventCallback = (env: Env, payload: any) => Promise<any>;
 
 export const eventNameToCallback: Partial<
   Record<GatewayDispatchEvents, GatewayEventCallback>

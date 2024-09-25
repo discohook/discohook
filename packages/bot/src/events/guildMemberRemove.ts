@@ -5,7 +5,7 @@ import { getDb, getchTriggerGuild } from "store";
 import { discordMembers, makeSnowflake } from "store/src/schema";
 import { TriggerEvent } from "store/src/types/triggers.js";
 import { GatewayEventCallback } from "../events.js";
-import { executeFlow } from "../flows/flows.js";
+import { FlowResult, executeFlow } from "../flows/flows.js";
 import { Trigger, getWelcomerConfigurations } from "./guildMemberAdd.js";
 
 export const guildMemberRemoveCallback: GatewayEventCallback = async (
@@ -40,10 +40,14 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   }
 
   const applicable = triggers.filter((t) => !!t.flow && !t.disabled);
+  const results: FlowResult[] = [];
   for (const trigger of applicable) {
-    await executeFlow(env, trigger.flow, rest, db, {
-      user: payload.user,
-      guild,
-    });
+    results.push(
+      await executeFlow(env, trigger.flow, rest, db, {
+        user: payload.user,
+        guild,
+      }),
+    );
   }
+  return results;
 };

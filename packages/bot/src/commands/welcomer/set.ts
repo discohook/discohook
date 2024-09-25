@@ -30,6 +30,7 @@ import { parseShareLink } from "../components/quick.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import {
   AutoWelcomerConfig,
+  getWelcomerConfigComponents,
   getWelcomerConfigEmbed,
   getWelcomerConfigFromActions,
 } from "./view.js";
@@ -324,6 +325,14 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
       })
         .setTitle(currentFlow.name)
         .toJSON(),
+    ],
+    components: [
+      getWelcomerConfigComponents(
+        ctx.env,
+        current,
+        event,
+        ctx.interaction.guild_id,
+      ).toJSON(),
     ],
     flags: MessageFlags.Ephemeral,
   });
