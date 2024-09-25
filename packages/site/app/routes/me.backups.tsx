@@ -10,6 +10,7 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
+import { linkClassName } from "~/components/preview/Markdown";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
@@ -145,7 +146,7 @@ export type LoadedBackup = Awaited<
 
 export default () => {
   const { t } = useTranslation();
-  const { backups, importedSettings, legacyPostsCount } =
+  const { backups, importedSettings, legacyPostsCount, page } =
     useLoaderData<typeof loader>();
   const submit = useSubmit();
 
@@ -366,8 +367,31 @@ export default () => {
           })}
         </div>
       ) : (
-        <p className="text-gray-500">{t("noBackups")}</p>
+        <p>
+          <Trans
+            t={t}
+            i18nKey="noBackups"
+            components={[<Link to="/" className={linkClassName} />]}
+          />
+        </p>
       )}
+      <div className="flex mt-2">
+        <Button
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => submit({ page: page - 1 })}
+          disabled={page === 1}
+        >
+          <CoolIcon icon="Chevron_Left" /> {t("previousPage")}
+        </Button>
+        <Button
+          className="ltr:ml-auto rtl:mr-auto"
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => submit({ page: page + 1 })}
+          disabled={backups.length < 50}
+        >
+          {t("nextPage")} <CoolIcon icon="Chevron_Right" />
+        </Button>
+      </div>
     </div>
   );
 };
