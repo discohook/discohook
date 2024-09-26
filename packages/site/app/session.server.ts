@@ -346,6 +346,7 @@ export async function authorizeRequest(
   context: Context,
   options?: {
     requireToken?: boolean;
+    headers?: Record<string, string>;
   },
 ): Promise<
   [
@@ -382,6 +383,11 @@ export async function authorizeRequest(
         user,
       }),
       (response) => {
+        if (options?.headers) {
+          for (const [k, v] of Object.entries(options.headers)) {
+            response.headers.append(k, v);
+          }
+        }
         response.headers.set("Set-Cookie", committed);
         return response;
       },

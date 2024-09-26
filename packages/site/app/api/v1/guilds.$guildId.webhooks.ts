@@ -4,7 +4,7 @@ import {
   APIChannel,
   APIWebhook,
   RESTGetAPIGuildWebhooksResult,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
@@ -103,13 +103,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     force ? "guildWebhooksForce" : "guildWebhooks",
   );
 
-  const [token, respond_] = await authorizeRequest(request, context);
-  const respond: typeof respond_ = (req) => {
-    for (const [k, v] of Object.entries(headers)) {
-      req.headers.append(k, v);
-    }
-    return respond_(req);
-  };
+  const [token, respond] = await authorizeRequest(request, context, {
+    headers,
+  });
   const { owner, permissions } = await getTokenGuildPermissions(
     token,
     guildId,
