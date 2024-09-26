@@ -138,15 +138,19 @@ export const getWebhookUrlEmbed = (
         },
   );
 
-  if (channelType === ChannelType.GuildForum) {
+  if (
+    channelType === ChannelType.GuildForum ||
+    channelType === ChannelType.GuildMedia
+  ) {
     embed.addFields({
-      name: "<:forum:1074458133407211562> Forum channels",
+      name: "<:forum:1074458133407211562> Forum/media channels",
       value: dedent`
-          <#${webhook.channel_id}> is a forum channel. In order to create a new forum
-          post using Discohook, click "Thread" and fill in the "Forum Thread Name" box.
-          If you want to send to an existing thread, add \`?thread_id=xxx\` to the end of
-          the above webhook URL, where \`xxx\` is the ID of the thread.
-          [Read how to get a thread ID](https://support.discord.com/hc/en-us/articles/206346498)
+          <#${webhook.channel_id}> is a thread-only channel. In order to create a new\
+          post using Discohook, click "Thread" and fill in the "Forum Thread Name" box.\
+          If you want to send to an existing thread, paste the ID of the thread in the\
+          "Thread ID" box.
+          [Read how to get a thread ID](https://support.discord.com/hc/en-us/articles/206346498)\
+          or use </id channel:1281305550340096032>
         `,
       inline: false,
     });
@@ -233,7 +237,9 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
         webhook,
         undefined,
         ctx.interaction.application_id,
-        ctx.interaction.channel.type,
+        webhook.channel_id === ctx.interaction.channel.id
+          ? ctx.interaction.channel.type
+          : undefined,
         showUrl,
       ).toJSON(),
     );
