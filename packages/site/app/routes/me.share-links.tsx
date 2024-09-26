@@ -30,10 +30,8 @@ import {
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
   const { page } = zxParseQuery(request, {
-    page: z
-      .number()
-      .min(1)
-      .default(1)
+    page: zx.IntAsString.default("1")
+      .refine((i) => i > 0)
       .transform((i) => i - 1),
   });
 
@@ -45,7 +43,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     offset: page * 100,
   });
 
-  return { user, shareLinks };
+  return { user, shareLinks, page: page + 1 };
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -135,7 +133,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
 export default () => {
   const { t } = useTranslation();
-  const { user, shareLinks: links } = useLoaderData<typeof loader>();
+  const { user, shareLinks: links, page } = useLoaderData<typeof loader>();
   const submit = useSubmit();
   const now = new Date();
 
@@ -318,6 +316,31 @@ export default () => {
       ) : (
         <p className="text-gray-500">{t("noLinks")}</p>
       )}
+      <div className="flex mt-2">
+        <Button
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => submit({ page: page - 1 })}
+          disabled={page === 1}
+        >
+          <Trans
+            t={t}
+            i18nKey="previousPage"
+            components={[<CoolIcon icon="Chevron_Left" rtl="Chevron_Right" />]}
+          />
+        </Button>
+        <Button
+          className="ltr:ml-auto rtl:mr-auto"
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => submit({ page: page + 1 })}
+          disabled={links.length < 100}
+        >
+          <Trans
+            t={t}
+            i18nKey="nextPage"
+            components={[<CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />]}
+          />
+        </Button>
+      </div>
     </div>
   );
 };

@@ -381,7 +381,11 @@ export default () => {
           onClick={() => submit({ page: page - 1 })}
           disabled={page === 1}
         >
-          <CoolIcon icon="Chevron_Left" /> {t("previousPage")}
+          <Trans
+            t={t}
+            i18nKey="previousPage"
+            components={[<CoolIcon icon="Chevron_Left" rtl="Chevron_Right" />]}
+          />
         </Button>
         <Button
           className="ltr:ml-auto rtl:mr-auto"
@@ -389,7 +393,11 @@ export default () => {
           onClick={() => submit({ page: page + 1 })}
           disabled={backups.length < 50}
         >
-          {t("nextPage")} <CoolIcon icon="Chevron_Right" />
+          <Trans
+            t={t}
+            i18nKey="nextPage"
+            components={[<CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />]}
+          />
         </Button>
       </div>
     </div>
