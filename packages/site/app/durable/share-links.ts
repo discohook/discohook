@@ -37,8 +37,11 @@ export class ShareLinks implements DurableObject {
         return new Response(undefined, { status: 201 });
       }
       case "HEAD": {
-        const alarm = await this.state.storage.getAlarm();
-        return new Response(undefined, { status: alarm !== null ? 200 : 404 });
+        // I would prefer not to be reading data but I was experiencing a bug
+        // where the alarm was `null` for links that still had data associated
+        // with them. This seems to be the only reliable method.
+        const data = await this.state.storage.get<QueryData>("data");
+        return new Response(undefined, { status: data ? 200 : 404 });
       }
       case "GET": {
         const data = await this.state.storage.get<QueryData>("data");
