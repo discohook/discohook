@@ -39,7 +39,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   const event = ctx.getIntegerOption("event").value as TriggerEvent;
 
   return [
-    ctx.defer(),
+    ctx.defer({ ephemeral: true }),
     async () => {
       const db = getDb(ctx.env.HYPERDRIVE);
       const guild = await getchTriggerGuild(
