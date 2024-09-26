@@ -44,7 +44,7 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
     await db.transaction(async (tx) => {
       // We retrieve tokens first in case we have tokens from a different bot;
       // we don't want to lose that data in the upsert event.
-      const tokens = await tx.query.webhooks.findMany({
+      const residual = await tx.query.webhooks.findMany({
         where: and(
           eq(webhooks.platform, "discord"),
           inArray(
@@ -52,26 +52,25 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
             incoming.map((w) => w.id),
           ),
         ),
-        columns: {
-          id: true,
-          token: true,
-        },
+        columns: { id: true, token: true },
       });
 
       await tx
         .insert(webhooks)
         .values(
-          incoming.map((webhook) => ({
-            platform: "discord" as const,
-            id: webhook.id,
-            name: webhook.name ?? "",
-            avatar: webhook.avatar,
-            channelId: webhook.channel_id,
-            discordGuildId: makeSnowflake(event.guild_id),
-            token:
-              webhook.token ?? tokens.find((w) => w.id === webhook.id)?.token,
-            applicationId: webhook.application_id,
-          })),
+          incoming.map((webhook) => {
+            const extant = residual.find((w) => w.id === webhook.id);
+            return {
+              platform: "discord" as const,
+              id: webhook.id,
+              name: webhook.name ?? "",
+              avatar: webhook.avatar,
+              channelId: webhook.channel_id,
+              discordGuildId: makeSnowflake(event.guild_id),
+              token: webhook.token ?? extant?.token ?? undefined,
+              applicationId: webhook.application_id,
+            } satisfies typeof webhooks.$inferInsert;
+          }),
         )
         .onConflictDoUpdate({
           target: [webhooks.platform, webhooks.id],

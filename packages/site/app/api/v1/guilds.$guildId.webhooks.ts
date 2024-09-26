@@ -4,11 +4,10 @@ import {
   APIChannel,
   APIWebhook,
   RESTGetAPIGuildWebhooksResult,
-  Routes,
-  WebhookType,
+  Routes
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { DBWithSchema, getDb, webhooks } from "store";
 import { zx } from "zodix";
 import { getBucket } from "~/durable/rate-limits";
@@ -19,34 +18,40 @@ import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
 const upsertGuildWebhooks = async (
   db: DBWithSchema,
-  source: APIWebhook[],
+  incoming: APIWebhook[],
   guildId: bigint,
 ) => {
   return (
     await db.transaction(async (tx) => {
-      await tx
-        .delete(webhooks)
-        .where(
-          and(
-            eq(webhooks.platform, "discord"),
-            eq(webhooks.discordGuildId, guildId),
+      // We retrieve tokens first in case we have tokens from a different bot;
+      // we don't want to lose that data in the upsert event.
+      const residual = await tx.query.webhooks.findMany({
+        where: and(
+          eq(webhooks.platform, "discord"),
+          inArray(
+            webhooks.id,
+            incoming.map((w) => w.id),
           ),
-        );
-      return await tx
+        ),
+        columns: { id: true, token: true },
+      });
+
+      const upserted = await tx
         .insert(webhooks)
         .values(
-          source
-            .filter((w) => w.type === WebhookType.Incoming)
-            .map((webhook) => ({
+          incoming.map((webhook) => {
+            const extant = residual.find((w) => w.id === webhook.id);
+            return {
               platform: "discord" as const,
               id: webhook.id,
-              discordGuildId: guildId,
-              channelId: webhook.channel_id,
               name: webhook.name ?? "",
               avatar: webhook.avatar,
+              channelId: webhook.channel_id,
+              discordGuildId: guildId,
+              token: webhook.token ?? extant?.token ?? undefined,
               applicationId: webhook.application_id,
-              token: webhook.token,
-            })),
+            } satisfies typeof webhooks.$inferInsert;
+          }),
         )
         .onConflictDoUpdate({
           target: [webhooks.platform, webhooks.id],
@@ -54,9 +59,8 @@ const upsertGuildWebhooks = async (
             name: sql`excluded.name`,
             avatar: sql`excluded.avatar`,
             channelId: sql`excluded."channelId"`,
-            discordGuildId: sql`excluded."discordGuildId"`,
-            applicationId: sql`excluded."applicationId"`,
             token: sql`excluded.token`,
+            applicationId: sql`excluded."applicationId"`,
           },
         })
         .returning({
@@ -66,6 +70,20 @@ const upsertGuildWebhooks = async (
           channelId: webhooks.channelId,
           applicationId: webhooks.applicationId,
         });
+
+      // Delete stale records
+      await tx.delete(webhooks).where(
+        and(
+          eq(webhooks.platform, "discord"),
+          eq(webhooks.discordGuildId, guildId),
+          notInArray(
+            webhooks.id,
+            incoming.map((w) => w.id),
+          ),
+        ),
+      );
+
+      return upserted;
     })
   ).map((d) => ({ ...d, user: null }));
 };
