@@ -8,7 +8,8 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { MessageAppCommandCallback } from "../../commands.js";
-import { getWebhookInfoEmbed } from "./webhookInfo.js";
+import { createLongDiscohookUrl } from "../restore.js";
+import { getWebhookInfoEmbed, getWebhookUrl } from "./webhookInfo.js";
 
 export const webhookInfoMsgCallback: MessageAppCommandCallback = async (
   ctx,
@@ -28,15 +29,23 @@ export const webhookInfoMsgCallback: MessageAppCommandCallback = async (
     ? !!ctx.env.APPLICATIONS[webhook.application_id]
     : webhook.type === WebhookType.Incoming;
 
+  const url = webhook.token
+    ? createLongDiscohookUrl(ctx.env.DISCOHOOK_ORIGIN, {
+        version: "d2",
+        messages: [{ data: {} }],
+        targets: [{ url: getWebhookUrl(webhook) }],
+      })
+    : ctx.env.DISCOHOOK_ORIGIN;
+
   const components = ctx.userPermissons.has(PermissionFlags.ManageWebhooks)
     ? [
         new ActionRowBuilder<ButtonBuilder>()
           .addComponents(
             new ButtonBuilder()
-              .setCustomId(`a_webhook-info-use_${webhook.id}`)
               .setLabel("Use Webhook")
               .setDisabled(!webhook.token && !tokenAccessible)
-              .setStyle(ButtonStyle.Primary),
+              .setURL(url)
+              .setStyle(ButtonStyle.Link),
             new ButtonBuilder()
               .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
               .setLabel("Show URL (advanced)")
