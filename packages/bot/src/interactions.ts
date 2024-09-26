@@ -337,16 +337,18 @@ export class InteractionContext<
   }
 
   getChannelOption(name: string) {
-    if (this.interaction.type === InteractionType.ApplicationCommand) {
-      return this._getResolvableOption<APIPartialResolvedChannel>(
-        name,
-        ApplicationCommandOptionType.Channel,
-        "channels",
-      );
-    } else if (
+    return this._getResolvableOption<APIPartialResolvedChannel>(
+      name,
+      ApplicationCommandOptionType.Channel,
+      "channels",
+    );
+  }
+
+  getAutocompleteChannelOption(name: string) {
+    // Autocomplete options are not resolved
+    if (
       this.interaction.type === InteractionType.ApplicationCommandAutocomplete
     ) {
-      // Autocomplete options are not resolved
       const option = this._getOption(name);
       if (!option || option.type !== ApplicationCommandOptionType.Channel) {
         return null;

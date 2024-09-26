@@ -13,7 +13,7 @@ export const webhookAutocomplete: AppCommandAutocompleteCallback = async (
   // biome-ignore lint/style/noNonNullAssertion: only guild-only commands use this function
   const guildId = ctx.interaction.guild_id!;
   const query = ctx.getStringOption("webhook").value.trim();
-  const channel = ctx.getChannelOption("filter-channel");
+  const channel = ctx.getAutocompleteChannelOption("filter-channel");
 
   // TODO: Use KV here, or query DB if we're confident enough in it
 
