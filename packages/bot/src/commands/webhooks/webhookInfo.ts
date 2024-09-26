@@ -296,6 +296,14 @@ const processUseWebhookButtonBoilerplate = async (
       flags: MessageFlags.Ephemeral,
     });
   }
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) {
+    return ctx.reply({
+      content: "This is a guild-only operation.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   const { webhookId } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "webhookId",
@@ -304,13 +312,17 @@ const processUseWebhookButtonBoilerplate = async (
   const db = getDb(ctx.env.HYPERDRIVE);
   const dbWebhook = await db.query.webhooks.findFirst({
     where: and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)),
-    columns: {
-      id: true,
-      token: true,
-    },
+    columns: { token: true },
   });
 
   const webhook = await getWebhook(webhookId, ctx.env);
+  if (!webhook.guild_id || webhook.guild_id !== guildId) {
+    return ctx.reply({
+      content: "This webhook belongs to a different server.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   db.insert(webhooks)
     .values({
       platform: "discord",
@@ -320,6 +332,7 @@ const processUseWebhookButtonBoilerplate = async (
       avatar: webhook.avatar,
       channelId: webhook.channel_id,
       applicationId: webhook.application_id,
+      discordGuildId: BigInt(webhook.guild_id ?? guildId),
     })
     .onConflictDoUpdate({
       target: [webhooks.platform, webhooks.id],
@@ -328,6 +341,7 @@ const processUseWebhookButtonBoilerplate = async (
         token: sql`excluded.token`,
         avatar: sql`excluded.avatar`,
         channelId: sql`excluded."channelId"`,
+        discordGuildId: sql`excluded."discordGuildId"`,
       },
     })
     .catch(console.error);
