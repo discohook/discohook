@@ -192,6 +192,8 @@
   },
   "justBeAMember": "Just be a member",
   "webhooks": "Webhooks",
+  "forceRefresh": "Force Refresh",
+  "refreshed": "Refreshed",
   "auditLog": "Audit Log",
   "auditLogSubtitle": "Below is a list of actions that have been taken through Discohook for <0>{{guild.name}}</0>. Some expected entries may not be present--for example if a webhook URL was leaked, it's not likely that the attacker would use Discohook.<br /><br />If you don't recognize a user, you may want to delete the webhook.",
   "tab": "Tab",

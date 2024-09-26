@@ -191,7 +191,10 @@ export default () => {
   const [confirmModal, setConfirm] = useConfirmModal();
 
   const auditLogFetcher = useFetcher<typeof ApiGetGuildAuditLog>();
-  const webhooksFetcher = useFetcher<typeof ApiGetGuildWebhooks>();
+  const webhooksFetcher = useSafeFetcher<typeof ApiGetGuildWebhooks>({
+    onError: setError,
+  });
+  const [webhooksForced, setWebhooksForced] = useState(false);
   const guildWebhookFetcher = useSafeFetcher<typeof ApiPatchGuildWebhook>({
     onError: setError,
   });
@@ -565,7 +568,25 @@ export default () => {
             </div>
           ) : tab === "webhooks" ? (
             <div>
-              <TabHeader>{t("webhooks")}</TabHeader>
+              <div className="flex mb-2">
+                <p className="text-xl font-semibold dark:text-gray-100 my-auto">
+                  {t(tab)}
+                </p>
+                <Button
+                  discordstyle={ButtonStyle.Secondary}
+                  className="mb-auto ltr:ml-auto rtl:mr-auto"
+                  disabled={webhooksForced || webhooksFetcher.state !== "idle"}
+                  onClick={() =>
+                    webhooksFetcher
+                      .loadAsync(
+                        `${apiUrl(BRoutes.guildWebhooks(guild.id))}?force=true`,
+                      )
+                      .then(() => setWebhooksForced(true))
+                  }
+                >
+                  {t(webhooksForced ? "refreshed" : "forceRefresh")}
+                </Button>
+              </div>
               <div className="space-y-2">
                 {webhooksFetcher.data
                   ? webhooksFetcher.data.map((webhook) => {

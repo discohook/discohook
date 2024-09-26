@@ -14,7 +14,7 @@ interface BucketConfig {
 }
 
 const apiBuckets: Partial<
-  Record<keyof typeof BRoutes, Record<string, BucketConfig>>
+  Record<RateLimitBucketName, Record<string, BucketConfig>>
 > & { global: Record<string, BucketConfig> } = {
   global: {
     POST: { capacity: 50, seconds: 5 },
@@ -28,6 +28,12 @@ const apiBuckets: Partial<
     GET: { capacity: 20, seconds: 5 },
     POST: { capacity: 20, seconds: 5 },
     PATCH: { capacity: 20, seconds: 5 },
+  },
+  guildWebhooks: {
+    GET: { capacity: 10, seconds: 10 },
+  },
+  guildWebhooksForce: {
+    GET: { capacity: 1, seconds: 120 },
   },
 };
 
@@ -50,10 +56,16 @@ const getRps = (bucket: BucketConfig): number =>
 const KEY_RE =
   /^(?<method>\w+):(?<bucket>\w+):(?<idScope>id|ip):(?<idValue>.+)$/;
 
+export type ExtraRateLimitBucketName = "guildWebhooksForce";
+
+export type RateLimitBucketName =
+  | keyof typeof BRoutes
+  | ExtraRateLimitBucketName;
+
 export const getBucket = async (
   request: Request,
   context: Context,
-  bucket?: keyof typeof BRoutes, // we should determine this from the url
+  bucket?: RateLimitBucketName, // we should determine this from the url
 ) => {
   const userId = await getUserId(request, context);
   const ip = request.headers.get("CF-Connecting-IP");
