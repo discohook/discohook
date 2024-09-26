@@ -37,6 +37,7 @@ const webhookChannelTypes = [
   ChannelType.GuildText,
   ChannelType.GuildVoice,
   ChannelType.GuildForum,
+  ChannelType.GuildMedia,
   ChannelType.PublicThread,
   ChannelType.PrivateThread,
   ChannelType.AnnouncementThread,
