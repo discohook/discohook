@@ -88,7 +88,7 @@ export const getWebhookUrlEmbed = (
     return new EmbedBuilder({
       title,
       description: dedent`
-        This webhook\'s token is not available. It may have been created by a
+        This webhook\'s token is not available. It may have been created by a\
         different bot or it may be a news webhook (from a different server).
       `,
       color,
@@ -148,9 +148,9 @@ export const getWebhookUrlEmbed = (
           <#${webhook.channel_id}> is a thread-only channel. In order to create a new\
           post using Discohook, click "Thread" and fill in the "Forum Thread Name" box.\
           If you want to send to an existing thread, paste the ID of the thread in the\
-          "Thread ID" box.
+          "Thread ID" box.\
           [Read how to get a thread ID](https://support.discord.com/hc/en-us/articles/206346498)\
-          or use </id channel:1281305550340096032>
+          or use </id channel:1281305550340096032>.
         `,
       inline: false,
     });
@@ -160,8 +160,8 @@ export const getWebhookUrlEmbed = (
     embed.addFields({
       name: ":warning: Keep this secret!",
       value: dedent`
-        Someone who can see this URL can send any message they want in
-        <#${webhook.channel_id}>, including scams and \`@everyone\` mentions.
+        Someone who can see this URL can send any message they want in\
+        <#${webhook.channel_id}>, including scams and \`@everyone\` mentions.\
         We are not able to screen messages sent by users.
       `,
       inline: false,
