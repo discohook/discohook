@@ -30,8 +30,8 @@ import {
   type StorableButtonWithCustomId,
 } from "store/src/types";
 import type { ModalCallback, SelectMenuCallback } from "../../components.js";
+import { getShareLink, getShareLinkExists } from "../../durable/share-links.js";
 import type { InteractionContext } from "../../interactions.js";
-import { getShareLink, getShareLinkExists } from "../../share-links.js";
 import { Env } from "../../types/env.js";
 import { storeComponents } from "../../util/components.js";
 import { getHighestRole } from "../reactionRoles.js";

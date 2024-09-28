@@ -27,7 +27,7 @@ import {
   MessageAppCommandCallback,
 } from "../commands.js";
 import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
-import { getShareLinkExists, putShareLink } from "../share-links.js";
+import { getShareLinkExists, putShareLink } from "../durable/share-links.js";
 import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { isThread } from "../util/guards.js";

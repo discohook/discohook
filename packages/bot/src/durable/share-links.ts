@@ -1,5 +1,5 @@
 import { QueryData } from "store/src/types";
-import { Env } from "./types/env.js";
+import { Env } from "../types/env.js";
 
 export const putShareLink = async (
   env: Env,
