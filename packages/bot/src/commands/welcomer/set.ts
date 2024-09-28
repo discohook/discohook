@@ -124,7 +124,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
     } catch (e) {
       const def = {
         content: String(e),
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       };
       return ctx.reply(
         isDiscordError(e) ? getErrorMessage(ctx, e.rawError)?.data ?? def : def,
@@ -134,7 +134,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
       return ctx.reply({
         content:
           "I cannot access that webhook's token. Choose a different webhook or use a channel instead.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
   }
@@ -159,38 +159,34 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
   if (triggers.length > 1) {
     return ctx.reply({
       content: `This server has ${triggers.length} triggers with this event. Please choose which one you would like to modify in the select menu, or [modify the trigger online](${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}).`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
       components: [
-        new ActionRowBuilder<StringSelectMenuBuilder>()
-          .setComponents(
-            new StringSelectMenuBuilder()
-              .setCustomId(
-                "a_edit-trigger-select_" satisfies AutoComponentCustomId,
-              )
-              .setOptions(
-                triggers.slice(0, 25).map((trigger, i) =>
-                  i === 24 && triggers.length > 25
-                    ? new StringSelectMenuOptionBuilder()
-                        .setLabel("Too many options")
-                        .setValue("overflow")
-                        .setDescription(
-                          "Please visit the link for more options",
-                        )
-                    : new StringSelectMenuOptionBuilder()
-                        .setLabel(`${i + 1}. ${trigger.flow.name}`)
-                        .setValue(`${trigger.id}`)
-                        .setEmoji(
-                          emojis.getC(
-                            event === TriggerEvent.MemberAdd
-                              ? "User_Add"
-                              : "User_Remove",
-                            true,
-                          ),
+        new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+          new StringSelectMenuBuilder()
+            .setCustomId(
+              "a_edit-trigger-select_" satisfies AutoComponentCustomId,
+            )
+            .setOptions(
+              triggers.slice(0, 25).map((trigger, i) =>
+                i === 24 && triggers.length > 25
+                  ? new StringSelectMenuOptionBuilder()
+                      .setLabel("Too many options")
+                      .setValue("overflow")
+                      .setDescription("Please visit the link for more options")
+                  : new StringSelectMenuOptionBuilder()
+                      .setLabel(`${i + 1}. ${trigger.flow.name}`)
+                      .setValue(`${trigger.id}`)
+                      .setEmoji(
+                        emojis.getC(
+                          event === TriggerEvent.MemberAdd
+                            ? "User_Add"
+                            : "User_Remove",
+                          true,
                         ),
-                ),
+                      ),
               ),
-          )
-          .toJSON(),
+            ),
+        ),
       ],
     });
   }
@@ -223,7 +219,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
   if (!current.backupId && !shareId) {
     return ctx.reply({
       content: "Please provide message data with the **share-link** option.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -238,7 +234,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
     return ctx.reply({
       content:
         "Please select a destination with either the **webhook** or **channel** option.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -322,9 +318,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
         backup: backupName ? { name: backupName } : undefined,
         webhook,
         emojis,
-      })
-        .setTitle(currentFlow.name)
-        .toJSON(),
+      }).setTitle(currentFlow.name),
     ],
     components: [
       getWelcomerConfigComponents(
@@ -332,8 +326,8 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
         current,
         event,
         ctx.interaction.guild_id,
-      ).toJSON(),
+      ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

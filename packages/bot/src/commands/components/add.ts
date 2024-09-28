@@ -13,11 +13,9 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIActionRowComponent,
   APIButtonComponent,
   APIInteraction,
   APIMessage,
-  APIMessageActionRowComponent,
   APIModalInteractionResponseCallbackData,
   APISelectMenuComponent,
   APIStringSelectComponent,
@@ -307,7 +305,7 @@ const registerComponent = async (
 export const startComponentFlow = async (
   ctx: InteractionContext<APIInteraction>,
   message: APIMessage,
-  components?: APIActionRowComponent<APIMessageActionRowComponent>[],
+  components?: ActionRowBuilder<MessageActionRowComponentBuilder>[],
 ): Promise<InteractionInstantOrDeferredResponse> => {
   const db = getDb(ctx.env.HYPERDRIVE);
   const user = await upsertDiscordUser(db, ctx.user);
@@ -315,7 +313,7 @@ export const startComponentFlow = async (
   if (!message.webhook_id) {
     return ctx.reply({
       content: "This is not a webhook message.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
   if (
@@ -330,7 +328,7 @@ export const startComponentFlow = async (
           ? `owned by <@${message.application_id}>, not Discohook Utils`
           : "not owned by Discohook Utils"
       }. You can create a bot-owned webhook with </webhook create:908884724087410732>, then re-send the message from Discohook (use </restore:979811266073878560> to load the message).`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
       // components: [
       //   new ActionRowBuilder<ButtonBuilder>()
       //     .addComponents(
@@ -339,8 +337,7 @@ export const startComponentFlow = async (
       //           `a_clone-webhook-message_${message.id}:${message.webhook_id}` satisfies AutoComponentCustomId,
       //         )
       //         .setLabel("Create webhook & re-send message"),
-      //     )
-      //     .toJSON(),
+      //     ),
       // ],
     });
   }
@@ -357,7 +354,7 @@ export const startComponentFlow = async (
         It may be an incompatible type of webhook, or it may have been
         created by a different bot user.
       `,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -385,70 +382,68 @@ export const startComponentFlow = async (
 
   return [
     ctx.reply({
-      embeds: [getComponentFlowEmbed(componentFlow).toJSON()],
+      embeds: [getComponentFlowEmbed(componentFlow)],
       components: [
-        new ActionRowBuilder<StringSelectMenuBuilder>()
-          .addComponents(
-            await storeComponents(ctx.env.KV, [
-              new StringSelectMenuBuilder({
-                placeholder: "Add a component",
-                options: [
-                  {
-                    label: "Button",
-                    description:
-                      "A simple button that runs a flow (add roles/send messages/etc)",
-                    value: "button",
-                    emoji: { name: "🟦" },
-                  },
-                  {
-                    label: "Link Button",
-                    description: "Direct a user to a webpage",
-                    value: "link-button",
-                    emoji: { name: "🌐" },
-                  },
-                  {
-                    label: "String Select",
-                    description:
-                      "Select from a custom list of options (up to 25)",
-                    value: "string-select",
-                    emoji: { name: "🔽" },
-                  },
-                  {
-                    label: "User Select",
-                    description: "Select from a list of all server members",
-                    value: "user-select",
-                    emoji: { name: "👤" },
-                  },
-                  {
-                    label: "Role Select",
-                    description: "Select from a list of all server roles",
-                    value: "role-select",
-                    emoji: { name: "🏷️" },
-                  },
-                  {
-                    label: "User/Role Select",
-                    description: "Select from a list of all members and roles",
-                    value: "mentionable-select",
-                    emoji: { name: "*️⃣" },
-                  },
-                  {
-                    label: "Channel Select",
-                    description: "Select from a list of all server channels",
-                    value: "channel-select",
-                    emoji: { name: "#️⃣" },
-                  },
-                ],
-              }),
-              {
-                ...componentFlow,
-                componentOnce: true,
-              },
-            ]),
-          )
-          .toJSON(),
+        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+          await storeComponents(ctx.env.KV, [
+            new StringSelectMenuBuilder({
+              placeholder: "Add a component",
+              options: [
+                {
+                  label: "Button",
+                  description:
+                    "A simple button that runs a flow (add roles/send messages/etc)",
+                  value: "button",
+                  emoji: { name: "🟦" },
+                },
+                {
+                  label: "Link Button",
+                  description: "Direct a user to a webpage",
+                  value: "link-button",
+                  emoji: { name: "🌐" },
+                },
+                {
+                  label: "String Select",
+                  description:
+                    "Select from a custom list of options (up to 25)",
+                  value: "string-select",
+                  emoji: { name: "🔽" },
+                },
+                {
+                  label: "User Select",
+                  description: "Select from a list of all server members",
+                  value: "user-select",
+                  emoji: { name: "👤" },
+                },
+                {
+                  label: "Role Select",
+                  description: "Select from a list of all server roles",
+                  value: "role-select",
+                  emoji: { name: "🏷️" },
+                },
+                {
+                  label: "User/Role Select",
+                  description: "Select from a list of all members and roles",
+                  value: "mentionable-select",
+                  emoji: { name: "*️⃣" },
+                },
+                {
+                  label: "Channel Select",
+                  description: "Select from a list of all server channels",
+                  value: "channel-select",
+                  emoji: { name: "#️⃣" },
+                },
+              ],
+            }),
+            {
+              ...componentFlow,
+              componentOnce: true,
+            },
+          ]),
+        ),
         ...(components ?? []),
       ],
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     }),
     async () => {
       const guild = await getchGuild(
@@ -619,38 +614,34 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
       const embed = getComponentFlowEmbed(state);
       embed.setFooter({ text: t("componentWillExpire") });
       return ctx.updateMessage({
-        embeds: [embed.toJSON()],
+        embeds: [embed],
         components: [
-          new ActionRowBuilder<StringSelectMenuBuilder>()
-            .addComponents(
-              await storeComponents(ctx.env.KV, [
-                new StringSelectMenuBuilder()
-                  .setPlaceholder("Select a quick setup configuration")
-                  .addOptions(
-                    quickButtonConfigs.map((config) =>
-                      new StringSelectMenuOptionBuilder()
-                        .setValue(config.id)
-                        .setLabel(config.name)
-                        .setEmoji(config.emoji),
-                    ),
+          new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+            await storeComponents(ctx.env.KV, [
+              new StringSelectMenuBuilder()
+                .setPlaceholder("Select a quick setup configuration")
+                .addOptions(
+                  quickButtonConfigs.map((config) =>
+                    new StringSelectMenuOptionBuilder()
+                      .setValue(config.id)
+                      .setLabel(config.name)
+                      .setEmoji(config.emoji),
                   ),
-                {
-                  ...state,
-                  componentTimeout: 600,
-                  componentRoutingId: "add-component-quick-entry",
-                  componentOnce: true,
-                },
-              ]),
-            )
-            .toJSON(),
-          new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-              new ButtonBuilder()
-                .setStyle(ButtonStyle.Link)
-                .setLabel(t("customize"))
-                .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
-            )
-            .toJSON(),
+                ),
+              {
+                ...state,
+                componentTimeout: 600,
+                componentRoutingId: "add-component-quick-entry",
+                componentOnce: true,
+              },
+            ]),
+          ),
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setStyle(ButtonStyle.Link)
+              .setLabel(t("customize"))
+              .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
+          ),
         ],
       });
     }
@@ -718,26 +709,24 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
       ]);
 
       return [
-        ctx.modal(modal.toJSON()),
+        ctx.modal(modal),
         async () => {
           await ctx.followup.editOriginalMessage({
-            embeds: [getComponentFlowEmbed(state).toJSON()],
+            embeds: [getComponentFlowEmbed(state)],
             components: [
-              new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                  await storeComponents(ctx.env.KV, [
-                    new ButtonBuilder()
-                      .setStyle(ButtonStyle.Primary)
-                      .setLabel("Open modal"),
-                    {
-                      componentRoutingId:
-                        "add-component-flow-customize-modal-resend",
-                      componentTimeout: 600,
-                      modal: modal.toJSON(),
-                    },
-                  ]),
-                )
-                .toJSON(),
+              new ActionRowBuilder<ButtonBuilder>().addComponents(
+                await storeComponents(ctx.env.KV, [
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setLabel("Open modal"),
+                  {
+                    componentRoutingId:
+                      "add-component-flow-customize-modal-resend",
+                    componentTimeout: 600,
+                    modal: modal.toJSON(),
+                  },
+                ]),
+              ),
             ],
           });
         },
@@ -823,16 +812,14 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
       const embed = getComponentFlowEmbed(state);
       embed.setFooter({ text: t("componentWillExpire") });
       return ctx.updateMessage({
-        embeds: [embed.toJSON()],
+        embeds: [embed],
         components: [
-          new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-              new ButtonBuilder()
-                .setStyle(ButtonStyle.Link)
-                .setLabel(t("customize"))
-                .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
-            )
-            .toJSON(),
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setStyle(ButtonStyle.Link)
+              .setLabel(t("customize"))
+              .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
+          ),
         ],
       });
     }
@@ -841,7 +828,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   }
 
   return ctx.updateMessage({
-    embeds: [getComponentFlowEmbed(state).toJSON()],
+    embeds: [getComponentFlowEmbed(state)],
     components: [],
   });
 };
@@ -864,7 +851,7 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
     if (!label && !emojiRaw) {
       return ctx.reply({
         content: "Must provide either a label or emoji.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
 
@@ -874,7 +861,7 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
         if (emojiRaw.includes(" ")) {
           return ctx.reply({
             content: "Invalid emoji: Contains invalid characters.",
-            flags: MessageFlags.Ephemeral,
+            ephemeral: true,
           });
         }
 
@@ -889,7 +876,7 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
           return ctx.reply({
             content:
               "Could not find an emoji that matches the input. For a custom emoji, try using the numeric ID, and make sure Discohook has access to it.",
-            flags: MessageFlags.Ephemeral,
+            ephemeral: true,
           });
         }
         state.component.emoji = partialEmojiToComponentEmoji(emoji);
@@ -927,14 +914,14 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
       } catch {
         return ctx.reply({
           content: "Invalid URL.",
-          flags: MessageFlags.Ephemeral,
+          ephemeral: true,
         });
       }
       if (!BUTTON_URL_RE.test(url.href)) {
         return ctx.reply({
           content:
             "Invalid URL. Must be a `http://`, `https://`, or `discord://` address.",
-          flags: MessageFlags.Ephemeral,
+          ephemeral: true,
         });
       }
 
@@ -955,13 +942,13 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
     state.step = state.steps?.length ?? 0;
     state.totalSteps = state.steps?.length;
     return ctx.updateMessage({
-      embeds: [getComponentFlowEmbed(state).toJSON()],
+      embeds: [getComponentFlowEmbed(state)],
       components: [],
     });
   }
 
   return ctx.reply({
     content: "This shouldn't happen",
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

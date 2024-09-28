@@ -1,5 +1,13 @@
+import {
+  ActionRowBuilder,
+  EmbedBuilder,
+  MessageActionRowComponentBuilder,
+  ModalBuilder,
+} from "@discordjs/builders";
 import type { REST } from "@discordjs/rest";
 import {
+  APIActionRowComponent,
+  APIAllowedMentions,
   APIApplicationCommandInteractionDataBooleanOption,
   APIApplicationCommandInteractionDataIntegerOption,
   APIApplicationCommandInteractionDataNumberOption,
@@ -7,6 +15,7 @@ import {
   APIApplicationCommandInteractionDataStringOption,
   APIApplicationCommandInteractionDataSubcommandOption,
   APIAttachment,
+  APIEmbed,
   APIGuildInteraction,
   APIGuildMember,
   APIInteraction,
@@ -17,6 +26,7 @@ import {
   APIInteractionResponseDeferredMessageUpdate,
   APIInteractionResponseUpdateMessage,
   APIMessage,
+  APIMessageActionRowComponent,
   APIMessageApplicationCommandInteraction,
   APIMessageComponentInteraction,
   APIModalInteractionResponse,
@@ -33,18 +43,75 @@ import {
   InteractionType,
   MessageFlags,
   ModalSubmitComponent,
+  RESTAPIPollCreate,
   RESTGetAPIInteractionFollowupResult,
-  RESTPatchAPIInteractionFollowupJSONBody,
   RESTPatchAPIInteractionFollowupResult,
-  RESTPostAPIInteractionFollowupJSONBody,
   RESTPostAPIInteractionFollowupResult,
   Routes,
 } from "discord-api-types/v10";
-import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import {
+  MessageFlagsBitField,
+  PermissionFlags,
+  PermissionsBitField,
+} from "discord-bitflag";
 import { Snowflake, getDate } from "discord-snowflake";
 import { MinimumKVComponentState } from "./components.js";
 import { APIPartialResolvedChannel } from "./types/api.js";
 import { Env } from "./types/env.js";
+
+export interface MessageConstructorData
+  extends Pick<
+    APIInteractionResponseCallbackData,
+    "content" | "attachments" | "flags" | "tts"
+  > {
+  embeds?: (EmbedBuilder | APIEmbed)[];
+  components?: (
+    | ActionRowBuilder<MessageActionRowComponentBuilder>
+    | APIActionRowComponent<APIMessageActionRowComponent>
+  )[];
+  poll?: RESTAPIPollCreate;
+  // poll?: (PollBuilder | RESTAPIPollCreate);
+  allowedMentions?: APIAllowedMentions;
+  appliedTags?: string[];
+  threadName?: string;
+  ephemeral?: boolean;
+}
+
+const messageConstructorDataToResponseCallbackData = (
+  data: string | MessageConstructorData,
+): APIInteractionResponseCallbackData => {
+  if (typeof data === "string") return { content: data };
+
+  const flags = new MessageFlagsBitField(data.flags ?? 0);
+  flags.set(MessageFlags.Ephemeral, data.ephemeral ?? false);
+  const constructed: APIInteractionResponseCallbackData = {
+    content: data.content,
+    allowed_mentions: data.allowedMentions,
+    attachments: data.attachments,
+    applied_tags: data.appliedTags,
+    tts: data.tts,
+    thread_name: data.threadName,
+  };
+
+  if (flags.value !== 0n) {
+    constructed.flags = Number(flags.value);
+  }
+  if (data.embeds) {
+    constructed.embeds = data.embeds.map((e) =>
+      e instanceof EmbedBuilder ? e.toJSON() : e,
+    );
+  }
+  if (data.components) {
+    constructed.components = data.components.map((e) =>
+      e instanceof ActionRowBuilder ? e.toJSON() : e,
+    );
+  }
+  if (data.poll) {
+    constructed.poll = data.poll;
+  }
+
+  return constructed;
+};
 
 export class InteractionContext<
   T extends APIInteraction = APIInteraction,
@@ -488,27 +555,30 @@ export class InteractionContext<
   }
 
   reply(
-    data: string | APIInteractionResponseCallbackData,
+    data: string | MessageConstructorData,
   ): APIInteractionResponseChannelMessageWithSource {
     return {
       type: InteractionResponseType.ChannelMessageWithSource,
-      data: typeof data === "string" ? { content: data } : data,
+      data: messageConstructorDataToResponseCallbackData(data),
     };
   }
 
   updateMessage(
-    data: APIInteractionResponseCallbackData,
+    data: string | MessageConstructorData,
   ): APIInteractionResponseUpdateMessage {
     return {
       type: InteractionResponseType.UpdateMessage,
-      data: typeof data === "string" ? { content: data } : data,
+      data: messageConstructorDataToResponseCallbackData(data),
     };
   }
 
   modal(
-    data: APIModalInteractionResponseCallbackData,
+    builder: ModalBuilder | APIModalInteractionResponseCallbackData,
   ): APIModalInteractionResponse {
-    return { type: InteractionResponseType.Modal, data };
+    return {
+      type: InteractionResponseType.Modal,
+      data: builder instanceof ModalBuilder ? builder.toJSON() : builder,
+    };
   }
 }
 
@@ -523,12 +593,10 @@ class InteractionFollowup {
     this.interaction = interaction;
   }
 
-  send(data: string | RESTPostAPIInteractionFollowupJSONBody) {
+  send(data: string | MessageConstructorData) {
     return this.rest.post(
       Routes.webhook(this.applicationId, this.interaction.token),
-      {
-        body: typeof data === "string" ? { content: data } : data,
-      },
+      { body: messageConstructorDataToResponseCallbackData(data) },
     ) as Promise<RESTPostAPIInteractionFollowupResult>;
   }
 
@@ -542,17 +610,14 @@ class InteractionFollowup {
     ) as Promise<RESTGetAPIInteractionFollowupResult>;
   }
 
-  editMessage(
-    messageId: string,
-    data: RESTPatchAPIInteractionFollowupJSONBody,
-  ) {
+  editMessage(messageId: string, data: MessageConstructorData) {
     return this.rest.patch(
       Routes.webhookMessage(
         this.applicationId,
         this.interaction.token,
         messageId,
       ),
-      { body: data },
+      { body: messageConstructorDataToResponseCallbackData(data) },
     ) as Promise<RESTPatchAPIInteractionFollowupResult>;
   }
 
@@ -570,7 +635,7 @@ class InteractionFollowup {
     return this.getMessage("@original");
   }
 
-  editOriginalMessage(data: RESTPatchAPIInteractionFollowupJSONBody) {
+  editOriginalMessage(data: MessageConstructorData) {
     return this.editMessage("@original", data);
   }
 

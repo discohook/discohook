@@ -2,7 +2,6 @@ import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import {
   APIWebhook,
   ButtonStyle,
-  MessageFlags,
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
@@ -18,7 +17,7 @@ export const webhookInfoMsgCallback: MessageAppCommandCallback = async (
   if (!msg.webhook_id) {
     return ctx.reply({
       content: "This is not a webhook message.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -39,26 +38,24 @@ export const webhookInfoMsgCallback: MessageAppCommandCallback = async (
 
   const components = ctx.userPermissons.has(PermissionFlags.ManageWebhooks)
     ? [
-        new ActionRowBuilder<ButtonBuilder>()
-          .addComponents(
-            new ButtonBuilder()
-              .setLabel("Use Webhook")
-              .setDisabled(!webhook.token && !tokenAccessible)
-              .setURL(url)
-              .setStyle(ButtonStyle.Link),
-            new ButtonBuilder()
-              .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
-              .setLabel("Show URL (advanced)")
-              .setDisabled(!webhook.token && !tokenAccessible)
-              .setStyle(ButtonStyle.Secondary),
-          )
-          .toJSON(),
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setLabel("Use Webhook")
+            .setDisabled(!webhook.token && !tokenAccessible)
+            .setURL(url)
+            .setStyle(ButtonStyle.Link),
+          new ButtonBuilder()
+            .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
+            .setLabel("Show URL (advanced)")
+            .setDisabled(!webhook.token && !tokenAccessible)
+            .setStyle(ButtonStyle.Secondary),
+        ),
       ]
     : undefined;
 
   return ctx.reply({
-    embeds: [getWebhookInfoEmbed(webhook).toJSON()],
+    embeds: [getWebhookInfoEmbed(webhook)],
     components,
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

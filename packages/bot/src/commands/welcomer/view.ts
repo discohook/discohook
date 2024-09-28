@@ -210,7 +210,7 @@ export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
   if (triggers.length === 0) {
     return ctx.reply({
       content: "This server has no triggers with that event.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -229,9 +229,9 @@ export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
   const emojis = await getEmojis(ctx.env);
   return ctx.reply({
     embeds: [
-      getWelcomerConfigEmbed(ctx.env, config, { webhook, emojis })
-        .setTitle(`Welcomer (${addRemove})`)
-        .toJSON(),
+      getWelcomerConfigEmbed(ctx.env, config, { webhook, emojis }).setTitle(
+        `Welcomer (${addRemove})`,
+      ),
     ],
     components: [
       getWelcomerConfigComponents(
@@ -239,8 +239,8 @@ export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
         config,
         event,
         ctx.interaction.guild_id,
-      ).toJSON(),
+      ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

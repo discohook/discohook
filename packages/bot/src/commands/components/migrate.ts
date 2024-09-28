@@ -360,13 +360,13 @@ export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
     if (typeof message === "string") {
       return ctx.reply({
         content: message,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
     if (!message.webhook_id) {
       return ctx.reply({
         content: "This is not a webhook message.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
 
@@ -382,7 +382,7 @@ export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
     if (result.count === 0) {
       return ctx.reply({
         content: "There are no buttons on this message to migrate.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
     return ctx.reply({
@@ -394,24 +394,22 @@ export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
         result.count
       } migrated legacy buttons. Positions may be altered, but can be changed later. Are you sure you want to do this?`,
       components: [
-        new ActionRowBuilder<ButtonBuilder>()
-          .addComponents(
-            new ButtonBuilder()
-              .setCustomId(
-                `a_migrate-buttons-confirm_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
-              )
-              .setLabel("Migrate")
-              .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-              .setCustomId(
-                "a_migrate-buttons-cancel_" satisfies AutoComponentCustomId,
-              )
-              .setLabel("Cancel")
-              .setStyle(ButtonStyle.Secondary),
-          )
-          .toJSON(),
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(
+              `a_migrate-buttons-confirm_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
+            )
+            .setLabel("Migrate")
+            .setStyle(ButtonStyle.Danger),
+          new ButtonBuilder()
+            .setCustomId(
+              "a_migrate-buttons-cancel_" satisfies AutoComponentCustomId,
+            )
+            .setLabel("Cancel")
+            .setStyle(ButtonStyle.Secondary),
+        ),
       ],
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   };
 

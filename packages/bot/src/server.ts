@@ -358,18 +358,16 @@ const handleInteraction = async (
             ? ctx.reply({
                 content: t("noComponentFlow"),
                 components: [
-                  new ActionRowBuilder<ButtonBuilder>()
-                    .addComponents(
-                      new ButtonBuilder()
-                        .setStyle(ButtonStyle.Link)
-                        .setURL(
-                          `${env.DISCOHOOK_ORIGIN}/edit/component/${component.id}`,
-                        )
-                        .setLabel(t("customize")),
-                    )
-                    .toJSON(),
+                  new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder()
+                      .setStyle(ButtonStyle.Link)
+                      .setURL(
+                        `${env.DISCOHOOK_ORIGIN}/edit/component/${component.id}`,
+                      )
+                      .setLabel(t("customize")),
+                  ),
                 ],
-                flags: MessageFlags.Ephemeral,
+                ephemeral: true,
               })
             : ctx.updateMessage({}),
         );

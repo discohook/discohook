@@ -14,7 +14,6 @@ import {
   APIWebhook,
   ButtonStyle,
   ChannelType,
-  MessageFlags,
   RouteBases,
   Routes,
   WebhookType,
@@ -230,7 +229,7 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
     ? !!ctx.env.APPLICATIONS[webhook.application_id]
     : webhook.type === WebhookType.Incoming;
 
-  const embeds = [getWebhookInfoEmbed(webhook).toJSON()];
+  const embeds = [getWebhookInfoEmbed(webhook)];
   if (showUrl) {
     embeds.push(
       getWebhookUrlEmbed(
@@ -241,7 +240,7 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
           ? ctx.interaction.channel.type
           : undefined,
         showUrl,
-      ).toJSON(),
+      ),
     );
   }
 
@@ -251,39 +250,37 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
     !webhook.token &&
     !tokenAccessible
   ) {
-    embeds[0].footer = {
+    embeds[0].setFooter({
       // This basically just means that if another bot created the webhook and
       // lets you see the token then you can provide it yourself on the website.
       // But that's a little wordy and I'm not sure how many cases there are
       // where that's useful information for people.
       text: "Discohook cannot see this webhook's token, so it cannot be used unless you provide the URL manually. Try creating a new webhook with Discohook.",
-    };
+    });
   }
 
   const components =
     !showUrl && ctx.userPermissons.has(PermissionFlags.ManageWebhooks)
       ? [
-          new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-              new ButtonBuilder()
-                .setCustomId(`a_webhook-info-use_${webhook.id}`)
-                .setLabel("Use Webhook")
-                .setDisabled(!webhook.token && !tokenAccessible)
-                .setStyle(ButtonStyle.Primary),
-              new ButtonBuilder()
-                .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
-                .setLabel("Show URL (advanced)")
-                .setDisabled(!webhook.token && !tokenAccessible)
-                .setStyle(ButtonStyle.Secondary),
-            )
-            .toJSON(),
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setCustomId(`a_webhook-info-use_${webhook.id}`)
+              .setLabel("Use Webhook")
+              .setDisabled(!webhook.token && !tokenAccessible)
+              .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+              .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
+              .setLabel("Show URL (advanced)")
+              .setDisabled(!webhook.token && !tokenAccessible)
+              .setStyle(ButtonStyle.Secondary),
+          ),
         ]
       : undefined;
 
   return ctx.reply({
     embeds,
-    flags: showUrl ? MessageFlags.Ephemeral : undefined,
     components,
+    ephemeral: showUrl,
   });
 };
 
@@ -293,14 +290,14 @@ const processUseWebhookButtonBoilerplate = async (
   if (!ctx.userPermissons.has(PermissionFlags.ManageWebhooks)) {
     return ctx.reply({
       content: "You need the manage webhooks permission.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
   const guildId = ctx.interaction.guild_id;
   if (!guildId) {
     return ctx.reply({
       content: "This is a guild-only operation.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -319,7 +316,7 @@ const processUseWebhookButtonBoilerplate = async (
   if (!webhook.guild_id || webhook.guild_id !== guildId) {
     return ctx.reply({
       content: "This webhook belongs to a different server.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -352,7 +349,7 @@ const processUseWebhookButtonBoilerplate = async (
     } else {
       return ctx.reply({
         content: "The webhook's token is not available.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
   }
@@ -380,16 +377,14 @@ export const webhookInfoUseCallback: ButtonCallback = async (ctx) => {
     content:
       "Click the button to start a new Discohook message with this webhook preloaded.",
     components: [
-      new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Link)
-            .setLabel("Open Discohook")
-            .setURL(url),
-        )
-        .toJSON(),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setLabel("Open Discohook")
+          .setURL(url),
+      ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -408,7 +403,7 @@ export const webhookInfoShowUrlCallback: ButtonCallback = async (ctx) => {
     true,
   );
   return ctx.reply({
-    embeds: [embed.toJSON()],
-    flags: MessageFlags.Ephemeral,
+    embeds: [embed],
+    ephemeral: true,
   });
 };

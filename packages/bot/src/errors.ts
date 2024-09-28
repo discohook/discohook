@@ -1,8 +1,7 @@
 import {
   APIInteraction,
   APIInteractionResponseChannelMessageWithSource,
-  MessageFlags,
-  RESTError
+  RESTError,
 } from "discord-api-types/v10";
 import { InteractionContext } from "./interactions.js";
 
@@ -110,7 +109,7 @@ export const getErrorMessage = (
   if (message) {
     return ctx.reply({
       content: message,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 };

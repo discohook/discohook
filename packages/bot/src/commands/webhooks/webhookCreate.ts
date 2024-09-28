@@ -1,11 +1,14 @@
-import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+} from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
   APIInteraction,
   APIWebhook,
   ButtonStyle,
   ChannelType,
-  MessageFlags,
   RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
@@ -84,7 +87,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
       content: `Invalid channel type.${
         !channel ? " To specify a channel, use the `channel` argument." : ""
       }`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -205,8 +208,8 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
         .onConflictDoNothing();
 
       await ctx.followup.editOriginalMessage({
-        embeds: [embed.toJSON()],
-        components: [row.toJSON()],
+        embeds: [embed],
+        components: [row],
       });
 
       await sleep(2000);
@@ -216,17 +219,17 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
         if (isDiscordError(e) && e.code === RESTJSONErrorCodes.UnknownWebhook) {
           await ctx.followup.editOriginalMessage({
             embeds: [
-              {
-                title: "Webhook was deleted",
-                description: dedent`
+              new EmbedBuilder()
+                .setTitle("Webhook was deleted")
+                .setColor(color)
+                .setDescription(dedent`
                   Your webhook was created successfully, but it seems like a
                   moderation bot may have deleted it automatically. Some bots
                   detect new webhooks as spam activity. Check your server audit
                   log for more details.
-                `,
-                color,
-              },
+                `),
             ],
+            components: [],
           });
           await db
             .delete(webhooks)

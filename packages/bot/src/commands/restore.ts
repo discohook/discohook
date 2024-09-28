@@ -165,9 +165,9 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
     const data = messageToQueryData(message);
     const share = await createShareLink(ctx.env, data, { userId: user.id });
     return ctx.reply({
-      embeds: [getShareEmbed(share, true).toJSON()],
+      embeds: [getShareEmbed(share, true)],
       components: [],
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -210,10 +210,8 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
   // }
 
   return ctx.reply({
-    components: [
-      new ActionRowBuilder<typeof select>().addComponents(select).toJSON(),
-    ],
-    flags: MessageFlags.Ephemeral,
+    components: [new ActionRowBuilder<typeof select>().addComponents(select)],
+    ephemeral: true,
   });
 };
 
@@ -267,7 +265,7 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
         userId: BigInt(userId),
       });
       return ctx.updateMessage({
-        embeds: [getShareEmbed(share, true).toJSON()],
+        embeds: [getShareEmbed(share, true)],
         components: [],
       });
     }
@@ -281,8 +279,8 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
       if (!webhook.token) {
         return ctx.updateMessage({
           content: dedent`
-            Webhook token (ID ${webhookId}) was not available.
-            It may be an incompatible type of webhook, or it may have been
+            Webhook token (ID ${webhookId}) was not available.\
+            It may be an incompatible type of webhook, or it may have been\
             created by a different bot user.
           `,
           components: [],
@@ -340,7 +338,7 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
         userId: BigInt(userId),
       });
       return ctx.updateMessage({
-        embeds: [getShareEmbed(share, false).toJSON()],
+        embeds: [getShareEmbed(share, false)],
         components: [],
       });
     }
@@ -353,7 +351,7 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
   }
   return ctx.reply({
     content: "This shouldn't happen!",
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -381,7 +379,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
     return ctx.reply({
       content:
         "You must have the manage webhooks permission to restore a message in edit mode.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -390,8 +388,8 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
   if (!message.webhook_id || message.interaction_metadata) {
     const share = await createShareLink(ctx.env, data, { userId: user.id });
     return ctx.reply({
-      embeds: [getShareEmbed(share, true).toJSON()],
-      flags: MessageFlags.Ephemeral,
+      embeds: [getShareEmbed(share, true)],
+      ephemeral: true,
     });
   }
 
@@ -403,15 +401,15 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
         userId: BigInt(user.id),
       });
       return ctx.reply({
-        embeds: [getShareEmbed(share, true).toJSON()],
-        flags: MessageFlags.Ephemeral,
+        embeds: [getShareEmbed(share, true)],
+        ephemeral: true,
       });
     }
     case "edit": {
       if (!message.webhook_id) {
         return ctx.reply({
           content: "This is not a webhook message.",
-          flags: MessageFlags.Ephemeral,
+          ephemeral: true,
         });
       }
 
@@ -425,7 +423,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
             It may be an incompatible type of webhook, or it may have been
             created by a different bot user.
           `,
-          flags: MessageFlags.Ephemeral,
+          ephemeral: true,
         });
       }
 
@@ -471,8 +469,8 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
         userId: user.id,
       });
       return ctx.reply({
-        embeds: [getShareEmbed(share, false).toJSON()],
-        flags: MessageFlags.Ephemeral,
+        embeds: [getShareEmbed(share, false)],
+        ephemeral: true,
       });
     }
     case "link": {
@@ -485,6 +483,6 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
 
   return ctx.reply({
     content: "This shouldn't happen",
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

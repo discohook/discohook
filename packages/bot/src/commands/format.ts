@@ -5,7 +5,6 @@ import {
   APIPartialEmoji,
   APIRole,
   FormattingPatterns,
-  MessageFlags,
 } from "discord-api-types/v10";
 import { ChatInputAppCommandCallback } from "../commands.js";
 import { InteractionContext } from "../interactions.js";
@@ -39,7 +38,7 @@ const getMentionEmbed = (result: string, title: string, warning?: string) => {
     embed.addFields({ name: "Warning", value: warning, inline: true });
   }
 
-  return embed.toJSON();
+  return embed;
 };
 
 export const formatMentionCallback: ChatInputAppCommandCallback = async (
@@ -64,7 +63,7 @@ export const formatMentionCallback: ChatInputAppCommandCallback = async (
           : "Mentions will only deliver to users when they are in the **Content** section, not an embed.",
       ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -75,7 +74,7 @@ export const formatChannelCallback: ChatInputAppCommandCallback = async (
   const target = ctx.getChannelOption("target")!;
   return ctx.reply({
     embeds: [getMentionEmbed(`<#${target.id}>`, "Channel")],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -116,7 +115,7 @@ export const formatEmojiCallback: ChatInputAppCommandCallback = async (ctx) => {
   if (!emoji) {
     return ctx.reply({
       content: "No emoji was found.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -127,6 +126,6 @@ export const formatEmojiCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   return ctx.reply({
     embeds: [getMentionEmbed(formatting, "Emoji")],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

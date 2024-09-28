@@ -1,32 +1,23 @@
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { TimestampStyles, time } from "@discordjs/formatters";
-import {
-  APIActionRowComponent,
-  APIMessageActionRowComponent,
-  ButtonStyle,
-  ComponentType,
-  MessageFlags,
-} from "discord-api-types/v10";
+import { ButtonStyle } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb, upsertDiscordUser } from "store";
 import { users } from "store/src/schema/schema.js";
 import { ChatInputAppCommandCallback } from "../commands.js";
 
 export const deluxeInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
-  // Latest stable @djs/builders (1.8.2) doesn't support premium buttons yet
-  const components: APIActionRowComponent<APIMessageActionRowComponent>[] = [
-    {
-      type: ComponentType.ActionRow,
-      components: ctx.env.PREMIUM_SKUS.map((sku_id) => ({
-        type: ComponentType.Button,
-        style: ButtonStyle.Premium,
-        sku_id,
-      })),
-    },
+  const components = [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      ctx.env.PREMIUM_SKUS.map((sku_id) =>
+        new ButtonBuilder().setStyle(ButtonStyle.Premium).setSKUId(sku_id),
+      ),
+    ),
   ];
   return ctx.reply({
     content: `Learn about Discohook Deluxe here: <${ctx.env.DISCOHOOK_ORIGIN}/donate>`,
     components,
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -71,6 +62,6 @@ export const deluxeSyncCallback: ChatInputAppCommandCallback = async (ctx) => {
               }.`
             : "You do not have an active Deluxe subscription."
     }`,
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

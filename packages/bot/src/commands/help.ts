@@ -1,4 +1,4 @@
-import { APIEmbed, MessageFlags } from "discord-api-types/v10";
+import { APIEmbed } from "discord-api-types/v10";
 import {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
@@ -38,10 +38,9 @@ export const helpEntry: ChatInputAppCommandCallback = async (ctx) => {
     embed.color = embed.color ?? color;
     return ctx.reply({
       content: mentionUser ? `<@${mentionUser.id}>` : undefined,
-      allowed_mentions: mentionUser ? { users: [mentionUser.id] } : undefined,
-      flags:
-        // These messages are ephemeral by default to reduce spam
-        mentionUser && !mentionUser.bot ? undefined : MessageFlags.Ephemeral,
+      allowedMentions: mentionUser ? { users: [mentionUser.id] } : undefined,
+      // These messages are ephemeral by default to reduce spam
+      ephemeral: !mentionUser || mentionUser.bot,
       embeds: [embed],
     });
   }
@@ -56,14 +55,14 @@ export const helpEntry: ChatInputAppCommandCallback = async (ctx) => {
     e.color = e.color ?? color;
     return ctx.reply({
       embeds: [e],
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
   return ctx.reply({
     content:
       "No tag found. Select an item from the autocomplete menu or use the exact title of a valid item.",
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 

@@ -1,10 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
-import {
-  APIWebhook,
-  ButtonStyle,
-  MessageFlags,
-  Routes,
-} from "discord-api-types/v10";
+import { APIWebhook, ButtonStyle, Routes } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, count, eq } from "drizzle-orm";
 import { t } from "i18next";
@@ -49,26 +44,24 @@ export const webhookDeleteEntryCallback: ChatInputAppCommandCallback = async (
   return ctx.reply({
     content:
       "Are you sure you want to delete this webhook? This will make it impossible to edit any messages it has sent.",
-    embeds: [embed.toJSON()],
+    embeds: [embed],
     components: [
-      new ActionRowBuilder<ButtonBuilder>()
-        .setComponents(
-          new ButtonBuilder()
-            .setCustomId(
-              `a_webhook-delete-confirm_${webhookId}` satisfies AutoComponentCustomId,
-            )
-            .setLabel("Delete")
-            .setStyle(ButtonStyle.Danger),
-          new ButtonBuilder()
-            .setCustomId(
-              "a_webhook-delete-cancel_" satisfies AutoComponentCustomId,
-            )
-            .setLabel("Cancel")
-            .setStyle(ButtonStyle.Secondary),
-        )
-        .toJSON(),
+      new ActionRowBuilder<ButtonBuilder>().setComponents(
+        new ButtonBuilder()
+          .setCustomId(
+            `a_webhook-delete-confirm_${webhookId}` satisfies AutoComponentCustomId,
+          )
+          .setLabel("Delete")
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId(
+            "a_webhook-delete-cancel_" satisfies AutoComponentCustomId,
+          )
+          .setLabel("Cancel")
+          .setStyle(ButtonStyle.Secondary),
+      ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 

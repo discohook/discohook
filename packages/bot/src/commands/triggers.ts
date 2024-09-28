@@ -4,15 +4,12 @@ import {
   EmbedBuilder,
 } from "@discordjs/builders";
 import {
-  APIEmbed,
   APIInteractionGuildMember,
   ButtonStyle,
-  ComponentType,
   GatewayDispatchEvents,
   GatewayGuildMemberAddDispatchData,
   GatewayGuildMemberRemoveDispatchData,
   GuildMemberFlags,
-  MessageFlags,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
@@ -84,17 +81,14 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
       await ctx.followup.editOriginalMessage({
         content: t("triggerCreated", { replace: { name } }),
         components: [
-          {
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.Button,
-                style: ButtonStyle.Link,
-                label: t("addActions"),
-                url: `${ctx.env.DISCOHOOK_ORIGIN}/s/${trigger.discordGuildId}?t=triggers`,
-              },
-            ],
-          },
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setStyle(ButtonStyle.Link)
+              .setLabel(t("addActions"))
+              .setURL(
+                `${ctx.env.DISCOHOOK_ORIGIN}/s/${trigger.discordGuildId}?t=triggers`,
+              ),
+          ),
         ],
       });
     },
@@ -103,25 +97,26 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 
 export const getFlowEmbed = (
   flow: Awaited<ReturnType<typeof getWelcomerConfigurations>>[number]["flow"],
-): APIEmbed => ({
-  title: flow.name ?? t("unnamedTrigger"),
-  color,
-  description:
-    flow.actions?.length === 0
-      ? t("noActions")
-      : flow.actions
-          .map(
-            ({ data: action }, i) =>
-              `${i + 1}. ${spaceEnum(FlowActionType[action.type])}${
-                action.type === FlowActionType.Wait
-                  ? ` ${action.seconds}s`
-                  : action.type === FlowActionType.SetVariable
-                    ? ` \`${action.name}\``
-                    : ""
-              }`,
-          )
-          .join("\n"),
-});
+): EmbedBuilder =>
+  new EmbedBuilder()
+    .setTitle(flow.name ?? t("unnamedTrigger"))
+    .setColor(color)
+    .setDescription(
+      flow.actions?.length === 0
+        ? t("noActions")
+        : flow.actions
+            .map(
+              ({ data: action }, i) =>
+                `${i + 1}. ${spaceEnum(FlowActionType[action.type])}${
+                  action.type === FlowActionType.Wait
+                    ? ` ${action.seconds}s`
+                    : action.type === FlowActionType.SetVariable
+                      ? ` \`${action.name}\``
+                      : ""
+                }`,
+            )
+            .join("\n"),
+    );
 
 export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   const name = ctx.getStringOption("name").value;
@@ -150,36 +145,34 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   if (!trigger) {
     return ctx.reply({
       content: t("noTrigger"),
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
   return ctx.reply({
     embeds: [getFlowEmbed(trigger.flow)],
     components: [
-      new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Link)
-            .setLabel(t("manageActions"))
-            .setURL(
-              `${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}?t=triggers`,
-            ),
-        )
-        // .addComponents(
-        //   await storeComponents(ctx.env.KV, [
-        //     new ButtonBuilder()
-        //       .setStyle(ButtonStyle.Danger)
-        //       .setLabel("Delete Trigger"),
-        //     {
-        //       componentRoutingId: "add-component-flow",
-        //       componentTimeout: 600,
-        //     },
-        //   ]),
-        // )
-        .toJSON(),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setLabel(t("manageActions"))
+          .setURL(
+            `${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}?t=triggers`,
+          ),
+      ),
+      // .addComponents(
+      //   await storeComponents(ctx.env.KV, [
+      //     new ButtonBuilder()
+      //       .setStyle(ButtonStyle.Danger)
+      //       .setLabel("Delete Trigger"),
+      //     {
+      //       componentRoutingId: "add-component-flow",
+      //       componentTimeout: 600,
+      //     },
+      //   ]),
+      // ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -292,7 +285,7 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
     return ctx.reply({
       content:
         "You must have the Manage Server permission to send test events.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -325,13 +318,13 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
     default:
       return ctx.reply({
         content: "No dispatch data could be formed for the event",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
   }
   if (!func) {
     return ctx.reply({
       content: `There was no function for the event \`${eventName}\``,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -414,8 +407,7 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
                   "View all actions in this trigger with </triggers view:1281305550340096033>",
                 inline: true,
               },
-            )
-            .toJSON(),
+            ),
         ],
       });
     },

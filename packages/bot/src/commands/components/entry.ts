@@ -8,7 +8,6 @@ import {
   APIWebhook,
   ApplicationCommandOptionType,
   ButtonStyle,
-  MessageFlags,
   Routes,
 } from "discord-api-types/v10";
 import { Snowflake, getDate } from "discord-snowflake";
@@ -84,7 +83,7 @@ export const addComponentChatEntry: ChatInputAppCommandCallback<true> = async (
   if (typeof message === "string") {
     return ctx.reply({
       content: message,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
   return await startComponentFlow(ctx, message);
@@ -207,6 +206,6 @@ export const addComponentMessageEntry: MessageAppCommandCallback = (ctx) => {
       .setStyle(ButtonStyle.Danger),
   );
   return startComponentFlow(ctx, message, [
-    row.toJSON(),
+    row,
   ]) as ReturnType<MessageAppCommandCallback>;
 };

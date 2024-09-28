@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
-import { ButtonStyle, MessageFlags } from "discord-api-types/v10";
+import { ButtonStyle } from "discord-api-types/v10";
 import { getDb, getchTriggerGuild } from "store";
 import { TriggerEvent } from "store/src/types/triggers.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
@@ -29,7 +29,7 @@ export const welcomerDeleteEntry: ChatInputAppCommandCallback<true> = async (
   if (triggers.length === 0) {
     return ctx.reply({
       content: "This server has no triggers with that event.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -37,24 +37,22 @@ export const welcomerDeleteEntry: ChatInputAppCommandCallback<true> = async (
     content: `Are you sure you want to delete these triggers?\n${triggers
       .map((t) => `- ${t.flow.name ?? TriggerEvent[event]}`)
       .join("\n")}`,
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
     components: [
-      new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-          new ButtonBuilder()
-            .setLabel("Delete")
-            .setStyle(ButtonStyle.Danger)
-            .setCustomId(
-              `a_delete-triggers-confirm_${event}` satisfies AutoComponentCustomId,
-            ),
-          new ButtonBuilder()
-            .setLabel("Cancel")
-            .setStyle(ButtonStyle.Secondary)
-            .setCustomId(
-              "a_delete-triggers-cancel_" satisfies AutoComponentCustomId,
-            ),
-        )
-        .toJSON(),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setLabel("Delete")
+          .setStyle(ButtonStyle.Danger)
+          .setCustomId(
+            `a_delete-triggers-confirm_${event}` satisfies AutoComponentCustomId,
+          ),
+        new ButtonBuilder()
+          .setLabel("Cancel")
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(
+            "a_delete-triggers-cancel_" satisfies AutoComponentCustomId,
+          ),
+      ),
     ],
   });
 };

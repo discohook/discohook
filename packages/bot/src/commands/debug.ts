@@ -6,7 +6,6 @@ import {
   APIMessageApplicationCommandGuildInteraction,
   APIWebhook,
   ChannelType,
-  MessageFlags,
   OverwriteType,
   RESTGetAPIGuildMemberResult,
   RESTGetAPIGuildRolesResult,
@@ -280,7 +279,7 @@ export const debugMessageCallback: MessageAppCommandCallback<
 > = async (ctx) => {
   const message = ctx.getMessage();
   return ctx.reply({
-    embeds: [(await getMessageDebugEmbed(ctx, message)).toJSON()],
-    flags: MessageFlags.Ephemeral,
+    embeds: [await getMessageDebugEmbed(ctx, message)],
+    ephemeral: true,
   });
 };

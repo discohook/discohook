@@ -79,7 +79,7 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
               type: FlowActionType.Stop,
               message: {
                 content: "Removed the <@&{roleId}> role from you.",
-                flags: MessageFlags.Ephemeral,
+                ephemeral: true,
               },
             },
           ],
@@ -92,7 +92,7 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
               type: FlowActionType.Stop,
               message: {
                 content: "Gave you the <@&{roleId}> role.",
-                flags: MessageFlags.Ephemeral,
+                ephemeral: true,
               },
             },
           ],
@@ -137,27 +137,25 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
       if (!ctx.userPermissons.has(PermissionFlags.ManageRoles)) {
         return ctx.reply({
           content: "You need the **Manage Roles** permission",
-          flags: MessageFlags.Ephemeral,
+          ephemeral: true,
         });
       }
       return ctx.updateMessage({
-        embeds: [getComponentFlowEmbed(state).toJSON()],
+        embeds: [getComponentFlowEmbed(state)],
         components: [
-          new ActionRowBuilder<RoleSelectMenuBuilder>()
-            .addComponents(
-              await storeComponents(ctx.env.KV, [
-                new RoleSelectMenuBuilder().setPlaceholder(
-                  "Select or search for a role",
-                ),
-                {
-                  ...state,
-                  componentTimeout: 600,
-                  componentRoutingId: `add-component-quick-${value}`,
-                  componentOnce: false,
-                },
-              ]),
-            )
-            .toJSON(),
+          new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+            await storeComponents(ctx.env.KV, [
+              new RoleSelectMenuBuilder().setPlaceholder(
+                "Select or search for a role",
+              ),
+              {
+                ...state,
+                componentTimeout: 600,
+                componentRoutingId: `add-component-quick-${value}`,
+                componentOnce: false,
+              },
+            ]),
+          ),
         ],
       });
     }
@@ -189,28 +187,26 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
       ]);
 
       return [
-        ctx.modal(modal.toJSON()),
+        ctx.modal(modal),
         async () => {
           await ctx.followup.editOriginalMessage({
-            embeds: [getComponentFlowEmbed(state).toJSON()],
+            embeds: [getComponentFlowEmbed(state)],
             components: [
-              new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                  await storeComponents(ctx.env.KV, [
-                    new ButtonBuilder()
-                      .setStyle(ButtonStyle.Primary)
-                      .setLabel("Open modal"),
-                    {
-                      ...state,
-                      modal,
-                      componentTimeout: 600,
-                      componentRoutingId:
-                        "add-component-flow-customize-modal-resend",
-                      componentOnce: false,
-                    },
-                  ]),
-                )
-                .toJSON(),
+              new ActionRowBuilder<ButtonBuilder>().addComponents(
+                await storeComponents(ctx.env.KV, [
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setLabel("Open modal"),
+                  {
+                    ...state,
+                    modal,
+                    componentTimeout: 600,
+                    componentRoutingId:
+                      "add-component-flow-customize-modal-resend",
+                    componentOnce: false,
+                  },
+                ]),
+              ),
             ],
           });
         },
@@ -222,7 +218,7 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
 
   return ctx.reply({
     content: "Unknown quick setup value",
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -267,50 +263,48 @@ export const addComponentSetStylePrompt = async (ctx: InteractionContext) => {
   state.step += 1;
 
   return ctx.updateMessage({
-    embeds: [getComponentFlowEmbed(state).toJSON()],
+    embeds: [getComponentFlowEmbed(state)],
     components: [
-      new ActionRowBuilder<StringSelectMenuBuilder>()
-        .addComponents(
-          await storeComponents(ctx.env.KV, [
-            new StringSelectMenuBuilder().addOptions(
-              (
-                [
-                  ButtonStyle.Primary,
-                  ButtonStyle.Secondary,
-                  ButtonStyle.Success,
-                  ButtonStyle.Danger,
-                ] as const
-              ).map((style) =>
-                new StringSelectMenuOptionBuilder()
-                  .setLabel(
-                    {
-                      [ButtonStyle.Primary]: "Blurple",
-                      [ButtonStyle.Secondary]: "Gray",
-                      [ButtonStyle.Success]: "Green",
-                      [ButtonStyle.Danger]: "Red",
-                    }[style],
-                  )
-                  .setDescription(ButtonStyle[style])
-                  .setValue(String(style))
-                  .setEmoji({
-                    name: {
-                      [ButtonStyle.Primary]: "🟦",
-                      [ButtonStyle.Secondary]: "⬜",
-                      [ButtonStyle.Success]: "🟩",
-                      [ButtonStyle.Danger]: "🟥",
-                    }[style],
-                  }),
-              ),
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        await storeComponents(ctx.env.KV, [
+          new StringSelectMenuBuilder().addOptions(
+            (
+              [
+                ButtonStyle.Primary,
+                ButtonStyle.Secondary,
+                ButtonStyle.Success,
+                ButtonStyle.Danger,
+              ] as const
+            ).map((style) =>
+              new StringSelectMenuOptionBuilder()
+                .setLabel(
+                  {
+                    [ButtonStyle.Primary]: "Blurple",
+                    [ButtonStyle.Secondary]: "Gray",
+                    [ButtonStyle.Success]: "Green",
+                    [ButtonStyle.Danger]: "Red",
+                  }[style],
+                )
+                .setDescription(ButtonStyle[style])
+                .setValue(String(style))
+                .setEmoji({
+                  name: {
+                    [ButtonStyle.Primary]: "🟦",
+                    [ButtonStyle.Secondary]: "⬜",
+                    [ButtonStyle.Success]: "🟩",
+                    [ButtonStyle.Danger]: "🟥",
+                  }[style],
+                }),
             ),
-            {
-              ...state,
-              componentOnce: true,
-              componentTimeout: 300,
-              componentRoutingId: "add-component-quick-style",
-            },
-          ]),
-        )
-        .toJSON(),
+          ),
+          {
+            ...state,
+            componentOnce: true,
+            componentTimeout: 300,
+            componentRoutingId: "add-component-quick-style",
+          },
+        ]),
+      ),
     ],
   });
 };
@@ -353,26 +347,23 @@ export const submitButtonQuickStyle: SelectMenuCallback = async (ctx) => {
   ]);
 
   return [
-    ctx.modal(modal.toJSON()),
+    ctx.modal(modal),
     async () => {
       await ctx.followup.editOriginalMessage({
-        embeds: [getComponentFlowEmbed(state).toJSON()],
+        embeds: [getComponentFlowEmbed(state)],
         components: [
-          new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-              await storeComponents(ctx.env.KV, [
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setLabel("Open modal"),
-                {
-                  componentRoutingId:
-                    "add-component-flow-customize-modal-resend",
-                  componentTimeout: 600,
-                  modal: modal.toJSON(),
-                },
-              ]),
-            )
-            .toJSON(),
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            await storeComponents(ctx.env.KV, [
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Primary)
+                .setLabel("Open modal"),
+              {
+                componentRoutingId: "add-component-flow-customize-modal-resend",
+                componentTimeout: 600,
+                modal: modal.toJSON(),
+              },
+            ]),
+          ),
         ],
       });
     },
@@ -397,13 +388,13 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
     return ctx.reply({
       content:
         "The role could not be found. Please choose a different one or try restarting Discord.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
   if (role.managed) {
     return ctx.reply({
       content: `<@&${role.id}> can't be assigned to members.`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -417,12 +408,12 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
     if (!botHighestRole) {
       return ctx.reply({
         content: `I can't assign <@&${role.id}> to members because I don't have any roles.`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     } else if (botHighestRole && role.position >= botHighestRole.position) {
       return ctx.reply({
         content: `<@&${role.id}> is higher than my highest role (<@&${botHighestRole.id}>), so I can't assign it to members. <@&${role.id}> needs to be lower in the role list, or my highest role needs to be higher.`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
   }
@@ -435,7 +426,7 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
       // This message should never be seen unless someone messes with permissions
       return ctx.reply({
         content: `You can't assign <@&${role.id}> to members because you don't have any roles.`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     } else if (
       memberHighestRole &&
@@ -443,7 +434,7 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
     ) {
       return ctx.reply({
         content: `<@&${role.id}> is higher than your highest role (<@&${memberHighestRole.id}>), so you can't select it to be assigned to members. <@&${role.id}> needs to be lower in the role list, or your highest role needs to be higher.`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
   }
@@ -524,39 +515,37 @@ export const addComponentQuickSendMessageCallback: ModalCallback = async (
   state.step += 1;
 
   return ctx.updateMessage({
-    embeds: [getComponentFlowEmbed(state).toJSON()],
+    embeds: [getComponentFlowEmbed(state)],
     components: [
-      new ActionRowBuilder<StringSelectMenuBuilder>()
-        .addComponents(
-          await storeComponents(ctx.env.KV, [
-            new StringSelectMenuBuilder()
-              .setPlaceholder("Select whether the message should be hidden")
-              .addOptions(
-                new StringSelectMenuOptionBuilder()
-                  .setValue("0")
-                  .setLabel("Public")
-                  .setEmoji({ name: "🦺" })
-                  .setDescription(
-                    "The message is visible to everyone in the channel",
-                  ),
-                new StringSelectMenuOptionBuilder()
-                  .setValue(String(MessageFlags.Ephemeral))
-                  .setLabel("Hidden")
-                  .setEmoji({ name: "😶‍🌫️" })
-                  .setDescription(
-                    "Only the person who pressed the button can see the message",
-                  ),
-              ),
-            {
-              ...state,
-              shareId,
-              componentRoutingId: "add-component-quick-send-message-visibility",
-              componentTimeout: 600,
-              componentOnce: true,
-            },
-          ]),
-        )
-        .toJSON(),
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        await storeComponents(ctx.env.KV, [
+          new StringSelectMenuBuilder()
+            .setPlaceholder("Select whether the message should be hidden")
+            .addOptions(
+              new StringSelectMenuOptionBuilder()
+                .setValue("0")
+                .setLabel("Public")
+                .setEmoji({ name: "🦺" })
+                .setDescription(
+                  "The message is visible to everyone in the channel",
+                ),
+              new StringSelectMenuOptionBuilder()
+                .setValue(String(MessageFlags.Ephemeral))
+                .setLabel("Hidden")
+                .setEmoji({ name: "😶‍🌫️" })
+                .setDescription(
+                  "Only the person who pressed the button can see the message",
+                ),
+            ),
+          {
+            ...state,
+            shareId,
+            componentRoutingId: "add-component-quick-send-message-visibility",
+            componentTimeout: 600,
+            componentOnce: true,
+          },
+        ]),
+      ),
     ],
   });
 };

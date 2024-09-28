@@ -16,7 +16,6 @@ import {
   ButtonStyle,
   CDNRoutes,
   ImageFormat,
-  MessageFlags,
   RESTGetAPIGuildEmojisResult,
   RouteBases,
   Routes,
@@ -182,7 +181,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   if (role.managed) {
     return ctx.reply({
       content: `<@&${role.id}> can't be assigned to members.`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -195,12 +194,12 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
     // the bot is the owner of the guild
     return ctx.reply({
       content: `I can't assign <@&${role.id}> to members because I don't have any roles.`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   } else if (botHighestRole && role.position >= botHighestRole.position) {
     return ctx.reply({
       content: `<@&${role.id}> is higher than my highest role (<@&${botHighestRole.id}>), so I can't assign it to members. <@&${role.id}> needs to be lower in the role list, or my highest role needs to be higher.`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
   // biome-ignore lint/style/noNonNullAssertion: guild-only
@@ -212,7 +211,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
       // This message should never be seen unless someone messes with permissions
       return ctx.reply({
         content: `You can't assign <@&${role.id}> to members because you don't have any roles.`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     } else if (
       memberHighestRole &&
@@ -220,7 +219,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
     ) {
       return ctx.reply({
         content: `<@&${role.id}> is higher than your highest role (<@&${memberHighestRole.id}>), so you can't select it to be assigned to members. <@&${role.id}> needs to be lower in the role list, or your highest role needs to be higher.`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
   }
@@ -232,7 +231,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   if (typeof message === "string") {
     return ctx.reply({
       content: message,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -247,7 +246,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
     return ctx.reply({
       content:
         "The emoji you specified couldn't be found. For best results, react to the message with the desired emoji before running this command.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -273,7 +272,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   } catch {
     return ctx.reply({
       content: `Failed to add the reaction (${reactionMention}) to the message.`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -337,10 +336,9 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
             `,
             inline: false,
           },
-        )
-        .toJSON(),
+        ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -357,7 +355,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
   if (typeof message === "string") {
     return ctx.reply({
       content: message,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -376,7 +374,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
       return ctx.reply({
         content:
           "The emoji you specified couldn't be found. For best results, react to the message with the desired emoji before running this command.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
     // biome-ignore lint/style/noNonNullAssertion: Must have at least one
@@ -417,15 +415,14 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
                   Emoji: ${
                     isSnowflakeSafe(reaction) ? `<:_:${reaction}>` : reaction
                   }
-                `)
-                .toJSON(),
+                `),
             ],
           }
         : {
             content:
               "There was not a registered reaction role on that message for that emoji.",
           }),
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -437,7 +434,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
   if (entries.length === 0) {
     return ctx.reply({
       content: "This message has no reaction roles registered.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -460,32 +457,30 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
     content:
       'Below are all the reaction roles registered to this message. Click a button to permanently delete the reaction role. Some external emojis may not be shown, but order should be roughly correct. If a button says "Unknown Role", you should delete it.',
     components: rows.slice(0, 5).map((row) =>
-      new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-          row.map((cell) => {
-            const role = roles.find((r) => r.id === String(cell.roleId));
-            const emoji = isSnowflakeSafe(cell.reaction)
-              ? emojis.find((e) => e.id === cell.reaction)
-              : { id: null, name: cell.reaction };
-            return new ButtonBuilder({
-              emoji: emoji
-                ? {
-                    animated: emoji.animated,
-                    id: emoji.id ?? undefined,
-                    name: emoji.name ?? undefined,
-                  }
-                : undefined,
-            })
-              .setCustomId(
-                `a_delete-reaction-role_${cell.messageId}:${cell.reaction}` satisfies AutoComponentCustomId,
-              )
-              .setStyle(ButtonStyle.Secondary)
-              .setLabel(role?.name ?? "Unknown Role");
-          }),
-        )
-        .toJSON(),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        row.map((cell) => {
+          const role = roles.find((r) => r.id === String(cell.roleId));
+          const emoji = isSnowflakeSafe(cell.reaction)
+            ? emojis.find((e) => e.id === cell.reaction)
+            : { id: null, name: cell.reaction };
+          return new ButtonBuilder({
+            emoji: emoji
+              ? {
+                  animated: emoji.animated,
+                  id: emoji.id ?? undefined,
+                  name: emoji.name ?? undefined,
+                }
+              : undefined,
+          })
+            .setCustomId(
+              `a_delete-reaction-role_${cell.messageId}:${cell.reaction}` satisfies AutoComponentCustomId,
+            )
+            .setStyle(ButtonStyle.Secondary)
+            .setLabel(role?.name ?? "Unknown Role");
+        }),
+      ),
     ),
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };
 
@@ -557,7 +552,7 @@ export const listReactionRolesHandler: ChatInputAppCommandCallback = async (
   if (typeof message === "string") {
     return ctx.reply({
       content: message,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -569,7 +564,7 @@ export const listReactionRolesHandler: ChatInputAppCommandCallback = async (
   if (entries.length === 0) {
     return ctx.reply({
       content: "This message has no reaction roles registered.",
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -594,9 +589,8 @@ export const listReactionRolesHandler: ChatInputAppCommandCallback = async (
               return `- ${emoji} - <@&${entry.roleId}>`;
             })
             .join("\n"),
-        )
-        .toJSON(),
+        ),
     ],
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 };

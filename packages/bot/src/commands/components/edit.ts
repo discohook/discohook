@@ -15,7 +15,6 @@ import {
   APIActionRowComponent,
   APIEmoji,
   APIInteraction,
-  APIInteractionResponseCallbackData,
   APIMessage,
   APIMessageActionRowComponent,
   APIMessageComponentEmoji,
@@ -23,7 +22,6 @@ import {
   APISelectMenuOption,
   ButtonStyle,
   ComponentType,
-  MessageFlags,
   Routes,
   TextInputStyle,
 } from "discord-api-types/v10";
@@ -47,7 +45,10 @@ import {
   ModalCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import { InteractionContext } from "../../interactions.js";
+import {
+  InteractionContext,
+  MessageConstructorData,
+} from "../../interactions.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { getComponentId, parseAutoComponentId } from "../../util/components.js";
 import { color } from "../../util/meta.js";
@@ -70,7 +71,7 @@ export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
   if (typeof message === "string") {
     return ctx.reply({
       content: message,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
   if (
@@ -84,7 +85,7 @@ export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
         : !message.application_id
           ? `This message's webhook is owned by a user, so it cannot have components.`
           : `This message's webhook is owned by <@${message.application_id}>, so I cannot edit it.`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -252,7 +253,7 @@ const pickWebhookMessageComponentToEdit = async (
       content: "That message has no components that can be picked from.",
       embeds: [],
       components: [],
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -266,10 +267,9 @@ const pickWebhookMessageComponentToEdit = async (
 
   return ctx.reply({
     embeds: [
-      new EmbedBuilder({
-        title: "Edit Component",
-        color,
-      })
+      new EmbedBuilder()
+        .setTitle("Edit Component")
+        .setColor(color)
         .addFields({
           name: "Message",
           value: messageLink(message.channel_id, message.id, guildId),
@@ -279,46 +279,39 @@ const pickWebhookMessageComponentToEdit = async (
             id: message.author.id,
             avatar: message.author.avatar,
           }),
-        )
-        .toJSON(),
+        ),
     ],
-    components: [
-      new ActionRowBuilder<typeof select>().addComponents(select).toJSON(),
-    ],
-    flags: MessageFlags.Ephemeral,
+    components: [new ActionRowBuilder<typeof select>().addComponents(select)],
+    ephemeral: true,
   });
 };
 
 export const getComponentPickCallbackData = (
   messageId: string,
   componentId: bigint,
-): APIInteractionResponseCallbackData => ({
+): MessageConstructorData => ({
   content:
     "What aspect of this component would you like to edit? Surface details are what users can see before clicking on the component.",
   embeds: [],
   components: [
-    new ActionRowBuilder<SelectMenuBuilder>()
-      .addComponents(
-        new SelectMenuBuilder()
-          .setCustomId(
-            `a_edit-component-flow-mode_${messageId}:${componentId}` satisfies AutoComponentCustomId,
-          )
-          .addOptions(
-            new SelectMenuOptionBuilder()
-              .setLabel("Details")
-              .setValue("internal")
-              .setDescription(
-                "Just change the surface details without leaving Discord",
-              ),
-            new SelectMenuOptionBuilder()
-              .setLabel("Everything")
-              .setValue("external")
-              .setDescription(
-                "Change what happens when this component is used",
-              ),
-          ),
-      )
-      .toJSON(),
+    new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+      new SelectMenuBuilder()
+        .setCustomId(
+          `a_edit-component-flow-mode_${messageId}:${componentId}` satisfies AutoComponentCustomId,
+        )
+        .addOptions(
+          new SelectMenuOptionBuilder()
+            .setLabel("Details")
+            .setValue("internal")
+            .setDescription(
+              "Just change the surface details without leaving Discord",
+            ),
+          new SelectMenuOptionBuilder()
+            .setLabel("Everything")
+            .setValue("external")
+            .setDescription("Change what happens when this component is used"),
+        ),
+    ),
   ],
 });
 
@@ -440,16 +433,14 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
           await ctx.followup.editOriginalMessage({
             content: "Click the button to resume editing the button.",
             components: [
-              new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                  new ButtonBuilder()
-                    .setCustomId(
-                      `a_edit-component-flow-modal-resend_${messageId}:${dbComponent.id}:${row},${column}` satisfies AutoComponentCustomId,
-                    )
-                    .setStyle(ButtonStyle.Secondary)
-                    .setLabel(t("customize")),
-                )
-                .toJSON(),
+              new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                  .setCustomId(
+                    `a_edit-component-flow-modal-resend_${messageId}:${dbComponent.id}:${row},${column}` satisfies AutoComponentCustomId,
+                  )
+                  .setStyle(ButtonStyle.Secondary)
+                  .setLabel(t("customize")),
+              ),
             ],
           });
         },
@@ -461,7 +452,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
       // Answer for a prize: https://github.com/discohook/discohook/issues
       return ctx.reply({
         content: "Cannot resolve that component from the database.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
   }
 };
@@ -630,16 +621,14 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
         await ctx.followup.editOriginalMessage({
           content: "Click the button to continue editing the component.",
           components: [
-            new ActionRowBuilder<ButtonBuilder>()
-              .addComponents(
-                new ButtonBuilder()
-                  .setCustomId(
-                    `a_edit-component-flow-modal-resend_${messageId}:${componentId}` satisfies AutoComponentCustomId,
-                  )
-                  .setStyle(ButtonStyle.Secondary)
-                  .setLabel(t("customize")),
-              )
-              .toJSON(),
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
+              new ButtonBuilder()
+                .setCustomId(
+                  `a_edit-component-flow-modal-resend_${messageId}:${componentId}` satisfies AutoComponentCustomId,
+                )
+                .setStyle(ButtonStyle.Secondary)
+                .setLabel(t("customize")),
+            ),
           ],
         });
       },
@@ -663,14 +652,12 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
   return ctx.updateMessage({
     content: "Click the button to open your browser and edit the component.",
     components: [
-      new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Link)
-            .setLabel(t("customize"))
-            .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
-        )
-        .toJSON(),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setLabel(t("customize"))
+          .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
+      ),
     ],
   });
 };
@@ -861,7 +848,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
           if (emojiRaw.includes(" ")) {
             return ctx.reply({
               content: "Invalid emoji: Contains invalid characters.",
-              flags: MessageFlags.Ephemeral,
+              ephemeral: true,
             });
           }
 
@@ -876,7 +863,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
             return ctx.reply({
               content:
                 "Could not find an emoji that matches the input. For a custom emoji, try using the numeric ID, and make sure Discohook has access to it.",
-              flags: MessageFlags.Ephemeral,
+              ephemeral: true,
             });
           }
           data.emoji = partialEmojiToComponentEmoji(emoji);
@@ -892,7 +879,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
         } catch (e) {
           return ctx.reply({
             content: "Invalid URL",
-            flags: MessageFlags.Ephemeral,
+            ephemeral: true,
           });
         }
         url.searchParams.set("dhc-id", componentId);
@@ -907,7 +894,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
     if (!["true", "false"].includes(disabledRaw.toLowerCase())) {
       return ctx.reply({
         content: "Disabled field must be either `true` or `false`.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
     data.disabled = disabledRaw.toLowerCase() === "true";

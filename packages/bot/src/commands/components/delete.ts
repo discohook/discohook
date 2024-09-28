@@ -14,7 +14,6 @@ import {
   APIMessageActionRowComponent,
   ButtonStyle,
   ComponentType,
-  MessageFlags,
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
@@ -45,7 +44,7 @@ export const deleteComponentChatEntry: ChatInputAppCommandCallback<true> =
     if (typeof message === "string") {
       return ctx.reply({
         content: message,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
 
@@ -71,7 +70,7 @@ const pickWebhookMessageComponentToDelete = async (
       content: "That message has no components that can be picked from.",
       embeds: [],
       components: [],
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -98,13 +97,10 @@ const pickWebhookMessageComponentToDelete = async (
             id: message.author.id,
             avatar: message.author.avatar,
           }),
-        )
-        .toJSON(),
+        ),
     ],
-    components: [
-      new ActionRowBuilder<typeof select>().addComponents(select).toJSON(),
-    ],
-    flags: MessageFlags.Ephemeral,
+    components: [new ActionRowBuilder<typeof select>().addComponents(select)],
+    ephemeral: true,
   });
 };
 
@@ -234,30 +230,28 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
         content:
           "Are you sure you want to delete this component? This cannot be undone.",
         components: [
-          new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-              ...(await storeComponents(ctx.env.KV, [
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Danger)
-                  .setLabel("Delete"),
-                {
-                  componentRoutingId: "delete-component-confirm",
-                  componentTimeout: 600,
-                  componentOnce: true,
-                  webhookId,
-                  messageId,
-                  threadId,
-                  componentId: component.id,
-                },
-              ])),
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            ...(await storeComponents(ctx.env.KV, [
               new ButtonBuilder()
-                .setCustomId(
-                  "a_delete-component-cancel_" satisfies AutoComponentCustomId,
-                )
-                .setStyle(ButtonStyle.Secondary)
-                .setLabel("Cancel"),
-            )
-            .toJSON(),
+                .setStyle(ButtonStyle.Danger)
+                .setLabel("Delete"),
+              {
+                componentRoutingId: "delete-component-confirm",
+                componentTimeout: 600,
+                componentOnce: true,
+                webhookId,
+                messageId,
+                threadId,
+                componentId: component.id,
+              },
+            ])),
+            new ButtonBuilder()
+              .setCustomId(
+                "a_delete-component-cancel_" satisfies AutoComponentCustomId,
+              )
+              .setStyle(ButtonStyle.Secondary)
+              .setLabel("Cancel"),
+          ),
         ],
       });
     }
@@ -326,31 +320,29 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
         content:
           "Are you sure you want to delete this component? This cannot be undone.",
         components: [
-          new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-              ...(await storeComponents(ctx.env.KV, [
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Danger)
-                  .setLabel("Delete"),
-                {
-                  componentRoutingId: "delete-component-confirm",
-                  componentTimeout: 600,
-                  componentOnce: true,
-                  webhookId,
-                  messageId,
-                  threadId,
-                  componentId: dbComponent.id,
-                  position: [row, column],
-                },
-              ])),
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            ...(await storeComponents(ctx.env.KV, [
               new ButtonBuilder()
-                .setCustomId(
-                  "a_delete-component-cancel_" satisfies AutoComponentCustomId,
-                )
-                .setStyle(ButtonStyle.Secondary)
-                .setLabel("Cancel"),
-            )
-            .toJSON(),
+                .setStyle(ButtonStyle.Danger)
+                .setLabel("Delete"),
+              {
+                componentRoutingId: "delete-component-confirm",
+                componentTimeout: 600,
+                componentOnce: true,
+                webhookId,
+                messageId,
+                threadId,
+                componentId: dbComponent.id,
+                position: [row, column],
+              },
+            ])),
+            new ButtonBuilder()
+              .setCustomId(
+                "a_delete-component-cancel_" satisfies AutoComponentCustomId,
+              )
+              .setStyle(ButtonStyle.Secondary)
+              .setLabel("Cancel"),
+          ),
         ],
       });
     }
@@ -358,7 +350,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
       return ctx.reply({
         content:
           "Cannot resolve that component from the database. Try editing another component to remove it.",
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
   }
 };
