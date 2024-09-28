@@ -112,7 +112,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   if (!user && defaultModal === "auth-failure") {
     const storage = getSessionStorage(context);
     const session = await storage.getSession(request.headers.get("Cookie"));
-    authFailure = session.get("auth:error") ?? undefined;
+    authFailure = session.get("auth:error")?.toString() ?? undefined;
   }
 
   return defer({
