@@ -665,13 +665,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cloudflare/workers-shared@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@cloudflare/workers-shared@npm:0.3.0"
-  checksum: 10c0/1708871348abc2162b0683c9738faf64c6c1fbeb0b77ece1467f64d048b53bfd7542b149ef78f1b70fdafdc3dc47892b727d97e4642bbf644e0936794cf447cd
-  languageName: node
-  linkType: hard
-
 "@cloudflare/workers-shared@npm:0.4.1":
   version: 0.4.1
   resolution: "@cloudflare/workers-shared@npm:0.4.1"
@@ -3719,13 +3712,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"consola@npm:^3.2.3":
-  version: 3.2.3
-  resolution: "consola@npm:3.2.3"
-  checksum: 10c0/c606220524ec88a05bb1baf557e9e0e04a0c08a9c35d7a08652d99de195c4ddcb6572040a7df57a18ff38bbc13ce9880ad032d56630cef27bef72768ef0ac078
-  languageName: node
-  linkType: hard
-
 "content-disposition@npm:0.5.4":
   version: 0.5.4
   resolution: "content-disposition@npm:0.5.4"
@@ -4064,7 +4050,7 @@ cron-parser@discohook/cron-parser:
     store: ../store
     tsx: "npm:^4.7.0"
     typescript: "npm:^5.3.3"
-    wrangler: "npm:^3.72.2"
+    wrangler: "npm:^3.76.0"
   languageName: unknown
   linkType: soft
 
@@ -7196,28 +7182,6 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
-"miniflare@npm:3.20240821.0":
-  version: 3.20240821.0
-  resolution: "miniflare@npm:3.20240821.0"
-  dependencies:
-    "@cspotcode/source-map-support": "npm:0.8.1"
-    acorn: "npm:^8.8.0"
-    acorn-walk: "npm:^8.2.0"
-    capnp-ts: "npm:^0.7.0"
-    exit-hook: "npm:^2.2.1"
-    glob-to-regexp: "npm:^0.4.1"
-    stoppable: "npm:^1.1.0"
-    undici: "npm:^5.28.4"
-    workerd: "npm:1.20240821.1"
-    ws: "npm:^8.17.1"
-    youch: "npm:^3.2.2"
-    zod: "npm:^3.22.3"
-  bin:
-    miniflare: bootstrap.js
-  checksum: 10c0/397bb5ca8116821f464aa49ab61535b2347ebcf68b2cc07212ccf93d18c2e533d45c656f9a7f8bf726cc3e18bdcc23ad1b64cbc6496b67801501204f19bc2ae7
-  languageName: node
-  linkType: hard
-
 "miniflare@npm:3.20240821.2":
   version: 3.20240821.2
   resolution: "miniflare@npm:3.20240821.2"
@@ -7531,13 +7495,6 @@ cron-parser@discohook/cron-parser:
     just-extend: "npm:^4.0.2"
     path-to-regexp: "npm:^1.7.0"
   checksum: 10c0/9fab856119fd5dfe96ef153f3def4199a90f5e6b1f80ce4090b6e58c450e3692f72ebc9610e19d79b1777db2161b3002bf5c8009312ce2fd15983c446784e195
-  languageName: node
-  linkType: hard
-
-"node-fetch-native@npm:^1.6.4":
-  version: 1.6.4
-  resolution: "node-fetch-native@npm:1.6.4"
-  checksum: 10c0/78334dc6def5d1d95cfe87b33ac76c4833592c5eb84779ad2b0c23c689f9dd5d1cfc827035ada72d6b8b218f717798968c5a99aeff0a1a8bf06657e80592f9c3
   languageName: node
   linkType: hard
 
@@ -9877,7 +9834,7 @@ tif-snowflake@discohook/snowflake:
   languageName: node
   linkType: hard
 
-"ufo@npm:^1.5.3, ufo@npm:^1.5.4":
+"ufo@npm:^1.5.4":
   version: 1.5.4
   resolution: "ufo@npm:1.5.4"
   checksum: 10c0/b5dc4dc435c49c9ef8890f1b280a19ee4d0954d1d6f9ab66ce62ce64dd04c7be476781531f952a07c678d51638d02ad4b98e16237be29149295b0f7c09cda765
@@ -9922,20 +9879,6 @@ tif-snowflake@discohook/snowflake:
   dependencies:
     "@fastify/busboy": "npm:^2.0.0"
   checksum: 10c0/08d0f2596553aa0a54ca6e8e9c7f45aef7d042c60918564e3a142d449eda165a80196f6ef19ea2ef2e6446959e293095d8e40af1236f0d67223b06afac5ecad7
-  languageName: node
-  linkType: hard
-
-"unenv@npm:unenv-nightly@1.10.0-1717606461.a117952":
-  version: 1.10.0-1717606461.a117952
-  resolution: "unenv-nightly@npm:1.10.0-1717606461.a117952"
-  dependencies:
-    consola: "npm:^3.2.3"
-    defu: "npm:^6.1.4"
-    mime: "npm:^3.0.0"
-    node-fetch-native: "npm:^1.6.4"
-    pathe: "npm:^1.1.2"
-    ufo: "npm:^1.5.3"
-  checksum: 10c0/69c72d43a2b04358398e82ffd2e22f604ff37a737f5cd77d8a56c8f445de84af04b151f64c6467692a18308d6e50bab67b183f9dd20f5c58ab482e32df0189ba
   languageName: node
   linkType: hard
 
@@ -10546,44 +10489,6 @@ tif-snowflake@discohook/snowflake:
     wrangler: bin/wrangler.js
     wrangler2: bin/wrangler.js
   checksum: 10c0/cf2683ba97fe788bbda82247673184d20e3950d0cc0ba6c06d133b9108b582c3d45af987576ff8f370ee18f1150920f5e9184119e4a17fe02344102a541b7b05
-  languageName: node
-  linkType: hard
-
-"wrangler@npm:^3.72.2":
-  version: 3.72.2
-  resolution: "wrangler@npm:3.72.2"
-  dependencies:
-    "@cloudflare/kv-asset-handler": "npm:0.3.4"
-    "@cloudflare/workers-shared": "npm:0.3.0"
-    "@esbuild-plugins/node-globals-polyfill": "npm:^0.2.3"
-    "@esbuild-plugins/node-modules-polyfill": "npm:^0.2.2"
-    blake3-wasm: "npm:^2.1.5"
-    chokidar: "npm:^3.5.3"
-    date-fns: "npm:^3.6.0"
-    esbuild: "npm:0.17.19"
-    fsevents: "npm:~2.3.2"
-    miniflare: "npm:3.20240821.0"
-    nanoid: "npm:^3.3.3"
-    path-to-regexp: "npm:^6.2.0"
-    resolve: "npm:^1.22.8"
-    resolve.exports: "npm:^2.0.2"
-    selfsigned: "npm:^2.0.1"
-    source-map: "npm:^0.6.1"
-    unenv: "npm:unenv-nightly@1.10.0-1717606461.a117952"
-    workerd: "npm:1.20240821.1"
-    xxhash-wasm: "npm:^1.0.1"
-  peerDependencies:
-    "@cloudflare/workers-types": ^4.20240821.1
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  peerDependenciesMeta:
-    "@cloudflare/workers-types":
-      optional: true
-  bin:
-    wrangler: bin/wrangler.js
-    wrangler2: bin/wrangler.js
-  checksum: 10c0/f309fad517ec21f10e18e62d56ee65625e69a48335ba93f26019246b2839af3eb42f558677ca32ef42ab3906df2c694735d111b165b147e880368563dfa9e47d
   languageName: node
   linkType: hard
 
