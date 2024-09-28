@@ -946,6 +946,7 @@ export default () => {
           onChange={(e) => setOverflowMessage(e.currentTarget.checked)}
           className="mb-1"
         /> */}
+        <p className="text-sm font-medium cursor-default">{t("preview")}</p>
         <div
           className={twJoin(
             "mb-4 p-4 rounded-lg shadow dark:shadow-lg border border-gray-300/80 dark:border-gray-300/20",
