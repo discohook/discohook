@@ -80,6 +80,7 @@ export const getWebhook = async (
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
+  console.log(`[${request.method} Component]`, id);
 
   let [token, respond]:
     | Awaited<ReturnType<typeof authorizeRequest>>

@@ -348,6 +348,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     row: z.number().int().min(0).max(MESSAGE_MAX_ROWS_INDEX).optional(),
     column: z.number().int().min(0).max(ROW_MAX_INDEX).optional(),
   });
+  console.log(`[Edit Component] /edit/component/${id}`);
   let tokenData: KVComponentEditorState | undefined;
   if (token) {
     if (row === undefined || column === undefined) {
