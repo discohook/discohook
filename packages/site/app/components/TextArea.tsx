@@ -109,6 +109,7 @@ export const TextArea = (
             short ? "min-h-9 py-1 px-[14px]" : "min-h-11 p-2",
             props.className,
           )}
+          rows={short ? 1 : 4}
         />
         {markdown && (
           <PopoutRichPicker
