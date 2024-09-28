@@ -1149,7 +1149,7 @@ export const ruleOptions: Record<
   headings: { rule: headingRule, full: true },
   footings: { rule: footingRule, full: true },
   codeBlocks: { rule: codeBlockRule, full: true },
-  inlineCode: { rule: codeRule, full: true },
+  inlineCode: { rule: codeRule, title: true, full: true },
   blockQuotes: { rule: blockQuoteRule, full: true },
   lists: { rule: listRule, full: true },
   paragraphs: { rule: paragraphRule, title: true, full: true },
