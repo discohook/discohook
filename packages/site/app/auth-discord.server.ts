@@ -4,7 +4,7 @@ import {
   RESTPostOAuth2AccessTokenResult,
   Routes,
 } from "discord-api-types/v10";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
 import { getSessionStorage } from "./session.server";
@@ -65,40 +65,112 @@ export const getDiscordAuth = (
         });
 
         const guilds = await getCurrentUserGuilds(accessToken);
-        if (guilds.length !== 0) {
-          await db
-            .insert(discordGuilds)
-            .values(
-              guilds.map((guild) => ({
-                id: makeSnowflake(guild.id),
-                name: guild.name,
-                icon: guild.icon,
-                ownerDiscordId: guild.owner ? makeSnowflake(j.id) : undefined,
-              })),
-            )
-            .onConflictDoUpdate({
-              target: discordGuilds.id,
-              set: {
-                name: sql`excluded.name`,
-                icon: sql`excluded.icon`,
-                ownerDiscordId: sql`excluded."ownerDiscordId"`,
-              },
-            });
-          await db
-            .insert(discordMembers)
-            .values(
-              guilds.map((guild) => ({
-                guildId: makeSnowflake(guild.id),
-                userId: makeSnowflake(j.id),
-                permissions: guild.permissions,
-                owner: guild.owner,
-              })),
-            )
-            .onConflictDoUpdate({
-              target: [discordMembers.guildId, discordMembers.userId],
-              set: { permissions: sql`excluded.permissions` },
-            });
-        }
+        const guildIds = guilds.map((g) => g.id);
+
+        await db.transaction(async (tx) => {
+          const memberships = await tx.query.discordMembers.findMany({
+            where: (discordMembers, { eq }) =>
+              eq(discordMembers.userId, makeSnowflake(j.id)),
+            columns: { guildId: true },
+          });
+          const membershipGuildIds = memberships.map((m) => m.guildId);
+          const memberlessGuilds =
+            membershipGuildIds.length === 0
+              ? []
+              : await tx.query.discordGuilds.findMany({
+                  columns: { id: true },
+                  where: (
+                    discordGuilds,
+                    { and, isNull, inArray, notInArray, notExists, eq, not },
+                  ) =>
+                    and(
+                      // Ignore guilds that the bot is in
+                      isNull(discordGuilds.botJoinedAt),
+                      // Only relevant guilds to this user
+                      inArray(discordGuilds.id, membershipGuildIds),
+                      // Only select guilds that the user isn't in anymore
+                      guildIds.length === 0
+                        ? sql`true`
+                        : notInArray(
+                            discordGuilds.id,
+                            guildIds.map(makeSnowflake),
+                          ),
+                      // Find guilds with no members other than this user
+                      notExists(
+                        tx
+                          .select()
+                          .from(discordMembers)
+                          .where(
+                            and(
+                              eq(discordMembers.guildId, discordGuilds.id),
+                              not(
+                                eq(discordMembers.userId, makeSnowflake(j.id)),
+                              ),
+                            ),
+                          ),
+                      ),
+                    ),
+                });
+          if (memberlessGuilds.length !== 0) {
+            await tx.delete(discordGuilds).where(
+              inArray(
+                discordGuilds.id,
+                memberlessGuilds.map((g) => g.id),
+              ),
+            );
+          }
+
+          if (guilds.length !== 0) {
+            await tx
+              .insert(discordGuilds)
+              .values(
+                guilds.map((guild) => ({
+                  id: makeSnowflake(guild.id),
+                  name: guild.name,
+                  icon: guild.icon,
+                  ownerDiscordId: guild.owner ? makeSnowflake(j.id) : undefined,
+                })),
+              )
+              .onConflictDoUpdate({
+                target: discordGuilds.id,
+                set: {
+                  name: sql`excluded.name`,
+                  icon: sql`excluded.icon`,
+                  ownerDiscordId: sql`excluded."ownerDiscordId"`,
+                },
+              });
+            await tx
+              .insert(discordMembers)
+              .values(
+                guilds.map((guild) => ({
+                  guildId: makeSnowflake(guild.id),
+                  userId: makeSnowflake(j.id),
+                  permissions: guild.permissions,
+                  owner: guild.owner,
+                })),
+              )
+              .onConflictDoUpdate({
+                target: [discordMembers.guildId, discordMembers.userId],
+                set: {
+                  permissions: sql`excluded.permissions`,
+                  owner: sql`excluded.owner`,
+                },
+              });
+          }
+          await tx
+            .delete(discordMembers)
+            .where(
+              and(
+                eq(discordMembers.userId, makeSnowflake(j.id)),
+                guildIds.length === 0
+                  ? sql`true`
+                  : notInArray(
+                      discordMembers.guildId,
+                      guildIds.map(makeSnowflake),
+                    ),
+              ),
+            );
+        });
 
         return {
           id: String(user.id),
