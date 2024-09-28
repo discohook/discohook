@@ -2,6 +2,7 @@ import { REST } from "@discordjs/rest";
 import { WebSocketManager, WebSocketShardEvents } from "@discordjs/ws";
 import {
   ActivityType,
+  ChannelType,
   GatewayDispatchEvents,
   GatewayIntentBits,
   PresenceUpdateStatus,
@@ -15,6 +16,8 @@ const env = process.env as unknown as Env;
 if (!env.DISCORD_TOKEN || !env.WORKER_ORIGIN) {
   throw Error("Missing required environment variables. Refer to README.");
 }
+
+const small = env.SHARD_COUNT === "1";
 
 // const arg = yargs(hideBin(process.argv)).parseSync();
 // const cluster = <number>arg.cluster ?? 0;
@@ -66,9 +69,9 @@ manager.on(WebSocketShardEvents.Ready, (event) => {
   console.log(
     `${event.data.user.username}#${event.data.user.discriminator} ready with ${
       event.data.shard ? event.data.shard[1] : 0
-    } shards on ${event.data.guilds.length} guilds\nWorker origin: ${
-      env.WORKER_ORIGIN
-    }`,
+    } shards on ${event.data.guilds.length} guilds${
+      small ? " (small mode; events sent instantly)" : ""
+    }\nWorker origin: ${env.WORKER_ORIGIN}`,
   );
 });
 
@@ -89,6 +92,29 @@ manager.on(WebSocketShardEvents.Error, (event) => {
 });
 
 manager.on(WebSocketShardEvents.Dispatch, async (event) => {
+  if (
+    ![
+      // Guild state (internal and db)
+      GatewayDispatchEvents.GuildCreate,
+      GatewayDispatchEvents.GuildDelete,
+      // Webhook state
+      GatewayDispatchEvents.ChannelDelete,
+      GatewayDispatchEvents.WebhooksUpdate,
+      // Subscriptions
+      GatewayDispatchEvents.EntitlementCreate,
+      GatewayDispatchEvents.EntitlementUpdate,
+      GatewayDispatchEvents.EntitlementDelete,
+      // Reaction roles
+      GatewayDispatchEvents.MessageReactionAdd,
+      GatewayDispatchEvents.MessageReactionRemove,
+      // Triggers
+      GatewayDispatchEvents.GuildMemberAdd,
+      GatewayDispatchEvents.GuildMemberRemove,
+    ].includes(event.data.t)
+  ) {
+    return;
+  }
+
   // We have to have just a little bit of local state to prevent sending 1000+
   // requests every time a shard is ready. Since this is the only cache, I am
   // not so concerned about RAM with this 'hybrid' technique
@@ -106,36 +132,39 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       if (index !== -1) guildIds.splice(index, 1);
       return; //break;
     }
+    case GatewayDispatchEvents.ChannelDelete: {
+      const channel = event.data.d;
+      if (
+        // Webhook-compatible channels
+        ![
+          ChannelType.GuildAnnouncement,
+          ChannelType.GuildText,
+          ChannelType.GuildVoice,
+          ChannelType.GuildForum,
+          ChannelType.GuildMedia,
+        ].includes(channel.type)
+      ) {
+        return;
+      }
+      break;
+    }
     default:
       break;
   }
 
-  if (
-    [
-      GatewayDispatchEvents.GuildMemberAdd,
-      GatewayDispatchEvents.GuildMemberRemove,
-      GatewayDispatchEvents.GuildCreate,
-      GatewayDispatchEvents.GuildDelete,
-      GatewayDispatchEvents.WebhooksUpdate,
-      GatewayDispatchEvents.EntitlementCreate,
-      GatewayDispatchEvents.EntitlementUpdate,
-      GatewayDispatchEvents.EntitlementDelete,
-      // Discobot: reaction roles
-      GatewayDispatchEvents.MessageReactionAdd,
-      GatewayDispatchEvents.MessageReactionRemove,
-    ].includes(event.data.t)
-  ) {
-    const now = new Date().getTime();
-    const asPayload: BulkEvent = {
-      t: event.data.t,
-      d: event.data.d,
-      ms: now,
-    };
+  const now = new Date().getTime();
+  const asPayload: BulkEvent = {
+    t: event.data.t,
+    d: event.data.d,
+    ms: now,
+  };
 
-    // bulk events every 2 seconds
-    let processEvents: typeof eventQueue = [];
+  // bulk events every 2 seconds (unless there is only one shard)
+  let processEvents: typeof eventQueue = [];
+  if (!small) {
+    const queueDuration = 2000;
     const firstInQueue = eventQueue[0];
-    if (firstInQueue && now - firstInQueue.ms >= 2000) {
+    if (firstInQueue && now - firstInQueue.ms >= queueDuration) {
       processEvents = [...eventQueue.splice(0, eventQueue.length), asPayload];
     }
 
@@ -144,27 +173,29 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
       eventQueue.push(asPayload);
       return;
     }
+  } else {
+    processEvents = [asPayload];
+  }
 
-    try {
-      const response = await fetch(`${env.WORKER_ORIGIN}/ws/bulk`, {
-        method: "POST",
-        body: JSON.stringify(processEvents),
-        headers: {
-          Authorization: `Bot ${env.DISCORD_TOKEN}`,
-          "X-Discohook-Shard": String(event.shardId),
-          // "X-Discohook-Cluster": String(cluster),
-          "Content-Type": "application/json",
-          "User-Agent":
-            "discohook-bot-ws/1.0.0 (+https://github.com/discohook/discohook)",
-        },
-      });
-      console.log(
-        `Bulk processing (${processEvents.length} events) returned ${response.status}`,
-        // `> ${processEvents.map((e) => e.t).join(", ")}`,
-      );
-    } catch (e) {
-      console.error(e);
-    }
+  try {
+    const response = await fetch(`${env.WORKER_ORIGIN}/ws/bulk`, {
+      method: "POST",
+      body: JSON.stringify(processEvents),
+      headers: {
+        Authorization: `Bot ${env.DISCORD_TOKEN}`,
+        "X-Discohook-Shard": String(event.shardId),
+        // "X-Discohook-Cluster": String(cluster),
+        "Content-Type": "application/json",
+        "User-Agent":
+          "discohook-bot-ws/1.0.0 (+https://github.com/discohook/discohook)",
+      },
+    });
+    console.log(
+      `Bulk processing (${processEvents.length} events) returned ${response.status}`,
+      // `> ${processEvents.map((e) => e.t).join(", ")}`,
+    );
+  } catch (e) {
+    console.error(e);
   }
 });
 

@@ -1,4 +1,5 @@
 import { GatewayDispatchEvents } from "discord-api-types/v10";
+import { channelDeleteCallback } from "./events/channelDelete.js";
 import {
   entitlementCreateCallback,
   entitlementUpdateCallback,
@@ -23,6 +24,7 @@ export const eventNameToCallback: Partial<
   [GatewayDispatchEvents.GuildCreate]: guildCreateCallback,
   [GatewayDispatchEvents.GuildDelete]: guildDeleteCallback,
   [GatewayDispatchEvents.WebhooksUpdate]: webhooksUpdateCallback,
+  [GatewayDispatchEvents.ChannelDelete]: channelDeleteCallback,
   [GatewayDispatchEvents.MessageReactionAdd]: messageReactionAddCallback,
   [GatewayDispatchEvents.MessageReactionRemove]: messageReactionRemoveCallback,
   [GatewayDispatchEvents.EntitlementCreate]: entitlementCreateCallback,
