@@ -444,5 +444,7 @@
     "random": "Casuale",
     "flags": "Flag",
     "rowEmpty": "Deve essere presente almeno un componente (bottone/tendina)",
-    "optionsEmpty": "Deve essere presente almeno un'opzione di selezione"
+    "optionsEmpty": "Deve essere presente almeno un'opzione di selezione",
+    "embedEmpty": "Deve essere presente un testo o un'immagine",
+    "embedsTooLarge": "Gli embed possono contenere massimo 6000 caratteri in totale (al momento sono presenti {{count}} caratteri in più)"
 }
