@@ -40,7 +40,7 @@
     "sendMessageN_many": "Invia i Messaggi",
     "sendMessageN_other": "Invia i Messaggi",
     "sendNoMessages": "Non hai messaggi da inviare.",
-    "willBeEdited": "Questo messaggio ha un riferimento impostato, quindi sarà modificato.",
+    "willBeEdited": "Questo messaggio ha il suo link impostato, quindi verrà modificato.",
     "skippedEdit": "Saltata la modifica a causa degli ID di webhook non corrispondenti.",
     "submitResultTitle": "Invia Risultato",
     "success": "Successo",
@@ -75,7 +75,8 @@
         "fr": "Francese",
         "es": "Spagnolo",
         "de": "Tedesco",
-        "it": "Italiano"
+        "it": "Italiano",
+        "cs": "Ceca"
     },
     "chooseServer": "Seleziona un server",
     "editorPanes": "Pannelli di Modifica",
@@ -448,5 +449,29 @@
     "embedEmpty": "Deve essere presente un testo o un'immagine",
     "embedsTooLarge": "Gli embed possono contenere massimo 6000 caratteri in totale (al momento sono presenti {{count}} caratteri in più)",
     "previousPage": "<0/> Pagina Precedente",
-    "nextPage": "Pagina successiva <0/>"
+    "nextPage": "Pagina successiva <0/>",
+    "actionDescription": {
+        "1": "Attendere {{ azione.secondi }} secondi"
+    },
+    "actionTypeUnsupported": "Sembra che questo tipo di azione non sia supportato. Provare ad aggiornare la pagina.",
+    "checkEqualA": "Questo valore (A):",
+    "checkEqualB": "Pari a questo valore (B):",
+    "stopMessageNote": "Le azioni di arresto possono opzionalmente mostrare un messaggio all'utente. Questi messaggi possono essere <0>formattati</0> come le normali azioni messaggio.",
+    "checkFunctionType": {
+        "5": "UGUALE",
+        "0": "E",
+        "1": "O",
+        "4": "IN"
+    },
+    "titleUrlManaged": "Questo valore è impostato automaticamente dall'embed principale della galleria. Modificarlo solo se si vuole cambiare la galleria a cui appartiene l'immagine.",
+    "checkFunctionThen": "Se la funzione passa:",
+    "checkFunctionElse": "Altrimenti, se la funzione non passa:",
+    "submitting": "Invio",
+    "removeMessageLink": "Rimuovi il collegamento al messaggio",
+    "setLink": "Imposta Link",
+    "checkFunctionTypeText": "Funzione",
+    "addCondition": "Aggiungi una condizione",
+    "checkInElement": "Elemento:",
+    "checkInArray": "Contenuta in un array in formato JSON:",
+    "setMessageLink": "Imposta il collegamento del messaggio"
 }
