@@ -461,7 +461,8 @@
         "5": "UGUALE",
         "0": "E",
         "1": "O",
-        "4": "IN"
+        "4": "IN",
+        "3": "NON"
     },
     "titleUrlManaged": "Questo valore è impostato automaticamente dall'embed principale della galleria. Modificarlo solo se si vuole cambiare la galleria a cui appartiene l'immagine.",
     "checkFunctionThen": "Se la funzione passa:",
