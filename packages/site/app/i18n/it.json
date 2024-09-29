@@ -429,7 +429,8 @@
         "32": "Ha thread",
         "64": "Nascosto (effimero)",
         "8192": "È un messaggio vocale",
-        "4": "Nascondi gli embed"
+        "4": "Nascondi gli embed",
+        "4096": "SIlenzioso"
     },
     "content": "Contenuto",
     "contentOptional": "Contenuto (facoltativo)",
@@ -503,5 +504,6 @@
     "default": "Predefinito",
     "valueHidden": "Valore (nascosto)",
     "valueMirrorVariable": "Nome completo della variabile prioritaria",
-    "actionNText": "Azione {{n}} - {{text}}"
+    "actionNText": "Azione {{n}} - {{text}}",
+    "messageActionGuideNote": "Confuso? Controlla <0>ricette - bottoni dei messaggi</0>"
 }
