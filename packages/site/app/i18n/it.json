@@ -122,7 +122,7 @@
     "linkEmbeds": "Embed dei Link",
     "deleteLinkBackupConfirm": "Sei sicuro di voler eliminare l'embed di questo link? Quest'azione non può essere annullata.",
     "backups": "Backup",
-    "noBackups": "Non hai creato nessun backup.",
+    "noBackups": "Non c'è nessunbackup qui. Puoi creare un backup sulla <0>pagina principale</0> nel menu \"Backup\".",
     "deleteBackup": "Elimina Backup",
     "deleteBackupConfirm": "Sei sicuro di voler eliminare questo backup? Questa azione non può essere annullata.",
     "shiftSkipTip": "Suggerimento: Tieni premuto shift per saltare la conferma la prossima volta.",
@@ -446,5 +446,7 @@
     "rowEmpty": "Deve essere presente almeno un componente (bottone/tendina)",
     "optionsEmpty": "Deve essere presente almeno un'opzione di selezione",
     "embedEmpty": "Deve essere presente un testo o un'immagine",
-    "embedsTooLarge": "Gli embed possono contenere massimo 6000 caratteri in totale (al momento sono presenti {{count}} caratteri in più)"
+    "embedsTooLarge": "Gli embed possono contenere massimo 6000 caratteri in totale (al momento sono presenti {{count}} caratteri in più)",
+    "previousPage": "<0/> Pagina Precedente",
+    "nextPage": "Pagina successiva <0/>"
 }
