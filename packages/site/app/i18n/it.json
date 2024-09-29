@@ -486,7 +486,7 @@
     "editFlow": "Modifica il flusso",
     "maxActionsWarningFree": "I flussi hanno un massimo di {{limit}} di azioni non di controllo/arresto. <0>Per saperne di più, leggere qui</0>. Abbonatevi a Deluxe per aggiungere fino a {{premiumLimit}} azioni.",
     "thread": "Thread",
-    "threadsNote": "I webhook possono creare e utilizzare thread. <0>Come si usa questo? </0>",
+    "threadsNote": "I webhook possono creare e utilizzare thread. <0>Come si usa questo?</0>",
     "backup": "Backup",
     "flowLink": "Flusso (<0>che cos'è un flusso? </0>)",
     "role": "Ruolo",
