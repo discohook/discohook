@@ -10,12 +10,15 @@ export type FeedType =
   | "bridge.threads"
   | "bridge.mastodon"
   | "bridge.gocomics" // kill shayypy/daily-peanuts
-  | "bridge.bandcamp";
+  | "bridge.bandcamp"
+  | "bridge.spotify"; // requires client id/secret, should use local bridge instance
 // Maybe
 // | "bridge.ao3"
 // | "bridge.amazon-prices"
 // | "bridge.youtube-community"
 // | "bridge.twitch-videos"
+
+const rssBridge = "https://rss-bridge.org/bridge01/";
 
 /**
  * This durable object polls for changes in various feeds, including:
@@ -36,7 +39,6 @@ export class FeedReader implements DurableObject {
   }
 
   async alarm() {
-    await this.state.storage.deleteAll();
   }
 }
 
