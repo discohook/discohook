@@ -452,7 +452,7 @@
     "nextPage": "Pagina successiva <0/>",
     "actionDescription": {
         "1": "Attendere {{ action.seconds }} secondi",
-        "8": "Crea un thread denominato “{{ action.name }}”."
+        "8": "Crea un thread denominato “{{ action.name }}”"
     },
     "actionTypeUnsupported": "Sembra che questo tipo di azione non sia supportato. Provare ad aggiornare la pagina.",
     "checkEqualA": "Questo valore (A):",
