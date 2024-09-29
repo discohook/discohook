@@ -564,7 +564,7 @@ export class InteractionContext<
   }
 
   updateMessage(
-    data: string | MessageConstructorData,
+    data: string | Omit<MessageConstructorData, "ephemeral">,
   ): APIInteractionResponseUpdateMessage {
     return {
       type: InteractionResponseType.UpdateMessage,
@@ -610,7 +610,10 @@ class InteractionFollowup {
     ) as Promise<RESTGetAPIInteractionFollowupResult>;
   }
 
-  editMessage(messageId: string, data: MessageConstructorData) {
+  editMessage(
+    messageId: string,
+    data: Omit<MessageConstructorData, "ephemeral">,
+  ) {
     return this.rest.patch(
       Routes.webhookMessage(
         this.applicationId,
@@ -635,7 +638,7 @@ class InteractionFollowup {
     return this.getMessage("@original");
   }
 
-  editOriginalMessage(data: MessageConstructorData) {
+  editOriginalMessage(data: Omit<MessageConstructorData, "ephemeral">) {
     return this.editMessage("@original", data);
   }
 
