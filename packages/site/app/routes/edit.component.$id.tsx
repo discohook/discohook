@@ -809,9 +809,23 @@ export default () => {
       let x = -1;
       for (const row of compiled.components) {
         y += 1;
-        const live = row.components.find(
+        let live = row.components.find(
           (c) => getComponentId(c) === BigInt(component_.id),
         );
+        // We should be injecting `custom_id` into draft link buttons but this is just in case
+        if (
+          !live &&
+          component.type === ComponentType.Button &&
+          component.style === ButtonStyle.Link
+        ) {
+          live = row.components.find(
+            (c) =>
+              c.type === component.type &&
+              c.style === component.style &&
+              c.url === component.url &&
+              c.label === component.label,
+          );
+        }
         if (live) {
           found = true;
           x = row.components.indexOf(live);
@@ -829,9 +843,7 @@ export default () => {
       setPosition([y, x]);
       return compiled;
     },
-    message
-      ? { ...message, components: message.components ?? [] }
-      : { components: [] },
+    { ...message, components: message?.components ?? [] },
   );
   // Insert live component
   // biome-ignore lint/correctness/useExhaustiveDependencies: once
@@ -841,9 +853,22 @@ export default () => {
     if (message) {
       const rows = message.components ?? [];
       const maybeY = rows.findIndex((r) => {
-        const maybeX = r.components.findIndex(
+        let maybeX = r.components.findIndex(
           (c) => getComponentId(c) === BigInt(component_.id),
         );
+        if (
+          maybeX === -1 &&
+          component.type === ComponentType.Button &&
+          component.style === ButtonStyle.Link
+        ) {
+          maybeX = r.components.findIndex(
+            (c) =>
+              c.type === component.type &&
+              c.style === component.style &&
+              c.url === component.url &&
+              c.label === component.label,
+          );
+        }
         if (maybeX !== -1) {
           x = maybeX;
           return true;
@@ -999,7 +1024,15 @@ export default () => {
                       {row.components.map((child, ci) => {
                         const id = getComponentId(child)?.toString();
                         const previewText = getComponentText(child);
-                        const isLiveComponent = id === component_.id.toString();
+                        const isLiveComponent = id
+                          ? id === component_.id.toString()
+                          : component.type === ComponentType.Button &&
+                              component.style === ButtonStyle.Link &&
+                              child.type === component.type &&
+                              child.style === component.style
+                            ? child.url === component.url &&
+                              child.label === component.label
+                            : false;
 
                         return (
                           <div

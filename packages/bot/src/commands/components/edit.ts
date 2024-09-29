@@ -156,11 +156,12 @@ export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
 export const getComponentsAsOptions = (
   components: APIActionRowComponent<APIMessageActionRowComponent>[],
   emojis: APIEmoji[],
+  dbComponents?: { id: bigint; data: StorableComponent }[],
 ) =>
   components.flatMap((row, ri) =>
     row.components
       .map((component, ci): APISelectMenuOption | undefined => {
-        const id = getComponentId(component);
+        const id = getComponentId(component, dbComponents);
         const value = id
           ? `id:${id}:${ri}-${ci}`
           : component.type === ComponentType.Button && isLinkButton(component)
@@ -882,7 +883,9 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
             ephemeral: true,
           });
         }
-        url.searchParams.set("dhc-id", componentId);
+        if (url.searchParams.get("dhc-id")) {
+          url.searchParams.delete("dhc-id");
+        }
         data.url = url.href;
       }
       break;

@@ -26,6 +26,7 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { generateId } from "store/src/schema";
+import { StorableComponent } from "store/src/types/components.js";
 import { MinimumKVComponentState } from "../components.js";
 import { Env } from "../types/env.js";
 
@@ -160,9 +161,10 @@ export const hasCustomId = (
 export const getComponentId = (
   component:
     | Pick<APIButtonComponentWithCustomId, "type" | "style" | "custom_id">
-    | Pick<APIButtonComponentWithURL, "type" | "style" | "url">
+    | Pick<APIButtonComponentWithURL, "type" | "style" | "label" | "url">
     | Pick<APIButtonComponentWithSKUId, "type" | "style" | "sku_id">
     | Pick<APISelectMenuComponent, "type" | "custom_id">,
+  components?: { id: bigint; data: StorableComponent }[],
 ) => {
   if (
     component.type === ComponentType.Button &&
@@ -174,6 +176,16 @@ export const getComponentId = (
       try {
         return BigInt(id);
       } catch {}
+    }
+    if (components) {
+      const match = components.find(
+        (c) =>
+          c.data.type === component.type &&
+          c.data.style === component.style &&
+          c.data.url === component.url &&
+          c.data.label === component.label,
+      );
+      return match?.id;
     }
     return undefined;
   }

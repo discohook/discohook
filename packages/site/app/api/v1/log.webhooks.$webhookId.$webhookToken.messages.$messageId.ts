@@ -229,16 +229,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           const id = getComponentId(component);
           flowsById[String(id)] = [];
 
-          if (match) {
-            // avoid conflict, later `insert` will find flow ids from match
-            return [];
-            // return match.componentsToFlows.map((ctf) => {
-            //   flowsById[String(id)].push(String(ctf.flow.id));
-            //   return { id: ctf.flow.id, name: ctf.flow.name };
-            // });
-          }
-
           if (
+            match ||
             component.type === ComponentType.StringSelect ||
             (component.type === ComponentType.Button && isLinkButton(component))
           ) {

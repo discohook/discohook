@@ -249,10 +249,6 @@ export const useMessageSubmissionManager = (
               withoutFlow.custom_id
             ) {
               const url = new URL(withoutFlow.url);
-              url.searchParams.set(
-                "dhc-id",
-                withoutFlow.custom_id.replace(/^p_/, ""),
-              );
               withoutFlow.url = url.href;
               withoutFlow.custom_id = undefined;
             }

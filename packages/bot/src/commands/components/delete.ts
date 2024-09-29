@@ -289,13 +289,8 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
           data: true,
         },
       });
-      const dbComponent = dbComponents.find(
-        (c) =>
-          c.data.type === ComponentType.Button &&
-          c.data.style === ButtonStyle.Link &&
-          c.data.url === foundComponent.url,
-      );
-      if (!dbComponent) {
+      const matchId = getComponentId(foundComponent, dbComponents);
+      if (matchId === undefined) {
         rows[row].components.splice(column, 1);
         const components = rows.filter((row) => row.components.length !== 0);
         await ctx.rest.patch(
@@ -332,7 +327,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
                 webhookId,
                 messageId,
                 threadId,
-                componentId: dbComponent.id,
+                componentId: matchId,
                 position: [row, column],
               },
             ])),
@@ -362,6 +357,7 @@ const registerComponentDelete = async (
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
   position?: [y: number, x: number],
+  shouldKeepRecord?: boolean,
 ) => {
   const db = getDb(ctx.env.HYPERDRIVE);
   const customId = `p_${id}`;
@@ -378,7 +374,7 @@ const registerComponentDelete = async (
     row = components.find((c) =>
       c.components
         .filter((c) => c.type === type)
-        .map(getComponentId)
+        .map((c) => getComponentId(c))
         .includes(id),
     );
     current = row?.components.find(
@@ -397,9 +393,11 @@ const registerComponentDelete = async (
   }
 
   const editedMsg = await db.transaction(async (tx) => {
-    await tx
-      .delete(discordMessageComponents)
-      .where(eq(discordMessageComponents.id, id));
+    if (!shouldKeepRecord) {
+      await tx
+        .delete(discordMessageComponents)
+        .where(eq(discordMessageComponents.id, id));
+    }
 
     // An error thrown here triggers a rollback
     return (await ctx.rest.patch(
@@ -414,9 +412,11 @@ const registerComponentDelete = async (
     )) as APIMessage;
   });
 
-  const doId = ctx.env.COMPONENTS.idFromName(`${editedMsg.id}-${customId}`);
-  const stub = ctx.env.COMPONENTS.get(doId);
-  await stub.fetch(`http://do/?id=${id}`, { method: "DELETE" });
+  if (!shouldKeepRecord) {
+    const doId = ctx.env.COMPONENTS.idFromName(`${editedMsg.id}-${customId}`);
+    const stub = ctx.env.COMPONENTS.get(doId);
+    await stub.fetch(`http://do/?id=${id}`, { method: "DELETE" });
+  }
 
   return editedMsg;
 };
@@ -446,17 +446,21 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
       id: true,
       type: true,
       guildId: true,
-      channelId: true,
       messageId: true,
     },
   });
+  // Allow removal from the message, but not record deletion, if the
+  // component's messageId/guildId hasn't been stored for whatever
+  // reason
+  const shouldKeepRecord = !component?.guildId || !component?.messageId;
   if (
     component &&
-    (component.guildId?.toString() !== ctx.interaction.guild_id ||
-      component.messageId?.toString() !== messageId)
+    ((component.guildId &&
+      component.guildId.toString() !== ctx.interaction.guild_id) ||
+      (component.messageId && component.messageId.toString() !== messageId))
   ) {
     return ctx.updateMessage({
-      content: "Unknown component or it does not belong to this server",
+      content: "That component does not belong to this server.",
       embeds: [],
       components: [],
     });
@@ -492,6 +496,7 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
       webhook,
       message,
       position,
+      shouldKeepRecord,
     );
   }
   return ctx.updateMessage({

@@ -242,7 +242,9 @@ export const getSetEditingComponentProps = ({
       ) {
         try {
           const url = new URL(withId.url);
-          url.searchParams.set("dhc-id", withId.custom_id.replace(/^p_/, ""));
+          if (url.searchParams.get("dhc-id")) {
+            url.searchParams.delete("dhc-id");
+          }
           withId.url = url.href;
         } catch {}
       }

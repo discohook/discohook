@@ -925,7 +925,6 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
         });
       }
 
-      url.searchParams.set("dhc-id", id);
       state.component.url = url.href;
       state.step += 1;
       state.steps?.push({ label: "Set URL" });

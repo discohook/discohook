@@ -185,6 +185,8 @@ export const loadMessageComponents = async (
           if (!!c.custom_id && /^p_\d+/.test(c.custom_id)) {
             return [c.custom_id.replace(/^p_/, ""), c];
           }
+          // We don't really need to load data for link buttons.
+          // This is pretty much just to reduce residue.
           if (c.type === ComponentType.Button && isLinkButton(c)) {
             try {
               const url = new URL(c.url);
