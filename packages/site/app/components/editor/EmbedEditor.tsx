@@ -14,7 +14,12 @@ import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import DatePicker from "../pickers/DatePicker";
 import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
-import { ColorPicker } from "./ColorPicker";
+import {
+  ColorPicker,
+  decimalToHex,
+  decimalToRgb,
+  rgbToDecimal,
+} from "./ColorPicker";
 
 export const isEmbedEmpty = (embed: APIEmbed): boolean =>
   !embed.author &&
@@ -127,9 +132,7 @@ export const EmbedEditor: React.FC<{
       className="group/embed rounded p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-gray-500 dark:border-l-[#1E1F22] shadow"
       open={open}
       style={
-        embed.color
-          ? { borderLeftColor: `#${embed.color.toString(16)}` }
-          : undefined
+        embed.color ? { borderLeftColor: decimalToHex(embed.color) } : undefined
       }
     >
       <summary className="group-open/embed:mb-2 py-1 px-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
@@ -401,9 +404,7 @@ export const EmbedEditor: React.FC<{
                   <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
                     <span className="align-middle">
                       {typeof embed.color === "number"
-                        ? embed.color === 0
-                          ? "#000000"
-                          : `#${embed.color.toString(16)}`
+                        ? decimalToHex(embed.color)
                         : t("clickToSet")}
                     </span>
                   </p>
@@ -413,7 +414,7 @@ export const EmbedEditor: React.FC<{
                   style={{
                     backgroundColor:
                       typeof embed.color === "number"
-                        ? `#${embed.color.toString(16)}`
+                        ? decimalToHex(embed.color)
                         : undefined,
                   }}
                 />
@@ -424,18 +425,17 @@ export const EmbedEditor: React.FC<{
                 containerClassName="ltr:right-0 rtl:left-0 top-0"
               >
                 <ColorPicker
+                  t={t}
                   color={
                     typeof embed.color === "number"
-                      ? `#${embed.color.toString(16)}`
+                      ? decimalToRgb(embed.color)
                       : undefined
                   }
                   onChange={(color) => {
-                    updateEmbed({
-                      color:
-                        color.rgb.a === -1
-                          ? undefined
-                          : parseInt(color.hex.replace("#", "0x"), 16),
-                    });
+                    updateEmbed({ color: rgbToDecimal(color.rgb) });
+                  }}
+                  onReset={() => {
+                    updateEmbed({ color: undefined });
                   }}
                 />
               </PickerOverlayWrapper>

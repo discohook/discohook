@@ -389,6 +389,7 @@
   "iconUrl": "Icon URL",
   "sidebarColor": "Sidebar Color",
   "clickToSet": "Click to Set",
+  "reset": "Reset",
   "provider": "Provider",
   "providerUrl": "Provider URL",
   "body": "Body",

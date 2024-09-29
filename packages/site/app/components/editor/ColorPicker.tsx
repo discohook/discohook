@@ -1,7 +1,15 @@
-import { CustomPicker, InjectedColorProps, SketchPicker } from "react-color";
+import { TFunction } from "i18next";
+import {
+  Color,
+  CustomPicker,
+  InjectedColorProps,
+  SketchPicker,
+} from "react-color";
 import { Button } from "../Button";
 
-const ColorPickerFunction: React.FC<InjectedColorProps> = (props) => (
+const ColorPickerFunction: React.FC<
+  InjectedColorProps & { t?: TFunction; onReset?: () => void }
+> = (props) => (
   <div className="w-fit rounded border border-gray-50 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:text-primary-230 shadow-md">
     <SketchPicker
       {...props}
@@ -45,20 +53,29 @@ const ColorPickerFunction: React.FC<InjectedColorProps> = (props) => (
       ]}
       disableAlpha
     />
-    <div className="flex p-2 pt-0">
-      <div className="flex gap-2 ml-auto">
-        <Button
-          onClick={() => {
-            if (props.onChange) {
-              props.onChange({ a: -1, r: 0, g: 0, b: 0 });
-            }
-          }}
-        >
-          Reset
-        </Button>
+    {!!props.onReset && (
+      <div className="flex p-2 pt-0">
+        <div className="flex gap-2 ml-auto">
+          <Button onClick={props.onReset}>
+            {props.t ? props.t("reset") : "Reset"}
+          </Button>
+        </div>
       </div>
-    </div>
+    )}
   </div>
 );
 
 export const ColorPicker = CustomPicker(ColorPickerFunction);
+
+export const rgbToDecimal = (rgb: { r: number; g: number; b: number }) =>
+  (rgb.r << 16) + (rgb.g << 8) + rgb.b;
+
+export const decimalToRgb = (decimal: number): Color => ({
+  r: (decimal & 0xff0000) >> 16,
+  g: (decimal & 0x00ff00) >> 8,
+  b: decimal & 0x0000ff,
+  a: 1,
+});
+
+export const decimalToHex = (decimal: number) =>
+  `#${decimal.toString(16).padStart(6, "0")}`;

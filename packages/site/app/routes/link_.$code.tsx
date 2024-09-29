@@ -10,6 +10,7 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { decimalToHex } from "~/components/editor/ColorPicker";
 import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
 import { Embed } from "~/components/preview/Embed";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
@@ -77,7 +78,7 @@ export const meta: MetaFunction = ({ data }) => {
     if (embed.color != null) {
       tags.push({
         name: "theme-color",
-        content: `#${embed.color.toString(16)}`,
+        content: decimalToHex(embed.color),
       });
     }
 

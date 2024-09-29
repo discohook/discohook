@@ -9,6 +9,7 @@ import { Trans } from "react-i18next";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { decimalToHex } from "../editor/ColorPicker";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 
@@ -84,7 +85,7 @@ export const Embed: React.FC<{
         className="rounded bg-gray-100 border-l-4 border-l-gray-300 dark:bg-background-secondary-dark dark:border-l-[#1E1F22] dark:text-gray-100 inline-grid max-w-[520px] pt-2 pr-4 pb-4 pl-3"
         style={
           typeof embed.color === "number"
-            ? { borderLeftColor: `#${embed.color.toString(16)}` }
+            ? { borderLeftColor: decimalToHex(embed.color) }
             : undefined
         }
       >
