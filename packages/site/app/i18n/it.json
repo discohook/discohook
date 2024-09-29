@@ -476,5 +476,32 @@
     "addCondition": "Aggiungi una condizione",
     "checkInElement": "Elemento:",
     "checkInArray": "Contenuta in un array in formato JSON:",
-    "setMessageLink": "Imposta il collegamento del messaggio"
+    "setMessageLink": "Imposta il collegamento del messaggio",
+    "value": "Valore",
+    "addAction": "Aggiungi Azione",
+    "seconds": "Secondi",
+    "actionN": "Azione {{n}}",
+    "valueFromReturn": "Attributo del ritorno precedente",
+    "editFlow": "Modifica il flusso",
+    "maxActionsWarningFree": "I flussi hanno un massimo di {{limit}} di azioni non di controllo/arresto. <0>Per saperne di più, leggere qui</0>. Abbonatevi a Deluxe per aggiungere fino a {{premiumLimit}} azioni.",
+    "thread": "Thread",
+    "threadsNote": "I webhook possono creare e utilizzare thread. <0>Come si usa questo? </0>",
+    "backup": "Backup",
+    "flowLink": "Flusso (<0>che cos'è un flusso? </0>)",
+    "role": "Ruolo",
+    "user": "Utente",
+    "noMentionsActionNote": "Non sono disponibili dati per questo elenco. Quando si è connessi, aggiungere un webhook o inserire manualmente le menzioni nel messaggio per popolarlo.",
+    "deleteMessageIdNote": {
+        "false": "<0/> La variabile <1>messageId</1> non è impostata.",
+        "true": "<0/> La variabile <1>messageId</1> è impostata come <1>{{value}}</1>."
+    },
+    "description": "Descrizione",
+    "type": "Tipo",
+    "flowParseNotice": "Risolvere questi problemi prima di tentare di salvare il componente o di inviare il messaggio. Se si è appena aggiunta una nuova azione, non c'è nulla di sbagliato, probabilmente si deve solo inserire un valore obbligatorio.",
+    "maxActionsWarningPremium": "I flussi hanno un massimo di {{limit}} di azioni non di controllo/arresto per i membri deluxe.",
+    "editComponent": "Modifica componente",
+    "default": "Predefinito",
+    "valueHidden": "Valore (nascosto)",
+    "valueMirrorVariable": "Nome completo della variabile prioritaria",
+    "actionNText": "Azione {{n}} - {{text}}"
 }
