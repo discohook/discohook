@@ -505,5 +505,9 @@
     "valueHidden": "Valore (nascosto)",
     "valueMirrorVariable": "Nome completo della variabile prioritaria",
     "actionNText": "Azione {{n}} - {{text}}",
-    "messageActionGuideNote": "Confuso? Controlla <0>ricette - bottoni dei messaggi</0>"
+    "messageActionGuideNote": "Confuso? Controlla <0>ricette - bottoni dei messaggi</0>",
+    "noForumWebhooks": "Nessuno dei webhook è in un canale thread-unico, quindi non è possibile impostare il nome di un thread.",
+    "forumThreadName": "Nome del thread del forum",
+    "threadId": "ID del thread",
+    "forumImmutable": "I webhook non possono modificare il nome del thread."
 }
