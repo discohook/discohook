@@ -183,6 +183,9 @@
   "noServers": "You don't appear to share any servers with Discohook Utils.",
   "inviteBot": "Invite Bot",
   "addToServer": "Add to Server",
+  "favorite": "Favorite",
+  "unfavorite": "Unfavorite",
+  "serversFavoriteTip": "Click the <icon/> <highlight>star icon</highlight> to favorite a server, making it easier to access while using Discohook. We recommend about 3-5 favorite servers at most.",
   "home": "Home",
   "homeWelcome": "Welcome to the homepage. Depending on your permissions in this server, you will be able to access various tabs in the <narrow>top bar</narrow><wide>sidebar</wide>.",
   "homePermission": {

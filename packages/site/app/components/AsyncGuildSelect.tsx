@@ -3,12 +3,14 @@ import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { selectClassNames } from "./StringSelect";
+import { Twemoji } from "./icons/Twemoji";
 
 export interface OptionGuild {
   id: string | bigint;
   name: string;
   icon?: string | null;
   botJoinedAt?: Date | null;
+  favorite?: boolean | null;
 }
 
 const getOption = (guild: OptionGuild) => ({
@@ -42,6 +44,9 @@ const getOption = (guild: OptionGuild) => ({
         // </div>
       )}
       <span className="align-middle">{guild.name}</span>
+      {guild.favorite ? (
+        <Twemoji emoji="⭐️" className="ltr:ml-1 rtl:mr-1 align-middle" />
+      ) : null}
     </div>
   ),
   value: String(guild.id),
@@ -73,12 +78,16 @@ export const AsyncGuildSelect = (props: {
               guild.name.toLowerCase().includes(inputValue.toLowerCase()),
             )
             .sort((a, b) => {
+              if (a.favorite && !b.favorite) return -1;
+              if (b.favorite && !a.favorite) return 1;
+
               let score = 0;
               if (b.botJoinedAt !== undefined) {
                 if (b.botJoinedAt) {
                   score -= 1;
                 }
               }
+
               score += b.name.toLowerCase() > a.name.toLowerCase() ? -1 : 1;
               return score;
             })

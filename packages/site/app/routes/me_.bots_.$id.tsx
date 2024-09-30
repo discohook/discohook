@@ -87,7 +87,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     user.discordId
       ? await db.query.discordMembers.findMany({
           where: eq(discordMembers.userId, user.discordId),
-          columns: { owner: true, permissions: true },
+          columns: { owner: true, permissions: true, favorite: true },
           with: { guild: { columns: { id: true, name: true, icon: true } } },
         })
       : [])();
@@ -630,7 +630,10 @@ export default function CustomBot() {
                                   BigInt(m.permissions),
                                 ).has(PermissionFlags.ManageGuild),
                             )
-                            .map((m) => m.guild))()}
+                            .map(({ guild, favorite }) => ({
+                              ...guild,
+                              favorite,
+                            })))()}
                         value={guild ?? null}
                         onChange={(g) => setGuild(g ?? undefined)}
                       />

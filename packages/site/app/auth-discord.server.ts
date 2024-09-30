@@ -68,14 +68,14 @@ export const getDiscordAuth = (
         const guildIds = guilds.map((g) => g.id);
 
         await db.transaction(async (tx) => {
+          const memberships = await tx.query.discordMembers.findMany({
+            where: (discordMembers, { eq }) =>
+              eq(discordMembers.userId, makeSnowflake(j.id)),
+            columns: { guildId: true, favorite: true },
+          });
           // TODO: Look into this. This may cause issues with unexpected
           // cascade deletes due to not every member having a `discordMembers`
           // record
-          // const memberships = await tx.query.discordMembers.findMany({
-          //   where: (discordMembers, { eq }) =>
-          //     eq(discordMembers.userId, makeSnowflake(j.id)),
-          //   columns: { guildId: true },
-          // });
           // const membershipGuildIds = memberships.map((m) => m.guildId);
           // const memberlessGuilds =
           //   membershipGuildIds.length === 0
@@ -146,6 +146,9 @@ export const getDiscordAuth = (
               .insert(discordMembers)
               .values(
                 guilds.map((guild) => ({
+                  ...memberships.find(
+                    (g) => g.guildId === makeSnowflake(guild.id),
+                  ),
                   guildId: makeSnowflake(guild.id),
                   userId: makeSnowflake(j.id),
                   permissions: guild.permissions,

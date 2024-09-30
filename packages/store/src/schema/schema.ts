@@ -4,6 +4,7 @@ import { relations } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  foreignKey,
   integer,
   json,
   pgTable,
@@ -101,6 +102,11 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   updatedTriggers: many(triggers, { relationName: "User_Trigger-updated" }),
   tokens: many(tokens, { relationName: "User_Token" }),
   bots: many(customBots, { relationName: "User_CustomBot" }),
+  userToWebhook: one(userToWebhook, {
+    fields: [users.id],
+    references: [userToWebhook.userId],
+    relationName: "User_UserToWebhook",
+  }),
 }));
 
 export const tokens = pgTable("Token", {
@@ -272,6 +278,7 @@ export const discordMembers = pgTable(
       .notNull(),
     permissions: text("permissions").default("0").notNull(),
     owner: boolean("owner").default(false).notNull(),
+    favorite: boolean("favorite").default(false).notNull(),
   },
   (table) => ({
     unq: unique().on(table.userId, table.guildId),
@@ -446,7 +453,47 @@ export const webhooksRelations = relations(webhooks, ({ one, many }) => ({
     references: [guildedServers.id],
     relationName: "GuildedServer_Webhook",
   }),
+  userToWebhook: one(userToWebhook, {
+    fields: [webhooks.platform, webhooks.id],
+    references: [userToWebhook.webhookPlatform, userToWebhook.webhookId],
+    relationName: "Webhook_UserToWebhook",
+  }),
   // messageLogEntries: many(messageLogEntries),
+}));
+
+export const userToWebhook = pgTable(
+  "UserToWebhook",
+  {
+    userId: snowflake("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    webhookPlatform: text("webhookPlatform")
+      .notNull()
+      .$type<"discord" | "guilded">(),
+    webhookId: text("webhookId").notNull(),
+    favorite: boolean("favorite").default(false).notNull(),
+  },
+  (table) => ({
+    unq: unique().on(table.userId, table.webhookPlatform, table.webhookId),
+    webhookReference: foreignKey({
+      columns: [table.webhookPlatform, table.webhookId],
+      foreignColumns: [webhooks.platform, webhooks.id],
+      name: "UserToWebhook_fk",
+    }),
+  }),
+);
+
+export const userToWebhookRelations = relations(userToWebhook, ({ one }) => ({
+  user: one(users, {
+    fields: [userToWebhook.userId],
+    references: [users.id],
+    relationName: "User_UserToWebhook",
+  }),
+  webhook: one(webhooks, {
+    fields: [userToWebhook.webhookPlatform, userToWebhook.webhookId],
+    references: [webhooks.platform, webhooks.id],
+    relationName: "Webhook_UserToWebhook",
+  }),
 }));
 
 export const messageLogEntries = pgTable("MessageLogEntry", {

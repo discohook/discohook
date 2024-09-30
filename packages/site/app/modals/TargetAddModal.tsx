@@ -116,7 +116,13 @@ export const TargetAddModal = (
           <AsyncGuildSelect
             guilds={(async () =>
               // biome-ignore lint/style/noNonNullAssertion: Must not be null to arrive at this point
-              (await props.memberships!).map(({ guild }) => guild))()}
+              (await props.memberships!).map(({ guild, favorite }) => ({
+                ...guild,
+                botJoinedAt: guild.botJoinedAt
+                  ? new Date(guild.botJoinedAt)
+                  : null,
+                favorite,
+              })))()}
             onChange={(guild) => {
               if (!guild) return;
 
