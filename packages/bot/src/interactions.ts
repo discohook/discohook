@@ -83,7 +83,9 @@ const messageConstructorDataToResponseCallbackData = (
   if (typeof data === "string") return { content: data };
 
   const flags = new MessageFlagsBitField(data.flags ?? 0);
-  flags.set(MessageFlags.Ephemeral, data.ephemeral ?? false);
+  if (data.ephemeral !== undefined) {
+    flags.set(MessageFlags.Ephemeral, data.ephemeral);
+  }
   const constructed: APIInteractionResponseCallbackData = {
     content: data.content,
     allowed_mentions: data.allowedMentions,

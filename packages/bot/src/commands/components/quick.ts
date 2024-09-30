@@ -79,7 +79,7 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
               type: FlowActionType.Stop,
               message: {
                 content: "Removed the <@&{roleId}> role from you.",
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
               },
             },
           ],
@@ -92,7 +92,7 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
               type: FlowActionType.Stop,
               message: {
                 content: "Gave you the <@&{roleId}> role.",
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
               },
             },
           ],
