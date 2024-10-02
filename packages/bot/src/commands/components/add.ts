@@ -497,6 +497,12 @@ interface KVComponentEditorState {
   column?: number;
 }
 
+export const getSessionManagerStub = (env: Env, sessionId: string) => {
+  const id = env.SESSIONS.idFromName(sessionId);
+  const stub = env.SESSIONS.get(id);
+  return stub;
+};
+
 export const generateEditorTokenForComponent = async (
   db: DBWithSchema,
   env: Env,
@@ -512,13 +518,13 @@ export const generateEditorTokenForComponent = async (
     // userId: makeSnowflake(state.user.id),
   });
 
-  await env.KV.put(
-    `token-${editorToken.id}-component-${componentId}`,
-    JSON.stringify(data),
-    {
-      expiration: Math.floor(editorToken.expiresAt.getTime() / 1000),
-    },
-  );
+  const key = `token:${editorToken.id}-component-${componentId}`;
+  const stub = getSessionManagerStub(env, key);
+  await stub.fetch("http://do/", {
+    method: "PUT",
+    body: JSON.stringify({ data, expires: editorToken.expiresAt }),
+    headers: { "Content-Type": "application/json" },
+  });
   return { ...editorToken, componentId };
 };
 

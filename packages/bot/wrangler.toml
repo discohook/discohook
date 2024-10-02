@@ -18,6 +18,7 @@ bindings = [
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site" },
   { name = "EMOJIS", class_name = "EmojiManager" },
+  { name = "SESSIONS", class_name = "SessionManager", script_name = "discohook-site" },
 ]
 
 [[migrations]]
@@ -42,6 +43,7 @@ bindings = [
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-preview" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-preview" },
   { name = "EMOJIS", class_name = "EmojiManager" },
+  { name = "SESSIONS", class_name = "SessionManager", script_name = "discohook-site-preview" },
 ]
 
 [[env.preview.migrations]]
@@ -76,6 +78,7 @@ bindings = [
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-production" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-production" },
   { name = "EMOJIS", class_name = "EmojiManager" },
+  { name = "SESSIONS", class_name = "SessionManager", script_name = "discohook-site-production" },
 ]
 
 [[env.production.migrations]]

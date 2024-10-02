@@ -39,6 +39,7 @@ import {
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { getDOToken, patchDOToken } from "~/durable/sessions";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
@@ -142,11 +143,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
       const tokenId = payload.jti!;
 
-      const key = `token-${tokenId}-component-${id}`;
-      const cached = await context.env.KV.get<KVComponentEditorState>(
-        key,
-        "json",
-      );
+      const cached = await getDOToken(context.env, tokenId, id);
       if (cached) {
         editingMeta = cached;
 
@@ -354,7 +351,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     if (row === undefined || column === undefined) {
       // This is because users logged in regularly (technically a different
       // sort of flow) are permitted to edit directly from the frontend,
-      // saving us a request.
+      // saving us a Discord request and storage interaction.
       throw json(
         { message: "`row` and `column` required when using `token`" },
         400,
@@ -373,11 +370,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
 
-    const key = `token-${tokenId}-component-${id}`;
-    const cached = await context.env.KV.get<KVComponentEditorState>(
-      key,
-      "json",
-    );
+    const cached = await getDOToken(context.env, tokenId, id);
     if (!cached) {
       throw json(
         {
@@ -387,15 +380,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         404,
       );
     }
-    tokenData = {
-      ...cached,
-      row,
-      column,
-    };
-    await context.env.KV.put(key, JSON.stringify(tokenData), {
-      // 2 hours
-      expirationTtl: 7_200,
-    });
+    // Save new data, but do not extend lifespan of the token
+    if (cached.row !== row || cached.column !== column) {
+      tokenData = {
+        ...cached,
+        row,
+        column,
+      };
+      await patchDOToken(context.env, tokenId, id, { data: tokenData });
+    }
   }
 
   const user = await getUser(request, context);

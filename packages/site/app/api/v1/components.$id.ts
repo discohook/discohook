@@ -10,6 +10,7 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
+import { getDOToken } from "~/durable/sessions";
 import {
   TokenWithUser,
   User,
@@ -30,7 +31,7 @@ import {
   getDb,
   inArray,
   makeSnowflake,
-  sql,
+  sql
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { Env } from "~/types/env";
@@ -105,11 +106,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     if (payload.scp !== "editor") {
       throw json({ message: "Invalid token" }, 401);
     }
+
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
-
-    const key = `token-${tokenId}-component-${id}`;
-    if (!(await context.env.KV.get(key))) {
+    if (!(await getDOToken(context.env, tokenId, id))) {
       throw e;
     }
 

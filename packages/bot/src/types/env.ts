@@ -23,5 +23,6 @@ export interface Env {
   DRAFT_CLEANER: DurableObjectNamespace;
   SHARE_LINKS: DurableObjectNamespace;
   EMOJIS: DurableObjectNamespace;
+  SESSIONS: DurableObjectNamespace;
   SITE: Service;
 }
