@@ -15,6 +15,4 @@ If your webhook is in a forum channel (only threads), you can use this to create
 
 If your webhook is in a text channel or forum channel, you can use this to send a message to a thread that already exists in your server. When using this, you cannot also specify a thread name (in the other input).
 
-### What do I put here?
-
 The value here needs to be Discord's identifier for the thread. You can use [our bot](discohook://bot) to get this with the </id channel:1> command, or you can [copy the ID manually](https://support.discord.com/hc/en-us/articles/206346498).
