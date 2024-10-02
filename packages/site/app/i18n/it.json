@@ -540,5 +540,92 @@
     "nEmbed_one": "{{count}} embed",
     "nEmbed_many": "{{count}} embed",
     "nEmbed_other": "",
-    "historyRestore": "Ripristina qui"
+    "historyRestore": "Ripristina qui",
+    "timestamp": {
+        "relative": {
+            "minutes_past_one": "un minuto fa",
+            "minutes_past_many": "{{count}} minuti fa",
+            "minutes_past_other": "",
+            "hours_future_one": "in un'ora",
+            "hours_future_many": "in {{count}} ore",
+            "hours_future_other": "",
+            "hours_past_one": "un'ora fa",
+            "hours_past_many": "{{count}} ore fa",
+            "hours_past_other": "",
+            "days_future_one": "in un giorno",
+            "days_future_many": "in {{count}} giorni",
+            "days_future_other": "",
+            "years_future_one": "in un anno",
+            "years_future_many": "in {{count}} anni",
+            "years_future_other": "",
+            "minutes_future_one": "in un minuto",
+            "minutes_future_many": "in {{count}} minuti",
+            "minutes_future_other": "",
+            "days_past_one": "un giorno fa",
+            "days_past_many": "{{count}} giorni fa",
+            "days_past_other": "",
+            "seconds_future": "in {{count}} secondi",
+            "seconds_past": "{{count}} secondi fa",
+            "months_future_one": "in un mese",
+            "months_future_many": "in {{count}} mesi",
+            "months_future_other": "",
+            "months_past_one": "un mese fa",
+            "months_past_many": "{{count}} mesi fa",
+            "months_past_other": "",
+            "years_past_one": "un anno fa",
+            "years_past_many": "{{count}} anni fa",
+            "years_past_other": ""
+        },
+        "footer": {
+            "other": "{{ date, MM/DD/YYYY h:mm A }}",
+            "yesterday": "Ieri alle {{ date, h:mm A }}",
+            "today": "Oggi alle {{ date, h:mm A }}",
+            "tomorrow": "Domani alle {{ date, h:mm A }}"
+        },
+        "date_verbose": "{{ date, MMMM D, YYYY }}",
+        "time": "{{ date, h:mm A }}",
+        "full": "{{ date, MMMM D, YYYY h:mm A }}",
+        "full_verbose": "{{ date, dddd, MMMM D, YYYY h:mm:ss A }}",
+        "time_verbose": "{{ date, h:mm:ss A }}",
+        "date": "{{ date, MM/DD/YYYY }}"
+    },
+    "formatMemberDescription": "L'utente usato qui dipende dal contesto del messaggio. In una risposta di un componenete, è il membro che ha interagito con il componenete. Per il trigger di un'entrata/uscita di un membro, è il membro che è entrato o che è stato rimosso dal server.",
+    "noCacheNote": "Non ci sono dati qui. Aggiungi un webhook o inserisci menzioni manualmente per riempire questo menu.",
+    "formatOptionDescription": {
+        "member": {
+            "discriminator": "Il discriminatore del membro (vecchio sistema di username)",
+            "display_name": "Il nome visualizzato del membro",
+            "tag": "Il tag completo del membro",
+            "bot": "Se l'utente sia un bot",
+            "created": "Quando è stato creato l'account",
+            "name": "L'username del membro",
+            "mention": "La menzione del membro",
+            "avatar_url": "L'URL dell'avatar mostrato del membro",
+            "default_avatar_url": "L'URL dell'avatar default del membro",
+            "created_relative": "Quando l'account è stato creato, relativo"
+        }
+    },
+    "formatServerDescription": "Questo è il server nel quale il messaggio formattato è inviato. In questo placeholder, è il server di supporto di Discohook.",
+    "mention": {
+        "customize": "Canali & Ruoli",
+        "deletedRole": "ruolo-sconosciuto",
+        "unknownUser": "utente-sconosciuto",
+        "guide": "Guida del Server",
+        "unknown": "sconosciuto",
+        "browse": "Esplora Canali"
+    },
+    "members": "Membri",
+    "formatMemberYou": "In questo placeholder, sei tu.",
+    "miscellaneous": "Varie",
+    "todayAt": "Oggi alle {{ date, h:mm A }}",
+    "badge": {
+        "server": "SERVER",
+        "app": "APP"
+    },
+    "channels": "Canali",
+    "formatDescription": "Alcuni messaggi possono essere resi dei template dinamicamente con la selezione di un formato mostrato sotto. Tutte le opzioni devono includere le parentesi graffe: <0>{}</0>",
+    "roles": "Ruoli",
+    "option": "Opzione",
+    "howToFormat": "Come formattare i tuoi messaggi",
+    "formatOptionsNone": "Passa sopra ad un'opzione per vedere un esempio."
 }
