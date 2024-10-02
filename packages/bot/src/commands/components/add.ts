@@ -38,7 +38,6 @@ import {
 } from "store";
 import {
   discordMessageComponents,
-  discordMessageComponentsToFlows,
   flows,
   generateId,
   makeSnowflake,
@@ -554,85 +553,31 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
 
   switch (value) {
     case "button": {
-      const db = getDb(ctx.env.HYPERDRIVE);
-
-      const { id: flowId } = (
-        await db.insert(flows).values({}).returning({ id: flows.id })
-      )[0];
-
-      state.component = state.component ?? {
-        type: ComponentType.Button,
-        style: ButtonStyle.Primary,
-        flowId: String(flowId),
-        label: "Button",
-      };
-
-      const component = (
-        await db
-          .insert(discordMessageComponents)
-          .values({
-            guildId: makeSnowflake(state.message.guildId),
-            channelId: makeSnowflake(state.message.channelId),
-            messageId: makeSnowflake(state.message.id),
-            type: state.component.type,
-            data: state.component,
-            createdById: makeSnowflake(state.user.id),
-            updatedById: makeSnowflake(state.user.id),
-            draft: true,
-          })
-          .returning({
-            id: discordMessageComponents.id,
-          })
-      )[0];
-      await db
-        .insert(discordMessageComponentsToFlows)
-        .values({
-          discordMessageComponentId: component.id,
-          flowId,
-        })
-        .onConflictDoNothing();
-
-      state.componentId = String(component.id);
-      const doId = ctx.env.DRAFT_CLEANER.idFromName(String(component.id));
-      const stub = ctx.env.DRAFT_CLEANER.get(doId);
-      await stub.fetch(`http://do/?id=${component.id}`);
-
-      const editorToken = await generateEditorTokenForComponent(
-        db,
-        ctx.env,
-        component.id,
-        {
-          interactionId: ctx.interaction.id,
-          user: {
-            id: ctx.user.id,
-            name: ctx.user.username,
-            avatar: ctx.user.avatar,
-          },
-        },
-      );
-
-      state.stepTitle = "Finish in the editor or choose a quick setup";
+      state.stepTitle = "Choose a quick setup or finish on Discohook";
       state.steps.push({
         label:
-          'For a quick setup, choose from the select menu. For more in-depth configuration, click "Customize", then "Add Button" when you\'re finished.',
+          'Choose from the select menu. For more in-depth configuration, click the final "Custom Flow" option.',
       });
 
       const embed = getComponentFlowEmbed(state);
-      embed.setFooter({ text: t("componentWillExpire") });
       return ctx.updateMessage({
         embeds: [embed],
         components: [
           new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             await storeComponents(ctx.env.KV, [
               new StringSelectMenuBuilder()
-                .setPlaceholder("Select a quick setup configuration")
+                .setPlaceholder("Choose your path")
                 .addOptions(
-                  quickButtonConfigs.map((config) =>
+                  ...quickButtonConfigs.map((config) =>
                     new StringSelectMenuOptionBuilder()
                       .setValue(config.id)
                       .setLabel(config.name)
                       .setEmoji(config.emoji),
                   ),
+                  new StringSelectMenuOptionBuilder()
+                    .setValue("_")
+                    .setLabel("Custom Flow")
+                    .setEmoji({ name: "⛓️" }),
                 ),
               {
                 ...state,
@@ -641,12 +586,6 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                 componentOnce: true,
               },
             ]),
-          ),
-          new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder()
-              .setStyle(ButtonStyle.Link)
-              .setLabel(t("customize"))
-              .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
           ),
         ],
       });

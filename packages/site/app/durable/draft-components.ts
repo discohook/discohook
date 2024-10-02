@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   discordMessageComponents,
   eq,
@@ -9,7 +10,7 @@ import { snowflakeAsString, zxParseQuery } from "~/util/zod";
 
 /**
  * This durable object helps keep the database clean by purging draft
- * components 14 days after they were created.
+ * components 14 days (default) after they were created.
  *
  * This is necessary because Discohook allows users to register components
  * before actually submitting them to their corresponding message so that an
@@ -25,11 +26,16 @@ export class DurableDraftComponentCleaner implements DurableObject {
   async fetch(request: Request) {
     const data = zxParseQuery(request, {
       id: snowflakeAsString(),
+      expires: z
+        .string()
+        .datetime()
+        .transform((v) => new Date(v))
+        .optional(),
     });
     await this.state.storage.put("id", String(data.id));
     await this.state.storage.setAlarm(
-      // 14 days
-      new Date(new Date().getTime() + 1_209_600_000),
+      // 14 days by default (intended for the web editor flow)
+      data.expires ?? new Date(new Date().getTime() + 1_209_600_000),
     );
     return new Response(undefined, { status: 204 });
   }

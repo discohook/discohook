@@ -14,14 +14,24 @@ import {
   APIGuildMember,
   APIMessageComponentEmoji,
   ButtonStyle,
+  ComponentType,
   MessageFlags,
   Routes,
   TextInputStyle,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { eq } from "drizzle-orm";
+import { t } from "i18next";
 import { getDb } from "store";
-import { backups, flowActions, generateId } from "store/src/schema";
+import {
+  backups,
+  discordMessageComponents,
+  discordMessageComponentsToFlows,
+  flowActions,
+  flows,
+  generateId,
+  makeSnowflake,
+} from "store/src/schema";
 import {
   type FlowAction,
   FlowActionCheckFunctionType,
@@ -35,7 +45,12 @@ import type { InteractionContext } from "../../interactions.js";
 import { Env } from "../../types/env.js";
 import { storeComponents } from "../../util/components.js";
 import { getHighestRole } from "../reactionRoles.js";
-import { type ComponentFlow, getComponentFlowEmbed } from "./add.js";
+import {
+  type ComponentFlow,
+  generateEditorTokenForComponent,
+  getComponentFlowEmbed,
+  getEditorTokenComponentUrl,
+} from "./add.js";
 
 interface QuickButtonConfig {
   id: string;
@@ -122,16 +137,111 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
 
 export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
   const value = ctx.interaction.data.values[0];
-  // biome-ignore lint/style/noNonNullAssertion: Options generated from this array
+  // biome-ignore lint/style/noNonNullAssertion: Options generated from this array (except `_`)
   const config = quickButtonConfigs.find((c) => c.id === value)!;
 
   const state = ctx.state as ComponentFlow;
   state.steps = state.steps ?? [];
 
-  state.stepTitle = `Configure ${config.name}`;
-  state.steps.splice(1, 1, { label: `Choose a quick setup (${config.name})` });
+  if (value === "_") {
+    state.stepTitle = "Finish on Discohook";
+    state.steps.splice(
+      1,
+      1,
+      { label: "Choose path (custom flow)" },
+      {
+        label:
+          'Click "Customize" to set details and flows **<--- you are here**',
+      },
+      { label: 'Finish editing and click "Add Button" in the tab' },
+    );
+  } else {
+    state.stepTitle = `Configure ${config.name}`;
+    state.steps.splice(1, 1, {
+      label: `Choose a quick setup (${config.name})`,
+    });
+  }
+
+  const db = getDb(ctx.env.HYPERDRIVE);
+  const flowId = BigInt(generateId());
+  await db.insert(flows).values({ id: flowId }).returning({ id: flows.id });
+
+  state.component = state.component ?? {
+    type: ComponentType.Button,
+    style: ButtonStyle.Primary,
+    flowId: String(flowId),
+    label: "Button",
+  };
+
+  const component = (
+    await db
+      .insert(discordMessageComponents)
+      .values({
+        guildId: makeSnowflake(state.message.guildId),
+        channelId: makeSnowflake(state.message.channelId),
+        messageId: makeSnowflake(state.message.id),
+        type: state.component.type,
+        data: state.component,
+        createdById: makeSnowflake(state.user.id),
+        updatedById: makeSnowflake(state.user.id),
+        draft: true,
+      })
+      .returning({
+        id: discordMessageComponents.id,
+      })
+  )[0];
+  await db
+    .insert(discordMessageComponentsToFlows)
+    .values({
+      discordMessageComponentId: component.id,
+      flowId,
+    })
+    .onConflictDoNothing();
+  state.componentId = String(component.id);
+
+  const doId = ctx.env.DRAFT_CLEANER.idFromName(String(component.id));
+  const stub = ctx.env.DRAFT_CLEANER.get(doId);
+  const cleanerParams = new URLSearchParams({ id: String(component.id) });
+  if (value !== "_") {
+    // If we're not going to use the web flow, we don't need 2 weeks
+    // for expiry in case the user backs out
+    cleanerParams.set(
+      "expires",
+      new Date(new Date().getTime() + 86_400_000).toISOString(),
+    );
+  }
+  await stub.fetch(`http://do/?${cleanerParams}`, { method: "GET" });
 
   switch (value) {
+    case "_": {
+      const editorToken = await generateEditorTokenForComponent(
+        db,
+        ctx.env,
+        component.id,
+        {
+          interactionId: ctx.interaction.id,
+          user: {
+            id: ctx.user.id,
+            name: ctx.user.username,
+            avatar: ctx.user.avatar,
+          },
+        },
+      );
+
+      const embed = getComponentFlowEmbed(state);
+      embed.setFooter({ text: t("componentWillExpire") });
+      return ctx.updateMessage({
+        embeds: [embed],
+        components: [
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setLabel(t("customize"))
+              .setStyle(ButtonStyle.Link)
+              .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
+          ),
+        ],
+      });
+    }
     case "toggle-role": {
       state.totalSteps = 5;
       if (!ctx.userPermissons.has(PermissionFlags.ManageRoles)) {
@@ -217,7 +327,7 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
   }
 
   return ctx.reply({
-    content: "Unknown quick setup value",
+    content: "Unknown setup path",
     ephemeral: true,
   });
 };
