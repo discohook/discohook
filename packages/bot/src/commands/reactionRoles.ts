@@ -142,7 +142,7 @@ export const messageAndEmojiAutocomplete: AppCommandAutocompleteCallback =
       );
 
       await ctx.env.KV.put(kvKey, JSON.stringify(emojis), {
-        expirationTtl: 300,
+        expirationTtl: 3600,
       });
     }
 
