@@ -75,40 +75,51 @@ export const getSessionManagerStub = (env: Env, sessionId: string) => {
   return stub;
 };
 
-interface TokenComponentEditorState {
-  interactionId: string;
-  user: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  };
-  row?: number;
-  column?: number;
-}
-
 // No good way to `has()` with this unfortunately
-export const getDOToken = async (
+export const getGeneric = async <T>(
   env: Env,
-  tokenId: string | bigint,
-  componentId: string | bigint,
-) => {
-  const key = `token:${tokenId}-component-${componentId}`;
+  key: string,
+): Promise<T | null> => {
   const stub = getSessionManagerStub(env, key);
   const response = await stub.fetch("http://do/", { method: "GET" });
   if (!response.ok) {
     return null;
   }
-  const raw = (await response.json()) as { data: TokenComponentEditorState };
+  const raw = (await response.json()) as { data: T };
   return raw.data;
 };
 
-export const patchDOToken = async <T>(
+export const putGeneric = async <T>(
   env: Env,
-  tokenId: string | bigint,
-  componentId: string | bigint,
-  body: { data?: any; expires?: Date },
+  key: string,
+  data: any,
+  options?: { expirationTtl?: number; expiration?: number },
+) => {
+  const stub = getSessionManagerStub(env, key);
+  const response = await stub.fetch("http://do/", {
+    method: "PUT",
+    body: JSON.stringify({
+      data,
+      expires: options?.expiration
+        ? new Date(options.expiration)
+        : options?.expirationTtl
+          ? new Date(new Date().getTime() + options.expirationTtl * 1000)
+          : undefined,
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!response.ok) {
+    return null;
+  }
+  const raw = (await response.json()) as T;
+  return raw;
+};
+
+export const patchGeneric = async <T>(
+  env: Env,
+  key: string,
+  body: { data?: T; expires?: Date },
 ): Promise<T | null> => {
-  const key = `token:${tokenId}-component-${componentId}`;
   const stub = getSessionManagerStub(env, key);
   const response = await stub.fetch("http://do/", {
     method: "PATCH",
@@ -122,12 +133,36 @@ export const patchDOToken = async <T>(
   return raw;
 };
 
-export const deleteDOToken = async (
+export const deleteGeneric = async (env: Env, key: string) => {
+  const stub = getSessionManagerStub(env, key);
+  await stub.fetch("http://do/", { method: "DELETE" });
+};
+
+interface TokenComponentEditorState {
+  interactionId: string;
+  user: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  row?: number;
+  column?: number;
+}
+export const getDOToken = async (
   env: Env,
   tokenId: string | bigint,
   componentId: string | bigint,
 ) => {
   const key = `token:${tokenId}-component-${componentId}`;
-  const stub = getSessionManagerStub(env, key);
-  await stub.fetch("http://do/", { method: "DELETE" });
+  return await getGeneric<TokenComponentEditorState>(env, key);
+};
+
+export const patchDOToken = async <T>(
+  env: Env,
+  tokenId: string | bigint,
+  componentId: string | bigint,
+  body: { data?: T; expires?: Date },
+): Promise<T | null> => {
+  const key = `token:${tokenId}-component-${componentId}`;
+  return await patchGeneric(env, key, body);
 };

@@ -21,6 +21,7 @@ import {
 import { TriggerEvent } from "store/src/types/triggers.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { AutoComponentCustomId } from "../../components.js";
+import { putGeneric } from "../../durable/do-kv.js";
 import { getShareLink } from "../../durable/share-links.js";
 import { getEmojis } from "../../emojis.js";
 import { getErrorMessage } from "../../errors.js";
@@ -304,10 +305,11 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
         ...(triggers[0] ?? { id: flowId, disabled: false }),
         flow: { ...currentFlow, actions: newActions },
       });
-      await ctx.env.KV.put(
-        `cache-triggers-${event}-${ctx.interaction.guild_id}`,
-        JSON.stringify(triggers),
-        { expirationTtl: 600 },
+      await putGeneric(
+        ctx.env,
+        `cache:triggers-${event}-${ctx.interaction.guild_id}`,
+        triggers,
+        { expirationTtl: 1200 },
       );
     });
   }

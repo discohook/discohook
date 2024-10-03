@@ -7,7 +7,8 @@ export const getchGuild = async (
   kv: KVNamespace,
   guildId: string,
 ): Promise<PartialKVGuild> => {
-  const cached = await kv.get<PartialKVGuild>(`cache-guild-${guildId}`, "json");
+  const key = `cache-guild-${guildId}`;
+  const cached = await kv.get<PartialKVGuild>(key, "json");
   if (!cached) {
     const guild = (await rest.get(Routes.guild(guildId))) as APIGuild;
     const reduced: PartialKVGuild = {
@@ -16,9 +17,9 @@ export const getchGuild = async (
       icon: guild.icon,
     };
     await kv.put(
-      `cache-guild-${guildId}`,
+      key,
       JSON.stringify(reduced),
-      { expirationTtl: 10800 }, // 3 hours
+      { expirationTtl: 43_200 }, // 12 hours
     );
     return reduced;
   }
@@ -30,10 +31,8 @@ export const getchTriggerGuild = async (
   kv: KVNamespace,
   guildId: string,
 ): Promise<TriggerKVGuild> => {
-  const cached = await kv.get<TriggerKVGuild>(
-    `cache-triggerGuild-${guildId}`,
-    "json",
-  );
+  const key = `cache-triggerGuild-${guildId}`;
+  const cached = await kv.get<TriggerKVGuild>(key, "json");
   if (!cached) {
     const guild = (await rest.get(Routes.guild(guildId), {
       query: new URLSearchParams({ with_counts: "true" }),
@@ -68,9 +67,9 @@ export const getchTriggerGuild = async (
               : 5,
     };
     await kv.put(
-      `cache-triggerGuild-${guildId}`,
+      key,
       JSON.stringify(reduced),
-      { expirationTtl: 10800 }, // 3 hours
+      { expirationTtl: 43_200 }, // 12 hours
     );
     return reduced;
   }

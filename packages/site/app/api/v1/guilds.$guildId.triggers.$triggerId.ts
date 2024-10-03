@@ -1,6 +1,7 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
+import { putGeneric } from "~/durable/sessions";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
   DBWithSchema,
@@ -10,6 +11,7 @@ import {
   flows,
   triggers,
 } from "~/store.server";
+import { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
@@ -55,7 +57,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
 const updateKvTriggers = async (
   db: DBWithSchema,
-  kv: KVNamespace,
+  env: Env,
   event: TriggerEvent,
   guildId: string | bigint,
 ) => {
@@ -71,17 +73,14 @@ const updateKvTriggers = async (
     },
     with: {
       flow: {
-        columns: {
-          name: true,
-        },
-        with: {
-          actions: true,
-        },
+        columns: { name: true },
+        with: { actions: true },
       },
     },
   });
-  const key = `cache-triggers-${event}-${guildId}`;
-  await kv.put(key, JSON.stringify(triggers), { expirationTtl: 600 });
+  await putGeneric(env, `cache:triggers-${event}-${guildId}`, triggers, {
+    expirationTtl: 1200,
+  });
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
@@ -117,7 +116,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     await db.delete(triggers).where(eq(triggers.id, triggerId));
     await updateKvTriggers(
       db,
-      context.env.KV,
+      context.env,
       trigger.event,
       trigger.discordGuildId,
     );
@@ -162,7 +161,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   await updateKvTriggers(
     db,
-    context.env.KV,
+    context.env,
     trigger.event,
     trigger.discordGuildId,
   );

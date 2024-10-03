@@ -51,6 +51,7 @@ import {
   ModalCallback,
   SelectMenuCallback,
 } from "../../components.js";
+import { getSessionManagerStub } from "../../durable/do-kv.js";
 import { InteractionContext } from "../../interactions.js";
 import { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
@@ -495,12 +496,6 @@ interface KVComponentEditorState {
   row?: number;
   column?: number;
 }
-
-export const getSessionManagerStub = (env: Env, sessionId: string) => {
-  const id = env.SESSIONS.idFromName(sessionId);
-  const stub = env.SESSIONS.get(id);
-  return stub;
-};
 
 export const generateEditorTokenForComponent = async (
   db: DBWithSchema,
