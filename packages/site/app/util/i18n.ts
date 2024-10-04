@@ -34,6 +34,9 @@ export const resources = {
   cs: {
     translation: require("../i18n/cs.json"),
   },
+  "pt-BR": {
+    translation: require("../i18n/pt-BR.json"),
+  },
 } satisfies Resource;
 
 export type i18nResources = typeof resources;
