@@ -602,8 +602,27 @@
             "mention": "La menzione del membro",
             "avatar_url": "L'URL dell'avatar mostrato del membro",
             "default_avatar_url": "L'URL dell'avatar default del membro",
-            "created_relative": "Quando l'account è stato creato, relativo"
-        }
+            "created_relative": "Quando l'account è stato creato, relativo",
+            "created_long": "Quando l'account è stato creato, formato lungo",
+            "id": "L'ID del membro",
+            "role_ids": "L'ID del ruolo del membro come un array (per i flow)"
+        },
+        "server": {
+            "created": "Quando il server è stato creato",
+            "name": "Il nome del server",
+            "boosts": "Il numero di boost che il server ha",
+            "emoji_limit": "Il massimo numero di emoji che il server può avere",
+            "icon_url": "L'URL dell'icona del server",
+            "members": "Il numero di membri nel server",
+            "roles": "Il numero di ruoli nel server",
+            "sticker_limit": "Il massimo numero di sticker che il server può avere",
+            "created_relative": "Quando il server è stato creato, relativo",
+            "created_long": "Quando il server è stato creato, formato lungo",
+            "id": "L'ID del server"
+        },
+        "now": "Il momento attuale della formattazione",
+        "now_relative": "Il momento attuale, relativo",
+        "now_long": "Il momento attuale, formato lungo"
     },
     "formatServerDescription": "Questo è il server nel quale il messaggio formattato è inviato. In questo placeholder, è il server di supporto di Discohook.",
     "mention": {
