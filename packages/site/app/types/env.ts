@@ -1,14 +1,18 @@
-import { Service } from "@cloudflare/workers-types";
+import type { Service } from "@cloudflare/workers-types";
+import type { RedisKV } from "~/store.server";
 
 export interface Env {
   ENVIRONMENT: "dev" | "preview" | "production";
-  KV: KVNamespace;
+  KV: RedisKV;
+  OLD_KV: KVNamespace;
   SCHEDULER: DurableObjectNamespace;
   DRAFT_CLEANER: DurableObjectNamespace;
   COMPONENTS: DurableObjectNamespace;
   RATE_LIMITER: DurableObjectNamespace;
   SHARE_LINKS: DurableObjectNamespace;
   SESSIONS: DurableObjectNamespace;
+  UPSTASH_REDIS_REST_URL: string;
+  UPSTASH_REDIS_REST_TOKEN: string;
   __STATIC_CONTENT: Fetcher;
   VERSION: WorkerVersionMetadata;
   // __STATIC_CONTENT_MANIFEST: Object;

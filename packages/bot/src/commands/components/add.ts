@@ -34,7 +34,7 @@ import {
   getchGuild,
   launchComponentDurableObject,
   upsertDiscordUser,
-  upsertGuild,
+  upsertGuild
 } from "store";
 import {
   discordMessageComponents,

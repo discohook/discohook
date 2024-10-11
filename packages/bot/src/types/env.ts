@@ -1,4 +1,5 @@
-import { Service } from "@cloudflare/workers-types";
+import type { Service } from "@cloudflare/workers-types";
+import type { RedisKV } from "store";
 
 export interface Env {
   ENVIRONMENT: "dev" | "preview" | "production";
@@ -10,6 +11,9 @@ export interface Env {
   DISCOHOOK_ORIGIN: string;
   TOKEN_SECRET: string;
   DATABASE_URL: string;
+  UPSTASH_REDIS_REST_URL: string;
+  UPSTASH_REDIS_REST_TOKEN: string;
+  KV: RedisKV;
 
   GUILD_ID?: string;
   DONATOR_ROLE_ID?: string;
@@ -18,7 +22,6 @@ export interface Env {
   APPLICATIONS: Record<string, string>;
   APPLICATIONS_RAW?: string;
   HYPERDRIVE: Hyperdrive;
-  KV: KVNamespace;
   COMPONENTS: DurableObjectNamespace;
   DRAFT_CLEANER: DurableObjectNamespace;
   SHARE_LINKS: DurableObjectNamespace;

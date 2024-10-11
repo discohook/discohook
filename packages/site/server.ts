@@ -3,6 +3,8 @@ import type { AppLoadContext } from "@remix-run/cloudflare";
 import { createRequestHandler, json, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
 import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
+import { getKv } from "~/store.server";
+import { Env } from "~/types/env";
 export { DurableComponentState } from "store";
 export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
 export { RateLimiter } from "./app/durable/rate-limits";
@@ -20,12 +22,7 @@ if (process.env.NODE_ENV === "development") {
 export default {
   async fetch(
     request: Request,
-    env: {
-      __STATIC_CONTENT: Fetcher;
-      ENVIRONMENT: "dev" | "preview" | "production";
-      HYPERDRIVE: Hyperdrive;
-      DATABASE_URL: string;
-    },
+    env: Env & { __STATIC_CONTENT: Fetcher },
     ctx: ExecutionContext,
   ): Promise<Response> {
     if (env.ENVIRONMENT === "dev") {
@@ -54,8 +51,12 @@ export default {
       // No-op
     }
 
+    const kv = getKv(env);
+    // Not strictly compatible due to `get()` missing some features that we don't use
+    env.KV = kv;
+
     try {
-      const origin = new URL(request.url).origin;
+      const { origin, pathname } = new URL(request.url);
       const loadContext: AppLoadContext = {
         origin,
         env,
@@ -64,7 +65,7 @@ export default {
       };
       const response = await handleRemixRequest(request, loadContext);
       if (
-        request.url.startsWith(`${origin}/api/`) &&
+        pathname.startsWith("/api/") &&
         !response.headers.get("Content-Type")?.startsWith("application/json")
       ) {
         response.headers.delete("Content-Type");

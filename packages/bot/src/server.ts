@@ -20,7 +20,7 @@ import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import i18next, { t } from "i18next";
 import { IRequest, Router } from "itty-router";
-import { getDb, getchTriggerGuild } from "store";
+import { getDb, getKv, getchTriggerGuild } from "store";
 import {
   DurableStoredComponent,
   launchComponentDurableObject,
@@ -86,6 +86,10 @@ const handleInteraction = async (
     // These are all plaintext strings passed to Discord (or another service that sanitizes afterward)
     interpolation: { escapeValue: false },
   });
+
+  const kv = getKv(env);
+  // Not strictly compatible due to `get()` missing some features that we don't use
+  env.KV = kv;
 
   if (
     interaction.type === InteractionType.ApplicationCommand ||

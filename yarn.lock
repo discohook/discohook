@@ -2885,6 +2885,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@upstash/redis@npm:^1.34.3":
+  version: 1.34.3
+  resolution: "@upstash/redis@npm:1.34.3"
+  dependencies:
+    crypto-js: "npm:^4.2.0"
+  checksum: 10c0/c192651740663a8c5db466eec00a6f8c97bc8c3c5f1cf0a48925c1f79097b9a63a32cd12ed99878c668e09123064e206f7591bc9bd19dffb8f809acc1d15cc5e
+  languageName: node
+  linkType: hard
+
 "@vanilla-extract/babel-plugin-debug-ids@npm:^1.0.2":
   version: 1.0.3
   resolution: "@vanilla-extract/babel-plugin-debug-ids@npm:1.0.3"
@@ -3817,6 +3826,13 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
+"crypto-js@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "crypto-js@npm:4.2.0"
+  checksum: 10c0/8fbdf9d56f47aea0794ab87b0eb9833baf80b01a7c5c1b0edc7faf25f662fb69ab18dc2199e2afcac54670ff0cd9607a9045a3f7a80336cccd18d77a55b9fdf0
+  languageName: node
+  linkType: hard
+
 "css-what@npm:^6.1.0":
   version: 6.1.0
   resolution: "css-what@npm:6.1.0"
@@ -4035,6 +4051,7 @@ cron-parser@discohook/cron-parser:
     "@discordjs/formatters": "npm:^0.5.0"
     "@discordjs/rest": "npm:^2.4.0"
     "@tsconfig/node18": "npm:^18.2.2"
+    "@upstash/redis": "npm:^1.34.3"
     c8: "npm:^8.0.0"
     chai: "npm:^4.3.7"
     dedent-js: "npm:^1.0.1"
@@ -4085,6 +4102,7 @@ cron-parser@discohook/cron-parser:
     "@types/react-modal": "npm:^3.16.3"
     "@types/showdown": "npm:^2.0.6"
     "@types/ua-parser-js": "npm:^0.7.39"
+    "@upstash/redis": "npm:^1.34.3"
     chrono-node: "npm:^2.7.5"
     cron-parser: discohook/cron-parser
     discord-api-types: "npm:^0.37.92"
@@ -9207,8 +9225,9 @@ cron-parser@discohook/cron-parser:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=48bf41&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=f3c848&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
+    "@upstash/redis": "npm:^1.34.3"
     discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.32.1"
@@ -9217,7 +9236,7 @@ cron-parser@discohook/cron-parser:
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/5b6a92521a477d95bf7cd191def2c579c1036f0136036b92e6f270ec3de66ba908e5445f5c2d670d3fed79a18e12d3c8bcac181cb67e6efe03a381939a2b9ee7
+  checksum: 10c0/3976bb5f88ab20c7e08223d9e0bc27fdebeca4754fecb63cd8d410ba8875363bb22e474b53bcf9c1bb5c84655e924b73fddeb9521720c0bd22eab3834b1553cd
   languageName: node
   linkType: hard
 
@@ -9227,6 +9246,7 @@ cron-parser@discohook/cron-parser:
   dependencies:
     "@discordjs/rest": "npm:^2.2.0"
     "@types/json-bigint": "npm:^1.0.4"
+    "@upstash/redis": "npm:^1.34.3"
     discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
     drizzle-kit: "npm:^0.23.1"

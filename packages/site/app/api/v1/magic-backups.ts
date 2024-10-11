@@ -3,6 +3,7 @@ import { getDb } from "store";
 import { z } from "zod";
 import { backups, makeSnowflake } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
+import { Env } from "~/types/env";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
 import { findMessagesPreviewImageUrl } from "./backups";
@@ -15,7 +16,7 @@ const getCorsHeaders = (origin?: string): Record<string, string> => {
   };
 };
 
-const verifyToken = async (request: Request, kv: KVNamespace) => {
+const verifyToken = async (request: Request, kv: Env["KV"]) => {
   const token = request.headers.get("X-Discohook-Pixiedust");
   if (!token) throw json({ message: "No token provided." }, 401);
 

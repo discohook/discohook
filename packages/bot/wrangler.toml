@@ -3,7 +3,7 @@ main = "./src/server.ts"
 compatibility_date = "2023-05-18"
 node_compat = true
 kv_namespaces = [
-  { binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" },
+  { binding = "OLD_KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" },
 ]
 services = [{ binding = "SITE", service = "discohook-site" }]
 
@@ -31,7 +31,7 @@ new_classes = ["EmojiManager"]
 
 [env.preview]
 route = { pattern = "bots.preview.discohook.app", custom_domain = true }
-kv_namespaces = [{ binding = "KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
+kv_namespaces = [{ binding = "OLD_KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "f8f714cc2701467cacf61b203ccd933a" },
 ]
@@ -63,7 +63,7 @@ DISCOHOOK_ORIGIN = "https://preview.discohook.app"
 
 [env.production]
 route = { pattern = "bots.discohook.app", custom_domain = true }
-kv_namespaces = [{ binding = "KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
+kv_namespaces = [{ binding = "OLD_KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "9568cd870bee47f3801c862de747ca94" },
 ]

@@ -293,25 +293,24 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
   });
 
   const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
-  // https://developers.cloudflare.com/kv/api/write-key-value-pairs/#write-data-in-bulk
-  // > As of January 2022, Cloudflare does not support bulk writes from within a Worker.
-  for (const membership of memberships) {
-    // A user can be in up to 200 guilds, so assuming proper state management
-    // (memberships are deleted when a member is removed), then that should
-    // be the maximum number of requests made in this loop.
-    await env.KV.put(
-      `token-${token.id}-guild-${membership.guildId}`,
-      JSON.stringify({
-        permissions: membership.permissions,
-        owner: membership.owner,
-      } satisfies KVTokenPermissions),
-      { expirationTtl: permExpireAt },
-    );
+  if (memberships.length !== 0) {
+    const pipeline = env.KV.redis.multi();
+    for (const membership of memberships) {
+      // A user can be in up to 200 guilds, so assuming proper state management
+      // (memberships are deleted when a member is removed), then that should
+      // be the maximum number of transaction members here.
+      pipeline.set(
+        `token-${token.id}-guild-${membership.guildId}`,
+        JSON.stringify({
+          permissions: membership.permissions,
+          owner: membership.owner,
+        } satisfies KVTokenPermissions),
+        { exat: Math.floor(permExpireAt) },
+      );
+    }
+    await pipeline.exec({ keepErrors: true });
   }
 
-  // await db.transaction(async (tx) => {
-  //   await tx.delete()
-  // })
   return token;
 };
 
@@ -740,7 +739,7 @@ export const getTokenGuildChannelPermissions = async (
         permissions: guildPermissions.toString(),
         owner: guild.owner_id === member.user?.id,
       } satisfies KVTokenPermissions),
-      { expirationTtl: permExpireAt },
+      { expiration: permExpireAt },
     );
     await env.KV.put(
       key,
@@ -748,7 +747,7 @@ export const getTokenGuildChannelPermissions = async (
         permissions: permissions.toString(),
         owner: guild.owner_id === member.user?.id,
       } satisfies KVTokenGuildChannelPermissions),
-      { expirationTtl: permExpireAt },
+      { expiration: permExpireAt },
     );
 
     data = {
@@ -785,6 +784,7 @@ export const getGuild = async (
   env: Pick<Env, "KV">,
 ) => {
   const guild = (await rest.get(Routes.guild(String(guildId)))) as APIGuild;
+  // TODO: Leads to unnecessary writes
   await env.KV.put(
     `cache-guild-${guildId}`,
     JSON.stringify({

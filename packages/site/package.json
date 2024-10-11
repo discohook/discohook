@@ -26,6 +26,7 @@
     "@remix-run/react": "^2.4.0",
     "@twemoji/api": "^15.0.3",
     "@types/showdown": "^2.0.6",
+    "@upstash/redis": "^1.34.3",
     "chrono-node": "^2.7.5",
     "cron-parser": "discohook/cron-parser",
     "discord-api-types": "^0.37.92",

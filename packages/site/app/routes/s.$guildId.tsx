@@ -104,6 +104,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         throw redirect(`/bot?guildId=${guildId}`);
       }
       throw respond(json(e.rawError, e.status));
+    } else if (e instanceof Response && e.status === 404) {
+      // Making assumptions here
+      throw redirect(`/bot?guildId=${guildId}`);
     }
     throw e;
   }

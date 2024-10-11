@@ -8,6 +8,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@upstash/redis": "^1.34.3",
     "discord-api-types": "^0.37.92",
     "discord-snowflake": "^2.0.0",
     "drizzle-orm": "^0.32.1",
