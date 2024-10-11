@@ -1,8 +1,5 @@
 import { REST } from "@discordjs/rest";
-import {
-  createCookie,
-  createWorkersKVSessionStorage,
-} from "@remix-run/cloudflare";
+import { createCookie } from "@remix-run/cloudflare";
 import {
   APIUser,
   APIWebhook,
@@ -10,6 +7,7 @@ import {
 } from "discord-api-types/v10";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
+import { createWorkersDOSessionStorage } from "./session.server";
 import {
   getDb,
   getchGuild,
@@ -20,14 +18,15 @@ import {
 import { Context } from "./util/loader";
 
 export const getDiscordWebhookAuth = (context: Context) => {
-  const dudSessionStorage = createWorkersKVSessionStorage({
-    kv: context.env.KV,
+  const dudSessionStorage = createWorkersDOSessionStorage({
+    env: context.env,
     cookie: createCookie("__discohook_webhook", {
       sameSite: "lax",
       path: "/",
       httpOnly: true,
       secrets: [context.env.SESSION_SECRET],
-      // secure: process.env.NODE_ENV === "production",
+      secure: context.env.ENVIRONMENT !== "dev",
+      maxAge: 604_800, // 1 week
     }),
   });
 

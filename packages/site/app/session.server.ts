@@ -32,7 +32,7 @@ import {
 import { Env } from "./types/env";
 import { Context } from "./util/loader";
 
-const createWorkersDOSessionStorage = ({
+export const createWorkersDOSessionStorage = ({
   env,
   cookie,
 }: { env: Env; cookie: Cookie }) =>
