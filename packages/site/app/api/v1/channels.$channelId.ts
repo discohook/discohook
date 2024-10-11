@@ -78,9 +78,13 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     );
   }
 
-  await context.env.KV.put(key, JSON.stringify(channel), {
-    // 2 hours
-    expirationTtl: 7200,
-  });
+  const stringified = JSON.stringify(channel);
+  if (stringified) {
+    // Was experiencing strange behavior where empty strings were being set
+    await context.env.KV.put(key, stringified, {
+      // 2 hours
+      expirationTtl: 7200,
+    });
+  }
   return respond(json(channel));
 };
