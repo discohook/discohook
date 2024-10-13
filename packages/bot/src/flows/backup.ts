@@ -1,7 +1,16 @@
-import { time } from "@discordjs/formatters";
-import { APIEmbed, ButtonStyle, ComponentType } from "discord-api-types/v10";
+import { channelLink, time } from "@discordjs/formatters";
+import {
+  APIEmbed,
+  APIGuildMember,
+  APIInteractionDataResolvedChannel,
+  APIInteractionDataResolvedGuildMember,
+  APIRole,
+  APIUser,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
-import type { QueryData } from "store/src/types";
+import type { QueryData, TriggerKVGuild } from "store/src/types";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
 import { cdn } from "../util/cdn.js";
 import { FlowFailure, LiveVariables } from "./flows.js";
@@ -11,30 +20,29 @@ export const assertGetSnowflake = (id: string): `${bigint}` => {
   throw Error(`${id} is not a snowflake.`);
 };
 
-export const getReplacements = (
-  vars: LiveVariables,
-  setVars: Record<string, string | boolean>,
-) => {
-  const now = new Date();
+const flattenMember = (
+  vars: {
+    member?: APIGuildMember | APIInteractionDataResolvedGuildMember;
+    user?: APIUser;
+    guild?: TriggerKVGuild;
+  },
+  prefix = "member",
+): Record<string, string | number | undefined> => {
+  const key = (attr: string) => `${prefix}.${attr}`;
   return {
-    // TODO: This prevents shadowing. Do we want to allow users to shadow variables?
-    ...Object.fromEntries(
-      Object.entries(setVars).map(([k, v]) => [k, String(v)]),
-    ),
-    "member.role_ids": JSON.stringify(vars.member ? vars.member.roles : []),
-    // Legacy (v1) format options
-    // Member
-    "member.id": vars.user?.id,
-    "member.name": vars.user?.username,
-    "member.discriminator": vars.user?.discriminator,
-    "member.display_name":
+    [key("role_ids")]: JSON.stringify(vars.member ? vars.member.roles : []),
+    // Legacy-compatible (v1) format options
+    [key("id")]: vars.user?.id,
+    [key("name")]: vars.user?.username,
+    [key("discriminator")]: vars.user?.discriminator,
+    [key("display_name")]:
       vars.member?.nick ?? vars.user?.global_name ?? vars.user?.username,
-    "member.tag":
+    [key("tag")]:
       vars.user?.discriminator === "0"
         ? vars.user.username
         : `${vars.user?.username}#${vars.user?.discriminator}`,
-    "member.mention": vars.user ? `<@${vars.user.id}>` : undefined,
-    "member.avatar_url":
+    [key("mention")]: vars.user ? `<@${vars.user.id}>` : undefined,
+    [key("avatar_url")]:
       vars.member?.avatar && vars.guild && vars.user
         ? cdn.guildMemberAvatar(
             vars.guild.id,
@@ -57,23 +65,73 @@ export const getReplacements = (
                   : Number(vars.user.discriminator) % 5
                 : 5,
             ),
-    "member.default_avatar_url": cdn.defaultAvatar(
+    [key("default_avatar_url")]: cdn.defaultAvatar(
       vars.user
         ? vars.user.discriminator === "0"
           ? Number((BigInt(vars.user.id) >> 22n) % 6n)
           : Number(vars.user.discriminator) % 5
         : 5,
     ),
-    "member.bot": vars.user?.bot ? "True" : "False",
-    "member.created": vars.user
+    [key("bot")]: vars.user?.bot ? "True" : "False",
+    [key("created")]: vars.user
       ? time(getDate(assertGetSnowflake(vars.user.id)), "d")
       : undefined,
-    "member.created_relative": vars.user
+    [key("created_relative")]: vars.user
       ? time(getDate(assertGetSnowflake(vars.user.id)), "R")
       : undefined,
-    "member.created_long": vars.user
+    [key("created_long")]: vars.user
       ? time(getDate(assertGetSnowflake(vars.user.id)), "F")
       : undefined,
+  };
+};
+
+const flattenChannel = (
+  vars: { channel?: APIInteractionDataResolvedChannel },
+  prefix = "channel",
+): Record<string, string | undefined> => {
+  const key = (attr: string) => `${prefix}.${attr}`;
+  return {
+    [key("id")]: vars.channel?.id,
+    [key("name")]: vars.channel?.name ?? undefined,
+    [key("mention")]: vars.channel ? `<#${vars.channel.id}>` : undefined,
+    [key("link")]: vars.channel ? channelLink(vars.channel.id) : undefined,
+  };
+};
+
+const flattenRole = (
+  vars: { role?: APIRole },
+  prefix = "role",
+): Record<string, string | number | undefined> => {
+  const key = (attr: string) => `${prefix}.${attr}`;
+  return {
+    [key("id")]: vars.role?.id,
+    [key("name")]: vars.role?.name ?? undefined,
+    [key("mention")]: vars.role ? `<@&${vars.role.id}>` : undefined,
+    [key("color")]: vars.role ? `#${vars.role.color.toString(16)}` : undefined,
+    [key("color_decimal")]: vars.role?.color,
+  };
+};
+
+const ordinal = (num: number): string => {
+  const str = String(num);
+  return str.endsWith("11") || str.endsWith("12") || str.endsWith("13")
+    ? `${num}th`
+    : str.endsWith("1")
+      ? `${num}st`
+      : str.endsWith("2")
+        ? `${num}nd`
+        : str.endsWith("3")
+          ? `${num}rd`
+          : `${num}th`;
+};
+
+export const getReplacements = (
+  vars: LiveVariables,
+  setVars: Record<string, string | boolean>,
+) => {
+  const now = new Date();
+  const values: Record<string, string | number | undefined> = {
+    ...flattenMember(vars),
     // Server
     "server.id": vars.guild?.id,
     "server.name": vars.guild?.name,
@@ -102,6 +160,57 @@ export const getReplacements = (
     now_relative: time(now, "R"),
     now_long: time(now, "F"),
   };
+
+  // Select menu values
+  if (vars.selected_values && vars.selected_values.length !== 0) {
+    let i = 0;
+    for (const value of vars.selected_values) {
+      // Intentionally 1-indexed
+      i += 1;
+      values[`selected_values.${i}`] = value;
+    }
+    const first = vars.selected_values[0];
+    values.selected_value = first;
+    if (vars.selected_resolved && "members" in vars.selected_resolved) {
+      const memberVars = flattenMember(
+        {
+          member: vars.selected_resolved.members?.[first],
+          user: vars.selected_resolved.users?.[first],
+          guild: vars.guild,
+        },
+        "selected_member",
+      );
+      Object.assign(values, memberVars);
+    }
+    if (vars.selected_resolved && "channels" in vars.selected_resolved) {
+      const channelVars = flattenChannel(
+        { channel: vars.selected_resolved.channels?.[first] },
+        "selected_channel",
+      );
+      Object.assign(values, channelVars);
+    }
+    if (vars.selected_resolved && "roles" in vars.selected_resolved) {
+      const roleVars = flattenRole(
+        { role: vars.selected_resolved.roles?.[first] },
+        "selected_role",
+      );
+      Object.assign(values, roleVars);
+    }
+  }
+
+  // Allow shadowing per https://discohook.app/guide/recipes/checks
+  for (const [key, val] of Object.entries(setVars)) {
+    values[key] = String(val);
+  }
+
+  // Ordinal for any number value
+  for (const [key, val] of Object.entries(values)) {
+    if (typeof val === "number") {
+      values[`${key}_ordinal`] = ordinal(val);
+    }
+  }
+
+  return values;
 };
 
 export const processQueryData = async (

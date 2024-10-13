@@ -304,6 +304,20 @@ const handleInteraction = async (
         member: interaction.member,
         user: interaction.member?.user,
       };
+      switch (interaction.data.component_type) {
+        case ComponentType.ChannelSelect:
+        case ComponentType.MentionableSelect:
+        case ComponentType.UserSelect:
+        case ComponentType.RoleSelect:
+          liveVars.selected_values = interaction.data.values;
+          liveVars.selected_resolved = interaction.data.resolved;
+          break;
+        case ComponentType.StringSelect:
+          liveVars.selected_values = interaction.data.values;
+          break;
+        default:
+          break;
+      }
 
       const allFlows = component.componentsToFlows.map((ctf) => ctf.flow);
       let flows: Flow[] = [];

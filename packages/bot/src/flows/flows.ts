@@ -2,7 +2,11 @@ import { REST } from "@discordjs/rest";
 import {
   APIGuildMember,
   APIMessage,
+  APIMessageChannelSelectInteractionData,
   APIMessageComponentInteraction,
+  APIMessageMentionableSelectInteractionData,
+  APIMessageRoleSelectInteractionData,
+  APIMessageUserSelectInteractionData,
   APIUser,
   ChannelType,
   RESTError,
@@ -10,7 +14,7 @@ import {
   RESTPostAPIChannelThreadsJSONBody,
   RESTPostAPIChannelThreadsResult,
   RESTPostAPIGuildForumThreadsJSONBody,
-  Routes,
+  Routes
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { DBWithSchema } from "store";
@@ -47,6 +51,13 @@ export interface LiveVariables {
   member?: APIGuildMember;
   user?: APIUser;
   guild?: TriggerKVGuild;
+  selected_values?: string[];
+  selected_resolved?: (
+    | APIMessageChannelSelectInteractionData
+    | APIMessageMentionableSelectInteractionData
+    | APIMessageRoleSelectInteractionData
+    | APIMessageUserSelectInteractionData
+  )["resolved"];
 }
 
 export class FlowFailure extends Error {
