@@ -292,9 +292,8 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   env,
   payload: GatewayGuildMemberAddDispatchData,
 ) => {
+  console.log(`[event:GUILD_MEMBER_ADD] ${payload.guild_id}`);
   const rest = new REST().setToken(env.DISCORD_TOKEN);
-
-  const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
 
   // Don't like this. We really should store all triggers per guild id,
   // but I did this to fit with the way getWelcomerConfiguration works
@@ -304,6 +303,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
     return;
   }
 
+  const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
   const db = getDb(env.HYPERDRIVE);
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "add", rest, guild);

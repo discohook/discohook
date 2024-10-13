@@ -13,6 +13,7 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   env,
   payload: GatewayGuildMemberRemoveDispatchData,
 ) => {
+  console.log(`[event:GUILD_MEMBER_REMOVE] ${payload.guild_id}`);
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
   const key = `cache:triggers-${TriggerEvent.MemberRemove}-${payload.guild_id}`;

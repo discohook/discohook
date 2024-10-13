@@ -87,10 +87,6 @@ const handleInteraction = async (
     interpolation: { escapeValue: false },
   });
 
-  const kv = getKv(env);
-  // Not strictly compatible due to `get()` missing some features that we don't use
-  env.KV = kv;
-
   if (
     interaction.type === InteractionType.ApplicationCommand ||
     interaction.type === InteractionType.ApplicationCommandAutocomplete
@@ -745,6 +741,10 @@ const server = {
     }
     // Duplicate the "main" bot token so that custom bots can still access the same webhooks
     env.APPLICATIONS[env.DISCORD_APPLICATION_ID] = env.DISCORD_TOKEN;
+
+    const kv = getKv(env);
+    // Not strictly compatible due to `get()` missing some features that we don't use
+    env.KV = kv;
 
     return router.handle(request, env, ctx);
   },
