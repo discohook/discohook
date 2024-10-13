@@ -697,7 +697,7 @@ const registerComponentUpdate = async (
     row = components.find((c) =>
       c.components
         .filter((c) => c.type === built.type)
-        .map(getComponentId)
+        .map((c) => getComponentId(c))
         .includes(id),
     );
     current = row?.components.find(
