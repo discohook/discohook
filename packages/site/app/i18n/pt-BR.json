@@ -1,1 +1,6 @@
-{}
+{
+    "help": "Ajuda",
+    "search": "Procurar",
+    "settings": "Configurações",
+    "helpSearchPlaceholder": "Como eu faço . . ."
+}
