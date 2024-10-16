@@ -59,5 +59,11 @@
     "fullError": "Erro Completo:",
     "createdAt": "Criado em {{ createdAt, MMM D, YYYY }}",
     "orgRedirectBody": "Discohook agora está disponível em <bold>discohook.app</bold>. Para migrar seus backups, <importLink>clique aqui</importLink>. Para ler mais sobre esta atualização, <infoLink>clique aqui</infoLink>.",
-    "createdAtTime": "Criado em {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}"
+    "createdAtTime": "Criado em {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
+    "theme": "Tema",
+    "messageDisplay": "Exibição de Mensagem",
+    "cozy": "Acolhedor",
+    "compact": "Compacto",
+    "compactAvatars": "Mostrar avatares em modo Compacto",
+    "successResultTroubleshoot": "Se você não conseguir ver a mensagem, certifique-se de que não foi deletada por outro bot. Alguns bots de moderação consideram todas as mensagens de webhook como spam por padrão."
 }
