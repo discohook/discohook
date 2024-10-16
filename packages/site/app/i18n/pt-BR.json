@@ -59,7 +59,7 @@
     "fullError": "Erro Completo:",
     "createdAt": "Criado em {{ createdAt, MMM D, YYYY }}",
     "orgRedirectBody": "Discohook agora está disponível em <bold>discohook.app</bold>. Para migrar seus backups, <importLink>clique aqui</importLink>. Para ler mais sobre esta atualização, <infoLink>clique aqui</infoLink>.",
-    "createdAtTime": "Criado em {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
+    "createdAtTime": "Criado {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
     "theme": "Tema",
     "messageDisplay": "Exibição de Mensagem",
     "cozy": "Acolhedor",
