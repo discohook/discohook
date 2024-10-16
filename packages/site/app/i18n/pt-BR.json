@@ -18,5 +18,6 @@
     "temporaryShareUrlExpires": "Compartilhar URL (expira em <0>$t(timestamp.relative.days_future)</0>)",
     "ok": "OK",
     "required": "Obrigatório",
-    "supportServerLanguageNote": "Este é um servidor de suporte <b>somente em inglês</b>. Embora o Discohook suporte vários idiomas para facilitar o uso, nossas equipes de suporte e moderação geralmente só conseguem fornecer ajuda em inglês. Você pode usar <anchor>ferramentas como o DeepL</anchor> se não estiver confortável com seu domínio no idioma. Marque a caixa à esquerda para entrar no servidor."
+    "supportServerLanguageNote": "Este é um servidor de suporte <b>somente em inglês</b>. Embora o Discohook suporte vários idiomas para facilitar o uso, nossas equipes de suporte e moderação geralmente só conseguem fornecer ajuda em inglês. Você pode usar <anchor>ferramentas como o DeepL</anchor> se não estiver confortável com seu domínio no idioma. Marque a caixa à esquerda para entrar no servidor.",
+    "expiresIn": "Expira em {{0}}"
 }
