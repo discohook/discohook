@@ -170,12 +170,13 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
           .setStyle(ButtonStyle.Link)
           .setLabel("Use in Discohook")
           .setURL(
-            `${ctx.env.DISCOHOOK_ORIGIN}/?data=${btoa(
+            `${ctx.env.DISCOHOOK_ORIGIN}/?data=${Buffer.from(
               JSON.stringify({
                 messages: [{ data: {} }],
                 targets: [{ url: webhook.url }],
               }),
-            )}`,
+              "utf8",
+            ).toString("base64")}`,
           ),
         // new ButtonBuilder()
         //   .setCustomId(`a_webhook-info-show-url_${webhook.id}`)
