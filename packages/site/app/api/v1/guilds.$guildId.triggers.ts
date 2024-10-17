@@ -1,6 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { flows as dFlows, triggers as dTriggers, getDb } from "store";
+import { flows as dFlows, getDb, triggers as dTriggers } from "store";
 import { z } from "zod";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";

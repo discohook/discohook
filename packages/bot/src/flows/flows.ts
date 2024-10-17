@@ -14,7 +14,7 @@ import {
   RESTPostAPIChannelThreadsJSONBody,
   RESTPostAPIChannelThreadsResult,
   RESTPostAPIGuildForumThreadsJSONBody,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { DBWithSchema } from "store";

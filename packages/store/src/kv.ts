@@ -147,7 +147,10 @@ export const getSessionManagerStub = (env: Env, sessionId: string) => {
 };
 
 // No good way to `has()` with this unfortunately
-export const getGeneric = async <T>(env: Env, key: string): Promise<T | null> => {
+export const getGeneric = async <T>(
+  env: Env,
+  key: string,
+): Promise<T | null> => {
   const stub = getSessionManagerStub(env, key);
   const response = await stub.fetch("http://do/", { method: "GET" });
   if (!response.ok) {

@@ -1,7 +1,7 @@
 import {
-  APIEmbed as _APIEmbed,
   APIActionRowComponent,
   APIAttachment,
+  APIEmbed as _APIEmbed,
   APIMessageActionRowComponent,
   MessageFlags,
   UserFlags,

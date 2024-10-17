@@ -95,12 +95,8 @@
           "name": "Backup_ownerId_User_id_fk",
           "tableFrom": "Backup",
           "tableTo": "User",
-          "columnsFrom": [
-            "ownerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ownerId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -191,12 +187,8 @@
           "name": "CustomBot_ownerId_User_id_fk",
           "tableFrom": "CustomBot",
           "tableTo": "User",
-          "columnsFrom": [
-            "ownerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ownerId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -204,12 +196,8 @@
           "name": "CustomBot_guildId_DiscordGuild_id_fk",
           "tableFrom": "CustomBot",
           "tableTo": "DiscordGuild",
-          "columnsFrom": [
-            "guildId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["guildId"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -219,9 +207,7 @@
         "CustomBot_applicationId_unique": {
           "name": "CustomBot_applicationId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "applicationId"
-          ]
+          "columns": ["applicationId"]
         }
       }
     },
@@ -289,12 +275,8 @@
           "name": "DiscordGuild_to_Backup_discordGuildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordGuild_to_Backup",
           "tableTo": "DiscordGuild",
-          "columnsFrom": [
-            "discordGuildId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["discordGuildId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -302,12 +284,8 @@
           "name": "DiscordGuild_to_Backup_backupId_Backup_id_fk",
           "tableFrom": "DiscordGuild_to_Backup",
           "tableTo": "Backup",
-          "columnsFrom": [
-            "backupId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["backupId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -315,10 +293,7 @@
       "compositePrimaryKeys": {
         "DiscordGuild_to_Backup_discordGuildId_backupId_pk": {
           "name": "DiscordGuild_to_Backup_discordGuildId_backupId_pk",
-          "columns": [
-            "discordGuildId",
-            "backupId"
-          ]
+          "columns": ["discordGuildId", "backupId"]
         }
       },
       "uniqueConstraints": {}
@@ -367,12 +342,8 @@
           "name": "DiscordMember_userId_DiscordUser_id_fk",
           "tableFrom": "DiscordMember",
           "tableTo": "DiscordUser",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -380,12 +351,8 @@
           "name": "DiscordMember_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordMember",
           "tableTo": "DiscordGuild",
-          "columnsFrom": [
-            "guildId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["guildId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -395,10 +362,7 @@
         "DiscordMember_userId_guildId_unique": {
           "name": "DiscordMember_userId_guildId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "userId",
-            "guildId"
-          ]
+          "columns": ["userId", "guildId"]
         }
       }
     },
@@ -496,12 +460,8 @@
           "name": "DMC_to_Flow_dmcId_DiscordMessageComponent_id_fk",
           "tableFrom": "DMC_to_Flow",
           "tableTo": "DiscordMessageComponent",
-          "columnsFrom": [
-            "dmcId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["dmcId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -509,12 +469,8 @@
           "name": "DMC_to_Flow_flowId_Flow_id_fk",
           "tableFrom": "DMC_to_Flow",
           "tableTo": "Flow",
-          "columnsFrom": [
-            "flowId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["flowId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -522,10 +478,7 @@
       "compositePrimaryKeys": {
         "DMC_to_Flow_dmcId_flowId_pk": {
           "name": "DMC_to_Flow_dmcId_flowId_pk",
-          "columns": [
-            "dmcId",
-            "flowId"
-          ]
+          "columns": ["dmcId", "flowId"]
         }
       },
       "uniqueConstraints": {}
@@ -571,12 +524,8 @@
           "name": "reaction_roles_guild_id_DiscordGuild_id_fk",
           "tableFrom": "reaction_roles",
           "tableTo": "DiscordGuild",
-          "columnsFrom": [
-            "guild_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["guild_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -584,10 +533,7 @@
       "compositePrimaryKeys": {
         "reaction_roles_message_id_reaction_pk": {
           "name": "reaction_roles_message_id_reaction_pk",
-          "columns": [
-            "message_id",
-            "reaction"
-          ]
+          "columns": ["message_id", "reaction"]
         }
       },
       "uniqueConstraints": {}
@@ -674,12 +620,8 @@
           "name": "DiscordRoles_guildId_DiscordGuild_id_fk",
           "tableFrom": "DiscordRoles",
           "tableTo": "DiscordGuild",
-          "columnsFrom": [
-            "guildId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["guildId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -689,17 +631,12 @@
         "DiscordRoles_id_unique": {
           "name": "DiscordRoles_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         },
         "DiscordRoles_id_guildId_unique": {
           "name": "DiscordRoles_id_guildId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "guildId"
-          ]
+          "columns": ["id", "guildId"]
         }
       }
     },
@@ -778,12 +715,8 @@
           "name": "Action_flowId_Flow_id_fk",
           "tableFrom": "Action",
           "tableTo": "Flow",
-          "columnsFrom": [
-            "flowId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["flowId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -873,19 +806,12 @@
         "GithubPost_postId_unique": {
           "name": "GithubPost_postId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "postId"
-          ]
+          "columns": ["postId"]
         },
         "GithubPost_platform_channelId_type_githubId_unique": {
           "name": "GithubPost_platform_channelId_type_githubId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "platform",
-            "channelId",
-            "type",
-            "githubId"
-          ]
+          "columns": ["platform", "channelId", "type", "githubId"]
         }
       }
     },
@@ -1004,12 +930,8 @@
           "name": "LinkBackup_ownerId_User_id_fk",
           "tableFrom": "LinkBackup",
           "tableTo": "User",
-          "columnsFrom": [
-            "ownerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ownerId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1115,12 +1037,8 @@
           "name": "MessageLogEntry_discordGuildId_DiscordGuild_id_fk",
           "tableFrom": "MessageLogEntry",
           "tableTo": "DiscordGuild",
-          "columnsFrom": [
-            "discordGuildId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["discordGuildId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1128,12 +1046,8 @@
           "name": "MessageLogEntry_guildedServerId_GuildedServer_id_fk",
           "tableFrom": "MessageLogEntry",
           "tableTo": "GuildedServer",
-          "columnsFrom": [
-            "guildedServerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["guildedServerId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1201,23 +1115,17 @@
         "OAuthInfo_discordId_unique": {
           "name": "OAuthInfo_discordId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "discordId"
-          ]
+          "columns": ["discordId"]
         },
         "OAuthInfo_guildedId_unique": {
           "name": "OAuthInfo_guildedId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "guildedId"
-          ]
+          "columns": ["guildedId"]
         },
         "OAuthInfo_botId_unique": {
           "name": "OAuthInfo_botId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "botId"
-          ]
+          "columns": ["botId"]
         }
       }
     },
@@ -1262,12 +1170,8 @@
           "name": "ShareLink_userId_User_id_fk",
           "tableFrom": "ShareLink",
           "tableTo": "User",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1328,12 +1232,8 @@
           "name": "Token_userId_User_id_fk",
           "tableFrom": "Token",
           "tableTo": "User",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1407,12 +1307,8 @@
           "name": "Trigger_flowId_Flow_id_fk",
           "tableFrom": "Trigger",
           "tableTo": "Flow",
-          "columnsFrom": [
-            "flowId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["flowId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1456,12 +1352,8 @@
           "name": "UserToWebhook_userId_User_id_fk",
           "tableFrom": "UserToWebhook",
           "tableTo": "User",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1469,14 +1361,8 @@
           "name": "UserToWebhook_fk",
           "tableFrom": "UserToWebhook",
           "tableTo": "Webhook",
-          "columnsFrom": [
-            "webhookPlatform",
-            "webhookId"
-          ],
-          "columnsTo": [
-            "platform",
-            "id"
-          ],
+          "columnsFrom": ["webhookPlatform", "webhookId"],
+          "columnsTo": ["platform", "id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1486,11 +1372,7 @@
         "UserToWebhook_userId_webhookPlatform_webhookId_unique": {
           "name": "UserToWebhook_userId_webhookPlatform_webhookId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "userId",
-            "webhookPlatform",
-            "webhookId"
-          ]
+          "columns": ["userId", "webhookPlatform", "webhookId"]
         }
       }
     },
@@ -1555,16 +1437,12 @@
         "User_discordId_unique": {
           "name": "User_discordId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "discordId"
-          ]
+          "columns": ["discordId"]
         },
         "User_guildedId_unique": {
           "name": "User_guildedId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "guildedId"
-          ]
+          "columns": ["guildedId"]
         }
       }
     },
@@ -1640,10 +1518,7 @@
         "Webhook_platform_id_unique": {
           "name": "Webhook_platform_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "platform",
-            "id"
-          ]
+          "columns": ["platform", "id"]
         }
       }
     },

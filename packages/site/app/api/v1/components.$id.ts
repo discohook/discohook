@@ -31,7 +31,7 @@ import {
   getDb,
   inArray,
   makeSnowflake,
-  sql
+  sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { Env } from "~/types/env";

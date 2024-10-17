@@ -38,8 +38,7 @@ export class FeedReader implements DurableObject {
     }
   }
 
-  async alarm() {
-  }
+  async alarm() {}
 }
 
 const getFeedReaderStub = (env: Env) => {
