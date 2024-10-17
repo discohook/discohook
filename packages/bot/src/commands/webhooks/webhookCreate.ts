@@ -186,7 +186,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
       const db = getDb(ctx.env.HYPERDRIVE);
       const guild = await getchGuild(
         ctx.rest,
-        ctx.env.KV,
+        ctx.env,
         ctx.interaction.guild_id,
       );
       await upsertGuild(db, guild);

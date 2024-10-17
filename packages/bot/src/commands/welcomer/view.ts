@@ -194,7 +194,7 @@ export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
 
   const guild = await getchTriggerGuild(
     ctx.rest,
-    ctx.env.KV,
+    ctx.env,
     ctx.interaction.guild_id,
   );
 

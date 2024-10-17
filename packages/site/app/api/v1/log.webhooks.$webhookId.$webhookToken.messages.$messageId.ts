@@ -141,7 +141,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   if (webhook.guild_id) {
     const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
     try {
-      const guild = await getchGuild(rest, context.env.KV, webhook.guild_id);
+      const guild = await getchGuild(rest, context.env, webhook.guild_id);
       const upserted = await upsertGuild(db, guild);
       guildId = upserted.id;
     } catch {

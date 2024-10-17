@@ -5,7 +5,7 @@ import {
 } from "@discordjs/builders";
 import { APIWebhook } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
-import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
+import { getDb, getchTriggerGuild, putGeneric, upsertDiscordUser } from "store";
 import {
   backups,
   triggers as dTriggers,
@@ -21,7 +21,6 @@ import {
 import { TriggerEvent } from "store/src/types/triggers.js";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { AutoComponentCustomId } from "../../components.js";
-import { putGeneric } from "../../durable/do-kv.js";
 import { getShareLink } from "../../durable/share-links.js";
 import { getEmojis } from "../../emojis.js";
 import { getErrorMessage } from "../../errors.js";
@@ -150,7 +149,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
         !!channel || !!webhook || deleteAfter !== -1 || !!shareId;
       const guild = await getchTriggerGuild(
         ctx.rest,
-        ctx.env.KV,
+        ctx.env,
         ctx.interaction.guild_id,
       );
 

@@ -1,10 +1,9 @@
 import { REST } from "@discordjs/rest";
 import { GatewayGuildMemberRemoveDispatchData } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
-import { getDb, getchTriggerGuild } from "store";
+import { getDb, getGeneric, getchTriggerGuild, putGeneric } from "store";
 import { discordMembers, makeSnowflake } from "store/src/schema";
 import { TriggerEvent } from "store/src/types/triggers.js";
-import { getGeneric, putGeneric } from "../durable/do-kv.js";
 import { GatewayEventCallback } from "../events.js";
 import { FlowResult, executeFlow } from "../flows/flows.js";
 import { Trigger, getWelcomerConfigurations } from "./guildMemberAdd.js";
@@ -35,7 +34,7 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
     );
   } catch {}
 
-  const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
+  const guild = await getchTriggerGuild(rest, env, payload.guild_id);
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "remove", rest, guild);
     await putGeneric(env, key, triggers, { expirationTtl: 600 });

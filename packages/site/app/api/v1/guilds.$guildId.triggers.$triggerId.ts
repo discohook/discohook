@@ -1,7 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
-import { putGeneric } from "~/durable/sessions";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
   DBWithSchema,
@@ -9,6 +8,7 @@ import {
   eq,
   flowActions,
   flows,
+  putGeneric,
   triggers,
 } from "~/store.server";
 import { Env } from "~/types/env";

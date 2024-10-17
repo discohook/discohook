@@ -129,21 +129,67 @@ export class RedisKV<Key extends string = string> {
   }
 }
 
-export const getKv = (env: {
+type Env = {
+  SESSIONS: DurableObjectNamespace;
   UPSTASH_REDIS_REST_URL: string;
   UPSTASH_REDIS_REST_TOKEN: string;
-}): RedisKV => {
+};
+
+export const getKv = (env: Env): RedisKV => {
   const redis = Redis.fromEnv(env);
   return new RedisKV(redis);
 };
 
+export const getSessionManagerStub = (env: Env, sessionId: string) => {
+  const id = env.SESSIONS.idFromName(sessionId);
+  const stub = env.SESSIONS.get(id);
+  return stub;
+};
+
+// No good way to `has()` with this unfortunately
+export const getGeneric = async <T>(env: Env, key: string): Promise<T | null> => {
+  const stub = getSessionManagerStub(env, key);
+  const response = await stub.fetch("http://do/", { method: "GET" });
+  if (!response.ok) {
+    return null;
+  }
+  const raw = (await response.json()) as { data: T };
+  return raw.data;
+};
+
+export const putGeneric = async <T>(
+  env: Env,
+  key: string,
+  data: any,
+  options?: { expirationTtl?: number; expiration?: number },
+) => {
+  const stub = getSessionManagerStub(env, key);
+  const response = await stub.fetch("http://do/", {
+    method: "PUT",
+    body: JSON.stringify({
+      data,
+      expires: options?.expiration
+        ? new Date(options.expiration)
+        : options?.expirationTtl
+          ? new Date(new Date().getTime() + options.expirationTtl * 1000)
+          : undefined,
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!response.ok) {
+    return null;
+  }
+  const raw = (await response.json()) as T;
+  return raw;
+};
+
 export const getchGuild = async (
   rest: REST,
-  kv: RedisKV,
+  env: Env,
   guildId: string,
 ): Promise<PartialKVGuild> => {
   const key = `cache-guild-${guildId}`;
-  const cached = await kv.get<PartialKVGuild>(key, "json");
+  const cached = await getGeneric<PartialKVGuild>(env, key);
   if (!cached) {
     const guild = (await rest.get(Routes.guild(guildId))) as APIGuild;
     const reduced: PartialKVGuild = {
@@ -151,9 +197,10 @@ export const getchGuild = async (
       name: guild.name,
       icon: guild.icon,
     };
-    await kv.put(
+    await putGeneric(
+      env,
       key,
-      JSON.stringify(reduced),
+      reduced,
       { expirationTtl: 43_200 }, // 12 hours
     );
     return reduced;
@@ -163,11 +210,11 @@ export const getchGuild = async (
 
 export const getchTriggerGuild = async (
   rest: REST,
-  kv: RedisKV,
+  env: Env,
   guildId: string,
 ): Promise<TriggerKVGuild> => {
   const key = `cache-triggerGuild-${guildId}`;
-  const cached = await kv.get<TriggerKVGuild>(key, "json");
+  const cached = await getGeneric<TriggerKVGuild>(env, key);
   if (!cached) {
     const guild = (await rest.get(Routes.guild(guildId), {
       query: new URLSearchParams({ with_counts: "true" }),
@@ -201,9 +248,10 @@ export const getchTriggerGuild = async (
               ? 15
               : 5,
     };
-    await kv.put(
+    await putGeneric(
+      env,
       key,
-      JSON.stringify(reduced),
+      reduced,
       { expirationTtl: 43_200 }, // 12 hours
     );
     return reduced;

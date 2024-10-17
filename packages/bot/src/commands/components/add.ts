@@ -31,10 +31,11 @@ import { SignJWT } from "jose";
 import {
   DBWithSchema,
   getDb,
+  getSessionManagerStub,
   getchGuild,
   launchComponentDurableObject,
   upsertDiscordUser,
-  upsertGuild
+  upsertGuild,
 } from "store";
 import {
   discordMessageComponents,
@@ -51,7 +52,6 @@ import {
   ModalCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import { getSessionManagerStub } from "../../durable/do-kv.js";
 import { InteractionContext } from "../../interactions.js";
 import { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
@@ -448,7 +448,7 @@ export const startComponentFlow = async (
     async () => {
       const guild = await getchGuild(
         ctx.rest,
-        ctx.env.KV,
+        ctx.env,
         // biome-ignore lint/style/noNonNullAssertion:
         ctx.interaction.guild_id!,
       );

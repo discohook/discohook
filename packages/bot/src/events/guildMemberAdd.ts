@@ -9,7 +9,9 @@ import { and, eq } from "drizzle-orm";
 import {
   DBWithSchema,
   getDb,
+  getGeneric,
   getchTriggerGuild,
+  putGeneric,
   upsertDiscordUser,
   upsertGuild,
 } from "store";
@@ -37,7 +39,6 @@ import {
   TriggerEvent,
   TriggerKVGuild,
 } from "store/src/types";
-import { getGeneric, putGeneric } from "../durable/do-kv.js";
 import { GatewayEventCallback } from "../events.js";
 import { FlowResult, executeFlow } from "../flows/flows.js";
 
@@ -303,7 +304,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
     return;
   }
 
-  const guild = await getchTriggerGuild(rest, env.KV, payload.guild_id);
+  const guild = await getchTriggerGuild(rest, env, payload.guild_id);
   const db = getDb(env.HYPERDRIVE);
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "add", rest, guild);

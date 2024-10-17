@@ -41,7 +41,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
       const db = getDb(ctx.env.HYPERDRIVE);
       const guild = await getchTriggerGuild(
         ctx.rest,
-        ctx.env.KV,
+        ctx.env,
         // biome-ignore lint/style/noNonNullAssertion: Guild only command
         ctx.interaction.guild_id!,
       );
@@ -124,7 +124,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   const db = getDb(ctx.env.HYPERDRIVE);
   const guild = await getchTriggerGuild(
     ctx.rest,
-    ctx.env.KV,
+    ctx.env,
     // biome-ignore lint/style/noNonNullAssertion: Guild only command
     ctx.interaction.guild_id!,
   );

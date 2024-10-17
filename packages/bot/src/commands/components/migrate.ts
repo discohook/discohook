@@ -62,7 +62,7 @@ export const migrateLegacyButtons = async (
   guildId: string,
   message: APIMessage,
 ) => {
-  const guild = await getchTriggerGuild(rest, env.KV, guildId);
+  const guild = await getchTriggerGuild(rest, env, guildId);
   // Not sure if it's better for RL reasons to use guildMember instead?
   const owner = (await rest.get(Routes.user(guild.owner_id))) as APIUser;
   const ownerUser = await upsertDiscordUser(db, owner);

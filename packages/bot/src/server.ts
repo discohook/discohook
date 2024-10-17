@@ -300,7 +300,7 @@ const handleInteraction = async (
       }
 
       const liveVars: LiveVariables = {
-        guild: await getchTriggerGuild(rest, env.KV, guildId),
+        guild: await getchTriggerGuild(rest, env, guildId),
         member: interaction.member,
         user: interaction.member?.user,
       };

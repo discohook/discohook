@@ -19,8 +19,8 @@ import {
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
+import { getSessionManagerStub, putGeneric } from "~/store.server";
 import { getDiscordUserOAuth } from "./auth-discord.server";
-import { getSessionManagerStub } from "./durable/sessions";
 import {
   discordMembers,
   generateId,
@@ -781,17 +781,18 @@ export const getTokenGuildChannelPermissions = async (
 export const getGuild = async (
   guildId: bigint | string,
   rest: REST,
-  env: Pick<Env, "KV">,
+  env: Env,
 ) => {
   const guild = (await rest.get(Routes.guild(String(guildId)))) as APIGuild;
   // TODO: Leads to unnecessary writes
-  await env.KV.put(
+  await putGeneric(
+    env,
     `cache-guild-${guildId}`,
-    JSON.stringify({
+    {
       id: guild.id,
       name: guild.name,
       icon: guild.icon,
-    }),
+    },
     { expirationTtl: 10800 }, // 3 hours
   );
   return guild;
