@@ -61,6 +61,8 @@ router.get("/", (_, env: Env) => {
   return new Response(`👋 ${env.DISCORD_APPLICATION_ID}`);
 });
 
+const bannedUserIds = ["1201838301674479672"];
+
 const handleInteraction = async (
   request: IRequest,
   env: Env,
@@ -78,6 +80,10 @@ const handleInteraction = async (
 
   if (interaction.type === InteractionType.Ping) {
     return respond({ type: InteractionResponseType.Pong });
+  }
+
+  if (interaction.user && bannedUserIds.includes(interaction.user.id)) {
+    return respond({ error: "Forbidden" });
   }
 
   await i18next.init({

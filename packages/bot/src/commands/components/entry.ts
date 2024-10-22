@@ -28,6 +28,7 @@ const MESSAGE_LINK_RE =
 export const resolveMessageLink = async (
   rest: REST,
   messageLink: string,
+  guildId: string | undefined,
 ): Promise<APIMessage | string> => {
   const match = messageLink.match(MESSAGE_LINK_RE);
   if (!match) {
@@ -37,13 +38,20 @@ export const resolveMessageLink = async (
     `;
   }
 
+  let message: APIMessage;
   try {
-    return (await rest.get(
+    message = (await rest.get(
       Routes.channelMessage(match[2], match[3]),
     )) as APIMessage;
   } catch (e) {
     return "Unable to resolve that message. Make sure you are pasting a valid message link in a channel that I can access.";
   }
+
+  if (guildId && guildId !== match[1]) {
+    return "That message is not from this server.";
+  }
+
+  return message;
 };
 
 type APIWebhookWithToken = APIWebhook & Required<Pick<APIWebhook, "token">>;
@@ -79,6 +87,7 @@ export const addComponentChatEntry: ChatInputAppCommandCallback<true> = async (
   const message = await resolveMessageLink(
     ctx.rest,
     ctx.getStringOption("message").value,
+    ctx.interaction.guild_id,
   );
   if (typeof message === "string") {
     return ctx.reply({

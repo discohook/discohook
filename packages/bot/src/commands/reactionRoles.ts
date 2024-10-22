@@ -227,6 +227,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   const message = await resolveMessageLink(
     ctx.rest,
     ctx.getStringOption("message").value,
+    ctx.interaction.guild_id,
   );
   if (typeof message === "string") {
     return ctx.reply({
@@ -351,6 +352,7 @@ export const deleteReactionRoleHandler: ChatInputAppCommandCallback = async (
   const message = await resolveMessageLink(
     ctx.rest,
     ctx.getStringOption("message").value,
+    ctx.interaction.guild_id,
   );
   if (typeof message === "string") {
     return ctx.reply({
@@ -548,6 +550,7 @@ export const listReactionRolesHandler: ChatInputAppCommandCallback = async (
   const message = await resolveMessageLink(
     ctx.rest,
     ctx.getStringOption("message").value,
+    ctx.interaction.guild_id,
   );
   if (typeof message === "string") {
     return ctx.reply({

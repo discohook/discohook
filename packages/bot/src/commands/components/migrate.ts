@@ -356,6 +356,7 @@ export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
     const message = await resolveMessageLink(
       ctx.rest,
       ctx.getStringOption("message").value,
+      ctx.interaction.guild_id,
     );
     if (typeof message === "string") {
       return ctx.reply({

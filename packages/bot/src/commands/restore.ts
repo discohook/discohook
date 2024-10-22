@@ -257,6 +257,18 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
   const value = (
     ctx.interaction.data.values as ("none" | "edit" | "link")[]
   )[0];
+
+  if (
+    value === "edit" &&
+    !ctx.userPermissons.has(PermissionFlags.ManageWebhooks)
+  ) {
+    return ctx.reply({
+      content:
+        "You must have the manage webhooks permission to restore a message in edit mode.",
+      ephemeral: true,
+    });
+  }
+
   switch (value) {
     case "none": {
       const data = messageToQueryData(message);
@@ -361,6 +373,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
   const message = await resolveMessageLink(
     ctx.rest,
     ctx.getStringOption("message").value,
+    ctx.interaction.guild_id,
   );
   if (typeof message === "string") {
     return ctx.reply({ content: message, flags: MessageFlags.Ephemeral });
