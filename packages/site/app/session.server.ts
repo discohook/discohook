@@ -294,7 +294,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
 
   const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
   if (memberships.length !== 0) {
-    await env.KV.send("MULTI");
+    // await env.KV.send("MULTI");
     try {
       for (const membership of memberships) {
         // A user can be in up to 200 guilds, so assuming proper state management
@@ -309,9 +309,10 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
           { expiration: Math.floor(permExpireAt) },
         );
       }
-      await env.KV.send("EXEC");
+      // await env.KV.send("EXEC");
     } catch (e) {
-      await env.KV.send("DISCARD");
+      // await env.KV.send("DISCARD");
+      // biome-ignore lint/complexity/noUselessCatch: temp
       throw e;
     }
   }
