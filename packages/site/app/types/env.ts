@@ -11,8 +11,7 @@ export interface Env {
   RATE_LIMITER: DurableObjectNamespace;
   SHARE_LINKS: DurableObjectNamespace;
   SESSIONS: DurableObjectNamespace;
-  UPSTASH_REDIS_REST_URL: string;
-  UPSTASH_REDIS_REST_TOKEN: string;
+  REDIS_URL: string;
   __STATIC_CONTENT: Fetcher;
   VERSION: WorkerVersionMetadata;
   // __STATIC_CONTENT_MANIFEST: Object;

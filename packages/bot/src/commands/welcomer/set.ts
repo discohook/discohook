@@ -5,13 +5,13 @@ import {
 } from "@discordjs/builders";
 import { APIWebhook } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
-import { getDb, getchTriggerGuild, putGeneric, upsertDiscordUser } from "store";
+import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import {
   backups,
+  triggers as dTriggers,
   flowActions,
   flows,
   generateId,
-  triggers as dTriggers,
 } from "store/src/schema/schema.js";
 import {
   FlowAction,
@@ -309,10 +309,9 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
             ...(triggers[0] ?? { id: flowId, disabled: false }),
             flow: { ...currentFlow, actions: newActions },
           });
-          await putGeneric(
-            ctx.env,
+          await ctx.env.KV.put(
             `cache:triggers-${event}-${ctx.interaction.guild_id}`,
-            triggers,
+            JSON.stringify(triggers),
             { expirationTtl: 1200 },
           );
         });

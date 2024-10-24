@@ -20,7 +20,7 @@ import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import i18next, { t } from "i18next";
 import { IRequest, Router } from "itty-router";
-import { getDb, getKv, getchTriggerGuild } from "store";
+import { getDb, getRedis, getchTriggerGuild } from "store";
 import {
   DurableStoredComponent,
   launchComponentDurableObject,
@@ -762,7 +762,7 @@ const server = {
     // Duplicate the "main" bot token so that custom bots can still access the same webhooks
     env.APPLICATIONS[env.DISCORD_APPLICATION_ID] = env.DISCORD_TOKEN;
 
-    const kv = getKv(env);
+    const kv = getRedis(env);
     // Not strictly compatible due to `get()` missing some features that we don't use
     env.KV = kv;
 

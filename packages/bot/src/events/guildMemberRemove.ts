@@ -1,7 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { GatewayGuildMemberRemoveDispatchData } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
-import { getDb, getGeneric, getchTriggerGuild, putGeneric } from "store";
+import { getDb, getchTriggerGuild } from "store";
 import { discordMembers, makeSnowflake } from "store/src/schema";
 import { TriggerEvent } from "store/src/types/triggers.js";
 import { GatewayEventCallback } from "../events.js";
@@ -16,7 +16,7 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
   const key = `cache:triggers-${TriggerEvent.MemberRemove}-${payload.guild_id}`;
-  let triggers = await getGeneric<Trigger[]>(env, key);
+  let triggers = await env.KV.get<Trigger[]>(key, "json");
   if (triggers && triggers.length === 0) {
     return;
   }
@@ -37,7 +37,7 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   const guild = await getchTriggerGuild(rest, env, payload.guild_id);
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "remove", rest, guild);
-    await putGeneric(env, key, triggers, { expirationTtl: 600 });
+    await env.KV.put(key, JSON.stringify(triggers), { expirationTtl: 600 });
   }
 
   const applicable = triggers.filter((t) => !!t.flow && !t.disabled);

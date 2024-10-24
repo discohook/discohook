@@ -19,7 +19,7 @@ import {
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
-import { getSessionManagerStub, putGeneric } from "~/store.server";
+import { getSessionManagerStub } from "~/store.server";
 import { getDiscordUserOAuth } from "./auth-discord.server";
 import {
   discordMembers,
@@ -294,21 +294,26 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
 
   const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
   if (memberships.length !== 0) {
-    const pipeline = env.KV.redis.multi();
-    for (const membership of memberships) {
-      // A user can be in up to 200 guilds, so assuming proper state management
-      // (memberships are deleted when a member is removed), then that should
-      // be the maximum number of transaction members here.
-      pipeline.set(
-        `token-${token.id}-guild-${membership.guildId}`,
-        JSON.stringify({
-          permissions: membership.permissions,
-          owner: membership.owner,
-        } satisfies KVTokenPermissions),
-        { exat: Math.floor(permExpireAt) },
-      );
+    await env.KV.send("MULTI");
+    try {
+      for (const membership of memberships) {
+        // A user can be in up to 200 guilds, so assuming proper state management
+        // (memberships are deleted when a member is removed), then that should
+        // be the maximum number of transaction members here.
+        await env.KV.put(
+          `token-${token.id}-guild-${membership.guildId}`,
+          JSON.stringify({
+            permissions: membership.permissions,
+            owner: membership.owner,
+          } satisfies KVTokenPermissions),
+          { expiration: Math.floor(permExpireAt) },
+        );
+      }
+      await env.KV.send("EXEC");
+    } catch (e) {
+      await env.KV.send("DISCARD");
+      throw e;
     }
-    await pipeline.exec({ keepErrors: true });
   }
 
   return token;
@@ -785,14 +790,13 @@ export const getGuild = async (
 ) => {
   const guild = (await rest.get(Routes.guild(String(guildId)))) as APIGuild;
   // TODO: Leads to unnecessary writes
-  await putGeneric(
-    env,
+  await env.KV.put(
     `cache-guild-${guildId}`,
-    {
+    JSON.stringify({
       id: guild.id,
       name: guild.name,
       icon: guild.icon,
-    },
+    }),
     { expirationTtl: 10800 }, // 3 hours
   );
   return guild;

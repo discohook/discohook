@@ -9,9 +9,7 @@ import { and, eq } from "drizzle-orm";
 import {
   DBWithSchema,
   getDb,
-  getGeneric,
   getchTriggerGuild,
-  putGeneric,
   upsertDiscordUser,
   upsertGuild,
 } from "store";
@@ -299,7 +297,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   // Don't like this. We really should store all triggers per guild id,
   // but I did this to fit with the way getWelcomerConfiguration works
   const key = `cache:triggers-${TriggerEvent.MemberAdd}-${payload.guild_id}`;
-  let triggers = await getGeneric<Trigger[]>(env, key);
+  let triggers = await env.KV.get<Trigger[]>(key, "json");
   if (triggers && triggers.length === 0) {
     return;
   }
@@ -308,7 +306,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   const db = getDb(env.HYPERDRIVE);
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "add", rest, guild);
-    await putGeneric(env, key, triggers, { expirationTtl: 1200 });
+    await env.KV.put(key, JSON.stringify(triggers), { expirationTtl: 1200 });
   }
 
   const applicable = triggers.filter((t) => !!t.flow && !t.disabled);

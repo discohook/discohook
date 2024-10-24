@@ -3,7 +3,7 @@ import type { AppLoadContext } from "@remix-run/cloudflare";
 import { createRequestHandler, json, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
 import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
-import { getKv } from "~/store.server";
+import { getRedis } from "~/store.server";
 import { Env } from "~/types/env";
 export { DurableComponentState } from "store";
 export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
@@ -51,7 +51,7 @@ export default {
       // No-op
     }
 
-    const kv = getKv(env);
+    const kv = getRedis(env);
     // Not strictly compatible due to `get()` missing some features that we don't use
     env.KV = kv;
 

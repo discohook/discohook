@@ -11,8 +11,7 @@ export interface Env {
   DISCOHOOK_ORIGIN: string;
   TOKEN_SECRET: string;
   DATABASE_URL: string;
-  UPSTASH_REDIS_REST_URL: string;
-  UPSTASH_REDIS_REST_TOKEN: string;
+  REDIS_URL: string;
   KV: RedisKV;
 
   GUILD_ID?: string;
