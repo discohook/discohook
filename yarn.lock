@@ -9209,7 +9209,6 @@ cron-parser@discohook/cron-parser:
   version: 0.0.0
   resolution: "store@file:../store#../store::hash=925b86&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
-    "@upstash/redis": "npm:^1.34.3"
     discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.32.1"
