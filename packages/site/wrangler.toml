@@ -6,10 +6,6 @@ compatibility_date = "2023-04-20"
 node_compat = true
 minify = true
 
-kv_namespaces = [
-  { binding = "OLD_KV", id = "29967d1631d24846a448e8d2bcc49a5b", preview_id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" },
-]
-
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
   { binding = "BOT", service = "discohook-bot" },
@@ -68,7 +64,6 @@ route = { pattern = "preview.discohook.app", custom_domain = true }
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "f8f714cc2701467cacf61b203ccd933a" },
 ]
-kv_namespaces = [{ binding = "OLD_KV", id = "03d176ba6dbd4a2daa2f63f9f8f8bb4b" }]
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
   { binding = "BOT", service = "discohook-bot-preview" },
@@ -121,7 +116,6 @@ route = { pattern = "discohook.app", custom_domain = true }
 hyperdrive = [
   { binding = "HYPERDRIVE", id = "9568cd870bee47f3801c862de747ca94" },
 ]
-kv_namespaces = [{ binding = "OLD_KV", id = "29967d1631d24846a448e8d2bcc49a5b" }]
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
   { binding = "BOT", service = "discohook-bot-production" },

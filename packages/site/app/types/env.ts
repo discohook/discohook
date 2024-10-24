@@ -4,7 +4,6 @@ import type { RedisKV } from "~/store.server";
 export interface Env {
   ENVIRONMENT: "dev" | "preview" | "production";
   KV: RedisKV;
-  OLD_KV: KVNamespace;
   SCHEDULER: DurableObjectNamespace;
   DRAFT_CLEANER: DurableObjectNamespace;
   COMPONENTS: DurableObjectNamespace;
