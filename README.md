@@ -44,6 +44,20 @@ Big thanks to [@maddysrc](https://github.com/maddysrc) and [@crawron](https://tw
 
 ## Development
 
+### Prerequisites: bindings
+
+#### Hyperdrive (PostgreSQL)
+
+The `DATABASE_URL` secret should be defined when developing as a connection string for a local PostgreSQL database. The `bot` and `site` packages will fill `env.HYPERDRIVE` such that it can be used in the `getDb` utility.
+
+In production, this variable is not used. Instead, provide a connection string directly to the [Hyperdrive instance](https://developers.cloudflare.com/hyperdrive/) associated with the worker in wrangler.toml.
+
+#### KV (Redis)
+
+This project started out using Cloudflare KV, but it was exorbitantly expensive, so it now uses a self-hosted instance of [Valkey](https://valkey.io/) behind [Webdis](https://webd.is). In the `bot` and `site` packages, you will need to define a `REDIS_URL` secret that describes the credentials to your Webdis instance in a standard `redis://` URI format. See [Webdis's README](https://github.com/nicolasff/webdis#acl) on configuring access control.
+
+`env.KV` is made available as a `RedisKV` instance, which is a custom class designed to mimic the behavior of `KVNamespace`.
+
 ### Contributing
 
 Before submitting your pull request, please remember to run `npx biome check .` to check for errors, then `yarn fix` to format. This repository uses [Biome](https://biomejs.dev), not ESLint/Prettier. You may also want to install the [Biome extension for your editor](https://biomejs.dev/guides/integrate-in-editor).
