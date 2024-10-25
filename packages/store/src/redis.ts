@@ -36,22 +36,20 @@ export class RedisKV<Key extends string = string> {
   send(command: "DEL" | "INCR", ...parameters: string[]): Promise<number>;
   async send(command: string, ...parameters: string[]): Promise<RedisValue> {
     const commands = [command, ...parameters];
+    if (this.options.database) {
+      commands.splice(0, 0, this.options.database);
+    }
 
-    const response = await fetch(
-      new URL(
-        this.options.database ? `/${this.options.database}` : "/",
-        this.options.url,
-      ),
-      {
-        method: "POST",
-        body: commands.join("/"),
-        headers: {
-          Authorization: this.auth,
-          Accept: "application/json",
-          "Content-Type": "text/plain",
-        },
+    const response = await fetch(this.options.url, {
+      method: "POST",
+      body: commands
+        .map((c) => c.replace(/\//g, "%2f").replace(/\./g, "%2e"))
+        .join("/"),
+      headers: {
+        Authorization: this.auth,
+        "Content-Type": "text/plain",
       },
-    );
+    });
     if (!response.ok) {
       const text = await response.text();
       throw Error(

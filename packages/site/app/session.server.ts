@@ -294,26 +294,18 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
 
   const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
   if (memberships.length !== 0) {
-    // await env.KV.send("MULTI");
-    try {
-      for (const membership of memberships) {
-        // A user can be in up to 200 guilds, so assuming proper state management
-        // (memberships are deleted when a member is removed), then that should
-        // be the maximum number of transaction members here.
-        await env.KV.put(
-          `token-${token.id}-guild-${membership.guildId}`,
-          JSON.stringify({
-            permissions: membership.permissions,
-            owner: membership.owner,
-          } satisfies KVTokenPermissions),
-          { expiration: Math.floor(permExpireAt) },
-        );
-      }
-      // await env.KV.send("EXEC");
-    } catch (e) {
-      // await env.KV.send("DISCARD");
-      // biome-ignore lint/complexity/noUselessCatch: temp
-      throw e;
+    for (const membership of memberships) {
+      // A user can be in up to 200 guilds, so assuming proper state management
+      // (memberships are deleted when a member is removed), then that should
+      // be the maximum number of transaction members here.
+      await env.KV.put(
+        `token-${token.id}-guild-${membership.guildId}`,
+        JSON.stringify({
+          permissions: membership.permissions,
+          owner: membership.owner,
+        } satisfies KVTokenPermissions),
+        { expiration: Math.floor(permExpireAt) },
+      );
     }
   }
 
@@ -362,6 +354,7 @@ export async function authorizeRequest(
   let auth = request.headers.get("Authorization");
   const storage = getTokenStorage(context);
   const session = await storage.getSession(request.headers.get("Cookie"));
+  console.log(await context.env.KV.get("test/123.abc"))
 
   const serveNewToken = async () => {
     const user = await getUser(request, context, true);
