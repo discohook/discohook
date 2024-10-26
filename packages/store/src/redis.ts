@@ -42,9 +42,7 @@ export class RedisKV<Key extends string = string> {
 
     const response = await fetch(this.options.url, {
       method: "POST",
-      body: commands
-        .map((c) => c.replace(/\//g, "%2f").replace(/\./g, "%2e"))
-        .join("/"),
+      body: commands.map(encodeURIComponent).join("/"),
       headers: {
         Authorization: this.auth,
         "Content-Type": "text/plain",
