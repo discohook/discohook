@@ -66,12 +66,17 @@ const manager = new WebSocketManager({
 
 manager.on(WebSocketShardEvents.Ready, (event) => {
   guildIds = event.data.guilds.map((g) => g.id);
+  const shards = event.data.shard ? event.data.shard[1] : 0;
   console.log(
-    `${event.data.user.username}#${event.data.user.discriminator} ready with ${
-      event.data.shard ? event.data.shard[1] : 0
-    } shards on ${event.data.guilds.length} guilds${
-      small ? " (small mode; events sent instantly)" : ""
-    }\nWorker origin: ${env.WORKER_ORIGIN}`,
+    `${event.data.user.username}#${
+      event.data.user.discriminator
+    } ready on shard ID ${event.shardId} (of ${shards}) with ${
+      event.data.guilds.length
+    } guilds${small ? " (small mode; events sent instantly)" : ""}${
+      event.shardId === 0 || event.shardId === shards - 1
+        ? `\nWorker origin: ${env.WORKER_ORIGIN}`
+        : ""
+    }`,
   );
 });
 
