@@ -115,10 +115,11 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
     return;
   }
 
-  // We have to have just a little bit of local state to prevent sending 1000+
-  // requests every time a shard is ready. Since this is the only cache, I am
-  // not so concerned about RAM with this 'hybrid' technique
+  // We have to have just a little bit of local state. Since this is the only
+  // cache, I am not so concerned about RAM with this 'hybrid' technique.
   switch (event.data.t) {
+    // We use webhook events instead of sending GuildCreate to the worker:
+    // https://discord.com/developers/docs/events/webhook-events
     case GatewayDispatchEvents.GuildCreate: {
       if (!guildIds.includes(event.data.d.id)) {
         guildIds.push(event.data.d.id);

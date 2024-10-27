@@ -1,11 +1,16 @@
 import { REST } from "@discordjs/rest";
-import { GatewayGuildMemberRemoveDispatchData } from "discord-api-types/v10";
+import {
+  GatewayGuildMemberRemoveDispatchData,
+  RESTJSONErrorCodes,
+} from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { getDb, getchTriggerGuild } from "store";
 import { discordMembers, makeSnowflake } from "store/src/schema";
+import { TriggerKVGuild } from "store/src/types/guild.js";
 import { TriggerEvent } from "store/src/types/triggers.js";
 import { GatewayEventCallback } from "../events.js";
 import { FlowResult, executeFlow } from "../flows/flows.js";
+import { isDiscordError } from "../util/error.js";
 import { Trigger, getWelcomerConfigurations } from "./guildMemberAdd.js";
 
 export const guildMemberRemoveCallback: GatewayEventCallback = async (
@@ -13,6 +18,8 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   payload: GatewayGuildMemberRemoveDispatchData,
 ) => {
   console.log(`[event:GUILD_MEMBER_REMOVE] ${payload.guild_id}`);
+  if (payload.user.id === env.DISCORD_APPLICATION_ID) return [];
+
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
   const key = `cache:triggers-${TriggerEvent.MemberRemove}-${payload.guild_id}`;
@@ -34,7 +41,24 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
     );
   } catch {}
 
-  const guild = await getchTriggerGuild(rest, env, payload.guild_id);
+  let guild: TriggerKVGuild;
+  try {
+    guild = await getchTriggerGuild(rest, env, payload.guild_id);
+  } catch (e) {
+    if (isDiscordError(e)) {
+      return [
+        {
+          status: "failure",
+          discordError: e.rawError,
+          message:
+            e.code === RESTJSONErrorCodes.UnknownGuild
+              ? "Discohook cannot access the server"
+              : e.rawError.message,
+        } satisfies FlowResult,
+      ];
+    }
+    throw e;
+  }
   if (!triggers) {
     triggers = await getWelcomerConfigurations(db, "remove", rest, guild);
     await env.KV.put(key, JSON.stringify(triggers), { expirationTtl: 600 });
