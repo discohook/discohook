@@ -8,10 +8,10 @@ import { eq, sql } from "drizzle-orm";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import {
   backups,
-  triggers as dTriggers,
   flowActions,
   flows,
   generateId,
+  triggers as dTriggers,
 } from "store/src/schema/schema.js";
 import {
   FlowAction,

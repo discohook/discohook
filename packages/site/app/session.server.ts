@@ -354,7 +354,6 @@ export async function authorizeRequest(
   let auth = request.headers.get("Authorization");
   const storage = getTokenStorage(context);
   const session = await storage.getSession(request.headers.get("Cookie"));
-  console.log(await context.env.KV.get("test/123.abc"))
 
   const serveNewToken = async () => {
     const user = await getUser(request, context, true);
