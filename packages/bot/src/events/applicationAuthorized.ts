@@ -1,16 +1,27 @@
 import { REST } from "@discordjs/rest";
-import { GatewayGuildCreateDispatchData, Routes } from "discord-api-types/v10";
+import { ApplicationIntegrationType, Routes } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "store";
 import { discordGuilds, discordRoles, makeSnowflake } from "store/src/schema";
 import { GatewayEventCallback } from "../events.js";
+import {
+  APIWebhookEventBodyApplicationAuthorizedBase,
+  APIWebhookEventBodyApplicationAuthorizedGuild,
+} from "../types/webhook-events.js";
 
-export const guildCreateCallback: GatewayEventCallback = async (
+export const applicationAuthorizedCallback: GatewayEventCallback = async (
   env,
-  guild: GatewayGuildCreateDispatchData,
+  authorization: APIWebhookEventBodyApplicationAuthorizedBase,
 ) => {
-  if (guild.unavailable) return;
-  const now = new Date();
+  if (
+    !authorization ||
+    authorization.integration_type === undefined ||
+    authorization.integration_type !== ApplicationIntegrationType.GuildInstall
+  ) {
+    return;
+  }
+  const { guild } =
+    authorization as APIWebhookEventBodyApplicationAuthorizedGuild;
 
   const db = getDb(env.HYPERDRIVE);
   const moderated = await env.KV.get<{ state: "banned"; reason?: string }>(
@@ -23,6 +34,7 @@ export const guildCreateCallback: GatewayEventCallback = async (
     return;
   }
 
+  const now = sql`NOW()`;
   await db
     .insert(discordGuilds)
     .values({

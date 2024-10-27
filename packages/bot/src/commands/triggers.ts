@@ -24,7 +24,7 @@ import {
 } from "../commands.js";
 import { ButtonCallback } from "../components.js";
 import { emojiToString, getEmojis } from "../emojis.js";
-import { eventNameToCallback } from "../events.js";
+import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import { FlowResult } from "../flows/flows.js";
 import { parseAutoComponentId } from "../util/components.js";
@@ -290,7 +290,7 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
   }
 
   let payload: any = {};
-  const func = eventNameToCallback[eventName];
+  const func = gatewayEventNameToCallback[eventName];
   switch (event) {
     case TriggerEvent.MemberAdd: {
       payload = {

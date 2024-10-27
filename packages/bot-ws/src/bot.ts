@@ -120,17 +120,17 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
   // not so concerned about RAM with this 'hybrid' technique
   switch (event.data.t) {
     case GatewayDispatchEvents.GuildCreate: {
-      const alreadyMember = guildIds.includes(event.data.d.id);
-      guildIds.push(event.data.d.id);
-      if (alreadyMember) return;
-      return; //break;
+      if (!guildIds.includes(event.data.d.id)) {
+        guildIds.push(event.data.d.id);
+      }
+      return;
     }
     case GatewayDispatchEvents.GuildDelete: {
       // It's just unavailable, ignore but let the bot worker handle it
       if (event.data.d.unavailable) break;
       const index = guildIds.indexOf(event.data.d.id);
       if (index !== -1) guildIds.splice(index, 1);
-      return; //break;
+      break;
     }
     case GatewayDispatchEvents.ChannelDelete: {
       const channel = event.data.d;

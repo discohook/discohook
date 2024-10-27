@@ -38,10 +38,17 @@ import {
   modalStore,
 } from "./components.js";
 import { getErrorMessage } from "./errors.js";
-import { eventNameToCallback } from "./events.js";
+import {
+  gatewayEventNameToCallback,
+  webhookEventNameToCallback
+} from "./events.js";
 import { LiveVariables, executeFlow } from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
 import { Env } from "./types/env.js";
+import {
+  APIWebhookEvent,
+  WebhookEventType
+} from "./types/webhook-events.js";
 import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";
@@ -68,10 +75,8 @@ const handleInteraction = async (
   env: Env,
   eCtx: ExecutionContext,
 ) => {
-  const { isValid, interaction } = await server.verifyDiscordRequest(
-    request,
-    env,
-  );
+  const { isValid, body: interaction } =
+    await server.verifyDiscordRequest<APIInteraction>(request, env);
   if (!isValid || !interaction) {
     return new Response("Bad request signature.", { status: 401 });
   }
@@ -676,7 +681,8 @@ router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
   const wait = query.get("wait") === "true";
 
   console.log(`[/ws] Handling ${eventName}`);
-  const callback = eventNameToCallback[eventName as GatewayDispatchEvents];
+  const callback =
+    gatewayEventNameToCallback[eventName as GatewayDispatchEvents];
   if (callback && wait) {
     try {
       await callback(env, await request.json());
@@ -712,7 +718,7 @@ router.post("/ws/bulk", async (request, env: Env, eCtx: ExecutionContext) => {
 
   const callbacks: (() => Promise<void>)[] = [];
   for (const payload of data) {
-    const callback = eventNameToCallback[payload.t];
+    const callback = gatewayEventNameToCallback[payload.t];
     if (callback) {
       callbacks.push(async () => callback(env, payload.d).catch(console.error));
     }
@@ -727,9 +733,39 @@ router.post("/ws/bulk", async (request, env: Env, eCtx: ExecutionContext) => {
   return new Response(null, { status: 204 });
 });
 
+router.post("/events", async (request, env: Env, eCtx: ExecutionContext) => {
+  const { isValid, body } = await server.verifyDiscordRequest<APIWebhookEvent>(
+    request,
+    env,
+  );
+  if (!isValid || !body) {
+    return new Response("Bad request signature.", { status: 401 });
+  }
+
+  switch (body.type) {
+    case WebhookEventType.Ping: {
+      return new Response(null, { status: 204 });
+    }
+    case WebhookEventType.Event: {
+      break;
+    }
+    default:
+      return new Response(null, { status: 204 });
+  }
+
+  console.log("[/events] Handling", body.event.type);
+  const callback = webhookEventNameToCallback[body.event.type];
+  if (callback) {
+    eCtx.waitUntil(callback(env, body.event.data));
+  } else {
+    console.error("No event callback found for", body.event.type);
+  }
+  return new Response(null, { status: 204 });
+});
+
 router.all("*", () => new Response("Not Found.", { status: 404 }));
 
-async function verifyDiscordRequest(request: Request, env: Env) {
+async function verifyDiscordRequest<T>(request: Request, env: Env) {
   const signature = request.headers.get("x-signature-ed25519");
   const timestamp = request.headers.get("x-signature-timestamp");
   const valid =
@@ -744,8 +780,8 @@ async function verifyDiscordRequest(request: Request, env: Env) {
     return { isValid: false };
   }
 
-  const body = (await request.json()) as APIInteraction;
-  return { interaction: body, isValid: true };
+  const body = (await request.json()) as T;
+  return { body, isValid: true };
 }
 
 const server = {
