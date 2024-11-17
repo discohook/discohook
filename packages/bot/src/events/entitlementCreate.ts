@@ -1,5 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { APIEntitlement, APIUser, Routes } from "discord-api-types/v10";
+import { eq } from "drizzle-orm";
 import { getDb } from "store";
 import { discordUsers, makeSnowflake, users } from "store/src/schema";
 import { GatewayEventCallback } from "../events.js";
@@ -54,13 +55,6 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
   const isLifetimeSKU =
     !!env.LIFETIME_SKU && entitlement.sku_id === env.LIFETIME_SKU;
 
-  const endsAt = entitlement.ends_at
-    ? new Date(entitlement.ends_at)
-    : entitlement.starts_at
-      ? // + 30 days
-        new Date(new Date(entitlement.starts_at).getTime() + 2_592_000_000)
-      : undefined;
-
   const dbUser = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.discordId, makeSnowflake(user.id)),
     columns: { lifetime: true, firstSubscribed: true },
@@ -77,7 +71,6 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
       firstSubscribed: entitlement.starts_at
         ? new Date(entitlement.starts_at)
         : undefined,
-      subscriptionExpiresAt: isLifetimeSKU || dbUser?.lifetime ? null : endsAt,
     })
     .onConflictDoUpdate({
       target: users.discordId,
@@ -97,10 +90,43 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
           entitlement.starts_at && !dbUser?.firstSubscribed
             ? new Date(entitlement.starts_at)
             : undefined,
-        subscriptionExpiresAt:
-          isLifetimeSKU || dbUser?.lifetime ? null : endsAt,
+        subscriptionExpiresAt: null,
       },
     });
 };
 
-export const entitlementUpdateCallback = entitlementCreateCallback;
+// https://discord.dev/monetization/implementing-app-subscriptions#working-with-entitlements
+// This is sent when a subscription ends
+export const entitlementUpdateCallback: GatewayEventCallback = async (
+  env,
+  entitlement: APIEntitlement,
+) => {
+  const db = getDb(env.HYPERDRIVE);
+  if (entitlement.application_id !== env.DISCORD_APPLICATION_ID) return;
+  if (!entitlement.user_id) return;
+  // This shouldn't happen
+  if (!entitlement.ends_at) return;
+
+  const endsAt = new Date(entitlement.ends_at);
+  const rest = new REST().setToken(env.DISCORD_TOKEN);
+
+  if (env.GUILD_ID) {
+    try {
+      if (env.SUBSCRIBER_ROLE_ID) {
+        await rest.delete(
+          Routes.guildMemberRole(
+            env.GUILD_ID,
+            entitlement.user_id,
+            env.SUBSCRIBER_ROLE_ID,
+          ),
+          { reason: `Subscription ended for SKU ${entitlement.sku_id}` },
+        );
+      }
+    } catch {}
+  }
+
+  await db
+    .update(users)
+    .set({ subscriptionExpiresAt: endsAt })
+    .where(eq(users.discordId, makeSnowflake(entitlement.user_id)));
+};
