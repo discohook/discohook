@@ -6,6 +6,7 @@ import {
 } from "discord-api-types/v10";
 import moment, { Moment } from "moment";
 import { Trans } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { CacheManager } from "~/util/cache/CacheManager";
@@ -82,12 +83,15 @@ export const Embed: React.FC<{
   return (
     <div>
       <div
-        className="rounded bg-gray-100 border-l-4 border-l-gray-300 dark:bg-background-secondary-dark dark:border-l-[#1E1F22] dark:text-gray-100 inline-grid max-w-[520px] pt-2 pr-4 pb-4 pl-3"
-        style={
-          typeof embed.color === "number"
+        className={twJoin(
+          "rounded bg-gray-100 border-l-4 border-l-gray-300 dark:bg-background-secondary-dark dark:border-l-[#1E1F22] dark:text-gray-100 inline-grid pt-2 pr-4 pb-4 pl-3",
+        )}
+        style={{
+          ...(typeof embed.color === "number"
             ? { borderLeftColor: decimalToHex(embed.color) }
-            : undefined
-        }
+            : undefined),
+          maxWidth: 520,
+        }}
       >
         {embed.provider?.name && (
           <div className="min-w-0 mt-2 font-normal text-xs whitespace-break-spaces break-words text-primary-230">
