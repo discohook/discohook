@@ -1,5 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { parseExpression } from "cron-parser";
+import { RESTJSONErrorCodes } from "discord-api-types/v10";
 import { z } from "zod";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
@@ -12,6 +13,7 @@ import {
 } from "~/store.server";
 import { Env } from "~/types/env";
 import { WEBHOOK_URL_RE } from "~/util/constants";
+import { isDiscordError } from "~/util/discord";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";
 
 export class DurableScheduler implements DurableObject {
@@ -61,55 +63,62 @@ export class DurableScheduler implements DurableObject {
     let status: ScheduledRunStatus | undefined;
     let statusMessage = "";
     let messageIndex = -1;
+
+    const targets = (backup.data.targets ?? [])
+      .map(({ url }) => {
+        const match = url.match(WEBHOOK_URL_RE);
+        return match ? { id: match[1], token: match[2] } : undefined;
+      })
+      .filter((v): v is NonNullable<typeof v> => !!v);
+    if (targets.length === 0) {
+      status = ScheduledRunStatus.Failure;
+      statusMessage = "No targets were available to send to.";
+    }
+
     // In the future I want to implement templating for (scheduled) backups
     for (const message of backup.data.messages) {
       messageIndex += 1;
-      const target = (backup.data.targets ?? [])[messageIndex];
-      if (!target?.url) {
-        console.log(`Message ${messageIndex} skipped: no target URL`);
-        continue;
-      }
+      for (const target of targets) {
+        try {
+          const result = await submitMessage(
+            target,
+            message,
+            // TODO: pull files from S3
+            undefined,
+            rest,
+          );
+          if (
+            (status === ScheduledRunStatus.Success &&
+              result.status === "error") ||
+            (status === ScheduledRunStatus.Failure &&
+              result.status === "success")
+          ) {
+            status = ScheduledRunStatus.Warning;
+          } else if (status !== ScheduledRunStatus.Warning) {
+            status =
+              result.status === "error"
+                ? ScheduledRunStatus.Failure
+                : ScheduledRunStatus.Success;
+          }
+          if (result.status === "error") {
+            statusMessage += `\n${result.data.message}`;
+          }
+        } catch (e) {
+          if (status === ScheduledRunStatus.Success) {
+            status = ScheduledRunStatus.Warning;
+          } else if (status !== ScheduledRunStatus.Warning) {
+            status = ScheduledRunStatus.Failure;
+          }
+          statusMessage += `\n${String(e)}`;
 
-      const match = target.url.match(WEBHOOK_URL_RE);
-      if (!match) {
-        console.log(`Message ${messageIndex} skipped: invalid target URL`);
-        continue;
-      }
-      const [_, webhookId, webhookToken] = match;
-
-      try {
-        const result = await submitMessage(
-          {
-            id: webhookId,
-            token: webhookToken,
-          },
-          message,
-          // TODO: pull files from S3
-          undefined,
-          rest,
-        );
-        if (
-          (status === ScheduledRunStatus.Success &&
-            result.status === "error") ||
-          (status === ScheduledRunStatus.Failure && result.status === "success")
-        ) {
-          status = ScheduledRunStatus.Warning;
-        } else if (status !== ScheduledRunStatus.Warning) {
-          status =
-            result.status === "error"
-              ? ScheduledRunStatus.Failure
-              : ScheduledRunStatus.Success;
+          // webhook doesn't exist, don't keep sending requests to it
+          if (
+            isDiscordError(e) &&
+            e.code === RESTJSONErrorCodes.UnknownWebhook
+          ) {
+            break;
+          }
         }
-        if (result.status === "error") {
-          statusMessage += `\n${result.data.message}`;
-        }
-      } catch (e) {
-        if (status === ScheduledRunStatus.Success) {
-          status = ScheduledRunStatus.Warning;
-        } else if (status !== ScheduledRunStatus.Warning) {
-          status = ScheduledRunStatus.Failure;
-        }
-        statusMessage += `\n${String(e)}`;
       }
     }
 
