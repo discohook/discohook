@@ -615,6 +615,11 @@ const maskedLinkRule = defineRule({
       title: match[3],
     };
 
+    // empty space cannot be mask text
+    if (match[1].trim().length === 0) {
+      return invalid;
+    }
+
     // URLs cannot be mask text
     try {
       new URL(match[1]);
