@@ -558,11 +558,6 @@ const autoLinkRule = defineRule({
       source,
     );
     if (!match) return;
-    try {
-      new URL(match[0]);
-    } catch {
-      return;
-    }
 
     let url = match[0];
     let searchLeft = 0;
@@ -578,10 +573,12 @@ const autoLinkRule = defineRule({
       searchRight -= 1;
     }
 
-    return {
-      size: url.length,
-      url: new URL(url).href,
-    };
+    try {
+      new URL(url);
+    } catch {
+      return;
+    }
+    return { size: url.length, url };
   },
   render(capture) {
     return (
