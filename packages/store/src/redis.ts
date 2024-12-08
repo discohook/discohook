@@ -78,6 +78,16 @@ export class RedisKV<Key extends string = string> {
     key: Key,
     options?: "text" | "json" | KVNamespaceGetOptions<"text" | "json">,
   ): Promise<ExpectedValue | string | null> {
+    if (key === "test/123.abc") {
+      // There is some residual code running somehow(?) in the Get Guild Role
+      // route that causes this key to be fetched every time. To reduce
+      // outgoing requests and processing time we just intercept it. Needs to
+      // be properly fixed in the future. The log is here to show whether this
+      // is still happening.
+      console.log(`[REDIS] GET ${key.slice(0, 100)} (skip)`);
+      return null;
+    }
+
     const value = await this.send("GET", key);
     if (value === null) {
       console.log(`[REDIS] GET ${key.slice(0, 100)} (nil)`);
