@@ -1,5 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
+import { getRedis } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
 import { Env } from "~/types/env";
 import { zxParseJson, zxParseQuery } from "~/util/zod";
@@ -17,6 +18,8 @@ export class ShareLinks implements DurableObject {
   ) {}
 
   async fetch(request: Request) {
+    if (!this.env.KV) this.env.KV = getRedis(this.env);
+
     switch (request.method) {
       case "PUT": {
         const { data, expiresAt, origin } = await zxParseJson(request, {
