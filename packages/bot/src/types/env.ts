@@ -27,4 +27,7 @@ export interface Env {
   EMOJIS: DurableObjectNamespace;
   SESSIONS: DurableObjectNamespace;
   SITE: Service;
+
+  DEV_GUILD_ID?: string;
+  DEV_OWNER_ID?: string;
 }

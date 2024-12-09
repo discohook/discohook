@@ -1,4 +1,3 @@
-import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
@@ -11,17 +10,20 @@ import {
 } from "@discordjs/builders";
 import {
   APIApplicationCommandOptionChoice,
+  ApplicationCommandOptionType,
   ApplicationCommandType,
   ChannelType,
   InteractionContextType,
   LocaleString,
   LocalizationMap,
+  RESTPutAPIApplicationGuildCommandsJSONBody,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
 import fs from "fs/promises";
+import process from "node:process";
 import { TriggerEvent } from "store/src/types";
 
 /**
@@ -772,6 +774,55 @@ const main = async () => {
       console.error("Error reading body from request:", err);
     }
     console.error(errorText);
+  }
+
+  if (process.env.DEV_GUILD_ID) {
+    await fetch(
+      RouteBases.api +
+        Routes.applicationGuildCommands(
+          applicationId,
+          process.env.DEV_GUILD_ID,
+        ),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bot ${token}`,
+        },
+        method: "PUT",
+        body: JSON.stringify([
+          {
+            type: ApplicationCommandType.ChatInput,
+            name: "leave",
+            description: "Leave a guild (dangerous!)",
+            options: [
+              {
+                type: ApplicationCommandOptionType.String,
+                name: "guild-id",
+                description: "The guild ID to leave",
+                required: true,
+              },
+              {
+                type: ApplicationCommandOptionType.String,
+                name: "reason",
+                description: "The reason for leaving",
+                required: true,
+              },
+              {
+                type: ApplicationCommandOptionType.Boolean,
+                name: "send-reason-message",
+                description: "Whether to send a message to the owner",
+              },
+              {
+                type: ApplicationCommandOptionType.Boolean,
+                name: "ban",
+                description:
+                  "Whether to ban the server so the bot cannot be re-added",
+              },
+            ],
+          },
+        ] satisfies RESTPutAPIApplicationGuildCommandsJSONBody),
+      },
+    );
   }
 };
 

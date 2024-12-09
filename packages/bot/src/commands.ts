@@ -34,6 +34,7 @@ import {
   idMentionCallback,
 } from "./commands/id.js";
 import { inviteCallback } from "./commands/invite.js";
+import { leaveCommandHandler } from "./commands/leave.js";
 import {
   createReactionRoleHandler,
   deleteReactionRoleHandler,
@@ -201,6 +202,10 @@ export const appCommands: Record<
         info: deluxeInfoCallback,
         sync: deluxeSyncCallback,
       },
+    },
+    // dev server
+    leave: {
+      handlers: { BASE: leaveCommandHandler },
     },
   },
   [ApplicationCommandType.Message]: {
