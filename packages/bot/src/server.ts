@@ -229,6 +229,7 @@ const handleInteraction = async (
         });
       }
     } else if (customId.startsWith("p_")) {
+      const ctx = new InteractionContext(rest, interaction, env);
       const db = getDb(env.HYPERDRIVE);
       const doId = env.COMPONENTS.idFromName(
         `${interaction.message.id}-${customId}`,
@@ -255,15 +256,41 @@ const handleInteraction = async (
           where: (table, { eq }) => eq(table.id, componentId),
           columns: { guildId: true },
         });
-        if (
-          !dryComponent ||
-          !dryComponent.guildId ||
-          dryComponent.guildId.toString() !== interaction.guild_id
-        ) {
+        if (!dryComponent) {
+          return respond(
+            ctx.reply({
+              content:
+                "No data could be found for this component. It may have been deleted by a moderator but not removed from the message.",
+              ephemeral: true,
+            }),
+          );
+        }
+        if (!dryComponent.guildId) {
+          return respond(
+            ctx.reply({
+              content: [
+                "In order to prevent private data from leaking into other servers,",
+                "please send a message with this component in a private channel and",
+                "use it at least once. This links the component with the current server.",
+                "After you do this, the component used in this context should work as expected.",
+              ].join(" "),
+              ephemeral: true,
+            }),
+          );
+        }
+        if (dryComponent.guildId.toString() !== interaction.guild_id) {
           return respond({
             error: response.statusText,
             status: response.status,
           });
+          // ctx.reply({
+          //   content: [
+          //     "The server associated with this component does not match the current server.",
+          //     "If this component should be able to be used in this server,",
+          //     "contact support to have its server association changed.",
+          //   ].join(" "),
+          //   ephemeral: true,
+          // }),
         }
 
         const params = new URLSearchParams({ id: componentId.toString() });
@@ -369,7 +396,6 @@ const handleInteraction = async (
         default:
           break;
       }
-      const ctx = new InteractionContext(rest, interaction, env);
       if (flows.length === 0) {
         return respond(
           liveVars.guild?.owner_id === ctx.user.id ||
