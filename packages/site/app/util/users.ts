@@ -15,7 +15,9 @@ export const getUserPremiumDetails = (
   //   };
   // }
   if (user.lifetime) return { active: true, grace: false };
+  // This value should be wiped by the bot in ON_ENTITLEMENT_DELETE
   if (!user.subscribedSince) return { active: false };
+
   if (user.subscriptionExpiresAt) {
     const now = new Date();
     const ttl = new Date(user.subscriptionExpiresAt).getTime() - now.getTime();
@@ -26,7 +28,7 @@ export const getUserPremiumDetails = (
       graceDaysRemaining: Math.floor((259_200_000 - ttl) / 86400000),
     };
   }
-  return { active: false };
+  return { active: true };
 };
 
 export const userIsPremium = (user: User) => getUserPremiumDetails(user).active;
