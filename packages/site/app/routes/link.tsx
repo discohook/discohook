@@ -398,7 +398,7 @@ export default () => {
             </Button>
           </div>
           <p className="mb-2 italic text-sm text-muted dark:text-muted-dark">
-            {isPremium && (
+            {isPremium && !!backupInfo && (
               <Trans
                 t={t}
                 i18nKey="linkEmbedCacheNote"
