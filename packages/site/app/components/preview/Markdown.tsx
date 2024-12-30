@@ -680,15 +680,30 @@ const maskedImageLinkRule = defineRule({
       return;
     }
 
+    const dotDelimited = new URL(match[2]).pathname.split(".");
     return {
       size: match[0].length,
       content: match[1],
       url: new URL(match[2]).href,
+      extension:
+        dotDelimited.length === 0
+          ? null
+          : dotDelimited[dotDelimited.length - 1].toLowerCase(),
       title: match[3],
     };
   },
   render(capture) {
-    return (
+    return capture.extension !== null && ["mp4"].includes(capture.extension) ? (
+      // biome-ignore lint/a11y/useMediaCaption: Not available
+      <video
+        title={capture.title}
+        className="rounded-lg"
+        rel="noreferrer noopener nofollow ugc"
+        controls
+      >
+        <source src={pathize(capture.url)} type="video/mp4" />
+      </video>
+    ) : (
       <img
         src={pathize(capture.url)}
         title={capture.title}
