@@ -258,7 +258,7 @@ export default function DonatePage() {
           and adapts to how much you donated. For example: for about a week of
           Deluxe, donate $2, or for a year, $72. */}
           You can currently donate through Discord. Click on Discohook Utils in
-          the member sidebar, click "Shop", then select a Deluxe subscription.
+          the member sidebar, click "Store", then select a Deluxe subscription.
         </p>
         {/* <div className="mt-4 rounded bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table table-auto w-full">
           <div className="table-header-group">
