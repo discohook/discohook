@@ -25,13 +25,32 @@ const getI18nTimestampFooterKey = (date: Moment) => {
   return "other";
 };
 
+// Supported extensions for the `attachment` URI according to:
+// https://discord.dev/reference#editing-message-attachments-using-attachments-within-embeds
+export const ATTACHMENT_URI_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+] as const;
+
+export const transformFileName = (filename: string) =>
+  filename.replace(/ /g, "_");
+
 export const resolveAttachmentUri = (
   uri: string,
   files?: DraftFile[] | undefined,
 ) => {
   if (uri.startsWith("attachment://")) {
     const filename = uri.replace(/^attachment:\/\//, "");
-    return files?.find((file) => file.file.name === filename);
+    return files?.find(
+      (file) =>
+        transformFileName(file.file.name) === filename &&
+        ATTACHMENT_URI_EXTENSIONS.find((ext) =>
+          file.file.name.toLowerCase().endsWith(ext),
+        ) !== undefined,
+    );
   }
 };
 

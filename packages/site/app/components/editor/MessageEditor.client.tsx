@@ -15,6 +15,7 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { transformFileName } from "../preview/Embed";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
@@ -280,7 +281,7 @@ export const MessageEditor: React.FC<{
                   className="text-xl my-auto mr-2"
                 />
                 <div className="my-auto truncate">
-                  <p className="font-medium">{file.name}</p>
+                  <p className="font-medium">{transformFileName(file.name)}</p>
                   {/* <p className="text-sm">{file.size} bytes</p> */}
                 </div>
                 <button

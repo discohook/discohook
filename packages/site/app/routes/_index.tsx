@@ -19,6 +19,10 @@ import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Logo } from "~/components/icons/Logo";
 import { PostChannelIcon } from "~/components/icons/channel";
+import {
+  ATTACHMENT_URI_EXTENSIONS,
+  transformFileName,
+} from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
@@ -262,16 +266,23 @@ export default function Index() {
           newData.messages.map((d) => [
             getQdMessageId(d),
             files[getQdMessageId(d)]?.map((f) => {
-              const uri = `attachment://${f.file.name}`;
-              f.embed =
-                !!d.data.embeds &&
-                d.data.embeds?.filter(
-                  (e) =>
-                    e.author?.icon_url?.trim() === uri ||
-                    e.image?.url?.trim() === uri ||
-                    e.thumbnail?.url?.trim() === uri ||
-                    e.footer?.icon_url?.trim() === uri,
-                ).length !== 0;
+              // https://discord.dev/reference#editing-message-attachments-using-attachments-within-embeds
+              const uri = `attachment://${transformFileName(f.file.name)}`;
+              if (
+                ATTACHMENT_URI_EXTENSIONS.find((ext) =>
+                  f.file.name.toLowerCase().endsWith(ext),
+                ) !== undefined
+              ) {
+                f.embed =
+                  !!d.data.embeds &&
+                  d.data.embeds?.filter(
+                    (e) =>
+                      e.author?.icon_url?.trim() === uri ||
+                      e.image?.url?.trim() === uri ||
+                      e.thumbnail?.url?.trim() === uri ||
+                      e.footer?.icon_url?.trim() === uri,
+                  ).length !== 0;
+              }
               return f;
             }) ?? [],
           ]),
