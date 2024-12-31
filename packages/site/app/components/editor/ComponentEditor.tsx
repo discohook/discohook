@@ -10,7 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { type ApiRoute, BRoutes, apiUrl } from "~/api/routing";
 import { action as ApiPostComponents } from "~/api/v1/components";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { EditingComponentData } from "~/modals/ComponentEditModal";
@@ -131,24 +131,24 @@ export const submitComponent = async (
 ) => {
   const id = getComponentId(data)?.toString();
 
-  let response = await fetch(
-    apiUrl(id ? BRoutes.component(id) : BRoutes.components()),
-    {
-      method: id ? "PUT" : "POST",
+  const perform = (method: string, route: ApiRoute) =>
+    fetch(apiUrl(route), {
+      method,
       body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-  if (response.status === 404) {
-    response = await fetch(apiUrl(BRoutes.components()), {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
+
+  let response = id
+    ? await perform("PUT", BRoutes.component(id))
+    : await perform("POST", BRoutes.components());
+  if (
+    id !== undefined &&
+    (response.status === 404 || response.status === 403)
+  ) {
+    // We tried to PUT, but the component doesn't exist anymore or isn't owned
+    // by the current account. Since the client already has the required data,
+    // the least confusing thing to do is simply create the component again.
+    response = await perform("POST", BRoutes.components());
   }
   if (!response.ok) {
     console.error(response.status, response.statusText);
