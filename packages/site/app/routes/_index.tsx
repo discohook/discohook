@@ -28,6 +28,10 @@ import { Message } from "~/components/preview/Message.client";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import {
+  CodeGeneratorModal,
+  CodeGeneratorProps,
+} from "~/modals/CodeGeneratorModal";
+import {
   ComponentEditModal,
   EditingComponentData,
 } from "~/modals/ComponentEditModal";
@@ -494,6 +498,7 @@ export default function Index() {
   const [editingWebhook, setEditingWebhook] = useState<string>();
   const [showHistory, setShowHistory] = useState(dm === "history");
   const [jsonEditor, setJsonEditor] = useState<JsonEditorProps>();
+  const [codeGenerator, setCodeGenerator] = useState<CodeGeneratorProps>();
   const [showOrgMigration, setShowOrgMigration] = useState(dm === "org");
   const [confirm, setConfirm] = useConfirmModal();
 
@@ -579,6 +584,11 @@ export default function Index() {
         open={!!jsonEditor}
         setOpen={() => setJsonEditor(undefined)}
         {...jsonEditor}
+      />
+      <CodeGeneratorModal
+        open={!!codeGenerator}
+        setOpen={() => setCodeGenerator(undefined)}
+        data={codeGenerator?.data ?? {}}
       />
       <HistoryModal
         open={showHistory}
@@ -912,6 +922,7 @@ export default function Index() {
                   setSettingMessageIndex={setSettingMessageIndex}
                   setEditingMessageFlags={setEditingMessageFlags}
                   setJsonEditor={setJsonEditor}
+                  setCodeGenerator={setCodeGenerator}
                   webhooks={Object.values(targets)}
                   setEditingComponent={setEditingComponent}
                   cache={cache}

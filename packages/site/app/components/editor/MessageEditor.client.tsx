@@ -2,6 +2,7 @@ import { Link } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
+import { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { JsonEditorProps } from "~/modals/JsonEditorModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
@@ -40,6 +41,9 @@ export const MessageEditor: React.FC<{
   setJsonEditor: React.Dispatch<
     React.SetStateAction<JsonEditorProps | undefined>
   >;
+  setCodeGenerator: React.Dispatch<
+    React.SetStateAction<CodeGeneratorProps | undefined>
+  >;
   webhooks?: APIWebhook[];
   cache?: CacheManager;
 }> = ({
@@ -53,6 +57,7 @@ export const MessageEditor: React.FC<{
   setEditingMessageFlags,
   setEditingComponent,
   setJsonEditor,
+  setCodeGenerator,
   webhooks,
   cache,
 }) => {
@@ -527,6 +532,18 @@ export const MessageEditor: React.FC<{
                   label: (
                     <p className="flex">
                       <CoolIcon
+                        icon="Code"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("codeGenerator")}</span>
+                    </p>
+                  ),
+                  value: "codeGenerator",
+                },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
                         icon="Copy"
                         className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
                       />
@@ -539,7 +556,11 @@ export const MessageEditor: React.FC<{
               onChange={(opt) => {
                 const val = (
                   opt as {
-                    value: "flags" | "jsonEditor" | "copyQueryData";
+                    value:
+                      | "flags"
+                      | "jsonEditor"
+                      | "codeGenerator"
+                      | "copyQueryData";
                   }
                 ).value;
                 switch (val) {
@@ -555,6 +576,9 @@ export const MessageEditor: React.FC<{
                       },
                       schema: ZodQueryDataMessage.shape.data,
                     });
+                    break;
+                  case "codeGenerator":
+                    setCodeGenerator({ data: message.data });
                     break;
                   case "copyQueryData":
                     copyText(JSON.stringify(message));
