@@ -337,7 +337,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           case ComponentType.ChannelSelect: {
             const flowId = generateId();
             allFlowIds = [flowId];
-            const { flow, ...rest } = c;
+            const {
+              flow,
+              default_values: defaultValues,
+              min_values: _,
+              max_values: __,
+              ...rest
+            } = c;
             await tx
               .insert(flows)
               .values({ id: BigInt(flowId), name: flow?.name });
@@ -357,6 +363,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
               minValues: 1,
               maxValues: 1,
               flowId,
+              defaultValues,
             };
             break;
           }

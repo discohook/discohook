@@ -162,12 +162,19 @@ export const action = async ({ request, context }: ActionArgs) => {
             case ComponentType.RoleSelect:
             case ComponentType.MentionableSelect:
             case ComponentType.ChannelSelect: {
+              const {
+                default_values: defaultValues,
+                min_values: _,
+                max_values: __,
+                ...rest
+              } = c;
               return {
-                ...c,
+                ...rest,
                 // See above
                 minValues: 1,
                 maxValues: 1,
                 flowId: String(createdFlow.id),
+                defaultValues,
               };
             }
             default:
