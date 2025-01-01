@@ -26,6 +26,7 @@
     "@remix-run/react": "^2.4.0",
     "@twemoji/api": "^15.0.3",
     "@types/showdown": "^2.0.6",
+    "@ungap/structured-clone": "^1.2.1",
     "chrono-node": "^2.7.5",
     "cron-parser": "discohook/cron-parser",
     "discord-api-types": "^0.37.92",
@@ -69,6 +70,7 @@
     "@types/react-lazy-load-image-component": "^1.6.4",
     "@types/react-modal": "^3.16.3",
     "@types/ua-parser-js": "^0.7.39",
+    "@types/ungap__structured-clone": "^1.2.0",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.1.6",
     "wrangler": "^3.76.0"

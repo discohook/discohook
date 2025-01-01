@@ -5,8 +5,14 @@
  */
 
 import { RemixBrowser } from "@remix-run/react";
+import structuredClone from "@ungap/structured-clone";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+
+if (!("structuredClone" in globalThis)) {
+  // @ts-expect-error
+  globalThis.structuredClone = structuredClone;
+}
 
 startTransition(() => {
   hydrateRoot(
