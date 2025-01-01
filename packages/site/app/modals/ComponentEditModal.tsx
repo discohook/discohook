@@ -538,7 +538,7 @@ export const ComponentEditForm = ({
                         : component.type === ComponentType.RoleSelect
                           ? {
                               id: "",
-                              type: SelectMenuDefaultValueType.User,
+                              type: SelectMenuDefaultValueType.Role,
                             }
                           : {
                               id: "",
