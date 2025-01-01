@@ -646,5 +646,13 @@
     "roles": "Ruoli",
     "option": "Opzione",
     "howToFormat": "Come formattare i tuoi messaggi",
-    "formatOptionsNone": "Passa sopra ad un'opzione per vedere un esempio."
+    "formatOptionsNone": "Passa sopra ad un'opzione per vedere un esempio.",
+    "codeGenerator": "Generatore di codice",
+    "noImports": "Non è necessaria nessuna importazione per questo codice.",
+    "codeNote": "Non affidarti solo ad un computer per scrivere il codice per te. <docs>Consulta la documentazione</docs> per più informazioni. Se hai bisogno di aiuto per utilizzare {{ library }}, visita il server di supporto, trovabile nel link della documentazione.",
+    "library": "Libreria",
+    "imports": "Importati",
+    "code": "Codice",
+    "copyImports": "Copia le Importazioni",
+    "copyCode": "Copia il Codice"
 }
