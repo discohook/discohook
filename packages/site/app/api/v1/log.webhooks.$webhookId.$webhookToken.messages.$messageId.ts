@@ -84,6 +84,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     //   .optional(),
   });
 
+  const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   const userId = await getUserId(request, context);
 
   let message: APIMessage | undefined;
@@ -94,6 +95,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       webhookToken,
       messageId,
       threadId,
+      rest,
     );
     if (deleted.id) {
       throw json({ message: "Message still exists" }, 400);
@@ -104,13 +106,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       webhookToken,
       messageId,
       threadId,
+      rest,
     );
     if (!message.id) {
       throw json(message, 404);
     }
   }
 
-  const webhook = await getWebhook(webhookId, webhookToken);
+  const webhook = await getWebhook(webhookId, webhookToken, rest);
   if (!webhook.id) {
     throw json(webhook, 404);
   }
@@ -139,7 +142,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   let guildId: bigint | undefined = undefined;
   if (webhook.guild_id) {
-    const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
     try {
       const guild = await getchGuild(rest, context.env, webhook.guild_id);
       const upserted = await upsertGuild(db, guild);

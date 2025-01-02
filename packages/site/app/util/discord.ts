@@ -3,6 +3,7 @@ import {
   type ImageExtension,
   type REST,
   type RawFile,
+  RequestMethod,
   calculateUserDefaultAvatarIndex,
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
@@ -40,18 +41,42 @@ export const DISCORD_BOT_TOKEN_RE =
 export const getSnowflakeDate = (snowflake: string) =>
   getDate(snowflake as Snowflake);
 
-export const discordRequest = async (
-  method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+export const discordRequest = async <T>(
+  method: RequestMethod,
   route: `/${string}`,
   options?: {
     query?: URLSearchParams;
     files?: DraftFile[];
     init?: Omit<RequestInit, "method">;
+    rest?: REST;
   },
-) => {
+): Promise<T> => {
   const search = options?.query ? `?${options.query.toString()}` : "";
   const init = options?.init ?? {};
   const headers = init.headers ? new Headers(init.headers) : new Headers();
+
+  if (options?.rest) {
+    const files: RawFile[] = [];
+    if (options.files) {
+      for (const { file } of options.files) {
+        files.push({
+          name: file.name,
+          contentType: file.type,
+          data: await file.bytes(),
+        });
+      }
+    }
+
+    const response = await options.rest.request({
+      method,
+      fullRoute: route,
+      query: options.query,
+      // headers,
+      files: files.length === 0 ? undefined : files,
+      body: options.init?.body,
+    });
+    return response as T;
+  }
 
   let body = undefined;
   if (options?.files && options?.files.length !== 0) {
@@ -77,17 +102,20 @@ export const discordRequest = async (
     body = init.body;
   }
 
-  return await fetch(`${DISCORD_API}/v${DISCORD_API_V}${route}${search}`, {
-    method,
-    ...init,
-    headers,
-    body,
-  });
+  const response = await fetch(
+    `${DISCORD_API}/v${DISCORD_API_V}${route}${search}`,
+    { method, ...init, headers, body },
+  );
+  return (await response.json()) as T;
 };
 
-export const getWebhook = async (id: string, token: string) => {
-  const data = await discordRequest("GET", `/webhooks/${id}/${token}`);
-  return (await data.json()) as RESTGetAPIWebhookWithTokenResult;
+export const getWebhook = async (id: string, token: string, rest?: REST) => {
+  const data = await discordRequest<RESTGetAPIWebhookWithTokenResult>(
+    RequestMethod.Get,
+    `/webhooks/${id}/${token}`,
+    { rest },
+  );
+  return data;
 };
 
 export const getWebhookMessage = async (
@@ -95,16 +123,17 @@ export const getWebhookMessage = async (
   webhookToken: string,
   messageId: string,
   threadId?: string,
+  rest?: REST,
 ) => {
   const query = threadId
     ? new URLSearchParams({ thread_id: threadId })
     : undefined;
-  const data = await discordRequest(
-    "GET",
+  const data = await discordRequest<RESTGetAPIWebhookWithTokenMessageResult>(
+    RequestMethod.Get,
     `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
-    { query },
+    { query, rest },
   );
-  return (await data.json()) as RESTGetAPIWebhookWithTokenMessageResult;
+  return data;
 };
 
 export const executeWebhook = async (
@@ -138,8 +167,8 @@ export const executeWebhook = async (
     })) as RESTPostAPIWebhookWithTokenWaitResult;
   }
 
-  const data = await discordRequest(
-    "POST",
+  const data = await discordRequest<RESTPostAPIWebhookWithTokenWaitResult>(
+    RequestMethod.Post,
     `/webhooks/${webhookId}/${webhookToken}`,
     {
       query,
@@ -156,7 +185,7 @@ export const executeWebhook = async (
     },
   );
 
-  return (await data.json()) as RESTPostAPIWebhookWithTokenWaitResult;
+  return data;
 };
 
 export const updateWebhookMessage = async (
@@ -195,8 +224,8 @@ export const updateWebhookMessage = async (
     )) as RESTPatchAPIWebhookWithTokenMessageResult;
   }
 
-  const data = await discordRequest(
-    "PATCH",
+  const data = await discordRequest<RESTPatchAPIWebhookWithTokenMessageResult>(
+    RequestMethod.Patch,
     `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
     {
       query,
@@ -213,7 +242,7 @@ export const updateWebhookMessage = async (
     },
   );
 
-  return (await data.json()) as RESTPatchAPIWebhookWithTokenMessageResult;
+  return data;
 };
 
 export const modifyWebhook = async (
@@ -221,11 +250,13 @@ export const modifyWebhook = async (
   webhookToken: string,
   payload: RESTPatchAPIWebhookWithTokenJSONBody,
   reason?: string,
+  rest?: REST,
 ) => {
-  const data = await discordRequest(
-    "PATCH",
+  const data = await discordRequest<RESTPatchAPIWebhookWithTokenResult>(
+    RequestMethod.Patch,
     `/webhooks/${webhookId}/${webhookToken}`,
     {
+      rest,
       init: {
         body: JSON.stringify(payload),
         headers: {
@@ -239,25 +270,32 @@ export const modifyWebhook = async (
       },
     },
   );
-
-  return (await data.json()) as RESTPatchAPIWebhookWithTokenResult;
+  return data;
 };
 
 export const getCurrentUserGuilds = async (accessToken: string) => {
-  const data = await discordRequest("GET", "/users/@me/guilds", {
-    init: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+  const data = await discordRequest<RESTGetAPICurrentUserGuildsResult>(
+    RequestMethod.Get,
+    "/users/@me/guilds",
+    {
+      init: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       },
     },
-  });
+  );
 
-  return (await data.json()) as RESTGetAPICurrentUserGuildsResult;
+  return data;
 };
 
-export const getApplicationRpc = async (id: string) => {
-  const data = await discordRequest("GET", `/applications/${id}/rpc`);
-  return (await data.json()) as RESTGetAPIApplicationRpcResult;
+export const getApplicationRpc = async (id: string, rest?: REST) => {
+  const data = await discordRequest<RESTGetAPIApplicationRpcResult>(
+    RequestMethod.Get,
+    `/applications/${id}/rpc`,
+    { rest },
+  );
+  return data;
 };
 
 class CDN {
