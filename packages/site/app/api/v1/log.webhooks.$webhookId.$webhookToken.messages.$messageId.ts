@@ -11,6 +11,7 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { notInArray } from "drizzle-orm";
+import { Snowflake } from "tif-snowflake";
 import { z } from "zod";
 import { getUserId } from "~/session.server";
 import { getWebhook, getWebhookMessage, hasCustomId } from "~/util/discord";
@@ -64,6 +65,9 @@ export const getComponentId = (
     : undefined;
 };
 
+// first second of 2015
+const DISCORD_EPOCH = 1420070400000;
+
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { webhookId, webhookToken, messageId } = zxParseParams(params, {
     webhookId: snowflakeAsString().transform(String),
@@ -83,6 +87,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     //   .array()
     //   .optional(),
   });
+  const now = new Date();
+  const messageIdSnowflake = Snowflake.parse(messageId, DISCORD_EPOCH);
+  if (type === "send" && now.getTime() - messageIdSnowflake.timestamp > 15000) {
+    // Allow 15 seconds to send the log request
+    // This disallows people from logging any old message sent by a webhook
+    // they have access to (and reduces our server's API calls in such cases)
+    throw json({ message: "Message is too old" }, 400);
+  }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   const userId = await getUserId(request, context);
@@ -110,6 +122,20 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     );
     if (!message.id) {
       throw json(message, 404);
+    }
+    if (type === "edit") {
+      if (!message.edited_timestamp) {
+        throw json({ message: "Message has never been edited" }, 400);
+      }
+      if (
+        now.getTime() - new Date(message.edited_timestamp).getTime() >
+        15000
+      ) {
+        // Allow 15 seconds to send the log request
+        // This disallows people from logging any old message sent by a webhook
+        // they have access to (and reduces our server's API calls in such cases)
+        throw json({ message: "Message was edited too long ago" }, 400);
+      }
     }
   }
 
