@@ -99,6 +99,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   const userId = await getUserId(request, context);
 
+  console.log(`[AUDIT] ${type}: verifying message`);
   let message: APIMessage | undefined;
   if (type === "delete") {
     // Make sure the user doesn't log that they deleted a message that still exists
@@ -138,11 +139,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       }
     }
   }
+  console.log("[AUDIT] message ID is valid");
 
   const webhook = await getWebhook(webhookId, webhookToken, rest);
   if (!webhook.id) {
     throw json(webhook, 404);
   }
+  console.log("[AUDIT] webhook is valid");
 
   const db = getDb(context.env.HYPERDRIVE);
   if (type === "send" || type === "delete") {
@@ -176,6 +179,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       guildId = undefined;
     }
   }
+  console.log(`[AUDIT] guild ID: ${guildId}`);
   const entryWebhook = (
     await db
       .insert(webhooks)
@@ -422,5 +426,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       })
   )[0];
 
+  console.log("[AUDIT] created entry");
   return { ...entry, webhook: entryWebhook };
 };
