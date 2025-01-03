@@ -24,13 +24,11 @@ import {
   flows,
   generateId,
   getDb,
-  getchGuild,
   inArray,
   launchComponentDurableObject,
   messageLogEntries,
   sql,
-  upsertGuild,
-  webhooks,
+  webhooks
 } from "../../store.server";
 
 export const getComponentId = (
@@ -141,12 +139,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
   console.log("[AUDIT] message ID is valid");
 
-  const webhook = await getWebhook(webhookId, webhookToken, rest);
-  if (!webhook.id) {
-    throw json(webhook, 404);
-  }
-  console.log("[AUDIT] webhook is valid");
-
   const db = getDb(context.env.HYPERDRIVE);
   if (type === "send" || type === "delete") {
     const entry = await db.query.messageLogEntries.findFirst({
@@ -169,42 +161,61 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     }
   }
 
-  let guildId: bigint | undefined = undefined;
-  if (webhook.guild_id) {
-    try {
-      const guild = await getchGuild(rest, context.env, webhook.guild_id);
-      const upserted = await upsertGuild(db, guild);
-      guildId = upserted.id;
-    } catch {
-      guildId = undefined;
+  let entryWebhook = await db.query.webhooks.findFirst({
+    where: (webhooks, { eq, and }) =>
+      and(eq(webhooks.id, webhookId), eq(webhooks.platform, "discord")),
+    columns: { id: true, discordGuildId: true, channelId: true },
+  });
+
+  let guildId = entryWebhook?.discordGuildId;
+  if (!entryWebhook) {
+    const webhook = await getWebhook(webhookId, webhookToken, rest);
+    if (!webhook.id) {
+      throw json(webhook, 404);
     }
-  }
-  console.log(`[AUDIT] guild ID: ${guildId}`);
-  const entryWebhook = (
-    await db
-      .insert(webhooks)
-      .values({
-        platform: "discord",
-        id: webhookId,
-        name: webhook.name ?? "",
-        avatar: webhook.avatar,
-        channelId: webhook.channel_id,
-        discordGuildId: guildId,
-      })
-      .onConflictDoUpdate({
-        target: [webhooks.platform, webhooks.id],
-        set: {
-          name: webhook.name ?? undefined,
+    console.log("[AUDIT] fetched webhook");
+
+    if (webhook.guild_id) {
+      guildId = BigInt(webhook.guild_id);
+      // I hope this wasn't important, it seemed unnecessary? jan 2 2024
+      // try {
+      //   const guild = await getchGuild(rest, context.env, webhook.guild_id);
+      //   const upserted = await upsertGuild(db, guild);
+      //   guildId = upserted.id;
+      // } catch {
+      //   guildId = undefined;
+      // }
+    }
+
+    entryWebhook = (
+      await db
+        .insert(webhooks)
+        .values({
+          platform: "discord",
+          id: webhookId,
+          name: webhook.name ?? "",
           avatar: webhook.avatar,
           channelId: webhook.channel_id,
           discordGuildId: guildId,
-        },
-      })
-      .returning({
-        id: webhooks.id,
-        discordGuildId: webhooks.discordGuildId,
-      })
-  )[0];
+        })
+        .onConflictDoUpdate({
+          target: [webhooks.platform, webhooks.id],
+          set: {
+            name: webhook.name ?? undefined,
+            avatar: webhook.avatar,
+            channelId: webhook.channel_id,
+            discordGuildId: guildId,
+          },
+        })
+        .returning({
+          id: webhooks.id,
+          discordGuildId: webhooks.discordGuildId,
+          channelId: webhooks.channelId,
+        })
+    )[0];
+  }
+
+  console.log(`[AUDIT] guild ID: ${guildId}`);
 
   if (!message || !message.components || message.components.length === 0) {
     await db
@@ -407,7 +418,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         // How crucial is an accurate message ID? This could definitely be
         // fabricated when creating `delete` logs
         messageId: message?.id ?? messageId,
-        channelId: message?.channel_id ?? webhook.channel_id,
+        channelId: message?.channel_id ?? entryWebhook.channelId,
         threadId,
         userId,
         // Not really a reliable check but it doesn't matter.
