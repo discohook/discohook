@@ -220,27 +220,30 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           },
         },
       });
-      if (current?.channelId) {
-        const permissions = await getTokenGuildChannelPermissions(
-          token,
-          current.channelId,
-          context.env,
-        );
-        if (
-          !permissions.owner &&
-          !permissions.permissions.has(
-            PermissionFlags.ViewChannel,
-            PermissionFlags.ManageMessages,
-            PermissionFlags.ManageWebhooks,
-          )
-        ) {
-          throw respond(json({ message: "Unknown Component" }, 404));
-        }
-      }
       if (!current) {
         throw respond(json({ message: "Unknown Component" }, 404));
       }
-      if (!current.channelId && current.createdById !== BigInt(token.user.id)) {
+      if (
+        current.createdById !== null &&
+        current.createdById !== BigInt(token.user.id)
+      ) {
+        if (current.channelId) {
+          const permissions = await getTokenGuildChannelPermissions(
+            token,
+            current.channelId,
+            context.env,
+          );
+          if (
+            !permissions.owner &&
+            !permissions.permissions.has(
+              PermissionFlags.ViewChannel,
+              PermissionFlags.ManageMessages,
+              PermissionFlags.ManageWebhooks,
+            )
+          ) {
+            throw respond(json({ message: "Unknown Component" }, 404));
+          }
+        }
         throw respond(json({ message: "You do not own this component" }, 403));
       }
       if (current.data.type !== component.type) {

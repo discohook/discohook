@@ -28,7 +28,7 @@ import {
   launchComponentDurableObject,
   messageLogEntries,
   sql,
-  webhooks
+  webhooks,
 } from "../../store.server";
 
 export const getComponentId = (
@@ -254,9 +254,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       await tx.delete(discordMessageComponents).where(
         and(
           eq(discordMessageComponents.messageId, BigInt(message.id)),
-          // drizzle throws when using inArray with an empty array
+          // drizzle throws when using (not)inArray with an empty array
           componentIds.length === 0
-            ? eq(sql`1`, sql`1`)
+            ? sql`true`
             : notInArray(discordMessageComponents.id, componentIds),
         ),
       );
