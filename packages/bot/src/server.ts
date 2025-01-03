@@ -18,6 +18,7 @@ import {
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
+import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
 import { IRequest, Router } from "itty-router";
 import { getDb, getRedis, getchTriggerGuild } from "store";
@@ -230,6 +231,10 @@ const handleInteraction = async (
       }
     } else if (customId.startsWith("p_")) {
       const ctx = new InteractionContext(rest, interaction, env);
+      if (!interaction.guild_id) {
+        return respond({ error: "Must be in a guild context", status: 400 });
+      }
+
       const db = getDb(env.HYPERDRIVE);
       const doId = env.COMPONENTS.idFromName(
         `${interaction.message.id}-${customId}`,
@@ -254,7 +259,12 @@ const handleInteraction = async (
         // Don't allow component data to leak into other servers
         const dryComponent = await db.query.discordMessageComponents.findFirst({
           where: (table, { eq }) => eq(table.id, componentId),
-          columns: { guildId: true },
+          columns: { guildId: true, channelId: true },
+          with: {
+            createdBy: {
+              columns: { discordId: true },
+            },
+          },
         });
         if (!dryComponent) {
           return respond(
@@ -266,19 +276,36 @@ const handleInteraction = async (
           );
         }
         if (!dryComponent.guildId) {
-          return respond(
-            ctx.reply({
-              content: [
-                "In order to prevent private data from leaking into other servers,",
-                "please send a message with this component in a private channel and",
-                "use it at least once. This links the component with the current server.",
-                "After you do this, the component used in this context should work as expected.",
-              ].join(" "),
-              ephemeral: true,
-            }),
-          );
-        }
-        if (dryComponent.guildId.toString() !== interaction.guild_id) {
+          if (
+            // Allow the component creator to set this data since it's obvious
+            // they can access the component's contents
+            dryComponent.createdBy?.discordId &&
+            dryComponent.createdBy.discordId === BigInt(ctx.user.id)
+          ) {
+            await db
+              .update(discordMessageComponents)
+              .set({
+                guildId: BigInt(interaction.guild_id),
+                channelId: BigInt(interaction.channel.id),
+              })
+              .where(eq(discordMessageComponents.id, componentId));
+
+            dryComponent.guildId = BigInt(interaction.guild_id);
+            dryComponent.channelId = BigInt(interaction.channel.id);
+          } else {
+            return respond(
+              ctx.reply({
+                content: [
+                  "In order to prevent private data from leaking into other servers,",
+                  "please send a message with this component in a private channel and",
+                  "use it at least once. This links the component with the current server.",
+                  "After you do this, the component used in this context should work as expected.",
+                ].join(" "),
+                ephemeral: true,
+              }),
+            );
+          }
+        } else if (dryComponent.guildId.toString() !== interaction.guild_id) {
           return respond({
             error: response.statusText,
             status: response.status,
