@@ -1,1 +1,109 @@
-{}
+{
+    "commands": {
+        "buttons": {
+            "description": "Aggiungi, rimuovi, e gestisci i componenti (bottoni/tendine)",
+            "options": {
+                "migrate": {
+                    "description": "Migra tutti i bottoni legacy",
+                    "options": {
+                        "message": {
+                            "name": "messaggio",
+                            "description": "Migra tutti i componenti di questo messaggio. Anche un link di un messaggio è accettabile qui"
+                        },
+                        "channel": {
+                            "name": "canale",
+                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+                        }
+                    },
+                    "name": "migra"
+                },
+                "add": {
+                    "name": "aggiungi",
+                    "description": "Aggiungi un componente",
+                    "options": {
+                        "channel": {
+                            "name": "canale",
+                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+                        },
+                        "message": {
+                            "description": "Aggiungi un componente a questo messaggio. Anche un link di un messaggio è accettabile qui",
+                            "name": "messaggio"
+                        }
+                    }
+                },
+                "edit": {
+                    "name": "modifica",
+                    "options": {
+                        "message": {
+                            "name": "messaggio",
+                            "description": "Modifica un componente di questo messaggio. Anche un link di un messaggio è accettabile qui"
+                        },
+                        "channel": {
+                            "name": "canale",
+                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+                        }
+                    },
+                    "description": "Modifica un componente"
+                },
+                "delete": {
+                    "name": "elimina",
+                    "options": {
+                        "message": {
+                            "name": "messaggio",
+                            "description": "Elimina un componente in questo messaggio. Anche un link di un messaggio è accettabile qui"
+                        },
+                        "channel": {
+                            "name": "canale",
+                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+                        }
+                    },
+                    "description": "Elimina un componente"
+                }
+            },
+            "name": "bottoni"
+        },
+        "_options": {
+            "webhook": {
+                "name": "webhook",
+                "description": "Il webhook bersaglio"
+            },
+            "filter-channel": {
+                "name": "filtra-canale",
+                "description": "Il canale in cui filtrare i risultati dell'autocompletamento"
+            }
+        },
+        "deluxe": {
+            "name": "deluxe",
+            "description": "Sincronizza la tua iscrizione a Deluxe",
+            "options": {
+                "info": {
+                    "name": "informazioni",
+                    "description": "Informazioni su Discohook Deluxe, la nostra opzione di iscrizione premium"
+                },
+                "sync": {
+                    "name": "sincronizzazione",
+                    "description": "Assicurati che il sito di Discohook sia aggiornato con la tua iscrizione Deluxe"
+                }
+            }
+        },
+        "triggers": {
+            "description": "Imposta dei trigger per rispondere ad avvenimenti nel tuo server",
+            "options": {
+                "add": {
+                    "name": "aggiungi",
+                    "description": "Aggiungi un nuovo trigger",
+                    "options": {
+                        "name": {
+                            "name": "nome",
+                            "description": "Il nome del trigger"
+                        },
+                        "event": {
+                            "name": "evento",
+                            "description": "L'avvenimento che farà scattare il trigger"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
