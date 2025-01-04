@@ -13,6 +13,7 @@ import {
 import { notInArray } from "drizzle-orm";
 import { Snowflake } from "tif-snowflake";
 import { z } from "zod";
+import { getBucket } from "~/durable/rate-limits";
 import { getUserId } from "~/session.server";
 import { getWebhook, getWebhookMessage, hasCustomId } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
@@ -85,13 +86,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     //   .array()
     //   .optional(),
   });
+  const headers = await getBucket(request, context, "messageLog");
+
   const now = new Date();
   const messageIdSnowflake = Snowflake.parse(messageId, DISCORD_EPOCH);
   if (type === "send" && now.getTime() - messageIdSnowflake.timestamp > 15000) {
     // Allow 15 seconds to send the log request
     // This disallows people from logging any old message sent by a webhook
     // they have access to (and reduces our server's API calls in such cases)
-    throw json({ message: "Message is too old" }, 400);
+    throw json({ message: "Message is too old" }, { status: 400, headers });
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
@@ -109,7 +112,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       rest,
     );
     if (deleted.id) {
-      throw json({ message: "Message still exists" }, 400);
+      throw json({ message: "Message still exists" }, { status: 400, headers });
     }
   } else {
     message = await getWebhookMessage(
@@ -124,7 +127,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     }
     if (type === "edit") {
       if (!message.edited_timestamp) {
-        throw json({ message: "Message has never been edited" }, 400);
+        throw json(
+          { message: "Message has never been edited" },
+          { status: 400, headers },
+        );
       }
       if (
         now.getTime() - new Date(message.edited_timestamp).getTime() >
@@ -133,7 +139,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         // Allow 15 seconds to send the log request
         // This disallows people from logging any old message sent by a webhook
         // they have access to (and reduces our server's API calls in such cases)
-        throw json({ message: "Message was edited too long ago" }, 400);
+        throw json(
+          { message: "Message was edited too long ago" },
+          { status: 400, headers },
+        );
       }
     }
   }
@@ -157,7 +166,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     // If it's a duplicate, assume race condition and
     // return the same record instead of erroring
     if (entry) {
-      return entry;
+      return json(entry, { headers });
     }
   }
 
@@ -438,5 +447,5 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   )[0];
 
   console.log("[AUDIT] created entry");
-  return { ...entry, webhook: entryWebhook };
+  return json({ ...entry, webhook: entryWebhook }, { headers });
 };

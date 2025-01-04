@@ -35,6 +35,10 @@ const apiBuckets: Partial<
   guildWebhooksForce: {
     GET: { capacity: 1, seconds: 120 },
   },
+  messageLog: {
+    // a bit more than the channel message rate limit (5s/5), so this shouldn't be an issue
+    POST: { capacity: 10, seconds: 5 },
+  },
 };
 
 const getBucketInfo = (method: string, bucket: string) => {
