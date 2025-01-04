@@ -306,7 +306,6 @@ export type CodeGeneratorProps = { data: Partial<CodeGeneratorData> };
 
 export const CodeGeneratorModal = (props: ModalProps & CodeGeneratorProps) => {
   const { t } = useTranslation();
-  console.log(props);
 
   const [wordWrap, setWordWrap] = useState(false);
   const [library, setLibrary] = useState<DiscordLibrary>("dpy2");
