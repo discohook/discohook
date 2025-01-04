@@ -31,6 +31,7 @@ import { Snowflake, getDate, isSnowflake } from "discord-snowflake";
 import { TimestampStyle } from "~/components/editor/TimePicker";
 import { DraftFile } from "~/routes/_index";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import { sleep } from "./time";
 
 export const DISCORD_API = "https://discord.com/api";
 export const DISCORD_API_V = "10";
@@ -102,11 +103,31 @@ export const discordRequest = async <T>(
     body = init.body;
   }
 
-  const response = await fetch(
-    `${DISCORD_API}/v${DISCORD_API_V}${route}${search}`,
-    { method, ...init, headers, body },
-  );
-  return (await response.json()) as T;
+  let tries = 0;
+  while (tries < 5) {
+    tries += 1;
+    const response = await fetch(
+      `${DISCORD_API}/v${DISCORD_API_V}${route}${search}`,
+      { method, ...init, headers, body },
+    );
+    // TODO: bucket cache to prevent 429s entirely
+    const rHeaders = response.headers;
+    if (response.status === 429) {
+      const bucket = rHeaders.get("X-RateLimit-Bucket");
+      const resetAfter = Number(
+        rHeaders.get("X-RateLimit-Reset-After") || rHeaders.get("Reset-After"),
+      );
+      if (!Number.isNaN(resetAfter) && resetAfter > 0) {
+        console.log(
+          `Rate limited on bucket ${bucket} for ${resetAfter}s (waiting). ${tries}/5`,
+        );
+        await sleep(Math.max(1, resetAfter) * 1000 + tries);
+        continue;
+      }
+    }
+    return (await response.json()) as T;
+  }
+  throw Error(`Failed to receive a good response for ${method} ${route}`);
 };
 
 export const getWebhook = async (id: string, token: string, rest?: REST) => {
