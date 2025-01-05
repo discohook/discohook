@@ -34,7 +34,7 @@ import { getMessageText } from "~/util/message";
 import { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
@@ -425,11 +425,10 @@ export const MessageSendModal = (
   const [troubleshootOpen, setTroubleshootOpen] = useState(false);
 
   return (
-    <Modal
-      title={t("sendMessageN", { count: data.messages.length })}
-      {...props}
-      setOpen={setOpen}
-    >
+    <Modal {...props} setOpen={setOpen}>
+      <PlainModalHeader>
+        {t("sendMessageN", { count: data.messages.length })}
+      </PlainModalHeader>
       <MessageTroubleshootModal
         open={troubleshootOpen}
         setOpen={setTroubleshootOpen}
@@ -585,62 +584,59 @@ export const MessageSendModal = (
           </div>
         )}
       </div>
-      <div className="flex mt-4">
-        <div className="mx-auto space-x-2 rtl:space-x-reverse">
-          <Button
-            disabled={
-              countSelected(selectedWebhooks) === 0 ||
-              enabledMessagesCount === 0 ||
-              sending
-            }
-            onClick={() =>
-              submitMessages(
-                Object.entries(targets)
-                  .filter(([targetId]) => selectedWebhooks[targetId])
-                  .map(([, target]) => target),
-              )
-            }
-          >
-            {t(
-              sending
+      <ModalFooter className="flex gap-2 flex-wrap">
+        <Button
+          className="ltr:mr-auto rtl:ml-auto"
+          disabled={
+            countSelected(selectedWebhooks) === 0 ||
+            enabledMessagesCount === 0 ||
+            sending
+          }
+          onClick={() =>
+            submitMessages(
+              Object.entries(targets)
+                .filter(([targetId]) => selectedWebhooks[targetId])
+                .map(([, target]) => target),
+            )
+          }
+        >
+          {t(
+            sending
+              ? withReferenceCount === 0
+                ? "sending"
+                : withReferenceCount === enabledMessagesCount
+                  ? "editing"
+                  : "submitting"
+              : countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
                 ? withReferenceCount === 0
-                  ? "sending"
-                  : withReferenceCount === enabledMessagesCount
-                    ? "editing"
-                    : "submitting"
-                : countSelected(selectedWebhooks) <= 1 &&
-                    enabledMessagesCount > 1
+                  ? "sendAll"
+                  : "submitAll"
+                : countSelected(selectedWebhooks) > 1
                   ? withReferenceCount === 0
-                    ? "sendAll"
-                    : "submitAll"
-                  : countSelected(selectedWebhooks) > 1
-                    ? withReferenceCount === 0
-                      ? "sendToAll"
-                      : "submitToAll"
-                    : withReferenceCount === 0
-                      ? "send"
-                      : withReferenceCount === enabledMessagesCount
-                        ? "edit"
-                        : "submit",
-            )}
-          </Button>
-          <Button
-            discordstyle={ButtonStyle.Secondary}
-            onClick={() => setTroubleshootOpen(true)}
-          >
-            {t("havingTrouble")}
-          </Button>
-          {/* <Button
-            disabled={
-              countSelected(selectedWebhooks) === 0 ||
-              enabledMessagesCount === 0
-            }
-            onClick={() => {}}
-          >
-            {t(enabledMessagesCount > 1 ? "scheduleSendAll" : "schedule")}
-          </Button> */}
-        </div>
-      </div>
+                    ? "sendToAll"
+                    : "submitToAll"
+                  : withReferenceCount === 0
+                    ? "send"
+                    : withReferenceCount === enabledMessagesCount
+                      ? "edit"
+                      : "submit",
+          )}
+        </Button>
+        <Button
+          discordstyle={ButtonStyle.Secondary}
+          onClick={() => setTroubleshootOpen(true)}
+        >
+          {t("havingTrouble")}
+        </Button>
+        {/* <Button
+          disabled={
+            countSelected(selectedWebhooks) === 0 || enabledMessagesCount === 0
+          }
+          onClick={() => {}}
+        >
+          {t(enabledMessagesCount > 1 ? "scheduleSendAll" : "schedule")}
+        </Button> */}
+      </ModalFooter>
     </Modal>
   );
 };

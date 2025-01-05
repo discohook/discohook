@@ -1,17 +1,21 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageTroubleshootModal = (props: ModalProps) => {
   const { t } = useTranslation();
   return (
-    <Modal title={t("havingTrouble")} {...props}>
+    <Modal {...props}>
+      <PlainModalHeader>{t("havingTrouble")}</PlainModalHeader>
       <p>{t("troubleshootMessage")}</p>
-      <div className="flex w-full mt-4">
-        <Button onClick={() => props.setOpen(false)} className="mx-auto">
-          OK
+      <ModalFooter className="flex">
+        <Button
+          onClick={() => props.setOpen(false)}
+          className="ltr:ml-auto rtl:mr-auto"
+        >
+          {t("ok")}
         </Button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 };
