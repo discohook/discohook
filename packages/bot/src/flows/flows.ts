@@ -565,22 +565,19 @@ export const executeSendWebhookMessage = async (
   }
   try {
     const msg = backup.data.messages[action.backupMessageIndex ?? 0].data;
-    await db.insert(messageLogEntries).values([
-      {
-        type: "send",
-        webhookId: webhook.id,
-        channelId: webhook.channelId,
-        messageId: message.id,
-        threadId:
-          message.position !== undefined ? message.channel_id : undefined,
-        discordGuildId: webhook.discordGuildId,
-        hasContent: !!msg.content,
-        embedCount: msg.embeds?.length,
-        notifiedEveryoneHere: message.mention_everyone,
-        notifiedUsers: message.mentions?.map((u) => u.id),
-        notifiedRoles: message.mention_roles,
-      },
-    ]);
+    await db.insert(messageLogEntries).values({
+      type: "send",
+      webhookId: webhook.id,
+      channelId: webhook.channelId,
+      messageId: message.id,
+      threadId: message.position !== undefined ? message.channel_id : undefined,
+      discordGuildId: webhook.discordGuildId,
+      hasContent: !!msg.content,
+      embedCount: msg.embeds?.length,
+      notifiedEveryoneHere: message.mention_everyone,
+      notifiedUsers: message.mentions?.map((u) => u.id),
+      notifiedRoles: message.mention_roles,
+    });
   } catch {}
   return message;
 };
