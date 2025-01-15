@@ -57,6 +57,7 @@ const resources = {
   "en-GB": { translation: require("./i18n/en-GB.json") },
   fr: { translation: require("./i18n/fr.json") },
   nl: { translation: require("./i18n/nl.json") },
+  it: { translation: require("./i18n/it.json") },
   "zh-CN": { translation: require("./i18n/zh-CN.json") },
 };
 

@@ -112,6 +112,7 @@ const main = async () => {
   const languages = {
     nl: await loadLocalization("nl"),
     fr: await loadLocalization("fr"),
+    it: await loadLocalization("it"),
     // "zh-CN": await loadLocalization("zh-CN"),
   };
   const english = { "en-US": await loadLocalization("en") };
