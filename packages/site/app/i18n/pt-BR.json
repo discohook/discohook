@@ -65,5 +65,9 @@
     "cozy": "Acolhedor",
     "compact": "Compacto",
     "compactAvatars": "Mostrar avatares em modo Compacto",
-    "successResultTroubleshoot": "Se você não conseguir ver a mensagem, certifique-se de que não foi deletada por outro bot. Alguns bots de moderação consideram todas as mensagens de webhook como spam por padrão."
+    "successResultTroubleshoot": "Se você não conseguir ver a mensagem, certifique-se de que não foi deletada por outro bot. Alguns bots de moderação consideram todas as mensagens de webhook como spam por padrão.",
+    "submitToAll": "Enviar para Todos",
+    "submitAll": "Enviar Todos",
+    "submitting": "Enviando",
+    "submitResultTitle": "Enviar Resultado"
 }
