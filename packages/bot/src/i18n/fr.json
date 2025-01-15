@@ -80,7 +80,8 @@
                             "description": "Modifie un des composants de ce message (un lien de message est aussi accepté)"
                         },
                         "channel": {
-                            "description": "Le salon dans lequel ce message a été posté"
+                            "description": "Le salon dans lequel ce message a été posté",
+                            "name": "salon"
                         }
                     }
                 },
@@ -90,7 +91,8 @@
                         "message": {
                             "description": "Supprime un des composants de ce message (un lien de message est également accepté)"
                         }
-                    }
+                    },
+                    "name": "supprimé"
                 }
             }
         },
