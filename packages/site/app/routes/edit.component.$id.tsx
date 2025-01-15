@@ -1356,18 +1356,18 @@ export default () => {
                   });
                   if (result.status === "success") {
                     setError(undefined);
-                    auditLogFetcher.submit(
-                      {
-                        type: "edit",
-                        threadId,
-                      },
-                      {
-                        method: "POST",
-                        action: apiUrl(
-                          BRoutes.messageLog(wt.id, wt.token, result.data.id),
-                        ),
-                      },
-                    );
+                    // auditLogFetcher.submit(
+                    //   {
+                    //     type: "edit",
+                    //     threadId,
+                    //   },
+                    //   {
+                    //     method: "POST",
+                    //     action: apiUrl(
+                    //       BRoutes.messageLog(wt.id, wt.token, result.data.id),
+                    //     ),
+                    //   },
+                    // );
 
                     // Tell the server that something changed and it needs to
                     // either fetch the message or ensure that the component's

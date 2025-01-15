@@ -13,7 +13,6 @@ import { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
@@ -297,27 +296,27 @@ export const useMessageSubmissionManager = (
           if (message.data.thread_name) {
             forumThreadId = result.data.channel_id;
           }
-          auditLogFetcher.submit(
-            {
-              type: message.reference ? "edit" : "send",
-              threadId:
-                result.data.position !== undefined
-                  ? result.data.channel_id
-                  : undefined,
-            },
-            {
-              method: "POST",
-              action: apiUrl(
-                BRoutes.messageLog(
-                  webhook.id,
-                  // We needed the token in order to arrive at a success state
-                  // biome-ignore lint/style/noNonNullAssertion: ^
-                  webhook.token!,
-                  result.data.id,
-                ),
-              ),
-            },
-          );
+          // auditLogFetcher.submit(
+          //   {
+          //     type: message.reference ? "edit" : "send",
+          //     threadId:
+          //       result.data.position !== undefined
+          //         ? result.data.channel_id
+          //         : undefined,
+          //   },
+          //   {
+          //     method: "POST",
+          //     action: apiUrl(
+          //       BRoutes.messageLog(
+          //         webhook.id,
+          //         // We needed the token in order to arrive at a success state
+          //         // biome-ignore lint/style/noNonNullAssertion: ^
+          //         webhook.token!,
+          //         result.data.id,
+          //       ),
+          //     ),
+          //   },
+          // );
         }
 
         updateMessages({
