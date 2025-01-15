@@ -88,5 +88,9 @@
     "clickGenerate": "Presiona \"Generar\" para generar un enlace compartido",
     "orgRedirectTitle": "Acabas de ser redirigido desde discohook.org",
     "orgRedirectBody": "Discohook ya está disponible en <bold>discohook.app</bold>. Para migrar sus copias de seguridad, <importLink>haga clic aquí</importLink>. Para leer más sobre esta actualización, <infoLink>haga clic aquí</infoLink>.",
-    "editing": "Editando"
+    "editing": "Editando",
+    "submit": "Enviar",
+    "submitToAll": "Enviar a todos",
+    "submitAll": "Enviar Todo",
+    "submitting": "Enviando"
 }
