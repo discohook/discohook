@@ -172,14 +172,16 @@ export const submitComponent = async (
         component.style !== ButtonStyle.Link &&
         component.style !== ButtonStyle.Premium
       ) {
-        component.flow = (data as APIButtonComponentWithCustomId).flow;
+        component.flow = structuredClone(
+          data as APIButtonComponentWithCustomId,
+        ).flow;
       }
       break;
     }
     case ComponentType.StringSelect: {
       const { minValues, maxValues, ...rest } = raw.data;
       component = {
-        flows: (data as APIStringSelectComponent).flows,
+        flows: structuredClone(data as APIStringSelectComponent).flows,
         ...rest,
         custom_id: `p_${raw.id}`,
         min_values: minValues,
@@ -193,7 +195,7 @@ export const submitComponent = async (
     case ComponentType.ChannelSelect: {
       const { minValues, maxValues, defaultValues, ...rest } = raw.data;
       component = {
-        flow: (data as APIAutoPopulatedSelectMenuComponent).flow,
+        flow: structuredClone(data as APIAutoPopulatedSelectMenuComponent).flow,
         ...rest,
         custom_id: `p_${raw.id}`,
         min_values: minValues,
@@ -347,7 +349,11 @@ export const ActionRowEditor: React.FC<{
                 : ""
             }
             onClick={() => {
-              message.data.components?.splice(i + 1, 0, structuredClone(row));
+              const cloned = structuredClone(row);
+              for (const component of cloned.components) {
+                component.custom_id = "";
+              }
+              message.data.components?.splice(i + 1, 0, cloned);
               setData({ ...data });
             }}
           >
@@ -622,7 +628,10 @@ export const IndividualComponentEditor: React.FC<{
           onClick={async () => {
             // Don't accidentally save the current component
             const { custom_id: _, ...withoutId } = component;
-            const copied = await submitComponent(withoutId as typeof component);
+            const copied = await submitComponent({
+              custom_id: "",
+              ...withoutId,
+            });
             if (copied) {
               // Should always be non-null
               row.components.splice(index + 1, 0, copied);
