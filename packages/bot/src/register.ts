@@ -820,6 +820,26 @@ const main = async () => {
               },
             ],
           },
+          {
+            type: ApplicationCommandType.ChatInput,
+            name: "grant-deluxe",
+            description: "Grant a Deluxe subscription to a user",
+            options: [
+              {
+                type: ApplicationCommandOptionType.String,
+                name: "user-id",
+                description: "The user ID",
+                required: true,
+              },
+              {
+                type: ApplicationCommandOptionType.String,
+                name: "duration",
+                description:
+                  "A donation amount ($100) or time (3d, 2w, 3m, 1y)",
+                required: true,
+              },
+            ],
+          },
         ] satisfies RESTPutAPIApplicationGuildCommandsJSONBody),
       },
     );

@@ -11,6 +11,10 @@ import {
   APIUserApplicationCommandInteraction,
   ApplicationCommandType,
 } from "discord-api-types/v10";
+import {
+  grantDeluxeCommandHandler,
+  leaveCommandHandler,
+} from "./commands/admin.js";
 import { deleteComponentChatEntry } from "./commands/components/delete.js";
 import { editComponentChatEntry } from "./commands/components/edit.js";
 import {
@@ -34,7 +38,6 @@ import {
   idMentionCallback,
 } from "./commands/id.js";
 import { inviteCallback } from "./commands/invite.js";
-import { leaveCommandHandler } from "./commands/leave.js";
 import {
   createReactionRoleHandler,
   deleteReactionRoleHandler,
@@ -206,6 +209,9 @@ export const appCommands: Record<
     // dev server
     leave: {
       handlers: { BASE: leaveCommandHandler },
+    },
+    "grant-deluxe": {
+      handlers: { BASE: grantDeluxeCommandHandler },
     },
   },
   [ApplicationCommandType.Message]: {
