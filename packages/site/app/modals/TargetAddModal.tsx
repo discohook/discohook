@@ -299,7 +299,7 @@ export const TargetAddModal = (
               }
             }}
           />
-          {props.memberships && (
+          {props.memberships && props.hasAuthentication ? (
             <button
               className={twJoin(linkClassName, "text-sm")}
               onClick={() => setManualWebhook(false)}
@@ -307,7 +307,7 @@ export const TargetAddModal = (
             >
               {t("backToServerSelection")}
             </button>
-          )}
+          ) : null}
           <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           <div className={`flex py-4 ${!webhook ? "animate-pulse" : ""}`}>
             <div className="w-1/3 mr-4 my-auto">
