@@ -39,6 +39,9 @@ const apiBuckets: Partial<
     // a bit more than the channel message rate limit (5s/5), so this shouldn't be an issue
     POST: { capacity: 10, seconds: 5 },
   },
+  profileRefresh: {
+    POST: { capacity: 2, seconds: 600 },
+  },
 };
 
 const getBucketInfo = (method: string, bucket: string) => {
@@ -60,7 +63,7 @@ const getRps = (bucket: BucketConfig): number =>
 const KEY_RE =
   /^(?<method>\w+):(?<bucket>\w+):(?<idScope>id|ip):(?<idValue>.+)$/;
 
-export type ExtraRateLimitBucketName = "guildWebhooksForce";
+export type ExtraRateLimitBucketName = "guildWebhooksForce" | "profileRefresh";
 
 export type RateLimitBucketName =
   | keyof typeof BRoutes

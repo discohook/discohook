@@ -139,6 +139,7 @@
   "webhookCreateFailed": "Failed to create webhook",
   "webhookCreateSubtitle": "You should be returned to the editor shortly.",
   "profile": "Profile",
+  "refresh": "Refresh",
   "linkEmbeds": "Link Embeds",
   "deleteLinkBackup": "Delete Link Embed",
   "deleteLinkBackupConfirm": "Are you sure you want to delete this link embed? This cannot be undone.",
