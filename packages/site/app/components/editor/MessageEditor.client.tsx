@@ -370,6 +370,7 @@ export const MessageEditor: React.FC<{
                 embedIndex={ei}
                 data={data}
                 setData={setData}
+                files={files}
                 cache={cache}
               />
             ))}

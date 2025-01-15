@@ -501,6 +501,7 @@
   "profileImmutable": "Profile info cannot be changed for existing messages.",
   "filesCount": "Files ({{ count }}/10)",
   "addFile": "Add File",
+  "file": "File",
   "flags": "Flags",
   "flagsOptional": "Flags (optional)",
   "messageFlagsNote": "Flags are optional message features that can be enabled or disabled.",

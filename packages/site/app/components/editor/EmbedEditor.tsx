@@ -1,12 +1,15 @@
-import { APIEmbedField } from "discord-api-types/v10";
+import { APIEmbedField, ButtonStyle } from "discord-api-types/v10";
 import { TFunction } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
+import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
+import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
@@ -71,6 +74,7 @@ export const EmbedEditor: React.FC<{
   embedIndex: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
+  files?: DraftFile[];
   open?: boolean;
   cache?: CacheManager;
 }> = ({
@@ -80,6 +84,7 @@ export const EmbedEditor: React.FC<{
   embedIndex: i,
   data,
   setData,
+  files,
   open,
   cache,
 }) => {
@@ -297,20 +302,38 @@ export const EmbedEditor: React.FC<{
                   </button>
                 </div>
               )}
-              <TextInput
-                label={t("iconUrl")}
-                className="w-full"
-                type="url"
-                value={embed.author?.icon_url ?? ""}
-                onInput={({ currentTarget }) =>
-                  updateEmbed({
-                    author: {
-                      ...(embed.author ?? { name: "" }),
-                      icon_url: currentTarget.value,
-                    },
-                  })
-                }
-              />
+              <div className="flex gap-2">
+                <div className="grow">
+                  <TextInput
+                    label={t("iconUrl")}
+                    className="w-full"
+                    type="url"
+                    value={embed.author?.icon_url ?? ""}
+                    onInput={({ currentTarget }) =>
+                      updateEmbed({
+                        author: {
+                          ...(embed.author ?? { name: "" }),
+                          icon_url: currentTarget.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="mt-auto">
+                  <EmbedFileSelect
+                    t={t}
+                    files={files}
+                    onChange={({ url }) => {
+                      updateEmbed({
+                        author: {
+                          ...(embed.author ?? { name: "" }),
+                          icon_url: url,
+                        },
+                      });
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </EmbedEditorSection>
           <hr className="border border-gray-500/20" />
@@ -536,7 +559,7 @@ export const EmbedEditor: React.FC<{
         </>
       )}
       <EmbedEditorSection name={t("images")} open={isChild || open}>
-        <div className="flex">
+        <div className={galleryChildren.includes(embed) ? "flex" : ""}>
           <div className="grow">
             <TextInput
               label={t("largeImageUrl")}
@@ -548,37 +571,60 @@ export const EmbedEditor: React.FC<{
               }
             />
           </div>
-          {!galleryChildren.includes(embed) && (
-            <Button
-              className="ltr:ml-2 rtl:mr-2 mt-auto"
-              disabled={
-                !embed.image?.url ||
-                messageEmbeds.length >= 10 ||
-                galleryEmbeds.length >= 4
-              }
-              onClick={() => {
-                const url =
-                  embed.url || `${location.origin}#gallery-${randomString(8)}`;
-                embed.url = url;
-                message.data.embeds = message.data.embeds ?? [];
-                message.data.embeds.splice(i + 1, 0, { url });
-                setData({ ...data });
-              }}
-            >
-              {t("addAnother")}
-            </Button>
-          )}
+          <div
+            className={twJoin(
+              "flex gap-2",
+              !galleryChildren.includes(embed) ? "mt-1 w-full" : "ml-2 mt-auto",
+            )}
+          >
+            <EmbedFileSelect
+              t={t}
+              files={files}
+              onChange={({ url }) => updateEmbed({ image: { url } })}
+            />
+            {!galleryChildren.includes(embed) && (
+              <Button
+                disabled={
+                  !embed.image?.url ||
+                  messageEmbeds.length >= 10 ||
+                  galleryEmbeds.length >= 4
+                }
+                onClick={() => {
+                  const url =
+                    embed.url ||
+                    `${location.origin}#gallery-${randomString(8)}`;
+                  embed.url = url;
+                  message.data.embeds = message.data.embeds ?? [];
+                  message.data.embeds.splice(i + 1, 0, { url });
+                  setData({ ...data });
+                }}
+              >
+                {t("addAnother")}
+              </Button>
+            )}
+          </div>
         </div>
         {!isChild && (
-          <TextInput
-            label={t("thumbnailUrl")}
-            type="url"
-            className="w-full"
-            value={embed.thumbnail?.url ?? ""}
-            onInput={({ currentTarget }) =>
-              updateEmbed({ thumbnail: { url: currentTarget.value } })
-            }
-          />
+          <div className="flex">
+            <div className="grow">
+              <TextInput
+                label={t("thumbnailUrl")}
+                type="url"
+                className="w-full"
+                value={embed.thumbnail?.url ?? ""}
+                onInput={({ currentTarget }) =>
+                  updateEmbed({ thumbnail: { url: currentTarget.value } })
+                }
+              />
+            </div>
+            <div className="ml-2 mt-auto">
+              <EmbedFileSelect
+                t={t}
+                files={files}
+                onChange={({ url }) => updateEmbed({ thumbnail: { url } })}
+              />
+            </div>
+          </div>
         )}
       </EmbedEditorSection>
       {!isChild && (
@@ -604,21 +650,37 @@ export const EmbedEditor: React.FC<{
                 />
               </div>
             </div>
-            <div className="grid gap-2 mt-2">
-              <TextInput
-                label={t("iconUrl")}
-                className="w-full"
-                type="url"
-                value={embed.footer?.icon_url ?? ""}
-                onInput={({ currentTarget }) =>
-                  updateEmbed({
-                    footer: {
-                      ...(embed.footer ?? { text: "" }),
-                      icon_url: currentTarget.value,
-                    },
-                  })
-                }
-              />
+            <div className="flex gap-2 mt-2">
+              <div className="grow">
+                <TextInput
+                  label={t("iconUrl")}
+                  className="w-full"
+                  type="url"
+                  value={embed.footer?.icon_url ?? ""}
+                  onInput={({ currentTarget }) =>
+                    updateEmbed({
+                      footer: {
+                        ...(embed.footer ?? { text: "" }),
+                        icon_url: currentTarget.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div className="mt-auto">
+                <EmbedFileSelect
+                  t={t}
+                  files={files}
+                  onChange={({ url }) => {
+                    updateEmbed({
+                      footer: {
+                        ...(embed.footer ?? { text: "" }),
+                        icon_url: url,
+                      },
+                    });
+                  }}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2 mt-2">
               <DatePicker
@@ -756,5 +818,33 @@ export const EmbedFieldEditorSection: React.FC<
       </summary>
       <div className="space-y-2">{children}</div>
     </details>
+  );
+};
+
+const EmbedFileSelect = (props: {
+  t: TFunction;
+  files: DraftFile[] | undefined;
+  onChange: (props: { filename: string; url: string }) => void;
+}) => {
+  const { t, onChange } = props;
+  const files = props.files
+    ? props.files.filter(({ file }) => file.type.startsWith("image/"))
+    : [];
+
+  return (
+    <ButtonSelect
+      discordstyle={ButtonStyle.Secondary}
+      isDisabled={files.length === 0}
+      options={files.map(({ file }) => ({
+        label: file.name,
+        value: file.name,
+      }))}
+      onChange={(o) => {
+        const opt = o as { label: string; value: string };
+        onChange({ filename: opt.value, url: `attachment://${opt.value}` });
+      }}
+    >
+      {t("file")}
+    </ButtonSelect>
   );
 };

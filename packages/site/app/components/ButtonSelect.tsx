@@ -9,10 +9,15 @@ import {
   StringSelectProps,
   selectClassNames,
 } from "./StringSelect";
-import { CoolIcon } from "./icons/CoolIcon";
+import { CoolIcon, CoolIconsGlyph } from "./icons/CoolIcon";
 
 export const ButtonSelect: React.FC<
-  React.PropsWithChildren<StringSelectProps & { discordstyle?: ButtonStyle }>
+  React.PropsWithChildren<
+    StringSelectProps & {
+      discordstyle?: ButtonStyle;
+      icon?: CoolIconsGlyph | null;
+    }
+  >
 > = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState<{ label: string; value: string } | null>();
@@ -29,13 +34,15 @@ export const ButtonSelect: React.FC<
           discordstyle={props.discordstyle}
         >
           {props.children}
-          <CoolIcon
-            icon="Chevron_Down"
-            className={twJoin(
-              "my-auto ml-1.5 transition-all",
-              isOpen ? "rotate-180" : "rotate-0",
-            )}
-          />
+          {props.icon !== null ? (
+            <CoolIcon
+              icon={props.icon ?? "Chevron_Down"}
+              className={twJoin(
+                "my-auto ml-1.5 transition-all",
+                isOpen ? "rotate-180" : "rotate-0",
+              )}
+            />
+          ) : null}
         </Button>
       }
     >
