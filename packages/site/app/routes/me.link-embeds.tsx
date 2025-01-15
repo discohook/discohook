@@ -10,7 +10,7 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
-import { getDb, inArray, linkBackups as dLinkBackups } from "~/store.server";
+import { linkBackups as dLinkBackups, getDb, inArray } from "~/store.server";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import {
@@ -216,7 +216,15 @@ export default () => {
           })}
         </div>
       ) : (
-        <p className="text-gray-500">{t("noBackups")}</p>
+        <p className="text-gray-500">
+          {
+            <Trans
+              t={t}
+              i18nKey="noLinkBackups"
+              components={[<Link to="/link" className={linkClassName} />]}
+            />
+          }
+        </p>
       )}
     </div>
   );
