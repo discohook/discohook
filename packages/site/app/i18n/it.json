@@ -654,5 +654,8 @@
     "imports": "Importati",
     "code": "Codice",
     "copyImports": "Copia le Importazioni",
-    "copyCode": "Copia il Codice"
+    "copyCode": "Copia il Codice",
+    "file": "FIle",
+    "noLinkBackups": "Non ci sono dati qui. Puoi salvare un link di un embed di un link nell'<0>editor degli embed dei link</0>.",
+    "refresh": "Ricarica"
 }
