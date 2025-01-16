@@ -6,7 +6,10 @@
         "full": "{{ date, D MMMM YYYY HH:mm }}",
         "full_verbose": "{{ date, dddd, D MMMM YYYY HH:mm:ss }}",
         "date": "{{ date, DD/MM/YYYY }}",
-        "date_verbose": "{{ date, D MMMM YYYY }}"
+        "date_verbose": "{{ date, D MMMM YYYY }}",
+        "footer": {
+            "other": "{{ date, DD/MM/YYYY h:mm A }}"
+        }
     },
     "permission": {
         "ViewCreatorMonetizationAnalytics": "View Creator Monetisation Analytics"

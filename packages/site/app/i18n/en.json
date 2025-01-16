@@ -568,7 +568,7 @@
     "time_verbose": "{{ date, h:mm:ss A }}",
     "full": "{{ date, MMMM D, YYYY h:mm A }}",
     "full_verbose": "{{ date, dddd, MMMM D, YYYY h:mm:ss A }}",
-    "date": "{{ date, MM/DD/YYYY }}",
+    "date": "{{ date, M/D/YYYY }}",
     "date_verbose": "{{ date, MMMM D, YYYY }}",
     "relative": {
       "seconds_future": "in {{count}} seconds",
@@ -598,7 +598,7 @@
       "yesterday": "Yesterday at {{ date, h:mm A }}",
       "today": "Today at {{ date, h:mm A }}",
       "tomorrow": "Tomorrow at {{ date, h:mm A }}",
-      "other": "{{ date, MM/DD/YYYY h:mm A }}"
+      "other": "{{ date, M/D/YYYY h:mm A }}"
     }
   },
   "option": "Option",
