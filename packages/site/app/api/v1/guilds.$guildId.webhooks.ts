@@ -5,6 +5,7 @@ import {
   APIWebhook,
   RESTGetAPIGuildWebhooksResult,
   Routes,
+  WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
@@ -18,11 +19,25 @@ import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
 const upsertGuildWebhooks = async (
   db: DBWithSchema,
-  incoming: APIWebhook[],
+  allWebhooks: APIWebhook[],
   guildId: bigint,
 ) => {
+  const incoming = allWebhooks.filter((w) => w.type === WebhookType.Incoming);
+
   return (
     await db.transaction(async (tx) => {
+      if (incoming.length === 0) {
+        await tx
+          .delete(webhooks)
+          .where(
+            and(
+              eq(webhooks.discordGuildId, guildId),
+              eq(webhooks.platform, "discord"),
+            ),
+          );
+        return [];
+      }
+
       // We retrieve tokens first in case we have tokens from a different bot;
       // we don't want to lose that data in the upsert event.
       const residual = await tx.query.webhooks.findMany({
