@@ -38,6 +38,7 @@ export const getDiscordWebhookAuth = (context: Context) => {
       clientSecret: context.env.DISCORD_CLIENT_SECRET,
       callbackURL: `${context.origin}/callback/discord-webhook`,
       scope: ["webhook.incoming"],
+      apiURL: context.env.DISCORD_PROXY_API,
     },
     async ({ profile, extraParams }): Promise<APIWebhook> => {
       const { webhook } =

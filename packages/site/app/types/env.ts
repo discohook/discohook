@@ -19,6 +19,7 @@ export interface Env {
   DISCORD_CLIENT_ID: string;
   DISCORD_CLIENT_SECRET: string;
   DISCORD_BOT_TOKEN: string;
+  DISCORD_PROXY_API?: string;
   AUTHLINK_CLIENT_ID?: string;
   AUTHLINK_CLIENT_SECRET?: string;
   GUILDED_BOT_TOKEN?: string;
