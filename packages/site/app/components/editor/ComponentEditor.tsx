@@ -343,8 +343,7 @@ export const ActionRowEditor: React.FC<{
           <button
             type="button"
             className={
-              !!message.data.components &&
-              message.data.components.length - 1 + 1 >= 5
+              !!message.data.components && message.data.components.length >= 4
                 ? "hidden"
                 : ""
             }
@@ -623,7 +622,7 @@ export const IndividualComponentEditor: React.FC<{
         </button>
         <button
           type="button"
-          className={getRowWidth(row) >= 5 ? "hidden" : ""}
+          className={getRowWidth(row) >= 4 ? "hidden" : ""}
           disabled={anySubmitting}
           onClick={async () => {
             // Don't accidentally save the current component
