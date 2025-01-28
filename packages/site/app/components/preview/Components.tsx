@@ -285,6 +285,14 @@ export const MessageComponents: React.FC<{
   cache?: CacheManager;
 }> = ({ components, authorType, cache }) => {
   const { t } = useTranslation();
+  const isAllLinkButtons = !components
+    .flatMap((r) =>
+      r.components.map(
+        (c) => c.type === ComponentType.Button && c.style === ButtonStyle.Link,
+      ),
+    )
+    .includes(false);
+
   return (
     <div className="grid gap-1 py-[0.125rem]">
       {components.map((row, i) => (
@@ -297,7 +305,14 @@ export const MessageComponents: React.FC<{
             <div key={`action-row-${i}-component-${ci}`} className="contents">
               <GenericPreviewComponent
                 data={component}
-                authorType={authorType}
+                authorType={
+                  // We shouldn't lie about the author type
+                  (authorType === undefined ||
+                    authorType < AuthorType.ApplicationWebhook) &&
+                  isAllLinkButtons
+                    ? AuthorType.ApplicationWebhook
+                    : authorType
+                }
                 cache={cache}
                 t={t}
               />
