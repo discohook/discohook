@@ -300,11 +300,11 @@ const handleInteraction = async (
             return respond(
               ctx.reply({
                 content: [
-                  "This component hasn't been linked with a server. Please have",
+                  "This component hasn't been linked with a server. Please tell",
                   "the component owner (the person who created the component on",
-                  "the Discohook site) use the component at least once. This will",
-                  "link the component with the current server. After you do this,",
-                  "the component should work as expected.",
+                  "the Discohook site) to use the component at least once. This",
+                  "will link the component with the current server. After you do",
+                  "this, the component should work as expected.",
                 ].join(" "),
                 ephemeral: true,
               }),
