@@ -99,7 +99,11 @@
                         },
                         "event": {
                             "name": "evento",
-                            "description": "L'avvenimento che farà scattare il trigger"
+                            "description": "L'avvenimento che farà scattare il trigger",
+                            "choices": {
+                                "0": "Unione di un Utente",
+                                "1": "Rimozione di un Utente"
+                            }
                         }
                     }
                 }
