@@ -17,6 +17,7 @@ import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import DatePicker from "../pickers/DatePicker";
 import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
+import { transformFileName } from "../preview/Embed";
 import {
   ColorPicker,
   decimalToHex,
@@ -841,7 +842,10 @@ const EmbedFileSelect = (props: {
       }))}
       onChange={(o) => {
         const opt = o as { label: string; value: string };
-        onChange({ filename: opt.value, url: `attachment://${opt.value}` });
+        onChange({
+          filename: opt.value,
+          url: `attachment://${transformFileName(opt.value)}`,
+        });
       }}
     >
       {t("file")}
