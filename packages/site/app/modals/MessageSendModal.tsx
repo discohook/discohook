@@ -51,7 +51,7 @@ export type SubmitMessageResult =
     };
 
 export const submitMessage = async (
-  target: Pick<APIWebhook, "id" | "token">,
+  target: Pick<APIWebhook, "id" | "token" | "application_id">,
   message: QueryData["messages"][number],
   files?: DraftFile[],
   rest?: REST,
@@ -67,6 +67,23 @@ export const submitMessage = async (
       },
     };
   }
+  // `with_components` is `true` when:
+  // - the webhook is not owned by an application, and
+  // - there are components, and
+  // - they are all link buttons
+  // and `undefined` otherwise (let default behavior take over)
+  const withComponents = target.application_id
+    ? undefined
+    : message.data.components
+      ? message.data.components?.find(
+          (r) =>
+            r.components.filter(
+              (c) =>
+                c.type === ComponentType.Button && c.style === ButtonStyle.Link,
+            ).length === r.components.length,
+        ) !== undefined
+      : undefined;
+
   let data: APIMessage | DiscordErrorData;
   const components = message.data.components
     ? structuredClone(message.data.components).map((row) => {
@@ -100,6 +117,7 @@ export const submitMessage = async (
       files,
       message.thread_id ?? orThreadId,
       rest,
+      withComponents,
     );
   } else {
     const threadName = message.data.thread_name?.trim();
@@ -122,6 +140,7 @@ export const submitMessage = async (
       files,
       threadName ? undefined : message.thread_id ?? orThreadId,
       rest,
+      withComponents,
     );
   }
   return {

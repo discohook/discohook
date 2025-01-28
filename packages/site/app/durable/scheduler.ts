@@ -67,7 +67,9 @@ export class DurableScheduler implements DurableObject {
     const targets = (backup.data.targets ?? [])
       .map(({ url }) => {
         const match = url.match(WEBHOOK_URL_RE);
-        return match ? { id: match[1], token: match[2] } : undefined;
+        return match
+          ? { id: match[1], token: match[2], application_id: null }
+          : undefined;
       })
       .filter((v): v is NonNullable<typeof v> => !!v);
     if (targets.length === 0) {

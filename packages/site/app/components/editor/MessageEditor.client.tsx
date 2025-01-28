@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
 import { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
@@ -378,7 +378,17 @@ export const MessageEditor: React.FC<{
         )}
         {message.data.components && message.data.components.length > 0 && (
           <>
-            {!possiblyActionable && (
+            {!possiblyActionable &&
+            // No actionable webhooks and there are not only link buttons in
+            // the message, so the user will have issues sending the message
+            message.data.components
+              .flatMap((r) => r.components)
+              .map(
+                (c) =>
+                  c.type === ComponentType.Button &&
+                  c.style === ButtonStyle.Link,
+              )
+              .includes(false) ? (
               <>
                 <p className="mt-1 text-lg font-semibold cursor-default select-none">
                   {t("components")}
@@ -404,7 +414,7 @@ export const MessageEditor: React.FC<{
                   )}
                 </InfoBox>
               </>
-            )}
+            ) : null}
             <div className="space-y-1">
               {message.data.components.map((row, ri) => (
                 <div key={`edit-message-${id}-row-${ri}`}>

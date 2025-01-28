@@ -164,10 +164,14 @@ export const executeWebhook = async (
   files?: DraftFile[],
   threadId?: string,
   rest?: REST,
+  withComponents?: boolean,
 ) => {
   const query = new URLSearchParams({ wait: "true" });
   if (threadId) {
     query.set("thread_id", threadId);
+  }
+  if (withComponents !== undefined) {
+    query.set("with_components", String(withComponents));
   }
 
   if (rest) {
@@ -217,10 +221,14 @@ export const updateWebhookMessage = async (
   files?: DraftFile[],
   threadId?: string,
   rest?: REST,
+  withComponents?: boolean,
 ) => {
   const query = new URLSearchParams();
   if (threadId) {
     query.set("thread_id", threadId);
+  }
+  if (withComponents !== undefined) {
+    query.set("with_components", String(withComponents));
   }
 
   if (rest) {

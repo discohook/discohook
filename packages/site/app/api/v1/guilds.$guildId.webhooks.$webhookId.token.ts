@@ -35,7 +35,13 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   });
   if (dbWebhook) {
     if (dbWebhook.token) {
-      return respond(json({ id: String(webhookId), token: dbWebhook.token }));
+      return respond(
+        json({
+          id: String(webhookId),
+          token: dbWebhook.token,
+          application_id: dbWebhook.applicationId,
+        }),
+      );
     }
     if (
       dbWebhook.applicationId &&
@@ -108,6 +114,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     json({
       id: webhook.id,
       token: webhook.token,
+      application_id: webhook.application_id,
     }),
   );
 };
