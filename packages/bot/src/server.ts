@@ -297,10 +297,11 @@ const handleInteraction = async (
             return respond(
               ctx.reply({
                 content: [
-                  "In order to prevent private data from leaking into other servers,",
-                  "please send a message with this component in a private channel and",
-                  "use it at least once. This links the component with the current server.",
-                  "After you do this, the component used in this context should work as expected.",
+                  "This component hasn't been linked with a server. Please have",
+                  "the component owner (the person who created the component on",
+                  "the Discohook site) use the component at least once. This will",
+                  "link the component with the current server. After you do this,",
+                  "the component should work as expected.",
                 ].join(" "),
                 ephemeral: true,
               }),

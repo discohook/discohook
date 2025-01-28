@@ -217,12 +217,18 @@ const registerComponent = async (
           : undefined,
       },
     )) as APIMessage;
-  } catch {
-    throw new Error(dedent`
-      Failed to fetch the message (${flow.message.id}).
-      Make sure the webhook (${flow.message.webhookId})
-      exists and is in the same channel.
-    `);
+  } catch (e) {
+    if (isDiscordError(e)) {
+      throw new Error(
+        [
+          `Failed to fetch the message (${flow.message.id}).`,
+          `Make sure the webhook (${flow.message.webhookId})`,
+          `exists and is in the same channel. (${e.code})`,
+        ].join(" "),
+      );
+    }
+    console.error(flow.message.id, e);
+    throw new Error(`Failed to fetch the message (${flow.message.id}).`);
   }
   // const components = message.components
   //   ? message.components.map(c => new ActionRowBuilder(c))
