@@ -348,7 +348,7 @@
   "addComponents": "Add Components",
   "componentsNoWebhook": "For buttons and select menus to work properly, use a webhook owned by Discohook. Add a webhook for more info.",
   "componentsPossibleWebhook": "One or more of your webhooks are owned by an app other than Discohook, so you should only add link buttons. Add a webhook owned by Discohook to use other components.",
-  "componentsNoUsableWebhook": "None of your webhooks are compatible with non-link buttons. Add a webhook owned by Discohook.",
+  "componentsNoUsableWebhook": "None of your webhooks are compatible with non-link buttons, so none will be visible. Add a webhook owned by Discohook.",
   "componentsNotLoggedIn": "You aren't logged in, so you can't save this component to your account, and components with flows won't be executed. If you just want display buttons, feel free to check the \"$t(disabled)\" box.",
   "component": {
     "1": "Row",
