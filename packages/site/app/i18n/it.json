@@ -311,7 +311,7 @@
         "0": "Un utente si unisce al server",
         "1": "Un utente abbandona il server (o è rimosso da esso)"
     },
-    "componentsNoWebhook": "Per far funzionare correttamente i pulsanti e i menu a tendina, usa un webhook di proprietà di Discohook Utils. Aggiungi un webhook per più informazioni.",
+    "componentsNoWebhook": "Per far funzionare correttamente i pulsanti e i menu a tendina, usa un webhook di proprietà di Discohook. Aggiungi un webhook per più informazioni.",
     "havingTrouble": "Hai Difficoltà?",
     "botTokenCheck": "Token del Bot <0/>",
     "botNoTokenNote": "Fornire un token di un bot è facoltativo. Quando un token è impostato, il tuo bot può eseguire azioni indipendentemente da Discohook Utils.",
@@ -328,7 +328,7 @@
     "overwriteMessage": "Editor per Sovrascrivere",
     "referenceNoWebhooks": "Non hai aggiunto nessun webhook che corrisponde al link del messaggio che hai fornito. Per sovrascrivere o modificare, devi aggiungere il webhook corretto.",
     "clickToSet": "Premi per Impostare",
-    "componentsPossibleWebhook": "Uno o più dei tuoi webhook è di proprietà di un'app, ma non Discohook, quindi potresti usare solo pulsanti di link. Aggiungi un webhook di proprietà di Discohook per usare più tipi di componenti.",
+    "componentsPossibleWebhook": "Uno o più dei tuoi webhook è di proprietà di un'app, dicversa da Discohook, quindi potresti usare solo pulsanti di link. Aggiungi un webhook di proprietà di Discohook per usare più tipi di componenti.",
     "newBot": "Nuovo Bot",
     "appClearSecret": "Resetta il Secret",
     "appSecretHiddenNote": "Per motivi di sicurezza, il tuo secret non è mai mostrato dopo che lo salvi qui. Se hai resettato il tuo client secret, premi \"Resetta Secret\" e risalvalo.",
@@ -347,7 +347,7 @@
     "authorUrl": "URL dell'Autore",
     "iconUrl": "URL dell'Icona",
     "botTokenOwnerWarning": "Assicurati che il tuo account Discord corrente ({{username}}) sia il proprietario del bot o nel suo team, altrimenti il token sarà resettato come misura di sicurezza.",
-    "componentsNoUsableWebhook": "Nessuno dei tuoi webhook è compatibile con i componenti. Aggiungi un webhook di proprietà di Discohook.",
+    "componentsNoUsableWebhook": "Nessuno dei tuoi webhook è compatibile con i bottoni diversi da bottoni per link, quindi nessuno sarà visibile. Aggiungi un webhook di proprietà di Discohook.",
     "botInteractionUrlNote": "Incolla questo nella sezione \"Genral Information\" del <0>Discord Developer Portal</0> in modo che il tuo bot possa rispondere agli utenti.",
     "troubleshootMessage": "Se premi il bottone di invio e non succede niente, può essere perché il tuo browser sta bloccando le connessioni a Discord, che non è raro per delle estensioni focalizzate sulla protezione della privacy come Privacy Badger. Prova a disabilitare le estensioni di questo tipo oppure utilizzare la modalità in incognito/privata.",
     "everyWeekday": "Qualsiasi giorno della settimana",
@@ -577,7 +577,7 @@
             "years_past_other": ""
         },
         "footer": {
-            "other": "{{ date, MM/DD/YYYY h:mm A }}",
+            "other": "{{ date, M/D/YYYY h:mm A }}",
             "yesterday": "Ieri alle {{ date, h:mm A }}",
             "today": "Oggi alle {{ date, h:mm A }}",
             "tomorrow": "Domani alle {{ date, h:mm A }}"
@@ -587,7 +587,7 @@
         "full": "{{ date, MMMM D, YYYY h:mm A }}",
         "full_verbose": "{{ date, dddd, MMMM D, YYYY h:mm:ss A }}",
         "time_verbose": "{{ date, h:mm:ss A }}",
-        "date": "{{ date, MM/DD/YYYY }}"
+        "date": "{{ date, M/D/YYYY }}"
     },
     "formatMemberDescription": "L'utente usato qui dipende dal contesto del messaggio. In una risposta di un componenete, è il membro che ha interagito con il componenete. Per il trigger di un'entrata/uscita di un membro, è il membro che è entrato o che è stato rimosso dal server.",
     "noCacheNote": "Non ci sono dati qui. Aggiungi un webhook o inserisci menzioni manualmente per riempire questo menu.",
