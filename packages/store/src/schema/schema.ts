@@ -523,10 +523,6 @@ export const messageLogEntries = pgTable("MessageLogEntry", {
 export const messageLogEntriesRelations = relations(
   messageLogEntries,
   ({ one }) => ({
-    // webhook: one(webhooks, {
-    //   fields: [messageLogEntries.webhookId],
-    //   references: [webhooks.id],
-    // }),
     discordGuild: one(discordGuilds, {
       fields: [messageLogEntries.discordGuildId],
       references: [discordGuilds.id],
@@ -556,9 +552,6 @@ export const discordMessageComponents = pgTable("DiscordMessageComponent", {
   type: integer("type").notNull().$type<ComponentType>(),
   data: json("data").notNull().$type<StorableComponent>(),
   draft: boolean("draft").notNull().default(false),
-  // oldButtonId: integer("oldButtonId").references(() => buttons.id, {
-  //   onDelete: "set null",
-  // }),
 });
 
 export const discordMessageComponentsRelations = relations(
@@ -580,12 +573,35 @@ export const discordMessageComponentsRelations = relations(
       relationName: "User_DiscordMessageComponent-updated",
     }),
     componentsToFlows: many(discordMessageComponentsToFlows),
-    // oldButton: one(buttons, {
-    //   fields: [discordMessageComponents.oldButtonId],
-    //   references: [buttons.id],
-    // }),
+    // placements: many(discordMessageComponentPlacements),
   }),
 );
+
+// export const discordMessageComponentPlacements = pgTable("DMC_Placement", {
+//   id: snowflakePk(),
+//   componentId: snowflake("componentId")
+//     .notNull()
+//     .references(() => discordMessageComponents.id, { onDelete: "cascade" }),
+//   guildId: snowflake("guildId")
+//     .notNull()
+//     .references(() => discordGuilds.id, { onDelete: "cascade" }),
+//   channelId: snowflake("channelId"),
+//   messageId: snowflake("messageId"),
+// });
+
+// export const discordMessageComponentPlacementsRelations = relations(
+//   discordMessageComponentPlacements,
+//   ({ one }) => ({
+//     discordMessageComponent: one(discordMessageComponents, {
+//       fields: [discordMessageComponentPlacements.componentId],
+//       references: [discordMessageComponents.id],
+//     }),
+//     guild: one(discordGuilds, {
+//       fields: [discordMessageComponentPlacements.guildId],
+//       references: [discordGuilds.id],
+//     }),
+//   }),
+// );
 
 export const discordMessageComponentsToFlows = pgTable(
   "DMC_to_Flow",

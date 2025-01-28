@@ -36,6 +36,7 @@ export const BRoutes = {
   },
 
   /**
+   * - PUT /components/:id
    * - PATCH /components/:id
    * - DELETE /components/:id
    */
@@ -49,6 +50,13 @@ export const BRoutes = {
    */
   components() {
     return "/components" as const;
+  },
+
+  /**
+   * - PATCH /components/bulk
+   */
+  componentsBulk() {
+    return "/components/bulk" as const;
   },
 
   /** - POST /donate/:type */

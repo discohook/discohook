@@ -79,6 +79,40 @@ export const getWebhook = async (
   return webhook;
 };
 
+export const canModifyComponent = async (
+  env: Env,
+  component: {
+    channelId: bigint | null;
+    createdById: bigint | null;
+  },
+  token: TokenWithUser,
+): Promise<boolean> => {
+  if (
+    component.createdById !== null &&
+    component.createdById === BigInt(token.user.id)
+  ) {
+    return true;
+  }
+  if (component.channelId) {
+    const permissions = await getTokenGuildChannelPermissions(
+      token,
+      component.channelId,
+      env,
+    );
+    if (
+      !permissions.owner &&
+      !permissions.permissions.has(
+        PermissionFlags.ViewChannel,
+        PermissionFlags.ManageMessages,
+        PermissionFlags.ManageWebhooks,
+      )
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
   console.log(`[${request.method} Component]`, id);
@@ -162,6 +196,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       const component = await zxParseJson(
         request,
         ZodAPIMessageActionRowComponent,
+        // .and(
+        //   z.object({
+        //     guild_id: snowflakeAsString().optional(),
+        //     channel_id: snowflakeAsString().optional(),
+        //     message_id: snowflakeAsString().optional(),
+        //   }),
+        // ),
       );
       const premium = userIsPremium(token.user);
       if ("flow" in component && component.flow) {
@@ -212,6 +253,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         columns: {
           createdById: true,
           data: true,
+          guildId: true,
           channelId: true,
         },
         with: {
@@ -223,27 +265,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       if (!current) {
         throw respond(json({ message: "Unknown Component" }, 404));
       }
-      if (
-        current.createdById !== null &&
-        current.createdById !== BigInt(token.user.id)
-      ) {
-        if (current.channelId) {
-          const permissions = await getTokenGuildChannelPermissions(
-            token,
-            current.channelId,
-            context.env,
-          );
-          if (
-            !permissions.owner &&
-            !permissions.permissions.has(
-              PermissionFlags.ViewChannel,
-              PermissionFlags.ManageMessages,
-              PermissionFlags.ManageWebhooks,
-            )
-          ) {
-            throw respond(json({ message: "Unknown Component" }, 404));
-          }
-        }
+      if (!(await canModifyComponent(context.env, current, token))) {
         throw respond(json({ message: "You do not own this component" }, 403));
       }
       if (current.data.type !== component.type) {
@@ -412,6 +434,76 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
       return respond(json(updated));
     }
+    case "PATCH": {
+      const db = getDb(context.env.HYPERDRIVE);
+      const current = await db.query.discordMessageComponents.findFirst({
+        where: (table, { eq }) => eq(table.id, id),
+        columns: {
+          createdById: true,
+          guildId: true,
+          channelId: true,
+          messageId: true,
+        },
+      });
+      if (
+        !current ||
+        !(await canModifyComponent(context.env, current, token))
+      ) {
+        throw respond(json({ message: "Unknown Component" }, 404));
+      }
+
+      // We're eventually going to move to "placements" which don't bind
+      // components to one guild in particular, alleviating lots of headaches
+      const payload = await zxParseJson(request, {
+        guildId: snowflakeAsString().optional(),
+        channelId: snowflakeAsString().optional(),
+        messageId: snowflakeAsString().optional(),
+        // draft: z.boolean().optional(),
+      });
+      const update: Pick<
+        typeof discordMessageComponents.$inferInsert,
+        | "channelId"
+        | "messageId"
+        | "guildId"
+        | "draft"
+        | "updatedById"
+        | "updatedAt"
+      > = {
+        updatedAt: new Date(),
+        updatedById: BigInt(token.user.id),
+      };
+      if (payload.channelId && payload.messageId && payload.guildId) {
+        if (
+          current.guildId &&
+          payload.guildId !== current.guildId &&
+          current.createdById !== BigInt(token.user.id)
+        ) {
+          throw respond(
+            json(
+              {
+                message:
+                  "Only the component owner can modify guild ID when one is already set",
+              },
+              403,
+            ),
+          );
+        }
+
+        update.messageId = payload.messageId;
+        update.channelId = payload.channelId;
+        update.guildId = payload.guildId;
+        update.draft = false;
+      }
+
+      if (Object.keys(update).length > 2) {
+        await db
+          .update(discordMessageComponents)
+          .set(update)
+          .where(eq(discordMessageComponents.id, id));
+      }
+
+      throw respond(new Response(null, { status: 204 }));
+    }
     case "DELETE": {
       const db = getDb(context.env.HYPERDRIVE);
       const current = await db.query.discordMessageComponents.findFirst({
@@ -422,26 +514,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           messageId: true,
         },
       });
-      if (current?.channelId) {
-        const permissions = await getTokenGuildChannelPermissions(
-          token,
-          current.channelId,
-          context.env,
-        );
-        if (
-          !permissions.owner &&
-          !permissions.permissions.has(
-            PermissionFlags.ViewChannel,
-            PermissionFlags.ManageMessages,
-            PermissionFlags.ManageWebhooks,
-          )
-        ) {
-          throw respond(json({ message: "Unknown Component" }, 404));
-        }
-      }
       if (
         !current ||
-        (!current.channelId && current.createdById !== token.user.id)
+        !(await canModifyComponent(context.env, current, token))
       ) {
         throw respond(json({ message: "Unknown Component" }, 404));
       }

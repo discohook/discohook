@@ -23,8 +23,7 @@ import { BRoutes, apiUrl } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import {
-  action as ApiAuditLogAction,
-  getComponentId,
+  getComponentId
 } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
@@ -907,9 +906,9 @@ export default () => {
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
     onError: setError,
   });
-  const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
-    onError: setError,
-  });
+  // const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
+  //   onError: setError,
+  // });
 
   return (
     <div>

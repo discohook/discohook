@@ -9,12 +9,14 @@ import {
   APIMessageStringSelectInteractionData,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  ApplicationIntegrationType,
   ButtonStyle,
   ComponentType,
   GatewayDispatchEvents,
   InteractionResponseType,
   InteractionType,
   MessageFlags,
+  RESTJSONErrorCodes,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
@@ -232,7 +234,8 @@ const handleInteraction = async (
       }
     } else if (customId.startsWith("p_")) {
       const ctx = new InteractionContext(rest, interaction, env);
-      if (!interaction.guild_id) {
+      const guildId = interaction.guild_id;
+      if (!guildId) {
         return respond({ error: "Must be in a guild context", status: 400 });
       }
 
@@ -286,12 +289,12 @@ const handleInteraction = async (
             await db
               .update(discordMessageComponents)
               .set({
-                guildId: BigInt(interaction.guild_id),
+                guildId: BigInt(guildId),
                 channelId: BigInt(interaction.channel.id),
               })
               .where(eq(discordMessageComponents.id, componentId));
 
-            dryComponent.guildId = BigInt(interaction.guild_id);
+            dryComponent.guildId = BigInt(guildId);
             dryComponent.channelId = BigInt(interaction.channel.id);
           } else {
             return respond(
@@ -358,13 +361,48 @@ const handleInteraction = async (
       // if (component.draft) {
       //   return respond({ error: "Component is marked as draft" });
       // }
-      const guildId = interaction.guild_id;
-      if (!guildId) {
-        return respond({ error: "No guild ID" });
+
+      let guild: TriggerKVGuild;
+      try {
+        guild = await getchTriggerGuild(rest, env, guildId);
+      } catch (e) {
+        if (isDiscordError(e) && e.code === RESTJSONErrorCodes.UnknownGuild) {
+          return respond(
+            ctx.reply({
+              content:
+                "Discohook Utils needs to be a member of this server in order to use components.",
+              ephemeral: true,
+              components: [
+                {
+                  type: ComponentType.ActionRow,
+                  components: [
+                    {
+                      type: ComponentType.Button,
+                      style: ButtonStyle.Link,
+                      label: "Add Bot",
+                      url: `https://discord.com/oauth2/authorize?${new URLSearchParams(
+                        {
+                          client_id: interaction.application_id,
+                          scope: "bot",
+                          guild_id: guildId,
+                          disable_guild_select: "true",
+                          integration_type: String(
+                            ApplicationIntegrationType.GuildInstall,
+                          ),
+                        },
+                      )}`,
+                    },
+                  ],
+                },
+              ],
+            }),
+          );
+        }
+        throw e;
       }
 
       const liveVars: LiveVariables = {
-        guild: await getchTriggerGuild(rest, env, guildId),
+        guild,
         member: interaction.member,
         user: interaction.member?.user,
       };

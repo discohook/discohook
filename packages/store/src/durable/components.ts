@@ -64,7 +64,7 @@ export class DurableComponentState implements DurableObject {
           },
         });
         if (!component) {
-          return new Response(undefined, { status: 404 });
+          return new Response(null, { status: 404 });
         }
 
         await this.state.storage.put(
@@ -75,29 +75,23 @@ export class DurableComponentState implements DurableObject {
           await this.state.storage.put("alarmType", AlarmType.Expiration);
           await this.state.storage.setAlarm(expireAt);
         }
-        return new Response(JSON.stringify(component), {
-          status: 201,
-          headers: { "Content-Type": "application/json" },
-        });
+        return Response.json(component, { status: 201 });
       }
       case "GET": {
         const component =
           await this.state.storage.get<DurableStoredComponent>("component");
         if (!component) {
-          return new Response(undefined, { status: 404 });
+          return new Response(null, { status: 404 });
         }
 
-        return new Response(JSON.stringify(component), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        return Response.json(component, { status: 200 });
       }
       case "DELETE": {
         await this.state.storage.delete("component");
-        return new Response(undefined, { status: 204 });
+        return new Response(null, { status: 204 });
       }
       default:
-        return new Response(undefined, { status: 405 });
+        return new Response(null, { status: 405 });
     }
   }
 
@@ -130,6 +124,9 @@ export const launchComponentDurableObject = async (
   const response = await stub.fetch(`http://do/?id=${options.componentId}`, {
     method: "PUT",
   });
+  if (!response.ok) {
+    throw Error(`${response.status} ${response.statusText}`);
+  }
 
   const raw = await response.text();
   const data = JSON.parse(raw) as DurableStoredComponent;

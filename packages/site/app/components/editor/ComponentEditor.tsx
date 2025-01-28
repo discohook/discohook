@@ -644,9 +644,41 @@ export const IndividualComponentEditor: React.FC<{
           type="button"
           disabled={anySubmitting}
           onClick={() => {
-            // TODO: delete request
             row.components.splice(index, 1);
             updateRow();
+
+            // Not sure about this as of now. I think we should have a pop up
+            // that asks the user if they want to delete the component (and/or
+            // check placements to see if it exists elsewhere)
+            // const pattern = /^p_(\d+)$/;
+            // if (component.custom_id && pattern.test(component.custom_id)) {
+            // const id = component.custom_id.match(pattern)![1];
+            // fetch(apiUrl(BRoutes.component(id)), {
+            //   method: "PATCH",
+            //   body: JSON.stringify({ draft: true }),
+            //   headers: { "Content-Type": "application/json" },
+            // })
+            //   .then((r) =>
+            //     console.log(
+            //       `${r.status} ${r.statusText} drafting component ${id}`,
+            //     ),
+            //   )
+            //   .catch((e) =>
+            //     console.error(`Error attempting to draft component ${id}`, e),
+            //   );
+            // fetch(apiUrl(BRoutes.component(id)), { method: "DELETE" })
+            //   .then((r) =>
+            //     console.log(
+            //       `${r.status} ${r.statusText} deleting component ${id}`,
+            //     ),
+            //   )
+            //   .catch((e) =>
+            //     console.error(
+            //       `Error attempting to delete component ${id}`,
+            //       e,
+            //     ),
+            //   );
+            // }
           }}
         >
           <CoolIcon icon="Trash_Full" />
