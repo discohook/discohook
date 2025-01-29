@@ -11,7 +11,9 @@ export const jsonAsString = <T extends z.ZodTypeAny>(schema?: T) =>
       try {
         const parsed = JSON.parse(val);
         if (schema) {
-          return schema.safeParse(parsed).success;
+          const sp = schema.safeParse(parsed);
+          // if (!sp.success) console.log(sp.error.issues);
+          return sp.success;
         }
         return true;
       } catch {

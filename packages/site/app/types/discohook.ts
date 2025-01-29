@@ -9,7 +9,7 @@ export const ZodDiscohookBackup = z.object({
   id: z.onumber(),
   name: z.string(),
   messages: ZodQueryDataMessage.array(),
-  targets: ZodQueryDataTarget.array(),
+  targets: ZodQueryDataTarget.array().default(() => []),
   schedule: z
     .object({
       cron: z.string(),

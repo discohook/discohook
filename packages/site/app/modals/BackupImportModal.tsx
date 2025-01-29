@@ -18,13 +18,13 @@ export const backupDataAsNewest = (
       return data.backups.map((backup) => ({
         name: backup.name,
         messages: [{ data: backup.message }],
-        targets: backup.webhookUrl ? [{ url: backup.webhookUrl }] : undefined,
+        targets: backup.webhookUrl ? [{ url: backup.webhookUrl }] : [],
       }));
     case 4:
       return data.backups.map((backup) => ({
         name: backup.name,
         messages: backup.messages.map((message) => ({ data: message })),
-        targets: backup.webhookUrl ? [{ url: backup.webhookUrl }] : undefined,
+        targets: backup.webhookUrl ? [{ url: backup.webhookUrl }] : [],
       }));
     case 5:
       return data.backups.map((backup) => ({
@@ -33,13 +33,13 @@ export const backupDataAsNewest = (
           data: message,
           reference: backup.target.message,
         })),
-        targets: backup.target.url ? [{ url: backup.target.url }] : undefined,
+        targets: backup.target.url ? [{ url: backup.target.url }] : [],
       }));
     case 6:
       return data.backups.map((backup) => ({
         name: backup.name,
         messages: backup.messages,
-        targets: backup.target.url ? [{ url: backup.target.url }] : undefined,
+        targets: backup.target.url ? [{ url: backup.target.url }] : [],
       }));
     case 7:
     case 8:
