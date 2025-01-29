@@ -60,7 +60,7 @@ const Inner = ({
     daysOfWeek: cronDaysOfWeek.map((day) => ({
       // October 1st 2000 is a Sunday
       // This is a bit of a hack but it's easy and doesn't require Moment
-      label: new Date(`2000-10-${day + 1}`).toLocaleDateString(undefined, {
+      label: new Date(2000, 9, day + 1).toLocaleDateString(undefined, {
         weekday: "long",
       }),
       value: day,
@@ -70,7 +70,7 @@ const Inner = ({
       value: day,
     })),
     months: cronMonths.map((month) => ({
-      label: new Date(`2000-${month}-1`).toLocaleDateString(undefined, {
+      label: new Date(2000, month - 1, 1).toLocaleDateString(undefined, {
         month: "long",
       }),
       value: month,

@@ -156,7 +156,7 @@ export const cronToEnglish = ({
     phrase += `on ${new Intl.ListFormat().format(
       dayOfWeek.map((d) =>
         // Hardcoded locale because the rest of the string is in English
-        new Date(`2000-10-${d + 1}`).toLocaleDateString("en-US", {
+        new Date(2000, 9, d + 1).toLocaleDateString("en-US", {
           weekday: "long",
         }),
       ),
@@ -170,7 +170,7 @@ export const cronToEnglish = ({
   if (month.length !== cronMonths.length) {
     phrase += `in ${new Intl.ListFormat().format(
       month.map((m) =>
-        new Date(`2000-${m}-1`).toLocaleDateString("en-US", { month: "long" }),
+        new Date(2000, m - 1, 1).toLocaleDateString("en-US", { month: "long" }),
       ),
     )} `;
   }
