@@ -348,7 +348,7 @@ export const ComponentEditForm = ({
                       <div className="grow">
                         <TextInput
                           label={t("valueHidden")}
-                          className="w-full"
+                          className="w-full text-muted dark:text-muted-dark focus:text-current font-code"
                           value={option.value ?? ""}
                           maxLength={100}
                           onInput={(e) => {
