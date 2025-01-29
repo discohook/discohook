@@ -107,6 +107,7 @@ export const BackupImportModal = (
         />
       </InfoBox>
       <FileInput
+        t={t}
         label={t("backupsFile")}
         accept=".json"
         errors={fileErrors}

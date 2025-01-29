@@ -164,6 +164,7 @@
   "backupNameDuplicate": "<0/> You already have a backup with this name",
   "viewBackupName": "View {{name}}",
   "importCount": "Import {{count}}",
+  "selectFile": "Select a file",
   "export": "Export",
   "exportBackups": "Export Backups",
   "importedFromOrgAt": "Imported from discohook.org on $t(timestamp.date_verbose)",
