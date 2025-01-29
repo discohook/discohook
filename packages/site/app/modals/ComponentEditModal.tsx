@@ -101,7 +101,9 @@ export const SelectMenuOptionsSection: React.FC<
             type="button"
             className={component.options.length >= 25 ? "hidden" : ""}
             onClick={() => {
-              component.options.splice(index + 1, 0, structuredClone(option));
+              const cloned = structuredClone(option);
+              cloned.value = randomString(10);
+              component.options.splice(index + 1, 0, cloned);
               update();
             }}
           >
