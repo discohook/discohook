@@ -1,6 +1,6 @@
 import { Await, Link, useSubmit } from "@remix-run/react";
 import { Suspense, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { FileInput } from "~/components/FileInput";
@@ -95,18 +95,19 @@ export const BackupImportModal = (
     <Modal {...props}>
       <PlainModalHeader>{t("importBackups")}</PlainModalHeader>
       <InfoBox icon="Info">
-        If you want to import your backups stored on Discohook.org,{" "}
-        <Link
-          className={twMerge(linkClassName, "dark:text-blurple")}
-          to="/me/import-org-backups"
-        >
-          click here
-        </Link>
-        . Otherwise, you can use this menu to import backup files that you have
-        previously exported.
+        <Trans
+          t={t}
+          i18nKey="importOrgPrompt"
+          components={[
+            <Link
+              className={twMerge(linkClassName, "dark:text-blurple")}
+              to="/me/import-org-backups"
+            />,
+          ]}
+        />
       </InfoBox>
       <FileInput
-        label="Backups File"
+        label={t("backupsFile")}
         accept=".json"
         errors={fileErrors}
         onInput={(e) => {
@@ -118,7 +119,7 @@ export const BackupImportModal = (
             setSelectedBackups([]);
 
             if (file.type !== "application/json") {
-              setFileErrors(["This is not a properly encoded JSON file."]);
+              setFileErrors([t("badJsonFile")]);
               return;
             }
 
@@ -134,9 +135,7 @@ export const BackupImportModal = (
                   );
                 }
               } catch {
-                setFileErrors([
-                  "Failed to parse the file. Make sure it is a valid, unmodified backup export.",
-                ]);
+                setFileErrors([t("failedBackupParse")]);
               }
             };
             reader.readAsText(file);
@@ -168,8 +167,13 @@ export const BackupImportModal = (
                         {(pBackups) =>
                           pBackups.map((b) => b.name).includes(backup.name) && (
                             <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                              <CoolIcon icon="Circle_Warning" /> You already
-                              have a backup with this name
+                              <Trans
+                                t={t}
+                                i18nKey="backupNameDuplicate"
+                                components={[
+                                  <CoolIcon icon="Circle_Warning" />,
+                                ]}
+                              />
                             </p>
                           )
                         }
@@ -196,7 +200,9 @@ export const BackupImportModal = (
                     } as QueryData),
                   )}`}
                   className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
-                  title={`View ${backup.name}`}
+                  title={t("viewBackupName", {
+                    replace: { name: backup.name },
+                  })}
                   target="_blank"
                 >
                   <CoolIcon
@@ -229,7 +235,7 @@ export const BackupImportModal = (
           className="ltr:ml-auto rtl:mr-auto"
           disabled={selectedBackups.length === 0}
         >
-          Import {selectedBackups.length}
+          {t("importCount", { count: selectedBackups.length })}
         </Button>
       </ModalFooter>
     </Modal>
