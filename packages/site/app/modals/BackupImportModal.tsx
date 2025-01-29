@@ -1,14 +1,16 @@
 import { Await, Link, useSubmit } from "@remix-run/react";
 import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { twMerge } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { FileInput } from "~/components/FileInput";
 import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { linkClassName } from "~/components/preview/Markdown";
 import { QueryData } from "~/types/QueryData";
 import { DiscohookBackup, DiscohookBackupExportData } from "~/types/discohook";
 import { base64UrlEncode } from "~/util/text";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export const backupDataAsNewest = (
   data: DiscohookBackupExportData,
@@ -70,14 +72,15 @@ export const BackupImportModal = (
   const backups = data ? backupDataAsNewest(data) : undefined;
 
   return (
-    <Modal title={t("importBackups")} {...props}>
+    <Modal {...props}>
+      <PlainModalHeader>{t("importBackups")}</PlainModalHeader>
       <InfoBox icon="Info">
-        If you still have backups stored on Discohook.org, you can{" "}
+        If you want to import your backups stored on Discohook.org,{" "}
         <Link
-          className="text-blurple-500 hover:underline"
+          className={twMerge(linkClassName, "dark:text-blurple")}
           to="/me/import-org-backups"
         >
-          import them by clicking here
+          click here
         </Link>
         . Otherwise, you can use this menu to import backup files that you have
         previously exported.
@@ -103,9 +106,6 @@ export const BackupImportModal = (
             reader.onload = () => {
               try {
                 const parsed = JSON.parse(reader.result as string);
-                // We need to actually validate this properly with zod,
-                // I tried using ZodType with the existing union but
-                // it was succeeding with invalid data.
                 const result = parsed;
                 setData(result);
                 if ("backups" in result) {
@@ -201,7 +201,7 @@ export const BackupImportModal = (
             </div>
           )
         ))}
-      <div className="flex w-full mt-4">
+      <ModalFooter className="flex">
         <Button
           onClick={() => {
             submit(
@@ -218,12 +218,12 @@ export const BackupImportModal = (
             );
             props.setOpen(false);
           }}
-          className="mx-auto"
+          className="ltr:ml-auto rtl:mr-auto"
           disabled={selectedBackups.length === 0}
         >
           Import {selectedBackups.length}
         </Button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 };
