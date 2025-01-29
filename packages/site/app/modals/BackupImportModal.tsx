@@ -7,15 +7,35 @@ import { FileInput } from "~/components/FileInput";
 import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
-import { QueryData } from "~/types/QueryData";
-import { DiscohookBackup, DiscohookBackupExportData } from "~/types/discohook";
-import { base64UrlEncode } from "~/util/text";
+import type { QueryData } from "~/types/QueryData";
+import type {
+  DiscohookBackup,
+  DiscohookBackupExportData,
+  MessageData,
+} from "~/types/discohook";
+import { base64UrlEncode, toSnakeCase } from "~/util/text";
 import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export const backupDataAsNewest = (
   data: DiscohookBackupExportData,
 ): DiscohookBackup[] => {
   switch (data.version) {
+    case 1:
+      return [
+        {
+          name: data.name,
+          messages: [{ data: toSnakeCase(data.message) as MessageData }],
+          targets: [],
+        },
+      ];
+    case 2:
+      return [
+        {
+          name: data.name,
+          messages: [{ data: data.message }],
+          targets: [],
+        },
+      ];
     case 3:
       return data.backups.map((backup) => ({
         name: backup.name,
@@ -123,84 +143,72 @@ export const BackupImportModal = (
           }
         }}
       />
-      {data &&
-        (data.version === 1 || data.version === 2 ? (
-          <p>
-            Sorry, Discohook has dropped support for backups that are this old.
-          </p>
-        ) : (
-          backups && (
-            <div className="my-2 space-y-1 overflow-y-auto max-h-96">
-              {backups.map((backup, i) => {
-                return (
-                  <div
-                    className="flex"
-                    key={`import-backup-${backup.name}-${i}`}
-                  >
-                    <button
-                      type="button"
-                      className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
-                      onClick={() => {
-                        if (selectedBackups.includes(backup.name)) {
-                          setSelectedBackups(
-                            selectedBackups.filter((b) => b !== backup.name),
-                          );
-                        } else {
-                          setSelectedBackups([...selectedBackups, backup.name]);
+      {backups ? (
+        <div className="my-2 space-y-1 overflow-y-auto max-h-96">
+          {backups.map((backup, i) => {
+            return (
+              <div className="flex" key={`import-backup-${backup.name}-${i}`}>
+                <button
+                  type="button"
+                  className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
+                  onClick={() => {
+                    if (selectedBackups.includes(backup.name)) {
+                      setSelectedBackups(
+                        selectedBackups.filter((b) => b !== backup.name),
+                      );
+                    } else {
+                      setSelectedBackups([...selectedBackups, backup.name]);
+                    }
+                  }}
+                >
+                  <div className="my-auto truncate mr-2 text-left py-2">
+                    <p className="font-semibold truncate">{backup.name}</p>
+                    <Suspense>
+                      <Await resolve={props.backups}>
+                        {(pBackups) =>
+                          pBackups.map((b) => b.name).includes(backup.name) && (
+                            <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                              <CoolIcon icon="Circle_Warning" /> You already
+                              have a backup with this name
+                            </p>
+                          )
                         }
-                      }}
-                    >
-                      <div className="my-auto truncate mr-2 text-left py-2">
-                        <p className="font-semibold truncate">{backup.name}</p>
-                        <Suspense>
-                          <Await resolve={props.backups}>
-                            {(pBackups) =>
-                              pBackups
-                                .map((b) => b.name)
-                                .includes(backup.name) && (
-                                <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                                  <CoolIcon icon="Circle_Warning" /> You already
-                                  have a backup with this name
-                                </p>
-                              )
-                            }
-                          </Await>
-                        </Suspense>
-                      </div>
-                      <div className="my-auto ml-auto">
-                        <CoolIcon
-                          icon={
-                            selectedBackups.includes(backup.name)
-                              ? "Checkbox_Check"
-                              : "Checkbox_Unchecked"
-                          }
-                          className="text-blurple-400 text-xl"
-                        />
-                      </div>
-                    </button>
-                    <Link
-                      to={`/?data=${base64UrlEncode(
-                        JSON.stringify({
-                          version: "d2",
-                          messages: backup.messages,
-                          targets: backup.targets,
-                        } as QueryData),
-                      )}`}
-                      className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
-                      title={`View ${backup.name}`}
-                      target="_blank"
-                    >
-                      <CoolIcon
-                        icon="External_Link"
-                        className="text-blurple-400 m-auto"
-                      />
-                    </Link>
+                      </Await>
+                    </Suspense>
                   </div>
-                );
-              })}
-            </div>
-          )
-        ))}
+                  <div className="my-auto ml-auto">
+                    <CoolIcon
+                      icon={
+                        selectedBackups.includes(backup.name)
+                          ? "Checkbox_Check"
+                          : "Checkbox_Unchecked"
+                      }
+                      className="text-blurple-400 text-xl"
+                    />
+                  </div>
+                </button>
+                <Link
+                  to={`/?data=${base64UrlEncode(
+                    JSON.stringify({
+                      version: "d2",
+                      messages: backup.messages,
+                      targets: backup.targets,
+                    } as QueryData),
+                  )}`}
+                  className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
+                  title={`View ${backup.name}`}
+                  target="_blank"
+                >
+                  <CoolIcon
+                    icon="External_Link"
+                    className="text-blurple-400 m-auto"
+                  />
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
       <ModalFooter className="flex">
         <Button
           onClick={() => {

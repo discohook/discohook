@@ -22,7 +22,7 @@ export type DiscohookBackup = z.infer<typeof ZodDiscohookBackup>;
 
 // https://github.com/discohook/site/blob/main/modules/database/backup/types/ExportData.ts
 
-type MessageData = QueryData["messages"][number]["data"];
+export type MessageData = QueryData["messages"][number]["data"];
 
 export type DiscohookBackupExportDataWithBackups =
   | {
