@@ -22,9 +22,7 @@ import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
-import {
-  getComponentId
-} from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
+import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -344,7 +342,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     row: z.number().int().min(0).max(MESSAGE_MAX_ROWS_INDEX).optional(),
     column: z.number().int().min(0).max(ROW_MAX_INDEX).optional(),
   });
-  console.log(`[Edit Component] /edit/component/${id}`);
+  console.log(`[Edit Component] ${id}`);
   let tokenData: KVComponentEditorState | undefined;
   if (token) {
     if (row === undefined || column === undefined) {
@@ -1292,17 +1290,17 @@ export default () => {
               onClick={async () => {
                 setSubmitState("submitting");
                 const updated = await submitComponent(component, setError);
-                if (updated) {
-                  try {
-                    data.components[position[0]].components.splice(
-                      position[1],
-                      1,
-                      updated,
-                    );
-                    setData({});
-                  } catch (e) {
-                    console.error(e);
-                  }
+                if (!updated) return;
+
+                try {
+                  data.components[position[0]].components.splice(
+                    position[1],
+                    1,
+                    updated,
+                  );
+                  setData({});
+                } catch (e) {
+                  console.error(e);
                 }
 
                 if (token) {
