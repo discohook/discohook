@@ -1,7 +1,15 @@
 import { json } from "@remix-run/cloudflare";
 import { Params } from "@remix-run/react";
 import { isSnowflake } from "discord-snowflake";
-import { ZodObject, ZodRawShape, ZodTypeAny, output, z } from "zod";
+import {
+  SafeParseReturnType,
+  ZodError,
+  ZodObject,
+  ZodRawShape,
+  ZodTypeAny,
+  output,
+  z,
+} from "zod";
 import { zx } from "zodix";
 
 export const jsonAsString = <T extends z.ZodTypeAny>(schema?: T) =>
@@ -34,6 +42,12 @@ type ParsedData<T extends ZodRawShape | ZodTypeAny> = T extends ZodTypeAny
   ? output<T>
   : T extends ZodRawShape
     ? output<ZodObject<T>>
+    : never;
+
+type SafeParsedData<T extends ZodRawShape | ZodTypeAny> = T extends ZodTypeAny
+  ? SafeParseReturnType<z.infer<T>, ParsedData<T>>
+  : T extends ZodRawShape
+    ? SafeParseReturnType<ZodObject<T>, ParsedData<T>>
     : never;
 
 type Options = {
@@ -101,24 +115,36 @@ export const zxParseForm = async <T extends ZodRawShape | ZodTypeAny>(
   return parsed.data;
 };
 
+export const zxParseJsonSafe = async <T extends ZodRawShape | ZodTypeAny>(
+  request: Request,
+  schema: T,
+  options?: Options,
+): Promise<SafeParsedData<T>> => {
+  const data = await request.json();
+  // @ts-expect-error
+  const finalSchema = isZodType(schema) ? schema : z.object(schema);
+  // @ts-expect-error
+  return finalSchema.safeParseAsync(data);
+};
+
 export const zxParseJson = async <T extends ZodRawShape | ZodTypeAny>(
   request: Request,
   schema: T,
   options?: Options,
 ): Promise<ParsedData<T>> => {
-  const data = await request.json();
-  // @ts-expect-error
-  const finalSchema = isZodType(schema) ? schema : z.object(schema);
-  // @ts-expect-error
-  const parsed = await finalSchema.safeParseAsync(data);
-  if (!parsed.success) {
+  try {
+    const data = await request.json();
+    // @ts-expect-error
+    const finalSchema = isZodType(schema) ? schema : z.object(schema);
+    // @ts-expect-error
+    return await finalSchema.parseAsync(data);
+  } catch (error) {
     throw json(
       {
         message: options?.message ?? "Bad Request",
-        issues: parsed.error.format(),
+        issues: error instanceof ZodError ? error.format() : undefined,
       },
       { status: options?.status ?? 400 },
     );
   }
-  return parsed.data;
 };
