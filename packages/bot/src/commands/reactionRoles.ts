@@ -326,7 +326,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
               Make sure:
               - <@${ctx.interaction.application_id}> has the View Channel permission in <#${message.channel_id}>
               - <@${ctx.interaction.application_id}> has the Manage Roles permission
-              - <@${ctx.interaction.application_id}>'s highest role is lower than <@&${role.id}> in the role list
+              - <@${ctx.interaction.application_id}>'s highest role is higher than <@&${role.id}> in the role list
             `,
             inline: false,
           },
