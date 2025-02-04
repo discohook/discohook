@@ -49,5 +49,7 @@ export const messageReactionAddCallback: GatewayEventCallback = async (
         reason: `Reaction role in channel ID ${event.channel_id}`,
       },
     );
-  } catch {}
+  } catch (e) {
+    console.error(e);
+  }
 };

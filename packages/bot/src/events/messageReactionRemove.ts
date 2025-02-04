@@ -33,9 +33,7 @@ export const messageReactionRemoveCallback: GatewayEventCallback = async (
       });
       return;
     }
-    data = {
-      roleId: String(stored.roleId),
-    };
+    data = { roleId: String(stored.roleId) };
     await env.KV.put(key, JSON.stringify(data), { expirationTtl: 604800 });
   }
   if (!data.roleId) return;
@@ -44,9 +42,9 @@ export const messageReactionRemoveCallback: GatewayEventCallback = async (
   try {
     await rest.delete(
       Routes.guildMemberRole(event.guild_id, event.user_id, data.roleId),
-      {
-        reason: `Reaction role in channel ID ${event.channel_id}`,
-      },
+      { reason: `Reaction role in channel ID ${event.channel_id}` },
     );
-  } catch {}
+  } catch (e) {
+    console.error(e);
+  }
 };

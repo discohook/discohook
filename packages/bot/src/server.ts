@@ -508,7 +508,7 @@ const handleInteraction = async (
               },
               ctx,
             );
-            console.log(result);
+            if (env.ENVIRONMENT === "dev") console.log(result);
           }
         })(),
       );
@@ -618,7 +618,7 @@ const handleInteraction = async (
               },
               ctx,
             );
-            console.log(result);
+            if (env.ENVIRONMENT === "dev") console.log(result);
           }
         })(),
       );
