@@ -17,7 +17,10 @@ type RedisValue =
   | string[];
 
 export class RedisKV<Key extends string = string> {
-  constructor(private options: RedisOptions) {}
+  constructor(
+    private options: RedisOptions,
+    private debugLogs = false,
+  ) {}
 
   private get auth() {
     const credentials = `${this.options.username}:${this.options.password}`;
@@ -84,16 +87,22 @@ export class RedisKV<Key extends string = string> {
       // outgoing requests and processing time we just intercept it. Needs to
       // be properly fixed in the future. The log is here to show whether this
       // is still happening.
-      console.log(`[REDIS] GET ${key.slice(0, 100)} (skip)`);
+      if (this.debugLogs) {
+        console.log(`[REDIS] GET ${key.slice(0, 100)} (skip)`);
+      }
       return null;
     }
 
     const value = await this.send("GET", key);
     if (value === null) {
-      console.log(`[REDIS] GET ${key.slice(0, 100)} (nil)`);
+      if (this.debugLogs) {
+        console.log(`[REDIS] GET ${key.slice(0, 100)} (nil)`);
+      }
       return null;
     }
-    console.log(`[REDIS] GET ${key.slice(0, 100)} (present)`);
+    if (this.debugLogs) {
+      console.log(`[REDIS] GET ${key.slice(0, 100)} (present)`);
+    }
 
     // value is `string` at this point
     const parsed = JSON.parse(String(value)) as {
@@ -139,7 +148,9 @@ export class RedisKV<Key extends string = string> {
   > {
     const value = await this.send("GET", key);
     if (value === null) {
-      console.log(`[REDIS] GET ${key.slice(0, 100)} (nil)`);
+      if (this.debugLogs) {
+        console.log(`[REDIS] GET ${key.slice(0, 100)} (nil)`);
+      }
       return { value: null, metadata: null, cacheStatus: null };
     }
     const parsed = JSON.parse(String(value)) as {
@@ -150,7 +161,9 @@ export class RedisKV<Key extends string = string> {
       ? (JSON.parse(parsed.metadata) as Metadata)
       : null;
 
-    console.log(`[REDIS] GET ${key.slice(0, 100)} (present)`);
+    if (this.debugLogs) {
+      console.log(`[REDIS] GET ${key.slice(0, 100)} (present)`);
+    }
     if (
       typeof parsed.value === "string" &&
       (options === "json" ||
@@ -177,7 +190,9 @@ export class RedisKV<Key extends string = string> {
       opts.push("EXAT", String(Math.floor(options.expiration)));
     }
 
-    console.log(`[REDIS] SET ${key.slice(0, 100)}`);
+    if (this.debugLogs) {
+      console.log(`[REDIS] SET ${key.slice(0, 100)}`);
+    }
     await this.send(
       "SET",
       key,
@@ -202,10 +217,13 @@ export const getRedis = (env: Env): RedisKV => {
   const { protocol, host, username, password, pathname } = new URL(
     env.REDIS_URL,
   );
-  return new RedisKV({
-    url: `${protocol.replace("redis", "http")}//${host}`,
-    username,
-    password,
-    database: pathname.substring(1) || undefined,
-  });
+  return new RedisKV(
+    {
+      url: `${protocol.replace("redis", "http")}//${host}`,
+      username,
+      password,
+      database: pathname.substring(1) || undefined,
+    },
+    env.ENVIRONMENT !== "production",
+  );
 };

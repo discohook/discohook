@@ -4,6 +4,7 @@ import { RedisKV } from "./redis.js";
 import { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
 
 export type Env = {
+  ENVIRONMENT: "dev" | "preview" | "production";
   SESSIONS: DurableObjectNamespace;
   REDIS_URL: string;
   KV: RedisKV;
