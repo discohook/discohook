@@ -291,7 +291,6 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   env,
   payload: GatewayGuildMemberAddDispatchData,
 ) => {
-  console.log(`[event:GUILD_MEMBER_ADD] ${payload.guild_id}`);
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
   // Don't like this. We really should store all triggers per guild id,

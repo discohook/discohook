@@ -17,7 +17,6 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   env,
   payload: GatewayGuildMemberRemoveDispatchData,
 ) => {
-  console.log(`[event:GUILD_MEMBER_REMOVE] ${payload.guild_id}`);
   if (payload.user.id === env.DISCORD_APPLICATION_ID) return [];
 
   const rest = new REST().setToken(env.DISCORD_TOKEN);

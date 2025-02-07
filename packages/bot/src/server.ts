@@ -818,7 +818,28 @@ router.post("/ws/bulk", async (request, env: Env, eCtx: ExecutionContext) => {
     return respond({ error: "No event callback found.", status: 404 });
   }
 
-  console.log(`[/ws/bulk] Handling ${callbacks.length} events`);
+  function getTargetId(payload: (typeof data)[number]): string[] | null {
+    switch (payload.t) {
+      case GatewayDispatchEvents.GuildMemberAdd:
+        return [payload.d.guild_id, payload.d.user.id];
+      case GatewayDispatchEvents.GuildMemberRemove:
+        return [payload.d.guild_id, payload.d.user?.id];
+      case GatewayDispatchEvents.MessageReactionAdd:
+        return [payload.d.guild_id, payload.d.user_id];
+      case GatewayDispatchEvents.MessageReactionRemove:
+        return [payload.d.guild_id, payload.d.user_id];
+      default:
+        return null;
+    }
+  }
+
+  console.log({
+    message: `Handling ${callbacks.length} events`,
+    events: data.map((payload) => ({
+      t: payload.t,
+      target_id: getTargetId(payload),
+    })),
+  });
   eCtx.waitUntil(Promise.all(callbacks.map((c) => c())));
   return new Response(null, { status: 204 });
 });
