@@ -15,6 +15,7 @@ import {
   upsertGuild,
   webhooks,
 } from "./store.server";
+import { DISCORD_API_V } from "./util/discord";
 import { Context } from "./util/loader";
 
 export const getDiscordWebhookAuth = (context: Context) => {
@@ -38,7 +39,9 @@ export const getDiscordWebhookAuth = (context: Context) => {
       clientSecret: context.env.DISCORD_CLIENT_SECRET,
       callbackURL: `${context.origin}/callback/discord-webhook`,
       scope: ["webhook.incoming"],
-      apiURL: context.env.DISCORD_PROXY_API,
+      apiURL: context.env.DISCORD_PROXY_API
+        ? `${context.env.DISCORD_PROXY_API}/v${DISCORD_API_V}`
+        : undefined,
     },
     async ({ profile, extraParams }): Promise<APIWebhook> => {
       const { webhook } =

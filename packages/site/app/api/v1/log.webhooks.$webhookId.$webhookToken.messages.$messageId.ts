@@ -97,10 +97,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     throw json({ message: "Message is too old" }, { status: 400, headers });
   }
 
-  const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+  const rest = new REST({ api: context.env.DISCORD_PROXY_API }).setToken(
+    context.env.DISCORD_BOT_TOKEN,
+  );
   const userId = await getUserId(request, context);
 
-  console.log(`[AUDIT] ${type}: verifying message`);
   let message: APIMessage | undefined;
   if (type === "delete") {
     // Make sure the user doesn't log that they deleted a message that still exists
@@ -146,7 +147,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       }
     }
   }
-  console.log("[AUDIT] message ID is valid");
 
   const db = getDb(context.env.HYPERDRIVE);
   if (type === "send" || type === "delete") {
@@ -182,7 +182,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     if (!webhook.id) {
       throw json(webhook, 404);
     }
-    console.log("[AUDIT] fetched webhook");
 
     if (webhook.guild_id) {
       guildId = BigInt(webhook.guild_id);
@@ -223,8 +222,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         })
     )[0];
   }
-
-  console.log(`[AUDIT] guild ID: ${guildId}`);
 
   if (!message || !message.components || message.components.length === 0) {
     await db
@@ -401,13 +398,19 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         .returning({
           id: discordMessageComponents.id,
           messageId: discordMessageComponents.messageId,
+          data: discordMessageComponents.data,
         });
     });
     // I want to do this in the background (ctx.waitUntil) but I had issues
     // the last time I tried with this Remix project. TODO: Try again after
     // upgrading to vite?
     for (const created of createdComponents) {
-      if (created.messageId) {
+      if (
+        created.messageId &&
+        (created.data.type !== ComponentType.Button ||
+          (created.data.style !== ButtonStyle.Link &&
+            created.data.style !== ButtonStyle.Premium))
+      ) {
         await launchComponentDurableObject(context.env, {
           messageId: created.messageId.toString(),
           componentId: created.id,
@@ -446,6 +449,5 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       })
   )[0];
 
-  console.log("[AUDIT] created entry");
   return json({ ...entry, webhook: entryWebhook }, { headers });
 };

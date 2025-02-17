@@ -224,9 +224,9 @@ export const refreshDiscordOAuth = async (
     // generic bad requests with no response elaboration, maybe it mistreats
     // a urlsearchparams body?
     const raw = await fetch(
-      `${
-        env.DISCORD_PROXY_API ?? `${DISCORD_API}/v${DISCORD_API_V}`
-      }${Routes.oauth2TokenExchange()}`,
+      `${`${
+        env.DISCORD_PROXY_API ?? DISCORD_API
+      }/v${DISCORD_API_V}`}${Routes.oauth2TokenExchange()}`,
       {
         method: "POST",
         body: new URLSearchParams({

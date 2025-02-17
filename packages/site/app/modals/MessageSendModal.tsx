@@ -14,7 +14,6 @@ import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
-import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
 import { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
@@ -30,9 +29,9 @@ import {
   updateWebhookMessage,
   webhookAvatarUrl,
 } from "~/util/discord";
+import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
-// import { useSafeFetcher } from "~/util/loader";
-// import { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
+import type { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
 import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
@@ -157,9 +156,9 @@ export const useMessageSubmissionManager = (
   setError?: SetErrorFunction,
 ) => {
   const [sending, setSending] = useState(false);
-  // const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
-  //   onError: setError,
-  // });
+  const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
+    onError: setError,
+  });
 
   type MessagesData = Record<
     string,
@@ -317,48 +316,48 @@ export const useMessageSubmissionManager = (
           if (message.data.thread_name) {
             forumThreadId = result.data.channel_id;
           }
-          const componentIds = result.data.components?.flatMap((row) =>
-            row.components
-              .map((c) => getComponentId(c)?.toString())
-              .filter((c): c is string => c !== undefined),
-          );
-          if (componentIds && componentIds.length > 0 && webhook.guild_id) {
-            await fetch(apiUrl(BRoutes.componentsBulk()), {
-              method: "PATCH",
-              body: JSON.stringify({
-                ids: componentIds,
-                body: {
-                  guildId: webhook.guild_id,
-                  channelId: result.data.channel_id,
-                  messageId: result.data.id,
-                },
-              }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-          }
-          // auditLogFetcher.submit(
-          //   {
-          //     type: message.reference ? "edit" : "send",
-          //     threadId:
-          //       result.data.position !== undefined
-          //         ? result.data.channel_id
-          //         : undefined,
-          //   },
-          //   {
-          //     method: "POST",
-          //     action: apiUrl(
-          //       BRoutes.messageLog(
-          //         webhook.id,
-          //         // We needed the token in order to arrive at a success state
-          //         // biome-ignore lint/style/noNonNullAssertion: ^
-          //         webhook.token!,
-          //         result.data.id,
-          //       ),
-          //     ),
-          //   },
+          // const componentIds = result.data.components?.flatMap((row) =>
+          //   row.components
+          //     .map((c) => getComponentId(c)?.toString())
+          //     .filter((c): c is string => c !== undefined),
           // );
+          // if (componentIds && componentIds.length > 0 && webhook.guild_id) {
+          //   await fetch(apiUrl(BRoutes.componentsBulk()), {
+          //     method: "PATCH",
+          //     body: JSON.stringify({
+          //       ids: componentIds,
+          //       body: {
+          //         guildId: webhook.guild_id,
+          //         channelId: result.data.channel_id,
+          //         messageId: result.data.id,
+          //       },
+          //     }),
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //     },
+          //   });
+          // }
+          auditLogFetcher.submit(
+            {
+              type: message.reference ? "edit" : "send",
+              threadId:
+                result.data.position !== undefined
+                  ? result.data.channel_id
+                  : undefined,
+            },
+            {
+              method: "POST",
+              action: apiUrl(
+                BRoutes.messageLog(
+                  webhook.id,
+                  // We needed the token in order to arrive at a success state
+                  // biome-ignore lint/style/noNonNullAssertion: ^
+                  webhook.token!,
+                  result.data.id,
+                ),
+              ),
+            },
+          );
         }
 
         updateMessages({

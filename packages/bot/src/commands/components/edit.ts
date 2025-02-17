@@ -747,11 +747,13 @@ const registerComponentUpdate = async (
     )) as APIMessage;
   });
 
-  await launchComponentDurableObject(ctx.env, {
-    messageId: editedMsg.id,
-    componentId: id,
-    customId: customId ?? `p_${id}`,
-  });
+  if (customId !== undefined) {
+    await launchComponentDurableObject(ctx.env, {
+      messageId: editedMsg.id,
+      componentId: id,
+      customId,
+    });
+  }
   return editedMsg;
 };
 

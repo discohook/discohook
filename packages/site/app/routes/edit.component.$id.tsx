@@ -22,6 +22,7 @@ import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
+import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
@@ -904,9 +905,9 @@ export default () => {
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
     onError: setError,
   });
-  // const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
-  //   onError: setError,
-  // });
+  const auditLogFetcher = useSafeFetcher<typeof ApiAuditLogAction>({
+    onError: setError,
+  });
 
   return (
     <div>
@@ -1353,18 +1354,18 @@ export default () => {
                   });
                   if (result.status === "success") {
                     setError(undefined);
-                    // auditLogFetcher.submit(
-                    //   {
-                    //     type: "edit",
-                    //     threadId,
-                    //   },
-                    //   {
-                    //     method: "POST",
-                    //     action: apiUrl(
-                    //       BRoutes.messageLog(wt.id, wt.token, result.data.id),
-                    //     ),
-                    //   },
-                    // );
+                    auditLogFetcher.submit(
+                      {
+                        type: "edit",
+                        threadId,
+                      },
+                      {
+                        method: "POST",
+                        action: apiUrl(
+                          BRoutes.messageLog(wt.id, wt.token, result.data.id),
+                        ),
+                      },
+                    );
 
                     // Tell the server that something changed and it needs to
                     // either fetch the message or ensure that the component's
