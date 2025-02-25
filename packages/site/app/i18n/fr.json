@@ -124,5 +124,6 @@
     "share": "Partager",
     "use": "Utiliser",
     "home": "Accueil",
-    "version": "Version : {{version}}"
+    "version": "Version : {{version}}",
+    "preview": "Aperçu"
 }
