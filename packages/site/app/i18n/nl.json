@@ -202,7 +202,7 @@
     "theme": "Thema",
     "invalidWebhookUrl": "Ongelidge webhook URL. Ze beginnen met https://discord.com/api/webhooks/...",
     "selectWebhookGuildNote": "Selecteer een server waar Discohook Utils zich bevindt om webhooks te bekijken, of maak een nieuwe webhook in een van jouw servers door op de knop hieronder te drukken.",
-    "editingBackupNote": "Je bent een back-up aan het bewerken, je werk wordt tijdens het bewerken periodiek opgeslagen. Om dit bericht te delen met anderen, gebruik de \"$t(share)\" knop.",
+    "editingBackupNote": "Je hebt een back-up$t(share) aan het bewerken, je werk wordt tijdens het bewerken periodiek opgeslagen. Om dit bericht te delen met anderen, gebruik de \"$t(share)\" knop.",
     "webhookCreateSubtitle": "Je zou binnenkort naar de editor moeten terugkeren.",
     "scheduleBackup": "Plan deze backup",
     "botTokenOwnerWarning": "Zorg ervoor dat je huidige Discord account ({{username}}) de eigenaar is van deze bot of deel is van zijn team, anders wordt de token opnieuw ingesteld voor beveiliging.",
