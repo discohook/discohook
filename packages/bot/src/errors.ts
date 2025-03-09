@@ -6,7 +6,7 @@ import {
 import { InteractionContext } from "./interactions.js";
 
 const xNotFound = (x: string) =>
-  `That is not a valid ${x} - it does not exist.`;
+  `Could not find the ${x}. There may be a permissions issue.`;
 
 const tooManyX = (x: string, limit?: number) =>
   limit !== undefined
