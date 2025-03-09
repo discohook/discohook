@@ -40,13 +40,14 @@ export const TargetAddModal = (
   const [error, setError] = useError(t);
   const [guildId, setGuildId] = useState<string>();
   const guildWebhooksFetcher = useSafeFetcher<typeof ApiGetGuildWebhooks>({
-    onError(e) {
-      if (e.status === 404) {
-        setError({ ...e, message: "Discohook Utils is not in this server." });
-      } else {
-        setError(e);
-      }
-    },
+    onError: setError,
+    // onError(e) {
+    //   if (e.status === 404) {
+    //     setError({ ...e, message: "Discohook Utils is not in this server." });
+    //   } else {
+    //     setError(e);
+    //   }
+    // },
   });
   const guildWebhookTokenFetcher = useSafeFetcher<
     typeof ApiGetGuildWebhookToken

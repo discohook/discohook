@@ -14,6 +14,7 @@ import {
   GuildChannelType,
   OverwriteType,
   RESTGetAPIGuildMemberResult,
+  RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
@@ -30,6 +31,7 @@ import {
   upsertDiscordUser,
 } from "./store.server";
 import { Env } from "./types/env";
+import { isDiscordError } from "./util/discord";
 import { Context } from "./util/loader";
 
 export const createWorkersDOSessionStorage = ({
@@ -532,14 +534,20 @@ export const getTokenGuildPermissions = async (
       // cache it. If this turns out to be bad for our rate limit cap we
       // should switch to guildRoles.
       guild = await getGuild(guildId, rest, env);
-    } catch {
-      throw json(
-        {
-          message:
-            "Server does not exist or Discohook Utils is not a member of it",
-        },
-        404,
-      );
+    } catch (e) {
+      if (isDiscordError(e)) {
+        throw json(
+          {
+            ...e.rawError,
+            message:
+              e.code === RESTJSONErrorCodes.UnknownGuild
+                ? "Server does not exist or Discohook Utils is not a member of it"
+                : e.rawError.message,
+          },
+          e.status,
+        );
+      }
+      throw json({ message: String(e) }, 500);
     }
 
     const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
@@ -551,10 +559,19 @@ export const getTokenGuildPermissions = async (
           auth: false,
         })) as RESTGetAPIGuildMemberResult;
       } catch (e) {
-        throw json(
-          { message: "Server does not exist or you are not a member of it" },
-          404,
-        );
+        if (isDiscordError(e)) {
+          throw json(
+            {
+              ...e.rawError,
+              message:
+                e.code === RESTJSONErrorCodes.UnknownGuild
+                  ? "Server does not exist or you are not a member of it"
+                  : e.rawError.message,
+            },
+            e.status,
+          );
+        }
+        throw json({ message: String(e) }, 500);
       }
     } else {
       try {
@@ -562,10 +579,19 @@ export const getTokenGuildPermissions = async (
           Routes.guildMember(String(guildId), String(token.user.discordId)),
         )) as RESTGetAPIGuildMemberResult;
       } catch (e) {
-        throw json(
-          { message: "Server does not exist or you are not a member of it" },
-          404,
-        );
+        if (isDiscordError(e)) {
+          throw json(
+            {
+              ...e.rawError,
+              message:
+                e.code === RESTJSONErrorCodes.UnknownGuild
+                  ? "Server does not exist or you are not a member of it"
+                  : e.rawError.message,
+            },
+            e.status,
+          );
+        }
+        throw json({ message: String(e) }, 500);
       }
     }
     const permissions = new PermissionsBitField(
