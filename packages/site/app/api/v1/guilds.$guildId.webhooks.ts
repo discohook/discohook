@@ -4,6 +4,7 @@ import {
   APIChannel,
   APIWebhook,
   RESTGetAPIGuildWebhooksResult,
+  RESTJSONErrorCodes,
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
@@ -132,18 +133,23 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
 
-  const [guildWebhooks, channels] = await Promise.all([
-    (async () => {
-      const db = getDb(context.env.HYPERDRIVE);
-
-      if (force) {
-        const freshWebhooks = (await rest.get(
-          Routes.guildWebhooks(String(guildId)),
-        )) as RESTGetAPIGuildWebhooksResult;
-        return await upsertGuildWebhooks(db, freshWebhooks, guildId);
-      }
-
-      let guildWebhooks = await db.query.webhooks.findMany({
+  let guildWebhooks: {
+    id: string;
+    name: string;
+    channelId: string;
+    avatar: string | null;
+    applicationId: string | null;
+    user: { name: string } | null;
+  }[] = [];
+  try {
+    const db = getDb(context.env.HYPERDRIVE);
+    if (force) {
+      const freshWebhooks = (await rest.get(
+        Routes.guildWebhooks(String(guildId)),
+      )) as RESTGetAPIGuildWebhooksResult;
+      guildWebhooks = await upsertGuildWebhooks(db, freshWebhooks, guildId);
+    } else {
+      guildWebhooks = await db.query.webhooks.findMany({
         where: (webhooks, { and, eq }) =>
           and(
             eq(webhooks.discordGuildId, guildId),
@@ -158,9 +164,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         },
         with: {
           user: {
-            columns: {
-              name: true,
-            },
+            columns: { name: true },
           },
         },
         limit,
@@ -169,41 +173,39 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       });
 
       if (guildWebhooks.length === 0) {
-        let freshWebhooks: RESTGetAPIGuildWebhooksResult | undefined;
-        try {
-          freshWebhooks = (await rest.get(
-            Routes.guildWebhooks(String(guildId)),
-          )) as RESTGetAPIGuildWebhooksResult;
-        } catch (e) {
-          if (isDiscordError(e)) {
-            throw respond(json(e.rawError, e.status));
-          }
-        }
-        if (freshWebhooks) {
-          guildWebhooks = await upsertGuildWebhooks(db, freshWebhooks, guildId);
-        }
+        const freshWebhooks = (await rest.get(
+          Routes.guildWebhooks(String(guildId)),
+        )) as RESTGetAPIGuildWebhooksResult;
+        guildWebhooks = await upsertGuildWebhooks(db, freshWebhooks, guildId);
       }
-      return guildWebhooks;
-    })().catch((e) => {
-      if (isDiscordError(e)) {
-        throw json(
-          {
-            ...e.rawError,
-            message:
-              e.status === 403
-                ? "Discohook does not have permission to manage webhooks in this server"
-                : e.rawError.message,
-          },
-          { status: 500 },
-        );
+    }
+  } catch (e) {
+    if (isDiscordError(e)) {
+      const err = e.rawError;
+      let msg = err.message;
+      switch (err.code) {
+        case RESTJSONErrorCodes.UnknownGuild:
+          msg = `Discohook Utils is not in this server (${err.message})`;
+          break;
+        case RESTJSONErrorCodes.MissingAccess:
+          msg = `Discohook Utils cannot access this server (${err.message})`;
+          break;
+        default:
+          break;
       }
-      console.error(e);
-      return [];
-    }),
-    rest.get(Routes.guildChannels(String(guildId))).catch(() => []) as Promise<
-      APIChannel[]
-    >,
-  ]);
+      throw respond(json({ ...err, message: msg }, e.status));
+    }
+    throw e;
+  }
+
+  let channels: APIChannel[];
+  try {
+    channels = (await rest.get(
+      Routes.guildChannels(String(guildId)),
+    )) as APIChannel[];
+  } catch (e) {
+    channels = [];
+  }
 
   return respond(
     json(
