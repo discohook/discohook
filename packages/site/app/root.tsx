@@ -128,7 +128,7 @@ export default function App() {
         <Links />
         <TailwindThemeScript />
       </head>
-      <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230">
+      <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230 isolate">
         <ClientOnly fallback={<FullscreenThrobber />}>
           {() => <Outlet />}
         </ClientOnly>

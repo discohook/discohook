@@ -8,6 +8,7 @@ import { Trans, useTranslation } from "react-i18next";
 import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
 
+import { NumberField } from "@base-ui-components/react/number-field";
 import { Link } from "@remix-run/react";
 import { MessageFlagsBitField } from "discord-bitflag";
 import { TFunction } from "i18next";
@@ -17,7 +18,6 @@ import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
-import { NumberInput } from "~/components/NumberInput";
 import { TextArea } from "~/components/TextArea";
 import {
   AnonymousVariable,
@@ -35,8 +35,8 @@ import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
 import { SafeFetcher, getZodErrorMessage, useSafeFetcher } from "~/util/loader";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import {
-  PartialBackupsWithMessages,
   loader as ApiGetUserBackups,
+  PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -495,15 +495,29 @@ const FlowActionEditor: React.FC<{
               }}
             />
           ) : action.type === 1 ? (
-            <NumberInput
-              min={1}
+            <NumberField.Root
+              min={0}
               max={60}
               value={action.seconds}
-              onChange={(value) => {
-                action.seconds = Number(value);
-                update();
+              required
+              onValueChange={(e) => {
+                if (e !== null) {
+                  action.seconds = e;
+                  update();
+                }
               }}
-            />
+              className="w-full group"
+            >
+              <NumberField.Group className="w-full rounded grid grid-cols-3 h-9 bg-gray-300 group-focus:border-blurple-500 dark:bg-[#292b2f] group-invalid:border-rose-400 dark:group-invalid:border-rose-400 group-disabled:text-gray-500 group-disabled:cursor-not-allowed transition">
+                <NumberField.Decrement className="border border-gray-200 dark:border-gray-300/20 dark:bg-gray-900 dark:hover:bg-primary-600 transition rounded-l">
+                  <CoolIcon icon="Remove_Minus" />
+                </NumberField.Decrement>
+                <NumberField.Input className="border-y border-gray-200 dark:border-gray-300/20 bg-transparent text-center" />
+                <NumberField.Increment className="border border-gray-200 dark:border-gray-300/20 dark:bg-gray-900 dark:hover:bg-primary-600 transition rounded-r">
+                  <CoolIcon icon="Add_Plus" />
+                </NumberField.Increment>
+              </NumberField.Group>
+            </NumberField.Root>
           ) : action.type === 2 ? (
             <div>
               <CheckFunctionEditor
