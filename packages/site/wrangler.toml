@@ -124,6 +124,11 @@ services = [
 [env.production.placement]
 mode = "smart"
 
+[env.production.observability]
+enabled = true
+head_sampling_rate = 0.5
+logs.invocation_logs = false
+
 [env.production.version_metadata]
 binding = "VERSION"
 
