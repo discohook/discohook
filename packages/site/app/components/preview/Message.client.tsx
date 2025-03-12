@@ -1,3 +1,4 @@
+import { Avatar } from "@base-ui-components/react/avatar";
 import { APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import {
   MessageFlags,
@@ -12,7 +13,7 @@ import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
-import { webhookAvatarUrl } from "~/util/discord";
+import { cdn, webhookAvatarUrl } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
 import { Svg } from "../icons/Svg";
 import { PostChannelIcon } from "../icons/channel";
@@ -189,11 +190,20 @@ export const Message: React.FC<{
         {messageDisplay !== "compact" && (
           <div className="hidden sm:block w-fit shrink-0">
             {showProfile ? (
-              <img
-                className="rounded-full mr-3 h-10 w-10 cursor-pointer hover:shadow-lg active:translate-y-px"
-                src={avatarUrl}
-                alt={username}
-              />
+              <Avatar.Root className="block mr-3 cursor-pointer active:translate-y-px">
+                <Avatar.Image
+                  className="rounded-full h-10 w-10 hover:shadow-lg"
+                  src={avatarUrl}
+                  alt={username}
+                />
+                <Avatar.Fallback>
+                  <img
+                    className="rounded-full h-10 w-10 hover:shadow-lg"
+                    src={cdn.defaultAvatar(0)}
+                    alt={username}
+                  />
+                </Avatar.Fallback>
+              </Avatar.Root>
             ) : (
               <div className="w-10 mr-3" />
             )}
@@ -243,11 +253,20 @@ export const Message: React.FC<{
                   })}
                 </span>
                 {compactAvatars && (
-                  <img
-                    className="inline-block rounded-full -mt-1 ml-[0.1em] mr-1 h-4 w-4 cursor-pointer active:translate-y-px"
-                    src={avatarUrl}
-                    alt={username}
-                  />
+                  <Avatar.Root className="contents">
+                    <Avatar.Image
+                      className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
+                      src={avatarUrl}
+                      alt={username}
+                    />
+                    <Avatar.Fallback>
+                      <img
+                        className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
+                        src={cdn.defaultAvatar(0)}
+                        alt={username}
+                      />
+                    </Avatar.Fallback>
+                  </Avatar.Root>
                 )}
                 <span className="mr-1">
                   {badge && (

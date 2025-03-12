@@ -1,3 +1,4 @@
+import { Avatar } from "@base-ui-components/react/avatar";
 import {
   Link,
   useLocation,
@@ -72,11 +73,21 @@ export const Header: React.FC<{
           className="flex my-auto ltr:-mx-2 rtl:mr-2 rtl:-ml-2 py-1 px-2 rounded hover:bg-gray-200 hover:dark:bg-gray-700 transition"
           target={isEditorPage ? "_blank" : undefined}
         >
-          <img
-            {...cdnImgAttributes(64, (size) => getUserAvatar(user, { size }))}
-            className="rounded-full h-7 w-7"
-            alt={user.name}
-          />
+          <Avatar.Root>
+            <Avatar.Image
+              {...cdnImgAttributes(64, (size) => getUserAvatar(user, { size }))}
+              className="rounded-full h-7 w-7"
+              alt={user.name}
+            />
+            <Avatar.Fallback>
+              <img
+                // default avatars are always the same size (256) so specifying it is unnecessary
+                src={getUserAvatar(user, { forceDefault: true })}
+                className="rounded-full h-7 w-7"
+                alt={user.name}
+              />
+            </Avatar.Fallback>
+          </Avatar.Root>
           <p className="ltr:ml-1.5 rtl:mr-1.5 text-base font-medium hidden sm:block my-auto">
             {user.discordUser?.globalName ?? getUserTag(user)}
           </p>

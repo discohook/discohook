@@ -1,3 +1,4 @@
+import { Avatar } from "@base-ui-components/react/avatar";
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
@@ -89,11 +90,20 @@ export default () => {
       <TabHeader>{t("profile")}</TabHeader>
       <div className="w-full rounded-lg bg-gray-200 dark:bg-gray-900 shadow-md p-4">
         <div className="flex">
-          <img
-            className="rounded-full ltr:mr-4 rtl:ml-4 h-[4.5rem] w-[4.5rem] my-auto"
-            src={getUserAvatar(user, { size: 128 })}
-            alt={user.name}
-          />
+          <Avatar.Root className="ltr:mr-4 rtl:ml-4 h-[4.5rem] w-[4.5rem] my-auto">
+            <Avatar.Image
+              className="rounded-full"
+              src={getUserAvatar(user, { size: 128 })}
+              alt={user.name}
+            />
+            <Avatar.Fallback>
+              <img
+                className="rounded-full"
+                src={getUserAvatar(user, { forceDefault: true })}
+                alt={user.name}
+              />
+            </Avatar.Fallback>
+          </Avatar.Root>
           <div className="grow my-auto">
             <p className="text-2xl font-semibold leading-none dark:text-gray-100">
               {user.name}

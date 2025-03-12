@@ -61,10 +61,10 @@ export const getUserAvatar = (
       avatarUrl: string | null;
     } | null;
   },
-  options?: ImageURLOptions,
+  options?: ImageURLOptions & { forceDefault?: boolean },
 ): string =>
   user.discordUser
-    ? user.discordUser.avatar
+    ? user.discordUser.avatar && !options?.forceDefault
       ? cdn.avatar(
           String(user.discordUser.id),
           user.discordUser.avatar,
