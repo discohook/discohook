@@ -96,7 +96,7 @@ export const discordRequest = async <T>(
 
     let i = 0;
     for (const { file } of options.files) {
-      body.append(`file[${i}]`, file, file.name);
+      body.append(`files[${i}]`, file, file.name);
       i += 1;
     }
   } else {
