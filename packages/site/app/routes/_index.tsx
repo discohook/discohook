@@ -145,6 +145,7 @@ export interface DraftFile {
   description?: string;
   url?: string;
   embed?: boolean;
+  is_thumbnail?: boolean;
 }
 
 export interface HistoryItem {
@@ -286,6 +287,11 @@ export default function Index() {
                       e.thumbnail?.url?.trim() === uri ||
                       e.footer?.icon_url?.trim() === uri,
                   ).length !== 0;
+                // Being in an embed overrides the thumbnail attribute
+                // TODO: people might think this is a bug; improve communication
+                if (f.embed && f.is_thumbnail) {
+                  f.is_thumbnail = false;
+                }
               }
               return f;
             }) ?? [],

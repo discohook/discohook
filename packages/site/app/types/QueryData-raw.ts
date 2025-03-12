@@ -1,7 +1,7 @@
 import {
-  APIActionRowComponent,
-  APIAttachment,
+  APIAttachment as _APIAttachment,
   APIEmbed as _APIEmbed,
+  APIActionRowComponent,
   APIMessageActionRowComponent,
   MessageFlags,
   UserFlags,
@@ -16,6 +16,12 @@ import { ZodMessageFlags } from "./discord";
  * versions, which used `null` instead of `undefined`.
  */
 export type APIEmbed = Omit<_APIEmbed, "color"> & { color?: number | null };
+
+/**
+ * Extending for media channel thumbnails (this attribute is undocumented,
+ * so we try to use it with caution)
+ */
+export type APIAttachment = _APIAttachment & { is_thumbnail?: boolean };
 
 export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
   // type: z
@@ -123,6 +129,7 @@ export const ZodQueryDataMessageDataRaw = z.object({
       proxy_url: z.string(),
       height: z.onumber().nullable(),
       weight: z.onumber().nullable(),
+      is_thumbnail: z.oboolean(),
     })
     .array()
     .optional(),

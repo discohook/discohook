@@ -1,7 +1,7 @@
 import {
-  APIActionRowComponent,
-  APIAttachment,
+  APIAttachment as _APIAttachment,
   APIEmbed as _APIEmbed,
+  APIActionRowComponent,
   APIMessageActionRowComponent,
   MessageFlags,
   UserFlags,
@@ -15,6 +15,12 @@ import { ZodLinkEmbed, ZodLinkQueryData } from "../zod/query.js";
  * versions, which used `null` instead of `undefined`.
  */
 export type APIEmbed = Omit<_APIEmbed, "color"> & { color?: number | null };
+
+/**
+ * Extending for media channel thumbnails (this attribute is undocumented,
+ * so we try to use it with caution)
+ */
+export type APIAttachment = _APIAttachment & { is_thumbnail?: boolean };
 
 /** The version of the query data, defaults to `d2`
  *

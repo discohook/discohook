@@ -1,13 +1,13 @@
 import {
-  APIActionRowComponent,
-  APIAttachment,
-  APIButtonComponentBase,
   APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
   APIChannelSelectComponent as _APIChannelSelectComponent,
   APIMentionableSelectComponent as _APIMentionableSelectComponent,
   APIRoleSelectComponent as _APIRoleSelectComponent,
   APIStringSelectComponent as _APIStringSelectComponent,
   APIUserSelectComponent as _APIUserSelectComponent,
+  APIActionRowComponent,
+  APIAttachment,
+  APIButtonComponentBase,
   ButtonStyle,
   MessageFlags,
   UserFlags,
@@ -136,6 +136,7 @@ export const ZodQueryDataMessageData = z.object({
       proxy_url: z.string(),
       height: z.onumber().nullable(),
       weight: z.onumber().nullable(),
+      is_thumbnail: z.oboolean(),
     })
     .array()
     .optional(),

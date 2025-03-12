@@ -1,4 +1,4 @@
-import { APIAttachment } from "discord-api-types/v10";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import { fileSize } from "~/util/text";
 import { CoolIcon } from "../icons/CoolIcon";
 

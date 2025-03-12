@@ -174,6 +174,20 @@ export const executeWebhook = async (
     query.set("with_components", String(withComponents));
   }
 
+  if (files && !payload.attachments) {
+    payload.attachments = files.map((file, i) => ({
+      id: i,
+      description: file.description,
+      filename: file.file.name,
+      // This is undocumented! Therefore we are taking precautions:
+      // Only provide any value when it is true and the user is creating a
+      // thread; narrows erroneous behavior if is_thumbnail suddenly gets
+      // blocked for example - users can simply not mark files as thumbnails
+      // instead of requiring an immediate patch.
+      is_thumbnail: file.is_thumbnail && payload.thread_name ? true : undefined,
+    }));
+  }
+
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {

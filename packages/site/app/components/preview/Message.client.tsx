@@ -1,9 +1,4 @@
-import {
-  APIAttachment,
-  APIEmbed,
-  APIEmbedImage,
-  APIWebhook,
-} from "discord-api-types/v10";
+import { APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import {
   MessageFlags,
   MessageFlagsBitField,
@@ -15,6 +10,7 @@ import { twJoin } from "tailwind-merge";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
+import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { webhookAvatarUrl } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
