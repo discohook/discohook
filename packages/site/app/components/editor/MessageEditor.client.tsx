@@ -8,7 +8,7 @@ import { JsonEditorProps } from "~/modals/JsonEditorModal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
-import { getBlobDataUrl, getMessageText } from "~/util/message";
+import { getMessageText } from "~/util/message";
 import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -21,6 +21,7 @@ import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
 import { EmbedEditor, EmbedEditorSection, getEmbedLength } from "./EmbedEditor";
+import { PasteFileButton } from "./PasteFileButton";
 
 export const MessageEditor: React.FC<{
   data: QueryData;
@@ -296,6 +297,7 @@ export const MessageEditor: React.FC<{
                     const newFiles = files.filter((f) => f.id !== id);
                     setFiles(newFiles);
                     setData({ ...data });
+                    if (url) URL.revokeObjectURL(url);
                   }}
                 >
                   <CoolIcon icon="Trash_Full" />
@@ -319,30 +321,46 @@ export const MessageEditor: React.FC<{
                   newFiles.push({
                     id: randomString(10),
                     file,
-                    // We need this for the gallery. For regular files we'd
-                    // just be bloating state for the time being.
-                    url: ["video", "image"].includes(file.type.split("/")[0])
-                      ? await getBlobDataUrl(file)
-                      : undefined,
+                    url: URL.createObjectURL(file),
                   });
                 }
                 setFiles(newFiles);
                 currentTarget.value = "";
               }}
             />
-            <Button
-              onClick={() => {
-                const input = document.querySelector<HTMLInputElement>(
-                  `input#files-${id}`,
-                );
-                // Shouldn't happen
-                if (!input) return;
-                input.click();
-              }}
-              disabled={files.length >= 10}
-            >
-              {t("addFile")}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  const input = document.querySelector<HTMLInputElement>(
+                    `input#files-${id}`,
+                  );
+                  // Shouldn't happen
+                  if (!input) return;
+                  input.click();
+                }}
+                disabled={files.length >= 10}
+              >
+                {t("addFile")}
+              </Button>
+              <PasteFileButton
+                t={t}
+                disabled={files.length >= 10}
+                onChange={async (list) => {
+                  const newFiles = [...files];
+                  for (const file of Array.from(list).slice(
+                    0,
+                    10 - newFiles.length,
+                  )) {
+                    newFiles.push({
+                      id: randomString(10),
+                      file,
+                      url: URL.createObjectURL(file),
+                    });
+                  }
+                  setFiles(newFiles);
+                }}
+              />
+            </div>
           </EmbedEditorSection>
         </div>
         {message.data.embeds && message.data.embeds.length > 0 && (
