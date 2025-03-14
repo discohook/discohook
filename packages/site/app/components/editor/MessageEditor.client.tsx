@@ -99,6 +99,11 @@ export const MessageEditor: React.FC<{
     // None of them are forums
     channels.filter((c) => c.type === "forum").length === 0;
 
+  // const imageFiles = useMemo(
+  //   () => files.filter((f) => f.file.type.startsWith("image/")),
+  //   [files],
+  // );
+
   return (
     <details className="group/message mt-4 pb-2" open>
       <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none">
@@ -237,6 +242,87 @@ export const MessageEditor: React.FC<{
                 setData({ ...data });
               }}
             />
+            {/*message.data.thread_name && imageFiles.length > 0 ? (
+              <div className="flex">
+                <div
+                  // Not a fan of this max-width
+                  className="grow max-w-[calc(100%_-_1.75rem)]"
+                >
+                  <Select.Root
+                    value={imageFiles.find((f) => f.is_thumbnail)?.id ?? null}
+                    onValueChange={(id) => {
+                      for (const file of files) {
+                        file.is_thumbnail = file.id === id && !file.embed;
+                      }
+                      setFiles([...files]);
+                    }}
+                  >
+                    <Select.Trigger className="text-sm font-medium cursor-default">
+                      {t("postThumbnail")}
+                    </Select.Trigger>
+                    <Select.Trigger
+                      className={twJoin(
+                        "flex rounded border border-black/[0.08] focus:outline-none h-9 py-0 px-[14px] font-medium !mt-0",
+                        "disabled:text-gray-600 disabled:cursor-not-allowed",
+                        "bg-[#ebebeb] dark:bg-[#1e1f22] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200",
+                      )}
+                    >
+                      <Select.Value
+                        placeholder={t("defaultPlaceholder")}
+                        className="my-auto truncate ltr:mr-2 rtl:ml-2"
+                      />
+                      <Select.Icon className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                        <CoolIcon icon="Chevron_Down" />
+                      </Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner
+                        className={twJoin(
+                          "rounded bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
+                          "border border-black/[0.08]",
+                        )}
+                        align="start"
+                        alignOffset={2}
+                      >
+                        <Select.ScrollUpArrow />
+                        <Select.Popup>
+                          <Select.Arrow />
+                          {imageFiles.map((file) => {
+                            return (
+                              <Select.Item
+                                key={`thumbnail-select-${file.id}`}
+                                value={file.id}
+                                className="px-[14px] py-0 h-9 hover:bg-[#e0e1e5] hover:dark:bg-[#36373d] flex first:rounded-t last:rounded-b cursor-pointer"
+                              >
+                                <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                                  {transformFileName(file.file.name)}
+                                </Select.ItemText>
+                                <Select.ItemIndicator className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                                  <CoolIcon icon="Check" />
+                                </Select.ItemIndicator>
+                              </Select.Item>
+                            );
+                          })}
+                        </Select.Popup>
+                        <Select.ScrollDownArrow />
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </div>
+                <button
+                  type="button"
+                  className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
+                  onClick={() => {
+                    for (const file of files) {
+                      file.is_thumbnail = false;
+                    }
+                    setFiles([...files]);
+                  }}
+                >
+                  <CoolIcon icon="Close_MD" />
+                </button>
+              </div>
+            ) : null*/}
           </EmbedEditorSection>
           <EmbedEditorSection name={t("profile")}>
             {!!message.reference && (
@@ -277,17 +363,19 @@ export const MessageEditor: React.FC<{
               },
             })}
           >
-            {files.map(({ id, file, embed }) => (
+            {files.map(({ id, file, embed, is_thumbnail, url }) => (
               <div
                 key={`file-${id}`}
                 className="rounded border py-1.5 px-[14px] bg-gray-300 border-gray-200 dark:border-transparent dark:bg-[#292b2f] flex"
               >
                 <CoolIcon
-                  icon={embed ? "Window" : "File_Blank"}
-                  className="text-xl my-auto mr-2"
+                  icon={embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"}
+                  className="text-xl my-auto ltr:mr-2 rtl:ml-2"
                 />
-                <div className="my-auto truncate">
-                  <p className="font-medium">{transformFileName(file.name)}</p>
+                <div className="my-auto truncate ltr:mr-2 rtl:ml-2">
+                  <p className="font-medium truncate">
+                    {transformFileName(file.name)}
+                  </p>
                   {/* <p className="text-sm">{file.size} bytes</p> */}
                 </div>
                 <button

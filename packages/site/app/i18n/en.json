@@ -503,6 +503,7 @@
   "forumImmutable": "Webhooks cannot change the thread name.",
   "noForumWebhooks": "None of your webhooks are in a thread-only channel, so a thread name cannot be set.",
   "threadId": "Thread ID",
+  "postThumbnail": "Post Thumbnail (media channels)",
   "content": "Content",
   "contentOptional": "Content (optional)",
   "avatarUrl": "Avatar URL",
