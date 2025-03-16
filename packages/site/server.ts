@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === "development") {
 export default {
   async fetch(
     request: Request,
-    env: Env & { __STATIC_CONTENT: Fetcher },
+    env: Env & { __STATIC_CONTENT: KVNamespace<string> },
     ctx: ExecutionContext,
   ): Promise<Response> {
     if (env.ENVIRONMENT === "dev") {

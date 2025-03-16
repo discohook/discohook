@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-alpha.6",
-    "@cloudflare/kv-asset-handler": "^0.1.3",
+    "@cloudflare/kv-asset-handler": "^0.4.0",
     "@discordjs/rest": "^2.4.0",
     "@emoji-mart/data": "^1.1.2",
     "@remix-run/cloudflare": "^2.4.0",
