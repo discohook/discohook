@@ -15,7 +15,7 @@
     "discord-snowflake": "^2.0.0",
     "drizzle-orm": "^0.32.1",
     "json-bigint": "^1.0.0",
-    "postgres": "^3.4.3",
+    "postgres": "^3.4.5",
     "tif-snowflake": "discohook/snowflake",
     "zod": "^3.23.8",
     "zodix": "^0.4.4"

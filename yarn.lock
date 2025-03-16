@@ -8550,10 +8550,10 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
-"postgres@npm:^3.4.3":
-  version: 3.4.3
-  resolution: "postgres@npm:3.4.3"
-  checksum: 10c0/859b02a1659a0c4139e20880bd15b238f755ae1dbdeb7e2e027e31667cfa32fa502bfa5a2bb955353f36c236ebf8b62e90830d005f81438d165910cc3b8fade0
+"postgres@npm:^3.4.5":
+  version: 3.4.5
+  resolution: "postgres@npm:3.4.5"
+  checksum: 10c0/53415acea77e97bdc1eeb861048f34964e2236e4d4d42f408fc9b901e62bfcf7443a487ebfdad18b57b468c6e297bf8d22097106a200f62eb1262eb5a71355df
   languageName: node
   linkType: hard
 
@@ -9657,17 +9657,17 @@ remix-auth-discord@discohook/remix-auth-discord:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=f6df30&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=a3186d&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.37.92"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.32.1"
     json-bigint: "npm:^1.0.0"
-    postgres: "npm:^3.4.3"
+    postgres: "npm:^3.4.5"
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/acb0322caa23838737a923d86f42f2c40fd617812600e35459ede6cd89162dd738017ca219f2658b1c3d4525e14976ec4b0968d2d909a10326b17bf7df925302
+  checksum: 10c0/6f33313f30f05d6c7e4f572ddf459c139f3c7c53f8f54e673d661005769da9bc5631fb7f3f2a7cd8a13516c593f6cc4e3ce0ee0f02f78675fa60933bca69b286
   languageName: node
   linkType: hard
 
@@ -9682,7 +9682,7 @@ remix-auth-discord@discohook/remix-auth-discord:
     drizzle-kit: "npm:^0.23.1"
     drizzle-orm: "npm:^0.32.1"
     json-bigint: "npm:^1.0.0"
-    postgres: "npm:^3.4.3"
+    postgres: "npm:^3.4.5"
     tif-snowflake: discohook/snowflake
     typescript: "npm:^5.3.3"
     zod: "npm:^3.23.8"
