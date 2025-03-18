@@ -48,5 +48,7 @@
     "editing": "Изменяется",
     "submitting": "Применяется",
     "sendNoWebhooks": "У вас нет вебхуков для отправки.",
-    "sendNoMessages": "У вас нет сообщений для отправки."
+    "sendNoMessages": "У вас нет сообщений для отправки.",
+    "orgRedirectTitle": "Вы были переадресованы с discohook.org",
+    "orgRedirectBody": "Discohook теперь доступен на <bold>discohook.app</bold>. Чтобы перенести свои бэкапы, <importLink>нажмите здесь</importLink>.  Больше о нашем обновлении —  <infoLink>здесь</infoLink>."
 }
