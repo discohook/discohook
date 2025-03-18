@@ -13,5 +13,16 @@
     "delete": "Видалити",
     "join": "Долучитись",
     "temporaryShareUrl": "Поширити посилання",
-    "temporaryShareUrlExpires": "Посиляння дійсне до <0>$t(timestamp.relative.days_future)</0>"
+    "temporaryShareUrlExpires": "Посиляння дійсне до <0>$t(timestamp.relative.days_future)</0>",
+    "expiresIn": "Дійсне до {{0}}",
+    "shareExpired": "Невідоме посилання",
+    "generate": "Згенерувати",
+    "regenerate": "Перегенерувати",
+    "clear": "Очистити",
+    "copy": "Копіювати",
+    "copied": "Скопійовано",
+    "copyLink": "Скопіювати посилання",
+    "clickGenerate": "Натисніть \"Згенерувати\" щоб отримати посилання",
+    "options": "Налаштування",
+    "clickToCopy": "Натисніть, щоб копіювати"
 }
