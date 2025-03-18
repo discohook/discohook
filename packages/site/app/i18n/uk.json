@@ -1,1 +1,17 @@
-{}
+{
+    "required": "Обов'язково",
+    "settings": "Налаштування",
+    "help": "Допомога",
+    "search": "Пошук",
+    "logIn": "Увійти",
+    "logOut": "Вийти",
+    "name": "Ім'я",
+    "save": "Зберегти",
+    "cancel": "Назад",
+    "ok": "Добре",
+    "edit": "Редагувати",
+    "delete": "Видалити",
+    "join": "Долучитись",
+    "temporaryShareUrl": "Поширити посилання",
+    "temporaryShareUrlExpires": "Посиляння дійсне до <0>$t(timestamp.relative.days_future)</0>"
+}
