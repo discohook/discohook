@@ -16,6 +16,8 @@ export const resources = {
   cs: tr(require("../i18n/cs.json")),
   "pt-BR": tr(require("../i18n/pt-BR.json")),
   id: tr(require("../i18n/id.json")),
+  uk: tr(require("../i18n/uk.json")),
+  ru: tr(require("../i18n/ru.json")),
 } satisfies Resource;
 
 export type i18nResources = typeof resources;

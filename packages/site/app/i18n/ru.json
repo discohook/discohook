@@ -1,4 +1,7 @@
 {
+    "locales": {
+        "ru": "Русский"
+    },
     "edit": "Изменить",
     "search": "Поиск",
     "helpSearchPlaceholder": "Как сделать …",

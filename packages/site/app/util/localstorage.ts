@@ -11,7 +11,9 @@ export type LocaleCode =
   | "de"
   | "it"
   | "cs"
-  | "id";
+  | "id"
+  | "uk"
+  | "ru";
 
 export interface Settings {
   theme?: "light" | "dark" | "sync";
