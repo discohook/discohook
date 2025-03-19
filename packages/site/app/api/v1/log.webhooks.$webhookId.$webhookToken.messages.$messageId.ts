@@ -20,6 +20,7 @@ import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
   and,
+  discordGuilds,
   discordMessageComponents,
   eq,
   flows,
@@ -420,34 +421,48 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     }
   }
 
-  const entry = (
-    await db
-      .insert(messageLogEntries)
-      .values({
-        webhookId,
-        type,
-        discordGuildId: guildId,
-        // How crucial is an accurate message ID? This could definitely be
-        // fabricated when creating `delete` logs
-        messageId: message?.id ?? messageId,
-        channelId: message?.channel_id ?? entryWebhook.channelId,
-        threadId,
-        userId,
-        // Not really a reliable check but it doesn't matter.
-        // We might want to remove this entirely
-        notifiedEveryoneHere: message
-          ? message.mention_everyone || message.content.includes("@here")
-          : undefined,
-        embedCount: message ? message.embeds.length : undefined,
-        hasContent: message ? !!message.content : undefined,
-      })
-      .returning({
-        id: messageLogEntries.id,
-        webhookId: messageLogEntries.webhookId,
-        channelId: messageLogEntries.channelId,
-        messageId: messageLogEntries.messageId,
-      })
-  )[0];
+  const entry = await db.transaction(async (tx) => {
+    // Ensure the guild exists for the relationship in messageLogEntries.
+    // Users who are the victim of webhook URL leakage (whereafter the attacker
+    // happens to use Discohook to abuse the URL) would probably not like
+    // to see that there are no logs just because they had never personally
+    // logged into the site before -- which is why we do this instead of just
+    // not creating the log. It's trivial to delete everything here upon request.
+    if (guildId) {
+      await tx
+        .insert(discordGuilds)
+        .values({ id: guildId })
+        .onConflictDoNothing();
+    }
+    return (
+      await tx
+        .insert(messageLogEntries)
+        .values({
+          webhookId,
+          type,
+          discordGuildId: guildId,
+          // How crucial is an accurate message ID? This could definitely be
+          // fabricated when creating `delete` logs
+          messageId: message?.id ?? messageId,
+          channelId: message?.channel_id ?? entryWebhook.channelId,
+          threadId,
+          userId,
+          // Not really a reliable check but it doesn't matter.
+          // We might want to remove this entirely
+          notifiedEveryoneHere: message
+            ? message.mention_everyone || message.content.includes("@here")
+            : undefined,
+          embedCount: message ? message.embeds.length : undefined,
+          hasContent: message ? !!message.content : undefined,
+        })
+        .returning({
+          id: messageLogEntries.id,
+          webhookId: messageLogEntries.webhookId,
+          channelId: messageLogEntries.channelId,
+          messageId: messageLogEntries.messageId,
+        })
+    )[0];
+  });
 
   return json({ ...entry, webhook: entryWebhook }, { headers });
 };
