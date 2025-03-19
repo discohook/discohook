@@ -52,7 +52,7 @@ export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: styles },
   { rel: "stylesheet", href: icons },
-  { rel: "manifest", href: "manifest.json" },
+  { rel: "manifest", href: "/manifest.json" },
 ];
 
 i18n.use(initReactI18next).init({
