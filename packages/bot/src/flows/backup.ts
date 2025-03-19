@@ -29,6 +29,8 @@ const flattenMember = (
   prefix = "member",
 ): Record<string, string | number | undefined> => {
   const key = (attr: string) => `${prefix}.${attr}`;
+
+  const mention = vars.user ? `<@${vars.user.id}>` : undefined;
   return {
     [key("role_ids")]: JSON.stringify(vars.member ? vars.member.roles : []),
     // Legacy-compatible (v1) format options
@@ -41,7 +43,7 @@ const flattenMember = (
       vars.user?.discriminator === "0"
         ? vars.user.username
         : `${vars.user?.username}#${vars.user?.discriminator}`,
-    [key("mention")]: vars.user ? `<@${vars.user.id}>` : undefined,
+    [key("mention")]: mention,
     [key("avatar_url")]:
       vars.member?.avatar && vars.guild && vars.user
         ? cdn.guildMemberAvatar(
@@ -82,6 +84,9 @@ const flattenMember = (
     [key("created_long")]: vars.user
       ? time(getDate(assertGetSnowflake(vars.user.id)), "F")
       : undefined,
+    // User assumptions (other bots may use these?)
+    mention,
+    user: mention,
   };
 };
 
