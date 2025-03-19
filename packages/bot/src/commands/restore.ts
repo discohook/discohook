@@ -30,6 +30,7 @@ import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
 import { getShareLinkExists, putShareLink } from "../durable/share-links.js";
 import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
+import { isDiscordError } from "../util/error.js";
 import { isThread } from "../util/guards.js";
 import { boolEmoji, color } from "../util/meta.js";
 import { base64UrlEncode, randomString } from "../util/text.js";
@@ -232,11 +233,15 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
     : undefined;
 
   let message: APIMessage | undefined;
-  let webhook: APIWebhook | undefined;
+  let webhook: APIWebhook | null | undefined;
+  let webhookErrorMsg: string | undefined;
   if (webhookId) {
     try {
       webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
-    } catch {}
+    } catch (e) {
+      if (isDiscordError(e)) webhookErrorMsg = e.rawError.message;
+      webhook = null;
+    }
     if (webhook?.token) {
       message = (await ctx.rest.get(
         Routes.webhookMessage(webhook.id, webhook.token, messageId),
@@ -282,6 +287,14 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
       });
     }
     case "edit": {
+      if (webhook === null) {
+        return ctx.updateMessage({
+          content: `It looks like this webhook was deleted (ID ${webhookId}), so the message cannot be edited${
+            webhookErrorMsg ? ` (${webhookErrorMsg})` : ""
+          }.`,
+          components: [],
+        });
+      }
       if (!webhook) {
         return ctx.updateMessage({
           content: "This is not a webhook message.",
