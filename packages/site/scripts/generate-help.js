@@ -9,18 +9,20 @@ const data = {
     send: {
       title: "How do I send messages?",
       description: [
-        "To send a message, you must first obtain a Webhook URL. You can get one using the [Discohook Utils bot](https://discohook.app/bot) with the **/webhook create** command, or you can create one manually in the channel settings.",
+        "To send a message, you must first create a webhook. You can get one using the [Discohook Utils bot](https://discohook.app/bot) with the **/webhook create** command, or you can create one manually in the channel settings.",
         "",
-        "Once you have copied the Webhook URL you can paste it at the top of Discohook's editor, and press the **Send** button to have it appear in your server!",
+        'If you create one with the bot, just press the "Use Webhook" button to open Discohook. If you created it manually, copy the Webhook URL and paste it in the "input a webhook URL manually" part of the Add Webhook menu, at the top of the Discohook editor.',
+        "",
+        "The Discohook editor can be found at https://discohook.app."
       ].join("\n"),
     },
     edit: {
       title: "How do I edit messages?",
       description:
-        "This process is easier with [our official bot](https://discohook.app/bot), but it's not necessary.",
+        "This process is easier with [our companion bot](https://discohook.app/bot), but it's not necessary.",
       fields: [
         {
-          name: "If you have Discohook Utils",
+          name: "If you have the bot (Discohook Utils)",
           value: [
             "1. Right click or long press on the message to edit, then open the Apps menu and select **Restore**.",
             ' - If it\'s a webhook message that can be edited, the bot will prompt you to "include edit options". This changes whether the webhook and message link will be pre-filled and makes it easier to get right into editing.',
