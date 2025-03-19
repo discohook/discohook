@@ -458,7 +458,7 @@ export const ComponentEditForm = ({
                             )}
                             className="w-full"
                             value={value.id}
-                            pattern="^\d{17,22}$"
+                            pattern="^\d{17,23}$"
                             onChange={(e) => {
                               value.id = e.currentTarget.value;
                               setComponent(component);

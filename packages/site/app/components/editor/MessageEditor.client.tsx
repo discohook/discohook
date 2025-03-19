@@ -237,9 +237,13 @@ export const MessageEditor: React.FC<{
               freeLength
               required={isAllForum && !message.data.thread_name}
               disabled={!!message.data.thread_name}
+              pattern="^\d+$"
               onInput={(e) => {
-                message.thread_id = e.currentTarget.value || undefined;
-                setData({ ...data });
+                const val = e.currentTarget.value;
+                if (!val || /^\d+$/.test(val)) {
+                  message.thread_id = val || undefined;
+                  setData({ ...data });
+                }
               }}
             />
             {/*message.data.thread_name && imageFiles.length > 0 ? (
