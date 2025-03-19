@@ -18,7 +18,7 @@ import { Settings } from "~/util/localstorage";
 import { Svg } from "../icons/Svg";
 import { PostChannelIcon } from "../icons/channel";
 import { MessageComponents } from "./Components";
-import { Embed } from "./Embed";
+import { Embed, getImageUri } from "./Embed";
 import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
@@ -95,7 +95,9 @@ export const Message: React.FC<{
     : undefined;
   const username = message.author?.name ?? webhook?.name ?? "Discohook";
   const avatarUrl =
-    message.author?.icon_url ??
+    // This is used to discard invalid URLs. Attachment URIs are not
+    // supported for avatars.
+    (message.author?.icon_url ? getImageUri(message.author.icon_url) : null) ||
     (webhook
       ? webhookAvatarUrl(webhook, { size: 64 })
       : "/logos/discohook.svg");
