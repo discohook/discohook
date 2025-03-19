@@ -4,9 +4,11 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { ZodSchema } from "zod";
 import { Button } from "~/components/Button";
+import { ButtonSelect } from "~/components/ButtonSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { TextArea } from "~/components/TextArea";
+import { DiscohookBackupExportData } from "~/types/discohook";
 import { cycleCopyText } from "~/util/text";
 import { Modal, ModalProps } from "./Modal";
 
@@ -81,32 +83,106 @@ export const JsonEditorModal = (
           onChange={(e) => setWordWrap(e.currentTarget.checked)}
         />
       </div>
-      <div className="mt-4 space-x-2 rtl:space-x-reverse">
-        <Button
-          discordstyle={ButtonStyle.Secondary}
-          onClick={(e) => cycleCopyText(value, t, e.currentTarget)}
-        >
-          {t("copy")}
-        </Button>
-        <Button
-          discordstyle={ButtonStyle.Secondary}
-          onClick={() => {
-            try {
-              setValue(JSON.stringify(JSON.parse(value), undefined, 2));
-            } catch {}
-          }}
-        >
-          {t("jsonPrettify")}
-        </Button>
-        <Button
-          disabled={!valid}
-          onClick={() => {
-            if (props.update) props.update(JSON.parse(value));
-            props.setOpen(false);
-          }}
-        >
-          {t("save")}
-        </Button>
+      <div className="flex mt-4">
+        <div className="space-x-2 rtl:space-x-reverse">
+          <Button
+            discordstyle={ButtonStyle.Secondary}
+            onClick={(e) => cycleCopyText(value, t, e.currentTarget)}
+          >
+            {t("copy")}
+          </Button>
+          <Button
+            discordstyle={ButtonStyle.Secondary}
+            onClick={() => {
+              try {
+                setValue(JSON.stringify(JSON.parse(value), undefined, 2));
+              } catch {}
+            }}
+          >
+            {t("jsonPrettify")}
+          </Button>
+          <Button
+            disabled={!valid}
+            onClick={() => {
+              if (props.update) props.update(JSON.parse(value));
+              props.setOpen(false);
+            }}
+          >
+            {t("save")}
+          </Button>
+        </div>
+        <div className="ltr:ml-auto rtl:mr-auto">
+          <ButtonSelect
+            // This select assumes that the JSON editor is for message data.
+            // Currently, it always will be, but it was designed to be generic.
+            isDisabled={!valid}
+            discordstyle={ButtonStyle.Secondary}
+            options={[
+              {
+                label: t("jsonDownload.backup"),
+                value: "backup",
+              },
+              {
+                label: t("jsonDownload.plain"),
+                value: "plain",
+              },
+            ]}
+            onChange={(opt) => {
+              const { value: val } = opt as {
+                label: string;
+                value: "backup" | "plain";
+              };
+
+              const now = new Date();
+              const datePretty = now.toLocaleString(undefined, {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+              });
+              const dateDash = `${now.getFullYear()}-${(now.getMonth() + 1)
+                .toString()
+                .padStart(2, "0")}-${now
+                .getDate()
+                .toString()
+                .padStart(2, "0")}`;
+
+              let downloadable = value;
+              if (val === "backup") {
+                downloadable = JSON.stringify(
+                  {
+                    version: 8,
+                    backups: [
+                      {
+                        messages: [{ _id: "", data: JSON.parse(value) }],
+                        name: `Export ${datePretty}`,
+                        targets: [],
+                      },
+                    ],
+                  } satisfies DiscohookBackupExportData,
+                  undefined,
+                  2,
+                );
+              }
+
+              const blob = new Blob([downloadable], {
+                type: "application/json",
+              });
+              const blobUrl = URL.createObjectURL(blob);
+              try {
+                const link = document.createElement("a");
+                link.href = blobUrl;
+                link.download = `discohook_${
+                  val === "backup" ? "backup" : "message"
+                }_${dateDash}.json`;
+                link.click();
+              } finally {
+                URL.revokeObjectURL(blobUrl);
+              }
+            }}
+          >
+            {t("download")}
+          </ButtonSelect>
+        </div>
       </div>
     </Modal>
   );

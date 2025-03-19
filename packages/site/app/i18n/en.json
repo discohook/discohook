@@ -115,6 +115,11 @@
   "developer": "Developer",
   "jsonEditor": "JSON Editor",
   "jsonPrettify": "Prettify JSON",
+  "download": "Download",
+  "jsonDownload": {
+    "backup": "As Backup",
+    "plain": "Plain JSON"
+  },
   "wordWrap": "Word Wrap",
   "codeGenerator": "Code Generator",
   "library": "Library",
