@@ -2,7 +2,7 @@ import { MetaFunction, redirect } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import type { LoaderFunctionArgs as RRLoaderFunctionArgs } from "@remix-run/router";
 import { useEffect, useReducer, useState } from "react";
-import { Button } from "~/components/Button";
+import { Button, ButtonStyle } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { DatabaseManager } from "~/database/DatabaseManager";
 import { Backup } from "~/database/schema";
@@ -190,7 +190,7 @@ export default function Index() {
                       <p className="mt-2 text-sm text-gray-500">
                         Backup names in{" "}
                         <span className="text-red-400">red</span> indicate that
-                        you already have a cloud backup with that name. You
+                        you already have a cloud backup with that name. You can
                         choose to import them anyway by simply ticking the box.
                       </p>
                     )}
@@ -198,51 +198,85 @@ export default function Index() {
                 )}
               </div>
             </div>
-            <div className="mt-2 flex relative">
-              <a className="ml-0 absolute" href={`${origin}/me/backups`}>
-                <Button>
-                  <span className="m-auto">
-                    <i className="ci-Chevron_Left" /> Back
-                  </span>
-                </Button>
-              </a>
-              <Button
-                className="mx-auto"
-                disabled={Object.values(selected).filter(Boolean).length === 0}
-                onClick={async () => {
-                  if (!backups) return;
-                  const response = await fetch(
-                    `${origin}/api/v1/magic-backups`,
-                    {
-                      method: "POST",
-                      body: JSON.stringify({
-                        backups: backups.filter(
-                          (b) => selected[b.id] !== false,
-                        ),
-                      }),
-                      headers: {
-                        "Content-Type": "application/json",
-                        "X-Discohook-Pixiedust": token,
+            <div className="mt-2 grid grid-cols-3">
+              <div className="flex">
+                <a className="mr-auto" href={`${origin}/me/backups`}>
+                  <Button discordStyle={ButtonStyle.Secondary}>
+                    <span className="m-auto">
+                      <i className="ci-Chevron_Left" /> Back
+                    </span>
+                  </Button>
+                </a>
+              </div>
+              <div className="flex">
+                <Button
+                  className="mx-auto"
+                  disabled={
+                    Object.values(selected).filter(Boolean).length === 0
+                  }
+                  onClick={async () => {
+                    if (!backups) return;
+                    const response = await fetch(
+                      `${origin}/api/v1/magic-backups`,
+                      {
+                        method: "POST",
+                        body: JSON.stringify({
+                          backups: backups.filter(
+                            (b) => selected[b.id] !== false,
+                          ),
+                        }),
+                        headers: {
+                          "Content-Type": "application/json",
+                          "X-Discohook-Pixiedust": token,
+                        },
                       },
-                    },
-                  );
-                  if (!response.ok) {
-                    console.error(response);
-                    const { message } = (await response.json()) as {
-                      message: string;
-                    };
-                    setError(message);
-                    return;
-                  }
-                  const url = new URL(`${origin}/me/backups`);
-                  if (settings) {
-                    url.searchParams.set("settings", JSON.stringify(settings));
-                  }
-                  window.location.href = url.href;
-                }}
-              >
-                <span className="m-auto">Finish</span>
-              </Button>
+                    );
+                    if (!response.ok) {
+                      console.error(response);
+                      const { message } = (await response.json()) as {
+                        message: string;
+                      };
+                      setError(message);
+                      return;
+                    }
+                    const url = new URL(`${origin}/me/backups`);
+                    if (settings) {
+                      url.searchParams.set(
+                        "settings",
+                        JSON.stringify(settings),
+                      );
+                    }
+                    window.location.href = url.href;
+                  }}
+                >
+                  <span className="m-auto">Finish</span>
+                </Button>
+              </div>
+              <div className="flex">
+                <Button
+                  className="ml-auto"
+                  discordStyle={ButtonStyle.Secondary}
+                  disabled={backups.length === 0}
+                  onClick={() => {
+                    // Borrowing all this from site/app/modals/JsonEditorModal
+                    const blob = new Blob(
+                      [JSON.stringify({ version: 7, backups })],
+                      { type: "application/json" },
+                    );
+                    const blobUrl = URL.createObjectURL(blob);
+                    try {
+                      const link = document.createElement("a");
+                      link.href = blobUrl;
+                      link.download = "backups.json";
+                      link.click();
+                    } finally {
+                      URL.revokeObjectURL(blobUrl);
+                    }
+                  }}
+                >
+                  <span className="m-auto">Export All</span>
+                </Button>
+              </div>
             </div>
           </>
         ) : (
