@@ -138,7 +138,7 @@
     "resetAvatar": "Очистить",
     "webhookCreated": "Вебхук создан",
     "webhookCreateFailed": "Не получилось создать вебхук",
-    "webhookCreateSubtitle": "Сейчас перенесем вас обратно в редактор",
+    "webhookCreateSubtitle": "Сейчас перенесем вас обратно в редактор.",
     "copyImports": "Скопировать импорты",
     "copyCode": "Скопировать код"
 }
