@@ -165,7 +165,7 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
     ms: now,
   };
 
-  // bulk events every 2 seconds (unless there is only one shard)
+  // bulk events at set interval (unless there is only one shard)
   let processEvents: typeof eventQueue = [];
   if (!small) {
     const queueDuration = 2000;
@@ -175,7 +175,7 @@ manager.on(WebSocketShardEvents.Dispatch, async (event) => {
     }
 
     if (processEvents.length === 0) {
-      // Fewer than 2 seconds of events have accumulated
+      // Fewer than `queueDuration`ms of events have accumulated
       eventQueue.push(asPayload);
       return;
     }
