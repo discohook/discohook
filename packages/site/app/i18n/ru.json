@@ -185,5 +185,14 @@
     "bots": "Боты",
     "newBot": "Новый бот",
     "noDescription": "Нет описания",
-    "commands": "Команды"
+    "commands": "Команды",
+    "backupNameDuplicate": "<0/> Бэкап с таким названием уже существует",
+    "viewBackupName": "Посмотреть {{name}}",
+    "importCount": "Импортировать {{count}}",
+    "selectFile": "Выбрать файл",
+    "export": "Экспорт",
+    "exportBackups": "Экспорт бэкапов",
+    "importedFromOrgAt": "Импортировано с discohook.org $t(timestamp.date_verbose)",
+    "exportBackupsNote": "Это меню экспорта бэкапов. Не очень нужная вещь, только если вы не собираетесь копировать свои сообщения для оффлайна или для других ботов. Если у вас было настроено расписание, то экспортируется только повторяющееся",
+    "version": "Версия: {{version}}"
 }
