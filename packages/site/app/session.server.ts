@@ -346,6 +346,9 @@ export async function authorizeRequest(
   options?: {
     requireToken?: boolean;
     headers?: Record<string, string>;
+    // This option is an override for the "is this an API route" logic,
+    // preventing a redirect to /auth/discord when it's not desired
+    errorLoggedOut?: boolean;
   },
 ): Promise<
   [
@@ -358,7 +361,20 @@ export async function authorizeRequest(
   const session = await storage.getSession(request.headers.get("Cookie"));
 
   const serveNewToken = async () => {
-    const user = await getUser(request, context, true);
+    const user = await getUser(
+      request,
+      context,
+      options?.errorLoggedOut === undefined
+        ? new URL(request.url).pathname.startsWith("/api/")
+          ? undefined
+          : true
+        : options.errorLoggedOut
+          ? undefined
+          : true,
+    );
+    if (user === null) {
+      throw json({ message: "Must provide proper authorization" }, 401);
+    }
     const token = await regenerateToken(context.env, context.origin, user.id);
     const countryCode = request.headers.get("CF-IPCountry") ?? undefined;
 
