@@ -1,7 +1,10 @@
+import { Select } from "@base-ui-components/react/select";
 import { Link } from "@remix-run/react";
 import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
+import { useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { JsonEditorProps } from "~/modals/JsonEditorModal";
@@ -99,10 +102,11 @@ export const MessageEditor: React.FC<{
     // None of them are forums
     channels.filter((c) => c.type === "forum").length === 0;
 
-  // const imageFiles = useMemo(
-  //   () => files.filter((f) => f.file.type.startsWith("image/")),
-  //   [files],
-  // );
+  const imageFiles = useMemo(
+    () => files.filter((f) => f.file.type.startsWith("image/")),
+    [files],
+  );
+  const thumbnailFileId = imageFiles.find((f) => f.is_thumbnail)?.id ?? null;
 
   return (
     <details className="group/message mt-4 pb-2" open>
@@ -246,14 +250,14 @@ export const MessageEditor: React.FC<{
                 }
               }}
             />
-            {/*message.data.thread_name && imageFiles.length > 0 ? (
+            {message.data.thread_name && imageFiles.length > 0 ? (
               <div className="flex">
                 <div
                   // Not a fan of this max-width
                   className="grow max-w-[calc(100%_-_1.75rem)]"
                 >
                   <Select.Root
-                    value={imageFiles.find((f) => f.is_thumbnail)?.id ?? null}
+                    value={thumbnailFileId}
                     onValueChange={(id) => {
                       for (const file of files) {
                         file.is_thumbnail = file.id === id && !file.embed;
@@ -283,7 +287,7 @@ export const MessageEditor: React.FC<{
                       <Select.Positioner
                         className={twJoin(
                           "rounded bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
-                          "border border-black/[0.08]",
+                          "p-0.5 border border-black/[0.08]",
                         )}
                         align="start"
                         alignOffset={2}
@@ -296,12 +300,23 @@ export const MessageEditor: React.FC<{
                               <Select.Item
                                 key={`thumbnail-select-${file.id}`}
                                 value={file.id}
-                                className="px-[14px] py-0 h-9 hover:bg-[#e0e1e5] hover:dark:bg-[#36373d] flex first:rounded-t last:rounded-b cursor-pointer"
+                                className={twJoin(
+                                  "px-[14px] py-0 h-9 flex rounded cursor-pointer",
+                                  "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium"
+                                )}
                               >
                                 <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
                                   {transformFileName(file.file.name)}
                                 </Select.ItemText>
-                                <Select.ItemIndicator className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                                <Select.ItemIndicator
+                                  className={twJoin(
+                                    "ltr:ml-auto rtl:mr-auto my-auto text-lg",
+                                    // https://github.com/mui/base-ui/issues/1556#issuecomment-2741296430
+                                    thumbnailFileId === file.id
+                                      ? "visible"
+                                      : "invisible",
+                                  )}
+                                >
                                   <CoolIcon icon="Check" />
                                 </Select.ItemIndicator>
                               </Select.Item>
@@ -326,7 +341,7 @@ export const MessageEditor: React.FC<{
                   <CoolIcon icon="Close_MD" />
                 </button>
               </div>
-            ) : null*/}
+            ) : null}
           </EmbedEditorSection>
           <EmbedEditorSection name={t("profile")}>
             {!!message.reference && (

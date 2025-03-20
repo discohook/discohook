@@ -142,7 +142,7 @@ export const Message: React.FC<{
   const allAttachments = [
     ...(message.attachments ?? []),
     ...(files
-      ?.filter((f) => f.embed !== true)
+      ?.filter((f) => f.embed !== true && f.is_thumbnail !== true)
       ?.map(
         ({ id, file, url }) =>
           ({
@@ -165,17 +165,29 @@ export const Message: React.FC<{
       a.content_type &&
       ["video", "image"].includes(a.content_type.split("/")[0]),
   );
+  const threadThumbnailFile = files?.find((f) => f.is_thumbnail);
 
   return (
     <div className={twJoin("dark:text-primary-230")} dir="ltr">
       {message.thread_name && (
         <div>
-          <div className="w-16 h-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
-            <PostChannelIcon className="w-10 h-10" />
+          <div className="flex">
+            <div className="shrink-0">
+              <div className="w-16 h-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
+                <PostChannelIcon className="w-10 h-10" />
+              </div>
+              <h3 className="font-medium select-text my-2 text-[32px] leading-5">
+                {message.thread_name}
+              </h3>
+            </div>
+            {threadThumbnailFile?.url &&
+            threadThumbnailFile.file.type.startsWith("image/") ? (
+              <div
+                className="ml-auto mt-auto rounded-md h-20 aspect-video bg-cover bg-center shadow"
+                style={{ backgroundImage: `url(${threadThumbnailFile.url})` }}
+              />
+            ) : null}
           </div>
-          <h3 className="font-medium select-text my-2 text-[32px] leading-5">
-            {message.thread_name}
-          </h3>
           <MessageDivider>
             {t("timestamp.date_verbose", {
               replace: { date: date ?? new Date() },
