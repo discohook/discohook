@@ -169,32 +169,41 @@ export const Message: React.FC<{
 
   return (
     <div className={twJoin("dark:text-primary-230")} dir="ltr">
-      {message.thread_name && (
-        <div>
-          <div className="flex">
-            <div className="shrink-0">
-              <div className="w-16 h-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
-                <PostChannelIcon className="w-10 h-10" />
+      {
+        // Show forum header when there is a thread name OR there is a
+        // thread ID and post thumbnail file (thus editing the starter
+        // message)
+        message.thread_name ||
+        (!!data &&
+          index !== undefined &&
+          !!data.messages[index]?.thread_id &&
+          !!threadThumbnailFile) ? (
+          <div>
+            <div className="flex">
+              <div className="shrink-0">
+                <div className="w-16 h-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
+                  <PostChannelIcon className="w-10 h-10" />
+                </div>
+                <h3 className="font-medium select-text my-2 text-[32px] leading-5">
+                  {message.thread_name || t("thread")}
+                </h3>
               </div>
-              <h3 className="font-medium select-text my-2 text-[32px] leading-5">
-                {message.thread_name}
-              </h3>
+              {threadThumbnailFile?.url &&
+              threadThumbnailFile.file.type.startsWith("image/") ? (
+                <div
+                  className="ml-auto mt-auto rounded-md h-20 aspect-video bg-cover bg-center shadow"
+                  style={{ backgroundImage: `url(${threadThumbnailFile.url})` }}
+                />
+              ) : null}
             </div>
-            {threadThumbnailFile?.url &&
-            threadThumbnailFile.file.type.startsWith("image/") ? (
-              <div
-                className="ml-auto mt-auto rounded-md h-20 aspect-video bg-cover bg-center shadow"
-                style={{ backgroundImage: `url(${threadThumbnailFile.url})` }}
-              />
-            ) : null}
+            <MessageDivider>
+              {t("timestamp.date_verbose", {
+                replace: { date: date ?? new Date() },
+              })}
+            </MessageDivider>
           </div>
-          <MessageDivider>
-            {t("timestamp.date_verbose", {
-              replace: { date: date ?? new Date() },
-            })}
-          </MessageDivider>
-        </div>
-      )}
+        ) : null
+      }
       <div
         className={twJoin(
           "flex",

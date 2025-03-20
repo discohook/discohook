@@ -245,6 +245,17 @@ export const updateWebhookMessage = async (
     query.set("with_components", String(withComponents));
   }
 
+  if (files && !payload.attachments) {
+    payload.attachments = files.map((file, i) => ({
+      id: i,
+      description: file.description,
+      filename: file.file.name,
+      // See comment under `executeWebhook`
+      is_thumbnail:
+        file.is_thumbnail && threadId !== undefined ? true : undefined,
+    }));
+  }
+
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {

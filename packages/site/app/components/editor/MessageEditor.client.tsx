@@ -250,7 +250,9 @@ export const MessageEditor: React.FC<{
                 }
               }}
             />
-            {message.data.thread_name && imageFiles.length > 0 ? (
+            {(message.reference
+              ? !!message.thread_id
+              : !!message.data.thread_name) && imageFiles.length > 0 ? (
               <div className="flex">
                 <div
                   // Not a fan of this max-width
@@ -302,7 +304,7 @@ export const MessageEditor: React.FC<{
                                 value={file.id}
                                 className={twJoin(
                                   "px-[14px] py-0 h-9 flex rounded cursor-pointer",
-                                  "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium"
+                                  "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
                                 )}
                               >
                                 <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
