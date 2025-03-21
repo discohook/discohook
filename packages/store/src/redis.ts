@@ -142,7 +142,11 @@ export class RedisKV<Key extends string = string> {
   ): Promise<KVNamespaceGetWithMetadataResult<ExpectedValue, Metadata>>;
   async getWithMetadata<ExpectedValue = unknown, Metadata = unknown>(
     key: Key,
-    options?: "text" | "json" | KVNamespaceGetOptions<"text" | "json">,
+    options?:
+      | "text"
+      | "json"
+      | KVNamespaceGetOptions<"text" | "json">
+      | Partial<KVNamespaceGetOptions<undefined>>,
   ): Promise<
     KVNamespaceGetWithMetadataResult<ExpectedValue | string, Metadata>
   > {
