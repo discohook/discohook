@@ -64,6 +64,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240405.0",
     "@remix-run/dev": "^2.4.0",
+    "@types/caniuse-lite": "^1",
     "@types/he": "^1",
     "@types/insert-text-at-cursor": "^0",
     "@types/react": "^18.2.20",
@@ -73,6 +74,8 @@
     "@types/react-modal": "^3.16.3",
     "@types/ua-parser-js": "^0.7.39",
     "@types/ungap__structured-clone": "^1.2.0",
+    "browserslist": "^4.24.4",
+    "caniuse-lite": "^1.0.30001706",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.1.6",
     "wrangler": "^3.107.3"
