@@ -47,7 +47,10 @@
         "es": "الاسبانية",
         "it": "الايطالية",
         "de": "الالمانية",
-        "cs": "التشيكية"
+        "cs": "التشيكية",
+        "id": "الإندونيسية",
+        "uk": "الأوكرانية",
+        "ru": "الروسية"
     },
     "webhookUrl": "رابط الويبهوك",
     "invalidWebhookUrl": "رابط الويبهوك خطأ, يجب ان يبدأ ب https://discord.com/api/webhooks/...",
@@ -713,5 +716,13 @@
     "backupNameDuplicate": "<0/> يوجد نسخة احتياطية بهذا الاسم بالفعل",
     "viewBackupName": "عرض {{name}}",
     "importCount": "استيراد {{count}}",
-    "selectFile": "اختر ملف"
+    "selectFile": "اختر ملف",
+    "download": "تحميل",
+    "jsonDownload": {
+        "backup": "كنسخة إحتياطية",
+        "plain": "JSON صافي"
+    },
+    "pasteFile": "لصق ملف",
+    "pasteCmd": "اضغط ⌘ر",
+    "pasteCtrl": "اضغط Ctrl+ر"
 }
