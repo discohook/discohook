@@ -724,5 +724,6 @@
     },
     "pasteFile": "لصق ملف",
     "pasteCmd": "اضغط ⌘ر",
-    "pasteCtrl": "اضغط Ctrl+ر"
+    "pasteCtrl": "اضغط Ctrl+ر",
+    "postThumbnail": "الصورة المُصغرة للمنشور (تشانل الوسائط)"
 }
