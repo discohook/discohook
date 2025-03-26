@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageTroubleshootModal = (props: ModalProps) => {
   const { t } = useTranslation();

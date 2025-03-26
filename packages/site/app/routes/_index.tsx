@@ -1,15 +1,26 @@
-import { SerializeFrom, defer } from "@remix-run/cloudflare";
+import {
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+  defer,
+} from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
-import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
+import {
+  type APIWebhook,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import React, { useEffect, useReducer, useState } from "react";
+import type React from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
-import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
+import type { SafeParseError, SafeParseReturnType, ZodError } from "zod";
+import type { ApiGetBackupWithData } from "~/api/.server/v1/backups.$id";
+import type { loader as ApiGetComponents } from "~/api/.server/v1/components";
+import type { InvalidShareIdData } from "~/api/.server/v1/share.$shareId";
 import { BRoutes, apiUrl } from "~/api/routing";
-import { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -29,17 +40,20 @@ import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import {
   CodeGeneratorModal,
-  CodeGeneratorProps,
+  type CodeGeneratorProps,
 } from "~/modals/CodeGeneratorModal";
 import {
   ComponentEditModal,
-  EditingComponentData,
+  type EditingComponentData,
 } from "~/modals/ComponentEditModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
-import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
+import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
-import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
-import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
+import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
+import {
+  JsonEditorModal,
+  type JsonEditorProps,
+} from "~/modals/JsonEditorModal";
 import { MessageFlagsEditModal } from "~/modals/MesageFlagsEditModal";
 import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
 import {
@@ -56,8 +70,8 @@ import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getSessionStorage, getUser } from "~/session.server";
 import { getDb } from "~/store.server";
 import {
-  APIMessageActionRowComponent,
-  QueryData,
+  type APIMessageActionRowComponent,
+  type QueryData,
   ZodQueryData,
 } from "~/types/QueryData";
 import { useCache } from "~/util/cache/CacheManager";
@@ -67,7 +81,6 @@ import {
   WEBHOOK_URL_RE,
 } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
@@ -77,15 +90,14 @@ import {
 } from "~/util/text";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
-import { type ApiGetBackupWithData } from "../api/v1/backups.$id";
-import { loader as ApiGetComponents } from "../api/v1/components";
 import {
   buildStorableComponent,
   unresolveStorableComponent,
 } from "./edit.component.$id";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context);
+  console.log(context.env);
   const db = getDb(context.env.HYPERDRIVE);
   const memberships = (async () => {
     return user?.discordId
@@ -387,7 +399,7 @@ export default function Index() {
         parsed = ZodQueryData.safeParse(
           JSON.parse(
             searchParams.get("data")
-              ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
+              ? (base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
               : JSON.stringify({ messages: [INDEX_MESSAGE] }),
           ),
         );

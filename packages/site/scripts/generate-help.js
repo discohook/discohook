@@ -13,7 +13,7 @@ const data = {
         "",
         'If you create one with the bot, just press the "Use Webhook" button to open Discohook. If you created it manually, copy the Webhook URL and paste it in the "input a webhook URL manually" part of the Add Webhook menu, at the top of the Discohook editor.',
         "",
-        "The Discohook editor can be found at https://discohook.app."
+        "The Discohook editor can be found at https://discohook.app.",
       ].join("\n"),
     },
     edit: {

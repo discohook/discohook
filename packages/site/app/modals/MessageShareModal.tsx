@@ -1,16 +1,16 @@
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import { useCallback, useMemo, useState } from "react";
+import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { useCallback, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import type { action as ApiPostShare } from "~/api/.server/v1/share";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
-import { QueryData } from "~/types/QueryData";
+import type { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
 import { cycleCopyText } from "~/util/text";
-import { action as ApiPostShare } from "../api/v1/share";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageShareModal = (
   props: ModalProps & {
@@ -23,15 +23,6 @@ export const MessageShareModal = (
   const [error, setError] = useError(t);
 
   const [includeTargets, setIncludeTargets] = useState(false);
-  const dataWithTargets = useMemo(
-    () => ({
-      ...data,
-      targets: Object.values(targets).map((t) => ({
-        url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-      })),
-    }),
-    [data, targets],
-  );
 
   const shareFetcher = useSafeFetcher<typeof ApiPostShare>({
     onError: setError,
@@ -40,12 +31,29 @@ export const MessageShareModal = (
   const generateShareData = useCallback(
     (options?: { includeTargets_?: boolean }) => {
       const { includeTargets_ } = options ?? {};
-      shareFetcher.submit(
-        { data: includeTargets_ ?? includeTargets ? dataWithTargets : data },
-        { method: "POST", action: apiUrl(BRoutes.share()) },
-      );
+      if (includeTargets_ ?? includeTargets) {
+        const dataWithTargets = {
+          ...data,
+          targets: Object.values(targets).map((t) => ({
+            url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
+          })),
+        };
+        shareFetcher.submit(
+          { data: dataWithTargets },
+          { method: "POST", action: apiUrl(BRoutes.share()) },
+        );
+      } else {
+        const dataWithoutTargets = {
+          ...data,
+          targets: [],
+        };
+        shareFetcher.submit(
+          { data: dataWithoutTargets },
+          { method: "POST", action: apiUrl(BRoutes.share()) },
+        );
+      }
     },
-    [includeTargets, data, shareFetcher.submit],
+    [includeTargets, data, targets, shareFetcher.submit],
   );
 
   return (

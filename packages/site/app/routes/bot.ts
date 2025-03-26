@@ -1,6 +1,5 @@
-import { redirect } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { LoaderArgs } from "~/util/loader";
 
 const permissions = new PermissionsBitField(0);
 // permissions.set(PermissionFlags.ManageGuild, true);
@@ -24,7 +23,7 @@ permissions.set(PermissionFlags.SendMessagesInThreads, true);
 // Flows
 permissions.set(PermissionFlags.ModerateMembers, true);
 
-export const loader = ({ request, context }: LoaderArgs) =>
+export const loader = ({ request, context }: LoaderFunctionArgs) =>
   redirect(
     new URL(
       `https://discord.com/oauth2/authorize?${new URLSearchParams({

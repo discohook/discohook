@@ -1,5 +1,4 @@
 import type { LinksFunction, MetaFunction } from "@remix-run/cloudflare";
-import { cssBundleHref } from "@remix-run/css-bundle";
 import {
   Links,
   LiveReload,
@@ -11,16 +10,16 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import i18n from "i18next";
-import moment from "moment";
-import { useEffect } from "react";
-import { initReactI18next } from "react-i18next";
 import { ClientOnly } from "remix-utils/client-only";
-import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message.client";
-import icons from "./styles/coolicons.css";
-import { resources } from "./util/i18n";
+import "./styles/coolicons.css";
+import "./styles/tailwind.css";
 import { getZodErrorMessage } from "./util/loader";
+
+// i18n
+import { useTranslation } from "react-i18next";
+import { useChangeLanguage } from "remix-i18next/react";
+import { getClientLocale } from "./util/localstorage";
 
 export const meta: MetaFunction = () => {
   return [
@@ -49,24 +48,13 @@ export const meta: MetaFunction = () => {
 };
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
-  { rel: "stylesheet", href: styles },
-  { rel: "stylesheet", href: icons },
+  // ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "manifest", href: "/manifest.json" },
 ];
 
-i18n.use(initReactI18next).init({
-  resources,
-  fallbackLng: "en",
-  interpolation: {
-    escapeValue: false,
-    format: (value, format) => {
-      if (format === "lowercase") return value.toLowerCase();
-      if (value instanceof Date) return moment(value).format(format);
-      return value.toString();
-    },
-  },
-});
+export const handle = {
+  i18n: "common",
+};
 
 const TailwindThemeScript = () => (
   <script
@@ -89,19 +77,6 @@ const TailwindThemeScript = () => (
   />
 );
 
-const changeLanguageEffect = () => {
-  const settings = JSON.parse(
-    localStorage.getItem("discohook_settings") ?? "{}",
-  );
-  if (settings.locale) {
-    i18n.changeLanguage(settings.locale);
-    const html = document.querySelector("html");
-    if (html) {
-      html.dir = ["ar"].includes(settings.locale) ? "rtl" : "ltr";
-    }
-  }
-};
-
 export const FullscreenThrobber = () => (
   <div className="h-screen w-full flex absolute top-0 left-0">
     <img
@@ -117,10 +92,11 @@ export const FullscreenThrobber = () => (
   </div>
 );
 
-export default function App() {
-  useEffect(changeLanguageEffect, []);
+export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { i18n } = useTranslation();
+
   return (
-    <html lang="en" className="dark" dir="ltr">
+    <html lang={i18n.language} className="dark" dir={i18n.dir()}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -129,69 +105,69 @@ export default function App() {
         <TailwindThemeScript />
       </head>
       <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230 isolate">
-        <ClientOnly fallback={<FullscreenThrobber />}>
-          {() => <Outlet />}
-        </ClientOnly>
+        {children}
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
       </body>
     </html>
   );
+};
+
+export default function App() {
+  const locale = getClientLocale();
+  useChangeLanguage(locale);
+
+  return (
+    <ClientOnly fallback={<FullscreenThrobber />}>
+      {() => <Outlet />}
+    </ClientOnly>
+  );
 }
 
 export function ErrorBoundary() {
-  useEffect(changeLanguageEffect, []);
+  const locale = getClientLocale();
+  useChangeLanguage(locale);
+
   const error = useRouteError();
-  console.error(error);
+  if (!isRouteErrorResponse(error)) {
+    console.error(error);
+  }
+
   return (
-    <html lang="en" className="dark">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Error - Discohook</title>
-        <Meta />
-        <Links />
-        <TailwindThemeScript />
-      </head>
-      <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230 h-screen flex">
+    <ClientOnly fallback={<FullscreenThrobber />}>
+      {() => (
         <div className="p-8 max-w-3xl mx-auto">
-          <ClientOnly fallback={<FullscreenThrobber />}>
-            {() => (
-              <Message
-                message={{
-                  content: [
-                    "You just encountered an error, here's all we know:",
-                    "```",
-                    isRouteErrorResponse(error)
-                      ? typeof error.data === "object" &&
-                        "message" in error.data
-                        ? getZodErrorMessage(error.data)
-                        : String(error.data)
-                      : String(error),
-                    "```",
-                    "If you think this shouldn't have happened, visit the support server.",
-                  ].join("\n"),
+          <Message
+            message={{
+              content: [
+                "You just encountered an error, here's all we know:",
+                "```",
+                isRouteErrorResponse(error)
+                  ? typeof error.data === "object" && "message" in error.data
+                    ? getZodErrorMessage(error.data)
+                    : String(error.data)
+                  : String(error),
+                "```",
+                "If you think this shouldn't have happened, visit the support server.",
+              ].join("\n"),
+              components: [
+                {
+                  type: ComponentType.ActionRow,
                   components: [
                     {
-                      type: ComponentType.ActionRow,
-                      components: [
-                        {
-                          type: ComponentType.Button,
-                          style: ButtonStyle.Link,
-                          label: "Support Server",
-                          url: "/discord",
-                        },
-                      ],
+                      type: ComponentType.Button,
+                      style: ButtonStyle.Link,
+                      label: "Support Server",
+                      url: "/discord",
                     },
                   ],
-                }}
-              />
-            )}
-          </ClientOnly>
+                },
+              ],
+            }}
+          />
         </div>
-        <Scripts />
-      </body>
-    </html>
+      )}
+    </ClientOnly>
   );
 }

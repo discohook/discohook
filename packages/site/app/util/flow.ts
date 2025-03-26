@@ -1,4 +1,4 @@
-import { DraftFlow, Flow } from "~/store.server";
+import type { DraftFlow, Flow } from "~/store.server";
 
 export const flowToDraftFlow = (flow: Flow): DraftFlow => ({
   name: flow.name,

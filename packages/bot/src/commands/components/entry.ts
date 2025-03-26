@@ -3,22 +3,22 @@ import { messageLink } from "@discordjs/formatters";
 import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
 import {
-  APIApplicationCommandAutocompleteInteraction,
-  APIMessage,
-  APIWebhook,
+  type APIApplicationCommandAutocompleteInteraction,
+  type APIMessage,
+  type APIWebhook,
   ApplicationCommandOptionType,
   ButtonStyle,
   Routes,
 } from "discord-api-types/v10";
-import { Snowflake, getDate } from "discord-snowflake";
-import {
+import { type Snowflake, getDate } from "discord-snowflake";
+import type {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
   MessageAppCommandCallback,
 } from "../../commands.js";
-import { AutoComponentCustomId } from "../../components.js";
-import { InteractionContext } from "../../interactions.js";
-import { Env } from "../../types/env.js";
+import type { AutoComponentCustomId } from "../../components.js";
+import type { InteractionContext } from "../../interactions.js";
+import type { Env } from "../../types/env.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import { startComponentFlow } from "./add.js";
 

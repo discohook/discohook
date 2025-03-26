@@ -1,20 +1,22 @@
 import twemoji, {
   type Twemoji as TTwemoji,
-  TwemojiOptions,
+  type TwemojiOptions,
 } from "@twemoji/api";
 import { memo } from "react";
-import {
-  LazyLoadImage,
-  LazyLoadImageProps,
+import lazyLoadImageComponent, {
+  type LazyLoadImageProps,
 } from "react-lazy-load-image-component";
 import { twMerge } from "tailwind-merge";
+
+// vite throws for named import
+const { LazyLoadImage } = lazyLoadImageComponent;
 
 const t = twemoji as TTwemoji;
 
 const generateTwemojiSrc = (icon: string, options: TwemojiOptions) => {
   return "".concat(
     options.base ?? t.base,
-    options.folder === "svg" ? "svg" : options.size?.toString() ?? t.size,
+    options.folder === "svg" ? "svg" : (options.size?.toString() ?? t.size),
     "/",
     icon,
     options.ext ?? t.ext,

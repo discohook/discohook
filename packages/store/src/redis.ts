@@ -1,4 +1,4 @@
-import { Env } from "./kv.js";
+import type { Env } from "./kv.js";
 
 interface RedisOptions {
   url: string;

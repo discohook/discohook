@@ -1,6 +1,6 @@
-import { ImageURLOptions } from "@discordjs/rest";
+import type { ImageURLOptions } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
-import { User } from "~/session.server";
+import type { User } from "~/session.server";
 import { cdn } from "./discord";
 
 export const getUserPremiumDetails = (
@@ -48,7 +48,7 @@ export const getUserTag = (user: User): string =>
     ? user.discordUser.discriminator === "0"
       ? user.discordUser.name
       : `${user.discordUser.name}#${user.discordUser.discriminator}`
-    : user.guildedUser?.name ?? user.name;
+    : (user.guildedUser?.name ?? user.name);
 
 export const getUserAvatar = (
   user: {
@@ -76,6 +76,6 @@ export const getUserAvatar = (
             : Number(user.discordUser.discriminator) % 5,
         )
     : user.guildedUser
-      ? user.guildedUser.avatarUrl ??
-        "https://img.gilcdn.com/asset/DefaultUserAvatars/profile_1.png"
+      ? (user.guildedUser.avatarUrl ??
+        "https://img.gilcdn.com/asset/DefaultUserAvatars/profile_1.png")
       : cdn.defaultAvatar(0);

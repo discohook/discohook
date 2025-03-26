@@ -1,4 +1,8 @@
-import { json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
@@ -11,7 +15,6 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import { linkBackups as dLinkBackups, getDb, inArray } from "~/store.server";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import {
   jsonAsString,
@@ -21,7 +24,7 @@ import {
 } from "~/util/zod";
 import { linkEmbedUrl } from "./link";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);
   const { page } = zxParseQuery(request, {
     page: z
@@ -52,7 +55,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   };
 };
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.HYPERDRIVE);

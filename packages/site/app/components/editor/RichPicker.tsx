@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { twJoin } from "tailwind-merge";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
 import { EmojiPicker } from "./EmojiPicker";

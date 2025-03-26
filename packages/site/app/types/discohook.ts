@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-  QueryData,
+  type QueryData,
   ZodQueryDataMessage,
   ZodQueryDataTarget,
 } from "./QueryData";

@@ -1,18 +1,21 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import {
-  RESTGetAPIGuildMemberResult,
-  RESTGetAPIUserResult,
+  type RESTGetAPIGuildMemberResult,
+  type RESTGetAPIUserResult,
   Routes,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { ResolvableAPIGuildMember } from "~/util/cache/CacheManager";
+import type { ResolvableAPIGuildMember } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId, userId } = zxParseParams(params, {
     guildId: z.literal("@global").or(snowflakeAsString()),
     userId: snowflakeAsString(),

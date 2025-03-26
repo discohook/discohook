@@ -3,33 +3,33 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } from "@discordjs/builders";
-import { APIWebhook } from "discord-api-types/v10";
+import type { APIWebhook } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
 import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import {
   backups,
+  triggers as dTriggers,
   flowActions,
   flows,
   generateId,
-  triggers as dTriggers,
 } from "store/src/schema/schema.js";
 import {
-  FlowAction,
+  type FlowAction,
   FlowActionSetVariableType,
   FlowActionType,
 } from "store/src/types/components.js";
 import { TriggerEvent } from "store/src/types/triggers.js";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import { AutoComponentCustomId } from "../../components.js";
-import { getShareLink } from "../../durable/share-links.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type { AutoComponentCustomId } from "../../components.js";
 import { getEmojis } from "../../emojis.js";
 import { getErrorMessage } from "../../errors.js";
 import { getWelcomerConfigurations } from "../../events/guildMemberAdd.js";
 import { isDiscordError } from "../../util/error.js";
+import { getShareLink } from "../../util/share-links.js";
 import { parseShareLink } from "../components/quick.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import {
-  AutoWelcomerConfig,
+  type AutoWelcomerConfig,
   getWelcomerConfigComponents,
   getWelcomerConfigEmbed,
   getWelcomerConfigFromActions,
@@ -131,7 +131,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
           const def = { content: String(e) };
           await ctx.followup.editOriginalMessage(
             isDiscordError(e)
-              ? getErrorMessage(ctx, e.rawError)?.data ?? def
+              ? (getErrorMessage(ctx, e.rawError)?.data ?? def)
               : def,
           );
           return;

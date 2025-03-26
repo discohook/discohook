@@ -1,15 +1,15 @@
 // Heavily modified from https://react-select.com/advanced#experimental (Popout)
 
-import { ButtonStyle } from "discord-api-types/v10";
-import { ReactNode, useState } from "react";
+import type { ButtonStyle } from "discord-api-types/v10";
+import { type ReactNode, useState } from "react";
 import { twJoin, twMerge } from "tailwind-merge";
 import { Button } from "./Button";
 import {
   StringSelect,
-  StringSelectProps,
+  type StringSelectProps,
   selectClassNames,
 } from "./StringSelect";
-import { CoolIcon, CoolIconsGlyph } from "./icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "./icons/CoolIcon";
 
 export const ButtonSelect: React.FC<
   React.PropsWithChildren<

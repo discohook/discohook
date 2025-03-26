@@ -1,13 +1,15 @@
 import {
-  MetaDescriptor,
-  MetaFunction,
-  SerializeFrom,
+  type LoaderFunctionArgs,
+  type MetaDescriptor,
+  type MetaFunction,
+  type SerializeFrom,
   json,
   redirect,
 } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { z } from "zod";
+import type { ZodOEmbedData } from "~/api/.server/v1/oembed";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { decimalToHex } from "~/components/editor/ColorPicker";
@@ -15,14 +17,16 @@ import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
 import { Embed } from "~/components/preview/Embed";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
-import { LinkQueryData } from "~/types/QueryData";
-import { LoaderArgs } from "~/util/loader";
+import type { LinkQueryData } from "~/types/QueryData";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
-import { ZodOEmbedData } from "../api/v1/oembed";
 import { linkEmbedToAPIEmbed } from "./link";
 
-export const loader = async ({ request, params, context }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  params,
+  context,
+}: LoaderFunctionArgs) => {
   const { code } = zxParseParams(params, {
     code: z.string(),
   });

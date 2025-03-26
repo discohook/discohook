@@ -1,8 +1,8 @@
 import { Trans, useTranslation } from "react-i18next";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { getSnowflakeDate } from "~/util/discord";
-import { SubmitMessageResult } from "./MessageSendModal";
-import { Modal, ModalProps } from "./Modal";
+import type { SubmitMessageResult } from "./MessageSendModal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const MessageSendResultModal = (
   props: ModalProps & { result?: SubmitMessageResult },

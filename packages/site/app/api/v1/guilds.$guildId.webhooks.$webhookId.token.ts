@@ -1,14 +1,17 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
-import { APIWebhook, Routes, WebhookType } from "discord-api-types/v10";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
+import { type APIWebhook, Routes, WebhookType } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId, webhookId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
     webhookId: snowflakeAsString(),

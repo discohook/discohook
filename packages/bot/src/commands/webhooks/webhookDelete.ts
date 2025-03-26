@@ -1,12 +1,15 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
-import { APIWebhook, ButtonStyle, Routes } from "discord-api-types/v10";
+import { type APIWebhook, ButtonStyle, Routes } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, count, eq } from "drizzle-orm";
 import { t } from "i18next";
 import { getDb } from "store";
 import { messageLogEntries, webhooks } from "store/src/schema/schema.js";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import { AutoComponentCustomId, ButtonCallback } from "../../components.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type {
+  AutoComponentCustomId,
+  ButtonCallback,
+} from "../../components.js";
 import { parseAutoComponentId } from "../../util/components.js";
 import { getWebhookInfoEmbed } from "./webhookInfo.js";
 

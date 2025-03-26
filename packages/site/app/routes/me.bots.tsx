@@ -1,5 +1,10 @@
 import { REST } from "@discordjs/rest";
-import { SerializeFrom, json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+  json,
+} from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -11,9 +16,8 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { BotCreateModal } from "~/modals/BotCreateModal";
 import { getUser, getUserId } from "~/session.server";
 import { customBots, desc, getDb, makeSnowflake } from "~/store.server";
-import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, isDiscordError } from "~/util/discord";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseQuery } from "~/util/zod";
 
@@ -23,7 +27,7 @@ export interface KVCustomBot {
   token: string | null;
 }
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);
   const { page } = zxParseQuery(request, {
     page: z
@@ -56,7 +60,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
 export type LoadedBot = Awaited<SerializeFrom<typeof loader>["bots"]>[number];
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const userId = await getUserId(request, context, true);
   const db = getDb(context.env.HYPERDRIVE);
 

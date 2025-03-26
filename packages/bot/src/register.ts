@@ -1,29 +1,29 @@
+import fs from "node:fs/promises";
+import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
   SlashCommandChannelOption,
-  SlashCommandOptionsOnlyBuilder,
+  type SlashCommandOptionsOnlyBuilder,
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
-  SlashCommandSubcommandsOnlyBuilder,
-  ToAPIApplicationCommandOptions,
+  type SlashCommandSubcommandsOnlyBuilder,
+  type ToAPIApplicationCommandOptions,
 } from "@discordjs/builders";
 import {
-  APIApplicationCommandOptionChoice,
+  type APIApplicationCommandOptionChoice,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ChannelType,
   InteractionContextType,
-  LocaleString,
-  LocalizationMap,
-  RESTPutAPIApplicationGuildCommandsJSONBody,
+  type LocaleString,
+  type LocalizationMap,
+  type RESTPutAPIApplicationGuildCommandsJSONBody,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
-import fs from "fs/promises";
-import process from "node:process";
 import { TriggerEvent } from "store/src/types";
 
 /**

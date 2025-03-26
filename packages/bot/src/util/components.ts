@@ -1,34 +1,34 @@
 import {
-  ButtonBuilder,
-  ChannelSelectMenuBuilder,
-  MentionableSelectMenuBuilder,
+  type ButtonBuilder,
+  type ChannelSelectMenuBuilder,
+  type MentionableSelectMenuBuilder,
   ModalBuilder,
-  RoleSelectMenuBuilder,
-  StringSelectMenuBuilder,
-  UserSelectMenuBuilder,
+  type RoleSelectMenuBuilder,
+  type StringSelectMenuBuilder,
+  type UserSelectMenuBuilder,
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
-  APIActionRowComponent,
-  APIButtonComponent,
-  APIButtonComponentWithCustomId,
-  APIButtonComponentWithSKUId,
-  APIButtonComponentWithURL,
-  APIChannelSelectComponent,
-  APIMentionableSelectComponent,
-  APIMessageComponent,
-  APIRoleSelectComponent,
-  APISelectMenuComponent,
-  APIStringSelectComponent,
-  APITextInputComponent,
-  APIUserSelectComponent,
+  type APIActionRowComponent,
+  type APIButtonComponent,
+  type APIButtonComponentWithCustomId,
+  type APIButtonComponentWithSKUId,
+  type APIButtonComponentWithURL,
+  type APIChannelSelectComponent,
+  type APIMentionableSelectComponent,
+  type APIMessageComponent,
+  type APIRoleSelectComponent,
+  type APISelectMenuComponent,
+  type APIStringSelectComponent,
+  type APITextInputComponent,
+  type APIUserSelectComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
 import { generateId } from "store/src/schema";
-import { StorableComponent } from "store/src/types/components.js";
-import { MinimumKVComponentState } from "../components.js";
-import { Env } from "../types/env.js";
+import type { StorableComponent } from "store/src/types/components.js";
+import type { MinimumKVComponentState } from "../components.js";
+import type { Env } from "../types/env.js";
 
 export const getCustomId = (temporary = false) => {
   if (!temporary) {

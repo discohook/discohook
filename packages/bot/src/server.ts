@@ -1,12 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import {
-  APIActionRowComponent,
-  APIApplicationCommandInteractionDataOption,
-  APIInteraction,
-  APIMessageActionRowComponent,
-  APIMessageComponentInteraction,
-  APIMessageStringSelectInteractionData,
+  type APIActionRowComponent,
+  type APIApplicationCommandInteractionDataOption,
+  type APIInteraction,
+  type APIMessageActionRowComponent,
+  type APIMessageComponentInteraction,
+  type APIMessageStringSelectInteractionData,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ApplicationIntegrationType,
@@ -22,21 +22,21 @@ import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
-import { IRequest, Router } from "itty-router";
+import { type IRequest, Router } from "itty-router";
 import { getDb, getRedis, getchTriggerGuild } from "store";
 import {
-  DurableStoredComponent,
+  type DurableStoredComponent,
   launchComponentDurableObject,
 } from "store/src/durable/components.js";
 import { discordMessageComponents } from "store/src/schema";
-import { Flow, TriggerKVGuild } from "store/src/types";
-import { AppCommandCallbackT, appCommands, respond } from "./commands.js";
+import type { Flow, TriggerKVGuild } from "store/src/types";
+import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import {
-  ComponentCallbackT,
-  ComponentRoutingId,
-  MinimumKVComponentState,
-  ModalRoutingId,
+  type ComponentCallbackT,
+  type ComponentRoutingId,
+  type MinimumKVComponentState,
+  type ModalRoutingId,
   componentStore,
   modalStore,
 } from "./components.js";
@@ -45,10 +45,13 @@ import {
   gatewayEventNameToCallback,
   webhookEventNameToCallback,
 } from "./events.js";
-import { LiveVariables, executeFlow } from "./flows/flows.js";
+import { type LiveVariables, executeFlow } from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
-import { Env } from "./types/env.js";
-import { APIWebhookEvent, WebhookEventType } from "./types/webhook-events.js";
+import type { Env } from "./types/env.js";
+import {
+  type APIWebhookEvent,
+  WebhookEventType,
+} from "./types/webhook-events.js";
 import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 export { DurableComponentState } from "store/src/durable/components.js";

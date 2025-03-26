@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.4.1/schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "files": {
     "ignore": [
       "node_modules/",
@@ -8,7 +8,9 @@
       "./packages/site/public/emoji.json",
       "./packages/site/public/guide-index.json",
       "./packages/site/app/util/highlights.json",
-      "./persistence/"
+      "./persistence/",
+      ".wrangler/",
+      "tailwind.css"
     ]
   },
   "organizeImports": {
@@ -19,22 +21,27 @@
     "rules": {
       "recommended": true,
       "style": {
-        "noUselessElse": "off"
+        "noUselessElse": "off",
+        "useImportType": "warn"
       },
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "noThenProperty": "off"
       },
       "complexity": {
         "noBannedTypes": "off"
       },
       "correctness": {
-        "useHookAtTopLevel": "error"
+        "useHookAtTopLevel": "error",
+        "useJsxKeyInIterable": "off"
       }
     }
   },
   "formatter": {
     "ignore": [
       "./packages/site/public/help/",
+      "./packages/site/public/i18n/",
       "./packages/site/app/i18n/",
       "./packages/bot/src/i18n/"
     ],

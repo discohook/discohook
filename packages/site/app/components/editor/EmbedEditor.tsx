@@ -1,12 +1,12 @@
-import { APIEmbedField, ButtonStyle } from "discord-api-types/v10";
-import { TFunction } from "i18next";
+import { type APIEmbedField, ButtonStyle } from "discord-api-types/v10";
+import type { TFunction } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { DraftFile } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
-import { APIEmbed } from "~/types/QueryData-raw";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { DraftFile } from "~/routes/_index";
+import type { QueryData } from "~/types/QueryData";
+import type { APIEmbed } from "~/types/QueryData-raw";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -342,38 +342,36 @@ export const EmbedEditor: React.FC<{
       )}
       <EmbedEditorSection name={t("body")} open={open}>
         {!isChild && (
-          <>
-            <div className="flex">
-              <div className="grow">
-                <TextArea
-                  label={t("title")}
-                  className="w-full"
-                  maxLength={256}
-                  value={embed.title ?? ""}
-                  markdown="title"
-                  cache={cache}
-                  short
-                  onInput={(e) =>
-                    updateEmbed({
-                      title: e.currentTarget.value || undefined,
-                    })
-                  }
-                />
-              </div>
-              {embed.url === undefined && (
-                <Button
-                  className="ltr:ml-2 rtl:mr-2 mt-auto"
-                  onClick={() =>
-                    updateEmbed({
-                      url: `${location.origin}#default-${randomString(8)}`,
-                    })
-                  }
-                >
-                  {t("addUrl")}
-                </Button>
-              )}
+          <div className="flex">
+            <div className="grow">
+              <TextArea
+                label={t("title")}
+                className="w-full"
+                maxLength={256}
+                value={embed.title ?? ""}
+                markdown="title"
+                cache={cache}
+                short
+                onInput={(e) =>
+                  updateEmbed({
+                    title: e.currentTarget.value || undefined,
+                  })
+                }
+              />
             </div>
-          </>
+            {embed.url === undefined && (
+              <Button
+                className="ltr:ml-2 rtl:mr-2 mt-auto"
+                onClick={() =>
+                  updateEmbed({
+                    url: `${location.origin}#default-${randomString(8)}`,
+                  })
+                }
+              >
+                {t("addUrl")}
+              </Button>
+            )}
+          </div>
         )}
         <div className="grid gap-2">
           {(isChild || embed.url !== undefined) && (

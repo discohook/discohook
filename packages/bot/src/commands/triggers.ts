@@ -4,12 +4,12 @@ import {
   EmbedBuilder,
 } from "@discordjs/builders";
 import {
-  APIInteractionGuildMember,
+  type APIInteractionGuildMember,
   ButtonStyle,
   GatewayDispatchEvents,
-  GatewayGuildMemberAddDispatchData,
-  GatewayGuildMemberRemoveDispatchData,
-  GuildMemberFlags,
+  type GatewayGuildMemberAddDispatchData,
+  type GatewayGuildMemberRemoveDispatchData,
+  type GuildMemberFlags,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
@@ -18,15 +18,15 @@ import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
 import { flows, makeSnowflake, triggers } from "store/src/schema";
 import { FlowActionType } from "store/src/types/components.js";
 import { TriggerEvent } from "store/src/types/triggers.js";
-import {
+import type {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
 } from "../commands.js";
-import { ButtonCallback } from "../components.js";
+import type { ButtonCallback } from "../components.js";
 import { emojiToString, getEmojis } from "../emojis.js";
 import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
-import { FlowResult } from "../flows/flows.js";
+import type { FlowResult } from "../flows/flows.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import { spaceEnum } from "../util/regex.js";

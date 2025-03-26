@@ -1,8 +1,8 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import {
   ChannelType,
-  RESTGetAPIGuildChannelsResult,
+  type RESTGetAPIGuildChannelsResult,
   Routes,
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
@@ -13,15 +13,14 @@ import {
 } from "~/session.server";
 import { discordRoles, getDb, makeSnowflake } from "~/store.server";
 import {
-  ResolvableAPIChannel,
-  ResolvableAPIEmoji,
-  ResolvableAPIRole,
+  type ResolvableAPIChannel,
+  type ResolvableAPIEmoji,
+  type ResolvableAPIRole,
   tagToResolvableTag,
 } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
-import { getChannelIconType } from "./channels.$channelId";
+import { getChannelIconType } from "../util/channels";
 
 // export type GuildMe = Pick<APIGuildMember, "roles" | "avatar"> & {
 //   /** Whether the member owns the guild */
@@ -30,7 +29,11 @@ import { getChannelIconType } from "./channels.$channelId";
 //   permissions: string;
 // };
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });

@@ -1,5 +1,5 @@
 import { json } from "itty-router";
-import { Env } from "../types/env.js";
+import type { Env } from "../types/env.js";
 
 export type FeedType =
   | "rss"

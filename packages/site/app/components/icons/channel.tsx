@@ -1,4 +1,4 @@
-import { IconFC, Svg } from "./Svg";
+import { type IconFC, Svg } from "./Svg";
 
 export const TextChannelIcon: IconFC = (props) => (
   <Svg {...props}>

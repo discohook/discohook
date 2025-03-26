@@ -1,12 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { MessageAppCommandCallback } from "../../commands.js";
+import type { MessageAppCommandCallback } from "../../commands.js";
 import { createLongDiscohookUrl } from "../restore.js";
 import { getWebhookInfoEmbed, getWebhookUrl } from "./webhookInfo.js";
 

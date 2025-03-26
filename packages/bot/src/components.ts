@@ -1,4 +1,4 @@
-import {
+import type {
   APIInteractionResponse,
   APIMessageComponentButtonInteraction,
   APIMessageComponentInteraction,
@@ -49,7 +49,7 @@ import {
   webhookInfoShowUrlCallback,
   webhookInfoUseCallback,
 } from "./commands/webhooks/webhookInfo.js";
-import { InteractionContext } from "./interactions.js";
+import type { InteractionContext } from "./interactions.js";
 
 export interface MinimumKVComponentState {
   /** The total number of seconds that the component/modal should be stored. */

@@ -1,6 +1,6 @@
 import { MessageFlags } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { ChatInputAppCommandCallback } from "../commands.js";
+import type { ChatInputAppCommandCallback } from "../commands.js";
 
 export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
   const permissions = new PermissionsBitField(0);

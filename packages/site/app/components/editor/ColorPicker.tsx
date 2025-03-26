@@ -1,11 +1,9 @@
-import { TFunction } from "i18next";
-import {
-  Color,
-  CustomPicker,
-  InjectedColorProps,
-  SketchPicker,
-} from "react-color";
+import type { TFunction } from "i18next";
+import reactColor, { type Color, type InjectedColorProps } from "react-color";
 import { Button } from "../Button";
+
+// vite throws for named import
+const { CustomPicker, SketchPicker } = reactColor;
 
 const ColorPickerFunction: React.FC<
   InjectedColorProps & { t?: TFunction; onReset?: () => void }

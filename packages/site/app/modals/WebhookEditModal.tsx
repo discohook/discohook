@@ -1,8 +1,8 @@
 import { Form, Link } from "@remix-run/react";
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
-  RESTPatchAPIWebhookJSONBody,
+  type RESTPatchAPIWebhookJSONBody,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
@@ -15,12 +15,15 @@ import { ChannelSelect } from "~/components/ChannelSelect";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Markdown, linkClassName } from "~/components/preview/Markdown";
-import { User } from "~/session.server";
-import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import type { User } from "~/session.server";
+import type {
+  CacheManager,
+  ResolvableAPIChannel,
+} from "~/util/cache/CacheManager";
 import { cdn, modifyWebhook } from "~/util/discord";
 import { cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const WebhookEditModal = (
   props: ModalProps & {

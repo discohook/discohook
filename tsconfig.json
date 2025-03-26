@@ -1,14 +1,14 @@
 {
   "references": [
-      { "path": "./packages/site" },
-      { "path": "./packages/bot" },
-      { "path": "./packages/bot-ws" },
-      { "path": "./packages/store" },
+    { "path": "./packages/site" },
+    { "path": "./packages/bot" },
+    { "path": "./packages/bot-ws" },
+    { "path": "./packages/store" }
   ],
   "files": [],
   "include": [],
   "exclude": ["**/node_modules"],
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types/2023-03-01"],
-  },
+    "types": ["@cloudflare/workers-types/2023-03-01"]
+  }
 }

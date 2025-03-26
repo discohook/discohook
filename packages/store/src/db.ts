@@ -1,10 +1,10 @@
-import { APIUser } from "discord-api-types/v10";
+import type { APIUser } from "discord-api-types/v10";
 import { drizzle } from "drizzle-orm/postgres-js";
 import JSONbig_ from "json-bigint";
 import postgres from "postgres";
 import * as schemaV1 from "./schema/schema-v1.js";
 import * as schema from "./schema/schema.js";
-import { PartialKVGuild } from "./types/guild.js";
+import type { PartialKVGuild } from "./types/guild.js";
 
 const JSONbig = JSONbig_({ useNativeBigInt: true, alwaysParseAsBig: true });
 

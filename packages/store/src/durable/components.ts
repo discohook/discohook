@@ -2,7 +2,7 @@ import { z } from "zod";
 import { zx } from "zodix";
 import { getDb } from "../db.js";
 import { makeSnowflake } from "../schema/schema.js";
-import { Flow, StorableComponent } from "../types/index.js";
+import type { Flow, StorableComponent } from "../types/index.js";
 
 interface MockStoreEnv {
   HYPERDRIVE: Hyperdrive;

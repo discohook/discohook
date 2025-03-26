@@ -1,24 +1,16 @@
-import { json } from "@remix-run/cloudflare";
+import { type ActionFunctionArgs, json } from "@remix-run/cloudflare";
+import { getDb, shareLinks } from "store";
 import { z } from "zod";
-import { getBucket } from "~/durable/rate-limits";
-import { getShareLinkExists, putShareLink } from "~/durable/share-links";
+import { getBucket } from "~/.server/durable/rate-limits";
 import { getUserId } from "~/session.server";
-import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
-import { Env } from "~/types/env";
-import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { zxParseJson } from "~/util/zod";
+import { getShareLinkExists, putShareLink } from "../util/share-links";
 
 const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 
-export interface ShortenedData {
-  data: string;
-  origin?: string;
-  userId?: string;
-}
-
-export const generateUniqueShortenKey = async (
+const generateUniqueShortenKey = async (
   env: Env,
   length: number,
   tries = 10,
@@ -33,7 +25,7 @@ export const generateUniqueShortenKey = async (
   return await generateUniqueShortenKey(env, length + 1, tries);
 };
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const contentLength = Number(request.headers.get("Content-Length"));
   if (!contentLength || Number.isNaN(contentLength)) {
     throw json({ message: "Must provide Content-Length header." }, 400);

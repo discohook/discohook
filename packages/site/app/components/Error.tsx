@@ -1,4 +1,4 @@
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { useState } from "react";
 import { InfoBox } from "./InfoBox";
 import { codeBlockStyle } from "./preview/Markdown";
@@ -12,14 +12,12 @@ export const useError = (t?: TFunction) => {
   const [raw, setRaw] = useState<string>();
 
   return [
-    <>
-      {text && (
-        <InfoBox severity="red" icon="Triangle_Warning" collapsible={!!raw}>
-          {text}
-          {!!raw && <pre className={codeBlockStyle}>{raw}</pre>}
-        </InfoBox>
-      )}
-    </>,
+    text && (
+      <InfoBox severity="red" icon="Triangle_Warning" collapsible={!!raw}>
+        {text}
+        {!!raw && <pre className={codeBlockStyle}>{raw}</pre>}
+      </InfoBox>
+    ),
     (params: ErrorParams | undefined) => {
       if (!params) {
         setText(undefined);

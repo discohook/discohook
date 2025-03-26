@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import {
+import type {
   LinkEmbed,
   LinkEmbedContainer,
   LinkQueryData,

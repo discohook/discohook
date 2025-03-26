@@ -1,4 +1,4 @@
-import { MetaFunction } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { twJoin } from "tailwind-merge";
@@ -6,10 +6,9 @@ import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { FullscreenThrobber } from "~/root";
 import { getUser } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
 import type { GuideFileMeta } from "./guide.$";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context);
   return { user };
 };

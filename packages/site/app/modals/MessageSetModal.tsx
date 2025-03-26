@@ -1,24 +1,24 @@
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, TextButton } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { loadMessageComponents } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { QueryData } from "~/types/QueryData";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
   cdnImgAttributes,
   getWebhookMessage,
   webhookAvatarUrl,
 } from "~/util/discord";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageSetModal = (
   props: ModalProps & {

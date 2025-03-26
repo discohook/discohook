@@ -1,10 +1,10 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { type ActionFunctionArgs, json } from "@remix-run/cloudflare";
 import {
-  APIGuildMember,
+  type APIGuildMember,
   GatewayDispatchEvents,
-  GatewayGuildMemberAddDispatchData,
-  GatewayGuildMemberRemoveDispatchData,
+  type GatewayGuildMemberAddDispatchData,
+  type GatewayGuildMemberRemoveDispatchData,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
@@ -13,7 +13,6 @@ import { z } from "zod";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { TriggerEvent } from "~/store.server";
-import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 const triggerEventToDispatchEvent: Record<TriggerEvent, GatewayDispatchEvents> =
@@ -22,7 +21,11 @@ const triggerEventToDispatchEvent: Record<TriggerEvent, GatewayDispatchEvents> =
     [TriggerEvent.MemberRemove]: GatewayDispatchEvents.GuildMemberRemove,
   };
 
-export const action = async ({ request, context, params }: ActionArgs) => {
+export const action = async ({
+  request,
+  context,
+  params,
+}: ActionFunctionArgs) => {
   if (request.method !== "PUT") {
     throw json({ message: "Method Not Allowed" }, 405);
   }

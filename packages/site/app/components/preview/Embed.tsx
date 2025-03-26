@@ -1,11 +1,11 @@
 import type { APIEmbedField, APIEmbedImage } from "discord-api-types/v10";
-import moment, { Moment } from "moment";
+import moment, { type Moment } from "moment";
 import { Trans } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { SetImageModalData } from "~/modals/ImageModal";
-import { DraftFile } from "~/routes/_index";
+import type { SetImageModalData } from "~/modals/ImageModal";
+import type { DraftFile } from "~/routes/_index";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { decimalToHex } from "../editor/ColorPicker";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";

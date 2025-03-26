@@ -5,8 +5,8 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIInteraction,
-  APIWebhook,
+  type APIInteraction,
+  type APIWebhook,
   ButtonStyle,
   ChannelType,
   RESTJSONErrorCodes,
@@ -16,8 +16,8 @@ import { and, eq } from "drizzle-orm";
 import { getDb, upsertDiscordUser, upsertGuild } from "store/src/db.js";
 import { getchGuild } from "store/src/kv.js";
 import { makeSnowflake, webhooks } from "store/src/schema";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import { APIPartialResolvedChannel } from "../../types/api.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type { APIPartialResolvedChannel } from "../../types/api.js";
 import { readAttachment } from "../../util/cdn.js";
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";

@@ -1,11 +1,11 @@
 // This file is a fork of @maddymeow's work on Discohook (AGPL 3.0) - thank you
 // https://github.com/discohook/site
 
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { useEffect } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
-import {
+import type {
   CacheManager,
   Resolutions,
   ResolvableAPIChannelType,

@@ -1,8 +1,8 @@
-import moment, { Moment } from "moment";
+import moment, { type Moment } from "moment";
 import { useState } from "react";
 import { Trans } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { getRelativeDateFormat } from "~/util/markdown/dates";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";

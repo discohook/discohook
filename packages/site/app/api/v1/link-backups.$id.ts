@@ -1,15 +1,22 @@
-import { json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getUser, getUserId } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { requirePremiumOrThrow } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
-import { findMessagesPreviewImageUrl } from "./backups";
+import { findMessagesPreviewImageUrl } from "../util/backups";
 
-export const loader = async ({ request, params, context }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  params,
+  context,
+}: LoaderFunctionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const userId = await getUserId(request, context, true);
 
@@ -35,7 +42,11 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   return backup;
 };
 
-export const action = async ({ request, params, context }: ActionArgs) => {
+export const action = async ({
+  request,
+  params,
+  context,
+}: ActionFunctionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
   const { name, data } = await zxParseJson(request, {
     name: z.string().max(100).optional(),

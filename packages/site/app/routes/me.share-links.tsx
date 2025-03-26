@@ -1,23 +1,31 @@
-import { json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { zx } from "zodix";
-import { Button } from "~/components/Button";
-import { CoolIcon } from "~/components/icons/CoolIcon";
 import {
-  deleteShareLink,
   getShareLink,
   getShareLinkExists,
   putShareLink,
-} from "~/durable/share-links";
+} from "~/api/util/share-links";
+import { Button } from "~/components/Button";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
-import { eq, getDb, inArray, shareLinks as dShareLinks } from "~/store.server";
+import {
+  shareLinks as dShareLinks,
+  eq,
+  getDb,
+  getRedis,
+  inArray,
+} from "~/store.server";
 import { getId } from "~/util/id";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { relativeTime } from "~/util/time";
 import { userIsPremium } from "~/util/users";
 import {
@@ -27,7 +35,7 @@ import {
   zxParseQuery,
 } from "~/util/zod";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);
   const { page } = zxParseQuery(request, {
     page: zx.IntAsString.default("1")
@@ -46,7 +54,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   return { user, shareLinks, page: page + 1 };
 };
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.HYPERDRIVE);
@@ -85,10 +93,13 @@ export const action = async ({ request, context }: ActionArgs) => {
         throw json({ message: "Share link is already expired" }, 400);
       }
 
-      const { data: current } = await getShareLink(context.env, share.shareId);
+      const { data: current, origin } = await getShareLink(
+        context.env,
+        share.shareId,
+      );
       const expires = new Date(new Date().getTime() + data.ttl * 1000);
       // Don't need to re-set origin because we're re-using the same durable object
-      await putShareLink(context.env, share.shareId, current, expires);
+      await putShareLink(context.env, share.shareId, current, expires, origin);
       await db
         .update(dShareLinks)
         .set({ expiresAt: expires })
@@ -118,9 +129,16 @@ export const action = async ({ request, context }: ActionArgs) => {
             ownIds.map((b) => b.id),
           ),
         );
+        const redis = context.env.KV ?? getRedis(context.env);
+        await redis.delete(...ownIds.map((link) => `share-${link.shareId}`));
+
+        // for old durable object based links
         for (const link of ownIds) {
-          console.log("deleting", link.shareId);
-          await deleteShareLink(context.env, link.shareId);
+          const id = context.env.SHARE_LINKS.idFromName(link.shareId);
+          const stub = context.env.SHARE_LINKS.get(id);
+          stub
+            .fetch(`http://do/?shareId=${link.shareId}`, { method: "DELETE" })
+            .catch(() => {});
         }
       }
 

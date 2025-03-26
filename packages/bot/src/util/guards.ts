@@ -1,7 +1,7 @@
 import {
-  APIChannel,
-  APIGuildChannel,
-  APIThreadChannel,
+  type APIChannel,
+  type APIGuildChannel,
+  type APIThreadChannel,
   ChannelType,
 } from "discord-api-types/v10";
 

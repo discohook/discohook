@@ -1,7 +1,8 @@
 import { REST } from "@discordjs/rest";
 import {
-  MetaFunction,
-  SerializeFrom,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  type SerializeFrom,
   json,
   redirect,
 } from "@remix-run/cloudflare";
@@ -13,15 +14,15 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import {
-  APIGuild,
-  APIWebhook,
+  type APIGuild,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
   WebhookType,
 } from "discord-api-types/v10";
 import {
-  BitFlagResolvable,
+  type BitFlagResolvable,
   PermissionFlags,
   PermissionsBitField,
 } from "discord-bitflag";
@@ -30,6 +31,15 @@ import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
+import type { action as ApiDeleteComponent } from "~/api/.server/v1/components.$id";
+import type { loader as ApiGetGuildComponents } from "~/api/.server/v1/guilds.$guildId.components";
+import type { loader as ApiGetGuildAuditLog } from "~/api/.server/v1/guilds.$guildId.log";
+import type { loader as ApiGetGuildSessions } from "~/api/.server/v1/guilds.$guildId.sessions";
+import type { action as ApiPutGuildTriggerEvent } from "~/api/.server/v1/guilds.$guildId.trigger-events.$event";
+import type { loader as ApiGetGuildTriggers } from "~/api/.server/v1/guilds.$guildId.triggers";
+import type { action as ApiPatchGuildTrigger } from "~/api/.server/v1/guilds.$guildId.triggers.$triggerId";
+import type { loader as ApiGetGuildWebhooks } from "~/api/.server/v1/guilds.$guildId.webhooks";
+import type { action as ApiPatchGuildWebhook } from "~/api/.server/v1/guilds.$guildId.webhooks.$webhookId";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
@@ -37,7 +47,7 @@ import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { getComponentWidth } from "~/components/editor/ComponentEditor";
-import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { PostChannelIcon } from "~/components/icons/channel";
 import { GenericPreviewComponent } from "~/components/preview/Components";
@@ -52,7 +62,7 @@ import {
   getGuild,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { DraftFlow } from "~/store.server";
+import type { DraftFlow } from "~/store.server";
 import { useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
@@ -62,21 +72,16 @@ import {
 } from "~/util/discord";
 import { flowToDraftFlow } from "~/util/flow";
 import { getId } from "~/util/id";
-import { LoaderArgs, useSafeFetcher } from "~/util/loader";
+import { useSafeFetcher } from "~/util/loader";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
-import { action as ApiDeleteComponent } from "../api/v1/components.$id";
-import { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
-import { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
-import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
-import { action as ApiPutGuildTriggerEvent } from "../api/v1/guilds.$guildId.trigger-events.$event";
-import { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
-import { action as ApiPatchGuildTrigger } from "../api/v1/guilds.$guildId.triggers.$triggerId";
-import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
-import { action as ApiPatchGuildWebhook } from "../api/v1/guilds.$guildId.webhooks.$webhookId";
 import { Cell } from "./donate";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: z.string().refine((v) => !Number.isNaN(Number(v))),
   });

@@ -1,22 +1,25 @@
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import { z } from "zod";
-import { getBucket } from "~/durable/rate-limits";
-import { getShareLink } from "~/durable/share-links";
-import { QueryData } from "~/types/QueryData";
-import { LoaderArgs } from "~/util/loader";
+import { getBucket } from "~/.server/durable/rate-limits";
+import type { QueryData } from "~/types/QueryData";
 import { zxParseParams } from "~/util/zod";
+import { getShareLink } from "../util/share-links";
 
 export interface InvalidShareIdData {
   message: string;
   expiredAt: string | undefined;
 }
 
-export const loader = async ({ request, params, context }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  params,
+  context,
+}: LoaderFunctionArgs) => {
   const { shareId } = zxParseParams(params, { shareId: z.string() });
   const headers = await getBucket(request, context, "share");
 
   let data: QueryData;
-  let alarm: number;
+  let alarm: number | undefined;
   try {
     ({ data, alarm } = await getShareLink(context.env, shareId));
   } catch (e) {
@@ -31,5 +34,5 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     throw e;
   }
 
-  return json({ data, expires: new Date(alarm) }, { headers });
+  return json({ data, expires: new Date(alarm ?? 0) }, { headers });
 };

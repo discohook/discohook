@@ -1,9 +1,9 @@
-import { APIEmbed } from "discord-api-types/v10";
-import {
+import type { APIEmbed } from "discord-api-types/v10";
+import type {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
 } from "../commands.js";
-import { Env } from "../types/env.js";
+import type { Env } from "../types/env.js";
 import { color } from "../util/meta.js";
 
 type HelpTags = Record<string, APIEmbed | string>;

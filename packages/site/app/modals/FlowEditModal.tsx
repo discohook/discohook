@@ -1,5 +1,5 @@
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
   ChannelType,
   MessageFlags,
@@ -11,15 +11,15 @@ import { twJoin } from "tailwind-merge";
 import { NumberField } from "@base-ui-components/react/number-field";
 import { Link } from "@remix-run/react";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { TFunction } from "i18next";
-import React from "react";
+import type { TFunction } from "i18next";
+import type React from "react";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { TextArea } from "~/components/TextArea";
-import {
+import type {
   AnonymousVariable,
   DraftFlow,
   FlowAction,
@@ -30,11 +30,15 @@ import {
   FlowActionSetVariableType,
 } from "~/store.server";
 import { FlowActionType, ZodDraftFlow } from "~/types/flows";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
-import { SafeFetcher, getZodErrorMessage, useSafeFetcher } from "~/util/loader";
-import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import {
+  type SafeFetcher,
+  getZodErrorMessage,
+  useSafeFetcher,
+} from "~/util/loader";
+import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
+import type {
   loader as ApiGetUserBackups,
   PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
@@ -45,7 +49,7 @@ import { StringSelect, selectClassNames } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 type FlowWithPartials = DraftFlow & {
   actions: (Partial<FlowAction> & Pick<FlowAction, "type">)[];

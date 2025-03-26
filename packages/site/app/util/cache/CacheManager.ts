@@ -1,5 +1,5 @@
-import { SerializeFrom } from "@remix-run/cloudflare";
-import {
+import type { SerializeFrom } from "@remix-run/cloudflare";
+import type {
   APIChannel,
   APIGuild,
   APIGuildForumTag,
@@ -8,8 +8,8 @@ import {
   APIUser,
 } from "discord-api-types/v10";
 import { useReducer } from "react";
-import { ApiRoute, BRoutes, apiUrl } from "~/api/routing";
-import type { loader as ApiGetGuildCacheable } from "~/api/v1/guilds.$guildId.cacheable";
+import type { loader as ApiGetGuildCacheable } from "~/api/.server/v1/guilds.$guildId.cacheable";
+import { type ApiRoute, BRoutes, apiUrl } from "~/api/routing";
 
 export type Resolutions = {
   [key: `channel:${string}`]: ResolvableAPIChannel | undefined | null;

@@ -1,16 +1,23 @@
 import { Select } from "@base-ui-components/react/select";
 import { Link } from "@remix-run/react";
-import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
+import {
+  type APIWebhook,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
 import { useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
-import { EditingComponentData } from "~/modals/ComponentEditModal";
-import { JsonEditorProps } from "~/modals/JsonEditorModal";
-import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
-import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
+import type { EditingComponentData } from "~/modals/ComponentEditModal";
+import type { JsonEditorProps } from "~/modals/JsonEditorModal";
+import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
+import type {
+  CacheManager,
+  ResolvableAPIChannel,
+} from "~/util/cache/CacheManager";
 import { getMessageText } from "~/util/message";
 import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";

@@ -3,8 +3,8 @@ import { ApplicationIntegrationType, Routes } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "store";
 import { discordGuilds, discordRoles, makeSnowflake } from "store/src/schema";
-import { GatewayEventCallback } from "../events.js";
-import {
+import type { GatewayEventCallback } from "../events.js";
+import type {
   APIWebhookEventBodyApplicationAuthorizedBase,
   APIWebhookEventBodyApplicationAuthorizedGuild,
 } from "../types/webhook-events.js";

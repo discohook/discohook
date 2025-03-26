@@ -3,8 +3,8 @@ import { MessageFlagsBitField } from "discord-bitflag";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { BigCheckbox } from "~/components/Checkbox";
-import { QueryData } from "~/types/QueryData";
-import { Modal, ModalProps } from "./Modal";
+import type { QueryData } from "~/types/QueryData";
+import { Modal, type ModalProps } from "./Modal";
 
 export const MessageFlagsEditModal = (
   props: ModalProps & {

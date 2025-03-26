@@ -2,7 +2,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   EmbedBuilder,
-  MessageActionRowComponentBuilder,
+  type MessageActionRowComponentBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
@@ -13,12 +13,12 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIButtonComponent,
-  APIInteraction,
-  APIMessage,
-  APIModalInteractionResponseCallbackData,
-  APISelectMenuComponent,
-  APIStringSelectComponent,
+  type APIButtonComponent,
+  type APIInteraction,
+  type APIMessage,
+  type APIModalInteractionResponseCallbackData,
+  type APISelectMenuComponent,
+  type APIStringSelectComponent,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -29,7 +29,7 @@ import { eq } from "drizzle-orm";
 import { t } from "i18next";
 import { SignJWT } from "jose";
 import {
-  DBWithSchema,
+  type DBWithSchema,
   getDb,
   getSessionManagerStub,
   getchGuild,
@@ -44,16 +44,16 @@ import {
   makeSnowflake,
   tokens,
 } from "store/src/schema";
-import { StorableComponent } from "store/src/types";
-import { InteractionInstantOrDeferredResponse } from "../../commands.js";
-import {
+import type { StorableComponent } from "store/src/types";
+import type { InteractionInstantOrDeferredResponse } from "../../commands.js";
+import type {
   ButtonCallback,
   MinimumKVComponentState,
   ModalCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import { InteractionContext } from "../../interactions.js";
-import { Env } from "../../types/env.js";
+import type { InteractionContext } from "../../interactions.js";
+import type { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentWidth,
@@ -687,12 +687,12 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     case "channel-select": {
       const db = getDb(ctx.env.HYPERDRIVE);
       const { id: flowId } =
-        state.component ?? value === "string-select"
+        (state.component ?? value === "string-select")
           ? { id: 0 }
           : (await db.insert(flows).values({}).returning({ id: flows.id }))[0];
 
       state.component =
-        state.component ?? value === "string-select"
+        (state.component ?? value === "string-select")
           ? {
               type: ComponentType.StringSelect,
               options: [],
@@ -839,7 +839,7 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
                 state.component.emoji.id,
                 state.component.emoji.animated,
               )
-            : state.component.emoji?.name ?? "none"
+            : (state.component.emoji?.name ?? "none")
         })`,
       });
     }

@@ -1,5 +1,5 @@
-import { APIUser } from "discord-api-types/v10";
-import { upsertDiscordUser } from "store";
+import type { APIUser } from "discord-api-types/v10";
+import type { upsertDiscordUser } from "store";
 
 export const getUserTag = (user: APIUser): string =>
   user.discriminator === "0"

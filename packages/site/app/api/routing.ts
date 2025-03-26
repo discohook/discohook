@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { TriggerEvent } from "~/store.server";
-import { ZodDonateKeyType } from "./v1/donate.$type";
+import type { z } from "zod";
+import type { TriggerEvent } from "~/store.server";
+import type { ZodDonateKeyType } from "./zod";
 
 export const BRoutes = {
   /**

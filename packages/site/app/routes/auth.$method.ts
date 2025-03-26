@@ -1,14 +1,17 @@
-import { redirect } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { zx } from "zodix";
 import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
 import { getDiscordAuth } from "~/auth-discord.server";
 import { getGuildedAuth } from "~/auth-guilded.server";
 import { getSessionStorage, getUser, getUserId } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
 import { zxParseParams, zxParseQuery } from "~/util/zod";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { method } = zxParseParams(params, {
     method: z.enum(["discord", "discord-webhook", "guilded"]),
   });

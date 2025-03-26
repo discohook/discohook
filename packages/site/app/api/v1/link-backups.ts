@@ -1,15 +1,14 @@
-import { json } from "@remix-run/cloudflare";
+import { type ActionFunctionArgs, json } from "@remix-run/cloudflare";
+import { getDb, linkBackups } from "store";
 import { z } from "zod";
 import { getUser } from "~/session.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
-import { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { requirePremiumOrThrow } from "~/util/users";
 import { zxParseJson } from "~/util/zod";
-import { getDb, linkBackups } from "../../store.server";
-import { findMessagesPreviewImageUrl } from "./backups";
+import { findMessagesPreviewImageUrl } from "../util/backups";
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const { name, data } = await zxParseJson(request, {
     name: z.string().max(100),
     data: ZodLinkQueryData,

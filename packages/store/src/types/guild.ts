@@ -1,4 +1,4 @@
-import { APIGuild, GuildPremiumTier } from "discord-api-types/v10";
+import type { APIGuild, GuildPremiumTier } from "discord-api-types/v10";
 
 export type PartialKVGuild = Pick<APIGuild, "id" | "name" | "icon">;
 

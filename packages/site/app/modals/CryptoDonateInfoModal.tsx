@@ -1,7 +1,7 @@
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { copyText } from "~/util/text";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const CryptoDonateInfoModal = (
   props: ModalProps & {

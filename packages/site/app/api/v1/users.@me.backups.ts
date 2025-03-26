@@ -1,10 +1,9 @@
-import { SerializeFrom } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/cloudflare";
 import { getUserId } from "~/session.server";
 import { getDb } from "~/store.server";
-import { LoaderArgs } from "~/util/loader";
 import { getMessageText } from "~/util/message";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const userId = await getUserId(request, context, true);
   const db = getDb(context.env.HYPERDRIVE);
   const userBackups = await db.query.backups.findMany({

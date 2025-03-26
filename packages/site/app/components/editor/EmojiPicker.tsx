@@ -1,22 +1,25 @@
 import emojiData, {
-  Category,
-  Emoji,
-  EmojiMartData,
-  Skin,
+  type Category,
+  type Emoji,
+  type EmojiMartData,
+  type Skin,
 } from "@emoji-mart/data";
-import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v10";
+import {
+  type APIMessageComponentEmoji,
+  ButtonStyle,
+} from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
-import { IconFC, IconFCProps, Svg } from "../icons/Svg";
+import { type IconFC, type IconFCProps, Svg } from "../icons/Svg";
 import { Twemoji } from "../icons/Twemoji";
 import {
   EmojiIconActivities,

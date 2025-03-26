@@ -1,23 +1,16 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { type ActionFunctionArgs, json } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIButtonComponentWithCustomId,
-  APIButtonComponentWithSKUId,
-  APIButtonComponentWithURL,
-  APIMessage,
-  APISelectMenuComponent,
+  type APIMessage,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
 import { notInArray } from "drizzle-orm";
 import { Snowflake } from "tif-snowflake";
 import { z } from "zod";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/.server/durable/rate-limits";
 import { getUserId } from "~/session.server";
-import { getWebhook, getWebhookMessage, hasCustomId } from "~/util/discord";
-import { ActionArgs } from "~/util/loader";
-import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
   and,
   discordGuilds,
@@ -31,44 +24,23 @@ import {
   messageLogEntries,
   sql,
   webhooks,
-} from "../../store.server";
-
-export const getComponentId = (
-  component:
-    | Pick<APIButtonComponentWithCustomId, "type" | "style" | "custom_id">
-    | Pick<APIButtonComponentWithURL, "type" | "style" | "url">
-    | Pick<APIButtonComponentWithSKUId, "type" | "style" | "sku_id">
-    | Pick<APISelectMenuComponent, "type" | "custom_id">,
-) => {
-  if (
-    component.type === ComponentType.Button &&
-    component.style === ButtonStyle.Link
-  ) {
-    let url: URL;
-    try {
-      url = new URL(component.url);
-    } catch {
-      return undefined;
-    }
-    const id = url.searchParams.get("dhc-id");
-    if (id) {
-      try {
-        return BigInt(id);
-      } catch {}
-    }
-    return undefined;
-  }
-  if ("sku_id" in component) return undefined;
-
-  return /^p_\d+/.test(component.custom_id)
-    ? BigInt(component.custom_id.replace(/^p_/, ""))
-    : undefined;
-};
+} from "~/store.server";
+import {
+  getComponentId,
+  getWebhook,
+  getWebhookMessage,
+  hasCustomId,
+} from "~/util/discord";
+import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
 // first second of 2015
 const DISCORD_EPOCH = 1420070400000;
 
-export const action = async ({ request, context, params }: ActionArgs) => {
+export const action = async ({
+  request,
+  context,
+  params,
+}: ActionFunctionArgs) => {
   const { webhookId, webhookToken, messageId } = zxParseParams(params, {
     webhookId: snowflakeAsString().transform(String),
     webhookToken: z.string(),

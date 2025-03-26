@@ -1,18 +1,17 @@
 import { REST } from "@discordjs/rest";
-import { parseExpression } from "cron-parser";
 import { RESTJSONErrorCodes } from "discord-api-types/v10";
 import { z } from "zod";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
-  ScheduledRunData,
+  type ScheduledRunData,
   ScheduledRunStatus,
   backups,
   eq,
   getDb,
   makeSnowflake,
 } from "~/store.server";
-import { Env } from "~/types/env";
 import { WEBHOOK_URL_RE } from "~/util/constants";
+import { parseExpression } from "~/util/cron-parser";
 import { isDiscordError } from "~/util/discord";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";
 
@@ -137,7 +136,7 @@ export class DurableScheduler implements DurableObject {
           message: statusMessage,
         } satisfies ScheduledRunData,
         nextRunAt,
-        scheduled: backup.cron ? true : false,
+        scheduled: !!backup.cron,
       })
       .where(eq(backups.id, makeSnowflake(backupId)));
 

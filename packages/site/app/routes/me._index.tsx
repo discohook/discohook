@@ -1,29 +1,32 @@
 import { Avatar } from "@base-ui-components/react/avatar";
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
-import { APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
+import { type APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
+import { getBucket } from "~/.server/durable/rate-limits";
 import { getDiscordUserOAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
 import { linkClassName } from "~/components/preview/Markdown";
 import { TabHeader } from "~/components/tabs";
-import { getBucket } from "~/durable/rate-limits";
 import { getUser } from "~/session.server";
 import { discordUsers, eq, getDb, users } from "~/store.server";
 import { getId } from "~/util/id";
-import { LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { zxParseForm } from "~/util/zod";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);
   return { user };
 };
 
-export const action = async ({ request, context }: LoaderArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const user = await getUser(request, context, true);
   const { action } = await zxParseForm(request, {
     action: z.literal("refresh"),

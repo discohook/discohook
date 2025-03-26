@@ -1,4 +1,4 @@
-import { IDBPDatabase, IDBPTransaction, openDB } from "idb";
+import { type IDBPDatabase, type IDBPTransaction, openDB } from "idb";
 import type { Schema } from "./schema";
 import { showUpgradeBlockedMessage } from "./showUpgradeBlockedMessage";
 import { upgradeDatabase } from "./upgradeDatabase";

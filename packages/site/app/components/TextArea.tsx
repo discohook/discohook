@@ -1,11 +1,11 @@
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import insertTextAtCursor from "insert-text-at-cursor";
-import { ReactNode, useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { PopoutRichPicker } from "./editor/RichPicker";
 import { CoolIcon } from "./icons/CoolIcon";
-import { FeatureConfig, getEnabledRuleKeys } from "./preview/Markdown";
+import { type FeatureConfig, getEnabledRuleKeys } from "./preview/Markdown";
 
 export const TextArea = (
   props: React.DetailedHTMLProps<

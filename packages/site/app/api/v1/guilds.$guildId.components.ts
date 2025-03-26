@@ -1,11 +1,14 @@
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
+import { getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { getDb } from "~/store.server";
-import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });

@@ -1,9 +1,9 @@
 ##: schema https://github.com/cloudflare/workers-sdk/files/12887590/wrangler.schema.json
 
 name = "discohook-site"
-main = "./build/index.js"
-compatibility_date = "2023-04-20"
-node_compat = true
+main = "./server.ts"
+compatibility_date = "2025-03-26"
+compatibility_flags = ["nodejs_compat"]
 minify = true
 
 services = [
@@ -13,12 +13,12 @@ services = [
 
 [durable_objects]
 bindings = [
-  { name = "SCHEDULER", class_name = "DurableScheduler" },
+  { name = "SCHEDULER", class_name = "DurableScheduler", script_name = "discohook-site" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
-  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
-  { name = "RATE_LIMITER", class_name = "RateLimiter" },
-  { name = "SHARE_LINKS", class_name = "ShareLinks" },
-  { name = "SESSIONS", class_name = "SessionManager" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter", script_name = "discohook-site" },
+  { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site" },
+  { name = "SESSIONS", class_name = "SessionManager", script_name = "discohook-site" },
 ]
 
 [version_metadata]
@@ -44,8 +44,12 @@ new_classes = ["ShareLinks"]
 tag = "v4"
 new_classes = ["SessionManager"]
 
-[site]
-bucket = "./public"
+# [site]
+# bucket = "./public"
+
+[assets]
+# https://developers.cloudflare.com/workers/static-assets/binding/
+directory = "./build/client"
 
 [build]
 command = "npm run build"
@@ -74,12 +78,12 @@ binding = "VERSION"
 
 [env.preview.durable_objects]
 bindings = [
-  { name = "SCHEDULER", class_name = "DurableScheduler" },
+  { name = "SCHEDULER", class_name = "DurableScheduler", script_name = "discohook-site-preview" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-preview" },
-  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
-  { name = "RATE_LIMITER", class_name = "RateLimiter" },
-  { name = "SHARE_LINKS", class_name = "ShareLinks" },
-  { name = "SESSIONS", class_name = "SessionManager" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-preview" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter", script_name = "discohook-site-preview" },
+  { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-preview" },
+  { name = "SESSIONS", class_name = "SessionManager", script_name = "discohook-site-preview" },
 ]
 
 [[env.preview.migrations]]
@@ -134,12 +138,12 @@ binding = "VERSION"
 
 [env.production.durable_objects]
 bindings = [
-  { name = "SCHEDULER", class_name = "DurableScheduler" },
+  { name = "SCHEDULER", class_name = "DurableScheduler", script_name = "discohook-site-production" },
   { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-production" },
-  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
-  { name = "RATE_LIMITER", class_name = "RateLimiter" },
-  { name = "SHARE_LINKS", class_name = "ShareLinks" },
-  { name = "SESSIONS", class_name = "SessionManager" },
+  { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-production" },
+  { name = "RATE_LIMITER", class_name = "RateLimiter", script_name = "discohook-site-production" },
+  { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-production" },
+  { name = "SESSIONS", class_name = "SessionManager", script_name = "discohook-site-production" },
 ]
 
 [[env.production.migrations]]

@@ -1,11 +1,11 @@
-import { MetaFunction, redirect } from "@remix-run/cloudflare";
+import { type MetaFunction, redirect } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import type { LoaderFunctionArgs as RRLoaderFunctionArgs } from "@remix-run/router";
 import { useEffect, useReducer, useState } from "react";
 import { Button, ButtonStyle } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { DatabaseManager } from "~/database/DatabaseManager";
-import { Backup } from "~/database/schema";
+import type { Backup } from "~/database/schema";
 import { getLocalStorage } from "~/util/storage";
 
 const getAllBackups = async (manager: DatabaseManager) => {

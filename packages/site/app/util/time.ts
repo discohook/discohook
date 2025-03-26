@@ -1,4 +1,4 @@
-import {
+import type {
   CronFields,
   DayOfTheMonthRange,
   DayOfTheWeekRange,
@@ -6,7 +6,7 @@ import {
   MonthRange,
   SixtyRange,
 } from "cron-parser";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { getRelativeDateFormat } from "./markdown/dates";
 
 type IntervalUnit =

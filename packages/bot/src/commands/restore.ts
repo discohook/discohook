@@ -8,11 +8,11 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIGuildChannel,
-  APIMessage,
-  APIWebhook,
+  type APIGuildChannel,
+  type APIMessage,
+  type APIWebhook,
   ChannelType,
-  GuildChannelType,
+  type GuildChannelType,
   MessageFlags,
   PermissionFlagsBits,
   RouteBases,
@@ -21,18 +21,21 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import { getDb, upsertDiscordUser } from "store";
 import { shareLinks } from "store/src/schema/index.js";
-import { QueryData } from "store/src/types/backups.js";
-import {
+import type { QueryData } from "store/src/types/backups.js";
+import type {
   ChatInputAppCommandCallback,
   MessageAppCommandCallback,
 } from "../commands.js";
-import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
-import { getShareLinkExists, putShareLink } from "../durable/share-links.js";
-import { Env } from "../types/env.js";
+import type {
+  AutoComponentCustomId,
+  SelectMenuCallback,
+} from "../components.js";
+import type { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { isDiscordError } from "../util/error.js";
 import { isThread } from "../util/guards.js";
 import { boolEmoji, color } from "../util/meta.js";
+import { getShareLinkExists, putShareLink } from "../util/share-links.js";
 import { base64UrlEncode, randomString } from "../util/text.js";
 import { getUserTag } from "../util/user.js";
 import { resolveMessageLink } from "./components/entry.js";

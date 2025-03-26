@@ -1,13 +1,13 @@
-import React from "react";
+import type React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message.client";
-import { HistoryItem } from "~/routes/_index";
-import { LinkHistoryItem, linkEmbedToAPIEmbed } from "~/routes/link";
-import { LinkQueryData, QueryData } from "~/types/QueryData";
+import type { HistoryItem } from "~/routes/_index";
+import { type LinkHistoryItem, linkEmbedToAPIEmbed } from "~/routes/link";
+import type { LinkQueryData, QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const HistoryModal = <
   T extends HistoryItem | LinkHistoryItem,

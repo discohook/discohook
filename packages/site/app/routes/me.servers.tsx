@@ -1,4 +1,8 @@
-import { json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
@@ -11,10 +15,9 @@ import { Twemoji } from "~/components/icons/Twemoji";
 import { getUser } from "~/session.server";
 import { and, discordMembers, eq, getDb } from "~/store.server";
 import { cdn, cdnImgAttributes } from "~/util/discord";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseForm } from "~/util/zod";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);
 
   const db = getDb(context.env.HYPERDRIVE);
@@ -31,7 +34,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   return { memberships };
 };
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const user = await getUser(request, context, true);
   if (!user.discordId) {
     throw json(

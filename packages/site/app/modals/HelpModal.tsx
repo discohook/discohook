@@ -1,14 +1,18 @@
-import { APIEmbed, ButtonStyle, ComponentType } from "discord-api-types/v10";
+import {
+  type APIEmbed,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
 import { PreviewButton } from "~/components/preview/Components";
 import { Embed } from "~/components/preview/Embed";
-import { GuideFileMeta } from "~/routes/guide.$";
+import type { GuideFileMeta } from "~/routes/guide.$";
 import tags_ from "../../public/help/en.json";
 import { ExampleModal } from "./ExampleModal";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const HelpModal = (props: ModalProps) => {
   const { t } = useTranslation();

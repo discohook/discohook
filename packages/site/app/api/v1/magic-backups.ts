@@ -1,12 +1,13 @@
-import { json } from "@remix-run/cloudflare";
-import { getDb } from "store";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
+import { backups, getDb, makeSnowflake } from "store";
 import { z } from "zod";
-import { backups, makeSnowflake } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
-import { Env } from "~/types/env";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
-import { findMessagesPreviewImageUrl } from "./backups";
+import { findMessagesPreviewImageUrl } from "../util/backups";
 
 const getCorsHeaders = (origin?: string): Record<string, string> => {
   if (!origin) return {};
@@ -32,7 +33,7 @@ const verifyToken = async (request: Request, kv: Env["KV"]) => {
   return { ...data, token };
 };
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   if (request.method === "OPTIONS") {
     return new Response(undefined, {
       headers: getCorsHeaders(context.env.LEGACY_ORIGIN),
@@ -84,7 +85,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   );
 };
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const { userId, token } = await verifyToken(request, context.env.KV);
   const parsed = await z
     .object({

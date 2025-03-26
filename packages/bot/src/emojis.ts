@@ -1,14 +1,14 @@
 import { formatEmoji } from "@discordjs/formatters";
 import { REST } from "@discordjs/rest";
 import {
-  APIEmoji,
-  APIMessageComponentEmoji,
-  APIPartialEmoji,
-  RESTGetAPIGuildEmojisResult,
+  type APIEmoji,
+  type APIMessageComponentEmoji,
+  type APIPartialEmoji,
+  type RESTGetAPIGuildEmojisResult,
   Routes,
 } from "discord-api-types/v10";
 import { json } from "itty-router";
-import { Env } from "./types/env.js";
+import type { Env } from "./types/env.js";
 
 export class EmojiManager implements DurableObject {
   rest: REST;
@@ -148,4 +148,4 @@ export const getEmojis = async (env: Env, guildId?: string) => {
 
 export const emojiToString = (
   emoji: APIPartialEmoji | APIMessageComponentEmoji,
-) => (emoji.id ? formatEmoji(emoji.id, emoji.animated) : emoji.name ?? "");
+) => (emoji.id ? formatEmoji(emoji.id, emoji.animated) : (emoji.name ?? ""));

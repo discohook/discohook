@@ -1,48 +1,42 @@
-import { REST } from "@discordjs/rest";
+import type { REST, RouteLike } from "@discordjs/rest";
 import {
-  APIGuildMember,
-  APIMessage,
-  APIMessageChannelSelectInteractionData,
-  APIMessageComponentInteraction,
-  APIMessageMentionableSelectInteractionData,
-  APIMessageRoleSelectInteractionData,
-  APIMessageUserSelectInteractionData,
-  APIUser,
+  type APIGuildMember,
+  type APIMessage,
+  type APIMessageChannelSelectInteractionData,
+  type APIMessageComponentInteraction,
+  type APIMessageMentionableSelectInteractionData,
+  type APIMessageRoleSelectInteractionData,
+  type APIMessageUserSelectInteractionData,
+  type APIUser,
   ChannelType,
-  RESTError,
-  RESTGetAPIChannelResult,
-  RESTPostAPIChannelThreadsJSONBody,
-  RESTPostAPIChannelThreadsResult,
-  RESTPostAPIGuildForumThreadsJSONBody,
+  type RESTError,
+  type RESTGetAPIChannelResult,
+  type RESTPostAPIChannelThreadsJSONBody,
+  type RESTPostAPIChannelThreadsResult,
+  type RESTPostAPIGuildForumThreadsJSONBody,
   Routes,
 } from "discord-api-types/v10";
-import { and, eq } from "drizzle-orm";
-import { DBWithSchema } from "store";
+import type { DBWithSchema } from "store";
+import { makeSnowflake, messageLogEntries, webhooks } from "store/src/schema";
 import {
-  backups,
-  makeSnowflake,
-  messageLogEntries,
-  webhooks,
-} from "store/src/schema";
-import {
-  AnonymousVariable,
-  Flow,
-  FlowActionAddRole,
-  FlowActionCheckFunction,
+  type AnonymousVariable,
+  type Flow,
+  type FlowActionAddRole,
+  type FlowActionCheckFunction,
   FlowActionCheckFunctionType,
-  FlowActionCreateThread,
-  FlowActionRemoveRole,
-  FlowActionSendMessage,
-  FlowActionSendWebhookMessage,
-  FlowActionSetVariable,
+  type FlowActionCreateThread,
+  type FlowActionRemoveRole,
+  type FlowActionSendMessage,
+  type FlowActionSendWebhookMessage,
+  type FlowActionSetVariable,
   FlowActionSetVariableType,
-  FlowActionToggleRole,
+  type FlowActionToggleRole,
   FlowActionType,
-  TriggerKVGuild,
+  type TriggerKVGuild,
 } from "store/src/types";
 import { getWebhook } from "../commands/webhooks/webhookInfo.js";
-import { InteractionContext } from "../interactions.js";
-import { Env } from "../types/env.js";
+import type { InteractionContext } from "../interactions.js";
+import type { Env } from "../types/env.js";
 import { isDiscordError } from "../util/error.js";
 import { sleep } from "../util/sleep.js";
 import { getReplacements, processQueryData } from "./backup.js";
@@ -84,6 +78,8 @@ export interface FlowResult {
 
 type SetVariables = Record<string, string | boolean>;
 
+type SentMessages = Record<string, { route: RouteLike }>;
+
 export const executeFlow = async (
   env: Env,
   flow: Pick<Flow, "actions">,
@@ -94,6 +90,7 @@ export const executeFlow = async (
   ctx?: InteractionContext<APIMessageComponentInteraction>,
   recursion = 0,
   lastReturnValue_?: any,
+  sentMessages_?: SentMessages,
 ): Promise<FlowResult> => {
   if (recursion > 50) {
     return {
@@ -101,6 +98,11 @@ export const executeFlow = async (
       message: `Too much recursion (${recursion} layers)`,
     };
   }
+
+  // For now, this exists for more efficient operation of the delete message
+  // action. This lets us use the webhook routes when appropriate, without
+  // storing the whole context.
+  const sentMessages: SentMessages = sentMessages_ ?? {};
 
   const vars = setVars ?? {};
   let lastReturnValue: any = lastReturnValue_;
@@ -228,6 +230,7 @@ export const executeFlow = async (
               ctx,
               recursion + 1,
               lastReturnValue,
+              sentMessages,
             );
             if (result.status === "success") {
               subActionsCompleted += action.then?.length ?? 0;
@@ -251,6 +254,7 @@ export const executeFlow = async (
               ctx,
               recursion + 1,
               lastReturnValue,
+              sentMessages,
             );
             if (result.status === "success") {
               subActionsCompleted += action.else?.length ?? 0;
@@ -273,9 +277,22 @@ export const executeFlow = async (
             liveVars,
             ctx,
           );
+          sentMessages[lastReturnValue.id] = {
+            // prefer deleting with the interaction credentials
+            route: ctx
+              ? Routes.webhookMessage(
+                  ctx.interaction.application_id,
+                  ctx.interaction.token,
+                  lastReturnValue.id,
+                )
+              : Routes.channelMessage(
+                  vars.channelId as string,
+                  lastReturnValue.id,
+                ),
+          };
           break;
-        case FlowActionType.SendWebhookMessage:
-          lastReturnValue = await executeSendWebhookMessage(
+        case FlowActionType.SendWebhookMessage: {
+          const returned = await executeSendWebhookMessage(
             action,
             rest,
             db,
@@ -283,23 +300,42 @@ export const executeFlow = async (
             liveVars,
             env,
           );
+          lastReturnValue = returned.message;
+          sentMessages[lastReturnValue.id] = {
+            // delete with the webhook credentials
+            route: Routes.webhookMessage(
+              returned.webhook.id,
+              returned.webhook.token,
+              lastReturnValue.id,
+            ),
+          };
           break;
-        case FlowActionType.DeleteMessage:
-          if (!vars.channelId) {
-            throw new FlowFailure(
-              "No `channelId` variable was set, so no message could be deleted.",
-            );
-          }
+        }
+        case FlowActionType.DeleteMessage: {
           if (!vars.messageId) {
             throw new FlowFailure(
               "No `messageId` variable was set, so no message could be deleted.",
             );
           }
-          await executeDeleteMessage(
-            rest,
-            vars as { channelId: string; messageId: string },
-          );
+          const msg = sentMessages[vars.messageId as string];
+          if (msg) {
+            await executeDeleteMessage(rest, msg.route);
+          } else {
+            if (!vars.channelId) {
+              throw new FlowFailure(
+                "No `channelId` variable was set, so no message could be deleted.",
+              );
+            }
+            await executeDeleteMessage(
+              rest,
+              Routes.channelMessage(
+                vars.channelId as string,
+                vars.messageId as string,
+              ),
+            );
+          }
           break;
+        }
         case FlowActionType.AddRole:
           if (!liveVars.guild) {
             throw new FlowFailure(
@@ -428,7 +464,7 @@ export const executeSendMessage = async (
   ctx?: InteractionContext<APIMessageComponentInteraction>,
 ): Promise<APIMessage> => {
   const backup = await db.query.backups.findFirst({
-    where: eq(backups.id, makeSnowflake(action.backupId)),
+    where: (backups, { eq }) => eq(backups.id, makeSnowflake(action.backupId)),
     columns: {
       data: true,
     },
@@ -476,12 +512,10 @@ export const executeSendWebhookMessage = async (
   vars: SetVariables,
   liveVars: LiveVariables,
   env: Env,
-): Promise<APIMessage> => {
+): Promise<{ webhook: { id: string; token: string }; message: APIMessage }> => {
   let webhook = await db.query.webhooks.findFirst({
-    where: and(
-      eq(webhooks.platform, "discord"),
-      eq(webhooks.id, action.webhookId),
-    ),
+    where: (webhooks, { eq, and }) =>
+      and(eq(webhooks.platform, "discord"), eq(webhooks.id, action.webhookId)),
     columns: {
       id: true,
       token: true,
@@ -528,7 +562,7 @@ export const executeSendWebhookMessage = async (
   }
 
   const backup = await db.query.backups.findFirst({
-    where: eq(backups.id, makeSnowflake(action.backupId)),
+    where: (backups, { eq }) => eq(backups.id, makeSnowflake(action.backupId)),
     columns: {
       data: true,
     },
@@ -579,21 +613,19 @@ export const executeSendWebhookMessage = async (
       notifiedRoles: message.mention_roles,
     });
   } catch {}
-  return message;
+  return {
+    // not expanding causes TS to think token is nullable
+    webhook: { id: webhook.id, token: webhook.token },
+    message,
+  };
 };
 
 export const executeDeleteMessage = async (
   rest: REST,
-  setVars: {
-    channelId: string;
-    messageId: string;
-  },
+  route: RouteLike,
 ): Promise<void> => {
   try {
-    await rest.delete(
-      Routes.channelMessage(setVars.channelId, setVars.messageId),
-      { reason },
-    );
+    await rest.delete(route, { reason });
   } catch (e) {
     throw httpFlowFailure(e, "Failed to delete the message.");
   }

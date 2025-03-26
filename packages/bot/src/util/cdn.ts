@@ -1,4 +1,4 @@
-import { CDN, ImageURLOptions } from "@discordjs/rest";
+import { CDN, type ImageURLOptions } from "@discordjs/rest";
 import { getUserDefaultAvatar } from "./user.js";
 
 export const cdn = new CDN();

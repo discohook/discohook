@@ -1,4 +1,4 @@
-import { DiscordErrorData } from "@discordjs/rest";
+import type { DiscordErrorData } from "@discordjs/rest";
 import { Form, useActionData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -6,10 +6,10 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
-import { action } from "~/routes/me.bots";
-import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import type { action } from "~/routes/me.bots";
+import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, getApplicationRpc } from "~/util/discord";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const BotCreateModal = (props: ModalProps) => {
   const { t } = useTranslation();

@@ -1,18 +1,18 @@
-import { SessionStorage } from "@remix-run/cloudflare";
-import { RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
+import type { SessionStorage } from "@remix-run/cloudflare";
+import type { RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
 import { GuildedStrategy } from "remix-auth-guilded";
-import { OauthInfo, UserAuth } from "./auth-discord.server";
+import type { OauthInfo, UserAuth } from "./auth-discord.server";
 import { getSessionStorage } from "./session.server";
 import {
-  DBWithSchema,
+  type DBWithSchema,
   getDb,
   oauthInfo,
   upsertGuildedUser,
 } from "./store.server";
-import { Env } from "./types/env";
-import { Context } from "./util/loader";
+import type { Env } from "./types/env";
+import type { Context } from "./util/loader";
 
 export const getGuildedAuth = (
   context: Context,

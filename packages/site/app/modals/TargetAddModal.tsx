@@ -1,9 +1,11 @@
 import { Link } from "@remix-run/react";
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import type { loader as ApiGetGuildWebhooks } from "~/api/.server/v1/guilds.$guildId.webhooks";
+import type { loader as ApiGetGuildWebhookToken } from "~/api/.server/v1/guilds.$guildId.webhooks.$webhookId.token";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
@@ -11,15 +13,13 @@ import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
-import { LoadedMembership } from "~/routes/_index";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { LoadedMembership } from "~/routes/_index";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { randomString } from "~/util/text";
-import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
-import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const TargetAddModal = (
   props: ModalProps & {
@@ -84,19 +84,28 @@ export const TargetAddModal = (
 
   const avatarUrl = webhook ? webhookAvatarUrl(webhook, { size: 128 }) : null;
 
-  const setOpen = (s: boolean) => {
-    props.setOpen(s);
-    if (!s) {
-      guildWebhooksFetcher.reset();
-      guildWebhookTokenFetcher.reset();
-      setGuildId(undefined);
-      setWebhook(undefined);
-      setError(undefined);
-      setUrlError(undefined);
-    }
-  };
+  const setOpen = useCallback(
+    (s: boolean) => {
+      props.setOpen(s);
+      if (!s) {
+        guildWebhooksFetcher.reset();
+        guildWebhookTokenFetcher.reset();
+        setGuildId(undefined);
+        setWebhook(undefined);
+        setError(undefined);
+        setUrlError(undefined);
+      }
+    },
+    [
+      guildWebhooksFetcher.reset,
+      guildWebhookTokenFetcher.reset,
+      props.setOpen,
+      setError,
+    ],
+  );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We need to depend on the stateful webhook value
+  // We need to depend on the stateful webhook value
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ^
   useEffect(() => {
     // @ts-expect-error
     window.handlePopupClose = (result: APIWebhook) => {
@@ -106,7 +115,7 @@ export const TargetAddModal = (
       props.updateTargets({ [result.id]: result });
       setOpen(false);
     };
-  }, [webhook, setOpen, props.updateTargets]);
+  }, [webhook, setOpen, props.cache, props.updateTargets]);
 
   return (
     <Modal title={t("addWebhook")} {...props} setOpen={setOpen}>

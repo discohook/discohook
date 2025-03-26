@@ -1,21 +1,20 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import {
-  APIChannel,
-  APIWebhook,
-  RESTGetAPIGuildWebhooksResult,
+  type APIChannel,
+  type APIWebhook,
+  type RESTGetAPIGuildWebhooksResult,
   RESTJSONErrorCodes,
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { DBWithSchema, getDb, webhooks } from "store";
+import { type DBWithSchema, getDb, webhooks } from "store";
 import { zx } from "zodix";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/.server/durable/rate-limits";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { isDiscordError } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
 const upsertGuildWebhooks = async (
@@ -104,7 +103,11 @@ const upsertGuildWebhooks = async (
   ).map((d) => ({ ...d, user: null }));
 };
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });

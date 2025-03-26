@@ -48,12 +48,12 @@ for (const name of hljs.listLanguages()) {
 
 let code = `
 // @generated
-// This file is generated with ~/scripts/generate-highlighting.js
+// This file is generated with site/scripts/generate-highlighting.js
 // Do not edit directly, please edit the script instead.
 
 import type { HLJSApi } from "highlight.js";
 import hljs_ from "highlight.js";
-import "../../public/hljs.css";
+import "~/styles/hljs.css";
 
 let hljs = hljs_;
 

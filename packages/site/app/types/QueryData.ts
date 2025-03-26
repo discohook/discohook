@@ -1,21 +1,25 @@
-import {
-  APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
-  APIChannelSelectComponent as _APIChannelSelectComponent,
-  APIMentionableSelectComponent as _APIMentionableSelectComponent,
-  APIRoleSelectComponent as _APIRoleSelectComponent,
-  APIStringSelectComponent as _APIStringSelectComponent,
-  APIUserSelectComponent as _APIUserSelectComponent,
+import type {
   APIActionRowComponent,
   APIAttachment,
   APIButtonComponentBase,
   ButtonStyle,
   MessageFlags,
   UserFlags,
+  APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
+  APIChannelSelectComponent as _APIChannelSelectComponent,
+  APIMentionableSelectComponent as _APIMentionableSelectComponent,
+  APIRoleSelectComponent as _APIRoleSelectComponent,
+  APIStringSelectComponent as _APIStringSelectComponent,
+  APIUserSelectComponent as _APIUserSelectComponent,
 } from "discord-api-types/v10";
 import { z } from "zod";
-import { DraftFlow } from "~/store.server";
+import type { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";
-import { APIEmbed, QueryDataVersion, ZodAPIEmbed } from "./QueryData-raw";
+import {
+  type APIEmbed,
+  type QueryDataVersion,
+  ZodAPIEmbed,
+} from "./QueryData-raw";
 import { ZodAPIActionRowComponent } from "./components";
 import { ZodMessageFlags } from "./discord";
 

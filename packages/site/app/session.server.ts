@@ -1,25 +1,26 @@
 import { REST } from "@discordjs/rest";
 import {
-  Cookie,
-  SerializeFrom,
+  type AppLoadContext,
+  type Cookie,
+  type SerializeFrom,
   createCookie,
   createSessionStorage,
   json,
   redirect,
 } from "@remix-run/cloudflare";
 import {
-  APIGuild,
-  APIGuildChannel,
-  APIGuildMember,
-  GuildChannelType,
+  type APIGuild,
+  type APIGuildChannel,
+  type APIGuildMember,
+  type GuildChannelType,
   OverwriteType,
-  RESTGetAPIGuildMemberResult,
+  type RESTGetAPIGuildMemberResult,
   RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
-import { JWTPayload, SignJWT, jwtVerify } from "jose";
+import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { getSessionManagerStub } from "~/store.server";
 import { getDiscordUserOAuth } from "./auth-discord.server";
 import {
@@ -28,11 +29,9 @@ import {
   getDb,
   makeSnowflake,
   tokens,
-  upsertDiscordUser,
+  type upsertDiscordUser,
 } from "./store.server";
-import { Env } from "./types/env";
 import { isDiscordError } from "./util/discord";
-import { Context } from "./util/loader";
 
 export const createWorkersDOSessionStorage = ({
   env,
@@ -76,7 +75,7 @@ export const createWorkersDOSessionStorage = ({
     },
   });
 
-export const getSessionStorage = (context: Context) => {
+export const getSessionStorage = (context: AppLoadContext) => {
   const sessionStorage = createWorkersDOSessionStorage({
     env: context.env,
     cookie: createCookie("__discohook_session", {
@@ -93,7 +92,7 @@ export const getSessionStorage = (context: Context) => {
   return { getSession, commitSession, destroySession, sessionStorage };
 };
 
-export const getTokenStorage = (context: Context) => {
+export const getTokenStorage = (context: AppLoadContext) => {
   const sessionStorage = createWorkersDOSessionStorage({
     env: context.env,
     cookie: createCookie("__discohook_token", {
@@ -110,7 +109,7 @@ export const getTokenStorage = (context: Context) => {
   return { getSession, commitSession, destroySession, sessionStorage };
 };
 
-export const getEditorTokenStorage = (context: Context) => {
+export const getEditorTokenStorage = (context: AppLoadContext) => {
   const sessionStorage = createWorkersDOSessionStorage({
     env: context.env,
     cookie: createCookie("__discohook_editor_token", {
@@ -137,17 +136,17 @@ export type User = SerializeFrom<typeof upsertDiscordUser>;
 
 export async function getUserId(
   request: Request,
-  context: Context,
+  context: AppLoadContext,
   throwIfNull?: false,
 ): Promise<bigint | null>;
 export async function getUserId(
   request: Request,
-  context: Context,
+  context: AppLoadContext,
   throwIfNull?: true,
 ): Promise<bigint>;
 export async function getUserId(
   request: Request,
-  context: Context,
+  context: AppLoadContext,
   throwIfNull?: boolean,
 ): Promise<bigint | null> {
   const session = await getSessionStorage(context).getSession(
@@ -165,17 +164,17 @@ export async function getUserId(
 
 export async function getUser(
   request: Request,
-  context: Context,
+  context: AppLoadContext,
   throwIfNull?: false,
 ): Promise<User | null>;
 export async function getUser(
   request: Request,
-  context: Context,
+  context: AppLoadContext,
   throwIfNull?: true,
 ): Promise<User>;
 export async function getUser(
   request: Request,
-  context: Context,
+  context: AppLoadContext,
   throwIfNull?: boolean,
 ): Promise<User | null> {
   const userId = await getUserId(request, context, false);
@@ -342,7 +341,7 @@ export type TokenWithUser = {
 
 export async function authorizeRequest(
   request: Request,
-  context: Context,
+  context: AppLoadContext,
   options?: {
     requireToken?: boolean;
     headers?: Record<string, string>;

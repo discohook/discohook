@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { type i18n as i18nT } from "i18next";
+import type { i18n as i18nT } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
@@ -7,9 +7,13 @@ import { Radio } from "~/components/Radio";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { linkClassName } from "~/components/preview/Markdown";
-import { User } from "~/session.server";
-import { LocaleCode, Settings, useLocalStorage } from "~/util/localstorage";
-import { Modal, ModalProps } from "./Modal";
+import type { User } from "~/session.server";
+import {
+  type LocaleCode,
+  type Settings,
+  useLocalStorage,
+} from "~/util/localstorage";
+import { Modal, type ModalProps } from "./Modal";
 
 const languages: Record<LocaleCode, string> = {
   ar: "🇪🇬",

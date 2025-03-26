@@ -10,6 +10,7 @@
 
 i {
   /* use !important to prevent issues with browser extensions that change fonts */
+  /* biome-ignore lint/a11y/useGenericFontNames: */
   font-family: "coolicons" !important;
   speak: never;
   font-style: normal;

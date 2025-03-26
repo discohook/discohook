@@ -1,12 +1,14 @@
-import { z } from "zod";
+import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { ZodDonateKeyType } from "~/api/zod";
 import { getUserId } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
 
-export const ZodDonateKeyType = z.literal("btc");
-
-export const action = async ({ request, params, context }: LoaderArgs) => {
+export const action = async ({
+  request,
+  params,
+  context,
+}: LoaderFunctionArgs) => {
   const { type } = zxParseParams(params, {
     type: ZodDonateKeyType,
   });
@@ -16,10 +18,8 @@ export const action = async ({ request, params, context }: LoaderArgs) => {
   await context.env.KV.put(
     `donation-key-${type}-${key}`,
     JSON.stringify({ userId }),
-    {
-      // 3 hours
-      expirationTtl: 10_8000,
-    },
+    // 3 hours
+    { expirationTtl: 10_8000 },
   );
   return { key };
 };

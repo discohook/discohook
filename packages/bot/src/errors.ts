@@ -1,9 +1,9 @@
-import {
+import type {
   APIInteraction,
   APIInteractionResponseChannelMessageWithSource,
   RESTError,
 } from "discord-api-types/v10";
-import { InteractionContext } from "./interactions.js";
+import type { InteractionContext } from "./interactions.js";
 
 const xNotFound = (x: string) =>
   `Could not find the ${x}. There may be a permissions issue.`;

@@ -1,19 +1,18 @@
-import { MetaFunction } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
+import type { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { Header } from "~/components/Header";
 import { Message } from "~/components/preview/Message.client";
 import { FullscreenThrobber } from "~/root";
 import { getUser } from "~/session.server";
-import { QueryData, ZodQueryData } from "~/types/QueryData";
+import { type QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
-import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { base64Decode } from "~/util/text";
 import { getQdMessageId } from "./_index";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context);
   return { user, discordApplicationId: context.env.DISCORD_CLIENT_ID };
 };
@@ -46,7 +45,7 @@ export default () => {
       parsed = ZodQueryData.safeParse(
         JSON.parse(
           searchParams.get("data")
-            ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
+            ? (base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
             : JSON.stringify({ messages: [INDEX_MESSAGE] }),
         ),
       );

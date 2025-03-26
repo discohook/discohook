@@ -1,5 +1,5 @@
 import ReactSelect from "react-select";
-import { ResolvableAPIRole } from "~/util/cache/CacheManager";
+import type { ResolvableAPIRole } from "~/util/cache/CacheManager";
 import { selectClassNames } from "./StringSelect";
 import { RoleShield } from "./icons/role";
 

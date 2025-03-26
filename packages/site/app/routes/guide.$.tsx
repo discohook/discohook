@@ -1,4 +1,5 @@
 import { useLoaderData, useNavigate } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 import matter from "front-matter";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -10,11 +11,14 @@ import { TabsWindow } from "~/components/tabs";
 import { FullscreenThrobber } from "~/root";
 import { getUser } from "~/session.server";
 import { useCache } from "~/util/cache/CacheManager";
-import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 import { meta as indexMeta } from "./guide._index";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { "*": path } = zxParseParams(params, {
     "*": z.string().regex(/^[\w\/-]+$/),
   });

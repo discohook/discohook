@@ -1,11 +1,11 @@
 import { channelLink, time } from "@discordjs/formatters";
 import {
-  APIEmbed,
-  APIGuildMember,
-  APIInteractionDataResolvedChannel,
-  APIInteractionDataResolvedGuildMember,
-  APIRole,
-  APIUser,
+  type APIEmbed,
+  type APIGuildMember,
+  type APIInteractionDataResolvedChannel,
+  type APIInteractionDataResolvedGuildMember,
+  type APIRole,
+  type APIUser,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
@@ -13,7 +13,7 @@ import { getDate } from "discord-snowflake";
 import type { QueryData, TriggerKVGuild } from "store/src/types";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
 import { cdn } from "../util/cdn.js";
-import { FlowFailure, LiveVariables } from "./flows.js";
+import { FlowFailure, type LiveVariables } from "./flows.js";
 
 export const assertGetSnowflake = (id: string): `${bigint}` => {
   if (isSnowflakeSafe(id)) return id;
@@ -29,8 +29,6 @@ const flattenMember = (
   prefix = "member",
 ): Record<string, string | number | undefined> => {
   const key = (attr: string) => `${prefix}.${attr}`;
-
-  const mention = vars.user ? `<@${vars.user.id}>` : undefined;
   return {
     [key("role_ids")]: JSON.stringify(vars.member ? vars.member.roles : []),
     // Legacy-compatible (v1) format options
@@ -43,7 +41,7 @@ const flattenMember = (
       vars.user?.discriminator === "0"
         ? vars.user.username
         : `${vars.user?.username}#${vars.user?.discriminator}`,
-    [key("mention")]: mention,
+    [key("mention")]: vars.user ? `<@${vars.user.id}>` : undefined,
     [key("avatar_url")]:
       vars.member?.avatar && vars.guild && vars.user
         ? cdn.guildMemberAvatar(
@@ -84,9 +82,6 @@ const flattenMember = (
     [key("created_long")]: vars.user
       ? time(getDate(assertGetSnowflake(vars.user.id)), "F")
       : undefined,
-    // User assumptions (other bots may use these?)
-    mention,
-    user: mention,
   };
 };
 
@@ -135,8 +130,12 @@ export const getReplacements = (
   setVars: Record<string, string | boolean>,
 ) => {
   const now = new Date();
+  const member = flattenMember(vars);
   const values: Record<string, string | number | undefined> = {
-    ...flattenMember(vars),
+    ...member,
+    // User assumptions (other bots may use these?)
+    mention: member.mention,
+    user: member.mention,
     // Server
     "server.id": vars.guild?.id,
     "server.name": vars.guild?.name,

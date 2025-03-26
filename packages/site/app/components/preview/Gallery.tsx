@@ -1,6 +1,6 @@
-import { APIAttachment } from "discord-api-types/v10";
+import type { APIAttachment } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
-import { SetImageModalData } from "~/modals/ImageModal";
+import type { SetImageModalData } from "~/modals/ImageModal";
 
 export const YOUTUBE_REGEX =
   /^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)\/((?:shorts\/|embed\/|v\/|live\/)?([\w\-]{5,}))/i;

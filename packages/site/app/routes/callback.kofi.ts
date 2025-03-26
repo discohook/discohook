@@ -1,10 +1,9 @@
-import { json } from "@remix-run/cloudflare";
+import { type ActionFunctionArgs, json } from "@remix-run/cloudflare";
 import {
   ZodKofiDonationPayload,
   ZodKofiGetSupporterDetails,
 } from "~/types/kofi";
-import { ActionArgs } from "~/util/loader";
-import Scraper from "~/util/scraper";
+import Scraper from "~/util/scraper.server";
 import { zxParseForm, zxParseJson } from "~/util/zod";
 
 const KOFI_BASE = "https://ko-fi.com";
@@ -14,7 +13,7 @@ const KOFI_BASE = "https://ko-fi.com";
 // not valid and we can't use it anyway.
 const DISCORD_NAME_RE = /: ([a-z0-9_.]+)(?:#0)?$/;
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const verificationToken = context.env.KOFI_WEBHOOK_TOKEN;
   if (!verificationToken) {
     // Technically optional on ko-fi's side,

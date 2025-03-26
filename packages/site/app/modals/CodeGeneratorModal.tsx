@@ -6,10 +6,10 @@ import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { StringSelect } from "~/components/StringSelect";
 import { codeBlockStyle, linkClassName } from "~/components/preview/Markdown";
-import { QueryData } from "~/types/QueryData";
-import { APIEmbed } from "~/types/QueryData-raw";
+import type { QueryData } from "~/types/QueryData";
+import type { APIEmbed } from "~/types/QueryData-raw";
 import { cycleCopyText } from "~/util/text";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export type CodeGeneratorData = Pick<
   QueryData["messages"][number]["data"],

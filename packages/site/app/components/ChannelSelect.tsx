@@ -1,5 +1,5 @@
 import ReactSelect from "react-select";
-import { ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import type { ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import { selectClassNames } from "./StringSelect";
 import { channelIcons } from "./preview/Markdown";
 

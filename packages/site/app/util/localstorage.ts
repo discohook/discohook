@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import i18n, { type SupportedLanguage, supportedLanguages } from "~/i18n";
 
 export type LocaleCode =
   | "en-US"
@@ -56,4 +57,17 @@ export const useLocalStorage = (): [
   };
 
   return [state, update];
+};
+
+export const getClientLocale = (): SupportedLanguage => {
+  try {
+    localStorage;
+  } catch {
+    return i18n.fallbackLng as SupportedLanguage;
+  }
+  const lang = localStorage.getItem("locale") as SupportedLanguage | null;
+  if (lang && supportedLanguages.includes(lang)) {
+    return lang;
+  }
+  return i18n.fallbackLng as SupportedLanguage;
 };

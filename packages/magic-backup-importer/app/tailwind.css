@@ -3,41 +3,41 @@
 @tailwind utilities;
 
 @font-face {
-    font-family: Whitney;
-    font-style: normal;
-    font-weight: 300;
-    src: url(/fonts/whitney-300.woff), url(/fonts/whitney-300.woff2);
-    font-display: swap;
+  font-family: Whitney;
+  font-style: normal;
+  font-weight: 300;
+  src: url(/fonts/whitney-300.woff), url(/fonts/whitney-300.woff2);
+  font-display: swap;
 }
 
 @font-face {
-    font-family: Whitney;
-    font-style: normal;
-    font-weight: 400;
-    src: url(/fonts/whitney-400.woff), url(/fonts/whitney-400.woff2);
-    font-display: swap;
+  font-family: Whitney;
+  font-style: normal;
+  font-weight: 400;
+  src: url(/fonts/whitney-400.woff), url(/fonts/whitney-400.woff2);
+  font-display: swap;
 }
 
 @font-face {
-    font-family: Whitney;
-    font-style: normal;
-    font-weight: 500;
-    src: url(/fonts/whitney-500.woff), url(/fonts/whitney-500.woff2);
-    font-display: swap;
+  font-family: Whitney;
+  font-style: normal;
+  font-weight: 500;
+  src: url(/fonts/whitney-500.woff), url(/fonts/whitney-500.woff2);
+  font-display: swap;
 }
 
 @font-face {
-    font-family: Whitney;
-    font-style: normal;
-    font-weight: 600;
-    src: url(/fonts/whitney-600.woff), url(/fonts/whitney-600.woff2);
-    font-display: swap;
+  font-family: Whitney;
+  font-style: normal;
+  font-weight: 600;
+  src: url(/fonts/whitney-600.woff), url(/fonts/whitney-600.woff2);
+  font-display: swap;
 }
 
 @font-face {
-    font-family: Whitney;
-    font-style: normal;
-    font-weight: 700;
-    src: url(/fonts/whitney-700.woff), url(/fonts/whitney-700.woff2);
-    font-display: swap;
+  font-family: Whitney;
+  font-style: normal;
+  font-weight: 700;
+  src: url(/fonts/whitney-700.woff), url(/fonts/whitney-700.woff2);
+  font-display: swap;
 }

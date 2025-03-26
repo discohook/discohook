@@ -10,8 +10,8 @@
     "dev:site": "cd packages/site && npm run dev",
     "dev:backups": "cd packages/magic-backup-importer && npm run dev",
     "format": "biome format . --write",
-    "lint": "biome lint . --apply",
-    "fix": "biome check --apply .",
+    "lint": "biome lint .",
+    "fix": "biome check --fix .",
     "db-generate": "drizzle-kit generate",
     "db-migrate": "drizzle-kit migrate",
     "db-push": "drizzle-kit push",
@@ -22,7 +22,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^1.5.1",
+    "@biomejs/biome": "^1.9.4",
     "drizzle-kit": "^0.23.1"
   },
   "packageManager": "yarn@4.1.0"

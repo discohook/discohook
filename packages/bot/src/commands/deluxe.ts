@@ -4,7 +4,7 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb, upsertDiscordUser } from "store";
 import { users } from "store/src/schema/schema.js";
-import { ChatInputAppCommandCallback } from "../commands.js";
+import type { ChatInputAppCommandCallback } from "../commands.js";
 
 export const deluxeInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
   const components = [
@@ -39,7 +39,7 @@ export const deluxeSyncCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   return ctx.reply({
     content: `Synced successfully: ${
-      user.lifetime ?? premium.lifetime
+      (user.lifetime ?? premium.lifetime)
         ? "You have a lifetime subscription."
         : premium.grace && premium.graceEndsAt
           ? `You can access your Deluxe subscription until ${time(

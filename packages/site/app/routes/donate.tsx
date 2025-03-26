@@ -1,6 +1,7 @@
-import { MetaFunction } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { Header } from "~/components/Header";
 import { Twemoji } from "~/components/icons/Twemoji";
@@ -8,12 +9,11 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { CryptoDonateInfoModal } from "~/modals/CryptoDonateInfoModal";
 import {
   SimpleTextModal,
-  SimpleTextModalProps,
+  type SimpleTextModalProps,
 } from "~/modals/SimpleTextModal";
 import { getUser } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context);
   const wallets = {
     // btc: context.env.BITCOIN_ADDRESS,

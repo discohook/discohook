@@ -1,9 +1,9 @@
 import { REST } from "@discordjs/rest";
-import { APIEntitlement, Routes } from "discord-api-types/v10";
+import { type APIEntitlement, Routes } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb } from "store";
 import { makeSnowflake, users } from "store/src/schema";
-import { GatewayEventCallback } from "../events.js";
+import type { GatewayEventCallback } from "../events.js";
 
 // Discord removed the entitlement. I think in any case this means the user is
 // no longer subscribed (through discord, at least), so it's safe to carefully

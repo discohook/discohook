@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
-import { LoadedBot } from "~/routes/me";
+import type { LoadedBot } from "~/routes/me";
 import { botAppAvatar } from "~/util/discord";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const BotDeleteConfirmModal = (
   props: ModalProps & {

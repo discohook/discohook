@@ -1,5 +1,9 @@
 import { useTranslation } from "react-i18next";
-import Select, { ClassNamesConfig, GroupBase, Props } from "react-select";
+import Select, {
+  type ClassNamesConfig,
+  type GroupBase,
+  type Props,
+} from "react-select";
 import { twJoin } from "tailwind-merge";
 
 export type StringSelectProps = Props & { label?: string };
@@ -29,6 +33,7 @@ export const selectClassNames: ClassNamesConfig<
 export const StringSelect: React.FC<StringSelectProps> = (props) => {
   const { t } = useTranslation();
   return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: has inner select control
     <label className="block">
       {props.label && <p className="text-sm">{props.label}</p>}
       <Select

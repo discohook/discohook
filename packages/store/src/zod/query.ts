@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { APIEmbed, QueryData } from "../types/backups.js";
+import type { APIEmbed, QueryData } from "../types/backups.js";
 import { randomString } from "../util/text.js";
 
 export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({

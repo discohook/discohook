@@ -1,20 +1,23 @@
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+} from "@remix-run/cloudflare";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { parseQuery } from "zodix";
 import { getUserId } from "~/session.server";
 import {
-  DraftComponent,
-  DraftFlow,
-  StorableComponent,
+  type DraftComponent,
+  type DraftFlow,
+  type StorableComponent,
   discordMessageComponents,
   flows,
   getDb,
   inArray,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson } from "~/util/zod";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const { id: ids } = parseQuery(
     request,
     {
@@ -123,7 +126,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     });
 };
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const component = await zxParseJson(request, ZodAPIMessageActionRowComponent);
   const userId = await getUserId(request, context);
 

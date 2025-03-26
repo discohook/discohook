@@ -1,5 +1,5 @@
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 import { getDiscordAuth } from "~/auth-discord.server";
-import { LoaderArgs } from "~/util/loader";
 
-export const loader = ({ request, context }: LoaderArgs) =>
+export const loader = ({ request, context }: LoaderFunctionArgs) =>
   getDiscordAuth(context).logout(request, { redirectTo: "/" });

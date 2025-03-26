@@ -1,12 +1,15 @@
-import { json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { flows as dFlows, getDb, triggers as dTriggers } from "store";
+import { flows as dFlows, triggers as dTriggers, getDb } from "store";
 import { z } from "zod";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { TriggerEvent, flowActions } from "~/store.server";
 import { refineZodDraftFlowMax } from "~/types/flows";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
@@ -15,7 +18,11 @@ import {
   zxParseQuery,
 } from "~/util/zod";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });
@@ -76,7 +83,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   return respond(json(triggers));
 };
 
-export const action = async ({ request, context, params }: ActionArgs) => {
+export const action = async ({
+  request,
+  context,
+  params,
+}: ActionFunctionArgs) => {
   if (request.method !== "POST") {
     throw json({ message: "Method Not Allowed" }, 405);
   }

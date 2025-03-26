@@ -1,13 +1,13 @@
 // Heavily modified from https://react-select.com/advanced#experimental (Popout)
 
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import {
   StringSelect,
-  StringSelectProps,
+  type StringSelectProps,
   selectClassNames,
 } from "./StringSelect";
-import { CoolIcon, CoolIconsGlyph } from "./icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "./icons/CoolIcon";
 
 export const IconSelect: React.FC<
   React.PropsWithChildren<StringSelectProps & { icon: CoolIconsGlyph }>

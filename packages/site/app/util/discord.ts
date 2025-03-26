@@ -8,29 +8,30 @@ import {
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIButtonComponent,
-  APIButtonComponentWithCustomId,
-  APIButtonComponentWithSKUId,
-  APIMessageComponent,
-  APISelectMenuComponent,
+  type APIButtonComponent,
+  type APIButtonComponentWithCustomId,
+  type APIButtonComponentWithSKUId,
+  type APIButtonComponentWithURL,
+  type APIMessageComponent,
+  type APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
-  RESTError,
-  RESTGetAPICurrentUserGuildsResult,
-  RESTGetAPIWebhookWithTokenMessageResult,
-  RESTGetAPIWebhookWithTokenResult,
-  RESTPatchAPIWebhookWithTokenJSONBody,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
-  RESTPatchAPIWebhookWithTokenMessageResult,
-  RESTPatchAPIWebhookWithTokenResult,
-  RESTPostAPIWebhookWithTokenJSONBody,
-  RESTPostAPIWebhookWithTokenWaitResult,
+  type RESTError,
+  type RESTGetAPICurrentUserGuildsResult,
+  type RESTGetAPIWebhookWithTokenMessageResult,
+  type RESTGetAPIWebhookWithTokenResult,
+  type RESTPatchAPIWebhookWithTokenJSONBody,
+  type RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  type RESTPatchAPIWebhookWithTokenMessageResult,
+  type RESTPatchAPIWebhookWithTokenResult,
+  type RESTPostAPIWebhookWithTokenJSONBody,
+  type RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
-import { Snowflake, getDate, isSnowflake } from "discord-snowflake";
-import { TimestampStyle } from "~/components/editor/TimePicker";
-import { DraftFile } from "~/routes/_index";
-import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import { type Snowflake, getDate, isSnowflake } from "discord-snowflake";
+import type { TimestampStyle } from "~/components/editor/TimePicker";
+import type { DraftFile } from "~/routes/_index";
+import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { sleep } from "./time";
 
 export const DISCORD_API = "https://discord.com/api";
@@ -538,3 +539,37 @@ export const hasCustomId = (
   component.type === ComponentType.UserSelect ||
   component.type === ComponentType.ChannelSelect ||
   component.type === ComponentType.MentionableSelect;
+
+export const getComponentId = (
+  component:
+    | Pick<APIButtonComponentWithCustomId, "type" | "style" | "custom_id">
+    | Pick<APIButtonComponentWithURL, "type" | "style" | "url">
+    | Pick<APIButtonComponentWithSKUId, "type" | "style" | "sku_id">
+    | Pick<APISelectMenuComponent, "type" | "custom_id">,
+) => {
+  if (
+    component.type === ComponentType.Button &&
+    component.style === ButtonStyle.Link
+  ) {
+    let url: URL;
+    try {
+      url = new URL(component.url);
+    } catch {
+      return undefined;
+    }
+    // this method is deprecated. dhc-id is not applied to new link
+    // buttons due to complications with some websites
+    const id = url.searchParams.get("dhc-id");
+    if (id) {
+      try {
+        return BigInt(id);
+      } catch {}
+    }
+    return undefined;
+  }
+  if ("sku_id" in component) return undefined;
+
+  return /^p_\d+/.test(component.custom_id)
+    ? BigInt(component.custom_id.replace(/^p_/, ""))
+    : undefined;
+};

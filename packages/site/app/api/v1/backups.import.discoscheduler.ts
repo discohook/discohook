@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import { getUser } from "~/session.server";
 import {
   ScheduledRunStatus,
@@ -7,11 +7,10 @@ import {
   inArray,
   scheduled_posts,
 } from "~/store.server";
-import { QueryData } from "~/types/QueryData";
-import { LoaderArgs } from "~/util/loader";
-import { findMessagesPreviewImageUrl } from "./backups";
+import type { QueryData } from "~/types/QueryData";
+import { findMessagesPreviewImageUrl } from "../util/backups";
 
-export const action = async ({ request, context }: LoaderArgs) => {
+export const action = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);
   const discordId = user.discordId;
   if (discordId === null) {

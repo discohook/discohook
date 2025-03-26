@@ -1,3 +1,4 @@
+import type { ActionFunctionArgs } from "@remix-run/server-runtime";
 import { z } from "zod";
 import { authorizeRequest } from "~/session.server";
 import {
@@ -6,10 +7,9 @@ import {
   inArray,
   launchComponentDurableObject,
 } from "~/store.server";
-import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson } from "~/util/zod";
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   if (request.method !== "PATCH") {
     throw new Response(null, {
       status: 405,

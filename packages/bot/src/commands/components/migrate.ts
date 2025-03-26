@@ -3,23 +3,23 @@ import {
   ButtonBuilder,
   messageLink,
 } from "@discordjs/builders";
-import { REST } from "@discordjs/rest";
+import type { REST } from "@discordjs/rest";
 import {
-  APIActionRowComponent,
-  APIMessage,
-  APIMessageActionRowComponent,
-  APIUser,
+  type APIActionRowComponent,
+  type APIMessage,
+  type APIMessageActionRowComponent,
+  type APIUser,
   ButtonStyle,
   ComponentType,
   MessageFlags,
-  RESTGetAPIGuildEmojisResult,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  type RESTGetAPIGuildEmojisResult,
+  type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
 import { and, count, eq, notInArray } from "drizzle-orm";
 import { t } from "i18next";
 import {
-  DBWithSchema,
+  type DBWithSchema,
   getDb,
   getchTriggerGuild,
   launchComponentDurableObject,
@@ -36,21 +36,24 @@ import {
   makeSnowflake,
 } from "store/src/schema";
 import {
-  FlowActionCheck,
+  type FlowActionCheck,
   FlowActionCheckFunctionType,
-  FlowActionDud,
-  FlowActionSendMessage,
+  type FlowActionDud,
+  type FlowActionSendMessage,
   FlowActionSetVariableType,
-  FlowActionStop,
-  FlowActionToggleRole,
+  type FlowActionStop,
+  type FlowActionToggleRole,
   FlowActionType,
-  QueryData,
-  StorableButtonWithCustomId,
-  StorableButtonWithUrl,
+  type QueryData,
+  type StorableButtonWithCustomId,
+  type StorableButtonWithUrl,
 } from "store/src/types";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import { AutoComponentCustomId, ButtonCallback } from "../../components.js";
-import { Env } from "../../types/env.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type {
+  AutoComponentCustomId,
+  ButtonCallback,
+} from "../../components.js";
+import type { Env } from "../../types/env.js";
 import { hasCustomId, parseAutoComponentId } from "../../util/components.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import { resolveMessageLink } from "./entry.js";
@@ -351,68 +354,69 @@ export const migrateLegacyButtons = async (
   return { inserted, rows, guild, emojis, oldIdMap };
 };
 
-export const migrateComponentsChatEntry: ChatInputAppCommandCallback<true> =
-  async (ctx) => {
-    const message = await resolveMessageLink(
-      ctx.rest,
-      ctx.getStringOption("message").value,
-      ctx.interaction.guild_id,
-    );
-    if (typeof message === "string") {
-      return ctx.reply({
-        content: message,
-        ephemeral: true,
-      });
-    }
-    if (!message.webhook_id) {
-      return ctx.reply({
-        content: "This is not a webhook message.",
-        ephemeral: true,
-      });
-    }
-
-    const db = getDb(ctx.env.HYPERDRIVE);
-    const result = (
-      await db
-        .select({
-          count: count(),
-        })
-        .from(buttons)
-        .where(eq(buttons.messageId, makeSnowflake(message.id)))
-    )[0];
-    if (result.count === 0) {
-      return ctx.reply({
-        content: "There are no buttons on this message to migrate.",
-        ephemeral: true,
-      });
-    }
+export const migrateComponentsChatEntry: ChatInputAppCommandCallback<
+  true
+> = async (ctx) => {
+  const message = await resolveMessageLink(
+    ctx.rest,
+    ctx.getStringOption("message").value,
+    ctx.interaction.guild_id,
+  );
+  if (typeof message === "string") {
     return ctx.reply({
-      content: `This will replace ALL components on ${messageLink(
-        message.channel_id,
-        message.id,
-        ctx.interaction.guild_id,
-      )} with ${
-        result.count
-      } migrated legacy buttons. Positions may be altered, but can be changed later. Are you sure you want to do this?`,
-      components: [
-        new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId(
-              `a_migrate-buttons-confirm_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
-            )
-            .setLabel("Migrate")
-            .setStyle(ButtonStyle.Danger),
-          new ButtonBuilder()
-            .setCustomId(
-              "a_migrate-buttons-cancel_" satisfies AutoComponentCustomId,
-            )
-            .setLabel("Cancel")
-            .setStyle(ButtonStyle.Secondary),
-        ),
-      ],
+      content: message,
       ephemeral: true,
     });
-  };
+  }
+  if (!message.webhook_id) {
+    return ctx.reply({
+      content: "This is not a webhook message.",
+      ephemeral: true,
+    });
+  }
+
+  const db = getDb(ctx.env.HYPERDRIVE);
+  const result = (
+    await db
+      .select({
+        count: count(),
+      })
+      .from(buttons)
+      .where(eq(buttons.messageId, makeSnowflake(message.id)))
+  )[0];
+  if (result.count === 0) {
+    return ctx.reply({
+      content: "There are no buttons on this message to migrate.",
+      ephemeral: true,
+    });
+  }
+  return ctx.reply({
+    content: `This will replace ALL components on ${messageLink(
+      message.channel_id,
+      message.id,
+      ctx.interaction.guild_id,
+    )} with ${
+      result.count
+    } migrated legacy buttons. Positions may be altered, but can be changed later. Are you sure you want to do this?`,
+    components: [
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(
+            `a_migrate-buttons-confirm_${message.channel_id}:${message.id}` satisfies AutoComponentCustomId,
+          )
+          .setLabel("Migrate")
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId(
+            "a_migrate-buttons-cancel_" satisfies AutoComponentCustomId,
+          )
+          .setLabel("Cancel")
+          .setStyle(ButtonStyle.Secondary),
+      ),
+    ],
+    ephemeral: true,
+  });
+};
 
 export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
   const { channelId, messageId } = parseAutoComponentId(

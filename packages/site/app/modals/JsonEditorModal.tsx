@@ -2,15 +2,15 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { ZodSchema } from "zod";
+import type { ZodSchema } from "zod";
 import { Button } from "~/components/Button";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { TextArea } from "~/components/TextArea";
-import { DiscohookBackupExportData } from "~/types/discohook";
+import type { DiscohookBackupExportData } from "~/types/discohook";
 import { cycleCopyText } from "~/util/text";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export interface JsonEditorProps<T = Record<string, any>> {
   data: T;

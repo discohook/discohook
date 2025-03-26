@@ -1,9 +1,9 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { type ActionFunctionArgs, json } from "@remix-run/cloudflare";
 import {
-  APIWebhook,
-  RESTPatchAPIWebhookJSONBody,
-  RESTPatchAPIWebhookResult,
+  type APIWebhook,
+  type RESTPatchAPIWebhookJSONBody,
+  type RESTPatchAPIWebhookResult,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
@@ -16,10 +16,13 @@ import {
 } from "~/session.server";
 import { upsertGuild } from "~/store.server";
 import { isDiscordError } from "~/util/discord";
-import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
-export const action = async ({ request, context, params }: ActionArgs) => {
+export const action = async ({
+  request,
+  context,
+  params,
+}: ActionFunctionArgs) => {
   const { guildId, webhookId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
     webhookId: snowflakeAsString(),

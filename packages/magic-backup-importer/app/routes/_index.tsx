@@ -1,5 +1,5 @@
 import { redirect } from "@remix-run/cloudflare";
-import { LoaderArgs } from "./migrate";
+import type { LoaderArgs } from "./migrate";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const url = new URL(request.url);

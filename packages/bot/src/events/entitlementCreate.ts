@@ -1,9 +1,13 @@
 import { REST } from "@discordjs/rest";
-import { APIEntitlement, APIUser, Routes } from "discord-api-types/v10";
+import {
+  type APIEntitlement,
+  type APIUser,
+  Routes,
+} from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb } from "store";
 import { discordUsers, makeSnowflake, users } from "store/src/schema";
-import { GatewayEventCallback } from "../events.js";
+import type { GatewayEventCallback } from "../events.js";
 
 export const entitlementCreateCallback: GatewayEventCallback = async (
   env,

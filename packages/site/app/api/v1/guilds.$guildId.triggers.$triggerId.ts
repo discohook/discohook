@@ -1,23 +1,29 @@
-import { json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  json,
+} from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
-  DBWithSchema,
-  TriggerEvent,
+  type DBWithSchema,
+  type TriggerEvent,
   eq,
   flowActions,
   flows,
   putGeneric,
   triggers,
 } from "~/store.server";
-import { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { guildId, triggerId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
     triggerId: snowflakeAsString(),
@@ -83,7 +89,11 @@ const updateKvTriggers = async (
   });
 };
 
-export const action = async ({ request, context, params }: ActionArgs) => {
+export const action = async ({
+  request,
+  context,
+  params,
+}: ActionFunctionArgs) => {
   if (request.method !== "PATCH" && request.method !== "DELETE") {
     throw json({ message: "Method Not Allowed" }, 405);
   }

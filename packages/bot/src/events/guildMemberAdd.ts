@@ -1,13 +1,13 @@
 import { REST } from "@discordjs/rest";
 import {
-  APIUser,
-  APIWebhook,
-  GatewayGuildMemberAddDispatchData,
+  type APIUser,
+  type APIWebhook,
+  type GatewayGuildMemberAddDispatchData,
   Routes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import {
-  DBWithSchema,
+  type DBWithSchema,
   getDb,
   getchTriggerGuild,
   upsertDiscordUser,
@@ -24,21 +24,21 @@ import {
   welcomer_hello,
 } from "store/src/schema";
 import {
-  FlowAction,
-  FlowActionCheck,
+  type FlowAction,
+  type FlowActionCheck,
   FlowActionCheckFunctionType,
-  FlowActionDeleteMessage,
-  FlowActionSendMessage,
-  FlowActionSendWebhookMessage,
-  FlowActionSetVariable,
+  type FlowActionDeleteMessage,
+  type FlowActionSendMessage,
+  type FlowActionSendWebhookMessage,
+  type FlowActionSetVariable,
   FlowActionSetVariableType,
   FlowActionType,
-  FlowActionWait,
+  type FlowActionWait,
   TriggerEvent,
-  TriggerKVGuild,
+  type TriggerKVGuild,
 } from "store/src/types";
-import { GatewayEventCallback } from "../events.js";
-import { FlowResult, executeFlow } from "../flows/flows.js";
+import type { GatewayEventCallback } from "../events.js";
+import { type FlowResult, executeFlow } from "../flows/flows.js";
 
 export const getWelcomerConfigurations = async (
   db: DBWithSchema,

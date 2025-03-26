@@ -1,10 +1,16 @@
-import { SerializeFrom, json } from "@remix-run/cloudflare";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+  json,
+} from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
+import type { action as ApiPostBackupsImportDiscoscheduler } from "~/api/.server/v1/backups.import.discoscheduler";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
@@ -17,9 +23,9 @@ import { BackupImportModal } from "~/modals/BackupImportModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import {
-  QueryDataVersion,
-  backups as dBackups,
+  type QueryDataVersion,
   count,
+  backups as dBackups,
   eq,
   getDb,
   inArray,
@@ -27,7 +33,7 @@ import {
 } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import { getId } from "~/util/id";
-import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
+import { useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { relativeTime } from "~/util/time";
 import {
@@ -36,9 +42,8 @@ import {
   zxParseForm,
   zxParseQuery,
 } from "~/util/zod";
-import type { action as ApiPostBackupsImportDiscoscheduler } from "../api/v1/backups.import.discoscheduler";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);
   const { page, settings: importedSettings } = zxParseQuery(request, {
     settings: jsonAsString(
@@ -88,7 +93,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   };
 };
 
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.HYPERDRIVE);

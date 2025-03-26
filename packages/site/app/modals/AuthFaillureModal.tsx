@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { codeBlockStyle } from "~/components/preview/Markdown";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const AuthFailureModal = (props: ModalProps & { message?: string }) => {
   const { t } = useTranslation();

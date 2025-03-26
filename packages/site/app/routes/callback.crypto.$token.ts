@@ -1,10 +1,13 @@
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { ZodCryptoAlert } from "~/types/crypto";
-import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
-export const action = async ({ request, params, context }: LoaderArgs) => {
+export const action = async ({
+  request,
+  params,
+  context,
+}: LoaderFunctionArgs) => {
   const { token } = zxParseParams(params, {
     token: z.string(),
   });
@@ -21,7 +24,7 @@ export const action = async ({ request, params, context }: LoaderArgs) => {
   switch (payload.type) {
     case "wallet": {
       const response = await fetch(
-        "https://blockchain.info/tobtc?currency=USD&value=4",
+        "https://blockchain.info/tobtc?currency=USD&value=6",
         {
           method: "GET",
         },

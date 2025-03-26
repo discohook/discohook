@@ -1,8 +1,8 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { type ActionFunctionArgs, json } from "@remix-run/cloudflare";
 import {
-  APIMessage,
-  APIWebhook,
+  type APIMessage,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
@@ -10,10 +10,10 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { getDOToken } from "~/durable/sessions";
+import { getDOToken } from "~/.server/durable/sessions";
 import {
-  TokenWithUser,
-  User,
+  type TokenWithUser,
+  type User,
   authorizeRequest,
   doubleDecode,
   getEditorTokenStorage,
@@ -21,7 +21,7 @@ import {
   verifyToken,
 } from "~/session.server";
 import {
-  StorableComponent,
+  type StorableComponent,
   discordMessageComponents,
   discordMessageComponentsToFlows,
   eq,
@@ -34,19 +34,13 @@ import {
   sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
-import { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
-import { isDiscordError } from "~/util/discord";
-import { ActionArgs } from "~/util/loader";
+import { getComponentId, isDiscordError } from "~/util/discord";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
-import { getComponentId } from "./log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 
 // TODO: RPC function in discohook-bot to use stored tokens
-export const getWebhook = async (
-  webhookId: string,
-  env: Env,
-): Promise<APIWebhook> => {
+const getWebhook = async (webhookId: string, env: Env): Promise<APIWebhook> => {
   const db = getDb(env.HYPERDRIVE);
   const dbWebhook = await db.query.webhooks.findFirst({
     where: (webhooks, { eq, and }) =>
@@ -79,7 +73,7 @@ export const getWebhook = async (
   return webhook;
 };
 
-export const canModifyComponent = async (
+const canModifyComponent = async (
   env: Env,
   component: {
     channelId: bigint | null;
@@ -113,7 +107,11 @@ export const canModifyComponent = async (
   return true;
 };
 
-export const action = async ({ request, context, params }: ActionArgs) => {
+export const action = async ({
+  request,
+  context,
+  params,
+}: ActionFunctionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
 
   let [token, respond]:

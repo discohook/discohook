@@ -1,21 +1,20 @@
-import { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIActionRowComponent,
-  APIMessageComponent,
-  APITextInputComponent,
+  type APIActionRowComponent,
+  type APIMessageComponent,
+  type APITextInputComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { z } from "zod";
+import type { z } from "zod";
+import type { action as ApiPostComponents } from "~/api/.server/v1/components";
 import { type ApiRoute, BRoutes, apiUrl } from "~/api/routing";
-import { action as ApiPostComponents } from "~/api/v1/components";
-import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
-import { EditingComponentData } from "~/modals/ComponentEditModal";
+import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { getQdMessageId } from "~/routes/_index";
-import {
+import type {
   APIAutoPopulatedSelectMenuComponent,
   APIButtonComponent,
   APIButtonComponentWithCustomId,
@@ -27,20 +26,21 @@ import {
   APIUserSelectComponent,
   QueryData,
 } from "~/types/QueryData";
-import { ZodAPIMessageActionRowComponent } from "~/types/components";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { ZodAPIMessageActionRowComponent } from "~/types/components";
+import type { CacheManager } from "~/util/cache/CacheManager";
+import { getComponentId } from "~/util/discord";
 import { getZodErrorMessage } from "~/util/loader";
 import { ButtonSelect } from "../ButtonSelect";
-import { SetErrorFunction, useError } from "../Error";
+import { type SetErrorFunction, useError } from "../Error";
 import { InfoBox } from "../InfoBox";
-import { CoolIcon, CoolIconsGlyph } from "../icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "../icons/CoolIcon";
 
 export const getComponentText = (
   component: APIMessageComponent,
 ): string | undefined =>
   component.type === ComponentType.Button
     ? component.style !== ButtonStyle.Premium
-      ? component.label ?? component.emoji?.name
+      ? (component.label ?? component.emoji?.name)
       : `SKU ${component.sku_id}`
     : component.type === ComponentType.StringSelect
       ? component.placeholder

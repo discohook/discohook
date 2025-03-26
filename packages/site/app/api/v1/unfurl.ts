@@ -1,15 +1,14 @@
-import { json } from "@remix-run/cloudflare";
+import { type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
 import {
-  APIEmbed,
-  APIEmbedImage,
-  APIEmbedVideo,
+  type APIEmbed,
+  type APIEmbedImage,
+  type APIEmbedVideo,
   EmbedType,
 } from "discord-api-types/v10";
 import he from "he";
 import { z } from "zod";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
-import { LoaderArgs } from "~/util/loader";
-import Scraper from "~/util/scraper";
+import Scraper from "~/util/scraper.server";
 import { jsonAsString, zxParseQuery } from "~/util/zod";
 import { ZodOEmbedData } from "./oembed";
 
@@ -118,7 +117,7 @@ const qualifyUrl = (url: string, currentUrl: string) => {
   }
 };
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { url: url_ } = zxParseQuery(request, { url: z.string().url() });
 
   /*
@@ -297,7 +296,7 @@ export const loader = async ({ request }: LoaderArgs) => {
         break;
       case "theme-color": {
         // Doesn't support standard CSS colors
-        const color = parseInt(content.replace(/^#/, ""), 16);
+        const color = Number.parseInt(content.replace(/^#/, ""), 16);
         if (!Number.isNaN(color)) {
           meta.vanilla.themeColor = color;
         }

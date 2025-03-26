@@ -4,19 +4,19 @@ import {
   EmbedBuilder,
   messageLink,
 } from "@discordjs/builders";
-import { REST } from "@discordjs/rest";
+import type { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
 import {
-  APIEmoji,
-  APIGuild,
-  APIGuildMember,
-  APIMessage,
-  APIPartialEmoji,
-  APIRole,
+  type APIEmoji,
+  type APIGuild,
+  type APIGuildMember,
+  type APIMessage,
+  type APIPartialEmoji,
+  type APIRole,
   ButtonStyle,
   CDNRoutes,
   ImageFormat,
-  RESTGetAPIGuildEmojisResult,
+  type RESTGetAPIGuildEmojisResult,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
@@ -24,12 +24,12 @@ import { isSnowflake } from "discord-snowflake";
 import { and, eq } from "drizzle-orm";
 import { getDb, upsertGuild } from "store";
 import { discordReactionRoles, makeSnowflake } from "store/src/schema";
-import {
+import type {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
 } from "../commands.js";
-import { AutoComponentCustomId, ButtonCallback } from "../components.js";
-import { Env } from "../types/env.js";
+import type { AutoComponentCustomId, ButtonCallback } from "../components.js";
+import type { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import {

@@ -1,4 +1,7 @@
-import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v10";
+import {
+  type APIMessageComponentEmoji,
+  ButtonStyle,
+} from "discord-api-types/v10";
 import { twMerge } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { CoolIcon } from "./icons/CoolIcon";

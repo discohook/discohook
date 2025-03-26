@@ -1,40 +1,40 @@
 import {
   ActionRowBuilder,
   EmbedBuilder,
-  MessageActionRowComponentBuilder,
+  type MessageActionRowComponentBuilder,
   ModalBuilder,
 } from "@discordjs/builders";
 import type { REST } from "@discordjs/rest";
 import {
-  APIActionRowComponent,
-  APIAllowedMentions,
-  APIApplicationCommandInteractionDataBooleanOption,
-  APIApplicationCommandInteractionDataIntegerOption,
-  APIApplicationCommandInteractionDataNumberOption,
-  APIApplicationCommandInteractionDataOption,
-  APIApplicationCommandInteractionDataStringOption,
-  APIApplicationCommandInteractionDataSubcommandOption,
-  APIAttachment,
-  APIEmbed,
-  APIGuildInteraction,
-  APIGuildMember,
-  APIInteraction,
-  APIInteractionDataResolved,
-  APIInteractionResponseCallbackData,
-  APIInteractionResponseChannelMessageWithSource,
-  APIInteractionResponseDeferredChannelMessageWithSource,
-  APIInteractionResponseDeferredMessageUpdate,
-  APIInteractionResponseUpdateMessage,
-  APIMessage,
-  APIMessageActionRowComponent,
-  APIMessageApplicationCommandInteraction,
-  APIMessageComponentInteraction,
-  APIModalInteractionResponse,
-  APIModalInteractionResponseCallbackData,
-  APIModalSubmitInteraction,
-  APIPartialChannel,
-  APIRole,
-  APIUser,
+  type APIActionRowComponent,
+  type APIAllowedMentions,
+  type APIApplicationCommandInteractionDataBooleanOption,
+  type APIApplicationCommandInteractionDataIntegerOption,
+  type APIApplicationCommandInteractionDataNumberOption,
+  type APIApplicationCommandInteractionDataOption,
+  type APIApplicationCommandInteractionDataStringOption,
+  type APIApplicationCommandInteractionDataSubcommandOption,
+  type APIAttachment,
+  type APIEmbed,
+  type APIGuildInteraction,
+  type APIGuildMember,
+  type APIInteraction,
+  type APIInteractionDataResolved,
+  type APIInteractionResponseCallbackData,
+  type APIInteractionResponseChannelMessageWithSource,
+  type APIInteractionResponseDeferredChannelMessageWithSource,
+  type APIInteractionResponseDeferredMessageUpdate,
+  type APIInteractionResponseUpdateMessage,
+  type APIMessage,
+  type APIMessageActionRowComponent,
+  type APIMessageApplicationCommandInteraction,
+  type APIMessageComponentInteraction,
+  type APIModalInteractionResponse,
+  type APIModalInteractionResponseCallbackData,
+  type APIModalSubmitInteraction,
+  type APIPartialChannel,
+  type APIRole,
+  type APIUser,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ChannelType,
@@ -42,11 +42,11 @@ import {
   InteractionResponseType,
   InteractionType,
   MessageFlags,
-  ModalSubmitComponent,
-  RESTAPIPollCreate,
-  RESTGetAPIInteractionFollowupResult,
-  RESTPatchAPIInteractionFollowupResult,
-  RESTPostAPIInteractionFollowupResult,
+  type ModalSubmitComponent,
+  type RESTAPIPollCreate,
+  type RESTGetAPIInteractionFollowupResult,
+  type RESTPatchAPIInteractionFollowupResult,
+  type RESTPostAPIInteractionFollowupResult,
   Routes,
 } from "discord-api-types/v10";
 import {
@@ -54,10 +54,10 @@ import {
   PermissionFlags,
   PermissionsBitField,
 } from "discord-bitflag";
-import { Snowflake, getDate } from "discord-snowflake";
-import { MinimumKVComponentState } from "./components.js";
-import { APIPartialResolvedChannel } from "./types/api.js";
-import { Env } from "./types/env.js";
+import { type Snowflake, getDate } from "discord-snowflake";
+import type { MinimumKVComponentState } from "./components.js";
+import type { APIPartialResolvedChannel } from "./types/api.js";
+import type { Env } from "./types/env.js";
 
 export interface MessageConstructorData
   extends Pick<

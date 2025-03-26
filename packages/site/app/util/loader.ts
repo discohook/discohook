@@ -1,23 +1,7 @@
-import { SerializeFrom } from "@remix-run/cloudflare";
-import { SubmitOptions } from "@remix-run/react";
-import type {
-  ActionFunctionArgs as RRActionFunctionArgs,
-  LoaderFunctionArgs as RRLoaderFunctionArgs,
-} from "@remix-run/router";
+import type { SerializeFrom } from "@remix-run/cloudflare";
+import type { SubmitOptions } from "@remix-run/react";
 import { useState } from "react";
-import { ZodError } from "zod";
-import { Env } from "~/types/env";
-
-export interface Context {
-  origin: string;
-  env: Env;
-  waitUntil: ExecutionContext["waitUntil"];
-}
-
-// We are specifically using these imports from @remix-run/router because the
-// adapter exports are not generic and we cannot pass Env like this.
-export type LoaderArgs = RRLoaderFunctionArgs<Context> & { context: Context };
-export type ActionArgs = RRActionFunctionArgs<Context> & { context: Context };
+import type { ZodError } from "zod";
 
 export const getZodErrorMessage = (e: any) => {
   if ("issues" in e) {

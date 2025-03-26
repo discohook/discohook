@@ -1,13 +1,13 @@
-import {
-  APIAttachment as _APIAttachment,
-  APIEmbed as _APIEmbed,
+import type {
   APIActionRowComponent,
   APIMessageActionRowComponent,
   MessageFlags,
   UserFlags,
+  APIAttachment as _APIAttachment,
+  APIEmbed as _APIEmbed,
 } from "discord-api-types/v10";
-import { z } from "zod";
-import { ZodLinkEmbed, ZodLinkQueryData } from "../zod/query.js";
+import type { z } from "zod";
+import type { ZodLinkEmbed, ZodLinkQueryData } from "../zod/query.js";
 
 /**
  * Discord may not return `null` but it will accept the value in payloads.

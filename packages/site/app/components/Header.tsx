@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
-import { User } from "~/session.server";
+import type { User } from "~/session.server";
 import { cdnImgAttributes } from "~/util/discord";
 import { getUserAvatar, getUserPremiumDetails, getUserTag } from "~/util/users";
 import { Button } from "./Button";

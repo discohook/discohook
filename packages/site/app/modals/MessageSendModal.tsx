@@ -1,26 +1,30 @@
-import { DiscordErrorData, REST } from "@discordjs/rest";
+import type { DiscordErrorData, REST } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIActionRowComponent,
-  APIEmbed,
-  APIMessage,
-  APIWebhook,
+  type APIActionRowComponent,
+  type APIEmbed,
+  type APIMessage,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
+import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
-import { SetErrorFunction } from "~/components/Error";
+import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { APIMessageActionRowComponent, QueryData } from "~/types/QueryData";
-import { CacheManager } from "~/util/cache/CacheManager";
+import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import type {
+  APIMessageActionRowComponent,
+  QueryData,
+} from "~/types/QueryData";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
   cdnImgAttributes,
@@ -31,10 +35,9 @@ import {
 } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
-import type { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
@@ -137,7 +140,7 @@ export const submitMessage = async (
         thread_name: threadName || undefined,
       },
       files,
-      threadName ? undefined : message.thread_id ?? orThreadId,
+      threadName ? undefined : (message.thread_id ?? orThreadId),
       rest,
       withComponents,
     );

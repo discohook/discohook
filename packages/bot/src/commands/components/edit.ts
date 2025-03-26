@@ -2,7 +2,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   EmbedBuilder,
-  MessageActionRowComponentBuilder,
+  type MessageActionRowComponentBuilder,
   ModalBuilder,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
@@ -12,14 +12,14 @@ import {
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
-  APIActionRowComponent,
-  APIEmoji,
-  APIInteraction,
-  APIMessage,
-  APIMessageActionRowComponent,
-  APIMessageComponentEmoji,
-  APIPartialEmoji,
-  APISelectMenuOption,
+  type APIActionRowComponent,
+  type APIEmoji,
+  type APIInteraction,
+  type APIMessage,
+  type APIMessageActionRowComponent,
+  type APIMessageComponentEmoji,
+  type APIPartialEmoji,
+  type APISelectMenuOption,
   ButtonStyle,
   ComponentType,
   Routes,
@@ -33,19 +33,19 @@ import {
   makeSnowflake,
   webhooks,
 } from "store/src/schema/schema.js";
-import {
+import type {
   StorableButtonWithUrl,
   StorableComponent,
 } from "store/src/types/components.js";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import {
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type {
   AutoComponentCustomId,
   AutoModalCustomId,
   ButtonCallback,
   ModalCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import {
+import type {
   InteractionContext,
   MessageConstructorData,
 } from "../../interactions.js";

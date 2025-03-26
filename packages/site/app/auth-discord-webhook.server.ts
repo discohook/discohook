@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { createCookie } from "@remix-run/cloudflare";
-import {
+import type {
   APIUser,
   APIWebhook,
   RESTPostOAuth2AccessTokenWithBotAndGuildsAndWebhookIncomingScopeResult,
@@ -16,7 +16,7 @@ import {
   webhooks,
 } from "./store.server";
 import { DISCORD_API_V } from "./util/discord";
-import { Context } from "./util/loader";
+import type { Context } from "./util/loader";
 
 export const getDiscordWebhookAuth = (context: Context) => {
   const dudSessionStorage = createWorkersDOSessionStorage({

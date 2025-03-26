@@ -1,17 +1,18 @@
 import { Form } from "@remix-run/react";
-import { TFunction } from "i18next";
-import React, { useEffect, useState } from "react";
+import type { TFunction } from "i18next";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { action as ApiPostGuildTriggers } from "~/api/.server/v1/guilds.$guildId.triggers";
 import { BRoutes, apiUrl } from "~/api/routing";
-import type { action as ApiPostGuildTriggers } from "~/api/v1/guilds.$guildId.triggers";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { StringSelect } from "~/components/StringSelect";
-import { DraftFlow, TriggerEvent } from "~/store.server";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { DraftFlow, TriggerEvent } from "~/store.server";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { useSafeFetcher } from "~/util/loader";
 import { FlowEditModal } from "./FlowEditModal";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 const getTriggerEventOptions = (t: TFunction) =>
   [0, 1].map((value) => ({

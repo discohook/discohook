@@ -2,7 +2,7 @@ import { Link } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { Button } from "~/components/Button";
 import { Markdown } from "~/components/preview/Markdown";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const FailureDataModal = (props: ModalProps & { data: unknown }) => {
   return (

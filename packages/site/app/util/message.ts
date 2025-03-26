@@ -1,5 +1,5 @@
 import { getEmbedText } from "~/components/editor/EmbedEditor";
-import { QueryData } from "~/types/QueryData";
+import type { QueryData } from "~/types/QueryData";
 
 export const getMessageText = (
   message: QueryData["messages"][number]["data"],
