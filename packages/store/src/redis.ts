@@ -37,6 +37,8 @@ export class RedisKV<Key extends string = string> {
     ...parameters: string[]
   ): Promise<string[] | null>;
   send(command: "DEL" | "INCR", ...parameters: string[]): Promise<number>;
+  send(command: "EXISTS", ...keys: string[]): Promise<number>;
+  send(command: string, ...parameters: string[]): Promise<RedisValue>;
   async send(command: string, ...parameters: string[]): Promise<RedisValue> {
     const commands = [command, ...parameters];
     if (this.options.database) {
@@ -205,8 +207,8 @@ export class RedisKV<Key extends string = string> {
     );
   }
 
-  async delete(key: string) {
-    await this.send("DEL", key);
+  async delete(...keys: string[]) {
+    await this.send("DEL", ...keys);
   }
 
   async list<Metadata = unknown>(
