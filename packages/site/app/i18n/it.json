@@ -76,7 +76,10 @@
         "es": "Spagnolo",
         "de": "Tedesco",
         "it": "Italiano",
-        "cs": "Ceca"
+        "cs": "Ceca",
+        "id": "Indonesiano",
+        "uk": "Ucraino",
+        "ru": "Russo"
     },
     "chooseServer": "Seleziona un server",
     "editorPanes": "Pannelli di Modifica",
@@ -657,5 +660,22 @@
     "copyCode": "Copia il Codice",
     "file": "FIle",
     "noLinkBackups": "Non ci sono dati qui. Puoi salvare un link di un embed di un link nell'<0>editor degli embed dei link</0>.",
-    "refresh": "Ricarica"
+    "refresh": "Ricarica",
+    "pasteFile": "Incolla File",
+    "pasteCmd": "Premi ⌘V",
+    "pasteCtrl": "Premi Ctrl+V",
+    "postThumbnail": "Copertina del Post (canali media)",
+    "download": "Download",
+    "jsonDownload": {
+        "backup": "Come Backup",
+        "plain": "JSON Semplice"
+    },
+    "importOrgPrompt": "Se vuoi importare i tuoi backup salvati su Discohook.org, <0>clicca qui</0>. Altrimenti, puoi usare questo menu per importare i file di backup che hai esportato precedentemente.",
+    "backupsFile": "File di Backup",
+    "badJsonFile": "Questo non è un file JSON codificato correttamente.",
+    "failedBackupParse": "Analisi del file non riuscita. Assicurati che sia un esportazione di backup valida e non modificata.",
+    "backupNameDuplicate": "<0/> Hai già un backup con questo nome",
+    "viewBackupName": "Vedi {{name}}",
+    "importCount": "Importa {{count}}",
+    "selectFile": "Seleziona un file"
 }
