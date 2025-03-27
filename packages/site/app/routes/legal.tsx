@@ -6,8 +6,8 @@ import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { Prose } from "~/components/Prose";
 import { MessageComponents } from "~/components/preview/Components";
-import { linkClassName } from "~/components/preview/Markdown";
 import { getUser } from "~/session.server";
+import { linkClassName } from "~/util/markdown/styles";
 
 export const loader = ({ request, context }: LoaderFunctionArgs) =>
   getUser(request, context);

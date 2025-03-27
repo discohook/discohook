@@ -15,14 +15,13 @@ import type {
   ResolvableAPIGuildMember,
   ResolvableAPIRole,
 } from "~/util/cache/CacheManager";
-import { cdn, cdnImgAttributes } from "~/util/discord";
+import { AuthorType, cdn, cdnImgAttributes } from "~/util/discord";
 import { getUserAvatar } from "~/util/users";
 import { Button } from "../Button";
 import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 import { RoleShield } from "../icons/role";
 import { channelIcons } from "./Markdown";
-import { AuthorType } from "./Message.client";
 
 type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
   data: T;

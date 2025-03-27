@@ -15,9 +15,9 @@ import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
-import { linkClassName } from "~/components/preview/Markdown";
 import { getUser } from "~/session.server";
 import { cdn, cdnImgAttributes } from "~/util/discord";
+import { linkClassName } from "~/util/markdown/styles";
 import { zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {

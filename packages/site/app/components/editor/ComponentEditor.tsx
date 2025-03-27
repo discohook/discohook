@@ -13,7 +13,6 @@ import type { z } from "zod";
 import type { action as ApiPostComponents } from "~/api/.server/v1/components";
 import { type ApiRoute, BRoutes, apiUrl } from "~/api/routing";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
-import { getQdMessageId } from "~/routes/_index";
 import type {
   APIAutoPopulatedSelectMenuComponent,
   APIButtonComponent,
@@ -30,6 +29,7 @@ import type { ZodAPIMessageActionRowComponent } from "~/types/components";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { getComponentId } from "~/util/discord";
 import { getZodErrorMessage } from "~/util/loader";
+import { getQdMessageId } from "~/util/query";
 import { ButtonSelect } from "../ButtonSelect";
 import { type SetErrorFunction, useError } from "../Error";
 import { InfoBox } from "../InfoBox";

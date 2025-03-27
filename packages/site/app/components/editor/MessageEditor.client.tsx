@@ -12,13 +12,15 @@ import { twJoin } from "tailwind-merge";
 import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { JsonEditorProps } from "~/modals/JsonEditorModal";
-import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import type {
   CacheManager,
   ResolvableAPIChannel,
 } from "~/util/cache/CacheManager";
+import { AuthorType, getAuthorType } from "~/util/discord";
+import { linkClassName } from "~/util/markdown/styles";
 import { getMessageText } from "~/util/message";
+import { type DraftFile, getQdMessageId } from "~/util/query";
 import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -27,8 +29,6 @@ import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { transformFileName } from "../preview/Embed";
-import { linkClassName } from "../preview/Markdown";
-import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
 import { EmbedEditor, EmbedEditorSection, getEmbedLength } from "./EmbedEditor";
 import { PasteFileButton } from "./PasteFileButton";

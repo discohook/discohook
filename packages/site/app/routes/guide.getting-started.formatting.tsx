@@ -7,7 +7,6 @@ import { Trans, useTranslation } from "react-i18next";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { codeStyle } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
@@ -20,6 +19,7 @@ import {
   time,
 } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
+import { codeStyle } from "~/util/markdown/styles";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import type { GuideFileMeta } from "./guide.$";
 

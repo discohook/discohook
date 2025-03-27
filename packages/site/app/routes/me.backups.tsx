@@ -16,7 +16,6 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
-import { linkClassName } from "~/components/preview/Markdown";
 import { BackupEditModal } from "~/modals/BackupEditModal";
 import { BackupExportModal } from "~/modals/BackupExportModal";
 import { BackupImportModal } from "~/modals/BackupImportModal";
@@ -35,6 +34,7 @@ import { ZodDiscohookBackup } from "~/types/discohook";
 import { getId } from "~/util/id";
 import { useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
+import { linkClassName } from "~/util/markdown/styles";
 import { relativeTime } from "~/util/time";
 import {
   jsonAsString,

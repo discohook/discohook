@@ -1,15 +1,13 @@
 import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import {
-  type APIEmbed,
-  type APIEmbedImage,
-  ButtonStyle,
+  ButtonStyle
 } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
-import type { SafeParseReturnType, z } from "zod";
 import type { loader as ApiGetLinkBackup } from "~/api/.server/v1/link-backups.$id";
+import type { SafeParseReturnType } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
@@ -18,7 +16,6 @@ import { TextInput } from "~/components/TextInput";
 import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
-import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
@@ -27,11 +24,17 @@ import { ModalFooter } from "~/modals/Modal";
 import { getUser } from "~/session.server";
 import {
   type LinkQueryData,
-  type ZodLinkEmbed,
-  ZodLinkQueryData,
+  ZodLinkQueryData
 } from "~/types/QueryData";
 import { LINK_INDEX_EMBED, LINK_INDEX_FAILURE_EMBED } from "~/util/constants";
 import { useLocalStorage } from "~/util/localstorage";
+import { linkClassName } from "~/util/markdown/styles";
+import {
+  type LinkHistoryItem,
+  linkEmbedToAPIEmbed,
+  linkEmbedUrl,
+  safePushState,
+} from "~/util/query";
 import {
   base64Decode,
   base64UrlEncode,
@@ -40,57 +43,11 @@ import {
 } from "~/util/text";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
-import { safePushState } from "./_index";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context);
   return { user, linkOrigin: context.env.LINK_ORIGIN };
 };
-
-export const linkEmbedUrl = (code: string, linkOrigin?: string) => {
-  if (linkOrigin) {
-    return `${linkOrigin}/${code}`;
-  }
-  try {
-    return `${origin}/link/${code}`;
-  } catch {
-    return `/link/${code}`;
-  }
-};
-
-export const linkEmbedToAPIEmbed = (
-  data: z.infer<typeof ZodLinkEmbed>,
-  code?: string,
-  linkOrigin?: string,
-): { embed: APIEmbed; extraImages: APIEmbedImage[] } => {
-  const embed: APIEmbed = {
-    title: data.title,
-    url: code ? linkEmbedUrl(code, linkOrigin) : "#",
-    provider: data.provider,
-    author: data.author,
-    description: data.description,
-    color: data.color,
-    video: data.video,
-  };
-  const extraImages: APIEmbedImage[] = [];
-
-  if (data.images && data.images.length > 0) {
-    if (data.large_images) {
-      embed.image = data.images[0];
-      extraImages.push(...data.images.slice(1));
-    } else {
-      embed.thumbnail = data.images[0];
-    }
-  }
-
-  return { embed, extraImages };
-};
-
-export interface LinkHistoryItem {
-  id: string;
-  createdAt: Date;
-  data: LinkQueryData;
-}
 
 export default () => {
   const { t } = useTranslation();

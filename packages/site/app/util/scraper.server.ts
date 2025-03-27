@@ -1,7 +1,5 @@
 // This file was borrowed from shayypy/gxcomics
 
-import { userAgent } from "~/api/v1/unfurl";
-
 // Fork of https://github.com/adamschwartz/web.scraper.workers.dev/blob/master/scraper.js
 // + TypeScript
 // + Reusable: provide `last: true` to your final getText/getAttribute call to
@@ -11,6 +9,9 @@ import { userAgent } from "~/api/v1/unfurl";
 // clones of the response, and subsequently HTMLRewriter must read it
 // several times. I suspect this is considerably slower than it has to be,
 // but this is at least better than performing multiple requests.
+
+export const userAgent =
+  "Discohook-Crawler/1.0.0 (+https://github.com/discohook/discohook)";
 
 const cleanText = (s: string) => s.trim().replace(/\s\s+/g, " ");
 

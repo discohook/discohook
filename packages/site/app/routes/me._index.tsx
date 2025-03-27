@@ -13,11 +13,11 @@ import { z } from "zod";
 import { getBucket } from "~/.server/durable/rate-limits";
 import { getDiscordUserOAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
-import { linkClassName } from "~/components/preview/Markdown";
 import { TabHeader } from "~/components/tabs";
 import { getUser } from "~/session.server";
 import { discordUsers, eq, getDb, users } from "~/store.server";
 import { getId } from "~/util/id";
+import { linkClassName } from "~/util/markdown/styles";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { zxParseForm } from "~/util/zod";
 

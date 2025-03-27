@@ -5,13 +5,13 @@ import { useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { Header } from "~/components/Header";
 import { Twemoji } from "~/components/icons/Twemoji";
-import { linkClassName } from "~/components/preview/Markdown";
 import { CryptoDonateInfoModal } from "~/modals/CryptoDonateInfoModal";
 import {
   SimpleTextModal,
   type SimpleTextModalProps,
 } from "~/modals/SimpleTextModal";
 import { getUser } from "~/session.server";
+import { linkClassName } from "~/util/markdown/styles";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context);

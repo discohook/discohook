@@ -9,7 +9,6 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { linkClassName } from "~/components/preview/Markdown";
 import type {
   LoadedBackup,
   loader as MeBackupsLoader,
@@ -17,6 +16,7 @@ import type {
 import type { User } from "~/session.server";
 import type { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
+import { linkClassName } from "~/util/markdown/styles";
 import type { action as ApiPostBackups } from "../api/v1/backups";
 import type { loader as ApiGetBackup } from "../api/v1/backups.$id";
 import { BackupEditModal } from "./BackupEditModal";

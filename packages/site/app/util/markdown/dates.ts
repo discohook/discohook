@@ -39,3 +39,16 @@ export function getDisplayDateFormat(date: Date) {
   if (difference === 1) return "tomorrow" as const;
   return "other" as const;
 }
+
+export const timestampFormats = {
+  t: "time",
+  T: "time_verbose",
+  f: "full",
+  F: "full_verbose",
+  d: "date",
+  D: "date_verbose",
+  R: "relative",
+} as const;
+
+// I'm sure this is exported by discord-api-types somewhere but I couldn't find it
+export type TimestampStyle = "t" | "T" | "d" | "D" | "f" | "F" | "R";

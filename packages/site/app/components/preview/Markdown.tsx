@@ -12,13 +12,14 @@ import type {
 } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
 import { highlightCode } from "~/util/highlighting";
-import { getRelativeDateFormat } from "~/util/markdown/dates";
+import { getRelativeDateFormat, timestampFormats } from "~/util/markdown/dates";
 import {
   findEmoji,
   getEmojiName,
   translateNamedEmoji,
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
+import { codeBlockStyle, codeStyle, linkClassName, mentionStyle } from "~/util/markdown/styles";
 import { getRgbComponents } from "~/util/text";
 import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
@@ -233,9 +234,6 @@ const footingRule = defineRule({
   },
 });
 
-export const codeBlockStyle =
-  "block overflow-x-auto whitespace-pre-wrap rounded border border-primary-200 bg-primary-130 p-[0.5em] indent-0 font-code text-[calc(var(--font-size)*0.875)] leading-[calc(var(--font-size)*1.125)] text-primary-600 dark:border-primary-700 dark:bg-primary-630 dark:text-primary-230 [[data-embed]_&]:border-none [[data-embed]_&]:bg-primary-200 dark:[[data-embed]_&]:bg-primary-700";
-
 const codeBlockRule = defineRule({
   capture(source) {
     // biome-ignore lint/correctness/noEmptyCharacterClassInRegex: Match anything, incl newline
@@ -413,8 +411,6 @@ const escapeRule = defineRule({
   },
 });
 
-export const mentionStyle =
-  "rounded-[3px] bg-blurple/[0.15] px-[2px] font-medium text-blurple [unicode-bidi:plaintext] dark:bg-blurple/30 dark:text-blurple-260 transition-colors transition-[50ms]";
 const actionableMentionStyle = twMerge(
   mentionStyle,
   "cursor-pointer hover:bg-blurple hover:text-white dark:hover:bg-blurple dark:hover:text-white",
@@ -499,10 +495,6 @@ const referenceRule = defineRule({
     );
   },
 });
-
-export const linkClassName = twMerge(
-  "text-blue-430 [word-break:break-word] hover:underline dark:text-blue-345",
-);
 
 /**
  * Transforms URLs like `discohook://path` to `/path`, which the client
@@ -774,9 +766,6 @@ const strikethroughRule = defineRule({
   },
 });
 
-export const codeStyle =
-  "my-[-0.2em] size-auto whitespace-pre-wrap rounded-[3px] bg-primary-130 p-[0.2em] indent-0 font-code text-[length:0.85em] leading-[calc(var(--font-size)*1.125)] dark:bg-primary-630";
-
 const codeRule = defineRule({
   capture(source) {
     const match = /^(`+)(.*?[^`])\1(?!`)/su.exec(source);
@@ -822,15 +811,6 @@ const spoilerRule = defineRule({
   },
 });
 
-export const timestampFormats = {
-  t: "time",
-  T: "time_verbose",
-  f: "full",
-  F: "full_verbose",
-  d: "date",
-  D: "date_verbose",
-  R: "relative",
-} as const;
 const timestampRule = defineRule({
   capture(source) {
     const match = /^<t:(-?\d+)(?::([DFRTdft]))?>/.exec(source);

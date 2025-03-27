@@ -34,7 +34,6 @@ import {
   ATTACHMENT_URI_EXTENSIONS,
   transformFileName,
 } from "~/components/preview/Embed";
-import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
@@ -82,6 +81,13 @@ import {
 } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
+import { linkClassName } from "~/util/markdown/styles";
+import {
+  type DraftFile,
+  type HistoryItem,
+  getQdMessageId,
+  safePushState,
+} from "~/util/query";
 import {
   base64Decode,
   base64UrlEncode,
@@ -150,49 +156,6 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 export type LoadedMembership = Awaited<
   SerializeFrom<typeof loader>["memberships"]
 >[number];
-
-export interface DraftFile {
-  id: string;
-  file: File;
-  description?: string;
-  url?: string;
-  embed?: boolean;
-  is_thumbnail?: boolean;
-}
-
-export interface HistoryItem {
-  id: string;
-  createdAt: Date;
-  data: QueryData;
-}
-
-export const safePushState = (data: any, url?: string | URL | null): void => {
-  // Avoid redundant call. This ignores `data` but we aren't using it for non-`url` state right now
-  if (url && url === location.href) return;
-  try {
-    history.pushState(data, "", url);
-  } catch (e) {
-    if (e instanceof DOMException) {
-      // We were getting errors about insecurity when inputting too quickly
-      // despite only dealing with the same origin, so we just ignore
-      // these and skip the state push.
-      return;
-    }
-    console.log(e);
-  }
-};
-
-export const getQdMessageId = (message: QueryData["messages"][number]) => {
-  // Technically not a unique prop right now
-  // if (message.reference) {
-  //   const match = message.reference.match(MESSAGE_REF_RE);
-  //   if (match) return match[3];
-  // }
-  if (message._id) return message._id;
-  const id = randomString(10);
-  message._id = id;
-  return id;
-};
 
 export const loadMessageComponents = async (
   data: QueryData,

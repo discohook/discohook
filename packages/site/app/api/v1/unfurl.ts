@@ -8,7 +8,7 @@ import {
 import he from "he";
 import { z } from "zod";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
-import Scraper from "~/util/scraper.server";
+import Scraper, { userAgent } from "~/util/scraper.server";
 import { jsonAsString, zxParseQuery } from "~/util/zod";
 import { ZodOEmbedData } from "./oembed";
 
@@ -16,9 +16,6 @@ import { ZodOEmbedData } from "./oembed";
 export const META_HTML_REGEX =
   /<meta\s+((?:(\w+) ?= ?["']([^"']+)["']\s?){1,})\s*\/?>/gim;
 export const HTML_ATTRIBUTE_REGEX = /(\w+) ?= ?["']([^"']+)["']/gim;
-
-export const userAgent =
-  "Discohook-Crawler/1.0.0 (+https://github.com/discohook/discohook)";
 
 const decode = (text: string) => {
   return he.decode(text).replace(/<br\/?>/gi, "\n");

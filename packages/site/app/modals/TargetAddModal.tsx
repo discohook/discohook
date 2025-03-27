@@ -12,12 +12,12 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { linkClassName } from "~/components/preview/Markdown";
 import type { LoadedMembership } from "~/routes/_index";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
+import { linkClassName } from "~/util/markdown/styles";
 import { randomString } from "~/util/text";
 import { Modal, type ModalProps } from "./Modal";
 

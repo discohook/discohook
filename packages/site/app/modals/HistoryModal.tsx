@@ -3,10 +3,13 @@ import { Trans, useTranslation } from "react-i18next";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message.client";
-import type { HistoryItem } from "~/routes/_index";
-import { type LinkHistoryItem, linkEmbedToAPIEmbed } from "~/routes/link";
 import type { LinkQueryData, QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
+import {
+  type HistoryItem,
+  type LinkHistoryItem,
+  linkEmbedToAPIEmbed,
+} from "~/util/query";
 import { Modal, type ModalProps } from "./Modal";
 
 export const HistoryModal = <

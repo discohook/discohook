@@ -11,10 +11,11 @@ import { z } from "zod";
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { linkClassName } from "~/components/preview/Markdown";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import { linkBackups as dLinkBackups, getDb, inArray } from "~/store.server";
+import { linkClassName } from "~/util/markdown/styles";
+import { linkEmbedUrl } from "~/util/query";
 import { userIsPremium } from "~/util/users";
 import {
   jsonAsString,
@@ -22,7 +23,6 @@ import {
   zxParseForm,
   zxParseQuery,
 } from "~/util/zod";
-import { linkEmbedUrl } from "./link";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context, true);

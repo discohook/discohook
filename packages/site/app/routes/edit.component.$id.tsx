@@ -41,7 +41,6 @@ import {
   submitComponent,
 } from "~/components/editor/ComponentEditor";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
-import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
@@ -83,6 +82,8 @@ import {
 import { draftFlowToFlow, flowToDraftFlow } from "~/util/flow";
 import { useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
+import { linkClassName } from "~/util/markdown/styles";
+import { safePushState } from "~/util/query";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
@@ -90,7 +91,6 @@ import {
   zxParseParams,
   zxParseQuery,
 } from "~/util/zod";
-import { safePushState } from "./_index";
 
 const ROW_MAX_WIDTH = 5;
 const MESSAGE_MAX_ROWS = 5;

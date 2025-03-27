@@ -1,7 +1,7 @@
 import type { TFunction } from "i18next";
 import { useState } from "react";
+import { codeBlockStyle } from "~/util/markdown/styles";
 import { InfoBox } from "./InfoBox";
-import { codeBlockStyle } from "./preview/Markdown";
 
 type ErrorParams =
   | { code: string; message?: string; raw?: string }

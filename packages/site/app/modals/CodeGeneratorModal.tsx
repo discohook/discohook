@@ -5,9 +5,9 @@ import { twMerge } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { StringSelect } from "~/components/StringSelect";
-import { codeBlockStyle, linkClassName } from "~/components/preview/Markdown";
 import type { QueryData } from "~/types/QueryData";
 import type { APIEmbed } from "~/types/QueryData-raw";
+import { codeBlockStyle, linkClassName } from "~/util/markdown/styles";
 import { cycleCopyText } from "~/util/text";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 

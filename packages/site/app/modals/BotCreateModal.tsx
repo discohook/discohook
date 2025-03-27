@@ -5,10 +5,10 @@ import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
-import { linkClassName } from "~/components/preview/Markdown";
 import type { action } from "~/routes/me.bots";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, getApplicationRpc } from "~/util/discord";
+import { linkClassName } from "~/util/markdown/styles";
 import { Modal, type ModalProps } from "./Modal";
 
 export const BotCreateModal = (props: ModalProps) => {

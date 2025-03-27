@@ -14,7 +14,8 @@
     "generate-help": "node scripts/generate-help.js",
     "generate-emoji": "node scripts/generate-emoji.js",
     "generate-highlights": "node scripts/generate-highlights.js",
-    "generate-guide": "node scripts/generate-guide.js"
+    "generate-guide": "node scripts/generate-guide.js",
+    "circular": "dpdm -T --no-warning --no-tree app/**/*.{ts,tsx}"
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-alpha.7",
@@ -81,6 +82,7 @@
     "autoprefixer": "^10.4.21",
     "browserslist": "^4.24.4",
     "caniuse-lite": "^1.0.30001706",
+    "dpdm": "^3.14.0",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.1.6",
     "vite": "^6.0.0",

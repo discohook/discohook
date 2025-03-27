@@ -6,13 +6,13 @@ import { Checkbox } from "~/components/Checkbox";
 import { Radio } from "~/components/Radio";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
-import { linkClassName } from "~/components/preview/Markdown";
 import type { User } from "~/session.server";
 import {
   type LocaleCode,
   type Settings,
   useLocalStorage,
 } from "~/util/localstorage";
+import { linkClassName } from "~/util/markdown/styles";
 import { Modal, type ModalProps } from "./Modal";
 
 const languages: Record<LocaleCode, string> = {

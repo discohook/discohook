@@ -20,12 +20,12 @@ import type {
 } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { isSnowflakeSafe } from "~/util/discord";
+import { linkClassName } from "~/util/markdown/styles";
 import { randomString } from "~/util/text";
 import { Button } from "../components/Button";
 import { StringSelect } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
-import { linkClassName } from "../components/preview/Markdown";
 import type { EditingFlowData } from "./FlowEditModal";
 import { Modal, type ModalProps } from "./Modal";
 

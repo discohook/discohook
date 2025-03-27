@@ -37,6 +37,7 @@ import {
   getZodErrorMessage,
   useSafeFetcher,
 } from "~/util/loader";
+import { linkClassName, mentionStyle } from "~/util/markdown/styles";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type {
   loader as ApiGetUserBackups,
@@ -48,7 +49,6 @@ import { RoleSelect } from "../components/RoleSelect";
 import { StringSelect, selectClassNames } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
-import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { Modal, type ModalProps } from "./Modal";
 
 type FlowWithPartials = DraftFlow & {

@@ -12,12 +12,12 @@ import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
-import { linkClassName } from "~/components/preview/Markdown";
 import { BotCreateModal } from "~/modals/BotCreateModal";
 import { getUser, getUserId } from "~/session.server";
 import { customBots, desc, getDb, makeSnowflake } from "~/store.server";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, isDiscordError } from "~/util/discord";
+import { linkClassName } from "~/util/markdown/styles";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseQuery } from "~/util/zod";
 

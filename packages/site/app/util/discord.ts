@@ -14,6 +14,7 @@ import {
   type APIButtonComponentWithURL,
   type APIMessageComponent,
   type APISelectMenuComponent,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   type RESTError,
@@ -29,9 +30,9 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { type Snowflake, getDate, isSnowflake } from "discord-snowflake";
-import type { TimestampStyle } from "~/components/editor/TimePicker";
-import type { DraftFile } from "~/routes/_index";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import type { DraftFile } from "~/util/query";
+import type { TimestampStyle } from "./markdown/dates";
 import { sleep } from "./time";
 
 export const DISCORD_API = "https://discord.com/api";
@@ -572,4 +573,39 @@ export const getComponentId = (
   return /^p_\d+/.test(component.custom_id)
     ? BigInt(component.custom_id.replace(/^p_/, ""))
     : undefined;
+};
+
+export enum AuthorType {
+  /** A user. */
+  User = 0,
+  /** A webhook. */
+  Webhook = 1,
+  /** A regular bot. */
+  Bot = 2,
+  /** A regular bot that we control. We aren't sure if we will use this. */
+  ActionableBot = 3,
+  /** A webhook owned by an application, but not necessarily our own
+   * application. */
+  ApplicationWebhook = 4,
+  /** A webhook owned by our application. It is "actionable" in that we can
+   * add components with custom IDs and respond to their interactions. */
+  ActionableWebhook = 5,
+}
+
+export const getAuthorType = (
+  discordApplicationId?: string,
+  webhook?: APIWebhook,
+): AuthorType => {
+  if (webhook) {
+    if (
+      discordApplicationId &&
+      webhook.application_id === discordApplicationId
+    ) {
+      return AuthorType.ActionableWebhook;
+    } else if (webhook.application_id) {
+      return AuthorType.ApplicationWebhook;
+    }
+  }
+  // Assume we are going to send the message with a webhook
+  return AuthorType.Webhook;
 };

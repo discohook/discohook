@@ -14,13 +14,14 @@ import { Button } from "~/components/Button";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Markdown, linkClassName } from "~/components/preview/Markdown";
+import { Markdown } from "~/components/preview/Markdown";
 import type { User } from "~/session.server";
 import type {
   CacheManager,
   ResolvableAPIChannel,
 } from "~/util/cache/CacheManager";
 import { cdn, modifyWebhook } from "~/util/discord";
+import { linkClassName } from "~/util/markdown/styles";
 import { cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";

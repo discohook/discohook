@@ -19,7 +19,6 @@ import { Button } from "~/components/Button";
 import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type {
   APIMessageActionRowComponent,
   QueryData,
@@ -35,6 +34,7 @@ import {
 } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
+import { type DraftFile, getQdMessageId } from "~/util/query";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";

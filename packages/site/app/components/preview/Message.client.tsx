@@ -9,12 +9,17 @@ import {
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
-import type { DraftFile } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
-import { cdn, webhookAvatarUrl } from "~/util/discord";
+import {
+  AuthorType,
+  cdn,
+  getAuthorType,
+  webhookAvatarUrl,
+} from "~/util/discord";
 import type { Settings } from "~/util/localstorage";
+import type { DraftFile } from "~/util/query";
 import { Svg } from "../icons/Svg";
 import { PostChannelIcon } from "../icons/channel";
 import { MessageComponents } from "./Components";
@@ -23,41 +28,6 @@ import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 import { MessageDivider } from "./MessageDivider.client";
-
-export enum AuthorType {
-  /** A user. */
-  User = 0,
-  /** A webhook. */
-  Webhook = 1,
-  /** A regular bot. */
-  Bot = 2,
-  /** A regular bot that we control. We aren't sure if we will use this. */
-  ActionableBot = 3,
-  /** A webhook owned by an application, but not necessarily our own
-   * application. */
-  ApplicationWebhook = 4,
-  /** A webhook owned by our application. It is "actionable" in that we can
-   * add components with custom IDs and respond to their interactions. */
-  ActionableWebhook = 5,
-}
-
-export const getAuthorType = (
-  discordApplicationId?: string,
-  webhook?: APIWebhook,
-): AuthorType => {
-  if (webhook) {
-    if (
-      discordApplicationId &&
-      webhook.application_id === discordApplicationId
-    ) {
-      return AuthorType.ActionableWebhook;
-    } else if (webhook.application_id) {
-      return AuthorType.ApplicationWebhook;
-    }
-  }
-  // Assume we are going to send the message with a webhook
-  return AuthorType.Webhook;
-};
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];

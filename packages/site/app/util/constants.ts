@@ -7,9 +7,6 @@ export const WEBHOOK_URL_RE =
 export const MESSAGE_REF_RE =
   /^(?:https:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/channels\/(\d+)\/(\d+)\/)?(\d+)$/;
 
-// export const escapeRegex = (pattern: RegExp) =>
-//   pattern.source.replace(/[.*+?^${}()|\[\]\\]/g, "\\$&");
-
 export const INDEX_MESSAGE: QueryData["messages"][number] = {
   data: {
     content: [

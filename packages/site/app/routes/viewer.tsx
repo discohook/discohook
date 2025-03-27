@@ -9,8 +9,8 @@ import { getUser } from "~/session.server";
 import { type QueryData, ZodQueryData } from "~/types/QueryData";
 import { INDEX_FAILURE_MESSAGE, INDEX_MESSAGE } from "~/util/constants";
 import { useLocalStorage } from "~/util/localstorage";
+import { getQdMessageId } from "~/util/query";
 import { base64Decode } from "~/util/text";
-import { getQdMessageId } from "./_index";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getUser(request, context);

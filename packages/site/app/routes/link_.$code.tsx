@@ -18,9 +18,9 @@ import { Embed } from "~/components/preview/Embed";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
 import type { LinkQueryData } from "~/types/QueryData";
+import { linkEmbedToAPIEmbed } from "~/util/query";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
-import { linkEmbedToAPIEmbed } from "./link";
 
 export const loader = async ({
   request,

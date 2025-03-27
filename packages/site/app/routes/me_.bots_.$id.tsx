@@ -34,7 +34,6 @@ import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { linkClassName } from "~/components/preview/Markdown";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BotDeleteConfirmModal } from "~/modals/BotDeleteConfirmModal";
 import { getUser } from "~/session.server";
@@ -53,6 +52,7 @@ import {
   botAppAvatar,
   isDiscordError,
 } from "~/util/discord";
+import { linkClassName } from "~/util/markdown/styles";
 import { base64Encode, cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseParams } from "~/util/zod";
