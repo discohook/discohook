@@ -9,8 +9,8 @@ import {
 import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { z } from "zod";
-import type { ZodOEmbedData } from "~/api/.server/v1/oembed";
 import { BRoutes, apiUrl } from "~/api/routing";
+import type { ZodOEmbedData } from "~/api/v1/oembed";
 import { Button } from "~/components/Button";
 import { decimalToHex } from "~/components/editor/ColorPicker";
 import { getEmbedText } from "~/components/editor/LinkEmbedEditor";

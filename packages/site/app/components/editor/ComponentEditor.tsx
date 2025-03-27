@@ -10,8 +10,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { z } from "zod";
-import type { action as ApiPostComponents } from "~/api/.server/v1/components";
 import { type ApiRoute, BRoutes, apiUrl } from "~/api/routing";
+import type { action as ApiPostComponents } from "~/api/v1/components";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type {
   APIAutoPopulatedSelectMenuComponent,

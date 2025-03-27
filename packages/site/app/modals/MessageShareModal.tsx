@@ -1,8 +1,8 @@
 import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useCallback, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import type { action as ApiPostShare } from "~/api/.server/v1/share";
 import { BRoutes, apiUrl } from "~/api/routing";
+import type { action as ApiPostShare } from "~/api/v1/share";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";

@@ -6,9 +6,9 @@ import {
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
-import type { loader as ApiGetLinkBackup } from "~/api/.server/v1/link-backups.$id";
 import type { SafeParseReturnType } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
+import type { loader as ApiGetLinkBackup } from "~/api/v1/link-backups.$id";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
