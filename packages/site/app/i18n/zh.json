@@ -61,7 +61,6 @@
     "embedEmpty": "必须包含文本或图像",
     "embedsTooLarge": "内容共不能超过6000个字符 (当前多了 {{count}} 个)",
     "resetEditor": "重置编辑器",
-    "todayAt": "今天 {{ date, h:mm A }}",
     "mention": {
         "guide": "服务器指南",
         "browse": "浏览频道",

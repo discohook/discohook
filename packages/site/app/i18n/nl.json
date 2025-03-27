@@ -188,7 +188,6 @@
     "nEmbed_other": "{{count}} embeds",
     "historyRestore": "Herstel tot dit punt",
     "defaultPlaceholder": "Maak een selectie",
-    "todayAt": "vandaag om {{ date, HH:mm }}",
     "settings": "Instellingen",
     "logIn": "Inloggen",
     "scheduleFrequencyNote": "Geplande backups mogen niet eerdeer dan 2 uur uit elkaar liggen. Als je een veld opnieuw wilt instellen naar \"Iedere maand/dag/weekdag\", verwijder alle gekozen opties.",
