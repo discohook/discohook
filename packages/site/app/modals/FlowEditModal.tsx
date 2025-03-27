@@ -676,7 +676,7 @@ const FlowActionEditor: React.FC<{
                         }}
                       />
                       <Button
-                        className="ltr:ml-2 rtl:mr-2 my-auto"
+                        className="ltr:ml-2 rtl:mr-2 my-auto h-9"
                         onClick={() =>
                           backupsFetcher.load(
                             apiUrl(BRoutes.currentUserBackups()),
@@ -838,7 +838,7 @@ const FlowActionEditor: React.FC<{
                         );
                       })()}
                       <Button
-                        className="ltr:ml-2 rtl:mr-2 my-auto"
+                        className="ltr:ml-2 rtl:mr-2 my-auto h-9"
                         onClick={() => {
                           if (!guildId) return;
                           webhooksFetcher.load(
@@ -882,7 +882,7 @@ const FlowActionEditor: React.FC<{
                         }}
                       />
                       <Button
-                        className="ltr:ml-2 rtl:mr-2 my-auto"
+                        className="ltr:ml-2 rtl:mr-2 my-auto h-9"
                         onClick={() =>
                           backupsFetcher.load(
                             apiUrl(BRoutes.currentUserBackups()),

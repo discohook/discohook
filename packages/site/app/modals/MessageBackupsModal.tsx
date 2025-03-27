@@ -281,7 +281,7 @@ export const MessageBackupsModal = (
                 />
               </div>
               <Button
-                className="mt-auto ltr:ml-2 rtl:mr-2"
+                className="mt-auto ltr:ml-2 rtl:mr-2 h-9"
                 onClick={async () => {
                   const created = await backupFetcher.submitAsync(
                     {

@@ -47,7 +47,7 @@ export const ButtonSelect: React.FC<
       }
     >
       <StringSelect
-        {...{ ...props, children: undefined }}
+        {...{ ...props, className: undefined, children: undefined }}
         backspaceRemovesValue={false}
         controlShouldRenderValue={false}
         hideSelectedOptions={false}

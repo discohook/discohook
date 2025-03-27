@@ -252,7 +252,7 @@ export const EmbedEditor: React.FC<{
               </div>
               {embed.author?.url === undefined && (
                 <Button
-                  className="ltr:ml-2 rtl:mr-2 mt-auto"
+                  className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
                   onClick={() =>
                     updateEmbed({
                       author: {
@@ -362,7 +362,7 @@ export const EmbedEditor: React.FC<{
               </div>
               {embed.url === undefined && (
                 <Button
-                  className="ltr:ml-2 rtl:mr-2 mt-auto"
+                  className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
                   onClick={() =>
                     updateEmbed({
                       url: `${location.origin}#default-${randomString(8)}`,
@@ -840,6 +840,7 @@ const EmbedFileSelect = (props: {
         label: file.name,
         value: file.name,
       }))}
+      className="h-9"
       onChange={(o) => {
         const opt = o as { label: string; value: string };
         onChange({
