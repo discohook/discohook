@@ -82,7 +82,7 @@
     "embedEmpty": "لا يمكن ترك الرسالة المضمنة فارغة",
     "embedsTooLarge": "لا يمكن ان تحتوي الرسالة المضمنة على اكثر من 6000 حرف (حالياَ لديك {{count}} حرف اكثر من اللازم)",
     "resetEditor": "مسح الكل",
-    "todayAt": "اليوم في {{ date, h:mm A }}",
+    "todayAt": "{{ date, h:mm }}",
     "timestamp": {
         "time": "{{ date, h:mm A }}",
         "time_verbose": "{{ date, h:mm:ss A }}",

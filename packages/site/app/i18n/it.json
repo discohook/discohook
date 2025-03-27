@@ -636,7 +636,7 @@
     "members": "Membri",
     "formatMemberYou": "In questo placeholder, sei tu.",
     "miscellaneous": "Varie",
-    "todayAt": "Oggi alle {{ date, h:mm A }}",
+    "todayAt": "{{ date, h:mm }}",
     "badge": {
         "server": "SERVER",
         "app": "APP"

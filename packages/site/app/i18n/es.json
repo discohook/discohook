@@ -1,6 +1,6 @@
 {
     "defaultPlaceholder": "Haz una selección",
-    "todayAt": "hoy a las {{time}}",
+    "todayAt": "{{ date, h:mm }}",
     "dayOfMonth": "Día del Mes",
     "settings": "Ajustes",
     "help": "Ayuda",

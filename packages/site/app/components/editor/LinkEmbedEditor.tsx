@@ -128,7 +128,7 @@ export const LinkEmbedEditor: React.FC<{
           </div>
           {embed.provider?.url === undefined && (
             <Button
-              className="ml-2 mt-auto"
+              className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
               onClick={() =>
                 updateEmbed({
                   provider: {
@@ -201,7 +201,7 @@ export const LinkEmbedEditor: React.FC<{
           </div>
           {embed.author?.url === undefined && (
             <Button
-              className="ml-2 mt-auto"
+              className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
               onClick={() =>
                 updateEmbed({
                   author: {

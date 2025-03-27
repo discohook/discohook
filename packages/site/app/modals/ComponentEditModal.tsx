@@ -359,7 +359,7 @@ export const ComponentEditForm = ({
                         />
                       </div>
                       <Button
-                        className="mt-auto ltr:ml-2 rtl:mr-2"
+                        className="mt-auto ltr:ml-2 rtl:mr-2 h-9"
                         onClick={async () => {
                           const flows = component.flows ?? {};
                           let flow: (typeof flows)[string] | undefined =
@@ -501,6 +501,7 @@ export const ComponentEditForm = ({
                         <div className="ltr:ml-2 rtl:mr-2 mt-auto">
                           <Button
                             discordstyle={ButtonStyle.Danger}
+                            className="h-9"
                             onClick={() => {
                               // @ts-expect-error
                               component.default_values =

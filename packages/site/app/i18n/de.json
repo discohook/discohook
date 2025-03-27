@@ -1,7 +1,7 @@
 {
     "defaultPlaceholder": "Triff eine Auswahl",
     "donate": "Spenden",
-    "todayAt": "heute um {{ date, h:mm A }} Uhr",
+    "todayAt": "{{ date, h:mm }}",
     "delete": "Löschen",
     "settings": "Einstellungen",
     "help": "Hilfe",

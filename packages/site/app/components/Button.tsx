@@ -18,17 +18,18 @@ export const Button = (
       type="button"
       {...props}
       className={twMerge(
-        "rounded font-medium text-base min-h-[36px] max-h-9 py-0 px-[14px] min-w-[60px] text-white transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex shrink-0",
+        "border border-[#ffffff14] rounded-lg font-medium text-base h-8 py-0 px-4 min-w-[60px] text-white transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex shrink-0",
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
           ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
           : [ButtonStyle.Link, ButtonStyle.Secondary].includes(
                 props.discordstyle,
               )
-            ? "bg-[#6d6f78] hover:bg-[#4e5058] dark:bg-[#4e5058] hover:dark:bg-[#6d6f78]"
+            ? // Secondary button colors are different for the Dark and Onyx themes, currently Light and Ash are implemented
+              "bg-[#97979f29] hover:bg-[#97979f47] dark:bg-[#97979f1f] hover:dark:bg-[#97979f33] active:bg-[#83838b14] active:dark:bg-[#50505a4d] text-[#0c0c0e] dark:text-[#ebebed] border-[#97979f33] dark:border-[#97979f0a]"
             : props.discordstyle === ButtonStyle.Danger
-              ? "bg-[#da373c] hover:bg-[#a12828]"
+              ? "bg-[#d22d39] hover:bg-[#b42831] active:bg-[#a4232c]"
               : props.discordstyle === ButtonStyle.Success
-                ? "bg-[#248046] hover:bg-[#15562b] dark:bg-[#248046] dark:hover:bg-[#1a6334]"
+                ? "bg-[#00863a] hover:bg-[#047e37] active:bg-[#057332]"
                 : "",
         props.className ?? "",
       )}
