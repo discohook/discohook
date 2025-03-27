@@ -72,7 +72,6 @@ export default defineConfig({
     mainFields: ["browser", "module", "main"],
   },
   build: {
-    minify: false,
-    sourcemap: true,
+    minify: true,
   },
 });
