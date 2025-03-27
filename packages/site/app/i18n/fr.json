@@ -21,6 +21,7 @@
     "resetAvatar": "Supprimer",
     "donate": "Faire un don",
     "defaultPlaceholder": "Fais un choix",
+    "todayAt": "{{ date, HH:mm }}",
     "logIn": "S'identifier",
     "logOut": "Se déconnecter",
     "permission": {

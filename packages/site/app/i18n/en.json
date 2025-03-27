@@ -566,7 +566,7 @@
   "historyRestore": "Restore to this point",
   "historyRemove": "Remove from history",
   "defaultPlaceholder": "Make a selection",
-  "todayAt": "{{ date, h:mm }}",
+  "todayAt": "{{ date, h:mm A }}",
   "badge": {
     "app": "APP",
     "server": "SERVER"

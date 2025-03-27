@@ -1,4 +1,5 @@
 {
+    "todayAt": "{{ date, H:mm }}",
     "timestamp": {
         "time": "{{ date, HH:mm }}",
         "time_verbose": "{{ date, HH:mm:ss }}",
