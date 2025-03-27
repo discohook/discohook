@@ -40,11 +40,12 @@ export default defineConfig({
     cloudflareDevProxyVitePlugin({ getLoadContext }),
     remix({
       future: {
-        // v3_fetcherPersist: true,
+        v3_fetcherPersist: true,
         // v3_relativeSplatPath: true,
-        // v3_throwAbortReason: true,
-        v3_singleFetch: true,
-        // v3_lazyRouteDiscovery: true,
+        v3_throwAbortReason: true,
+        // v3_singleFetch: true,
+        v3_lazyRouteDiscovery: true,
+        unstable_optimizeDeps: true,
       },
       routes: async (defineRoutes) => {
         const filesV1 = await getRouteFilenames("./app/api/v1");

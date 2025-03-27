@@ -1,7 +1,6 @@
 import type { LinksFunction, MetaFunction } from "@remix-run/cloudflare";
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -12,8 +11,8 @@ import {
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { ClientOnly } from "remix-utils/client-only";
 import { Message } from "./components/preview/Message.client";
-import "./styles/coolicons.css";
-import "./styles/tailwind.css";
+import icons from "./styles/coolicons.css?url";
+import styles from "./styles/tailwind.css?url";
 import { getZodErrorMessage } from "./util/loader";
 
 // i18n
@@ -48,7 +47,8 @@ export const meta: MetaFunction = () => {
 };
 
 export const links: LinksFunction = () => [
-  // ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
+  { rel: "stylesheet", href: styles },
+  { rel: "stylesheet", href: icons },
   { rel: "manifest", href: "/manifest.json" },
 ];
 
@@ -108,7 +108,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         {children}
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   );

@@ -23,7 +23,6 @@
     "@discordjs/rest": "^2.4.0",
     "@emoji-mart/data": "^1.1.2",
     "@remix-run/cloudflare": "^2.16.2",
-    "@remix-run/css-bundle": "^2.16.2",
     "@remix-run/react": "^2.16.2",
     "@remix-run/server-runtime": "^2.16.2",
     "@twemoji/api": "^15.0.3",
@@ -85,12 +84,12 @@
     "dpdm": "^3.14.0",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.1.6",
-    "vite": "^6.0.0",
+    "vite": "^6.2.3",
     "vite-env-only": "^3.0.3",
     "vite-tsconfig-paths": "^4.2.1",
     "wrangler": "^4.5.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }
