@@ -118,10 +118,10 @@ export const Embed: React.FC<{
         }}
       >
         {embed.provider?.name && (
-          <div className="min-w-0 mt-2 font-normal text-xs whitespace-break-spaces break-words text-primary-230">
+          <div className="min-w-0 mt-2 font-normal text-xs whitespace-break-spaces break-words text-background-secondary-dark dark:text-primary-230">
             {embed.provider.url ? (
               <a
-                className="hover:underline decoration-primary-230"
+                className="hover:underline decoration-background-text-background-secondary-dark dark:decoration-primary-230"
                 href={embed.provider.url}
                 target="_blank"
                 rel="noreferrer nofollow ugc"
@@ -163,7 +163,7 @@ export const Embed: React.FC<{
             {embed.url ? (
               <a
                 href={embed.url}
-                className="text-[#006ce7] dark:text-[#00a8fc] hover:underline underline-offset-1"
+                className="text-blue-430 dark:text-blue-345 hover:underline underline-offset-1"
                 target="_blank"
                 rel="noreferrer nofollow ugc"
               >
