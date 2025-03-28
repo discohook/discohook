@@ -1030,7 +1030,7 @@ export default function Index() {
                 ),
           )}
         >
-          <div className="overflow-y-scroll grow p-4 pb-8">
+          <div className="overflow-y-scroll grow p-4 pb-8 bg-[#FBFBFB] dark:bg-[#2E2E33]">
             <div className={settings.forceDualPane ? "hidden" : "md:hidden"}>
               <Button
                 onClick={() => setTab("editor")}

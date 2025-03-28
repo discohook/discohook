@@ -60,6 +60,9 @@ export const getImageUri = (uri: string, files?: DraftFile[] | undefined) => {
   return uri;
 };
 
+// maybe also an ios & android
+type PreviewPlatform = "desktop" | "mobile";
+
 export const Embed: React.FC<{
   embed: APIEmbed;
   extraImages?: APIEmbedImage[];
@@ -87,6 +90,9 @@ export const Embed: React.FC<{
     }
   }
 
+  // todo: let users select this
+  const platform: PreviewPlatform = "desktop";
+
   const images: APIEmbedImage[] = [];
   if (embed.image?.url) {
     images.push(embed.image);
@@ -99,7 +105,10 @@ export const Embed: React.FC<{
     <div>
       <div
         className={twJoin(
-          "rounded bg-gray-100 border-l-4 border-l-gray-300 dark:bg-background-secondary-dark dark:border-l-[#1E1F22] dark:text-gray-100 inline-grid pt-2 pr-4 pb-4 pl-3",
+          "rounded dark:text-gray-100 inline-grid pr-4 pb-4 pl-3",
+          platform === "desktop"
+            ? "bg-white dark:bg-background-secondary-dark border border-l-4 border-[#E2E2E4] border-l-[#D9D9DC] dark:border-[#434349] dark:border-l-[#4A4A50] pt-[2px]"
+            : "bg-gray-100 dark:bg-[#2B2D31] border-l-4 border-l-gray-300 dark:border-l-[#1E1F22] pt-2",
         )}
         style={{
           ...(typeof embed.color === "number"

@@ -60,11 +60,11 @@ export default {
           950: "#1a1a4c",
         },
         blue: {
-          345: "#00A8FC",
-          430: "#006CE7",
+          345: "#86AFEF",
+          430: "#3172DB",
         },
         gray: {
-          100: "#f2f3f5",
+          100: "#F3F3F4",
           200: "#ebedef",
           300: "#e3e5e8",
           400: "#d4d7dc",
@@ -76,8 +76,8 @@ export default {
         muted: "#5C5E65",
         "muted-dark": "#959BA3",
         background: {
-          secondary: "#F2F3F5",
-          "secondary-dark": "#2B2D31",
+          secondary: "#F3F3F4",
+          "secondary-dark": "#37373D",
         },
       },
     },
