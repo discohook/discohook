@@ -66,7 +66,13 @@ import {
   INDEX_MESSAGE,
   WEBHOOK_URL_RE,
 } from "~/util/constants";
-import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
+import {
+  DISCORD_API,
+  DISCORD_API_V,
+  cdnImgAttributes,
+  getWebhook,
+  webhookAvatarUrl,
+} from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import {
@@ -512,6 +518,23 @@ export default function Index() {
 
   const ua = new UAParser(navigator.userAgent).getResult();
 
+  // Warn users if they can't connect to Discord
+  const [blockTest, setBlockTest] = useState<"success" | "failure">();
+  const performBlockTest = () => {
+    fetch(`${DISCORD_API}/v${DISCORD_API_V}/invites/discord-developers`, {
+      method: "HEAD",
+    })
+      // we don't care about the response itself, just if the promise was
+      // rejected due to being blocked by an extension
+      .then(() => {
+        setBlockTest("success");
+      })
+      .catch((e) => {
+        setBlockTest("failure");
+      });
+  };
+  useEffect(performBlockTest, []);
+
   return (
     <div className="h-screen overflow-hidden">
       <ComponentEditModal
@@ -674,6 +697,24 @@ export default function Index() {
           )}
         >
           <div className="px-4">
+            {blockTest === "failure" ? (
+              <InfoBox icon="Link_Break" severity="red" open>
+                <Trans
+                  t={t}
+                  i18nKey="discordRequestBlocked"
+                  components={{
+                    bold: <span className="font-semibold" />,
+                    retry: (
+                      <button
+                        type="button"
+                        className="text-start contents text-blue-700 hover:underline"
+                        onClick={performBlockTest}
+                      />
+                    ),
+                  }}
+                />
+              </InfoBox>
+            ) : null}
             {error}
             {urlTooLong && (
               <InfoBox icon="Triangle_Warning" severity="yellow">

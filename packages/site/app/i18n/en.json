@@ -343,6 +343,7 @@
   "deleteTrigger": "Delete Trigger",
   "deleteTriggerConfirm": "Are you sure you want to delete $t(triggerEvent.{{0}}) and its flow?",
   "information": "Information",
+  "discordRequestBlocked": "Please make sure your browser and any extensions are allowing requests to <bold>discord.com</bold>. If not, you will not be able to load webhooks or send messages. <retry>Changed settings? Test again</retry>",
   "havingTrouble": "Having Trouble?",
   "troubleshootMessage": "If you press the send button and nothing happens, it may be because your browser is blocking connections to Discord, which is not uncommon for privacy-focused extensions like Privacy Badger. Try disabling privacy extensions or entering incognito/private mode.",
   "setMessageLink": "Set Message Link",
