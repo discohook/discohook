@@ -277,7 +277,7 @@ export const LinkEmbedEditor: React.FC<{
         >
           <div className="grow">
             <p className="text-sm font-medium">{t("sidebarColor")}</p>
-            <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
+            <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
               <span className="align-middle">
                 {typeof embed.color === "number"
                   ? decimalToHex(embed.color)

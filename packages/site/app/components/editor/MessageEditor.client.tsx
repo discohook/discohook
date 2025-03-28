@@ -109,8 +109,8 @@ export const MessageEditor: React.FC<{
   const thumbnailFileId = imageFiles.find((f) => f.is_thumbnail)?.id ?? null;
 
   return (
-    <details className="group/message mt-4 pb-2" open>
-      <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none">
+    <details className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]" open>
+      <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none mx-4">
         <CoolIcon
           icon="Chevron_Right"
           className="group-open/message:rotate-90 mr-2 my-auto transition-transform"
@@ -182,7 +182,7 @@ export const MessageEditor: React.FC<{
           </button>
         </div>
       </summary>
-      <div className="rounded bg-gray-100 dark:bg-gray-800 border-2 border-transparent dark:border-gray-700 p-2 dark:px-3 dark:-mx-1 mt-1 space-y-2">
+      <div className="py-2 px-4 mt-1 space-y-2">
         <TextArea
           label={t("content")}
           className="w-full h-40"
@@ -196,7 +196,7 @@ export const MessageEditor: React.FC<{
             setData({ ...data });
           }}
         />
-        <div className="-space-y-2">
+        <div className="-space-y-2 -mx-2">
           <EmbedEditorSection name={t("thread")}>
             {(!!message.reference || isNoneForum) && (
               <InfoBox severity="blue" icon="Info">
@@ -272,9 +272,9 @@ export const MessageEditor: React.FC<{
                     </Select.Trigger>
                     <Select.Trigger
                       className={twJoin(
-                        "flex rounded border border-black/[0.08] focus:outline-none h-9 py-0 px-[14px] font-medium !mt-0",
+                        "flex rounded-lg border border-border-normal dark:border-border-normal-dark focus:outline-none h-9 py-0 px-[14px] font-medium !mt-0",
                         "disabled:text-gray-600 disabled:cursor-not-allowed",
-                        "bg-[#ebebeb] dark:bg-[#1e1f22] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200",
+                        "bg-white dark:bg-[#333338]",
                       )}
                     >
                       <Select.Value
@@ -288,7 +288,7 @@ export const MessageEditor: React.FC<{
                     <Select.Portal>
                       <Select.Positioner
                         className={twJoin(
-                          "rounded bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
+                          "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
                           "p-0.5 border border-black/[0.08]",
                         )}
                         align="start"
@@ -303,7 +303,7 @@ export const MessageEditor: React.FC<{
                                 key={`thumbnail-select-${file.id}`}
                                 value={file.id}
                                 className={twJoin(
-                                  "px-[14px] py-0 h-9 flex rounded cursor-pointer",
+                                  "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
                                   "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
                                 )}
                               >
@@ -387,7 +387,7 @@ export const MessageEditor: React.FC<{
             {files.map(({ id, file, embed, is_thumbnail, url }) => (
               <div
                 key={`file-${id}`}
-                className="rounded border py-1.5 px-[14px] bg-gray-300 border-gray-200 dark:border-transparent dark:bg-[#292b2f] flex"
+                className="rounded-lg border py-1.5 px-[14px] bg-background-secondary border-border-normal dark:border-border-normal-dark dark:bg-background-secondary-dark flex"
               >
                 <CoolIcon
                   icon={embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"}

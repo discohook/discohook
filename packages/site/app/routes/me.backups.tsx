@@ -18,8 +18,8 @@ import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import {
   QueryDataVersion,
-  backups as dBackups,
   count,
+  backups as dBackups,
   eq,
   getDb,
   inArray,
@@ -251,7 +251,7 @@ export default () => {
                   <div className="w-10 h-10 my-auto ltr:mr-2 rtl:ml-2 rounded-lg bg-blurple hidden sm:flex">
                     <CoolIcon
                       icon="File_Document"
-                      className="m-auto text-2xl"
+                      className="m-auto text-2xl text-gray-50"
                     />
                   </div>
                 )}

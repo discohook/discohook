@@ -86,7 +86,7 @@ export const TextInput = (
           }
         }}
         className={twMerge(
-          "rounded border-2 min-h-[36px] max-h-9 py-0 px-[14px] bg-gray-300 border-gray-200 placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
+          "rounded-lg border min-h-[36px] max-h-9 py-0 px-[14px] bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
           props.className,
         )}
       />

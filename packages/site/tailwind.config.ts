@@ -40,7 +40,7 @@ export default {
           300: "#C4C9CE",
           400: "#80848E",
           500: "#4E5058",
-          600: "#313338",
+          600: "#2E2E33",
           630: "#202225",
           700: "#17181A",
         },
@@ -65,9 +65,10 @@ export default {
         },
         gray: {
           100: "#F3F3F4",
-          200: "#ebedef",
+          200: "#EAEAEC",
           300: "#e3e5e8",
           400: "#d4d7dc",
+          500: "#606069",
           600: "#4f545c",
           700: "#36393f",
           800: "#2f3136",
@@ -79,6 +80,10 @@ export default {
           secondary: "#F3F3F4",
           "secondary-dark": "#37373D",
         },
+        border: {
+          normal: "#D9D9DC",
+          "normal-dark": "#4A4A51"
+        }
       },
     },
   },

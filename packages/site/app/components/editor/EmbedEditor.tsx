@@ -135,7 +135,7 @@ export const EmbedEditor: React.FC<{
   const errors = getEmbedErrors(embed);
   return (
     <details
-      className="group/embed rounded p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-gray-500 dark:border-l-[#1E1F22] shadow"
+      className="group/embed rounded p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-[#D9D9DC] dark:border-l-[#4A4A50] shadow"
       open={open}
       style={
         embed.color ? { borderLeftColor: decimalToHex(embed.color) } : undefined
@@ -425,7 +425,7 @@ export const EmbedEditor: React.FC<{
               >
                 <div className="grow">
                   <p className="text-sm font-medium">{t("sidebarColor")}</p>
-                  <p className="rounded border h-9 py-0 px-[14px] bg-gray-300 dark:border-transparent dark:bg-[#292b2f]">
+                  <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
                     <span className="align-middle">
                       {typeof embed.color === "number"
                         ? decimalToHex(embed.color)

@@ -46,10 +46,13 @@ const ColorPickerFunction: React.FC<
         // "#979C9F",
         "#607D8B",
         // "#546E7A",
+        // Now that there is a border around the whole embed this effect
+        // doesn't work as well. Demand might be low enough that it should
+        // just be removed.
         // Dark mode embed body
-        "#2F3136",
+        "#37373d", // pre-desktop refresh: "#2F3136",
         // Light mode embed body
-        "#F2F3F5",
+        "#fff", // pre-desktop refresh: "#F2F3F5",
       ]}
       disableAlpha
     />

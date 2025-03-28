@@ -118,7 +118,7 @@ export const MessageBackupsModal = (
                 <div
                   key={`backup-${b.id}`}
                   className={twJoin(
-                    "rounded bg-gray-200 dark:bg-gray-700 p-2 flex transition",
+                    "rounded bg-gray-200 dark:bg-gray-800 p-2 flex transition",
                     b.id.toString() === data.backup_id
                       ? "opacity-60 pointer-events-none"
                       : undefined,
@@ -133,7 +133,7 @@ export const MessageBackupsModal = (
                     <div className="w-7 h-7 my-auto ltr:mr-2 rtl:ml-2 flex rounded bg-blurple">
                       <CoolIcon
                         icon="File_Document"
-                        className="m-auto text-lg"
+                        className="m-auto text-lg text-gray-50"
                       />
                     </div>
                   )}
@@ -222,7 +222,7 @@ export const MessageBackupsModal = (
           )}
           <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           {backup || backupFetcher.state !== "idle" ? (
-            <div className="rounded bg-gray-200 dark:bg-gray-700 p-2 flex">
+            <div className="rounded bg-gray-200 dark:bg-gray-800 p-2 flex">
               {backup?.previewImageUrl ? (
                 <div
                   style={{ backgroundImage: `url(${backup.previewImageUrl})` }}

@@ -28,7 +28,7 @@ export const MessageSendResultModal = (
           <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           {success ? (
             <div>
-              <details className="p-2 bg-gray-200 dark:bg-gray-700 rounded">
+              <details className="p-2 bg-gray-200 dark:bg-gray-800 rounded">
                 <summary className="font-medium">{t("messageDetails")}</summary>
                 <p>
                   <Trans
@@ -54,7 +54,7 @@ export const MessageSendResultModal = (
           ) : (
             <div>
               <p>{t("fullError")}</p>
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-gray-200 dark:bg-gray-700 p-2">
+              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-gray-200 dark:bg-gray-800 p-2">
                 {JSON.stringify(result.data, null, 2)}
               </pre>
             </div>

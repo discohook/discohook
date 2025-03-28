@@ -667,355 +667,356 @@ export default function Index() {
       >
         <div
           className={twMerge(
-            "p-4 h-full overflow-y-scroll",
+            "py-4 h-full overflow-y-scroll",
             settings.forceDualPane
               ? "w-1/2"
               : twJoin("md:w-1/2", tab === "editor" ? "" : "hidden md:block"),
           )}
         >
-          {error}
-          {urlTooLong && (
-            <InfoBox icon="Triangle_Warning" severity="yellow">
-              Your message data is too large to be shown in the page URL. If you
-              need to share this page, use the "Share Message" button.
-            </InfoBox>
-          )}
-          {backupId !== undefined && (
-            <InfoBox icon="Save" collapsible open>
-              {t("editingBackupNote")}
-            </InfoBox>
-          )}
-          <div className="flex">
-            <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 ltr:mr-2 rtl:ml-2">
+          <div className="px-4">
+            {error}
+            {urlTooLong && (
+              <InfoBox icon="Triangle_Warning" severity="yellow">
+                Your message data is too large to be shown in the page URL. If
+                you need to share this page, use the "Share Message" button.
+              </InfoBox>
+            )}
+            {backupId !== undefined && (
+              <InfoBox icon="Save" collapsible open>
+                {t("editingBackupNote")}
+              </InfoBox>
+            )}
+            <div className="flex">
+              <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 ltr:mr-2 rtl:ml-2">
+                <Button
+                  onClick={() => setSharing(true)}
+                  discordstyle={ButtonStyle.Secondary}
+                  disabled={data.messages.length === 0}
+                >
+                  {t("share")}
+                </Button>
+                <Button
+                  onClick={() => setShowBackups(true)}
+                  discordstyle={ButtonStyle.Secondary}
+                >
+                  {t("backups")}
+                </Button>
+                <Button
+                  onClick={() =>
+                    setConfirm({
+                      title: t("resetEditor"),
+                      children: (
+                        <>
+                          <p>
+                            {t("resetEditorConfirm", {
+                              count: data.messages.length,
+                            })}
+                          </p>
+                          <p className="text-muted dark:text-muted-dark text-sm font-medium mt-1">
+                            <Trans
+                              t={t}
+                              i18nKey="resetEditorFootnote"
+                              components={[
+                                <button
+                                  type="button"
+                                  className={twJoin(linkClassName, "contents")}
+                                  onClick={() => {
+                                    setShowHistory(true);
+                                    setConfirm(undefined);
+                                  }}
+                                />,
+                              ]}
+                            />
+                          </p>
+                          <ModalFooter className="flex gap-2">
+                            <Button
+                              className="ltr:ml-auto rtl:mr-auto"
+                              onClick={() => {
+                                setData({
+                                  messages: [{ data: {} }],
+                                  targets: undefined,
+                                });
+                                setConfirm(undefined);
+                              }}
+                              discordstyle={ButtonStyle.Danger}
+                            >
+                              {t("resetEditor")}
+                            </Button>
+                            <Button
+                              onClick={() => setConfirm(undefined)}
+                              discordstyle={ButtonStyle.Secondary}
+                            >
+                              {t("cancel")}
+                            </Button>
+                          </ModalFooter>
+                        </>
+                      ),
+                    })
+                  }
+                  discordstyle={ButtonStyle.Secondary}
+                >
+                  {t("resetEditor")}
+                </Button>
+              </div>
               <Button
-                onClick={() => setSharing(true)}
-                discordstyle={ButtonStyle.Secondary}
-                disabled={data.messages.length === 0}
-              >
-                {t("share")}
-              </Button>
-              <Button
-                onClick={() => setShowBackups(true)}
+                className={twJoin(
+                  "ltr:ml-auto rtl:mr-auto",
+                  settings.forceDualPane ? "hidden" : "md:hidden",
+                )}
+                onClick={() => setTab("preview")}
                 discordstyle={ButtonStyle.Secondary}
               >
-                {t("backups")}
-              </Button>
-              <Button
-                onClick={() =>
-                  setConfirm({
-                    title: t("resetEditor"),
-                    children: (
-                      <>
-                        <p>
-                          {t("resetEditorConfirm", {
-                            count: data.messages.length,
-                          })}
-                        </p>
-                        <p className="text-muted dark:text-muted-dark text-sm font-medium mt-1">
-                          <Trans
-                            t={t}
-                            i18nKey="resetEditorFootnote"
-                            components={[
-                              <button
-                                type="button"
-                                className={twJoin(linkClassName, "contents")}
-                                onClick={() => {
-                                  setShowHistory(true);
-                                  setConfirm(undefined);
-                                }}
-                              />,
-                            ]}
-                          />
-                        </p>
-                        <ModalFooter className="flex gap-2">
-                          <Button
-                            className="ltr:ml-auto rtl:mr-auto"
-                            onClick={() => {
-                              setData({
-                                messages: [{ data: {} }],
-                                targets: undefined,
-                              });
-                              setConfirm(undefined);
-                            }}
-                            discordstyle={ButtonStyle.Danger}
-                          >
-                            {t("resetEditor")}
-                          </Button>
-                          <Button
-                            onClick={() => setConfirm(undefined)}
-                            discordstyle={ButtonStyle.Secondary}
-                          >
-                            {t("cancel")}
-                          </Button>
-                        </ModalFooter>
-                      </>
-                    ),
-                  })
-                }
-                discordstyle={ButtonStyle.Secondary}
-              >
-                {t("resetEditor")}
+                {t("preview")}{" "}
+                <CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />
               </Button>
             </div>
-            <Button
-              className={twJoin(
-                "ltr:ml-auto rtl:mr-auto",
-                settings.forceDualPane ? "hidden" : "md:hidden",
-              )}
-              onClick={() => setTab("preview")}
-              discordstyle={ButtonStyle.Secondary}
-            >
-              {t("preview")}{" "}
-              <CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />
-            </Button>
-          </div>
-          {Object.values(targets).map((webhook) => (
-            <div
-              key={`target-${webhook.id}`}
-              className="rounded-lg py-2 px-3 mb-2 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
-            >
-              <img
-                {...cdnImgAttributes(64, (size) =>
-                  webhookAvatarUrl(webhook, { size }),
-                )}
-                className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
-                alt=""
-              />
-              <div className="truncate my-auto">
-                <div className="flex max-w-full">
-                  <p className="font-semibold truncate dark:text-primary-230 text-lg">
-                    <span className="align-baseline">{webhook.name}</span>
-                    {webhook.application_id === discordApplicationId && (
-                      <span
-                        className="ml-1 inline-block"
-                        title={t("createdByDiscohook")}
-                      >
-                        <CoolIcon
-                          icon="Circle_Check"
-                          className="text-blurple-500 dark:text-blurple-400"
-                        />
-                      </span>
-                    )}
-                  </p>
+            {Object.values(targets).map((webhook) => (
+              <div
+                key={`target-${webhook.id}`}
+                className="rounded-lg py-2 px-3 mb-2 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
+              >
+                <img
+                  {...cdnImgAttributes(64, (size) =>
+                    webhookAvatarUrl(webhook, { size }),
+                  )}
+                  className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
+                  alt=""
+                />
+                <div className="truncate my-auto">
+                  <div className="flex max-w-full">
+                    <p className="font-semibold truncate dark:text-primary-230 text-lg">
+                      <span className="align-baseline">{webhook.name}</span>
+                      {webhook.application_id === discordApplicationId && (
+                        <span
+                          className="ml-1 inline-block"
+                          title={t("createdByDiscohook")}
+                        >
+                          <CoolIcon
+                            icon="Circle_Check"
+                            className="text-blurple-500 dark:text-blurple-400"
+                          />
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="ltr:ml-auto rtl:mr-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
+                  <button
+                    type="button"
+                    title={t("editResource", { replace: [webhook.name] })}
+                    onClick={() => setEditingWebhook(webhook.id)}
+                  >
+                    <CoolIcon icon="Edit_Pencil_01" />
+                  </button>
+                  <button
+                    type="button"
+                    title={t("removeResource", { replace: [webhook.name] })}
+                    onClick={() => {
+                      delete targets[webhook.id];
+                      updateTargets({ ...targets });
+                    }}
+                  >
+                    <CoolIcon icon="Trash_Full" />
+                  </button>
                 </div>
               </div>
-              <div className="ltr:ml-auto rtl:mr-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
-                <button
-                  type="button"
-                  title={t("editResource", { replace: [webhook.name] })}
-                  onClick={() => setEditingWebhook(webhook.id)}
-                >
-                  <CoolIcon icon="Edit_Pencil_01" />
-                </button>
-                <button
-                  type="button"
-                  title={t("removeResource", { replace: [webhook.name] })}
-                  onClick={() => {
-                    delete targets[webhook.id];
-                    updateTargets({ ...targets });
-                  }}
-                >
-                  <CoolIcon icon="Trash_Full" />
-                </button>
-              </div>
-            </div>
-          ))}
-          {settings.webhookInput === "classic" && (
-            <div className="flex mb-2">
-              {/* <CoolIcon
+            ))}
+            {settings.webhookInput === "classic" && (
+              <div className="flex mb-2">
+                {/* <CoolIcon
                 icon="Add_Plus_Circle"
                 className="my-auto text-2xl ltr:mr-2 rtl:ml-2 text-muted dark:text-muted-dark"
               /> */}
-              <div className="grow">
-                <TextInput
-                  className="w-full text-base"
-                  onChange={async ({ currentTarget }) => {
-                    setError(undefined);
-                    const { value } = currentTarget;
-                    if (!value.trim()) return;
+                <div className="grow">
+                  <TextInput
+                    className="w-full text-base"
+                    onChange={async ({ currentTarget }) => {
+                      setError(undefined);
+                      const { value } = currentTarget;
+                      if (!value.trim()) return;
 
-                    const match = WEBHOOK_URL_RE.exec(value);
-                    if (!match) {
-                      setError({ code: "invalidWebhookUrl" });
-                      return;
-                    }
-
-                    const live = await getWebhook(match[1], match[2]);
-                    if (live.id) {
-                      if (cache && live.guild_id && !targets[live.id]) {
-                        cache.fetchGuildCacheable(live.guild_id);
+                      const match = WEBHOOK_URL_RE.exec(value);
+                      if (!match) {
+                        setError({ code: "invalidWebhookUrl" });
+                        return;
                       }
-                      updateTargets({ [live.id]: live });
-                      currentTarget.value = "";
-                    } else if ("message" in live) {
-                      setError({ message: live.message as string });
-                    }
-                  }}
-                  placeholder="https://discord.com/api/webhooks/..."
-                />
+
+                      const live = await getWebhook(match[1], match[2]);
+                      if (live.id) {
+                        if (cache && live.guild_id && !targets[live.id]) {
+                          cache.fetchGuildCacheable(live.guild_id);
+                        }
+                        updateTargets({ [live.id]: live });
+                        currentTarget.value = "";
+                      } else if ("message" in live) {
+                        setError({ message: live.message as string });
+                      }
+                    }}
+                    placeholder="https://discord.com/api/webhooks/..."
+                  />
+                </div>
               </div>
-            </div>
-          )}
-          <div className="flex space-x-2 rtl:space-x-reverse">
-            {settings.webhookInput !== "classic" && (
-              <Button
-                onClick={() => setAddingTarget(true)}
-                disabled={Object.keys(targets).length >= 10}
-              >
-                {t("addWebhook")}
-              </Button>
             )}
-            <Button
-              disabled={data.messages.length === 0 || sending}
-              onClick={async () => {
-                if (settings.webhookInput !== "classic") {
-                  setSendingMessages(true);
-                  return;
-                }
-                const results = await submitMessages(Object.values(targets));
-                const errors = results.filter((r) => r.status === "error");
-                if (errors.length === 1) {
-                  setShowingResult(errors[0]);
-                } else if (errors.length !== 0) {
-                  setSendingMessages(true);
-                }
-              }}
-            >
-              {t(
-                // This is so awkward
-                settings.webhookInput !== "classic"
-                  ? messagesWithReference === 0
-                    ? "send"
-                    : messagesWithReference === data.messages.length
-                      ? "edit"
-                      : "submit"
-                  : sending
-                    ? messagesWithReference === 0
-                      ? "sending"
-                      : messagesWithReference === data.messages.length
-                        ? "editing"
-                        : "submitting"
-                    : Object.keys(targets).length <= 1 &&
-                        data.messages.length > 1
-                      ? messagesWithReference === 0
-                        ? "sendAll"
-                        : "submitAll"
-                      : Object.keys(targets).length > 1
-                        ? messagesWithReference === 0
-                          ? "sendToAll"
-                          : "submitToAll"
-                        : messagesWithReference === 0
-                          ? "send"
-                          : messagesWithReference === data.messages.length
-                            ? "edit"
-                            : "submit",
+            <div className="flex space-x-2 rtl:space-x-reverse">
+              {settings.webhookInput !== "classic" && (
+                <Button
+                  onClick={() => setAddingTarget(true)}
+                  disabled={Object.keys(targets).length >= 10}
+                >
+                  {t("addWebhook")}
+                </Button>
               )}
-            </Button>
+              <Button
+                disabled={data.messages.length === 0 || sending}
+                onClick={async () => {
+                  if (settings.webhookInput !== "classic") {
+                    setSendingMessages(true);
+                    return;
+                  }
+                  const results = await submitMessages(Object.values(targets));
+                  const errors = results.filter((r) => r.status === "error");
+                  if (errors.length === 1) {
+                    setShowingResult(errors[0]);
+                  } else if (errors.length !== 0) {
+                    setSendingMessages(true);
+                  }
+                }}
+              >
+                {t(
+                  // This is so awkward
+                  settings.webhookInput !== "classic"
+                    ? messagesWithReference === 0
+                      ? "send"
+                      : messagesWithReference === data.messages.length
+                        ? "edit"
+                        : "submit"
+                    : sending
+                      ? messagesWithReference === 0
+                        ? "sending"
+                        : messagesWithReference === data.messages.length
+                          ? "editing"
+                          : "submitting"
+                      : Object.keys(targets).length <= 1 &&
+                          data.messages.length > 1
+                        ? messagesWithReference === 0
+                          ? "sendAll"
+                          : "submitAll"
+                        : Object.keys(targets).length > 1
+                          ? messagesWithReference === 0
+                            ? "sendToAll"
+                            : "submitToAll"
+                          : messagesWithReference === 0
+                            ? "send"
+                            : messagesWithReference === data.messages.length
+                              ? "edit"
+                              : "submit",
+                )}
+              </Button>
+            </div>
           </div>
           {data.messages.map((d, i) => {
             const id = getQdMessageId(d);
             return (
-              <div key={`edit-message-${id}`}>
-                <MessageEditor
-                  index={i}
-                  data={data}
-                  files={files[id] ?? []}
-                  discordApplicationId={discordApplicationId}
-                  setData={setData}
-                  setFiles={(newF) =>
-                    setFiles({ ...files, [id]: newF as DraftFile[] })
-                  }
-                  setSettingMessageIndex={setSettingMessageIndex}
-                  setEditingMessageFlags={setEditingMessageFlags}
-                  setJsonEditor={setJsonEditor}
-                  setCodeGenerator={setCodeGenerator}
-                  webhooks={Object.values(targets)}
-                  setEditingComponent={setEditingComponent}
-                  cache={cache}
-                />
-                {i < data.messages.length - 1 && (
-                  <hr className="border border-gray-500/20 mt-4" />
-                )}
-              </div>
+              <MessageEditor
+                key={`edit-message-${id}`}
+                index={i}
+                data={data}
+                files={files[id] ?? []}
+                discordApplicationId={discordApplicationId}
+                setData={setData}
+                setFiles={(newF) =>
+                  setFiles({ ...files, [id]: newF as DraftFile[] })
+                }
+                setSettingMessageIndex={setSettingMessageIndex}
+                setEditingMessageFlags={setEditingMessageFlags}
+                setJsonEditor={setJsonEditor}
+                setCodeGenerator={setCodeGenerator}
+                webhooks={Object.values(targets)}
+                setEditingComponent={setEditingComponent}
+                cache={cache}
+              />
             );
           })}
-          <Button
-            className="mt-4 w-full"
-            disabled={data.messages.length >= 10}
-            onClick={() => {
-              data.messages.push({ data: {} });
-              setData({ ...data });
-            }}
-          >
-            <div className="flex">
-              <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
-              <span className="my-auto">{t("addMessage")}</span>
-            </div>
-          </Button>
-          <hr className="border border-gray-400 dark:border-gray-600 my-6" />
-          <div className="grayscale hover:grayscale-0 group flex text-sm opacity-60 hover:opacity-100 transition-opacity">
-            <div className="mb-auto mt-1 ltr:ml-2 rtl:mr-2">
-              <Logo pink={isPremium} />
-            </div>
-            <div className="ltr:ml-6 rtl:mr-6">
-              <p>
-                Discohook is brought to you free of charge by me (shay) and a
-                history of contributors.{" "}
-                <Link
-                  to="/donate"
-                  target="_blank"
-                  className="underline hover:no-underline"
+          <div className="px-4">
+            <Button
+              className="mt-4 w-full"
+              disabled={data.messages.length >= 10}
+              onClick={() => {
+                data.messages.push({ data: {} });
+                setData({ ...data });
+              }}
+            >
+              <div className="flex">
+                <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
+                <span className="my-auto">{t("addMessage")}</span>
+              </div>
+            </Button>
+            <hr className="border border-gray-400 dark:border-gray-600 my-6" />
+            <div className="grayscale hover:grayscale-0 group flex text-sm opacity-60 hover:opacity-100 transition-opacity">
+              <div className="mb-auto mt-1 ltr:ml-2 rtl:mr-2">
+                <Logo pink={isPremium} />
+              </div>
+              <div className="ltr:ml-6 rtl:mr-6">
+                <p>
+                  Discohook is brought to you free of charge by me (shay) and a
+                  history of contributors.{" "}
+                  <Link
+                    to="/donate"
+                    target="_blank"
+                    className="underline hover:no-underline"
+                  >
+                    Consider donating
+                  </Link>{" "}
+                  if you would like to support the project.
+                </p>
+                <hr className="border-gray-400 dark:border-gray-600 mb-1 mt-2" />
+                <button
+                  type="button"
+                  className="text-muted dark:text-muted-dark text-xs text-start"
+                  title={t("clickToCopy")}
+                  onClick={(e) => copyText(e.currentTarget.textContent ?? "")}
                 >
-                  Consider donating
-                </Link>{" "}
-                if you would like to support the project.
-              </p>
-              <hr className="border-gray-400 dark:border-gray-600 mb-1 mt-2" />
-              <button
-                type="button"
-                className="text-muted dark:text-muted-dark text-xs text-start"
-                title={t("clickToCopy")}
-                onClick={(e) => copyText(e.currentTarget.textContent ?? "")}
-              >
-                Discohook {debug.version.id.split("-")[0]}
-                {debug.environment === "production"
-                  ? ""
-                  : ` (${debug.environment})`}
-                {"\n"}
-                <br />
-                {ua.browser.name} {ua.browser.version} ({ua.engine.name}){"\n"}
-                <br />
-                {ua.os.name} {ua.os.version}
-              </button>
-              <hr className="border-gray-400 dark:border-gray-600 mt-1 mb-2" />
-              <p className="flex flex-wrap gap-2">
-                <Link
-                  to="/bot"
-                  className="underline hover:no-underline"
-                  target="_blank"
-                >
-                  {t("inviteBot")}
-                </Link>
-                <a
-                  href="https://github.com/discohook/discohook"
-                  className="underline hover:no-underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  GitHub
-                </a>
-                <a
-                  href="https://docs.discohook.app"
-                  className="underline hover:no-underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  API Docs
-                </a>
-                {location.hostname === "discohook.app" && (
-                  <span>Email: "hello" at {location.hostname}</span>
-                )}
-              </p>
+                  Discohook {debug.version.id.split("-")[0]}
+                  {debug.environment === "production"
+                    ? ""
+                    : ` (${debug.environment})`}
+                  {"\n"}
+                  <br />
+                  {ua.browser.name} {ua.browser.version} ({ua.engine.name})
+                  {"\n"}
+                  <br />
+                  {ua.os.name} {ua.os.version}
+                </button>
+                <hr className="border-gray-400 dark:border-gray-600 mt-1 mb-2" />
+                <p className="flex flex-wrap gap-2">
+                  <Link
+                    to="/bot"
+                    className="underline hover:no-underline"
+                    target="_blank"
+                  >
+                    {t("inviteBot")}
+                  </Link>
+                  <a
+                    href="https://github.com/discohook/discohook"
+                    className="underline hover:no-underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    GitHub
+                  </a>
+                  <a
+                    href="https://docs.discohook.app"
+                    className="underline hover:no-underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    API
+                  </a>
+                  {location.hostname === "discohook.app" && (
+                    <span>Email: "hello" at {location.hostname}</span>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1030,7 +1031,7 @@ export default function Index() {
                 ),
           )}
         >
-          <div className="overflow-y-scroll grow p-4 pb-8 bg-[#FBFBFB] dark:bg-[#2E2E33]">
+          <div className="overflow-y-scroll grow p-4 pb-8">
             <div className={settings.forceDualPane ? "hidden" : "md:hidden"}>
               <Button
                 onClick={() => setTab("editor")}

@@ -19,7 +19,7 @@ import { useSafeFetcher } from "~/util/loader";
 import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalProps, PlainModalHeader } from "./Modal";
 
 export const TargetAddModal = (
   props: ModalProps & {
@@ -109,7 +109,8 @@ export const TargetAddModal = (
   }, [webhook, setOpen, props.updateTargets]);
 
   return (
-    <Modal title={t("addWebhook")} {...props} setOpen={setOpen}>
+    <Modal {...props} setOpen={setOpen}>
+      <PlainModalHeader>{t("addWebhook")}</PlainModalHeader>
       {!manualWebhook ? (
         <div>
           {error}

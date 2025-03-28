@@ -1,5 +1,5 @@
 import { Button } from "~/components/Button";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export interface SimpleTextModalProps {
   title: string;
@@ -9,14 +9,19 @@ export interface SimpleTextModalProps {
 export const SimpleTextModal = (
   props: ModalProps & Partial<SimpleTextModalProps>,
 ) => {
+  const { title, ...restProps } = props;
   return (
-    <Modal {...props}>
+    <Modal {...restProps}>
+      {title ? <PlainModalHeader>{title}</PlainModalHeader> : null}
       {props.children}
-      <div className="flex w-full mt-4">
-        <Button onClick={() => props.setOpen(false)} className="mx-auto">
+      <ModalFooter className="flex">
+        <Button
+          onClick={() => props.setOpen(false)}
+          className="ltr:ml-auto rtl:mr-auto"
+        >
           OK
         </Button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 };

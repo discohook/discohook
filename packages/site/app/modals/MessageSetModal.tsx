@@ -125,7 +125,7 @@ export const MessageSetModal = (
             return (
               <label
                 key={`target-${targetId}`}
-                className="flex rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 hover:dark:bg-gray-600 transition py-2 px-4 w-full cursor-pointer"
+                className="flex rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 hover:dark:bg-gray-600 transition py-2 px-4 w-full cursor-pointer"
               >
                 <img
                   {...cdnImgAttributes(64, (size) =>

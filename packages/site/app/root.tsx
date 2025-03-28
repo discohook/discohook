@@ -154,7 +154,7 @@ export function ErrorBoundary() {
         <Links />
         <TailwindThemeScript />
       </head>
-      <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230 h-screen flex">
+      <body className="bg-[#FBFBFB] text-black dark:bg-primary-600 dark:text-primary-230 h-screen flex">
         <div className="p-8 max-w-3xl mx-auto">
           <ClientOnly fallback={<FullscreenThrobber />}>
             {() => (

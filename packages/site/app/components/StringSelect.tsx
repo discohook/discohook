@@ -10,17 +10,17 @@ export const selectClassNames: ClassNamesConfig<
   GroupBase<unknown>
 > = {
   control: () =>
-    "!rounded !bg-[#ebebeb] dark:!bg-[#1e1f22] !border !border-black/[0.08] dark:!border-transparent hover:!border-[#c4c9ce] dark:hover:!border-[#020202] transition-[border] duration-200 !font-medium",
+    "!rounded-lg !bg-[#ebebeb] dark:!bg-[#1e1f22] !border !border-black/[0.08] dark:!border-transparent hover:!border-[#c4c9ce] dark:hover:!border-[#020202] transition-[border] duration-200 !font-medium",
   multiValue: () =>
     "!bg-white !text-[#060607] dark:!bg-primary-600 dark:!text-white",
   multiValueLabel: () => "dark:!text-[#ddd]",
   multiValueRemove: () => "hover:!bg-[#da373c] hover:!text-white",
   singleValue: () => "dark:!text-[#ddd]",
   input: () => "dark:!text-[#ddd]",
-  menu: () => "!rounded dark:!bg-background-secondary-dark",
+  menu: () => "!rounded-lg dark:!bg-background-secondary-dark",
   option: (p) =>
     twJoin(
-      "!rounded dark:!bg-background-secondary-dark dark:hover:!bg-[#36373d] !font-semibold !text-sm",
+      "!rounded-lg dark:!bg-background-secondary-dark dark:hover:!bg-gray-500 !font-semibold !text-sm",
       p.isDisabled ? "!cursor-not-allowed opacity-60" : undefined,
     ),
   menuPortal: () => "!z-30",

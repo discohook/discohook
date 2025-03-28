@@ -40,9 +40,9 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode }> = ({
         },
       }}
     >
-      <div className="rounded-lg bg-gray-50 text-black dark:bg-primary-600 dark:text-gray-50">
+      <div className="rounded-xl bg-gray-50 text-black dark:bg-[#37373D] dark:text-gray-50 border border-border-normal dark:border-border-normal-dark">
         {title && (
-          <div className="px-5 py-3 bg-gray-200 dark:bg-gray-900 flex rounded-t-lg">
+          <div className="px-5 py-3 bg-gray-200 dark:bg-gray-900 flex rounded-t-xl">
             <p className="text-xl font-bold my-auto">{title}</p>
             <ModalCloseButton setOpen={setOpen} />
           </div>
@@ -77,7 +77,7 @@ export const ModalFooter: React.FC<
 > = ({ children, className }) => (
   <div
     className={twMerge(
-      "-m-5 mt-4 py-4 px-8 bg-background-secondary dark:bg-background-secondary-dark",
+      "-m-5 mt-4 py-4 px-8 bg-background-secondary dark:bg-background-secondary-dark rounded-b-xl",
       className,
     )}
   >

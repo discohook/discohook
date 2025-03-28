@@ -48,7 +48,7 @@ export const HistoryModal = <
                 return (
                   <details
                     key={item.id}
-                    className="group p-2 bg-gray-200 dark:bg-gray-700 rounded"
+                    className="group p-2 bg-gray-200 dark:bg-gray-800 rounded"
                   >
                     <summary className="group-open:mb-2 transition-[margin] marker:content-none marker-none flex text-base cursor-default select-none">
                       <CoolIcon
@@ -118,7 +118,7 @@ export const HistoryModal = <
                 return (
                   <details
                     key={item.id}
-                    className="group p-2 bg-gray-200 dark:bg-gray-700"
+                    className="group p-2 bg-gray-200 dark:bg-gray-800"
                   >
                     <summary className="group-open:mb-2 transition-[margin] marker:content-none marker-none flex text-base cursor-default select-none">
                       <CoolIcon

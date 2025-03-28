@@ -59,7 +59,7 @@ export const BackupExportModal = (
                   <div className="flex" key={`export-backup-${backup.id}`}>
                     <button
                       type="button"
-                      className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
+                      className="rounded px-4 bg-gray-300 dark:bg-gray-800 flex grow min-h-[2.5rem]"
                       onClick={() => {
                         if (selectedBackups.includes(backup.id)) {
                           setSelectedBackups(
@@ -86,7 +86,7 @@ export const BackupExportModal = (
                     </button>
                     <Link
                       to={`/?backup=${backup.id}`}
-                      className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
+                      className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-800 w-10 min-h-[2.5rem]"
                       title={`View ${backup.name}`}
                       target="_blank"
                     >

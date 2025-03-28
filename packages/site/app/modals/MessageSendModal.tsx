@@ -502,7 +502,7 @@ export const MessageSendModal = (
                     />
                   </button>
                 )}
-                <label className="flex grow rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer overflow-hidden">
+                <label className="flex grow rounded bg-gray-200 dark:bg-gray-800 py-2 px-4 w-full cursor-pointer overflow-hidden">
                   <div className="my-auto grow text-left ltr:mr-2 rtl:ml-2 truncate">
                     <p className="font-semibold text-base truncate">
                       {t(previewText ? "messageNText" : "messageN", {
@@ -569,7 +569,7 @@ export const MessageSendModal = (
             return (
               <label
                 key={`target-${targetId}`}
-                className="flex rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 w-full cursor-pointer"
+                className="flex rounded bg-gray-200 dark:bg-gray-800 py-2 px-4 w-full cursor-pointer"
               >
                 <img
                   {...cdnImgAttributes(64, (size) =>

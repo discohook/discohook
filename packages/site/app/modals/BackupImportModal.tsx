@@ -150,7 +150,7 @@ export const BackupImportModal = (
               <div className="flex" key={`import-backup-${backup.name}-${i}`}>
                 <button
                   type="button"
-                  className="rounded px-4 bg-gray-300 dark:bg-gray-700 flex grow min-h-[2.5rem]"
+                  className="rounded px-4 bg-gray-300 dark:bg-gray-800 flex grow min-h-[2.5rem]"
                   onClick={() => {
                     if (selectedBackups.includes(backup.name)) {
                       setSelectedBackups(
@@ -200,7 +200,7 @@ export const BackupImportModal = (
                       targets: backup.targets,
                     } as QueryData),
                   )}`}
-                  className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-700 w-10 min-h-[2.5rem]"
+                  className="flex text-xl ml-1 shrink-0 rounded bg-gray-300 dark:bg-gray-800 w-10 min-h-[2.5rem]"
                   title={t("viewBackupName", {
                     replace: { name: backup.name },
                   })}
