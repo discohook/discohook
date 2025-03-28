@@ -85,10 +85,10 @@ export const MessageSetModal = (
       <InfoBox severity="blue" icon="Info" collapsible open={false}>
         <span>What is this?</span>
         <p>
-          You can use this menu if you're managing a message that has already
-          been sent in Discord. To get started, right click or long press the
-          message you want to edit, select "Copy Message Link", then paste the
-          link in the box below.
+          You can use this menu if you're editing a message that has already
+          been sent. To get started, right click/long press the message you want
+          to edit, select "Copy Message Link", then paste the link in the box
+          below.
           <br />
           <br />
           If you want to overwrite what is currently written in Discohook: Add
