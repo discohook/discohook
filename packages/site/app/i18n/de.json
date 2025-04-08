@@ -260,5 +260,6 @@
     "refreshed": "Aktualisiert",
     "inviteBot": "Bot Einladen",
     "weekday": "Wochentag",
-    "hourTime": "Stunde ({{timezone}})"
+    "hourTime": "Stunde ({{timezone}})",
+    "linkButton": "Link Knopf"
 }
