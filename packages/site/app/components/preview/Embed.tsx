@@ -224,25 +224,30 @@ export const Embed: React.FC<{
             )}
           </div>
         )}
-        {embed.description && (
-          <div
-            className="text-sm font-normal mt-2 inline-block whitespace-pre-line"
-            style={{
-              // @ts-expect-error
-              "--font-size": "1rem",
-            }}
-          >
-            {isLinkEmbed ? (
-              <p>{embed.description}</p>
-            ) : (
-              <Markdown
-                content={embed.description}
-                features="full"
-                cache={cache}
-              />
-            )}
-          </div>
-        )}
+        {embed.description &&
+          !(
+            isLinkEmbed &&
+            linkEmbedStrategy === LinkEmbedStrategy.Link &&
+            embed.video
+          ) && (
+            <div
+              className="text-sm font-normal mt-2 inline-block whitespace-pre-line"
+              style={{
+                // @ts-expect-error
+                "--font-size": "1rem",
+              }}
+            >
+              {isLinkEmbed ? (
+                <p>{embed.description}</p>
+              ) : (
+                <Markdown
+                  content={embed.description}
+                  features="full"
+                  cache={cache}
+                />
+              )}
+            </div>
+          )}
         {fieldLines.length > 0 && (
           <div className="text-sm leading-[1.125rem] grid col-start-1 col-end-2 gap-2 mt-2 min-w-0">
             {fieldLines.map((line, i) => (
