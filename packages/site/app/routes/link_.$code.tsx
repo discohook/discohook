@@ -9,17 +9,20 @@ import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
+import type { ZodOEmbedData } from "~/api/v1/oembed";
 import { Button } from "~/components/Button";
 import { decimalToHex } from "~/components/editor/ColorPicker";
 import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
 import { Embed } from "~/components/preview/Embed";
-import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
+import {
+  getVimeoVideoParameters,
+  getYoutubeVideoParameters,
+} from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
 import { LinkQueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
-import { ZodOEmbedData } from "../api/v1/oembed";
 import { linkEmbedToAPIEmbed } from "./link";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
@@ -55,7 +58,12 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
 export const meta: MetaFunction = ({ data }) => {
   if (data) {
-    const { data: embed } = (data as SerializeFrom<typeof loader>).data;
+    const {
+      data: { data: embed, redirect_url },
+      origin,
+      code,
+    } = data as SerializeFrom<typeof loader>;
+
     const tags: MetaDescriptor[] = [
       {
         title: `${getEmbedText(embed) || "Custom link embed"} - Discohook`,
@@ -69,6 +77,7 @@ export const meta: MetaFunction = ({ data }) => {
         content: embed.title,
       });
     }
+
     if (embed.description) {
       tags.push({
         property: "og:description",
@@ -82,35 +91,24 @@ export const meta: MetaFunction = ({ data }) => {
       });
     }
 
-    const youtubeMatch = embed.video?.url
-      ? getYoutubeVideoParameters(embed.video?.url)
-      : null;
     if (embed.video?.url) {
+      const youtubeMatch = embed.video?.url
+        ? getYoutubeVideoParameters(embed.video.url)
+        : null;
+      const vimeoMatch = embed.video?.url
+        ? getVimeoVideoParameters(embed.video.url)
+        : null;
+      const videoUrl = youtubeMatch
+        ? `https://www.youtube.com/embed/${youtubeMatch.id}`
+        : vimeoMatch
+          ? `https://player.vimeo.com/video/${vimeoMatch.id}`
+          : embed.video.url;
       tags.push(
-        {
-          name: "twitter:card",
-          content: "player",
-        },
-        {
-          property: "og:video",
-          content: youtubeMatch
-            ? `https://www.youtube.com/embed/${youtubeMatch.id}`
-            : embed.video.url,
-        },
-        {
-          property: "og:video:secure_url",
-          content: youtubeMatch
-            ? `https://www.youtube.com/embed/${youtubeMatch.id}`
-            : embed.video.url,
-        },
-        {
-          property: "og:video:width",
-          content: "1280",
-        },
-        {
-          property: "og:video:height",
-          content: "720",
-        },
+        { name: "twitter:card", content: "player" },
+        { property: "og:video", content: videoUrl },
+        { property: "og:video:secure_url", content: videoUrl },
+        { property: "og:video:width", content: embed.video.width ?? "1280" },
+        { property: "og:video:height", content: embed.video.height ?? "720" },
         ...(youtubeMatch
           ? [
               {
@@ -118,7 +116,15 @@ export const meta: MetaFunction = ({ data }) => {
                 content: `https://img.youtube.com/vi/${youtubeMatch.id}/0.jpg`,
               },
             ]
-          : []),
+          : vimeoMatch
+            ? [
+                {
+                  property: "og:image",
+                  // Unsure if this service is reliable
+                  content: `https://vumbnail.com/${vimeoMatch.id}_large.jpg`,
+                },
+              ]
+            : []),
       );
     } else if (embed.large_images) {
       tags.push({
@@ -155,9 +161,7 @@ export const meta: MetaFunction = ({ data }) => {
       tags.push({
         tagName: "link",
         rel: "alternate",
-        href: `${(data as SerializeFrom<typeof loader>).origin}${apiUrl(
-          BRoutes.oembed(),
-        )}?${new URLSearchParams({
+        href: `${origin}${apiUrl(BRoutes.oembed())}?${new URLSearchParams({
           data: JSON.stringify(oembed),
         })}`,
         type: "application/json+oembed",

@@ -5,6 +5,9 @@ import { SetImageModalData } from "~/modals/ImageModal";
 export const YOUTUBE_REGEX =
   /^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)\/((?:shorts\/|embed\/|v\/|live\/)?([\w\-]{5,}))/i;
 
+export const VIMEO_REGEX =
+  /^https?:\/\/(?:www\.)?vimeo\.com\/(?:video\/)?(\d+)/i;
+
 export const getYoutubeVideoParameters = (
   url: string,
 ): {
@@ -39,6 +42,28 @@ export const getYoutubeVideoParameters = (
   };
 };
 
+export const getVimeoVideoParameters = (
+  url: string,
+): {
+  id: string;
+  autoplay?: boolean;
+} | null => {
+  const match = url.match(VIMEO_REGEX);
+  if (!match || !match[1]) return null;
+
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+
+  return {
+    id: match[1],
+    autoplay: u.searchParams.get("autoplay") === "1",
+  };
+};
+
 export const Gallery: React.FC<{
   attachments: APIAttachment[];
   setImageModalData?: SetImageModalData;
@@ -67,6 +92,7 @@ export const GalleryItem: React.FC<{
 }) => {
   const { content_type: contentType, url } = attachments[index];
   const youtube = getYoutubeVideoParameters(url);
+  const vimeo = getVimeoVideoParameters(url);
   // Preview lighter-weight videos instead of GIF files
   const cdnGifVideoUrl =
     cdn && url.startsWith(`${cdn}/tenor/`) && url.endsWith(".gif")
@@ -107,6 +133,21 @@ export const GalleryItem: React.FC<{
         //     allowFullScreen
         //   />
         // </div>
+      ) : vimeo ? (
+        <a
+          href={`https://www.vimeo.com/${vimeo.id}?autoplay=${
+            vimeo.autoplay ? "1" : "0"
+          }`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            // not sure if this is reliable
+            src={`https://vumbnail.com/${vimeo.id}_large.jpg`}
+            className={twJoin("w-full h-full object-cover", itemClassName)}
+            alt="Vimeo video thumbnail"
+          />
+        </a>
       ) : (
         // biome-ignore lint/a11y/useMediaCaption: User-generated content
         <video src={url} className={itemClassName} controls />
