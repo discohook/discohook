@@ -102,10 +102,6 @@ export const LINK_INDEX_EMBED: LinkQueryData["embed"] = {
       "",
       "To save your embed and get posting, type a name in the box on the left, then click Save. Copy your link with Copy Link.",
     ].join("\n"),
-    // TODO tutorial video on how to use this editor
-    video: {
-      url: "https://youtube.com/embed/dQw4w9WgXcQ",
-    },
     color: 0x58b9ff,
   },
 };
