@@ -12,6 +12,7 @@ export interface Env {
   SESSIONS: DurableObjectNamespace;
   REDIS_URL: string;
   __STATIC_CONTENT: Fetcher;
+  ASSETS: Fetcher;
   VERSION: WorkerVersionMetadata;
   // __STATIC_CONTENT_MANIFEST: Object;
   SESSION_SECRET: string;
@@ -29,16 +30,16 @@ export interface Env {
   KOFI_WEBHOOK_TOKEN?: string;
   CRYPTO_ALERTS_TOKEN?: string;
   BITCOIN_ADDRESS?: string;
-  // reset possibly-stolen bot tokens
+  /** reset possibly-stolen bot tokens */
   GIST_TOKEN?: string;
-  // discohook.org - for importing old-style backups
+  /** discohook.org - for importing old-style backups */
   LEGACY_ORIGIN?: string;
-  // discohook.link - prettier links for link embeds
+  /** discohook.link - prettier links for link embeds */
   LINK_ORIGIN?: string;
-  // cdn.discohook.app - user uploaded content on B2
+  /** cdn.discohook.app - user uploaded content on B2 */
   CDN_ORIGIN: string;
   CDN: Service;
-  // bots.discohook.app - custom bots
+  /** bots.discohook.app - custom bots */
   BOTS_ORIGIN?: string;
   BOT: Service;
 }

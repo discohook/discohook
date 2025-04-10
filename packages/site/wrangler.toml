@@ -44,8 +44,9 @@ new_classes = ["ShareLinks"]
 tag = "v4"
 new_classes = ["SessionManager"]
 
-[site]
-bucket = "./public"
+[assets]
+directory = "./public"
+binding = "ASSETS"
 
 [build]
 command = "npm run build"
