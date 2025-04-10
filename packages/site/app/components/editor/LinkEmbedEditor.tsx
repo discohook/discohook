@@ -260,24 +260,26 @@ export const LinkEmbedEditor: React.FC<{
               </button>
             </div>
           )}
-          <div className="flex gap-2">
-            <div className="grow">
-              <TextInput
-                label={t("iconUrl")}
-                className="w-full"
-                type="url"
-                value={embed.author?.icon_url ?? ""}
-                onInput={({ currentTarget }) =>
-                  updateEmbed({
-                    author: {
-                      ...(embed.author ?? { name: "" }),
-                      icon_url: currentTarget.value,
-                    },
-                  })
-                }
-              />
+          {strategy === LinkEmbedStrategy.Mastodon ? (
+            <div className="flex gap-2">
+              <div className="grow">
+                <TextInput
+                  label={t("iconUrl")}
+                  className="w-full"
+                  type="url"
+                  value={embed.author?.icon_url ?? ""}
+                  onInput={({ currentTarget }) =>
+                    updateEmbed({
+                      author: {
+                        ...(embed.author ?? { name: "" }),
+                        icon_url: currentTarget.value,
+                      },
+                    })
+                  }
+                />
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
