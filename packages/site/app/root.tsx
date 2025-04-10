@@ -143,7 +143,10 @@ export default function App() {
 export function ErrorBoundary() {
   useEffect(changeLanguageEffect, []);
   const error = useRouteError();
-  console.error(error);
+  // We don't need to log 404s
+  if (!(isRouteErrorResponse(error) && error.status === 404)) {
+    console.error(error);
+  }
   return (
     <html lang="en" className="dark">
       <head>
