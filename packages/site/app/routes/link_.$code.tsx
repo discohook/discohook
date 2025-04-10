@@ -19,7 +19,7 @@ import {
   getYoutubeVideoParameters,
 } from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
-import { LinkQueryData } from "~/types/QueryData";
+import { LinkEmbedStrategy, LinkQueryData } from "~/types/QueryData";
 import { LoaderArgs } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
@@ -34,6 +34,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   const linkBackup = await db.query.linkBackups.findFirst({
     where: (linkBackups, { eq }) => eq(linkBackups.code, code),
     columns: {
+      id: true,
       data: true,
     },
   });
@@ -49,33 +50,70 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   const data: LinkQueryData = linkBackup.data;
   if (
     data.embed.redirect_url &&
-    !request.headers.get("User-Agent")?.includes("Discord")
+    !request.headers.get("User-Agent")?.includes("Discordbot")
   ) {
     return redirect(data.embed.redirect_url);
   }
-  return { data: data.embed, origin };
+  return {
+    data: data.embed,
+    backup_id:
+      data.embed.data.strategy === LinkEmbedStrategy.Mastodon
+        ? linkBackup.id
+        : undefined,
+    origin,
+    code,
+  };
 };
 
 export const meta: MetaFunction = ({ data }) => {
   if (data) {
     const {
       data: { data: embed, redirect_url },
+      backup_id,
       origin,
       code,
     } = data as SerializeFrom<typeof loader>;
+    const strategy = embed.strategy ?? LinkEmbedStrategy.Link;
 
     const tags: MetaDescriptor[] = [
+      { title: `${getEmbedText(embed) || "Custom link embed"} - Discohook` },
       {
-        title: `${getEmbedText(embed) || "Custom link embed"} - Discohook`,
+        tagName: "link",
+        rel: "canonical",
+        href: redirect_url ?? `${origin}/link/${code}`,
       },
+      { property: "og:url", content: redirect_url ?? `${origin}/link/${code}` },
     ];
 
     // Open Graph/Twitter tags
-    if (embed.title) {
-      tags.push({
-        property: "og:title",
-        content: embed.title,
-      });
+    if (strategy === LinkEmbedStrategy.Mastodon) {
+      if (embed.author?.name) {
+        tags.push(
+          { property: "twitter:title", content: embed.author.name },
+          { property: "og:title", content: embed.author.name },
+        );
+      }
+      // Goes in the footer for mastodon
+      if (embed.provider?.name) {
+        tags.push({
+          property: "og:site_name",
+          content: embed.provider.name,
+        });
+      }
+      if (embed.provider?.icon_url) {
+        tags.push({
+          tagName: "link",
+          href: embed.provider.icon_url,
+          rel: "icon",
+          // ¯\_(ツ)_/¯ ?
+          // sizes: "64x64",
+          // type: "image/png",
+        });
+      }
+    } else if (strategy === LinkEmbedStrategy.Link) {
+      if (embed.title) {
+        tags.push({ property: "og:title", content: embed.title });
+      }
     }
 
     if (embed.description) {
@@ -156,7 +194,6 @@ export const meta: MetaFunction = ({ data }) => {
       oembed.author_name = embed.author.name;
       oembed.author_url = embed.author.url;
     }
-
     if (Object.keys(oembed).length > 2) {
       tags.push({
         tagName: "link",
@@ -165,6 +202,18 @@ export const meta: MetaFunction = ({ data }) => {
           data: JSON.stringify(oembed),
         })}`,
         type: "application/json+oembed",
+      });
+    }
+
+    // Activity Streams (reformats the data to mimic a mastodon status)
+    if (backup_id !== undefined && strategy === LinkEmbedStrategy.Mastodon) {
+      tags.push({
+        tagName: "link",
+        rel: "alternate",
+        // Not actually visited by Discord; they parse out
+        // the ID and go to /api/v1/statuses/$id
+        href: `${origin}/users/link-embeds/statuses/${backup_id}`,
+        type: "application/activity+json",
       });
     }
 

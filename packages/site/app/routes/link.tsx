@@ -21,6 +21,7 @@ import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { ModalFooter } from "~/modals/Modal";
 import { getUser } from "~/session.server";
 import {
+  LinkEmbedStrategy,
   LinkQueryData,
   ZodLinkEmbed,
   ZodLinkQueryData,
@@ -59,7 +60,12 @@ export const linkEmbedToAPIEmbed = (
   data: z.infer<typeof ZodLinkEmbed>,
   code?: string,
   linkOrigin?: string,
-): { embed: APIEmbed; extraImages: APIEmbedImage[] } => {
+): {
+  embed: APIEmbed;
+  extraImages: APIEmbedImage[];
+  isLinkEmbed: true;
+  linkEmbedStrategy: LinkEmbedStrategy;
+} => {
   const embed: APIEmbed = {
     title: data.title,
     url: code ? linkEmbedUrl(code, linkOrigin) : "#",
@@ -68,6 +74,7 @@ export const linkEmbedToAPIEmbed = (
     description: data.description,
     color: data.color,
     video: data.video,
+    timestamp: data.timestamp,
   };
   const extraImages: APIEmbedImage[] = [];
 
@@ -80,7 +87,12 @@ export const linkEmbedToAPIEmbed = (
     }
   }
 
-  return { embed, extraImages };
+  return {
+    embed,
+    extraImages,
+    isLinkEmbed: true,
+    linkEmbedStrategy: data.strategy ?? LinkEmbedStrategy.Link,
+  };
 };
 
 export interface LinkHistoryItem {
@@ -415,7 +427,7 @@ export default () => {
                         `${linkEmbedUrl(
                           backupInfo.code,
                           linkOrigin,
-                        )}#${randomString(6)}`,
+                        )}#${randomString(3)}`,
                       );
                     }}
                   />,
@@ -437,6 +449,109 @@ export default () => {
               />
             </div>
           </div>
+          {/*
+          <div className="flex w-full mb-2">
+            <div className="grow">
+              <p className="text-sm font-medium cursor-default">
+                <Trans
+                  t={t}
+                  i18nKey="linkEmbedType"
+                  components={[
+                    <Link
+                      className={linkClassName}
+                      to="/guide/getting-started/link-embeds"
+                      target="_blank"
+                    />,
+                  ]}
+                />
+              </p>
+              <Select.Root
+                value={data.embed.data.strategy ?? LinkEmbedStrategy.Link}
+                onValueChange={(value) => {
+                  data.embed.data.strategy = value;
+                  setData({ ...data });
+                }}
+              >
+                <Select.Trigger
+                  className={twJoin(
+                    "flex rounded-lg border border-border-normal dark:border-border-normal-dark focus:outline-none h-9 py-0 px-[14px] font-medium !mt-0",
+                    "disabled:text-gray-600 disabled:cursor-not-allowed",
+                    "bg-white dark:bg-[#333338]",
+                  )}
+                >
+                  <Select.Value
+                    placeholder={t("defaultPlaceholder")}
+                    className="my-auto truncate ltr:mr-2 rtl:ml-2"
+                  />
+                  <Select.Icon className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                    <CoolIcon icon="Chevron_Down" />
+                  </Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Positioner
+                    className={twJoin(
+                      "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
+                      "p-0.5 border border-black/[0.08]",
+                    )}
+                    align="start"
+                    alignOffset={2}
+                  >
+                    <Select.ScrollUpArrow />
+                    <Select.Popup>
+                      <Select.Arrow />
+                      <Select.Item
+                        value="link"
+                        className={twJoin(
+                          "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
+                          "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
+                        )}
+                      >
+                        <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                          {t("linkEmbedTypeStandard")}
+                        </Select.ItemText>
+                        <Select.ItemIndicator
+                          className={twJoin(
+                            "ltr:ml-auto rtl:mr-auto my-auto text-lg",
+                            // https://github.com/mui/base-ui/issues/1556#issuecomment-2741296430
+                            !data.embed.data.strategy ||
+                              data.embed.data.strategy === "link"
+                              ? "visible"
+                              : "invisible",
+                          )}
+                        >
+                          <CoolIcon icon="Check" />
+                        </Select.ItemIndicator>
+                      </Select.Item>
+                      <Select.Item
+                        value="mastodon"
+                        className={twJoin(
+                          "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
+                          "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
+                        )}
+                      >
+                        <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                          {t("linkEmbedTypeMastodon")}
+                        </Select.ItemText>
+                        <Select.ItemIndicator
+                          className={twJoin(
+                            "ltr:ml-auto rtl:mr-auto my-auto text-lg",
+                            // https://github.com/mui/base-ui/issues/1556#issuecomment-2741296430
+                            data.embed.data.strategy === "mastodon"
+                              ? "visible"
+                              : "invisible",
+                          )}
+                        >
+                          <CoolIcon icon="Check" />
+                        </Select.ItemIndicator>
+                      </Select.Item>
+                    </Select.Popup>
+                    <Select.ScrollDownArrow />
+                  </Select.Positioner>
+                </Select.Portal>
+              </Select.Root>
+            </div>
+          </div>
+          */}
           <LinkEmbedEditor
             embed={data.embed}
             data={data}
@@ -497,6 +612,9 @@ export default () => {
                 compactAvatars={settings.compactAvatars}
                 setImageModalData={setImageModalData}
                 isLinkEmbedEditor
+                linkEmbedStrategies={
+                  data.embed.data.strategy ? [data.embed.data.strategy] : []
+                }
               />
             ) : (
               <Embed
@@ -506,7 +624,6 @@ export default () => {
                   linkOrigin,
                 )}
                 setImageModalData={setImageModalData}
-                isLinkEmbed
               />
             )}
           </div>

@@ -76,18 +76,29 @@ export const ZodQueryDataMessage = z.object({
 
 export const ZodLinkQueryDataVersion = z.literal(1);
 
+export enum LinkEmbedStrategy {
+  Link = "link",
+  Mastodon = "mastodon",
+}
+
+export const ZodLinkEmbedStrategy = z.nativeEnum(LinkEmbedStrategy);
+
 export const ZodLinkEmbed = z.object({
+  strategy: ZodLinkEmbedStrategy.optional(),
   title: z.ostring(),
   description: z.ostring(),
+  timestamp: z.ostring(),
   provider: z
     .object({
       name: z.ostring(),
+      icon_url: z.ostring(),
       url: z.ostring(),
     })
     .optional(),
   author: z
     .object({
       name: z.string(),
+      icon_url: z.ostring(),
       url: z.ostring(),
     })
     .optional(),
@@ -107,7 +118,7 @@ export const ZodLinkEmbed = z.object({
     })
     .optional(),
   color: z.onumber(),
-});
+}) satisfies z.ZodType<APIEmbed>;
 
 export const ZodLinkQueryData = z.object({
   version: ZodLinkQueryDataVersion.optional(),

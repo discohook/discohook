@@ -4,6 +4,7 @@ import { twJoin } from "tailwind-merge";
 import {
   LinkEmbed,
   LinkEmbedContainer,
+  LinkEmbedStrategy,
   LinkQueryData,
 } from "~/types/QueryData";
 import { Button } from "../Button";
@@ -12,6 +13,7 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import DatePicker from "../pickers/DatePicker";
 import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
 import {
   ColorPicker,
@@ -54,7 +56,9 @@ export const LinkEmbedEditor: React.FC<{
   setData: React.Dispatch<React.SetStateAction<LinkQueryData>>;
   open?: boolean;
 }> = ({ embed: embedContainer, data, setData, open }) => {
-  const { data: embed, redirect_url } = embedContainer;
+  const { data: embed, redirect_url: _ } = embedContainer;
+  const strategy = embed.strategy ?? LinkEmbedStrategy.Link;
+
   const { t } = useTranslation();
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
@@ -69,6 +73,7 @@ export const LinkEmbedEditor: React.FC<{
     if (
       partialEmbed.author &&
       !partialEmbed.author.name &&
+      !partialEmbed.author.icon_url &&
       !partialEmbed.author.url
     ) {
       partialEmbed.author = undefined;
@@ -108,78 +113,80 @@ export const LinkEmbedEditor: React.FC<{
           </InfoBox>
         </div>
       )}
-      <EmbedEditorSection name={t("provider")} open={open}>
-        <div className="flex">
-          <div className="grow">
-            <TextArea
-              label={t("name")}
-              className="w-full"
-              maxLength={256}
-              value={embed.provider?.name ?? ""}
-              short
-              onInput={(e) =>
-                updateEmbed({
-                  provider: {
-                    ...(embed.provider ?? {}),
-                    name: e.currentTarget.value,
-                  },
-                })
-              }
-            />
-          </div>
-          {embed.provider?.url === undefined && (
-            <Button
-              className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
-              onClick={() =>
-                updateEmbed({
-                  provider: {
-                    ...(embed.provider ?? { name: "" }),
-                    url: location.origin,
-                  },
-                })
-              }
-            >
-              {t("addUrl")}
-            </Button>
-          )}
-        </div>
-        <div className="grid gap-2 mt-2">
-          {embed.provider?.url !== undefined && (
-            <div className="flex">
-              <div className="grow">
-                <TextInput
-                  label={t("providerUrl")}
-                  className="w-full"
-                  type="url"
-                  value={embed.provider?.url ?? ""}
-                  onInput={(e) =>
-                    updateEmbed({
-                      provider: {
-                        ...(embed.provider ?? { name: "" }),
-                        url: e.currentTarget.value,
-                      },
-                    })
-                  }
-                />
-              </div>
-              <button
-                type="button"
-                className="ml-2 mt-auto mb-1 text-xl"
+      {strategy === "link" ? (
+        <EmbedEditorSection name={t("provider")} open={open}>
+          <div className="flex">
+            <div className="grow">
+              <TextArea
+                label={t("name")}
+                className="w-full"
+                maxLength={256}
+                value={embed.provider?.name ?? ""}
+                short
+                onInput={(e) =>
+                  updateEmbed({
+                    provider: {
+                      ...(embed.provider ?? {}),
+                      name: e.currentTarget.value,
+                    },
+                  })
+                }
+              />
+            </div>
+            {embed.provider?.url === undefined && (
+              <Button
+                className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
                 onClick={() =>
                   updateEmbed({
                     provider: {
                       ...(embed.provider ?? { name: "" }),
-                      url: undefined,
+                      url: location.origin,
                     },
                   })
                 }
               >
-                <CoolIcon icon="Close_MD" />
-              </button>
-            </div>
-          )}
-        </div>
-      </EmbedEditorSection>
+                {t("addUrl")}
+              </Button>
+            )}
+          </div>
+          <div className="grid gap-2 mt-2">
+            {embed.provider?.url !== undefined && (
+              <div className="flex">
+                <div className="grow">
+                  <TextInput
+                    label={t("providerUrl")}
+                    className="w-full"
+                    type="url"
+                    value={embed.provider?.url ?? ""}
+                    onInput={(e) =>
+                      updateEmbed({
+                        provider: {
+                          ...(embed.provider ?? { name: "" }),
+                          url: e.currentTarget.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="ml-2 mt-auto mb-1 text-xl"
+                  onClick={() =>
+                    updateEmbed({
+                      provider: {
+                        ...(embed.provider ?? { name: "" }),
+                        url: undefined,
+                      },
+                    })
+                  }
+                >
+                  <CoolIcon icon="Close_MD" />
+                </button>
+              </div>
+            )}
+          </div>
+        </EmbedEditorSection>
+      ) : null}
       <hr className="border border-gray-500/20" />
       <EmbedEditorSection name={t("author")} open={open}>
         <div className="flex">
@@ -253,6 +260,24 @@ export const LinkEmbedEditor: React.FC<{
               </button>
             </div>
           )}
+          <div className="flex gap-2">
+            <div className="grow">
+              <TextInput
+                label={t("iconUrl")}
+                className="w-full"
+                type="url"
+                value={embed.author?.icon_url ?? ""}
+                onInput={({ currentTarget }) =>
+                  updateEmbed({
+                    author: {
+                      ...(embed.author ?? { name: "" }),
+                      icon_url: currentTarget.value,
+                    },
+                  })
+                }
+              />
+            </div>
+          </div>
         </div>
       </EmbedEditorSection>
       <hr className="border border-gray-500/20" />
@@ -273,61 +298,59 @@ export const LinkEmbedEditor: React.FC<{
             />
           </div>
         </div>
-        <button
-          type="button"
-          className="flex w-full cursor-pointer text-start"
-          onClick={() => setColorPickerOpen((v) => !v)}
-        >
-          <div className="grow">
-            <p className="text-sm font-medium">{t("sidebarColor")}</p>
-            <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
-              <span className="align-middle">
-                {typeof embed.color === "number"
-                  ? decimalToHex(embed.color)
-                  : t("clickToSet")}
-              </span>
-            </p>
-          </div>
-          <div
-            className="h-9 w-9 mt-auto rounded ml-2 bg-gray-500"
-            style={{
-              backgroundColor:
+        <div className="grid gap-2">
+          <button
+            type="button"
+            className="flex cursor-pointer text-start"
+            onClick={() => setColorPickerOpen((v) => !v)}
+          >
+            <div className="grow">
+              <p className="text-sm font-medium">{t("sidebarColor")}</p>
+              <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
+                <span className="align-middle">
+                  {typeof embed.color === "number"
+                    ? decimalToHex(embed.color)
+                    : t("clickToSet")}
+                </span>
+              </p>
+            </div>
+            <div
+              className="h-9 w-9 mt-auto rounded-lg ltr:ml-2 rtl:mr-2 bg-gray-500"
+              style={{
+                backgroundColor:
+                  typeof embed.color === "number"
+                    ? decimalToHex(embed.color)
+                    : undefined,
+              }}
+            />
+          </button>
+          <PickerOverlayWrapper
+            open={colorPickerOpen}
+            setOpen={setColorPickerOpen}
+            containerClassName="ltr:right-0 rtl:left-0 top-0"
+          >
+            <ColorPicker
+              t={t}
+              color={
                 typeof embed.color === "number"
-                  ? decimalToHex(embed.color)
-                  : undefined,
-            }}
-          />
-        </button>
-        <PickerOverlayWrapper
-          open={colorPickerOpen}
-          setOpen={setColorPickerOpen}
-          containerClassName="ltr:right-0 rtl:left-0 top-0"
-        >
-          <ColorPicker
-            t={t}
-            color={
-              typeof embed.color === "number"
-                ? decimalToRgb(embed.color)
-                : undefined
-            }
-            onChange={(color) => {
-              updateEmbed({ color: rgbToDecimal(color.rgb) });
-            }}
-            onReset={() => {
-              updateEmbed({ color: undefined });
-            }}
-          />
-        </PickerOverlayWrapper>
-        {!!embed.video?.url && (
-          <InfoBox severity="yellow" icon="Info">
-            {t("linkEmbedsNoVideoAndDescription")}
-          </InfoBox>
-        )}
+                  ? decimalToRgb(embed.color)
+                  : undefined
+              }
+              onChange={(color) => {
+                updateEmbed({ color: rgbToDecimal(color.rgb) });
+              }}
+              onReset={() => {
+                updateEmbed({ color: undefined });
+              }}
+            />
+          </PickerOverlayWrapper>
+        </div>
         <TextArea
           label={t("description")}
           className="w-full h-40"
           value={embed.description ?? ""}
-          maxLength={356}
+          maxLength={strategy === LinkEmbedStrategy.Mastodon ? 4096 : 356}
+          // markdown="full"
           onInput={(e) =>
             updateEmbed({
               description: e.currentTarget.value || undefined,
@@ -424,7 +447,11 @@ export const LinkEmbedEditor: React.FC<{
         )}
         <div>
           <TextInput
-            label={t("linkEmbedsVideoUrl")}
+            label={t(
+              strategy === LinkEmbedStrategy.Mastodon
+                ? "linkEmbedsVideoUrlDirect"
+                : "linkEmbedsVideoUrl",
+            )}
             type="url"
             className="w-full"
             value={embed.video?.url ?? ""}
@@ -482,6 +509,89 @@ export const LinkEmbedEditor: React.FC<{
           </div> */}
         </div>
       </EmbedEditorSection>
+      <hr className="border border-gray-500/20" />
+      {strategy === "mastodon" ? (
+        <EmbedEditorSection name={t("footer")} open={open}>
+          <div className="flex">
+            <div className="grow">
+              <TextArea
+                label={t("text")}
+                className="w-full"
+                maxLength={2048}
+                required
+                value={embed.provider?.name ?? ""}
+                short
+                onInput={(e) =>
+                  updateEmbed({
+                    provider: {
+                      ...(embed.provider ?? {}),
+                      name: e.currentTarget.value,
+                    },
+                  })
+                }
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-2">
+            <div className="grow">
+              <TextInput
+                label={t("iconUrl")}
+                className="w-full"
+                type="url"
+                value={embed.provider?.icon_url ?? ""}
+                onInput={({ currentTarget }) =>
+                  updateEmbed({
+                    provider: {
+                      ...(embed.provider ?? { text: "" }),
+                      icon_url: currentTarget.value,
+                    },
+                  })
+                }
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <DatePicker
+              label={t("date")}
+              value={embed.timestamp ? new Date(embed.timestamp) : null}
+              onChange={(opt) =>
+                updateEmbed({
+                  timestamp: opt ? opt.date.toISOString() : undefined,
+                })
+              }
+              isClearable
+            />
+            <TextInput
+              label={t("timeText")}
+              type="time"
+              className="w-full"
+              disabled={!embed.timestamp}
+              step={60}
+              value={
+                !embed.timestamp
+                  ? ""
+                  : new Date(embed.timestamp).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+              }
+              onChange={(e) => {
+                if (embed.timestamp) {
+                  const [hours, minutes] = e.currentTarget.value
+                    .split(":")
+                    .map(Number);
+                  const timestamp = new Date(embed.timestamp);
+                  timestamp.setHours(hours, minutes, 0, 0);
+                  updateEmbed({
+                    timestamp: timestamp.toISOString(),
+                  });
+                }
+              }}
+            />
+          </div>
+        </EmbedEditorSection>
+      ) : null}
     </details>
   );
 };

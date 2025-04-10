@@ -1289,3 +1289,28 @@ export const Markdown: React.FC<{
 
   return <div>{renderMarkdownNodes(result.nodes, resolver.resolved, t)}</div>;
 };
+
+/**
+ * The output of this function is able to be converted to an HTML string
+ * via `ReactDOMServer.renderToString`, fit for the content of a Mastodon
+ * activity payload. Does not attempt to resolve or populate cache.
+ */
+export const markdownToHtmlable = ({ content }: { content: string }) => {
+  const { t } = useTranslation();
+
+  const features: FeatureConfig = {
+    links: true,
+    autoLinks: true,
+    maskedLinks: true,
+    bold: true,
+    italic: true,
+    underline: true,
+    breaks: true,
+    escapes: true,
+    text: true,
+  };
+  const parse = createMarkdownParser(getRules(features));
+  const result = parse(trimContent(content));
+
+  return renderMarkdownNodes(result.nodes, undefined, t);
+};

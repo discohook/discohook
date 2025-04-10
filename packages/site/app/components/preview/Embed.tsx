@@ -4,6 +4,7 @@ import { Trans } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
+import { LinkEmbedStrategy } from "~/types/QueryData";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { decimalToHex } from "../editor/ColorPicker";
@@ -70,6 +71,7 @@ export const Embed: React.FC<{
   cache?: CacheManager;
   setImageModalData?: SetImageModalData;
   isLinkEmbed?: boolean;
+  linkEmbedStrategy?: LinkEmbedStrategy;
   cdn?: string;
 }> = ({
   embed,
@@ -78,8 +80,21 @@ export const Embed: React.FC<{
   cache,
   setImageModalData,
   isLinkEmbed,
+  linkEmbedStrategy: linkEmbedStrategy_,
   cdn,
 }) => {
+  const linkEmbedStrategy = linkEmbedStrategy_ ?? LinkEmbedStrategy.Link;
+  const footer: (typeof embed)["footer"] =
+    linkEmbedStrategy === LinkEmbedStrategy.Mastodon
+      ? embed.provider
+        ? {
+            text: embed.provider.name ?? "",
+            // @ts-expect-error
+            icon_url: embed.provider.icon_url,
+          }
+        : undefined
+      : embed.footer;
+
   const fieldLines: APIEmbedField[][] = [];
   for (const field of embed.fields ?? []) {
     const currentLine = fieldLines[fieldLines.length - 1];
@@ -131,7 +146,8 @@ export const Embed: React.FC<{
           maxWidth: 520,
         }}
       >
-        {embed.provider?.name && (
+        {(!linkEmbedStrategy || linkEmbedStrategy === LinkEmbedStrategy.Link) &&
+        embed.provider?.name ? (
           <div className="min-w-0 mt-2 font-normal text-xs whitespace-break-spaces break-words text-background-secondary-dark dark:text-primary-230">
             {embed.provider.url ? (
               <a
@@ -146,7 +162,7 @@ export const Embed: React.FC<{
               <span>{embed.provider.name}</span>
             )}
           </div>
-        )}
+        ) : null}
         {embed.author?.name && (
           <div className="min-w-0 flex mt-2">
             {embed.author.icon_url &&
@@ -357,14 +373,16 @@ export const Embed: React.FC<{
             )}
           </button>
         )}
-        {(embed.footer?.text || embed.timestamp) && (
+        {(footer?.text ||
+          (embed.timestamp &&
+            linkEmbedStrategy === LinkEmbedStrategy.Mastodon)) && (
           <div className="min-w-0 flex mt-2 font-medium text-xs text-primary-600 dark:text-primary-230">
-            {embed.footer?.text && (
+            {footer?.text && (
               <>
-                {embed.footer.icon_url &&
-                  (cdnGifVideoUrl(embed.footer.icon_url) ? (
+                {footer.icon_url &&
+                  (cdnGifVideoUrl(footer.icon_url) ? (
                     <video
-                      src={cdnGifVideoUrl(embed.footer.icon_url)}
+                      src={cdnGifVideoUrl(footer.icon_url)}
                       className="h-5 w-5 mr-2 object-contain rounded-full"
                       autoPlay
                       muted
@@ -373,18 +391,18 @@ export const Embed: React.FC<{
                   ) : (
                     <img
                       className="h-5 w-5 mr-2 object-contain rounded-full"
-                      src={getImageUri(embed.footer.icon_url, files)}
+                      src={getImageUri(footer.icon_url, files)}
                       alt="Footer"
                     />
                   ))}
                 <p className="whitespace-pre-wrap inline-block my-auto">
-                  {embed.footer.text}
+                  {footer.text}
                 </p>
               </>
             )}
             {embed.timestamp && (
               <>
-                {embed.footer?.text && <p className="mx-1">•</p>}
+                {footer?.text && <p className="mx-1">•</p>}
                 <p className="whitespace-pre-wrap inline-block my-auto">
                   <Trans
                     i18nKey={`timestamp.footer.${getI18nTimestampFooterKey(

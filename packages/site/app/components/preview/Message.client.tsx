@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
+import { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { cdn, webhookAvatarUrl } from "~/util/discord";
@@ -73,6 +73,7 @@ export const Message: React.FC<{
   setImageModalData?: SetImageModalData;
   forceSeparateAuthor?: boolean;
   isLinkEmbedEditor?: boolean;
+  linkEmbedStrategies?: LinkEmbedStrategy[];
   cdn?: string;
 }> = ({
   message,
@@ -88,6 +89,7 @@ export const Message: React.FC<{
   setImageModalData,
   forceSeparateAuthor,
   isLinkEmbedEditor,
+  linkEmbedStrategies,
   cdn: cdnOrigin,
 }) => {
   const { t } = useTranslation();
@@ -362,6 +364,7 @@ export const Message: React.FC<{
                       setImageModalData={setImageModalData}
                       cache={cache}
                       isLinkEmbed={isLinkEmbedEditor}
+                      linkEmbedStrategy={linkEmbedStrategies?.[i]}
                       cdn={cdnOrigin}
                     />
                   ))}
