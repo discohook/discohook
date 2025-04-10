@@ -81,7 +81,7 @@ export const LinkEmbedEditor: React.FC<{
   const errors = getEmbedErrors(embed);
   return (
     <details
-      className="group/embed rounded p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-gray-500 dark:border-l-[#1E1F22] shadow"
+      className="group/embed rounded-lg p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-[#D9D9DC] dark:border-l-[#4A4A50] shadow"
       open={open}
       style={
         embed.color ? { borderLeftColor: decimalToHex(embed.color) } : undefined
@@ -90,12 +90,13 @@ export const LinkEmbedEditor: React.FC<{
       <summary className="group-open/embed:mb-2 py-1 px-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/embed:rotate-90 mr-2 my-auto transition-transform"
+          rtl="Chevron_Left"
+          className="ltr:group-open/embed:rotate-90 rtl:group-open/embed:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
         />
         {errors.length > 0 && (
           <CoolIcon
             icon="Circle_Warning"
-            className="my-auto text-rose-600 dark:text-rose-400 mr-1.5"
+            className="my-auto text-rose-600 dark:text-rose-400 ltr:mr-1.5 rtl:ml-1.5"
           />
         )}
         <span className="truncate">{t("embed")}</span>
@@ -189,6 +190,7 @@ export const LinkEmbedEditor: React.FC<{
               maxLength={256}
               value={embed.author?.name ?? ""}
               short
+              t={t}
               onInput={(e) =>
                 updateEmbed({
                   author: {
@@ -223,6 +225,7 @@ export const LinkEmbedEditor: React.FC<{
                   label={t("authorUrl")}
                   className="w-full"
                   type="url"
+                  t={t}
                   value={embed.author?.url ?? ""}
                   onInput={(e) =>
                     updateEmbed({
@@ -236,7 +239,7 @@ export const LinkEmbedEditor: React.FC<{
               </div>
               <button
                 type="button"
-                className="ml-2 mt-auto mb-1 text-xl"
+                className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
                 onClick={() =>
                   updateEmbed({
                     author: {
@@ -426,16 +429,57 @@ export const LinkEmbedEditor: React.FC<{
             className="w-full"
             value={embed.video?.url ?? ""}
             disabled={!!embed.images?.length}
-            onInput={(e) => {
+            onInput={async (e) => {
+              const url = e.currentTarget.value;
               updateEmbed({
                 large_images: false,
                 images: undefined,
-                video: e.currentTarget.value
-                  ? { url: e.currentTarget.value }
-                  : undefined,
+                video: url ? { url } : undefined,
               });
+              const oldSizers = document.querySelectorAll("video.sizer");
+              for (const el of oldSizers) el.remove();
+
+              // Get height and width automatically
+              if (url) {
+                // We would use the preview video here but it's not always rendered
+                const element = document.createElement("video");
+                element.className = "sizer";
+                element.src = url;
+                element.style.opacity = "0";
+                element.style.top = "0";
+                element.style.left = "0";
+                element.style.position = "absolute";
+                element.addEventListener("loadedmetadata", (e) => {
+                  if (!e.target) return;
+                  const { videoHeight, videoWidth } =
+                    e.target as HTMLVideoElement;
+                  updateEmbed({
+                    video: {
+                      url,
+                      height: videoHeight,
+                      width: videoWidth,
+                    },
+                  });
+                  element.remove();
+                });
+                document.appendChild(element);
+              }
             }}
           />
+          {/* <div className="">
+            <TextInput
+              label={t("width")}
+              className="w-full"
+              value={embed.video?.width ?? ""}
+              disabled
+            />
+            <TextInput
+              label={t("height")}
+              className="w-full"
+              value={embed.video?.height ?? ""}
+              disabled
+            />
+          </div> */}
         </div>
       </EmbedEditorSection>
     </details>
