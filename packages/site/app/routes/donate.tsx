@@ -126,7 +126,11 @@ const features: Record<string, SimpleTextModalProps> = {
         <Link to="/link" className={linkClassName}>
           link embed editor
         </Link>{" "}
-        to see what's possible.
+        to see what's possible, or{" "}
+        <Link to="/guide/getting-started/link-embeds" className={linkClassName}>
+          learn more here
+        </Link>
+        .
       </>
     ),
   },
