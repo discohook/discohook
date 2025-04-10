@@ -74,6 +74,7 @@ export const TextArea = (
         )}
       </p>
       {props.description && <p className="text-sm">{props.description}</p>}
+      {/* TODO: On Chrome this div is 6px too tall for some reason */}
       <div className="relative">
         <textarea
           {...newProps}

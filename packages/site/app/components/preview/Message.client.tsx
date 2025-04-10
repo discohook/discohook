@@ -73,6 +73,7 @@ export const Message: React.FC<{
   setImageModalData?: SetImageModalData;
   forceSeparateAuthor?: boolean;
   isLinkEmbedEditor?: boolean;
+  cdn?: string;
 }> = ({
   message,
   discordApplicationId,
@@ -87,6 +88,7 @@ export const Message: React.FC<{
   setImageModalData,
   forceSeparateAuthor,
   isLinkEmbedEditor,
+  cdn: cdnOrigin,
 }) => {
   const { t } = useTranslation();
   const webhook = webhooks
@@ -94,10 +96,19 @@ export const Message: React.FC<{
       webhooks[0]
     : undefined;
   const username = message.author?.name ?? webhook?.name ?? "Discohook";
+  // Trim out obviously bad data before attempting to load the image
   const avatarUrl =
-    // This is used to discard invalid URLs. Attachment URIs are not
-    // supported for avatars.
-    (message.author?.icon_url ? getImageUri(message.author.icon_url) : null) ||
+    (message.author?.icon_url
+      ? cdnOrigin &&
+        message.author.icon_url.startsWith(`${cdnOrigin}/tenor/`) &&
+        message.author.icon_url.endsWith(".gif")
+        ? // You can attempt to send a GIF, but it will be static. We preview
+          // the thumbnail (for tenor) so people don't think there's something
+          // wrong.
+          message.author.icon_url.replace(/\.gif$/, ".png")
+        : // Discards attachment URIs, which are not supported for avatars
+          getImageUri(message.author.icon_url)
+      : null) ||
     (webhook
       ? webhookAvatarUrl(webhook, { size: 64 })
       : "/logos/discohook.svg");
@@ -351,6 +362,7 @@ export const Message: React.FC<{
                       setImageModalData={setImageModalData}
                       cache={cache}
                       isLinkEmbed={isLinkEmbedEditor}
+                      cdn={cdnOrigin}
                     />
                   ))}
                 </div>

@@ -70,7 +70,16 @@ export const Embed: React.FC<{
   cache?: CacheManager;
   setImageModalData?: SetImageModalData;
   isLinkEmbed?: boolean;
-}> = ({ embed, extraImages, files, cache, setImageModalData, isLinkEmbed }) => {
+  cdn?: string;
+}> = ({
+  embed,
+  extraImages,
+  files,
+  cache,
+  setImageModalData,
+  isLinkEmbed,
+  cdn,
+}) => {
   const fieldLines: APIEmbedField[][] = [];
   for (const field of embed.fields ?? []) {
     const currentLine = fieldLines[fieldLines.length - 1];
@@ -100,6 +109,11 @@ export const Embed: React.FC<{
   if (extraImages) {
     images.push(...extraImages);
   }
+
+  const cdnGifVideoUrl = (url: string) =>
+    cdn && url.startsWith(`${cdn}/tenor/`) && url.endsWith(".gif")
+      ? url.replace(/\.gif$/, ".mp4")
+      : undefined;
 
   return (
     <div>
@@ -135,13 +149,23 @@ export const Embed: React.FC<{
         )}
         {embed.author?.name && (
           <div className="min-w-0 flex mt-2">
-            {embed.author.icon_url && (
-              <img
-                className="h-6 w-6 mr-2 object-contain rounded-full"
-                src={getImageUri(embed.author.icon_url, files)}
-                alt="Author"
-              />
-            )}
+            {embed.author.icon_url &&
+              !isLinkEmbed &&
+              (cdnGifVideoUrl(embed.author.icon_url) ? (
+                <video
+                  src={cdnGifVideoUrl(embed.author.icon_url)}
+                  className="h-6 w-6 mr-2 object-contain rounded-full"
+                  autoPlay
+                  muted
+                  loop
+                />
+              ) : (
+                <img
+                  className="h-6 w-6 mr-2 object-contain rounded-full"
+                  src={getImageUri(embed.author.icon_url, files)}
+                  alt="Author"
+                />
+              ))}
             <p className="font-medium text-sm whitespace-pre-wrap inline-block my-auto">
               {embed.author.url ? (
                 <a
@@ -283,6 +307,7 @@ export const Embed: React.FC<{
                   }) as APIAttachment,
               )}
               setImageModalData={setImageModalData}
+              cdn={cdn}
             />
           </div>
         )}
@@ -315,24 +340,43 @@ export const Embed: React.FC<{
               }
             }}
           >
-            <img
-              src={getImageUri(embed.thumbnail.url, files)}
-              className="rounded max-w-[80px] max-h-20"
-              alt="Thumbnail"
-            />
+            {cdnGifVideoUrl(embed.thumbnail.url) ? (
+              <video
+                src={cdnGifVideoUrl(embed.thumbnail.url)}
+                className="rounded max-w-[80px] max-h-20"
+                autoPlay
+                muted
+                loop
+              />
+            ) : (
+              <img
+                src={getImageUri(embed.thumbnail.url, files)}
+                className="rounded max-w-[80px] max-h-20"
+                alt="Thumbnail"
+              />
+            )}
           </button>
         )}
         {(embed.footer?.text || embed.timestamp) && (
           <div className="min-w-0 flex mt-2 font-medium text-xs text-primary-600 dark:text-primary-230">
             {embed.footer?.text && (
               <>
-                {embed.footer.icon_url && (
-                  <img
-                    className="h-5 w-5 mr-2 object-contain rounded-full"
-                    src={getImageUri(embed.footer.icon_url, files)}
-                    alt="Footer"
-                  />
-                )}
+                {embed.footer.icon_url &&
+                  (cdnGifVideoUrl(embed.footer.icon_url) ? (
+                    <video
+                      src={cdnGifVideoUrl(embed.footer.icon_url)}
+                      className="h-5 w-5 mr-2 object-contain rounded-full"
+                      autoPlay
+                      muted
+                      loop
+                    />
+                  ) : (
+                    <img
+                      className="h-5 w-5 mr-2 object-contain rounded-full"
+                      src={getImageUri(embed.footer.icon_url, files)}
+                      alt="Footer"
+                    />
+                  ))}
                 <p className="whitespace-pre-wrap inline-block my-auto">
                   {embed.footer.text}
                 </p>

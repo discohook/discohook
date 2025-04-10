@@ -1,7 +1,7 @@
 import { APIEmbedField, ButtonStyle } from "discord-api-types/v10";
 import { TFunction } from "i18next";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
@@ -18,6 +18,7 @@ import { CoolIcon } from "../icons/CoolIcon";
 import DatePicker from "../pickers/DatePicker";
 import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
 import { transformFileName } from "../preview/Embed";
+import { linkClassName } from "../preview/Markdown";
 import {
   ColorPicker,
   decimalToHex,
@@ -68,6 +69,84 @@ export const getEmbedErrors = (embed: APIEmbed) => {
   return errors;
 };
 
+const GIF_SITE_RE =
+  /^https:\/\/(?:www\.)?(?:(giphy)\.com\/gifs|(tenor)\.com\/view)\//;
+
+const isGifUrl = (gifUrl: string) => GIF_SITE_RE.test(gifUrl);
+
+const transformGifUrl = (gifUrl: string, cdn: string) => {
+  try {
+    const url = new URL(gifUrl);
+    const match = GIF_SITE_RE.exec(url.href);
+    if (!match) return null;
+
+    if (match[2] === "tenor") {
+      return new URL(
+        `${url.pathname.replace(/^\/view\//i, "/tenor/")}.gif`,
+        cdn,
+      ).href;
+    }
+    if (match[1] === "giphy") {
+      return new URL(`${url.pathname.replace(/^\/gifs\//, "/giphy/")}.gif`, cdn)
+        .href;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return null;
+};
+
+export const DetectGifUrlFooter = ({
+  t,
+  value,
+  onChange,
+  cdn,
+}: {
+  t: TFunction;
+  value: string | undefined;
+  onChange: (value: string) => void;
+  cdn?: string;
+}) => {
+  const match = isGifUrl(value ?? "");
+  return (
+    <div
+      data-show={!!cdn && match}
+      className={twJoin(
+        "mt-1 transition-all",
+        "max-h-0 data-[show=true]:max-h-20",
+        "opacity-0 data-[show=true]:opacity-100",
+        "pointer-events-none data-[show=true]:pointer-events-auto",
+      )}
+    >
+      <p className={twJoin("text-sm text-muted dark:text-muted-dark")}>
+        <Trans
+          t={t}
+          i18nKey="gifConvertSuggestion"
+          components={{
+            icon: (
+              <CoolIcon
+                icon="Bulb"
+                className="text-yellow-500 dark:text-yellow-300"
+              />
+            ),
+            button: (
+              <button
+                type="button"
+                className={twJoin(linkClassName, "contents text-start")}
+                onClick={() => {
+                  if (!cdn || !value || !match) return;
+                  const converted = transformGifUrl(value, cdn);
+                  if (converted) onChange(converted);
+                }}
+              />
+            ),
+          }}
+        />
+      </p>
+    </div>
+  );
+};
+
 export const EmbedEditor: React.FC<{
   message: QueryData["messages"][number];
   messageIndex: number;
@@ -78,6 +157,7 @@ export const EmbedEditor: React.FC<{
   files?: DraftFile[];
   open?: boolean;
   cache?: CacheManager;
+  cdn?: string;
 }> = ({
   message,
   messageIndex: mi,
@@ -88,6 +168,7 @@ export const EmbedEditor: React.FC<{
   files,
   open,
   cache,
+  cdn,
 }) => {
   const { t } = useTranslation();
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -135,7 +216,7 @@ export const EmbedEditor: React.FC<{
   const errors = getEmbedErrors(embed);
   return (
     <details
-      className="group/embed rounded p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-[#D9D9DC] dark:border-l-[#4A4A50] shadow"
+      className="group/embed rounded-lg p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-[#D9D9DC] dark:border-l-[#4A4A50] shadow"
       open={open}
       style={
         embed.color ? { borderLeftColor: decimalToHex(embed.color) } : undefined
@@ -303,37 +384,52 @@ export const EmbedEditor: React.FC<{
                   </button>
                 </div>
               )}
-              <div className="flex gap-2">
-                <div className="grow">
-                  <TextInput
-                    label={t("iconUrl")}
-                    className="w-full"
-                    type="url"
-                    value={embed.author?.icon_url ?? ""}
-                    onInput={({ currentTarget }) =>
-                      updateEmbed({
-                        author: {
-                          ...(embed.author ?? { name: "" }),
-                          icon_url: currentTarget.value,
-                        },
-                      })
-                    }
-                  />
+              <div>
+                <div className="flex gap-2">
+                  <div className="grow">
+                    <TextInput
+                      label={t("iconUrl")}
+                      className="w-full"
+                      type="url"
+                      value={embed.author?.icon_url ?? ""}
+                      onInput={({ currentTarget }) =>
+                        updateEmbed({
+                          author: {
+                            ...(embed.author ?? { name: "" }),
+                            icon_url: currentTarget.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="mt-auto">
+                    <EmbedFileSelect
+                      t={t}
+                      files={files}
+                      onChange={({ url }) => {
+                        updateEmbed({
+                          author: {
+                            ...(embed.author ?? { name: "" }),
+                            icon_url: url,
+                          },
+                        });
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="mt-auto">
-                  <EmbedFileSelect
-                    t={t}
-                    files={files}
-                    onChange={({ url }) => {
-                      updateEmbed({
-                        author: {
-                          ...(embed.author ?? { name: "" }),
-                          icon_url: url,
-                        },
-                      });
-                    }}
-                  />
-                </div>
+                <DetectGifUrlFooter
+                  t={t}
+                  value={embed.author?.icon_url}
+                  onChange={(value) => {
+                    updateEmbed({
+                      author: {
+                        ...(embed.author ?? { name: "" }),
+                        icon_url: value,
+                      },
+                    });
+                  }}
+                  cdn={cdn}
+                />
               </div>
             </div>
           </EmbedEditorSection>
@@ -434,7 +530,7 @@ export const EmbedEditor: React.FC<{
                   </p>
                 </div>
                 <div
-                  className="h-9 w-9 mt-auto rounded ltr:ml-2 rtl:mr-2 bg-gray-500"
+                  className="h-9 w-9 mt-auto rounded-lg ltr:ml-2 rtl:mr-2 bg-gray-500"
                   style={{
                     backgroundColor:
                       typeof embed.color === "number"
@@ -560,71 +656,100 @@ export const EmbedEditor: React.FC<{
         </>
       )}
       <EmbedEditorSection name={t("images")} open={isChild || open}>
-        <div className={galleryChildren.includes(embed) ? "flex" : ""}>
-          <div className="grow">
-            <TextInput
-              label={t("largeImageUrl")}
-              type="url"
-              className="w-full"
-              value={embed.image?.url ?? ""}
-              onInput={({ currentTarget }) =>
-                updateEmbed({ image: { url: currentTarget.value } })
-              }
-            />
-          </div>
-          <div
-            className={twJoin(
-              "flex gap-2",
-              !galleryChildren.includes(embed) ? "mt-1 w-full" : "ml-2 mt-auto",
-            )}
-          >
-            <EmbedFileSelect
-              t={t}
-              files={files}
-              onChange={({ url }) => updateEmbed({ image: { url } })}
-            />
-            {!galleryChildren.includes(embed) && (
-              <Button
-                disabled={
-                  !embed.image?.url ||
-                  messageEmbeds.length >= 10 ||
-                  galleryEmbeds.length >= 4
-                }
-                onClick={() => {
-                  const url =
-                    embed.url ||
-                    `${location.origin}#gallery-${randomString(8)}`;
-                  embed.url = url;
-                  message.data.embeds = message.data.embeds ?? [];
-                  message.data.embeds.splice(i + 1, 0, { url });
-                  setData({ ...data });
-                }}
-              >
-                {t("addAnother")}
-              </Button>
-            )}
-          </div>
-        </div>
-        {!isChild && (
-          <div className="flex">
+        <div>
+          <div className={galleryChildren.includes(embed) ? "flex" : ""}>
             <div className="grow">
               <TextInput
-                label={t("thumbnailUrl")}
+                label={t("largeImageUrl")}
                 type="url"
                 className="w-full"
-                value={embed.thumbnail?.url ?? ""}
+                value={embed.image?.url ?? ""}
                 onInput={({ currentTarget }) =>
-                  updateEmbed({ thumbnail: { url: currentTarget.value } })
+                  updateEmbed({ image: { url: currentTarget.value } })
                 }
               />
             </div>
-            <div className="ml-2 mt-auto">
+            {!galleryChildren.includes(embed) ? (
+              <DetectGifUrlFooter
+                t={t}
+                value={embed.image?.url}
+                onChange={(value) => updateEmbed({ image: { url: value } })}
+                cdn={cdn}
+              />
+            ) : null}
+            <div
+              className={twJoin(
+                "flex gap-2",
+                !galleryChildren.includes(embed)
+                  ? "mt-1 w-full"
+                  : "ml-2 mt-auto",
+              )}
+            >
               <EmbedFileSelect
                 t={t}
                 files={files}
-                onChange={({ url }) => updateEmbed({ thumbnail: { url } })}
+                onChange={({ url }) => updateEmbed({ image: { url } })}
               />
+              {!galleryChildren.includes(embed) && (
+                <Button
+                  className="h-9"
+                  disabled={
+                    !embed.image?.url ||
+                    messageEmbeds.length >= 10 ||
+                    galleryEmbeds.length >= 4
+                  }
+                  onClick={() => {
+                    const url =
+                      embed.url ||
+                      `${location.origin}#gallery-${randomString(8)}`;
+                    embed.url = url;
+                    message.data.embeds = message.data.embeds ?? [];
+                    message.data.embeds.splice(i + 1, 0, { url });
+                    setData({ ...data });
+                  }}
+                >
+                  {t("addAnother")}
+                </Button>
+              )}
             </div>
+          </div>
+          {galleryChildren.includes(embed) ? (
+            <DetectGifUrlFooter
+              t={t}
+              value={embed.image?.url}
+              onChange={(value) => updateEmbed({ image: { url: value } })}
+              cdn={cdn}
+            />
+          ) : null}
+        </div>
+        {!isChild && (
+          <div>
+            <div className="flex">
+              <div className="grow">
+                <TextInput
+                  label={t("thumbnailUrl")}
+                  type="url"
+                  className="w-full"
+                  value={embed.thumbnail?.url ?? ""}
+                  onInput={({ currentTarget }) =>
+                    updateEmbed({ thumbnail: { url: currentTarget.value } })
+                  }
+                />
+              </div>
+              <div className="ml-2 mt-auto">
+                <EmbedFileSelect
+                  t={t}
+                  files={files}
+                  onChange={({ url }) => updateEmbed({ thumbnail: { url } })}
+                />
+              </div>
+            </div>
+            <DetectGifUrlFooter
+              t={t}
+              value={embed.thumbnail?.url}
+              onChange={(value) => updateEmbed({ thumbnail: { url: value } })}
+              cdn={cdn}
+            />
           </div>
         )}
       </EmbedEditorSection>
@@ -651,37 +776,52 @@ export const EmbedEditor: React.FC<{
                 />
               </div>
             </div>
-            <div className="flex gap-2 mt-2">
-              <div className="grow">
-                <TextInput
-                  label={t("iconUrl")}
-                  className="w-full"
-                  type="url"
-                  value={embed.footer?.icon_url ?? ""}
-                  onInput={({ currentTarget }) =>
-                    updateEmbed({
-                      footer: {
-                        ...(embed.footer ?? { text: "" }),
-                        icon_url: currentTarget.value,
-                      },
-                    })
-                  }
-                />
+            <div>
+              <div className="flex gap-2 mt-2">
+                <div className="grow">
+                  <TextInput
+                    label={t("iconUrl")}
+                    className="w-full"
+                    type="url"
+                    value={embed.footer?.icon_url ?? ""}
+                    onInput={({ currentTarget }) =>
+                      updateEmbed({
+                        footer: {
+                          ...(embed.footer ?? { text: "" }),
+                          icon_url: currentTarget.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="mt-auto">
+                  <EmbedFileSelect
+                    t={t}
+                    files={files}
+                    onChange={({ url }) => {
+                      updateEmbed({
+                        footer: {
+                          ...(embed.footer ?? { text: "" }),
+                          icon_url: url,
+                        },
+                      });
+                    }}
+                  />
+                </div>
               </div>
-              <div className="mt-auto">
-                <EmbedFileSelect
-                  t={t}
-                  files={files}
-                  onChange={({ url }) => {
-                    updateEmbed({
-                      footer: {
-                        ...(embed.footer ?? { text: "" }),
-                        icon_url: url,
-                      },
-                    });
-                  }}
-                />
-              </div>
+              <DetectGifUrlFooter
+                t={t}
+                value={embed.footer?.icon_url}
+                onChange={(value) => {
+                  updateEmbed({
+                    footer: {
+                      ...(embed.footer ?? { text: "" }),
+                      icon_url: value,
+                    },
+                  });
+                }}
+                cdn={cdn}
+              />
             </div>
             <div className="grid grid-cols-2 gap-2 mt-2">
               <DatePicker

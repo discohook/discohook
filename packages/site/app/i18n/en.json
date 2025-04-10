@@ -414,6 +414,7 @@
   "embed": "Embed",
   "embedN": "Embed {{n}}",
   "embedNText": "Embed {{n}} - {{text}}",
+  "gifConvertSuggestion": "<icon/> Looks like this is a GIF! Would you like to <button>convert the link</button> so Discord can display it?",
   "author": "Author",
   "authorUrl": "Author URL",
   "iconUrl": "Icon URL",

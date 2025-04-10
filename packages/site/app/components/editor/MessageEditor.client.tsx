@@ -2,12 +2,18 @@ import { Select } from "@base-ui-components/react/select";
 import { Link } from "@remix-run/react";
 import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { JsonEditorProps } from "~/modals/JsonEditorModal";
+import {
+  Modal,
+  ModalFooter,
+  ModalProps,
+  PlainModalHeader,
+} from "~/modals/Modal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
@@ -15,6 +21,7 @@ import { getMessageText } from "~/util/message";
 import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
+import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
@@ -23,8 +30,101 @@ import { transformFileName } from "../preview/Embed";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
-import { EmbedEditor, EmbedEditorSection, getEmbedLength } from "./EmbedEditor";
+import {
+  DetectGifUrlFooter,
+  EmbedEditor,
+  EmbedEditorSection,
+  getEmbedLength,
+} from "./EmbedEditor";
 import { PasteFileButton } from "./PasteFileButton";
+
+const FileEditModal = (
+  props: ModalProps & { file?: DraftFile; onSave: (file: DraftFile) => void },
+) => {
+  const { t } = useTranslation();
+  const { file, onSave, ...restProps } = props;
+
+  const [draft, setDraft] = useState<DraftFile>();
+  const [name, setName] = useState<string>();
+  useEffect(() => {
+    // File.name is read-only so we wait until we save to duplicate it
+    setName(file ? file.file.name : undefined);
+    setDraft(file ? { ...file } : undefined);
+  }, [file]);
+
+  return (
+    <Modal {...restProps}>
+      <PlainModalHeader>
+        {file ? transformFileName(file.file.name) : "File"}
+      </PlainModalHeader>
+      {draft ? (
+        <div>
+          <div>
+            <TextInput
+              label={t("filename")}
+              onChange={(e) => setName(e.currentTarget.value)}
+              value={name ?? ""}
+              required
+            />
+          </div>
+          <div>
+            <TextInput
+              label={t("fileDescription")}
+              onChange={(e) => {
+                setDraft({
+                  ...draft,
+                  description: e.currentTarget.value,
+                });
+              }}
+              value={draft.description ?? ""}
+            />
+          </div>
+          <div>
+            <Checkbox
+              label={t("markSpoiler")}
+              onChange={(e) => {
+                setDraft({
+                  ...draft,
+                  spoiler: e.currentTarget.checked,
+                });
+              }}
+              checked={draft.spoiler}
+            />
+          </div>
+        </div>
+      ) : (
+        <div />
+      )}
+      <ModalFooter className="flex gap-2 flex-wrap">
+        <button
+          className={twJoin("ltr:ml-auto rtl:mr-auto", linkClassName)}
+          type="button"
+          onClick={() => {
+            props.setOpen(false);
+          }}
+        >
+          {t("cancel")}
+        </button>
+        <Button
+          onClick={() => {
+            props.setOpen(false);
+            if (draft && name) {
+              onSave({
+                ...draft,
+                // should reuse the same blob in memory
+                file: new File([draft.file], name, {
+                  type: draft.file.type,
+                }),
+              });
+            }
+          }}
+        >
+          {t("save")}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
+};
 
 export const MessageEditor: React.FC<{
   data: QueryData;
@@ -50,6 +150,7 @@ export const MessageEditor: React.FC<{
   >;
   webhooks?: APIWebhook[];
   cache?: CacheManager;
+  cdn?: string;
 }> = ({
   index: i,
   data,
@@ -64,6 +165,7 @@ export const MessageEditor: React.FC<{
   setCodeGenerator,
   webhooks,
   cache,
+  cdn,
 }) => {
   const { t } = useTranslation();
   const message = data.messages[i];
@@ -109,7 +211,10 @@ export const MessageEditor: React.FC<{
   const thumbnailFileId = imageFiles.find((f) => f.is_thumbnail)?.id ?? null;
 
   return (
-    <details className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]" open>
+    <details
+      className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
+      open
+    >
       <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none mx-4">
         <CoolIcon
           icon="Chevron_Right"
@@ -363,19 +468,34 @@ export const MessageEditor: React.FC<{
                 setData({ ...data });
               }}
             />
-            <TextInput
-              label={t("avatarUrl")}
-              type="url"
-              className="w-full"
-              disabled={!!message.reference}
-              value={message.data.author?.icon_url ?? ""}
-              onChange={(e) => {
-                message.data.author = message.data.author ?? {};
-                message.data.author.icon_url =
-                  e.currentTarget.value || undefined;
-                setData({ ...data });
-              }}
-            />
+            <div>
+              <TextInput
+                label={t("avatarUrl")}
+                type="url"
+                className="w-full"
+                disabled={!!message.reference}
+                value={message.data.author?.icon_url ?? ""}
+                onChange={(e) => {
+                  message.data.author = {
+                    ...message.data.author,
+                    icon_url: e.currentTarget.value || undefined,
+                  };
+                  setData({ ...data });
+                }}
+              />
+              <DetectGifUrlFooter
+                t={t}
+                cdn={cdn}
+                value={message.data.author?.icon_url}
+                onChange={(value) => {
+                  message.data.author = {
+                    ...message.data.author,
+                    icon_url: value,
+                  };
+                  setData({ ...data });
+                }}
+              />
+            </div>
           </EmbedEditorSection>
           <EmbedEditorSection
             name={t("filesCount", {
@@ -499,6 +619,7 @@ export const MessageEditor: React.FC<{
                 setData={setData}
                 files={files}
                 cache={cache}
+                cdn={cdn}
               />
             ))}
           </div>

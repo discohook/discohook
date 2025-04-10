@@ -42,11 +42,12 @@ export const getYoutubeVideoParameters = (
 export const Gallery: React.FC<{
   attachments: APIAttachment[];
   setImageModalData?: SetImageModalData;
-}> = ({ attachments, setImageModalData }) => {
+  cdn?: string;
+}> = ({ attachments, setImageModalData, cdn }) => {
   const sized = galleriesBySize[attachments.length];
   if (!sized) return <p>Inappropriate size for gallery.</p>;
 
-  return sized({ attachments, setImageModalData });
+  return sized({ attachments, setImageModalData, cdn });
 };
 
 export const GalleryItem: React.FC<{
@@ -55,9 +56,22 @@ export const GalleryItem: React.FC<{
   className: string;
   itemClassName?: string;
   setImageModalData?: SetImageModalData;
-}> = ({ attachments, index, className, itemClassName, setImageModalData }) => {
+  cdn?: string;
+}> = ({
+  attachments,
+  index,
+  className,
+  itemClassName,
+  setImageModalData,
+  cdn,
+}) => {
   const { content_type: contentType, url } = attachments[index];
   const youtube = getYoutubeVideoParameters(url);
+  // Preview lighter-weight videos instead of GIF files
+  const cdnGifVideoUrl =
+    cdn && url.startsWith(`${cdn}/tenor/`) && url.endsWith(".gif")
+      ? url.replace(/\.gif$/, ".mp4")
+      : null;
 
   return contentType?.startsWith("video/") ? (
     <div className={className}>
@@ -114,11 +128,21 @@ export const GalleryItem: React.FC<{
         }
       }}
     >
-      <img
-        src={url}
-        className={twJoin("w-full h-full object-cover", itemClassName)}
-        alt=""
-      />
+      {cdnGifVideoUrl ? (
+        <video
+          src={cdnGifVideoUrl}
+          className={twJoin("w-full h-full object-cover", itemClassName)}
+          autoPlay
+          muted
+          loop
+        />
+      ) : (
+        <img
+          src={url}
+          className={twJoin("w-full h-full object-cover", itemClassName)}
+          alt=""
+        />
+      )}
       <p className="absolute top-1 left-1 rounded px-1 py-0.5 text-sm text-white bg-black/60 font-semibold group-hover/gallery-item:hidden">
         GIF
       </p>

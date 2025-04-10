@@ -133,6 +133,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     user,
     memberships,
     discordApplicationId: context.env.DISCORD_CLIENT_ID,
+    cdn: context.env.CDN_ORIGIN,
     debug: {
       environment: context.env.ENVIRONMENT,
       version: context.env.VERSION,
@@ -152,6 +153,7 @@ export interface DraftFile {
   url?: string;
   embed?: boolean;
   is_thumbnail?: boolean;
+  spoiler?: boolean;
 }
 
 export interface HistoryItem {
@@ -250,7 +252,7 @@ export const loadMessageComponents = async (
 
 export default function Index() {
   const { t } = useTranslation();
-  const { user, memberships, discordApplicationId, debug } =
+  const { user, memberships, cdn, discordApplicationId, debug } =
     useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
@@ -975,6 +977,7 @@ export default function Index() {
                 webhooks={Object.values(targets)}
                 setEditingComponent={setEditingComponent}
                 cache={cache}
+                cdn={cdn}
               />
             );
           })}
@@ -1098,6 +1101,7 @@ export default function Index() {
                   setImageModalData={setImageModalData}
                   messageDisplay={settings.messageDisplay}
                   compactAvatars={settings.compactAvatars}
+                  cdn={cdn}
                 />
               );
             })}

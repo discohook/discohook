@@ -10,7 +10,7 @@ import { Button } from "../Button";
 const ColorPickerFunction: React.FC<
   InjectedColorProps & { t?: TFunction; onReset?: () => void }
 > = (props) => (
-  <div className="w-fit rounded border border-gray-50 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:text-primary-230 shadow-md">
+  <div className="w-fit rounded-lg border border-gray-50 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:text-primary-230 shadow-md">
     <SketchPicker
       {...props}
       styles={{
