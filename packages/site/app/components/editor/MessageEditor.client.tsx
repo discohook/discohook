@@ -38,6 +38,36 @@ import {
 } from "./EmbedEditor";
 import { PasteFileButton } from "./PasteFileButton";
 
+const FilePreview = ({
+  file,
+  className,
+}: { file: DraftFile; className?: string }) => {
+  const style = twJoin("rounded-xl", className);
+  if (file.file.type.startsWith("image/") && file.url) {
+    return <img src={file.url} className={style} alt="" />;
+  } else if (file.file.type.startsWith("video/") && file.url) {
+    return (
+      <video
+        src={file.url}
+        className={twJoin("pointer-events-none", style)}
+        muted
+        autoPlay={false}
+        controls={false}
+      />
+    );
+  }
+  return (
+    <div
+      className={twJoin(
+        "bg-gray-200 dark:bg-gray-800 p-4 hidden sm:flex",
+        style,
+      )}
+    >
+      <CoolIcon icon="File_Document" className="text-4xl m-auto" />
+    </div>
+  );
+};
+
 const FileEditModal = (
   props: ModalProps & { file?: DraftFile; onSave: (file: DraftFile) => void },
 ) => {
@@ -47,7 +77,7 @@ const FileEditModal = (
   const [draft, setDraft] = useState<DraftFile>();
   const [name, setName] = useState<string>();
   useEffect(() => {
-    // File.name is read-only so we wait until we save to duplicate it
+    // File#name is read-only so we wait until we save to duplicate it
     setName(file ? file.file.name : undefined);
     setDraft(file ? { ...file } : undefined);
   }, [file]);
@@ -58,38 +88,49 @@ const FileEditModal = (
         {file ? transformFileName(file.file.name) : "File"}
       </PlainModalHeader>
       {draft ? (
-        <div>
-          <div>
-            <TextInput
-              label={t("filename")}
-              onChange={(e) => setName(e.currentTarget.value)}
-              value={name ?? ""}
-              required
-            />
+        <div className="flex flex-wrap-reverse md:flex-nowrap">
+          <div className="space-y-2 grow">
+            <div>
+              <TextInput
+                label={t("filename")}
+                className="w-full"
+                onChange={(e) => setName(e.currentTarget.value)}
+                value={name ?? ""}
+                required
+              />
+            </div>
+            {draft.file.type.startsWith("image/") ? (
+              <div>
+                <TextArea
+                  label={t("fileDescription")}
+                  placeholder={t("fileDescriptionPlaceholder")}
+                  className="w-full"
+                  onChange={(e) => {
+                    setDraft({
+                      ...draft,
+                      description: e.currentTarget.value,
+                    });
+                  }}
+                  value={draft.description ?? ""}
+                  short
+                />
+              </div>
+            ) : null}
+            <div>
+              <Checkbox
+                label={t("markSpoiler")}
+                onChange={(e) => {
+                  setDraft({
+                    ...draft,
+                    spoiler: e.currentTarget.checked,
+                  });
+                }}
+                checked={draft.spoiler}
+              />
+            </div>
           </div>
-          <div>
-            <TextInput
-              label={t("fileDescription")}
-              onChange={(e) => {
-                setDraft({
-                  ...draft,
-                  description: e.currentTarget.value,
-                });
-              }}
-              value={draft.description ?? ""}
-            />
-          </div>
-          <div>
-            <Checkbox
-              label={t("markSpoiler")}
-              onChange={(e) => {
-                setDraft({
-                  ...draft,
-                  spoiler: e.currentTarget.checked,
-                });
-              }}
-              checked={draft.spoiler}
-            />
+          <div className="mb-2 sm:mt-0 sm:mb-0 sm:ltr:ml-4 sm:rtl:mr-4 w-full sm:max-w-[33%]">
+            <FilePreview file={draft} className="max-h-32 sm:max-h-60 w-full" />
           </div>
         </div>
       ) : (
@@ -168,6 +209,8 @@ export const MessageEditor: React.FC<{
   cdn,
 }) => {
   const { t } = useTranslation();
+  const [editingFile, setEditingFile] = useState<DraftFile>();
+
   const message = data.messages[i];
   const id = getQdMessageId(message);
   const embedsLength =
@@ -215,6 +258,15 @@ export const MessageEditor: React.FC<{
       className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
       open
     >
+      <FileEditModal
+        open={!!editingFile}
+        setOpen={() => setEditingFile(undefined)}
+        file={editingFile}
+        onSave={(file) => {
+          setFiles(files.map((f) => (f.id === file.id ? file : f)));
+          setData({ ...data });
+        }}
+      />
       <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none mx-4">
         <CoolIcon
           icon="Chevron_Right"
@@ -499,40 +551,50 @@ export const MessageEditor: React.FC<{
           </EmbedEditorSection>
           <EmbedEditorSection
             name={t("filesCount", {
-              replace: {
-                count: files.length,
-              },
+              replace: { count: files.length },
             })}
           >
-            {files.map(({ id, file, embed, is_thumbnail, url }) => (
-              <div
-                key={`file-${id}`}
-                className="rounded-lg border py-1.5 px-[14px] bg-background-secondary border-border-normal dark:border-border-normal-dark dark:bg-background-secondary-dark flex"
-              >
-                <CoolIcon
-                  icon={embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"}
-                  className="text-xl my-auto ltr:mr-2 rtl:ml-2"
-                />
-                <div className="my-auto truncate ltr:mr-2 rtl:ml-2">
-                  <p className="font-medium truncate">
-                    {transformFileName(file.name)}
-                  </p>
-                  {/* <p className="text-sm">{file.size} bytes</p> */}
-                </div>
-                <button
-                  type="button"
-                  className="ml-auto my-auto hover:text-red-400 text-xl"
-                  onClick={() => {
-                    const newFiles = files.filter((f) => f.id !== id);
-                    setFiles(newFiles);
-                    setData({ ...data });
-                    if (url) URL.revokeObjectURL(url);
-                  }}
+            {files.map((draftFile) => {
+              const { id, file, embed, is_thumbnail, url } = draftFile;
+              return (
+                <div
+                  key={`file-${id}`}
+                  className="rounded-lg border py-1.5 px-[14px] bg-background-secondary border-border-normal dark:border-border-normal-dark dark:bg-background-secondary-dark flex"
                 >
-                  <CoolIcon icon="Trash_Full" />
-                </button>
-              </div>
-            ))}
+                  <CoolIcon
+                    icon={
+                      embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"
+                    }
+                    className="text-xl my-auto ltr:mr-2 rtl:ml-2"
+                  />
+                  <div className="my-auto truncate ltr:mr-2 rtl:ml-2">
+                    <p className="font-medium truncate">
+                      {transformFileName(file.name)}
+                    </p>
+                    {/* <p className="text-sm">{file.size} bytes</p> */}
+                  </div>
+                  <button
+                    type="button"
+                    className="ltr:ml-auto rtl:mr-auto my-auto hover:text-blurple text-xl"
+                    onClick={() => setEditingFile(draftFile)}
+                  >
+                    <CoolIcon icon="Edit_Pencil_01" />
+                  </button>
+                  <button
+                    type="button"
+                    className="ltr:ml-1 rtl:mr-1 my-auto hover:text-red-400 text-xl"
+                    onClick={() => {
+                      const newFiles = files.filter((f) => f.id !== id);
+                      setFiles(newFiles);
+                      setData({ ...data });
+                      if (url) URL.revokeObjectURL(url);
+                    }}
+                  >
+                    <CoolIcon icon="Trash_Full" />
+                  </button>
+                </div>
+              );
+            })}
             <input
               id={`files-${id}`}
               type="file"
