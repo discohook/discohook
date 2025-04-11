@@ -133,17 +133,30 @@ export const meta: MetaFunction = ({ data }) => {
     const { guild } = data as SerializeFrom<typeof loader>;
     return [
       { title: `${guild.name} - Discohook` },
-      guild.icon
-        ? {
-            tagName: "link",
-            rel: "icon",
-            type: guild.icon.startsWith("a_") ? "image/gif" : "image/webp",
-            href: cdn.icon(guild.id, guild.icon, {
-              size: 16,
-              extension: guild.icon.startsWith("a_") ? "gif" : "webp",
-            }),
-          }
-        : {},
+      { name: "apple-mobile-web-app-title", content: guild.name },
+      ...(guild.icon
+        ? [
+            {
+              tagName: "link",
+              rel: "icon",
+              type: guild.icon.startsWith("a_") ? "image/gif" : "image/webp",
+              href: cdn.icon(guild.id, guild.icon, {
+                size: 16,
+                extension: guild.icon.startsWith("a_") ? "gif" : "webp",
+              }),
+            },
+            {
+              // we can't exactly match apple's sizes with the discord cdn
+              // so we're just going to provide one unsized icon.
+              tagName: "link",
+              rel: "apple-touch-icon",
+              href: cdn.icon(guild.id, guild.icon, {
+                size: 256,
+                extension: "png",
+              }),
+            },
+          ]
+        : []),
     ];
   }
   return [];
