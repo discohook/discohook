@@ -10,8 +10,8 @@ import {
   APIButtonComponentWithSkuId,
   APIButtonComponentWithURL,
   APIChannelSelectComponent,
+  APIComponentInMessageActionRow,
   APIMentionableSelectComponent,
-  APIMessageActionRowComponent,
   APIRoleSelectComponent,
   APIStringSelectComponent,
   APIUserSelectComponent,
@@ -238,7 +238,7 @@ export const ZodAPIMessageActionRowComponent = z
 
     const parsed = schema.parse(val);
     return parsed;
-  }) as unknown as z.ZodType<APIMessageActionRowComponent>;
+  }) as unknown as z.ZodType<APIComponentInMessageActionRow>;
 
 export const ZodAPIActionRowComponent = z.object({
   type: z.literal(ComponentType.ActionRow),

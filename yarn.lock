@@ -4519,7 +4519,7 @@ cron-parser@discohook/cron-parser:
     caniuse-lite: "npm:^1.0.30001706"
     chrono-node: "npm:^2.7.5"
     cron-parser: discohook/cron-parser
-    discord-api-types: "npm:^0.37.92"
+    discord-api-types: "npm:^0.38.0-next-1740095508888"
     discord-bitflag: "npm:^1.0.2"
     discord-snowflake: "npm:^2.0.0"
     emoji-mart: "npm:^5.5.2"
@@ -4589,6 +4589,13 @@ cron-parser@discohook/cron-parser:
   version: 0.37.92
   resolution: "discord-api-types@npm:0.37.92"
   checksum: 10c0/23b29a996f5d6f7cae116c91601a9420290a24c3b18d062ad049644437e70d946e0fc00f51104221b32643e938905c305cc06de97ec10947e46e06d6e413915d
+  languageName: node
+  linkType: hard
+
+"discord-api-types@npm:^0.38.0-next-1740095508888":
+  version: 0.38.0-next-1740095508888
+  resolution: "discord-api-types@npm:0.38.0-next-1740095508888"
+  checksum: 10c0/ade3667de6a5f033393781f822b928d67ff95d54c445ba0387cb87060984d7bd692ba32e1d1d2cb2581f1eb90518e3030d6afe7a3002eaf81b675394b822b1ee
   languageName: node
   linkType: hard
 

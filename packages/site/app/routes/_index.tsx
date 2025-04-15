@@ -56,7 +56,7 @@ import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getSessionStorage, getUser } from "~/session.server";
 import { getDb } from "~/store.server";
 import {
-  APIMessageActionRowComponent,
+  APIComponentInMessageActionRow,
   QueryData,
   ZodQueryData,
 } from "~/types/QueryData";
@@ -71,6 +71,7 @@ import {
   DISCORD_API_V,
   cdnImgAttributes,
   getWebhook,
+  onlyActionRows,
   webhookAvatarUrl,
 } from "~/util/discord";
 import { LoaderArgs } from "~/util/loader";
@@ -196,7 +197,7 @@ export const loadMessageComponents = async (
 ) => {
   const allComponentsById = Object.fromEntries(
     data.messages.flatMap((m) =>
-      (m.data.components ?? [])
+      onlyActionRows(m.data.components ?? [])
         .flatMap((r) => r.components)
         .map((c) => {
           if (!!c.custom_id && /^p_\d+/.test(c.custom_id)) {
@@ -217,7 +218,7 @@ export const loadMessageComponents = async (
         })
         .filter((pair): pair is NonNullable<typeof pair> => Boolean(pair)),
     ),
-  ) as Record<string, APIMessageActionRowComponent>;
+  ) as Record<string, APIComponentInMessageActionRow>;
 
   if (Object.keys(allComponentsById).length !== 0) {
     const params = new URLSearchParams();

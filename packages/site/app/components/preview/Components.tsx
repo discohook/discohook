@@ -1,7 +1,7 @@
 import {
   APIButtonComponent,
+  APIComponentInMessageActionRow,
   APIMessage,
-  APIMessageActionRowComponent,
   APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
@@ -15,7 +15,7 @@ import {
   ResolvableAPIGuildMember,
   ResolvableAPIRole,
 } from "~/util/cache/CacheManager";
-import { cdn, cdnImgAttributes } from "~/util/discord";
+import { cdn, cdnImgAttributes, onlyActionRows } from "~/util/discord";
 import { getUserAvatar } from "~/util/users";
 import { Button } from "../Button";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -24,7 +24,7 @@ import { RoleShield } from "../icons/role";
 import { channelIcons } from "./Markdown";
 import { AuthorType } from "./Message.client";
 
-type PreviewComponent<T extends APIMessageActionRowComponent> = React.FC<{
+type PreviewComponent<T extends APIComponentInMessageActionRow> = React.FC<{
   data: T;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
   authorType?: AuthorType;
@@ -272,7 +272,7 @@ const previewComponentMap = {
 };
 
 export const GenericPreviewComponent: PreviewComponent<
-  APIMessageActionRowComponent
+  APIComponentInMessageActionRow
 > = (props) => {
   const fc = previewComponentMap[props.data.type];
   // @ts-expect-error
@@ -285,7 +285,7 @@ export const MessageComponents: React.FC<{
   cache?: CacheManager;
 }> = ({ components, authorType, cache }) => {
   const { t } = useTranslation();
-  const isAllLinkButtons = !components
+  const isAllLinkButtons = !onlyActionRows(components)
     .flatMap((r) =>
       r.components.map(
         (c) => c.type === ComponentType.Button && c.style === ButtonStyle.Link,
@@ -295,7 +295,7 @@ export const MessageComponents: React.FC<{
 
   return (
     <div className="grid gap-1 py-[0.125rem]">
-      {components.map((row, i) => (
+      {onlyActionRows(components).map((row, i) => (
         <div
           key={`action-row-${i}`}
           className="flex flex-wrap gap-x-1.5 gap-y-0"

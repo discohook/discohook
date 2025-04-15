@@ -1,14 +1,14 @@
 import {
-  APIButtonComponentWithCustomId,
-  APIButtonComponentWithSKUId,
-  APIButtonComponentWithURL,
-  APIChannelSelectComponent,
-  APIMentionableSelectComponent,
-  APIMessageActionRowComponent,
-  APIMessageComponentEmoji,
-  APIRoleSelectComponent,
-  APIStringSelectComponent,
-  APIUserSelectComponent,
+  type APIButtonComponentWithCustomId,
+  type APIButtonComponentWithSKUId,
+  type APIButtonComponentWithURL,
+  type APIChannelSelectComponent,
+  type APIComponentInMessageActionRow,
+  type APIMentionableSelectComponent,
+  type APIMessageComponentEmoji,
+  type APIRoleSelectComponent,
+  type APIStringSelectComponent,
+  type APIUserSelectComponent,
   ButtonStyle,
   ChannelType,
   ComponentType,
@@ -235,7 +235,7 @@ export const ZodAPIMessageActionRowComponentRaw = z
 
     const parsed = schema.parse(val);
     return parsed;
-  }) as unknown as z.ZodType<APIMessageActionRowComponent>;
+  }) as unknown as z.ZodType<APIComponentInMessageActionRow>;
 
 export const ZodAPIActionRowComponentRaw = z.object({
   type: z.literal(ComponentType.ActionRow),

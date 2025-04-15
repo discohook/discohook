@@ -16,7 +16,7 @@ import { InfoBox } from "~/components/InfoBox";
 import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
 import {
   APIButtonComponent,
-  APIMessageActionRowComponent,
+  APIComponentInMessageActionRow,
 } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { isSnowflakeSafe } from "~/util/discord";
@@ -30,12 +30,12 @@ import { EditingFlowData } from "./FlowEditModal";
 import { Modal, ModalProps } from "./Modal";
 
 export type EditingComponentData = {
-  component: APIMessageActionRowComponent;
-  setComponent: (component: APIMessageActionRowComponent) => void;
+  component: APIComponentInMessageActionRow;
+  setComponent: (component: APIComponentInMessageActionRow) => void;
   submit: (
-    component: APIMessageActionRowComponent,
+    component: APIComponentInMessageActionRow,
     setError?: SetErrorFunction,
-  ) => Promise<APIMessageActionRowComponent>;
+  ) => Promise<APIComponentInMessageActionRow>;
 };
 
 export const ButtonStylePicker: React.FC<{

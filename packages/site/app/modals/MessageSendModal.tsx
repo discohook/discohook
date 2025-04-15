@@ -19,7 +19,7 @@ import { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { APIMessageActionRowComponent, QueryData } from "~/types/QueryData";
+import { APIComponentInMessageActionRow, QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
@@ -219,7 +219,7 @@ export const useMessageSubmissionManager = (
         }
 
         let result: SubmitMessageResult | undefined;
-        const rowsWithoutFlows: APIActionRowComponent<APIMessageActionRowComponent>[] =
+        const rowsWithoutFlows: APIActionRowComponent<APIComponentInMessageActionRow>[] =
           [];
         for (const row of message.data.components ?? []) {
           rowsWithoutFlows.push({
@@ -238,7 +238,7 @@ export const useMessageSubmissionManager = (
               setData,
               setEditingComponent: () => {},
             });
-            let updated: APIMessageActionRowComponent;
+            let updated: APIComponentInMessageActionRow;
             try {
               updated = await editingProps.submit(component, setError);
             } catch (e) {

@@ -1,8 +1,7 @@
 import {
   APIAttachment as _APIAttachment,
   APIEmbed as _APIEmbed,
-  APIActionRowComponent,
-  APIMessageActionRowComponent,
+  APIMessageTopLevelComponent,
   MessageFlags,
   UserFlags,
 } from "discord-api-types/v10";
@@ -97,7 +96,7 @@ export interface QueryDataRaw {
       content?: string | null;
       embeds?: APIEmbed[] | null;
       attachments?: APIAttachment[];
-      components?: APIActionRowComponent<APIMessageActionRowComponent>[];
+      components?: APIMessageTopLevelComponent[];
       webhook_id?: string;
       flags?: MessageFlags;
       thread_name?: string;

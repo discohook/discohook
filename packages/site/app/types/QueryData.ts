@@ -1,4 +1,4 @@
-import {
+import type {
   APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
   APIChannelSelectComponent as _APIChannelSelectComponent,
   APIMentionableSelectComponent as _APIMentionableSelectComponent,
@@ -8,14 +8,24 @@ import {
   APIActionRowComponent,
   APIAttachment,
   APIButtonComponentBase,
+  APIContainerComponent,
+  APIFileComponent,
+  APIMediaGalleryComponent,
+  APISectionComponent,
+  APISeparatorComponent,
+  APITextDisplayComponent,
   ButtonStyle,
   MessageFlags,
   UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
-import { DraftFlow } from "~/store.server";
+import type { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";
-import { APIEmbed, QueryDataVersion, ZodAPIEmbed } from "./QueryData-raw";
+import {
+  type APIEmbed,
+  type QueryDataVersion,
+  ZodAPIEmbed,
+} from "./QueryData-raw";
 import { ZodAPIActionRowComponent } from "./components";
 import { ZodMessageFlags } from "./discord";
 
@@ -85,9 +95,18 @@ export type APIAutoPopulatedSelectMenuComponent =
   | APIMentionableSelectComponent
   | APIChannelSelectComponent;
 
-export type APIMessageActionRowComponent =
+export type APIComponentInMessageActionRow =
   | APIButtonComponent
   | APISelectMenuComponent;
+
+export type APIMessageTopLevelComponent =
+  | APIActionRowComponent<APIComponentInMessageActionRow>
+  | APIContainerComponent
+  | APIFileComponent
+  | APIMediaGalleryComponent
+  | APISectionComponent
+  | APISeparatorComponent
+  | APITextDisplayComponent;
 
 export interface QueryData {
   version?: QueryDataVersion;
@@ -104,7 +123,7 @@ export interface QueryData {
       content?: string | null;
       embeds?: APIEmbed[] | null;
       attachments?: APIAttachment[];
-      components?: APIActionRowComponent<APIMessageActionRowComponent>[];
+      components?: APIMessageTopLevelComponent[];
       webhook_id?: string;
       flags?: MessageFlags;
       thread_name?: string;

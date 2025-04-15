@@ -20,8 +20,8 @@ import {
   APIButtonComponent,
   APIButtonComponentWithCustomId,
   APIChannelSelectComponent,
+  APIComponentInMessageActionRow,
   APIMentionableSelectComponent,
-  APIMessageActionRowComponent,
   APIRoleSelectComponent,
   APIStringSelectComponent,
   APIUserSelectComponent,
@@ -126,7 +126,7 @@ export const getComponentErrors = (
  * You can also do this while logged out.
  */
 export const submitComponent = async (
-  data: APIMessageActionRowComponent,
+  data: APIComponentInMessageActionRow,
   setError?: SetErrorFunction,
 ) => {
   const id = getComponentId(data)?.toString();
@@ -161,7 +161,7 @@ export const submitComponent = async (
   const raw = (await response.json()) as SerializeFrom<
     typeof ApiPostComponents
   >;
-  let component: APIMessageActionRowComponent | undefined;
+  let component: APIComponentInMessageActionRow | undefined;
   switch (raw.data.type) {
     case ComponentType.Button: {
       component = {
@@ -220,8 +220,8 @@ export const getSetEditingComponentProps = ({
   setData,
   setEditingComponent,
 }: {
-  component: APIMessageActionRowComponent;
-  row: APIActionRowComponent<APIMessageActionRowComponent>;
+  component: APIComponentInMessageActionRow;
+  row: APIActionRowComponent<APIComponentInMessageActionRow>;
   componentIndex: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
@@ -277,7 +277,7 @@ export const getSetEditingComponentProps = ({
 
 export const ActionRowEditor: React.FC<{
   message: QueryData["messages"][number];
-  row: APIActionRowComponent<APIMessageActionRowComponent>;
+  row: APIActionRowComponent<APIComponentInMessageActionRow>;
   rowIndex: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
@@ -524,9 +524,9 @@ export const ActionRowEditor: React.FC<{
 };
 
 export const IndividualComponentEditor: React.FC<{
-  component: APIMessageActionRowComponent;
+  component: APIComponentInMessageActionRow;
   index: number;
-  row: APIActionRowComponent<APIMessageActionRowComponent>;
+  row: APIActionRowComponent<APIComponentInMessageActionRow>;
   updateRow: () => void;
   onClick: () => void;
 }> = ({ component, index, row, updateRow, onClick }) => {

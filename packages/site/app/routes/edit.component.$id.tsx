@@ -5,8 +5,8 @@ import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIActionRowComponent,
   APIChannel,
+  APIComponentInModalActionRow,
   APIMessage,
-  APIModalActionRowComponent,
   APIWebhook,
   ButtonStyle,
   ChannelType,
@@ -59,9 +59,9 @@ import {
   messageLogEntries,
   tokens,
 } from "~/store.server";
-import {
+import type {
   APIButtonComponentWithCustomId,
-  APIMessageActionRowComponent,
+  APIComponentInMessageActionRow,
 } from "~/types/QueryData";
 import {
   ResolutionKey,
@@ -70,7 +70,11 @@ import {
   ResolvableAPIRole,
   useCache,
 } from "~/util/cache/CacheManager";
-import { cdnImgAttributes, isDiscordError } from "~/util/discord";
+import {
+  cdnImgAttributes,
+  isDiscordError,
+  onlyActionRows,
+} from "~/util/discord";
 import { draftFlowToFlow, flowToDraftFlow } from "~/util/flow";
 import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
@@ -430,7 +434,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     message.position !== undefined ? message.channel_id : undefined;
 
   let isDraft = component.draft;
-  for (const row of message.components ?? []) {
+  for (const row of onlyActionRows(message.components ?? [])) {
     for (const rowComponent of row.components) {
       if (
         getComponentId(rowComponent) === component.id &&
@@ -459,7 +463,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     }
 
     const components = getRowsWithInsertedComponent(
-      message.components ?? [],
+      onlyActionRows(message.components ?? []),
       built,
       // biome-ignore lint/style/noNonNullAssertion: Non-nullable if token is present
       [row!, column!],
@@ -476,7 +480,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             : undefined,
         },
       )) as APIMessage;
-      for (const row of edited.components ?? []) {
+      for (const row of onlyActionRows(edited.components ?? [])) {
         for (const rowComponent of row.components) {
           if (
             getComponentId(rowComponent) === component.id &&
@@ -539,7 +543,7 @@ export const buildStorableComponent = (
   component: StorableComponent,
   id: string,
   flows: Flow[] = [],
-): APIMessageActionRowComponent => {
+): APIComponentInMessageActionRow => {
   switch (component.type) {
     case ComponentType.Button: {
       if (component.style === ButtonStyle.Link) {
@@ -663,8 +667,8 @@ export const unresolveStorableComponent = (
 };
 
 const getRowsWithInsertedComponent = (
-  rows: APIActionRowComponent<APIMessageActionRowComponent>[],
-  component: APIMessageActionRowComponent,
+  rows: APIActionRowComponent<APIComponentInMessageActionRow>[],
+  component: APIComponentInMessageActionRow,
   position: [number, number],
 ) => {
   // We don't want to send this data to Discord
@@ -704,7 +708,7 @@ const getRowsWithInsertedComponent = (
 };
 
 const rowHasSpace = <
-  T extends APIMessageActionRowComponent | APIModalActionRowComponent,
+  T extends APIComponentInMessageActionRow | APIComponentInModalActionRow,
 >(
   row: APIActionRowComponent<T>,
   component: T,
@@ -788,7 +792,7 @@ export default () => {
 
   type Data = Pick<APIMessage, "webhook_id" | "resolved"> & {
     components: NonNullable<
-      APIActionRowComponent<APIMessageActionRowComponent>[]
+      APIActionRowComponent<APIComponentInMessageActionRow>[]
     >;
   };
   const [data, setData] = useReducer(
@@ -833,7 +837,10 @@ export default () => {
       setPosition([y, x]);
       return compiled;
     },
-    { ...message, components: message?.components ?? [] },
+    {
+      ...message,
+      components: onlyActionRows(message?.components ?? []),
+    } satisfies Data,
   );
   // Insert live component
   // biome-ignore lint/correctness/useExhaustiveDependencies: once
@@ -841,7 +848,7 @@ export default () => {
     let y = -1;
     let x = -1;
     if (message) {
-      const rows = message.components ?? [];
+      const rows = onlyActionRows(message.components ?? []);
       const maybeY = rows.findIndex((r) => {
         let maybeX = r.components.findIndex(
           (c) => getComponentId(c) === BigInt(component_.id),

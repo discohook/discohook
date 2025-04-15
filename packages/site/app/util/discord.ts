@@ -8,28 +8,33 @@ import {
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIButtonComponent,
-  APIButtonComponentWithCustomId,
-  APIButtonComponentWithSKUId,
-  APIMessageComponent,
-  APISelectMenuComponent,
+  type APIActionRowComponent,
+  type APIButtonComponent,
+  type APIButtonComponentWithCustomId,
+  type APIButtonComponentWithSKUId,
+  type APIMessageComponent,
+  type APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
-  RESTError,
-  RESTGetAPICurrentUserGuildsResult,
-  RESTGetAPIWebhookWithTokenMessageResult,
-  RESTGetAPIWebhookWithTokenResult,
-  RESTPatchAPIWebhookWithTokenJSONBody,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
-  RESTPatchAPIWebhookWithTokenMessageResult,
-  RESTPatchAPIWebhookWithTokenResult,
-  RESTPostAPIWebhookWithTokenJSONBody,
-  RESTPostAPIWebhookWithTokenWaitResult,
+  type RESTError,
+  type RESTGetAPICurrentUserGuildsResult,
+  type RESTGetAPIWebhookWithTokenMessageResult,
+  type RESTGetAPIWebhookWithTokenResult,
+  type RESTPatchAPIWebhookWithTokenJSONBody,
+  type RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  type RESTPatchAPIWebhookWithTokenMessageResult,
+  type RESTPatchAPIWebhookWithTokenResult,
+  type RESTPostAPIWebhookWithTokenJSONBody,
+  type RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
 import { Snowflake, getDate, isSnowflake } from "discord-snowflake";
 import { TimestampStyle } from "~/components/editor/TimePicker";
 import { DraftFile } from "~/routes/_index";
+import type {
+  APIComponentInMessageActionRow,
+  APIMessageTopLevelComponent,
+} from "~/types/QueryData";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { sleep } from "./time";
 
@@ -538,3 +543,11 @@ export const hasCustomId = (
   component.type === ComponentType.UserSelect ||
   component.type === ComponentType.ChannelSelect ||
   component.type === ComponentType.MentionableSelect;
+
+export const isActionRow = (
+  component: APIMessageTopLevelComponent,
+): component is APIActionRowComponent<APIComponentInMessageActionRow> =>
+  component.type === ComponentType.ActionRow;
+
+export const onlyActionRows = (components: APIMessageTopLevelComponent[]) =>
+  components.filter(isActionRow);
