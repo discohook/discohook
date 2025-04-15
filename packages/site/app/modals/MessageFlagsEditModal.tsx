@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { BigCheckbox } from "~/components/Checkbox";
 import { QueryData } from "~/types/QueryData";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageFlagsEditModal = (
   props: ModalProps & {
@@ -19,48 +19,68 @@ export const MessageFlagsEditModal = (
     messageIndex !== undefined ? data.messages[messageIndex] : undefined;
 
   return (
-    <Modal title={t("flags")} {...props}>
+    <Modal {...props}>
+      <PlainModalHeader>{t("flags")}</PlainModalHeader>
       <div className="space-y-2">
         <p>{t("messageFlagsNote")}</p>
-        {message &&
-          (() => {
-            const flags = new MessageFlagsBitField(message.data.flags ?? 0);
-            return (
-              <>
-                <BigCheckbox
-                  label={t("messageFlag.4096")}
-                  description={t("messageFlagsNoteSuppressNotifications")}
-                  checked={flags.has(MessageFlags.SuppressNotifications)}
-                  onChange={(e) => {
-                    flags.set(
-                      MessageFlags.SuppressNotifications,
-                      e.currentTarget.checked,
-                    );
-                    message.data.flags = Number(flags.value);
-                    setData({ ...data });
-                  }}
-                />
-                <BigCheckbox
-                  label={t("messageFlag.4")}
-                  description={t("messageFlagsNoteSuppressEmbeds")}
-                  checked={flags.has(MessageFlags.SuppressEmbeds)}
-                  onChange={(e) => {
-                    flags.set(
-                      MessageFlags.SuppressEmbeds,
-                      e.currentTarget.checked,
-                    );
-                    message.data.flags = Number(flags.value);
-                    setData({ ...data });
-                  }}
-                />
-              </>
-            );
-          })()}
-        <div className="flex w-full">
-          <Button className="mx-auto" onClick={() => props.setOpen(false)}>
+        {message
+          ? (() => {
+              const flags = new MessageFlagsBitField(message.data.flags ?? 0);
+              return (
+                <>
+                  <BigCheckbox
+                    label={t(
+                      `messageFlag.${MessageFlags.SuppressNotifications}`,
+                    )}
+                    description={t("messageFlagsNoteSuppressNotifications")}
+                    checked={flags.has(MessageFlags.SuppressNotifications)}
+                    onChange={(e) => {
+                      flags.set(
+                        MessageFlags.SuppressNotifications,
+                        e.currentTarget.checked,
+                      );
+                      message.data.flags = Number(flags.value);
+                      setData({ ...data });
+                    }}
+                  />
+                  <BigCheckbox
+                    label={t(`messageFlag.${MessageFlags.SuppressEmbeds}`)}
+                    description={t("messageFlagsNoteSuppressEmbeds")}
+                    checked={flags.has(MessageFlags.SuppressEmbeds)}
+                    onChange={(e) => {
+                      flags.set(
+                        MessageFlags.SuppressEmbeds,
+                        e.currentTarget.checked,
+                      );
+                      message.data.flags = Number(flags.value);
+                      setData({ ...data });
+                    }}
+                  />
+                  {/* <BigCheckbox
+                    label={t(`messageFlag.${MessageFlags.IsComponentsV2}`)}
+                    description={t("messageFlagsNoteIsComponentsV2")}
+                    checked={flags.has(MessageFlags.IsComponentsV2)}
+                    onChange={(e) => {
+                      flags.set(
+                        MessageFlags.IsComponentsV2,
+                        e.currentTarget.checked,
+                      );
+                      message.data.flags = Number(flags.value);
+                      setData({ ...data });
+                    }}
+                  /> */}
+                </>
+              );
+            })()
+          : null}
+        <ModalFooter className="flex gap-2 flex-wrap">
+          <Button
+            className="ltr:ml-auto rtl:mr-auto"
+            onClick={() => props.setOpen(false)}
+          >
             {t("ok")}
           </Button>
-        </div>{" "}
+        </ModalFooter>
       </div>
     </Modal>
   );
