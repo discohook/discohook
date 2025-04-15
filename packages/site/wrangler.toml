@@ -122,9 +122,6 @@ services = [
   { binding = "BOT", service = "discohook-bot-production" },
 ]
 
-[env.production.placement]
-mode = "smart"
-
 [env.production.observability]
 enabled = true
 head_sampling_rate = 0.5
