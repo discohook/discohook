@@ -40,8 +40,8 @@ import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
-import { MessageFlagsEditModal } from "~/modals/MesageFlagsEditModal";
 import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
+import { MessageFlagsEditModal } from "~/modals/MessageFlagsEditModal";
 import {
   MessageSendModal,
   useMessageSubmissionManager,
