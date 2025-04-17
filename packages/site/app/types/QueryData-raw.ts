@@ -1,6 +1,7 @@
-import {
+import type {
   APIAttachment as _APIAttachment,
   APIEmbed as _APIEmbed,
+  APIEmbedField,
   APIMessageTopLevelComponent,
   MessageFlags,
   UserFlags,
@@ -59,12 +60,15 @@ export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
       icon_url: z.ostring(),
     })
     .optional(),
-  fields: z
-    .object({
-      name: z.string(),
-      value: z.string(),
+  fields: (
+    z.object({
+      // Zod cries about these defaults but the resultant types are actually
+      // still compatible (non-optional string)
+      name: z.string().default(""),
+      value: z.string().default(""),
       inline: z.oboolean(),
-    })
+    }) as z.ZodType<APIEmbedField>
+  )
     .array()
     .optional(),
 });
