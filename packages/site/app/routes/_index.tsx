@@ -19,10 +19,6 @@ import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Logo } from "~/components/icons/Logo";
 import { PostChannelIcon } from "~/components/icons/channel";
-import {
-  ATTACHMENT_URI_EXTENSIONS,
-  transformFileName,
-} from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
@@ -74,6 +70,7 @@ import {
   onlyActionRows,
   webhookAvatarUrl,
 } from "~/util/discord";
+import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import {

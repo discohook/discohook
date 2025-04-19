@@ -17,6 +17,9 @@ import {
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import {
+  transformFileName,
+} from "~/util/files";
 import { getMessageText } from "~/util/message";
 import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -26,7 +29,6 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
-import { transformFileName } from "../preview/Embed";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";

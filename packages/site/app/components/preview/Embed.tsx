@@ -7,6 +7,7 @@ import { DraftFile } from "~/routes/_index";
 import { LinkEmbedStrategy } from "~/types/QueryData";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { decimalToHex } from "../editor/ColorPicker";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
@@ -21,19 +22,6 @@ const getI18nTimestampFooterKey = (date: Moment) => {
   else if (cal(date) === cal(tomorrow)) return "tomorrow";
   return "other";
 };
-
-// Supported extensions for the `attachment` URI according to:
-// https://discord.dev/reference#editing-message-attachments-using-attachments-within-embeds
-export const ATTACHMENT_URI_EXTENSIONS = [
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".webp",
-  ".gif",
-] as const;
-
-export const transformFileName = (filename: string) =>
-  filename.replace(/ /g, "_");
 
 export const resolveAttachmentUri = (
   uri: string,

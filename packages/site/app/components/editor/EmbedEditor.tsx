@@ -7,6 +7,7 @@ import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
+import { transformFileName } from "~/util/files";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -17,7 +18,6 @@ import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import DatePicker from "../pickers/DatePicker";
 import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
-import { transformFileName } from "../preview/Embed";
 import { linkClassName } from "../preview/Markdown";
 import {
   ColorPicker,
