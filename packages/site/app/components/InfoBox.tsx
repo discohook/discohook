@@ -31,7 +31,7 @@ export const InfoBox: React.FC<
   return (
     <div
       className={twJoin(
-        "mb-4 text-sm font-regular p-2 rounded border-2 dark:font-medium select-none dark:text-black",
+        "mb-4 text-sm font-regular p-2 rounded-lg border-2 dark:font-medium select-none dark:text-black",
         colors,
       )}
     >

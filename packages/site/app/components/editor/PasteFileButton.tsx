@@ -27,11 +27,7 @@ export function PasteFileButton(props: PasteFileButtonProps) {
         tabIndex={-1}
         placeholder={t("pasteFile")}
         disabled={disabled}
-        style={{
-          position: "absolute",
-          opacity: 0,
-          pointerEvents: "none",
-        }}
+        className="absolute opacity-0 pointer-events-none"
         onFocus={() => setActive(true)}
         onBlur={() => setActive(false)}
         onPaste={(event) => {
