@@ -50,7 +50,7 @@ export const getEmbedLength = (embed: APIEmbed) => {
     (embed.footer?.text ?? "").length;
 
   const fieldLengths = (embed.fields ?? []).map(
-    (f) => f.name.length + f.value.length,
+    (f) => (f.name?.length ?? 0) + (f.value?.length ?? 0),
   );
   if (fieldLengths.length > 0) {
     totalCharacters += fieldLengths.reduce((a, b) => a + b);
@@ -598,7 +598,7 @@ export const EmbedEditor: React.FC<{
                       <div className="grow">
                         <TextArea
                           label={t("name")}
-                          value={field.name}
+                          value={field.name ?? ""}
                           maxLength={256}
                           className="w-full"
                           markdown="title"
@@ -898,7 +898,7 @@ export const EmbedFieldEditorSection: React.FC<
     open?: boolean;
   }>
 > = ({ embed, updateEmbed, field, index, t, open, children }) => {
-  const previewText = field.name.trim() || field.value.trim();
+  const previewText = (field.name?.trim() || field.value?.trim()) ?? "";
   const embedFields = embed.fields ?? [];
   return (
     <details className="group/field pb-2 -my-1" open={open}>

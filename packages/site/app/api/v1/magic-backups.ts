@@ -102,7 +102,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     .safeParseAsync(await request.json());
   if (!parsed.success) {
     throw json(
-      { message: "Bad request", error: parsed.error },
+      { message: "Bad request", error: parsed.error.format() },
       { status: 400, headers: getCorsHeaders(context.env.LEGACY_ORIGIN) },
     );
   }

@@ -20,6 +20,8 @@ export const ZodDiscohookBackup = z.object({
 
 export type DiscohookBackup = z.infer<typeof ZodDiscohookBackup>;
 
+// const x: { version: number; backups: DiscohookBackup[] } = 
+
 // https://github.com/discohook/site/blob/main/modules/database/backup/types/ExportData.ts
 
 export type MessageData = QueryData["messages"][number]["data"];

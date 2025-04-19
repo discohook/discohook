@@ -118,11 +118,12 @@ const codegen: Record<
       if (embed.fields) {
         lines.push("    .setFields(");
         for (const field of embed.fields) {
+          const { name, value, inline } = field;
           lines.push(
             "        {",
-            `            name: ${quoteString(field.name, preferences)},`,
-            `            value: ${quoteString(field.value, preferences)},`,
-            `            inline: ${field.inline ? "true" : "false"},`,
+            `            name: ${quoteString(name ?? "", preferences)},`,
+            `            value: ${quoteString(value ?? "", preferences)},`,
+            `            inline: ${inline ? "true" : "false"},`,
             "        },",
           );
         }
@@ -253,11 +254,12 @@ const codegen: Record<
       }
       if (embed.fields) {
         for (const field of embed.fields) {
+          const { name, value, inline } = field;
           lines.push(
             "    .add_field(",
-            `        name=${quoteString(field.name, preferences)},`,
-            `        value=${quoteString(field.value, preferences)},`,
-            `        inline=${field.inline ? "True" : "False"},`,
+            `        name=${quoteString(name ?? "", preferences)},`,
+            `        value=${quoteString(value ?? "", preferences)},`,
+            `        inline=${inline ? "True" : "False"},`,
             "    )",
           );
         }
