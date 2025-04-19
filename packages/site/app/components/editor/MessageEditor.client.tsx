@@ -18,6 +18,7 @@ import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import {
+  MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
 import { getMessageText } from "~/util/message";
@@ -602,24 +603,7 @@ export const MessageEditor: React.FC<{
               type="file"
               hidden
               multiple
-              onChange={async ({ currentTarget }) => {
-                const list = currentTarget.files;
-                if (!list) return;
-
-                const newFiles = [...files];
-                for (const file of Array.from(list).slice(
-                  0,
-                  10 - newFiles.length,
-                )) {
-                  newFiles.push({
-                    id: randomString(10),
-                    file,
-                    url: URL.createObjectURL(file),
-                  });
-                }
-                setFiles(newFiles);
-                currentTarget.value = "";
-              }}
+              onChange={fileInputChangeHandler(files, setFiles)}
             />
             <div className="flex gap-2">
               <Button
@@ -631,18 +615,18 @@ export const MessageEditor: React.FC<{
                   if (!input) return;
                   input.click();
                 }}
-                disabled={files.length >= 10}
+                disabled={files.length >= MAX_FILES_PER_MESSAGE}
               >
                 {t("addFile")}
               </Button>
               <PasteFileButton
                 t={t}
-                disabled={files.length >= 10}
+                disabled={files.length >= MAX_FILES_PER_MESSAGE}
                 onChange={async (list) => {
                   const newFiles = [...files];
                   for (const file of Array.from(list).slice(
                     0,
-                    10 - newFiles.length,
+                    MAX_FILES_PER_MESSAGE - newFiles.length,
                   )) {
                     newFiles.push({
                       id: randomString(10),

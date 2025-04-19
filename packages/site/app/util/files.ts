@@ -19,3 +19,33 @@ export const ATTACHMENT_URI_EXTENSIONS = [
 
 export const transformFileName = (filename: string) =>
   filename.replace(/ /g, "_");
+
+/**
+ * Returns an onChange handler that will add one or multiple files to the
+ * state from an input, then return them.
+ */
+export const fileInputChangeHandler =
+  (
+    files: DraftFile[],
+    setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>,
+  ): React.ChangeEventHandler<HTMLInputElement> =>
+  async (event) => {
+    const list = event.currentTarget.files;
+    if (!list) return;
+
+    const newFiles = [...files];
+    for (const file of Array.from(list).slice(
+      0,
+      MAX_FILES_PER_MESSAGE - newFiles.length,
+    )) {
+      newFiles.push({
+        id: randomString(10),
+        file,
+        url: URL.createObjectURL(file),
+      });
+    }
+    setFiles(newFiles);
+    event.currentTarget.value = "";
+
+    return newFiles;
+  };
