@@ -7,12 +7,18 @@ import {
   type APIMentionableSelectComponent,
   type APIMessageComponentEmoji,
   type APIRoleSelectComponent,
+  type APISectionAccessoryComponent,
+  type APISectionComponent,
   type APIStringSelectComponent,
+  type APITextDisplayComponent,
+  type APIThumbnailComponent,
+  type APIUnfurledMediaItem,
   type APIUserSelectComponent,
   ButtonStyle,
   ChannelType,
   ComponentType,
   SelectMenuDefaultValueType,
+  UnfurledMediaItemLoadingState,
 } from "discord-api-types/v10";
 import { z } from "zod";
 
@@ -241,3 +247,41 @@ export const ZodAPIActionRowComponentRaw = z.object({
   type: z.literal(ComponentType.ActionRow),
   components: ZodAPIMessageActionRowComponentRaw.array(),
 });
+
+export const ZodAPITextDisplayComponentRaw = z.object({
+  id: z.onumber(),
+  type: z.literal(ComponentType.TextDisplay),
+  content: z.string(),
+}) satisfies z.ZodType<APITextDisplayComponent>;
+
+export const ZodAPIUnfurledMediaItemRaw = z.object({
+  url: z.string(),
+  proxy_url: z.ostring(),
+  width: z.onumber(),
+  height: z.onumber(),
+  // placeholder: z.ostring(),
+  // placeholder_version: z.onumber(),
+  content_type: z.ostring(),
+  loading_state: z.nativeEnum(UnfurledMediaItemLoadingState).optional(),
+  // flags: z.onumber(),
+}) satisfies z.ZodType<APIUnfurledMediaItem>;
+
+export const ZodAPIThumbnailComponentRaw = z.object({
+  id: z.onumber(),
+  type: z.literal(ComponentType.Thumbnail),
+  media: ZodAPIUnfurledMediaItemRaw,
+  description: z.ostring().nullable(),
+  spoiler: z.oboolean(),
+}) satisfies z.ZodType<APIThumbnailComponent>;
+
+export const ZodAPISectionAccessoryComponentRaw = z.union([
+  ZodAPIButtonComponent,
+  ZodAPIThumbnailComponentRaw,
+]) satisfies z.ZodType<APISectionAccessoryComponent>;
+
+export const ZodAPISectionComponentRaw = z.object({
+  id: z.onumber(),
+  type: z.literal(ComponentType.Section),
+  components: ZodAPITextDisplayComponentRaw.array(),
+  accessory: ZodAPISectionAccessoryComponentRaw,
+}) satisfies z.ZodType<APISectionComponent>;

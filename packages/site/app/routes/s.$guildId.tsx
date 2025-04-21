@@ -36,7 +36,7 @@ import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
-import { getComponentWidth } from "~/components/editor/ComponentEditor";
+import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { PostChannelIcon } from "~/components/icons/channel";

@@ -1,7 +1,13 @@
 import { Select } from "@base-ui-components/react/select";
 import { Link } from "@remix-run/react";
-import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
-import { MessageFlags, MessageFlagsBitField } from "discord-bitflag";
+import {
+  APIWebhook,
+  ButtonStyle,
+  ComponentType,
+  MessageFlags,
+} from "discord-api-types/v10";
+import { MessageFlagsBitField } from "discord-bitflag";
+import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -15,10 +21,20 @@ import {
   PlainModalHeader,
 } from "~/modals/Modal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
+import {
+  APIMessageTopLevelComponent,
+  QueryData,
+  ZodQueryDataMessage,
+} from "~/types/QueryData";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import {
+  MAX_TOP_LEVEL_COMPONENTS,
+  MAX_TOTAL_COMPONENTS,
+} from "~/util/constants";
+import { onlyActionRows } from "~/util/discord";
+import {
   MAX_FILES_PER_MESSAGE,
+  fileInputChangeHandler,
   transformFileName,
 } from "~/util/files";
 import { getMessageText } from "~/util/message";
@@ -39,7 +55,11 @@ import {
   EmbedEditorSection,
   getEmbedLength,
 } from "./EmbedEditor";
+import { MediaGalleryEditor } from "./MediaGalleryEditor";
 import { PasteFileButton } from "./PasteFileButton";
+import { SectionEditor } from "./SectionEditor";
+import { TextDisplayEditor } from "./TextDisplayEditor";
+import { TopLevelComponentEditorContainerProps } from "./TopLevelComponentEditor";
 
 const FilePreview = ({
   file,
@@ -170,7 +190,7 @@ const FileEditModal = (
   );
 };
 
-export const MessageEditor: React.FC<{
+interface MessageEditorProps {
   data: QueryData;
   files: DraftFile[];
   discordApplicationId: string;
@@ -195,7 +215,45 @@ export const MessageEditor: React.FC<{
   webhooks?: APIWebhook[];
   cache?: CacheManager;
   cdn?: string;
-}> = ({
+}
+
+export const MessageEditor: React.FC<MessageEditorProps> = (props) => {
+  const { t } = useTranslation();
+  const message = props.data.messages[props.index];
+  // const id = getQdMessageId(message);
+  const flags = new MessageFlagsBitField(message.data.flags ?? 0);
+
+  // Hooks
+  const [editingFile, setEditingFile] = useState<DraftFile>();
+
+  const childProps: MessageEditorChildProps = { ...props, t, setEditingFile };
+
+  return (
+    <div className="contents">
+      <FileEditModal
+        open={!!editingFile}
+        setOpen={() => setEditingFile(undefined)}
+        file={editingFile}
+        onSave={(file) => {
+          props.setFiles(props.files.map((f) => (f.id === file.id ? file : f)));
+          props.setData({ ...props.data });
+        }}
+      />
+      {flags.has(MessageFlags.IsComponentsV2) ? (
+        <ComponentMessageEditor {...childProps} />
+      ) : (
+        <StandardMessageEditor {...childProps} />
+      )}
+    </div>
+  );
+};
+
+type MessageEditorChildProps = MessageEditorProps & {
+  t: TFunction;
+  setEditingFile: React.Dispatch<React.SetStateAction<DraftFile | undefined>>;
+};
+
+const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   index: i,
   data,
   files,
@@ -210,10 +268,10 @@ export const MessageEditor: React.FC<{
   webhooks,
   cache,
   cdn,
+  // Parent
+  t,
+  setEditingFile,
 }) => {
-  const { t } = useTranslation();
-  const [editingFile, setEditingFile] = useState<DraftFile>();
-
   const message = data.messages[i];
   const id = getQdMessageId(message);
   const embedsLength =
@@ -261,15 +319,6 @@ export const MessageEditor: React.FC<{
       className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
       open
     >
-      <FileEditModal
-        open={!!editingFile}
-        setOpen={() => setEditingFile(undefined)}
-        file={editingFile}
-        onSave={(file) => {
-          setFiles(files.map((f) => (f.id === file.id ? file : f)));
-          setData({ ...data });
-        }}
-      />
       <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none mx-4">
         <CoolIcon
           icon="Chevron_Right"
@@ -516,10 +565,9 @@ export const MessageEditor: React.FC<{
               maxLength={80}
               className="w-full"
               disabled={!!message.reference}
-              value={message.data.author?.name ?? ""}
+              value={message.data.username ?? ""}
               onChange={(e) => {
-                message.data.author = message.data.author ?? {};
-                message.data.author.name = e.currentTarget.value || undefined;
+                message.data.username = e.currentTarget.value || undefined;
                 setData({ ...data });
               }}
             />
@@ -529,24 +577,18 @@ export const MessageEditor: React.FC<{
                 type="url"
                 className="w-full"
                 disabled={!!message.reference}
-                value={message.data.author?.icon_url ?? ""}
+                value={message.data.avatar_url ?? ""}
                 onChange={(e) => {
-                  message.data.author = {
-                    ...message.data.author,
-                    icon_url: e.currentTarget.value || undefined,
-                  };
+                  message.data.avatar_url = e.currentTarget.value || undefined;
                   setData({ ...data });
                 }}
               />
               <DetectGifUrlFooter
                 t={t}
                 cdn={cdn}
-                value={message.data.author?.icon_url}
+                value={message.data.avatar_url}
                 onChange={(value) => {
-                  message.data.author = {
-                    ...message.data.author,
-                    icon_url: value,
-                  };
+                  message.data.avatar_url = value;
                   setData({ ...data });
                 }}
               />
@@ -677,7 +719,7 @@ export const MessageEditor: React.FC<{
             {!possiblyActionable &&
             // No actionable webhooks and there are not only link buttons in
             // the message, so the user will have issues sending the message
-            message.data.components
+            onlyActionRows(message.data.components)
               .flatMap((r) => r.components)
               .map(
                 (c) =>
@@ -712,12 +754,12 @@ export const MessageEditor: React.FC<{
               </>
             ) : null}
             <div className="space-y-1">
-              {message.data.components.map((row, ri) => (
+              {onlyActionRows(message.data.components).map((row, ri) => (
                 <div key={`edit-message-${id}-row-${ri}`}>
                   <ActionRowEditor
                     message={message}
-                    row={row}
-                    rowIndex={ri}
+                    component={row}
+                    index={ri}
                     data={data}
                     setData={setData}
                     cache={cache}
@@ -790,6 +832,766 @@ export const MessageEditor: React.FC<{
                     message.data.components = message.data.components
                       ? [...message.data.components, emptyRow]
                       : [emptyRow];
+                    setData({ ...data });
+                    break;
+                  }
+                  default:
+                    break;
+                }
+              }}
+            >
+              {t("add")}
+            </ButtonSelect>
+          </div>
+          <Button
+            discordstyle={ButtonStyle.Secondary}
+            onClick={() => setSettingMessageIndex(i)}
+          >
+            {t("setLink")}
+          </Button>
+          <div>
+            <ButtonSelect
+              discordstyle={ButtonStyle.Secondary}
+              options={[
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Flag"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("flags")}</span>
+                    </p>
+                  ),
+                  value: "flags",
+                },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Terminal"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("jsonEditor")}</span>
+                    </p>
+                  ),
+                  value: "jsonEditor",
+                },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Code"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("codeGenerator")}</span>
+                    </p>
+                  ),
+                  value: "codeGenerator",
+                },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Copy"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("copyQueryData")}</span>
+                    </p>
+                  ),
+                  value: "copyQueryData",
+                },
+              ]}
+              onChange={(opt) => {
+                const val = (
+                  opt as {
+                    value:
+                      | "flags"
+                      | "jsonEditor"
+                      | "codeGenerator"
+                      | "copyQueryData";
+                  }
+                ).value;
+                switch (val) {
+                  case "flags": {
+                    setEditingMessageFlags(i);
+                    break;
+                  }
+                  case "jsonEditor":
+                    setJsonEditor({
+                      data: message.data,
+                      update: (newData) => {
+                        message.data = newData;
+                      },
+                      schema: ZodQueryDataMessage.shape.data,
+                    });
+                    break;
+                  case "codeGenerator":
+                    setCodeGenerator({ data: message.data });
+                    break;
+                  case "copyQueryData":
+                    copyText(JSON.stringify(message));
+                    break;
+                  default:
+                    break;
+                }
+              }}
+            >
+              {t("options")}
+            </ButtonSelect>
+          </div>
+        </div>
+      </div>
+    </details>
+  );
+};
+
+const AutoTopLevelComponentEditor = (
+  props: Omit<TopLevelComponentEditorContainerProps, "t"> & {
+    component: APIMessageTopLevelComponent;
+    setEditingComponent: React.Dispatch<
+      React.SetStateAction<EditingComponentData | undefined>
+    >;
+    files: DraftFile[];
+    setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  },
+) => {
+  const { component, setEditingComponent, files, setFiles, ...rest } = props;
+  switch (component.type) {
+    case ComponentType.ActionRow:
+      return (
+        <ActionRowEditor
+          {...rest}
+          component={component}
+          setEditingComponent={setEditingComponent}
+        />
+      );
+    // case ComponentType.Container:
+    //   return <ContainerEditor {...props} component={component} />;
+    case ComponentType.Section:
+      return (
+        <SectionEditor
+          {...rest}
+          component={component}
+          setEditingComponent={setEditingComponent}
+          files={files}
+          setFiles={setFiles}
+        />
+      );
+    case ComponentType.TextDisplay:
+      return <TextDisplayEditor {...rest} component={component} />;
+    case ComponentType.MediaGallery:
+      return (
+        <MediaGalleryEditor
+          {...rest}
+          component={component}
+          files={files}
+          setFiles={setFiles}
+        />
+      );
+    default:
+      return null;
+  }
+};
+
+// Blank message with cv2 flag: http://localhost:8788/?data=eyJ2ZXJzaW9uIjoiZDIiLCJtZXNzYWdlcyI6W3siX2lkIjoiOWZNd0QxYzVLZCIsImRhdGEiOnsiY29tcG9uZW50cyI6W10sImZsYWdzIjozMjc2OH19XX0
+/** Components V2-based editor. Ensure you have pr-1190 installed */
+const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
+  index: i,
+  data,
+  files,
+  discordApplicationId,
+  setData,
+  setFiles,
+  setSettingMessageIndex,
+  setEditingMessageFlags,
+  setEditingComponent,
+  setJsonEditor,
+  setCodeGenerator,
+  webhooks,
+  cache,
+  cdn,
+  // Parent
+  t,
+  setEditingFile,
+}) => {
+  const message = data.messages[i];
+  const id = getQdMessageId(message);
+  const components = message.data.components ?? [];
+
+  const allComponentsCount =
+    components.length > 0
+      ? components
+          // Add one because top-level also included in count
+          //              Section, Container, ActionRow
+          .map((c) => 1 + ("components" in c ? c.components.length : 0))
+          .reduce((a, b) => a + b, 0)
+      : 0;
+
+  const previewText = getMessageText(message.data);
+  const flags = new MessageFlagsBitField(message.data.flags ?? 0);
+
+  const authorTypes = webhooks
+    ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
+    : [];
+  const possiblyActionable = authorTypes.includes(AuthorType.ActionableWebhook);
+  const possiblyApplication = authorTypes.includes(
+    AuthorType.ApplicationWebhook,
+  );
+  const channels =
+    webhooks && cache
+      ? webhooks
+          .map((w) => cache.channel.get(w.channel_id))
+          .filter((c): c is ResolvableAPIChannel => !!c)
+      : [];
+
+  const isAllForum =
+    !!webhooks &&
+    webhooks.length !== 0 &&
+    channels.filter((c) => c.type === "forum").length === webhooks.length;
+  const isNoneForum =
+    // There are webhooks
+    !!webhooks &&
+    webhooks.length !== 0 &&
+    // All of their channels are resolved
+    channels.length === webhooks?.length &&
+    // None of them are forums
+    channels.filter((c) => c.type === "forum").length === 0;
+
+  const imageFiles = useMemo(
+    () => files.filter((f) => f.file.type.startsWith("image/")),
+    [files],
+  );
+  const thumbnailFileId = imageFiles.find((f) => f.is_thumbnail)?.id ?? null;
+
+  return (
+    <details
+      className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
+      open
+    >
+      <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none mx-4">
+        <CoolIcon
+          icon="Chevron_Right"
+          className="group-open/message:rotate-90 mr-2 my-auto transition-transform"
+        />
+        <span className="truncate">
+          {flags.has(MessageFlags.SuppressNotifications) && (
+            <CoolIcon
+              icon="Bell_Off"
+              title={t("messageFlag.4096")}
+              className="ltr:mr-1 rtl:ml-1"
+            />
+          )}
+          {flags.has(MessageFlags.SuppressEmbeds) && (
+            <CoolIcon
+              icon="Window_Close"
+              title={t("messageFlag.4")}
+              className="ltr:mr-1 rtl:ml-1"
+            />
+          )}
+          {t(previewText ? "messageNText" : "messageN", {
+            replace: { n: i + 1, text: previewText },
+          })}
+        </span>
+        <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
+          <button
+            type="button"
+            className={i === 0 ? "hidden" : ""}
+            onClick={() => {
+              data.messages.splice(i, 1);
+              data.messages.splice(i - 1, 0, message);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            type="button"
+            className={i === data.messages.length - 1 ? "hidden" : ""}
+            onClick={() => {
+              data.messages.splice(i, 1);
+              data.messages.splice(i + 1, 0, message);
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            type="button"
+            className={data.messages.length >= 10 ? "hidden" : ""}
+            onClick={() => {
+              data.messages.splice(i + 1, 0, structuredClone(message));
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (data.messages.length <= 1) {
+                data.messages.splice(i, 1, { data: {} });
+              } else {
+                data.messages.splice(i, 1);
+              }
+              setData({ ...data });
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
+      </summary>
+      <div className="px-4 space-y-2">
+        <div className="-space-y-2 -mx-2">
+          <EmbedEditorSection name={t("thread")}>
+            {(!!message.reference || isNoneForum) && (
+              <InfoBox severity="blue" icon="Info">
+                {t(isNoneForum ? "noForumWebhooks" : "forumImmutable")}
+              </InfoBox>
+            )}
+            <p className="text-sm italic mb-2">
+              <Trans
+                t={t}
+                i18nKey="threadsNote"
+                components={[
+                  <Link
+                    to="/guide/getting-started/threads"
+                    className={linkClassName}
+                    target="_blank"
+                  />,
+                ]}
+              />
+            </p>
+            <TextInput
+              label={t("forumThreadName")}
+              className="w-full"
+              value={message.data.thread_name ?? ""}
+              maxLength={100}
+              freeLength
+              required={isAllForum && !message.thread_id}
+              disabled={
+                !!message.reference || isNoneForum || !!message.thread_id
+              }
+              onInput={(e) => {
+                message.data.thread_name = e.currentTarget.value || undefined;
+                setData({ ...data });
+              }}
+            />
+            <TextInput
+              // TODO: I want this to be a thread picker in the future, when
+              // possible, but we'll always need a way to input an ID
+              label={t("threadId")}
+              className="w-full"
+              value={message.thread_id ?? ""}
+              maxLength={30}
+              freeLength
+              required={isAllForum && !message.data.thread_name}
+              disabled={!!message.data.thread_name}
+              pattern="^\d+$"
+              onInput={(e) => {
+                const val = e.currentTarget.value;
+                if (!val || /^\d+$/.test(val)) {
+                  message.thread_id = val || undefined;
+                  setData({ ...data });
+                }
+              }}
+            />
+            {(message.reference
+              ? !!message.thread_id
+              : !!message.data.thread_name) && imageFiles.length > 0 ? (
+              <div className="flex">
+                <div
+                  // Not a fan of this max-width
+                  className="grow max-w-[calc(100%_-_1.75rem)]"
+                >
+                  <Select.Root
+                    value={thumbnailFileId}
+                    onValueChange={(id) => {
+                      for (const file of files) {
+                        file.is_thumbnail = file.id === id && !file.embed;
+                      }
+                      setFiles([...files]);
+                    }}
+                  >
+                    <Select.Trigger className="text-sm font-medium cursor-default">
+                      {t("postThumbnail")}
+                    </Select.Trigger>
+                    <Select.Trigger
+                      className={twJoin(
+                        "flex rounded-lg border border-border-normal dark:border-border-normal-dark focus:outline-none h-9 py-0 px-[14px] font-medium !mt-0",
+                        "disabled:text-gray-600 disabled:cursor-not-allowed",
+                        "bg-white dark:bg-[#333338]",
+                      )}
+                    >
+                      <Select.Value
+                        placeholder={t("defaultPlaceholder")}
+                        className="my-auto truncate ltr:mr-2 rtl:ml-2"
+                      />
+                      <Select.Icon className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                        <CoolIcon icon="Chevron_Down" />
+                      </Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner
+                        className={twJoin(
+                          "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
+                          "p-0.5 border border-black/[0.08]",
+                        )}
+                        align="start"
+                        alignOffset={2}
+                      >
+                        <Select.ScrollUpArrow />
+                        <Select.Popup>
+                          <Select.Arrow />
+                          {imageFiles.map((file) => {
+                            return (
+                              <Select.Item
+                                key={`thumbnail-select-${file.id}`}
+                                value={file.id}
+                                className={twJoin(
+                                  "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
+                                  "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
+                                )}
+                              >
+                                <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                                  {transformFileName(file.file.name)}
+                                </Select.ItemText>
+                                <Select.ItemIndicator
+                                  className={twJoin(
+                                    "ltr:ml-auto rtl:mr-auto my-auto text-lg",
+                                    // https://github.com/mui/base-ui/issues/1556#issuecomment-2741296430
+                                    thumbnailFileId === file.id
+                                      ? "visible"
+                                      : "invisible",
+                                  )}
+                                >
+                                  <CoolIcon icon="Check" />
+                                </Select.ItemIndicator>
+                              </Select.Item>
+                            );
+                          })}
+                        </Select.Popup>
+                        <Select.ScrollDownArrow />
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </div>
+                <button
+                  type="button"
+                  className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
+                  onClick={() => {
+                    for (const file of files) {
+                      file.is_thumbnail = false;
+                    }
+                    setFiles([...files]);
+                  }}
+                >
+                  <CoolIcon icon="Close_MD" />
+                </button>
+              </div>
+            ) : null}
+          </EmbedEditorSection>
+          <EmbedEditorSection name={t("profile")}>
+            {!!message.reference && (
+              <InfoBox severity="blue" icon="Info">
+                {t("profileImmutable")}
+              </InfoBox>
+            )}
+            <TextInput
+              label={t("name")}
+              maxLength={80}
+              className="w-full"
+              disabled={!!message.reference}
+              value={message.data.username ?? ""}
+              onChange={(e) => {
+                message.data.username = e.currentTarget.value || undefined;
+                setData({ ...data });
+              }}
+            />
+            <div>
+              <TextInput
+                label={t("avatarUrl")}
+                type="url"
+                className="w-full"
+                disabled={!!message.reference}
+                value={message.data.avatar_url ?? ""}
+                onChange={(e) => {
+                  message.data.avatar_url = e.currentTarget.value || undefined;
+                  setData({ ...data });
+                }}
+              />
+              <DetectGifUrlFooter
+                t={t}
+                cdn={cdn}
+                value={message.data.avatar_url}
+                onChange={(value) => {
+                  message.data.avatar_url = value;
+                  setData({ ...data });
+                }}
+              />
+            </div>
+          </EmbedEditorSection>
+          <EmbedEditorSection
+            name={t("filesCount", {
+              replace: { count: files.length },
+            })}
+          >
+            {files.map((draftFile) => {
+              const { id, file, embed, is_thumbnail, url } = draftFile;
+              return (
+                <div
+                  key={`file-${id}`}
+                  className="rounded-lg border py-1.5 px-[14px] bg-background-secondary border-border-normal dark:border-border-normal-dark dark:bg-background-secondary-dark flex"
+                >
+                  <CoolIcon
+                    icon={
+                      embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"
+                    }
+                    className="text-xl my-auto ltr:mr-2 rtl:ml-2"
+                  />
+                  <div className="my-auto truncate ltr:mr-2 rtl:ml-2">
+                    <p className="font-medium truncate">
+                      {transformFileName(file.name)}
+                    </p>
+                    {/* <p className="text-sm">{file.size} bytes</p> */}
+                  </div>
+                  <button
+                    type="button"
+                    className="ltr:ml-auto rtl:mr-auto my-auto hover:text-blurple text-xl"
+                    onClick={() => setEditingFile(draftFile)}
+                  >
+                    <CoolIcon icon="Edit_Pencil_01" />
+                  </button>
+                  <button
+                    type="button"
+                    className="ltr:ml-1 rtl:mr-1 my-auto hover:text-red-400 text-xl"
+                    onClick={() => {
+                      const newFiles = files.filter((f) => f.id !== id);
+                      setFiles(newFiles);
+                      setData({ ...data });
+                      if (url) URL.revokeObjectURL(url);
+                    }}
+                  >
+                    <CoolIcon icon="Trash_Full" />
+                  </button>
+                </div>
+              );
+            })}
+            <input
+              id={`files-${id}`}
+              type="file"
+              hidden
+              multiple
+              onChange={async ({ currentTarget }) => {
+                const list = currentTarget.files;
+                if (!list) return;
+
+                const newFiles = [...files];
+                for (const file of Array.from(list).slice(
+                  0,
+                  MAX_FILES_PER_MESSAGE - newFiles.length,
+                )) {
+                  newFiles.push({
+                    id: randomString(10),
+                    file,
+                    url: URL.createObjectURL(file),
+                  });
+                }
+                setFiles(newFiles);
+                currentTarget.value = "";
+              }}
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  const input = document.querySelector<HTMLInputElement>(
+                    `input#files-${id}`,
+                  );
+                  // Shouldn't happen
+                  if (!input) return;
+                  input.click();
+                }}
+                disabled={files.length >= MAX_FILES_PER_MESSAGE}
+              >
+                {t("addFile")}
+              </Button>
+              <PasteFileButton
+                t={t}
+                disabled={files.length >= MAX_FILES_PER_MESSAGE}
+                onChange={async (list) => {
+                  const newFiles = [...files];
+                  for (const file of Array.from(list).slice(
+                    0,
+                    MAX_FILES_PER_MESSAGE - newFiles.length,
+                  )) {
+                    newFiles.push({
+                      id: randomString(10),
+                      file,
+                      url: URL.createObjectURL(file),
+                    });
+                  }
+                  setFiles(newFiles);
+                }}
+              />
+            </div>
+          </EmbedEditorSection>
+        </div>
+        <div className="space-y-1">
+          {components.map((component, i) => {
+            const props = { message, index: i, data, setData, cache };
+
+            switch (component.type) {
+              case ComponentType.ActionRow:
+                return (
+                  <ActionRowEditor
+                    {...props}
+                    component={component}
+                    setEditingComponent={setEditingComponent}
+                  />
+                );
+              case ComponentType.Section:
+                return (
+                  <SectionEditor
+                    {...props}
+                    component={component}
+                    setEditingComponent={setEditingComponent}
+                    files={files}
+                    setFiles={setFiles}
+                  />
+                );
+              case ComponentType.TextDisplay:
+                return <TextDisplayEditor {...props} component={component} />;
+              case ComponentType.MediaGallery:
+                return (
+                  <MediaGalleryEditor
+                    {...props}
+                    component={component}
+                    files={files}
+                    setFiles={setFiles}
+                  />
+                );
+              default:
+                return null;
+            }
+          })}
+        </div>
+        <div className="flex space-x-2 rtl:space-x-reverse">
+          <div>
+            <ButtonSelect
+              isDisabled={
+                components.length >= MAX_TOP_LEVEL_COMPONENTS ||
+                allComponentsCount >= MAX_TOTAL_COMPONENTS
+              }
+              options={[
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Text"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("text")}</span>
+                    </p>
+                  ),
+                  value: "textDisplay",
+                },
+                {
+                  label: t("mediaGallery"),
+                  value: "mediaGallery",
+                },
+                // Any single file
+                {
+                  label: t("file"),
+                  value: "file",
+                },
+                {
+                  label: t("separator"),
+                  value: "separator",
+                },
+                {
+                  label: t("container"),
+                  value: "container",
+                },
+                {
+                  label: t("actionRow"),
+                  value: "actionRow",
+                },
+              ]}
+              onChange={(opt) => {
+                const val = (
+                  opt as {
+                    value:
+                      | "textDisplay"
+                      | "mediaGallery"
+                      | "file"
+                      | "separator"
+                      | "container"
+                      | "actionRow";
+                  }
+                ).value;
+                switch (val) {
+                  // case "section": {
+                  //   message.data.components = [
+                  //     ...components,
+                  //     {
+                  //       type: ComponentType.Section,
+                  //       components: [
+                  //         {
+                  //           type: ComponentType.TextDisplay,
+                  //           content: "",
+                  //         },
+                  //       ],
+                  //       accessory: {} as APISectionAccessoryComponent,
+                  //     },
+                  //   ];
+                  //   setData({ ...data });
+                  //   break;
+                  // }
+                  case "textDisplay": {
+                    message.data.components = [
+                      ...components,
+                      { type: ComponentType.TextDisplay, content: "" },
+                    ];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "container": {
+                    message.data.components = [
+                      ...components,
+                      { type: ComponentType.Container, components: [] },
+                    ];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "file": {
+                    message.data.components = [
+                      ...components,
+                      { type: ComponentType.File, file: { url: "" } },
+                    ];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "mediaGallery": {
+                    message.data.components = [
+                      ...components,
+                      { type: ComponentType.MediaGallery, items: [] },
+                    ];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "separator": {
+                    message.data.components = [
+                      ...components,
+                      { type: ComponentType.Separator },
+                    ];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "actionRow": {
+                    message.data.components = [
+                      ...components,
+                      { type: ComponentType.ActionRow, components: [] },
+                    ];
                     setData({ ...data });
                     break;
                   }

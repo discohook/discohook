@@ -305,7 +305,11 @@
     "contentOptional": "Inhalt (optional)",
     "flagsOptional": "Flaggen (optional)",
     "authorUrl": "Autor URL",
-    "rowN": "Zeile {{n}}",
+    "componentN": {
+        "1": "Zeile {{n}}",
+        "2": "Knopf {{n}}",
+        "2_text": "Knopf {{n}} - {{text}}"
+    },
     "reset": "Zurücksetzen",
     "editingComponentFromUser": "Bearbeiten eines $t(component.{{type}}, lowercase) von",
     "messageMaxRowsNote": "Die maximale Anzahl von Zeilen pro Nachricht ist {{count}}.",
@@ -315,7 +319,6 @@
         "9": "Variable \"{{ action.name }}\" setzen"
     },
     "noMentionsActionNote": "Keine Daten sind für diese Liste verfügbar. Füge während du Angemeldet bist ein Webhook hinzu oder füge manuell Erwähnungen in die Nachricht ein, um sie zu füllen.",
-    "buttonNText": "Knopf {{n}} - {{text}}",
     "maxActionsWarningFree": "Abläufe haben ein Maximum von {{limit}} Nicht-Prüf-/Stopp-Aktionen. <0>Hier kannst du mehr darüber lesen</0>. Abonniere Deluxe, um bis zu {{premiumLimit}} Aktionen hinzuzufügen.",
     "deleteComponentConfirm": "Bist du dir sicher, dass du die $t(component.{{type}}, lowercase) löschen willst?",
     "componentSaveEditMessageTip": "TIPP: Wenn du nur Abläufe bearbeitest, musst du nicht auf Nachricht bearbeiten drücken.",
@@ -346,7 +349,6 @@
     "pasteFile": "Datei einfügen",
     "pasteCmd": "Drück ⌘V",
     "pasteCtrl": "Drück Ctrl+V",
-    "buttonN": "Knopf {{n}}",
     "checkFunctionElse": "Andernfalls, wenn die Funktion nicht besteht:",
     "checkEqualA": "Dieser Wert (A):",
     "stopMessageNote": "Stopp-Aktionen können optional eine Nachricht an den Benutzer anzeigen. Diese Nachrichten können wie normale Nachrichtenaktionen <0>formatiert</0> werden.",

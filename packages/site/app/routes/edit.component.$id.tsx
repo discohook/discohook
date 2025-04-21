@@ -28,12 +28,12 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
+import { submitComponent } from "~/components/editor/ComponentEditor";
 import {
   getComponentText,
   getComponentWidth,
   getRowWidth,
-  submitComponent,
-} from "~/components/editor/ComponentEditor";
+} from "~/components/editor/TopLevelComponentEditor";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
@@ -1014,7 +1014,7 @@ export default () => {
                         className="group-open/action-row:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
                       />
                       <span className="my-auto">
-                        {t("rowN", { replace: { n: i + 1 } })}
+                        {t("componentN.1", { replace: { n: i + 1 } })}
                       </span>
                     </summary>
                     <div className="space-y-1">

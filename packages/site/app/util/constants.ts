@@ -111,3 +111,8 @@ export const LINK_INDEX_FAILURE_EMBED: LinkQueryData["embed"] = {
     description: INDEX_FAILURE_MESSAGE.data.content ?? undefined,
   },
 };
+
+// Components
+export const MAX_TOP_LEVEL_COMPONENTS = 10;
+export const MAX_TOTAL_COMPONENTS = 30;
+export const MAX_TOTAL_COMPONENTS_CHARACTERS = 4000;

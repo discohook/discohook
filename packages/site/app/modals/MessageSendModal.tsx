@@ -1,7 +1,6 @@
 import { DiscordErrorData, REST } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIActionRowComponent,
   APIEmbed,
   APIMessage,
   APIWebhook,
@@ -19,13 +18,18 @@ import { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { APIComponentInMessageActionRow, QueryData } from "~/types/QueryData";
+import {
+  APIComponentInMessageActionRow,
+  APIMessageTopLevelComponent,
+  QueryData,
+} from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
   cdnImgAttributes,
   executeWebhook,
   hasCustomId,
+  isActionRow,
   updateWebhookMessage,
   webhookAvatarUrl,
 } from "~/util/discord";
@@ -69,29 +73,57 @@ export const submitMessage = async (
   // `with_components` is `true` when:
   // - the webhook is not owned by an application, and
   // - there are components, and
-  // - they are all link buttons
+  // - none are interaction-spawning
   // and `undefined` otherwise (let default behavior take over)
   const withComponents = target.application_id
     ? undefined
-    : message.data.components
-      ? message.data.components?.find(
-          (r) =>
-            r.components.filter(
-              (c) =>
-                c.type === ComponentType.Button && c.style === ButtonStyle.Link,
-            ).length === r.components.length,
-        ) !== undefined
-      : undefined;
+    : ((): true | undefined => {
+        if (!message.data.components) return;
+
+        const inner = (
+          components: typeof message.data.components,
+        ): true | undefined => {
+          for (const component of components) {
+            if (isActionRow(component)) {
+              if (
+                component.components.filter((child) => {
+                  // Not non-interactable. Technically premium buttons are not
+                  // interaction-spawning but they are application-only
+                  return !(
+                    child.type === ComponentType.Button &&
+                    child.style === ButtonStyle.Link
+                  );
+                }).length !== 0
+              ) {
+                return true;
+              }
+            } else if (component.type === ComponentType.Container) {
+              return inner(component.components);
+            } else if (component.type === ComponentType.Section) {
+              if (
+                component.accessory.type === ComponentType.Button &&
+                component.accessory.style !== ButtonStyle.Link
+              ) {
+                return true;
+              }
+            }
+          }
+        };
+
+        return inner(message.data.components);
+      })();
 
   let data: APIMessage | DiscordErrorData;
   const components = message.data.components
-    ? structuredClone(message.data.components).map((row) => {
-        for (const child of row.components) {
-          if (!hasCustomId(child)) {
-            child.custom_id = undefined;
+    ? structuredClone(message.data.components).map((component) => {
+        if (isActionRow(component)) {
+          for (const child of component.components) {
+            if (!hasCustomId(child)) {
+              child.custom_id = undefined;
+            }
           }
         }
-        return row;
+        return component;
       })
     : [];
 
@@ -219,11 +251,16 @@ export const useMessageSubmissionManager = (
         }
 
         let result: SubmitMessageResult | undefined;
-        const rowsWithoutFlows: APIActionRowComponent<APIComponentInMessageActionRow>[] =
-          [];
+        // TODO: ignores action rows/buttons nested in other components. need a catch all solution for these cases
+        const rowsWithoutFlows: APIMessageTopLevelComponent[] = [];
         for (const row of message.data.components ?? []) {
+          if (!isActionRow(row)) {
+            rowsWithoutFlows.push(row);
+            continue;
+          }
           rowsWithoutFlows.push({
-            type: ComponentType.ActionRow,
+            id: row.id,
+            type: row.type,
             components: [],
           });
           let ci = -1;
@@ -252,9 +289,9 @@ export const useMessageSubmissionManager = (
               break;
             }
             const withoutFlow = structuredClone(updated);
-            rowsWithoutFlows[rowsWithoutFlows.length - 1].components.push(
-              withoutFlow,
-            );
+            (
+              rowsWithoutFlows[rowsWithoutFlows.length - 1] as typeof row
+            ).components.push(withoutFlow);
 
             if ("flow" in withoutFlow && withoutFlow.flow) {
               withoutFlow.flow = undefined;

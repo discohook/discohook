@@ -352,9 +352,11 @@
     "componentsPossibleWebhook": "Één of meer van je webhooks zijn eigendom van een app, maar niet van Discohook, dus je kan alleen link knoppen toevoegen. Voeg een webhook toe die eigendom van de Discohook bot is om meer type componenten te gebruiken.",
     "linkButton": "Link Knop",
     "messageN": "Bericht {{n}}",
-    "rowN": "Rij {{n}}",
-    "buttonN": "Knop {{n}}",
-    "buttonNText": "Knop {{n}} - {{text}}",
+    "componentN": {
+        "1": "Rij {{n}}",
+        "2": "Knop {{n}}",
+        "2_text": "Knop {{n}} - {{text}}"
+    },
     "emoji": "Emoji",
     "label": "Label",
     "disabled": "Uitgeschakeld",

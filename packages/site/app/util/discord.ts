@@ -16,6 +16,7 @@ import {
   type APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
+  MessageFlags,
   type RESTError,
   type RESTGetAPICurrentUserGuildsResult,
   type RESTGetAPIWebhookWithTokenMessageResult,
@@ -28,6 +29,7 @@ import {
   type RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
+import { MessageFlagsBitField } from "discord-bitflag";
 import { Snowflake, getDate, isSnowflake } from "discord-snowflake";
 import { TimestampStyle } from "~/components/editor/TimePicker";
 import { DraftFile } from "~/routes/_index";
@@ -177,6 +179,14 @@ export const executeWebhook = async (
   }
   if (withComponents !== undefined) {
     query.set("with_components", String(withComponents));
+  }
+
+  // Avoid possible error from stale data
+  const flags = new MessageFlagsBitField(payload.flags ?? 0);
+  if (flags.has(MessageFlags.IsComponentsV2)) {
+    payload.content = undefined;
+    payload.embeds = undefined;
+    payload.poll = undefined;
   }
 
   if (files && !payload.attachments) {

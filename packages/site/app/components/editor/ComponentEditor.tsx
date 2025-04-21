@@ -2,8 +2,6 @@ import { SerializeFrom } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIActionRowComponent,
-  APIMessageComponent,
-  APITextInputComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
@@ -17,14 +15,9 @@ import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { getQdMessageId } from "~/routes/_index";
 import {
   APIAutoPopulatedSelectMenuComponent,
-  APIButtonComponent,
   APIButtonComponentWithCustomId,
-  APIChannelSelectComponent,
   APIComponentInMessageActionRow,
-  APIMentionableSelectComponent,
-  APIRoleSelectComponent,
   APIStringSelectComponent,
-  APIUserSelectComponent,
   QueryData,
 } from "~/types/QueryData";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
@@ -32,91 +25,12 @@ import { CacheManager } from "~/util/cache/CacheManager";
 import { getZodErrorMessage } from "~/util/loader";
 import { ButtonSelect } from "../ButtonSelect";
 import { SetErrorFunction, useError } from "../Error";
-import { InfoBox } from "../InfoBox";
 import { CoolIcon, CoolIconsGlyph } from "../icons/CoolIcon";
-
-export const getComponentText = (
-  component: APIMessageComponent,
-): string | undefined =>
-  component.type === ComponentType.Button
-    ? component.style !== ButtonStyle.Premium
-      ? component.label ?? component.emoji?.name
-      : `SKU ${component.sku_id}`
-    : component.type === ComponentType.StringSelect
-      ? component.placeholder
-      : undefined;
-
-export const getComponentWidth = (component: {
-  type: ComponentType;
-}): number => {
-  switch (component.type) {
-    case ComponentType.Button:
-      return 1;
-    case ComponentType.StringSelect:
-    case ComponentType.UserSelect:
-    case ComponentType.RoleSelect:
-    case ComponentType.MentionableSelect:
-    case ComponentType.ChannelSelect:
-    case ComponentType.TextInput:
-      return 5;
-    default:
-      break;
-  }
-  return 0;
-};
-
-export const getRowWidth = (
-  row: APIActionRowComponent<
-    | APIButtonComponent
-    | APIStringSelectComponent
-    | APIUserSelectComponent
-    | APIRoleSelectComponent
-    | APIMentionableSelectComponent
-    | APIChannelSelectComponent
-    | APITextInputComponent
-  >,
-): number => {
-  return row.components.reduce(
-    (last, component) => getComponentWidth(component) + last,
-    0,
-  );
-};
-
-export const getComponentErrors = (
-  component: APIMessageComponent,
-): string[] => {
-  const errors: string[] = [];
-  switch (component.type) {
-    case ComponentType.ActionRow:
-      if (component.components.length === 0) {
-        errors.push("rowEmpty");
-      }
-      // if (component.components.length > 5) {
-      //   errors.push("Cannot contain more than five components")
-      // }
-      break;
-    case ComponentType.Button:
-      if (
-        component.style !== ButtonStyle.Premium &&
-        !component.emoji &&
-        !component.label
-      ) {
-        errors.push("labelEmpty");
-      }
-      if (component.style === ButtonStyle.Link && !component.url) {
-        errors.push("urlEmpty");
-      }
-      break;
-    case ComponentType.StringSelect:
-      if (component.options.length === 0) {
-        errors.push("optionsEmpty");
-      }
-      break;
-    default:
-      break;
-  }
-  return errors;
-};
+import {
+  TopLevelComponentEditorContainer,
+  getComponentText,
+  getRowWidth,
+} from "./TopLevelComponentEditor";
 
 /**
  * This is a bit of a dance, we basically just want to generate a
@@ -219,6 +133,7 @@ export const getSetEditingComponentProps = ({
   data,
   setData,
   setEditingComponent,
+  setComponent: setComponent_,
 }: {
   component: APIComponentInMessageActionRow;
   row: APIActionRowComponent<APIComponentInMessageActionRow>;
@@ -228,13 +143,19 @@ export const getSetEditingComponentProps = ({
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
   >;
+  setComponent?: EditingComponentData["setComponent"];
 }): EditingComponentData => {
+  // Allow a custom value so this works without a row
+  const setComponent =
+    setComponent_ ??
+    ((updated) => {
+      row.components.splice(componentIndex, 1, updated);
+      setData({ ...data });
+    });
+
   return {
     component,
-    setComponent: (newComponent) => {
-      row.components.splice(componentIndex, 1, newComponent);
-      setData({ ...data });
-    },
+    setComponent,
     submit: async (newComponent, setError) => {
       const withId = { ...newComponent };
       if (
@@ -253,8 +174,7 @@ export const getSetEditingComponentProps = ({
 
       const updated = await submitComponent(withId, setError);
       if (updated) {
-        row.components.splice(componentIndex, 1, updated);
-        setData({ ...data });
+        setComponent(updated);
 
         // Reset state with new component so that subsequent saves
         // without closing the modal will PUT instead of POSTing
@@ -277,8 +197,8 @@ export const getSetEditingComponentProps = ({
 
 export const ActionRowEditor: React.FC<{
   message: QueryData["messages"][number];
-  row: APIActionRowComponent<APIComponentInMessageActionRow>;
-  rowIndex: number;
+  component: APIActionRowComponent<APIComponentInMessageActionRow>;
+  index: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   setEditingComponent: React.Dispatch<
@@ -288,8 +208,8 @@ export const ActionRowEditor: React.FC<{
   open?: boolean;
 }> = ({
   message,
-  row,
-  rowIndex: i,
+  component: row,
+  index: i,
   data,
   setData,
   setEditingComponent,
@@ -298,84 +218,18 @@ export const ActionRowEditor: React.FC<{
 }) => {
   const { t } = useTranslation();
   const mid = getQdMessageId(message);
-  const errors = getComponentErrors(row);
   const [error, setError] = useError(t);
 
   return (
-    <details
-      className="group/action-row rounded p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow"
+    <TopLevelComponentEditorContainer
+      t={t}
+      message={message}
+      component={row}
+      index={i}
+      data={data}
+      setData={setData}
       open={open}
     >
-      <summary className="group-open/action-row:mb-2 transition-[margin] marker:content-none marker-none flex text-lg text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-        <CoolIcon
-          icon="Chevron_Right"
-          className="group-open/action-row:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-        />
-        Row {i + 1}
-        <div className="ltr:ml-auto rtl:mr-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
-          <button
-            type="button"
-            className={i === 0 ? "hidden" : ""}
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              message.data.components?.splice(i - 1, 0, row);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={
-              !!message.data.components &&
-              i === message.data.components.length - 1
-                ? "hidden"
-                : ""
-            }
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              message.data.components?.splice(i + 1, 0, row);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            type="button"
-            className={
-              !!message.data.components && message.data.components.length >= 4
-                ? "hidden"
-                : ""
-            }
-            onClick={() => {
-              const cloned = structuredClone(row);
-              for (const component of cloned.components) {
-                component.custom_id = "";
-              }
-              message.data.components?.splice(i + 1, 0, cloned);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
-      </summary>
-      {errors.length > 0 && (
-        <div className="-mt-1 mb-1">
-          <InfoBox severity="red" icon="Circle_Warning">
-            {errors.map((k) => t(k)).join("\n")}
-          </InfoBox>
-        </div>
-      )}
       {error}
       <div className="space-y-1 mb-1">
         {row.components.map((component, ci) => {
@@ -519,7 +373,7 @@ export const ActionRowEditor: React.FC<{
       >
         {t("addComponent")}
       </ButtonSelect>
-    </details>
+    </TopLevelComponentEditorContainer>
   );
 };
 
@@ -527,7 +381,9 @@ export const IndividualComponentEditor: React.FC<{
   component: APIComponentInMessageActionRow;
   index: number;
   row: APIActionRowComponent<APIComponentInMessageActionRow>;
-  updateRow: () => void;
+  updateRow: (
+    row?: APIActionRowComponent<APIComponentInMessageActionRow>,
+  ) => void;
   onClick: () => void;
 }> = ({ component, index, row, updateRow, onClick }) => {
   const { t } = useTranslation();
@@ -603,7 +459,7 @@ export const IndividualComponentEditor: React.FC<{
           onClick={() => {
             row.components.splice(index, 1);
             row.components.splice(index - 1, 0, component);
-            updateRow();
+            updateRow(row);
           }}
         >
           <CoolIcon icon="Chevron_Up" />
@@ -615,7 +471,7 @@ export const IndividualComponentEditor: React.FC<{
           onClick={() => {
             row.components.splice(index, 1);
             row.components.splice(index + 1, 0, component);
-            updateRow();
+            updateRow(row);
           }}
         >
           <CoolIcon icon="Chevron_Down" />
@@ -634,7 +490,7 @@ export const IndividualComponentEditor: React.FC<{
             if (copied) {
               // Should always be non-null
               row.components.splice(index + 1, 0, copied);
-              updateRow();
+              updateRow(row);
             }
           }}
         >
@@ -645,7 +501,7 @@ export const IndividualComponentEditor: React.FC<{
           disabled={anySubmitting}
           onClick={() => {
             row.components.splice(index, 1);
-            updateRow();
+            updateRow(row);
 
             // Not sure about this as of now. I think we should have a pop up
             // that asks the user if they want to delete the component (and/or

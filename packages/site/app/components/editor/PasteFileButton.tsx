@@ -11,10 +11,24 @@ export type PasteFileButtonProps = {
   className?: string;
   onChange: (files: File[]) => void;
   disabled?: boolean;
+  multiple?: boolean;
+  getChildren?(state: "idle" | "active" | "active_mac"): React.ReactNode;
 };
 
 export function PasteFileButton(props: PasteFileButtonProps) {
-  const { t, className, onChange: handleChange, disabled = false } = props;
+  const {
+    t,
+    className,
+    onChange: handleChange,
+    disabled = false,
+    multiple = false,
+    getChildren = (state) =>
+      state === "active_mac"
+        ? t("pasteCmd")
+        : state === "active"
+          ? t("pasteCtrl")
+          : t("pasteFile"),
+  } = props;
 
   const [active, setActive] = useState(false);
 
@@ -36,6 +50,7 @@ export function PasteFileButton(props: PasteFileButtonProps) {
         }}
       />
       <Button
+        data-active={active}
         className={className}
         disabled={disabled}
         discordstyle={ButtonStyle.Secondary}
@@ -43,7 +58,7 @@ export function PasteFileButton(props: PasteFileButtonProps) {
           if (navigator.clipboard) {
             const items = await navigator.clipboard.read();
             const files: File[] = [];
-            for (const item of items) {
+            for (const item of items.slice(0, multiple ? undefined : 1)) {
               let type: string | undefined;
               // Guess the preferred type based on what a user would probably
               // expect to be on their clipboard. This attempts to prevent
@@ -101,14 +116,16 @@ export function PasteFileButton(props: PasteFileButtonProps) {
           }
         }}
       >
-        {active
-          ? // iOS devices support keyboards too
-            ["Mac", "iPhone", "iPad", "iPod"].find((p) =>
-              navigator.platform.startsWith(p),
-            )
-            ? t("pasteCmd")
-            : t("pasteCtrl")
-          : t("pasteFile")}
+        {getChildren(
+          active
+            ? // iOS devices support keyboards too
+              ["Mac", "iPhone", "iPad", "iPod"].find((p) =>
+                navigator.platform.startsWith(p),
+              )
+              ? "active_mac"
+              : "active"
+            : "idle",
+        )}
       </Button>
     </>
   );
