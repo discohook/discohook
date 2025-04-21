@@ -90,54 +90,93 @@ export interface QueryDataRaw {
   backup_id?: string;
   messages: {
     _id?: string;
-    data: {
-      author?: {
-        name?: string;
-        icon_url?: string;
-        badge?: string | null;
-        flags?: UserFlags;
-      };
-      content?: string | null;
-      embeds?: APIEmbed[] | null;
-      attachments?: APIAttachment[];
-      components?: APIMessageTopLevelComponent[];
-      webhook_id?: string;
-      flags?: MessageFlags;
-      thread_name?: string;
-    };
+    data: QueryDataMessageDataRaw;
     reference?: string;
     thread_id?: string;
   }[];
   targets?: { url: string }[];
 }
 
-export const ZodQueryDataMessageDataRaw = z.object({
-  author: z
-    .object({
-      name: z.ostring(),
-      icon_url: z.ostring(),
-      badge: z.ostring().nullable(),
-    })
-    .optional(),
-  content: z.ostring().nullable(),
-  embeds: ZodAPIEmbed.array().nullable().optional(),
-  attachments: z
-    .object({
-      id: z.string(),
-      filename: z.string(),
-      description: z.ostring(),
-      content_type: z.ostring(),
-      size: z.number(),
-      url: z.string(),
-      proxy_url: z.string(),
-      height: z.onumber().nullable(),
-      weight: z.onumber().nullable(),
-      is_thumbnail: z.oboolean(),
-    })
-    .array()
-    .optional(),
-  webhook_id: z.ostring(),
-  components: ZodAPIActionRowComponentRaw.array().optional(),
-  flags: ZodMessageFlags.optional(),
-  thread_name: z.ostring(),
-}) satisfies z.ZodType<QueryDataRaw["messages"][number]["data"]>;
+export interface QueryDataMessageDataRaw {
+  username?: string;
+  avatar_url?: string;
+  author?: {
+    /** @deprecated use `data.username` */
+    name?: string;
+    /** @deprecated use `data.avatar_url` */
+    icon_url?: string;
+    badge?: string | null;
+    flags?: UserFlags;
+  };
+  content?: string | null;
+  embeds?: APIEmbed[] | null;
+  attachments?: APIAttachment[];
+  components?: APIMessageTopLevelComponent[];
+  webhook_id?: string;
+  flags?: MessageFlags;
+  thread_name?: string;
+}
+
+const queryDataMessageDataTransform = (value: QueryDataMessageDataRaw) => {
+  if (!value.username && value.author?.name) {
+    value.username = value.author.name;
+  }
+  if (!value.avatar_url && value.author?.icon_url) {
+    value.avatar_url = value.author.icon_url;
+  }
+  return value;
+};
+
+export const ZodQueryDataMessageDataRaw = (
+  z.object({
+    username: z.ostring(),
+    avatar_url: z.ostring(),
+    author: z
+      .object({
+        /** @deprecated use `data.username` */
+        name: z.ostring(),
+        /** @deprecated use `data.avatar_url` */
+        icon_url: z.ostring(),
+        badge: z.ostring().nullable(),
+      })
+      .optional(),
+    content: z.ostring().nullable(),
+    embeds: ZodAPIEmbed.array().nullable().optional(),
+    attachments: z
+      .object({
+        id: z.string(),
+        filename: z.string(),
+        description: z.ostring(),
+        content_type: z.ostring(),
+        size: z.number(),
+        url: z.string(),
+        proxy_url: z.string(),
+        height: z.onumber().nullable(),
+        weight: z.onumber().nullable(),
+        is_thumbnail: z.oboolean(),
+      })
+      .array()
+      .optional(),
+    webhook_id: z.ostring(),
+    components: ZodAPIActionRowComponentRaw.array().optional(),
+    flags: ZodMessageFlags.optional(),
+    thread_name: z.ostring(),
+  }) satisfies z.ZodType<QueryDataMessageDataRaw>
+).transform(queryDataMessageDataTransform);
+
+/** Make zod-transformed payloads compatible with possibly-old API consumers */
+export const retrofitQueryData = <T extends QueryDataRaw>(data: T): T => {
+  const transformed = structuredClone(data);
+  for (const message of transformed.messages) {
+    message.data = queryDataMessageDataTransform(message.data);
+    if (message.data.avatar_url && !message.data.author?.icon_url) {
+      message.data.author = message.data.author ?? {};
+      message.data.author.icon_url = message.data.avatar_url;
+    }
+    if (message.data.username && !message.data.author?.name) {
+      message.data.author = message.data.author ?? {};
+      message.data.author.name = message.data.username;
+    }
+  }
+  return transformed;
+};

@@ -6,6 +6,7 @@ import { zx } from "zodix";
 import { doubleDecode, getUserId } from "~/session.server";
 import { backups, getDb } from "~/store.server";
 import { QueryData, ZodQueryData } from "~/types/QueryData";
+import { onlyActionRows } from "~/util/discord";
 import { ActionArgs, LoaderArgs } from "~/util/loader";
 import {
   snowflakeAsString,
@@ -61,10 +62,10 @@ export type ApiGetBackupWithData = ApiGetBackup & {
   data: QueryData;
 };
 
-const fixZodQueryData = (data: QueryData): QueryData => {
+const removeExtraneousBackupData = (data: QueryData): QueryData => {
   // `_id` is editor-only state
   data.messages = data.messages.map(({ _id: _, ...m }) => {
-    for (const row of m.data.components ?? []) {
+    for (const row of onlyActionRows(m.data.components ?? [])) {
       // We don't want to store flow data in backups since
       // it is already stored separately.
       row.components = row.components.map((component) => {
@@ -95,7 +96,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     timezone,
   } = await zxParseJson(request, {
     name: z.string().max(100).optional(),
-    data: ZodQueryData.transform(fixZodQueryData).optional(),
+    data: ZodQueryData.transform(removeExtraneousBackupData).optional(),
     scheduleAt: z
       .string()
       .datetime()

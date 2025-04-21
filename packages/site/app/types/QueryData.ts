@@ -6,7 +6,6 @@ import type {
   APIStringSelectComponent as _APIStringSelectComponent,
   APIUserSelectComponent as _APIUserSelectComponent,
   APIActionRowComponent,
-  APIAttachment,
   APIButtonComponentBase,
   APIContainerComponent,
   APIFileComponent,
@@ -15,19 +14,17 @@ import type {
   APISeparatorComponent,
   APITextDisplayComponent,
   ButtonStyle,
-  MessageFlags,
-  UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import type { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";
 import {
   type APIEmbed,
+  QueryDataMessageDataRaw,
   type QueryDataVersion,
-  ZodAPIEmbed,
+  ZodQueryDataMessageDataRaw,
 } from "./QueryData-raw";
 import { ZodAPIActionRowComponent } from "./components";
-import { ZodMessageFlags } from "./discord";
 
 export interface APIButtonComponentWithURL
   extends APIButtonComponentBase<ButtonStyle.Link> {
@@ -113,20 +110,8 @@ export interface QueryData {
   backup_id?: string;
   messages: {
     _id?: string;
-    data: {
-      author?: {
-        name?: string;
-        icon_url?: string;
-        badge?: string | null;
-        flags?: UserFlags;
-      };
-      content?: string | null;
-      embeds?: APIEmbed[] | null;
-      attachments?: APIAttachment[];
+    data: Omit<QueryDataMessageDataRaw, "components"> & {
       components?: APIMessageTopLevelComponent[];
-      webhook_id?: string;
-      flags?: MessageFlags;
-      thread_name?: string;
     };
     reference?: string;
     thread_id?: string;
@@ -134,40 +119,11 @@ export interface QueryData {
   targets?: { url: string }[];
 }
 
-export const ZodQueryDataMessageData = z.object({
-  author: z
-    .object({
-      name: z.ostring(),
-      icon_url: z.ostring(),
-      badge: z.ostring().nullable(),
-    })
-    .optional(),
-  content: z.ostring().nullable(),
-  embeds: ZodAPIEmbed.array().nullable().optional(),
-  attachments: z
-    .object({
-      id: z.string(),
-      filename: z.string(),
-      description: z.ostring(),
-      content_type: z.ostring(),
-      size: z.number(),
-      url: z.string(),
-      proxy_url: z.string(),
-      height: z.onumber().nullable(),
-      weight: z.onumber().nullable(),
-      is_thumbnail: z.oboolean(),
-    })
-    .array()
-    .optional(),
-  webhook_id: z.ostring(),
-  components: ZodAPIActionRowComponent.array().optional(),
-  flags: ZodMessageFlags.optional(),
-  thread_name: z.ostring(),
-}) satisfies z.ZodType<QueryData["messages"][number]["data"]>;
-
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),
-  data: ZodQueryDataMessageData,
+  data: ZodQueryDataMessageDataRaw.and(
+    z.object({ components: ZodAPIActionRowComponent.array().optional() }),
+  ),
   reference: z.ostring(),
   thread_id: z.ostring(),
 }) satisfies z.ZodType<QueryData["messages"][number]>;

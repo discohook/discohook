@@ -124,8 +124,8 @@ export const submitMessage = async (
       target.id,
       token,
       {
-        username: message.data.author?.name,
-        avatar_url: message.data.author?.icon_url,
+        username: message.data.username ?? message.data.author?.name,
+        avatar_url: message.data.avatar_url ?? message.data.author?.icon_url,
         content: message.data.content?.trim() ?? "",
         embeds:
           message.data.embeds?.map((e) => {

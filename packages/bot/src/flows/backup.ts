@@ -261,8 +261,8 @@ export const processQueryData = async (
           return row;
         })
       : [],
-    username: message.data.author?.name,
-    avatar_url: message.data.author?.icon_url,
+    username: message.data.username ?? message.data.author?.name,
+    avatar_url: message.data.avatar_url ?? message.data.author?.icon_url,
     thread_name: message.data.thread_name,
     flags: message.data.flags,
   };

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
 import { getShareLink } from "~/durable/share-links";
 import { QueryData } from "~/types/QueryData";
+import { retrofitQueryData } from "~/types/QueryData-raw";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
@@ -31,5 +32,8 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     throw e;
   }
 
-  return json({ data, expires: new Date(alarm) }, { headers });
+  return json(
+    { data: retrofitQueryData(data), expires: new Date(alarm) },
+    { headers },
+  );
 };

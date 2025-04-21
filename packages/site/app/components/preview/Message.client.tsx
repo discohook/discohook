@@ -97,19 +97,19 @@ export const Message: React.FC<{
     ? webhooks.find((w) => w.application_id === discordApplicationId) ??
       webhooks[0]
     : undefined;
-  const username = message.author?.name ?? webhook?.name ?? "Discohook";
+  const username = message.username ?? webhook?.name ?? "Discohook";
   // Trim out obviously bad data before attempting to load the image
   const avatarUrl =
-    (message.author?.icon_url
+    (message.avatar_url
       ? cdnOrigin &&
-        message.author.icon_url.startsWith(`${cdnOrigin}/tenor/`) &&
-        message.author.icon_url.endsWith(".gif")
+        message.avatar_url.startsWith(`${cdnOrigin}/tenor/`) &&
+        message.avatar_url.endsWith(".gif")
         ? // You can attempt to send a GIF, but it will be static. We preview
           // the thumbnail (for tenor) so people don't think there's something
           // wrong.
-          message.author.icon_url.replace(/\.gif$/, ".png")
+          message.avatar_url.replace(/\.gif$/, ".png")
         : // Discards attachment URIs, which are not supported for avatars
-          getImageUri(message.author.icon_url)
+          getImageUri(message.avatar_url)
       : null) ||
     (webhook
       ? webhookAvatarUrl(webhook, { size: 64 })
@@ -127,8 +127,8 @@ export const Message: React.FC<{
   const showProfile =
     !!forceSeparateAuthor ||
     (lastMessage
-      ? lastMessage.data.author?.name !== message.author?.name ||
-        lastMessage.data.author?.icon_url !== message.author?.icon_url
+      ? lastMessage.data.username !== message.username ||
+        lastMessage.data.avatar_url !== message.avatar_url
       : true) ||
     !!message.thread_name;
   // To save time, display components if the user has no webhooks
