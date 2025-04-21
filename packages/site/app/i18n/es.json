@@ -27,7 +27,8 @@
         "nl": "Holandés",
         "fr": "Francés",
         "en-US": "Inglés, US",
-        "de": "Alemán"
+        "de": "Alemán",
+        "it": "Italiano"
     },
     "search": "Busqueda",
     "helpSearchPlaceholder": "Como hago…",
@@ -92,5 +93,8 @@
     "submit": "Enviar",
     "submitToAll": "Enviar a todos",
     "submitAll": "Enviar Todo",
-    "submitting": "Enviando"
+    "submitting": "Enviando",
+    "backToServerSelection": "Volver a la selección de servidores",
+    "webhookInput": "Entrada de Webhook",
+    "translatePrompt": "¿Quieres ayudar a traducir Discohook a tu idioma? Visita <0>el portal de traducción</0> y únete a <1>el servidor de soporte</1> para coordinar con nosotros."
 }
