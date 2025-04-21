@@ -96,5 +96,10 @@
     "submitting": "Enviando",
     "backToServerSelection": "Volver a la selección de servidores",
     "webhookInput": "Entrada de Webhook",
-    "translatePrompt": "¿Quieres ayudar a traducir Discohook a tu idioma? Visita <0>el portal de traducción</0> y únete a <1>el servidor de soporte</1> para coordinar con nosotros."
+    "translatePrompt": "¿Quieres ayudar a traducir Discohook a tu idioma? Visita <0>el portal de traducción</0> y únete a <1>el servidor de soporte</1> para coordinar con nosotros.",
+    "chooseServer": "Elige un servidor",
+    "modern": "Moderno",
+    "classic": "Clásico",
+    "webhookUrl": "URL del webhook",
+    "invalidWebhookUrl": "URL de webhook no válida. Comienzan con https://discord.com/api/webhooks/..."
 }
