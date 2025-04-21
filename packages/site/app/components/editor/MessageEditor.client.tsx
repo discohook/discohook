@@ -519,15 +519,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                                 <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
                                   {transformFileName(file.file.name)}
                                 </Select.ItemText>
-                                <Select.ItemIndicator
-                                  className={twJoin(
-                                    "ltr:ml-auto rtl:mr-auto my-auto text-lg",
-                                    // https://github.com/mui/base-ui/issues/1556#issuecomment-2741296430
-                                    thumbnailFileId === file.id
-                                      ? "visible"
-                                      : "invisible",
-                                  )}
-                                >
+                                <Select.ItemIndicator className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
                                   <CoolIcon icon="Check" />
                                 </Select.ItemIndicator>
                               </Select.Item>
@@ -1256,15 +1248,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                                 <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
                                   {transformFileName(file.file.name)}
                                 </Select.ItemText>
-                                <Select.ItemIndicator
-                                  className={twJoin(
-                                    "ltr:ml-auto rtl:mr-auto my-auto text-lg",
-                                    // https://github.com/mui/base-ui/issues/1556#issuecomment-2741296430
-                                    thumbnailFileId === file.id
-                                      ? "visible"
-                                      : "invisible",
-                                  )}
-                                >
+                                <Select.ItemIndicator className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
                                   <CoolIcon icon="Check" />
                                 </Select.ItemIndicator>
                               </Select.Item>
