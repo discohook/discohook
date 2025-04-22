@@ -151,7 +151,10 @@
         "Administrator": "管理员",
         "ManageChannels": "管理频道",
         "AttachFiles": "附加文件",
-        "ManageGuild": "管理服务器"
+        "ManageGuild": "管理服务器",
+        "AddReactions": "添加反应",
+        "ViewAuditLog": "查看审核日志",
+        "PrioritySpeaker": "优先发言人"
     },
     "user": "用户",
     "sidebarColor": "侧栏颜色",
@@ -264,5 +267,6 @@
     "graceRemaining_other": "剩余 {{count}} 天",
     "homeWelcome": "欢迎来到主页。根据您在此服务器中的权限，您将能够访问<narrow>顶栏</narrow><wide>侧栏</wide>中的各个选项。",
     "auditLogSubtitle": "以下是通过 Discohook 为 <0>{{guild.name}}></0> 执行的操作列表。某些预期条目可能不存在 - 例如，如果 webhook URL 被泄露，攻击者不太可能使用 Discohook。<br /><br />如果您不认识某个用户，您可能需要删除该 webhook。",
-    "linkEmbedsNoVideoAndDescription": "设置视频时，描述不可见。"
+    "linkEmbedsNoVideoAndDescription": "设置视频时，描述不可见。",
+    "tab": "标签页"
 }
