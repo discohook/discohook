@@ -231,6 +231,9 @@
     "editingBackupNote": "您正在编辑备份，因此编辑期间您的内容会定期保存。若要与他人共享此消息，请使用“$t(share)”按钮。",
     "requestedBy": "{{username}} 在 Discohook 上请求",
     "cannotChangeChannel": "Webhook 频道必须在 Discord 里或从<0>服务器 webhook 菜单</0>进行设置。",
-    "webhookCreateSubtitle": "您很快就会回到编辑器那里。",
-    "openBackupLoad": "开始编辑此备份而不打开新的标签页"
+    "webhookCreateSubtitle": "您将很快返回编辑器。",
+    "openBackupLoad": "开始编辑此备份而不打开新的标签页",
+    "refresh": "刷新",
+    "previousPage": "<0/> 前一页",
+    "nextPage": "下一页 <0/>"
 }
