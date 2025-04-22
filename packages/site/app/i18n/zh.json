@@ -169,7 +169,16 @@
     "webhookCreated": "Webhook 已创建",
     "webhookCreateFailed": "创建 Webhook 失败",
     "locales": {
-        "zh": "中文"
+        "zh": "中文",
+        "cs": "捷克语",
+        "ar": "阿拉伯语",
+        "nl": "荷兰语",
+        "en-US": "英语（美国）",
+        "es": "西班牙语",
+        "it": "意大利语",
+        "en-GB": "英语（英国）",
+        "fr": "法语",
+        "de": "德语"
     },
     "cancel": "取消",
     "sendNoWebhooks": "您没有可发送的 Webhook。",
@@ -203,5 +212,18 @@
     "imports": "导入",
     "noImports": "此代码无需导入。",
     "copyImports": "复制导入",
-    "codeNote": "不要仅依赖计算机为您编写代码。<docs>查阅文档</docs>了解更多信息。如果您在使用 {{ library }} 时需要帮助，请访问支持服务器（可通过文档链接获取）。"
+    "codeNote": "不要仅依赖计算机为您编写代码。<docs>查阅文档</docs>了解更多信息。如果您在使用 {{ library }} 时需要帮助，请访问支持服务器（可通过文档链接获取）。",
+    "jsonEditor": "JSON 编辑器",
+    "chooseServer": "选择一个服务器",
+    "backToServerSelection": "返回服务器选择",
+    "required": "必须填写",
+    "sending": "正在发送",
+    "developer": "开发者",
+    "submit": "提交",
+    "submitAll": "提交全部",
+    "editing": "正在编辑",
+    "submitting": "正在提交",
+    "clickToCopy": "点击复制",
+    "code": "代码",
+    "copyCode": "复制代码"
 }
