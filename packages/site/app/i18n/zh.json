@@ -250,5 +250,6 @@
     "badJsonFile": "这不是一个正确编码的 JSON 文件。",
     "failedBackupParse": "无法解析文件。请确保它是有效的、未修改的备份导出文件。",
     "backupNameDuplicate": "<0/> 您已有一个同名的备份",
-    "importCount": "导入 {{count}}"
+    "importCount": "导入 {{count}}",
+    "deleteShareLinkConfirm": "您确定要删除此分享链接吗？删除后无法撤消。"
 }
