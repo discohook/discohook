@@ -176,7 +176,13 @@
         "ReadMessageHistory": "阅读消息历史",
         "EmbedLinks": "嵌入链接",
         "UseExternalEmojis": "使用外部表情符号",
-        "ChangeNickname": "修改昵称"
+        "ChangeNickname": "修改昵称",
+        "UseExternalStickers": "使用外部贴纸",
+        "SendMessagesInThreads": "在子区里发送消息",
+        "UseExternalSounds": "使用外部声音",
+        "SendVoiceMessages": "发送语音消息",
+        "ModerateMembers": "暂时禁言成员",
+        "UseSoundboard": "使用声音板"
     },
     "user": "用户",
     "sidebarColor": "侧栏颜色",
@@ -291,5 +297,11 @@
     "auditLogSubtitle": "以下是通过 Discohook 为 <0>{{guild.name}}></0> 执行的操作列表。某些预期条目可能不存在 - 例如，如果 webhook URL 被泄露，攻击者不太可能使用 Discohook。<br /><br />如果您不认识某个用户，您可能需要删除该 webhook。",
     "linkEmbedsNoVideoAndDescription": "设置视频时，描述不可见。",
     "tab": "标签页",
-    "supportServer": "支持服务器"
+    "supportServer": "支持服务器",
+    "hourTime": "小时 ({{timezone}})",
+    "month": "月",
+    "everyMonth": "每个月",
+    "dayOfMonth": "日期",
+    "repeating": "重复",
+    "weekday": "平日"
 }
