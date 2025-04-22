@@ -241,5 +241,14 @@
     "deleteBackup": "删除备份",
     "deleteBackupConfirm": "您确定要删除此备份吗？此操作无法撤销。",
     "viewBackupName": "查看 {{name}}",
-    "selectFile": "选择文件"
+    "selectFile": "选择文件",
+    "openBackupNewTab": "在新的标签页中打开此备份",
+    "shiftSkipTip": "提示：下次按住 Shift 键即可跳过此确认。",
+    "deleteShareLink": "删除分享链接",
+    "importedFromOrgAt": "于 $t(timestamp.date_verbose) 从 discohook.org 导入",
+    "importOrgPrompt": "如果您想导入存储在 Discohook.org 上的备份，请<0>点击此处</0>。否则，您可以使用此菜单导入您之前导出的备份文件。",
+    "badJsonFile": "这不是一个正确编码的 JSON 文件。",
+    "failedBackupParse": "无法解析文件。请确保它是有效的、未修改的备份导出文件。",
+    "backupNameDuplicate": "<0/> 您已有一个同名的备份",
+    "importCount": "导入 {{count}}"
 }
