@@ -156,7 +156,8 @@
         "ViewAuditLog": "查看审核日志",
         "PrioritySpeaker": "优先发言人",
         "ViewChannel": "查看频道",
-        "SendMessages": "发送讯息"
+        "SendMessages": "发送讯息",
+        "ManageMessages": "管理讯息"
     },
     "user": "用户",
     "sidebarColor": "侧栏颜色",
