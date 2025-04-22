@@ -232,7 +232,7 @@
     "requestedBy": "{{username}} 在 Discohook 上请求",
     "cannotChangeChannel": "Webhook 频道必须在 Discord 里或从<0>服务器 webhook 菜单</0>进行设置。",
     "webhookCreateSubtitle": "您将很快返回编辑器。",
-    "openBackupLoad": "开始编辑此备份而不打开新的标签页",
+    "openBackupLoad": "在不打开新标签页的情况下开始编辑此备份",
     "refresh": "刷新",
     "previousPage": "<0/> 前一页",
     "nextPage": "下一页 <0/>"
