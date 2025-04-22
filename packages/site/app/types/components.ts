@@ -16,7 +16,15 @@ import {
   APIStringSelectComponent,
   APIUserSelectComponent,
 } from "./QueryData";
-import { ZodPartialEmoji } from "./components-raw";
+import {
+  ZodAPIContainerComponentRaw,
+  ZodAPIFileComponentRaw,
+  ZodAPIMediaGalleryComponentRaw,
+  ZodAPISectionComponentRaw,
+  ZodAPISeparatorComponentRaw,
+  ZodAPITextDisplayComponentRaw,
+  ZodPartialEmoji,
+} from "./components-raw";
 import { ZodDraftFlow } from "./flows";
 
 export const ZodAPIButtonComponentWithCustomIdBase = z.object({
@@ -244,3 +252,13 @@ export const ZodAPIActionRowComponent = z.object({
   type: z.literal(ComponentType.ActionRow),
   components: ZodAPIMessageActionRowComponent.array(),
 });
+
+export const ZodAPITopLevelComponent = z.union([
+  ZodAPIContainerComponentRaw,
+  ZodAPIActionRowComponent,
+  ZodAPIFileComponentRaw,
+  ZodAPIMediaGalleryComponentRaw,
+  ZodAPISectionComponentRaw,
+  ZodAPISeparatorComponentRaw,
+  ZodAPITextDisplayComponentRaw,
+]);

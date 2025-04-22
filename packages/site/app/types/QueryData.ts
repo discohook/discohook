@@ -24,7 +24,7 @@ import {
   type QueryDataVersion,
   ZodQueryDataMessageDataRaw,
 } from "./QueryData-raw";
-import { ZodAPIActionRowComponent } from "./components";
+import { ZodAPITopLevelComponent } from "./components";
 
 export interface APIButtonComponentWithURL
   extends APIButtonComponentBase<ButtonStyle.Link> {
@@ -33,8 +33,7 @@ export interface APIButtonComponentWithURL
    */
   url: string;
   /**
-   * An internal Discohook ID, only sent to Discord when combined with the
-   * validated `url`. It is later split from `url` to populate this property.
+   * An internal Discohook ID for tracking within the editor
    */
   custom_id?: string;
 }
@@ -122,7 +121,7 @@ export interface QueryData {
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),
   data: ZodQueryDataMessageDataRaw.and(
-    z.object({ components: ZodAPIActionRowComponent.array().optional() }),
+    z.object({ components: ZodAPITopLevelComponent.array().optional() }),
   ),
   reference: z.ostring(),
   thread_id: z.ostring(),
@@ -176,7 +175,7 @@ export const ZodLinkEmbed = z.object({
   large_images: z.oboolean(),
   video: z
     .object({
-      /** Direct video file or YouTube video */
+      /** Direct video file or supported iframe src */
       url: z.string(),
       height: z.onumber(),
       width: z.onumber(),

@@ -4,11 +4,16 @@ import {
   type APIButtonComponentWithURL,
   type APIChannelSelectComponent,
   type APIComponentInMessageActionRow,
+  APIContainerComponent,
+  APIFileComponent,
+  APIMediaGalleryComponent,
+  APIMediaGalleryItem,
   type APIMentionableSelectComponent,
   type APIMessageComponentEmoji,
   type APIRoleSelectComponent,
   type APISectionAccessoryComponent,
   type APISectionComponent,
+  APISeparatorComponent,
   type APIStringSelectComponent,
   type APITextDisplayComponent,
   type APIThumbnailComponent,
@@ -18,6 +23,7 @@ import {
   ChannelType,
   ComponentType,
   SelectMenuDefaultValueType,
+  SeparatorSpacingSize,
   UnfurledMediaItemLoadingState,
 } from "discord-api-types/v10";
 import { z } from "zod";
@@ -255,6 +261,7 @@ export const ZodAPITextDisplayComponentRaw = z.object({
 }) satisfies z.ZodType<APITextDisplayComponent>;
 
 export const ZodAPIUnfurledMediaItemRaw = z.object({
+  /** http(s) or attachment:// */
   url: z.string(),
   proxy_url: z.ostring(),
   width: z.onumber(),
@@ -285,3 +292,56 @@ export const ZodAPISectionComponentRaw = z.object({
   components: ZodAPITextDisplayComponentRaw.array(),
   accessory: ZodAPISectionAccessoryComponentRaw,
 }) satisfies z.ZodType<APISectionComponent>;
+
+export const ZodAPIMediaGalleryItemRaw = z.object({
+  media: ZodAPIUnfurledMediaItemRaw,
+  description: z.ostring().nullable(),
+  spoiler: z.oboolean(),
+}) satisfies z.ZodType<APIMediaGalleryItem>;
+
+export const ZodAPIMediaGalleryComponentRaw = z.object({
+  id: z.onumber(),
+  type: z.literal(ComponentType.MediaGallery),
+  items: ZodAPIMediaGalleryItemRaw.array(),
+}) satisfies z.ZodType<APIMediaGalleryComponent>;
+
+export const ZodAPIFileComponentRaw = z.object({
+  id: z.onumber(),
+  type: z.literal(ComponentType.File),
+  /** Only supports attachment:// */
+  file: ZodAPIUnfurledMediaItemRaw,
+}) satisfies z.ZodType<APIFileComponent>;
+
+export const ZodAPISeparatorComponentRaw = z.object({
+  id: z.onumber(),
+  type: z.literal(ComponentType.Separator),
+  divider: z.oboolean(),
+  spacing: z.nativeEnum(SeparatorSpacingSize).optional(),
+}) satisfies z.ZodType<APISeparatorComponent>;
+
+export const ZodAPIComponentInContainerRaw = z.union([
+  ZodAPIActionRowComponentRaw,
+  ZodAPIFileComponentRaw,
+  ZodAPIMediaGalleryComponentRaw,
+  ZodAPISectionComponentRaw,
+  ZodAPISeparatorComponentRaw,
+  ZodAPITextDisplayComponentRaw,
+]);
+
+export const ZodAPIContainerComponentRaw = z.object({
+  id: z.onumber(),
+  type: z.literal(ComponentType.Container),
+  accent_color: z.onumber().nullable(),
+  spoiler: z.oboolean(),
+  components: ZodAPIComponentInContainerRaw.array(),
+}) satisfies z.ZodType<APIContainerComponent>;
+
+export const ZodAPITopLevelComponentRaw = z.union([
+  ZodAPIContainerComponentRaw,
+  ZodAPIActionRowComponentRaw,
+  ZodAPIFileComponentRaw,
+  ZodAPIMediaGalleryComponentRaw,
+  ZodAPISectionComponentRaw,
+  ZodAPISeparatorComponentRaw,
+  ZodAPITextDisplayComponentRaw,
+]);
