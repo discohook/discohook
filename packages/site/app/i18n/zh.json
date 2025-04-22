@@ -253,8 +253,15 @@
     "importCount": "导入 {{count}}",
     "deleteShareLinkConfirm": "您确定要删除此共享链接吗？删除后无法撤消。",
     "homePermission": {
-        "admin": "您是管理员。"
+        "admin": "您是管理员。",
+        "owner": "您拥有该服务器。",
+        "roles": "您的身份组授予您一些服务器范围的权限（不包括频道覆盖）。"
     },
     "forceRefresh": "强制刷新",
-    "refreshed": "已刷新"
+    "refreshed": "已刷新",
+    "linkEmbedsPremiumReadOnly": "您目前处于阅读模式。您可以在编辑器中试用，但为了保存链接，您需要订阅 <0>Discohook Deluxe</0> 。",
+    "graceRemaining_other": "剩余 {{count}} 天",
+    "homeWelcome": "欢迎来到主页。根据您在此服务器中的权限，您将能够访问<narrow>顶栏</narrow><wide>侧栏</wide>中的各个选项。",
+    "auditLogSubtitle": "以下是通过 Discohook 为 <0>{{guild.name}></0> 采取的行动列表。某些预期条目可能不存在 - 例如，如果 webhook URL 泄露，攻击者不太可能使用 Discohook。<br /><br />如果您不认识某个用户，您可能需要删除该 webhook。",
+    "linkEmbedsNoVideoAndDescription": "设置视频时，描述不可见。"
 }
