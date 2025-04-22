@@ -235,5 +235,6 @@
     "openBackupLoad": "在不打开新标签页的情况下开始编辑此备份",
     "refresh": "刷新",
     "previousPage": "<0/> 前一页",
-    "nextPage": "下一页 <0/>"
+    "nextPage": "下一页 <0/>",
+    "openBackupClone": "克隆此备份并在当前的标签页中加载重复的数据"
 }
