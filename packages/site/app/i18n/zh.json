@@ -46,7 +46,7 @@
     "channel": "频道",
     "profile": "Webhook 资料",
     "backups": "备份",
-    "noBackups": "您尚未创建任何备份。",
+    "noBackups": "这里没有备份。您可以在<0>主页</0>的“备份”菜单中创建备份。",
     "import": "导入",
     "importBackups": "导入备份",
     "exportBackups": "导出备份",
@@ -231,5 +231,6 @@
     "editingBackupNote": "您正在编辑备份，因此编辑期间您的内容会定期保存。若要与他人共享此消息，请使用“$t(share)”按钮。",
     "requestedBy": "{{username}} 在 Discohook 上请求",
     "cannotChangeChannel": "Webhook 频道必须在 Discord 里或从<0>服务器 webhook 菜单</0>进行设置。",
-    "webhookCreateSubtitle": "您很快就会回到编辑器那里。"
+    "webhookCreateSubtitle": "您很快就会回到编辑器那里。",
+    "openBackupLoad": "开始编辑此备份而不打开新的标签页"
 }
