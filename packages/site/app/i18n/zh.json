@@ -205,7 +205,7 @@
     "temporaryShareUrlExpires": "分享链接（ <0>$t(timestamp.relative.days_future)</0>过期）",
     "expiresIn": "{{0}} 过期",
     "copyWebhookUrl": "复制链接（高级）",
-    "copyQueryData": "复制数据查询",
+    "copyQueryData": "复制查询数据",
     "webhookInput": "Webhook 输入",
     "translatePrompt": "想要帮助将 Discohook 翻译成您的语言吗？请查看 <0>翻译门户</0> 并加入 <1>支持服务器</1> 以与我们协调。",
     "library": "库",
