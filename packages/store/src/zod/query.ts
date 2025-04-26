@@ -41,10 +41,13 @@ export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),
   data: z.object({
+    username: z.ostring(),
+    avatar_url: z.ostring(),
     author: z
       .object({
+        /** @deprecated use `data.username` */
         name: z.ostring(),
-        icon_url: z.ostring(),
+        /** @deprecated use `data.avatar_url` */
         badge: z.ostring().nullable(),
       })
       .optional(),

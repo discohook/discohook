@@ -1,8 +1,7 @@
 import {
   APIAttachment as _APIAttachment,
   APIEmbed as _APIEmbed,
-  APIActionRowComponent,
-  APIMessageActionRowComponent,
+  APIMessageTopLevelComponent,
   MessageFlags,
   UserFlags,
 } from "discord-api-types/v10";
@@ -37,8 +36,12 @@ export interface QueryData {
   messages: {
     _id?: string;
     data: {
+      username?: string;
+      avatar_url?: string;
       author?: {
+        /** @deprecated use `username` */
         name?: string;
+        /** @deprecated use `avatar_url` */
         icon_url?: string;
         badge?: string | null;
         flags?: UserFlags;
@@ -46,7 +49,7 @@ export interface QueryData {
       content?: string | null;
       embeds?: APIEmbed[] | null;
       attachments?: APIAttachment[];
-      components?: APIActionRowComponent<APIMessageActionRowComponent>[];
+      components?: APIMessageTopLevelComponent[];
       webhook_id?: string;
       flags?: MessageFlags;
       thread_name?: string;
