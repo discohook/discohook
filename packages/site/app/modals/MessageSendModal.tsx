@@ -6,7 +6,7 @@ import {
   APIWebhook,
   ButtonStyle,
   ComponentType,
-  RESTJSONErrorCodes,
+  RESTJSONErrorCodes
 } from "discord-api-types/v10";
 import { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
@@ -30,6 +30,8 @@ import {
   executeWebhook,
   hasCustomId,
   isActionRow,
+  isComponentsV2,
+  onlyActionRows,
   updateWebhookMessage,
   webhookAvatarUrl,
 } from "~/util/discord";
@@ -73,44 +75,31 @@ export const submitMessage = async (
   // `with_components` is `true` when:
   // - the webhook is not owned by an application, and
   // - there are components, and
-  // - none are interaction-spawning
+  // - the message is using components v2 (required), or there are
+  //   non-actionable components
   // and `undefined` otherwise (let default behavior take over)
   const withComponents = target.application_id
     ? undefined
     : ((): true | undefined => {
         if (!message.data.components) return;
-
-        const inner = (
-          components: typeof message.data.components,
-        ): true | undefined => {
-          for (const component of components) {
-            if (isActionRow(component)) {
-              if (
-                component.components.filter((child) => {
-                  // Not non-interactable. Technically premium buttons are not
-                  // interaction-spawning but they are application-only
-                  return !(
-                    child.type === ComponentType.Button &&
-                    child.style === ButtonStyle.Link
-                  );
-                }).length !== 0
-              ) {
-                return true;
-              }
-            } else if (component.type === ComponentType.Container) {
-              return inner(component.components);
-            } else if (component.type === ComponentType.Section) {
-              if (
-                component.accessory.type === ComponentType.Button &&
-                component.accessory.style !== ButtonStyle.Link
-              ) {
-                return true;
-              }
+        // The param is required for Components V2 messages
+        if (isComponentsV2(message.data)) {
+          return true;
+        }
+        for (const row of onlyActionRows(message.data.components)) {
+          for (const child of row.components) {
+            // Any child encountered that is not a link
+            // button (a V1 non-actionable component)
+            if (
+              !(
+                child.type === ComponentType.Button &&
+                child.style === ButtonStyle.Link
+              )
+            ) {
+              return true;
             }
           }
-        };
-
-        return inner(message.data.components);
+        }
       })();
 
   let data: APIMessage | DiscordErrorData;
@@ -374,6 +363,10 @@ export const useMessageSubmissionManager = (
           //     },
           //   });
           // }
+          if (isComponentsV2(message.data)) {
+            // Don't log for now; in beta
+            return;
+          }
           auditLogFetcher.submit(
             {
               type: message.reference ? "edit" : "send",
