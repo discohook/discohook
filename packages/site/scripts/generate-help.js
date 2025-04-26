@@ -13,7 +13,7 @@ const data = {
         "",
         'If you create one with the bot, just press the "Use Webhook" button to open Discohook. If you created it manually, copy the Webhook URL and paste it in the "input a webhook URL manually" part of the Add Webhook menu, at the top of the Discohook editor.',
         "",
-        "The Discohook editor can be found at https://discohook.app."
+        "The Discohook editor can be found at https://discohook.app.",
       ].join("\n"),
     },
     edit: {
@@ -35,9 +35,9 @@ const data = {
           name: "The process on the Discohook website",
           value: [
             '1. Right click or long press on the message to edit, then select "Copy Message Link".',
-            '2. In Discohook, scroll down to the bottom of the website. Click the "Settings" button, then choose "Set Reference". Paste the copied message link in the box.',
+            '2. In Discohook, scroll down to the bottom of the website. Click the "Set Link" button. Paste the copied message link in the box.',
             "3. Select the webhook that sent the message or add it in the \"Add Webhook\" menu. If you're not logged in, you may have to copy the webhook URL using Discohook Utils's </webhook info:1> command.",
-            '4. If you would like to overwrite the current message that you see in the editor, choose "Overwrite Editor". This will pull the message data from Discord and put it into Discohook so you can edit it. Otherwise, choose "Set Reference".',
+            '4. If you would like to overwrite the current message that you see in the editor, choose "Overwrite Editor". This will pull the message data from Discord and put it into Discohook so you can edit it. Otherwise, choose "Set Message Link".',
           ].join("\n"),
           inline: false,
         },
