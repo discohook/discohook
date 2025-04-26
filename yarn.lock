@@ -799,6 +799,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@discordjs/rest@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@discordjs/rest@npm:2.5.0"
+  dependencies:
+    "@discordjs/collection": "npm:^2.1.1"
+    "@discordjs/util": "npm:^1.1.1"
+    "@sapphire/async-queue": "npm:^1.5.3"
+    "@sapphire/snowflake": "npm:^3.5.3"
+    "@vladfrangu/async_event_emitter": "npm:^2.4.6"
+    discord-api-types: "npm:^0.38.1"
+    magic-bytes.js: "npm:^1.10.0"
+    tslib: "npm:^2.6.3"
+    undici: "npm:6.21.1"
+  checksum: 10c0/9bfafd34c684240395d3ce1ae7a930de426f379940ae526466714e8066bf06c6a6a4f45e76a39f32d85fee7eb74bcb6ff7b72669cec722f9c3e1828a96ec3ad6
+  languageName: node
+  linkType: hard
+
 "@discordjs/util@npm:^1.0.2":
   version: 1.0.2
   resolution: "@discordjs/util@npm:1.0.2"
@@ -4496,7 +4513,7 @@ cron-parser@discohook/cron-parser:
     "@base-ui-components/react": "npm:^1.0.0-alpha.8"
     "@cloudflare/kv-asset-handler": "npm:^0.4.0"
     "@cloudflare/workers-types": "npm:^4.20240405.0"
-    "@discordjs/rest": "npm:^2.4.0"
+    "@discordjs/rest": "npm:^2.5.0"
     "@emoji-mart/data": "npm:^1.1.2"
     "@remix-run/cloudflare": "npm:^2.4.0"
     "@remix-run/css-bundle": "npm:^2.4.0"
@@ -4519,7 +4536,7 @@ cron-parser@discohook/cron-parser:
     caniuse-lite: "npm:^1.0.30001706"
     chrono-node: "npm:^2.7.5"
     cron-parser: discohook/cron-parser
-    discord-api-types: "npm:^0.38.0-next-1740095508888"
+    discord-api-types: "npm:^0.38.1"
     discord-bitflag: "npm:^1.0.2"
     discord-snowflake: "npm:^2.0.0"
     emoji-mart: "npm:^5.5.2"
@@ -4592,10 +4609,10 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
-"discord-api-types@npm:^0.38.0-next-1740095508888":
-  version: 0.38.0-next-1740095508888
-  resolution: "discord-api-types@npm:0.38.0-next-1740095508888"
-  checksum: 10c0/ade3667de6a5f033393781f822b928d67ff95d54c445ba0387cb87060984d7bd692ba32e1d1d2cb2581f1eb90518e3030d6afe7a3002eaf81b675394b822b1ee
+"discord-api-types@npm:^0.38.1":
+  version: 0.38.1
+  resolution: "discord-api-types@npm:0.38.1"
+  checksum: 10c0/8616eb025ccc998d1c5eca08fb50ba2faefbd53ed786ea84ded9b9f881037104bac22c6f53db357c1d12660ea32375a507c3cce8cf36873382ace42ddc73ca4b
   languageName: node
   linkType: hard
 
@@ -9732,9 +9749,9 @@ remix-auth-discord@discohook/remix-auth-discord:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=5d264a&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=7246f9&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
-    discord-api-types: "npm:^0.37.92"
+    discord-api-types: "npm:^0.38.1"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.32.1"
     json-bigint: "npm:^1.0.0"
@@ -9742,7 +9759,7 @@ remix-auth-discord@discohook/remix-auth-discord:
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/3c985c9b3ca0ee7a4376a172db2bc00114746fde8bf70687bf1f3e4607e67bf4e323d1558962e236d7a3f1a915a8423dcd23f2ca061ede06d2a715d9100fe4d1
+  checksum: 10c0/4fb2924c85e4782794c9d04ecacff81233a757aa53b9783188e797ec948e46117ba10a6a1a3b7cf8d79ff365dbdd0e7d0f2321cee3dfe6a688f68ec7a6151027
   languageName: node
   linkType: hard
 
@@ -9750,9 +9767,9 @@ remix-auth-discord@discohook/remix-auth-discord:
   version: 0.0.0-use.local
   resolution: "store@workspace:packages/store"
   dependencies:
-    "@discordjs/rest": "npm:^2.2.0"
+    "@discordjs/rest": "npm:^2.5.0"
     "@types/json-bigint": "npm:^1.0.4"
-    discord-api-types: "npm:^0.37.92"
+    discord-api-types: "npm:^0.38.1"
     discord-snowflake: "npm:^2.0.0"
     drizzle-kit: "npm:^0.23.1"
     drizzle-orm: "npm:^0.32.1"
@@ -10400,6 +10417,13 @@ tif-snowflake@discohook/snowflake:
   version: 6.19.8
   resolution: "undici@npm:6.19.8"
   checksum: 10c0/07fd8520bce7e34ea29c07ef0de27b734183042cdb4e2f1262cd1fb9b755a6b04ff2471040395dfb1770fb7786069a97c5178bcf706b80a34075994f46feb37c
+  languageName: node
+  linkType: hard
+
+"undici@npm:6.21.1":
+  version: 6.21.1
+  resolution: "undici@npm:6.21.1"
+  checksum: 10c0/d604080e4f8db89b35a63b483b5f96a5f8b19ec9f716e934639345449405809d2997e1dd7212d67048f210e54534143384d712bd9075e4394f0788895ef9ca8e
   languageName: node
   linkType: hard
 

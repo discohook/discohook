@@ -1266,6 +1266,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"discord-api-types@npm:^0.38.0-next-1740095508888":
+  version: 0.38.0-next-1740095508888
+  resolution: "discord-api-types@npm:0.38.0-next-1740095508888"
+  checksum: 10c0/ade3667de6a5f033393781f822b928d67ff95d54c445ba0387cb87060984d7bd692ba32e1d1d2cb2581f1eb90518e3030d6afe7a3002eaf81b675394b822b1ee
+  languageName: node
+  linkType: hard
+
 "discord-bitflag@npm:^1.0.2":
   version: 1.0.2
   resolution: "discord-bitflag@npm:1.0.2"
@@ -2901,9 +2908,9 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=5d264a&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=618525&locator=discohook-bot%40workspace%3A."
   dependencies:
-    discord-api-types: "npm:^0.37.92"
+    discord-api-types: "npm:^0.38.0-next-1740095508888"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.32.1"
     json-bigint: "npm:^1.0.0"
@@ -2911,7 +2918,7 @@ __metadata:
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/3c985c9b3ca0ee7a4376a172db2bc00114746fde8bf70687bf1f3e4607e67bf4e323d1558962e236d7a3f1a915a8423dcd23f2ca061ede06d2a715d9100fe4d1
+  checksum: 10c0/788181bb777518661c6b75085ee55900ccaedd7fbddf407e404bedfd2b767de06d178b53da180b3855a9c3423dc9d8cf44ccc48b3d38ee504424a68c82cd9a37
   languageName: node
   linkType: hard
 

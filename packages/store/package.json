@@ -11,7 +11,7 @@
     "snowflake": "node ./scripts/snowflake.js"
   },
   "dependencies": {
-    "discord-api-types": "^0.37.92",
+    "discord-api-types": "^0.38.1",
     "discord-snowflake": "^2.0.0",
     "drizzle-orm": "^0.32.1",
     "json-bigint": "^1.0.0",
@@ -21,7 +21,7 @@
     "zodix": "^0.4.4"
   },
   "devDependencies": {
-    "@discordjs/rest": "^2.2.0",
+    "@discordjs/rest": "^2.5.0",
     "@types/json-bigint": "^1.0.4",
     "drizzle-kit": "^0.23.1",
     "typescript": "^5.3.3"
