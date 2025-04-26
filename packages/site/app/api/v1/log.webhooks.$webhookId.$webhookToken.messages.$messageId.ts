@@ -8,14 +8,20 @@ import {
   APIMessage,
   APISelectMenuComponent,
   ButtonStyle,
-  ComponentType,
+  ComponentType
 } from "discord-api-types/v10";
 import { notInArray } from "drizzle-orm";
 import { Snowflake } from "tif-snowflake";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
 import { getUserId } from "~/session.server";
-import { getWebhook, getWebhookMessage, hasCustomId } from "~/util/discord";
+import { APIComponentInMessageActionRow } from "~/types/QueryData";
+import {
+  getWebhook,
+  getWebhookMessage,
+  hasCustomId,
+  isComponentsV2,
+} from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
@@ -127,6 +133,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     if (!message.id) {
       throw json(message, 404);
     }
+    if (isComponentsV2(message)) {
+      // We currently do not support logging these messages out of an abundance of caution
+      throw json(
+        { message: "Message is not loggable" },
+        { status: 400, headers },
+      );
+    }
     if (type === "edit") {
       if (!message.edited_timestamp) {
         throw json(
@@ -229,8 +242,32 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       .delete(discordMessageComponents)
       .where(eq(discordMessageComponents.messageId, BigInt(messageId)));
   } else {
-    const components = message.components.flatMap((row) => row.components);
-    const componentIds = components
+    const storableComponents = message.components.flatMap((component) => {
+      switch (component.type) {
+        case ComponentType.ActionRow:
+          return component.components;
+        case ComponentType.Section:
+          return component.accessory.type === ComponentType.Button
+            ? [component.accessory]
+            : [];
+        case ComponentType.Container:
+          return component.components.flatMap((child) => {
+            switch (child.type) {
+              case ComponentType.ActionRow:
+                return child.components;
+              case ComponentType.Section:
+                return child.accessory.type === ComponentType.Button
+                  ? [child.accessory]
+                  : [];
+              default:
+                return [];
+            }
+          });
+        default:
+          return [];
+      }
+    }) satisfies APIComponentInMessageActionRow[];
+    const componentIds = storableComponents
       .map(getComponentId)
       .filter((id): id is bigint => id !== undefined);
 
@@ -269,8 +306,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       );
 
       const flowsById: Record<string, string[]> = {};
-      const flowsValues: (typeof flows.$inferInsert)[] = components.flatMap(
-        (component) => {
+      const flowsValues: (typeof flows.$inferInsert)[] =
+        storableComponents.flatMap((component) => {
           const match = stored.find((c) =>
             "custom_id" in component
               ? component.custom_id === `p_${c.id}`
@@ -290,117 +327,122 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           const newId = generateId();
           flowsById[String(id)].push(newId);
           return [{ id: BigInt(newId) }];
-        },
-      );
+        });
       if (flowsValues.length !== 0) {
         await tx.insert(flows).values(flowsValues).onConflictDoNothing();
       }
 
-      return await tx
-        .insert(discordMessageComponents)
-        .values(
-          components.flatMap((component) => {
-            const match =
-              "custom_id" in component
-                ? stored.find((c) => component.custom_id === `p_${c.id}`)
-                : undefined;
+      const now = new Date();
+      const values: (typeof discordMessageComponents.$inferInsert)[] =
+        storableComponents.flatMap((component) => {
+          const match =
+            "custom_id" in component
+              ? stored.find((c) => component.custom_id === `p_${c.id}`)
+              : undefined;
 
-            // We generally want to prevent a component type from changing but
-            // I think it makes more sense in this context to allow it
-            // if (match && match.data.type !== component.type) {
-            //   return [];
-            // }
+          const id = String(getComponentId(component));
 
-            const id = String(getComponentId(component));
-            return [
-              {
-                id: match?.id,
-                type: component.type,
-                data: (() => {
-                  switch (component.type) {
-                    case ComponentType.Button: {
-                      if (!hasCustomId(component)) {
-                        return component;
-                      }
-                      const { custom_id: _, ...c } = component;
-                      return {
-                        ...c,
-                        flowId:
-                          match && "flowId" in match.data
-                            ? match.data.flowId
-                            : flowsById[id][0],
-                      };
-                    }
-                    case ComponentType.StringSelect: {
-                      const { custom_id: _, ...c } = component;
-                      return {
-                        ...c,
-                        // Force max 1 value until we support otherwise
-                        // I want to make it so selects with >1 max_values share one
-                        // flow for all options, like with autofill selects. And also
-                        // a way to tell which values have been selected - `{values[n]}`?
-                        minValues: 1,
-                        maxValues: 1,
-                        // minValues: component.min_values,
-                        // maxValues: component.max_values,
-                        flowIds:
-                          match && "flowIds" in match.data
-                            ? match.data.flowIds
-                            : {},
-                      };
-                    }
-                    case ComponentType.UserSelect:
-                    case ComponentType.RoleSelect:
-                    case ComponentType.MentionableSelect:
-                    case ComponentType.ChannelSelect: {
-                      const { custom_id: _, ...c } = component;
-                      return {
-                        ...c,
-                        // See above
-                        minValues: 1,
-                        maxValues: 1,
-                        flowId:
-                          match && "flowId" in match.data
-                            ? match.data.flowId
-                            : flowsById[id][0],
-                      };
-                    }
-                    default:
-                      break;
-                  }
-                  // Shouldn't happen
-                  throw Error("Unsupported component type");
-                })(),
-                draft: false,
-                createdById: match?.createdById ?? userId,
-                updatedById: userId,
-                updatedAt: sql`NOW()`,
-                guildId,
-                messageId: BigInt(message.id),
-                channelId: BigInt(message.channel_id),
-              },
-            ];
-          }),
-        )
-        .onConflictDoUpdate({
-          target: discordMessageComponents.id,
-          set: {
-            type: sql`excluded.type`,
-            data: sql`excluded.data`,
-            draft: sql`excluded.draft`,
-            createdById: sql`excluded."createdById"`,
-            updatedById: sql`excluded."updatedById"`,
-            updatedAt: sql`excluded."updatedAt"`,
-            guildId: sql`excluded."guildId"`,
-            channelId: sql`excluded."channelId"`,
-            messageId: sql`excluded."messageId"`,
-          },
-        })
-        .returning({
-          id: discordMessageComponents.id,
-          messageId: discordMessageComponents.messageId,
-          data: discordMessageComponents.data,
+          let data:
+            | (typeof discordMessageComponents.$inferInsert)["data"]
+            | undefined;
+          switch (component.type) {
+            case ComponentType.Button: {
+              if (!hasCustomId(component)) {
+                data = component;
+              } else {
+                const { custom_id: _, ...c } = component;
+                data = {
+                  ...c,
+                  flowId:
+                    match && "flowId" in match.data
+                      ? match.data.flowId
+                      : flowsById[id][0],
+                };
+              }
+              break;
+            }
+            case ComponentType.StringSelect: {
+              const { custom_id: _, ...c } = component;
+              data = {
+                ...c,
+                // Force max 1 value until we support otherwise
+                // I want to make it so selects with >1 max_values share one
+                // flow for all options, like with autofill selects. And also
+                // a way to tell which values have been selected - `{values[n]}`?
+                minValues: 1,
+                maxValues: 1,
+                // minValues: component.min_values,
+                // maxValues: component.max_values,
+                flowIds:
+                  match && "flowIds" in match.data ? match.data.flowIds : {},
+              };
+              break;
+            }
+            case ComponentType.UserSelect:
+            case ComponentType.RoleSelect:
+            case ComponentType.MentionableSelect:
+            case ComponentType.ChannelSelect: {
+              const { custom_id: _, ...c } = component;
+              data = {
+                ...c,
+                // See above
+                minValues: 1,
+                maxValues: 1,
+                flowId:
+                  match && "flowId" in match.data
+                    ? match.data.flowId
+                    : flowsById[id][0],
+              };
+              break;
+            }
+            default:
+              break;
+          }
+          // Shouldn't happen
+          if (!data) {
+            console.error("Unsupported component type");
+            return [];
+          }
+
+          return [
+            {
+              id: match?.id,
+              type: component.type,
+              data,
+              draft: false,
+              createdById: match?.createdById ?? userId,
+              updatedById: userId,
+              updatedAt: now,
+              guildId,
+              messageId: BigInt(message.id),
+              channelId: BigInt(message.channel_id),
+            },
+          ];
         });
+      return values.length === 0
+        ? []
+        : await tx
+            .insert(discordMessageComponents)
+            .values(values)
+            .onConflictDoUpdate({
+              target: discordMessageComponents.id,
+              set: {
+                type: sql`excluded.type`,
+                data: sql`excluded.data`,
+                draft: sql`excluded.draft`,
+                createdById: sql`excluded."createdById"`,
+                updatedById: sql`excluded."updatedById"`,
+                updatedAt: sql`excluded."updatedAt"`,
+                guildId: sql`excluded."guildId"`,
+                channelId: sql`excluded."channelId"`,
+                messageId: sql`excluded."messageId"`,
+              },
+            })
+            .returning({
+              id: discordMessageComponents.id,
+              messageId: discordMessageComponents.messageId,
+              data: discordMessageComponents.data,
+            });
     });
     // I want to do this in the background (ctx.waitUntil) but I had issues
     // the last time I tried with this Remix project. TODO: Try again after
