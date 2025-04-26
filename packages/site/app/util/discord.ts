@@ -12,6 +12,7 @@ import {
   type APIButtonComponent,
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
+  type APIMessage,
   type APIMessageComponent,
   type APISelectMenuComponent,
   ButtonStyle,
@@ -561,3 +562,6 @@ export const isActionRow = (
 
 export const onlyActionRows = (components: APIMessageTopLevelComponent[]) =>
   components.filter(isActionRow);
+
+export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>
+  new MessageFlagsBitField(message.flags ?? 0).has(MessageFlags.IsComponentsV2);
