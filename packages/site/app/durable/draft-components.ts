@@ -44,6 +44,7 @@ export class DurableDraftComponentCleaner implements DurableObject {
     const id = await this.state.storage.get<string>("id");
     if (!id) {
       console.log("No ID stored for this durable object.");
+      await this.state.storage.deleteAll();
       return;
     }
 
@@ -77,8 +78,11 @@ export class DurableDraftComponentCleaner implements DurableObject {
       }
     }
 
+    // The component is a draft and it was edited sufficiently
+    // long ago; clean up.
     await db
       .delete(discordMessageComponents)
       .where(eq(discordMessageComponents.id, makeSnowflake(id)));
+    await this.state.storage.deleteAll();
   }
 }
