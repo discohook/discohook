@@ -549,6 +549,7 @@
   "avatarUrl": "Avatar URL",
   "profileImmutable": "Profile info cannot be changed for existing messages.",
   "filesCount": "Files ({{ count }}/10)",
+  "filesComponentsOnly": "There's nothing here. Files can be added by clicking the upload or paste buttons in a media gallery item, thumbnail, or file component.",
   "addFile": "Add File",
   "pasteFile": "Paste File",
   "pasteCmd": "Press \u2318V",

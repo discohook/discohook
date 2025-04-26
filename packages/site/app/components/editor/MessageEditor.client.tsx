@@ -1265,104 +1265,51 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
               replace: { count: files.length },
             })}
           >
-            {files.map((draftFile) => {
-              const { id, file, embed, is_thumbnail, url } = draftFile;
-              return (
-                <div
-                  key={`file-${id}`}
-                  className="rounded-lg border py-1.5 px-[14px] bg-background-secondary border-border-normal dark:border-border-normal-dark dark:bg-background-secondary-dark flex"
-                >
-                  <CoolIcon
-                    icon={
-                      embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"
-                    }
-                    className="text-xl my-auto ltr:mr-2 rtl:ml-2"
-                  />
-                  <div className="my-auto truncate ltr:mr-2 rtl:ml-2">
-                    <p className="font-medium truncate">
-                      {transformFileName(file.name)}
-                    </p>
-                    {/* <p className="text-sm">{file.size} bytes</p> */}
+            {files.length === 0 ? (
+              <p className="text-muted dark:text-muted-dark text-sm italic">{t("filesComponentsOnly")}</p>
+            ) : (
+              files.map((draftFile) => {
+                const { id, file, embed, is_thumbnail, url } = draftFile;
+                return (
+                  <div
+                    key={`file-${id}`}
+                    className="rounded-lg border py-1.5 px-[14px] bg-background-secondary border-border-normal dark:border-border-normal-dark dark:bg-background-secondary-dark flex"
+                  >
+                    <CoolIcon
+                      icon={
+                        embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"
+                      }
+                      className="text-xl my-auto ltr:mr-2 rtl:ml-2"
+                    />
+                    <div className="my-auto truncate ltr:mr-2 rtl:ml-2">
+                      <p className="font-medium truncate">
+                        {transformFileName(file.name)}
+                      </p>
+                      {/* <p className="text-sm">{file.size} bytes</p> */}
+                    </div>
+                    <button
+                      type="button"
+                      className="ltr:ml-auto rtl:mr-auto my-auto hover:text-blurple text-xl"
+                      onClick={() => setEditingFile(draftFile)}
+                    >
+                      <CoolIcon icon="Edit_Pencil_01" />
+                    </button>
+                    <button
+                      type="button"
+                      className="ltr:ml-1 rtl:mr-1 my-auto hover:text-red-400 text-xl"
+                      onClick={() => {
+                        const newFiles = files.filter((f) => f.id !== id);
+                        setFiles(newFiles);
+                        setData({ ...data });
+                        if (url) URL.revokeObjectURL(url);
+                      }}
+                    >
+                      <CoolIcon icon="Trash_Full" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className="ltr:ml-auto rtl:mr-auto my-auto hover:text-blurple text-xl"
-                    onClick={() => setEditingFile(draftFile)}
-                  >
-                    <CoolIcon icon="Edit_Pencil_01" />
-                  </button>
-                  <button
-                    type="button"
-                    className="ltr:ml-1 rtl:mr-1 my-auto hover:text-red-400 text-xl"
-                    onClick={() => {
-                      const newFiles = files.filter((f) => f.id !== id);
-                      setFiles(newFiles);
-                      setData({ ...data });
-                      if (url) URL.revokeObjectURL(url);
-                    }}
-                  >
-                    <CoolIcon icon="Trash_Full" />
-                  </button>
-                </div>
-              );
-            })}
-            <input
-              id={`files-${id}`}
-              type="file"
-              hidden
-              multiple
-              onChange={async ({ currentTarget }) => {
-                const list = currentTarget.files;
-                if (!list) return;
-
-                const newFiles = [...files];
-                for (const file of Array.from(list).slice(
-                  0,
-                  MAX_FILES_PER_MESSAGE - newFiles.length,
-                )) {
-                  newFiles.push({
-                    id: randomString(10),
-                    file,
-                    url: URL.createObjectURL(file),
-                  });
-                }
-                setFiles(newFiles);
-                currentTarget.value = "";
-              }}
-            />
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  const input = document.querySelector<HTMLInputElement>(
-                    `input#files-${id}`,
-                  );
-                  // Shouldn't happen
-                  if (!input) return;
-                  input.click();
-                }}
-                disabled={files.length >= MAX_FILES_PER_MESSAGE}
-              >
-                {t("addFile")}
-              </Button>
-              <PasteFileButton
-                t={t}
-                disabled={files.length >= MAX_FILES_PER_MESSAGE}
-                onChange={async (list) => {
-                  const newFiles = [...files];
-                  for (const file of Array.from(list).slice(
-                    0,
-                    MAX_FILES_PER_MESSAGE - newFiles.length,
-                  )) {
-                    newFiles.push({
-                      id: randomString(10),
-                      file,
-                      url: URL.createObjectURL(file),
-                    });
-                  }
-                  setFiles(newFiles);
-                }}
-              />
-            </div>
+                );
+              })
+            )}
           </EmbedEditorSection>
         </div>
         <div className="space-y-1">
