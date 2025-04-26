@@ -1,7 +1,8 @@
 import { SerializeFrom } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIActionRowComponent,
+  type APIActionRowComponent,
+  type APIContainerComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
@@ -198,6 +199,7 @@ export const getSetEditingComponentProps = ({
 export const ActionRowEditor: React.FC<{
   message: QueryData["messages"][number];
   component: APIActionRowComponent<APIComponentInMessageActionRow>;
+  parent: APIContainerComponent | undefined;
   index: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
@@ -209,6 +211,7 @@ export const ActionRowEditor: React.FC<{
 }> = ({
   message,
   component: row,
+  parent,
   index: i,
   data,
   setData,
@@ -225,6 +228,7 @@ export const ActionRowEditor: React.FC<{
       t={t}
       message={message}
       component={row}
+      parent={parent}
       index={i}
       data={data}
       setData={setData}
@@ -385,7 +389,10 @@ export const IndividualComponentEditor: React.FC<{
     row?: APIActionRowComponent<APIComponentInMessageActionRow>,
   ) => void;
   onClick: () => void;
-}> = ({ component, index, row, updateRow, onClick }) => {
+  actionsBar?: Partial<
+    Record<"up" | "down" | "copy" | "delete", (() => void) | null>
+  >;
+}> = ({ component, index, row, updateRow, onClick, actionsBar }) => {
   const { t } = useTranslation();
   const previewText = getComponentText(component);
 
@@ -451,95 +458,116 @@ export const IndividualComponentEditor: React.FC<{
             }`}
         </p>
       </button>
-      <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
-        <button
-          type="button"
-          className={index === 0 ? "hidden" : ""}
-          disabled={anySubmitting}
-          onClick={() => {
-            row.components.splice(index, 1);
-            row.components.splice(index - 1, 0, component);
-            updateRow(row);
-          }}
-        >
-          <CoolIcon icon="Chevron_Up" />
-        </button>
-        <button
-          type="button"
-          className={index === row.components.length - 1 ? "hidden" : ""}
-          disabled={anySubmitting}
-          onClick={() => {
-            row.components.splice(index, 1);
-            row.components.splice(index + 1, 0, component);
-            updateRow(row);
-          }}
-        >
-          <CoolIcon icon="Chevron_Down" />
-        </button>
-        <button
-          type="button"
-          className={getRowWidth(row) >= 4 ? "hidden" : ""}
-          disabled={anySubmitting}
-          onClick={async () => {
-            // Don't accidentally save the current component
-            const { custom_id: _, ...withoutId } = component;
-            const copied = await submitComponent({
-              custom_id: "",
-              ...withoutId,
-            });
-            if (copied) {
-              // Should always be non-null
-              row.components.splice(index + 1, 0, copied);
-              updateRow(row);
+      {actionsBar && Object.keys(actionsBar).length === 0 ? null : (
+        <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
+          <button
+            type="button"
+            className={index === 0 || actionsBar?.up === null ? "hidden" : ""}
+            disabled={anySubmitting}
+            onClick={
+              actionsBar?.up ??
+              (() => {
+                row.components.splice(index, 1);
+                row.components.splice(index - 1, 0, component);
+                updateRow(row);
+              })
             }
-          }}
-        >
-          <CoolIcon icon="Copy" />
-        </button>
-        <button
-          type="button"
-          disabled={anySubmitting}
-          onClick={() => {
-            row.components.splice(index, 1);
-            updateRow(row);
+          >
+            <CoolIcon icon="Chevron_Up" />
+          </button>
+          <button
+            type="button"
+            className={
+              index === row.components.length - 1 || actionsBar?.down === null
+                ? "hidden"
+                : ""
+            }
+            disabled={anySubmitting}
+            onClick={
+              actionsBar?.down ??
+              (() => {
+                row.components.splice(index, 1);
+                row.components.splice(index + 1, 0, component);
+                updateRow(row);
+              })
+            }
+          >
+            <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button
+            type="button"
+            className={
+              getRowWidth(row) >= 4 || actionsBar?.copy === null ? "hidden" : ""
+            }
+            disabled={anySubmitting}
+            onClick={
+              actionsBar?.copy ??
+              (async () => {
+                // Don't accidentally save the current component
+                const { custom_id: _, ...withoutId } = component;
+                const copied = await submitComponent({
+                  custom_id: "",
+                  ...withoutId,
+                });
+                if (copied) {
+                  // Should always be non-null
+                  row.components.splice(index + 1, 0, copied);
+                  updateRow(row);
+                }
+              })
+            }
+          >
+            <CoolIcon icon="Copy" />
+          </button>
+          <button
+            type="button"
+            disabled={anySubmitting}
+            className={actionsBar?.delete === null ? "hidden" : ""}
+            onClick={
+              actionsBar?.delete ??
+              (() => {
+                row.components.splice(index, 1);
+                updateRow(row);
 
-            // Not sure about this as of now. I think we should have a pop up
-            // that asks the user if they want to delete the component (and/or
-            // check placements to see if it exists elsewhere)
-            // const pattern = /^p_(\d+)$/;
-            // if (component.custom_id && pattern.test(component.custom_id)) {
-            // const id = component.custom_id.match(pattern)![1];
-            // fetch(apiUrl(BRoutes.component(id)), {
-            //   method: "PATCH",
-            //   body: JSON.stringify({ draft: true }),
-            //   headers: { "Content-Type": "application/json" },
-            // })
-            //   .then((r) =>
-            //     console.log(
-            //       `${r.status} ${r.statusText} drafting component ${id}`,
-            //     ),
-            //   )
-            //   .catch((e) =>
-            //     console.error(`Error attempting to draft component ${id}`, e),
-            //   );
-            // fetch(apiUrl(BRoutes.component(id)), { method: "DELETE" })
-            //   .then((r) =>
-            //     console.log(
-            //       `${r.status} ${r.statusText} deleting component ${id}`,
-            //     ),
-            //   )
-            //   .catch((e) =>
-            //     console.error(
-            //       `Error attempting to delete component ${id}`,
-            //       e,
-            //     ),
-            //   );
-            // }
-          }}
-        >
-          <CoolIcon icon="Trash_Full" />
-        </button>
-      </div>
+                // Not sure about this as of now. I think we should have a pop up
+                // that asks the user if they want to delete the component (and/or
+                // check placements to see if it exists elsewhere)
+                // const pattern = /^p_(\d+)$/;
+                // if (component.custom_id && pattern.test(component.custom_id)) {
+                // const id = component.custom_id.match(pattern)![1];
+                // fetch(apiUrl(BRoutes.component(id)), {
+                //   method: "PATCH",
+                //   body: JSON.stringify({ draft: true }),
+                //   headers: { "Content-Type": "application/json" },
+                // })
+                //   .then((r) =>
+                //     console.log(
+                //       `${r.status} ${r.statusText} drafting component ${id}`,
+                //     ),
+                //   )
+                //   .catch((e) =>
+                //     console.error(`Error attempting to draft component ${id}`, e),
+                //   );
+                // fetch(apiUrl(BRoutes.component(id)), { method: "DELETE" })
+                //   .then((r) =>
+                //     console.log(
+                //       `${r.status} ${r.statusText} deleting component ${id}`,
+                //     ),
+                //   )
+                //   .catch((e) =>
+                //     console.error(
+                //       `Error attempting to delete component ${id}`,
+                //       e,
+                //     ),
+                //   );
+                // }
+              })
+            }
+          >
+            <CoolIcon icon="Trash_Full" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

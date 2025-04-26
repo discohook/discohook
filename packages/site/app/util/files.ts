@@ -24,20 +24,24 @@ export const transformFileName = (filename: string) =>
  * Returns an onChange handler that will add one or multiple files to the
  * state from an input, then return them.
  */
-export const fileInputChangeHandler =
-  (
-    files: DraftFile[],
-    setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>,
-  ): React.ChangeEventHandler<HTMLInputElement> =>
-  async (event) => {
+export const fileInputChangeHandler = (
+  files: DraftFile[],
+  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>,
+  accept?: readonly string[],
+) =>
+  (async (event) => {
     const list = event.currentTarget.files;
     if (!list) return;
 
     const newFiles = [...files];
-    for (const file of Array.from(list).slice(
-      0,
-      MAX_FILES_PER_MESSAGE - newFiles.length,
-    )) {
+    for (const file of Array.from(list)
+      .filter((file) =>
+        accept
+          ? accept.find((ext) => file.name.toLowerCase().endsWith(ext)) !==
+            undefined
+          : true,
+      )
+      .slice(0, MAX_FILES_PER_MESSAGE - newFiles.length)) {
       newFiles.push({
         id: randomString(10),
         file,
@@ -48,4 +52,4 @@ export const fileInputChangeHandler =
     event.currentTarget.value = "";
 
     return newFiles;
-  };
+  }) satisfies React.ChangeEventHandler<HTMLInputElement>;

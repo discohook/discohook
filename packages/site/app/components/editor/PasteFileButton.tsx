@@ -54,6 +54,7 @@ export function PasteFileButton(props: PasteFileButtonProps) {
         className={className}
         disabled={disabled}
         discordstyle={ButtonStyle.Secondary}
+        title={t("pasteFile")}
         onClick={async () => {
           if (navigator.clipboard) {
             const items = await navigator.clipboard.read();
@@ -109,7 +110,7 @@ export function PasteFileButton(props: PasteFileButtonProps) {
             // On iOS, we can open a text formatting dialog which
             // allows the user to paste their clipboard.
             ["iPhone", "iPad", "iPod"].find((p) =>
-              navigator.platform.startsWith(p),
+              navigator.platform?.startsWith(p),
             )
           ) {
             document.execCommand("paste");
@@ -120,7 +121,7 @@ export function PasteFileButton(props: PasteFileButtonProps) {
           active
             ? // iOS devices support keyboards too
               ["Mac", "iPhone", "iPad", "iPod"].find((p) =>
-                navigator.platform.startsWith(p),
+                navigator.platform?.startsWith(p),
               )
               ? "active_mac"
               : "active"

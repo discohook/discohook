@@ -2,7 +2,7 @@ import { APIEmbedField, ButtonStyle } from "discord-api-types/v10";
 import { TFunction } from "i18next";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import { APIEmbed } from "~/types/QueryData-raw";
@@ -871,17 +871,72 @@ export const EmbedEditor: React.FC<{
 };
 
 export const EmbedEditorSection: React.FC<
-  React.PropsWithChildren<{ name: string; open?: boolean }>
-> = ({ name, open, children }) => {
+  React.PropsWithChildren<{
+    name: string;
+    open?: boolean;
+    className?: string;
+    actionsBar?: Partial<{
+      up: { hidden?: boolean; onClick: () => void };
+      down: { hidden?: boolean; onClick: () => void };
+      copy: { hidden?: boolean; onClick: () => void };
+      delete: { hidden?: boolean; onClick: () => void };
+    }>;
+  }>
+> = ({ name, open, children, className, actionsBar }) => {
   return (
-    <details className="group/section p-2" open={open}>
-      <summary className="group-open/section:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-        <CoolIcon
-          icon="Chevron_Right"
-          rtl="Chevron_Left"
-          className="ltr:group-open/section:rotate-90 rtl:group-open/section:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-        />
-        {name}
+    <details
+      className={twMerge("group/editor-section p-2", className)}
+      open={open}
+    >
+      <summary className="group-open/editor-section:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
+        <div className="my-auto flex">
+          <CoolIcon
+            icon="Chevron_Right"
+            rtl="Chevron_Left"
+            className="ltr:group-open/editor-section:rotate-90 rtl:group-open/editor-section:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+          />
+          {name}
+        </div>
+        {actionsBar && Object.keys(actionsBar).length === 0 ? null : (
+          <div className="ltr:ml-auto rtl:mr-auto text-base space-x-2 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
+            {actionsBar?.up ? (
+              <button
+                type="button"
+                className={actionsBar.up.hidden ? "hidden" : undefined}
+                onClick={actionsBar.up.onClick}
+              >
+                <CoolIcon icon="Chevron_Up" />
+              </button>
+            ) : null}
+            {actionsBar?.down ? (
+              <button
+                type="button"
+                className={actionsBar.down.hidden ? "hidden" : undefined}
+                onClick={actionsBar.down.onClick}
+              >
+                <CoolIcon icon="Chevron_Down" />
+              </button>
+            ) : null}
+            {actionsBar?.copy ? (
+              <button
+                type="button"
+                className={actionsBar.copy.hidden ? "hidden" : undefined}
+                onClick={actionsBar.copy.onClick}
+              >
+                <CoolIcon icon="Copy" />
+              </button>
+            ) : null}
+            {actionsBar?.delete ? (
+              <button
+                type="button"
+                className={actionsBar.delete.hidden ? "hidden" : undefined}
+                onClick={actionsBar.delete.onClick}
+              >
+                <CoolIcon icon="Trash_Full" />
+              </button>
+            ) : null}
+          </div>
+        )}
       </summary>
       <div className="space-y-2">{children}</div>
     </details>

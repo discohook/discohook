@@ -1,4 +1,5 @@
 import {
+  type APIContainerComponent,
   type APIMediaGalleryComponent,
   ButtonStyle,
 } from "discord-api-types/v10";
@@ -6,17 +7,20 @@ import { useTranslation } from "react-i18next";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
+import { MAX_GALLERY_ITEMS } from "~/util/constants";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
 import { FileOrUrlInput } from "../FileOrUrlInput";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { EmbedEditorSection } from "./EmbedEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const MediaGalleryEditor: React.FC<{
   message: QueryData["messages"][number];
   component: APIMediaGalleryComponent;
+  parent: APIContainerComponent | undefined;
   index: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
@@ -27,6 +31,7 @@ export const MediaGalleryEditor: React.FC<{
 }> = ({
   message,
   component: gallery,
+  parent,
   index: i,
   data,
   setData,
@@ -44,34 +49,74 @@ export const MediaGalleryEditor: React.FC<{
       t={t}
       message={message}
       component={gallery}
+      parent={parent}
       index={i}
       data={data}
       setData={setData}
       open={open}
     >
       {error}
-      <div className="space-y-2">
-        {gallery.items.map((item, itemI) => {
-          return (
-            <>
-              <div
-                key={`message-${mid}-gallery-${i}-item-${itemI}`}
-                className="space-y-1"
-              >
-                <div className="flex">controls</div>
+      <div>
+        {gallery.items.map((item, itemI) => (
+          <div
+            key={`message-${mid}-gallery-${i}-item-${itemI}`}
+            className="-mt-4"
+          >
+            <EmbedEditorSection
+              name={t("mediaItemN", { replace: { n: itemI + 1 } })}
+              open={open}
+              className="pl-0 pt-0 open:pb-4"
+              actionsBar={{
+                up: {
+                  hidden: itemI === 0,
+                  onClick: () => {
+                    gallery.items.splice(itemI, 1);
+                    gallery.items.splice(itemI - 1, 0, item);
+                    setData({ ...data });
+                  },
+                },
+                down: {
+                  hidden:
+                    itemI === gallery.items.length - 1 ||
+                    gallery.items.length >= MAX_GALLERY_ITEMS,
+                  onClick: () => {
+                    gallery.items.splice(itemI, 1);
+                    gallery.items.splice(itemI + 1, 0, item);
+                    setData({ ...data });
+                  },
+                },
+                copy: {
+                  hidden: gallery.items.length >= MAX_GALLERY_ITEMS,
+                  onClick: () => {
+                    gallery.items.splice(itemI, 0, structuredClone(item));
+                    setData({ ...data });
+                  },
+                },
+                delete: {
+                  onClick: () => {
+                    gallery.items.splice(itemI, 1);
+                    setData({ ...data });
+                  },
+                },
+              }}
+            >
+              <div className="space-y-1 -mt-2">
                 <div className="w-full">
                   <FileOrUrlInput
                     t={t}
                     files={files}
                     setFiles={setFiles}
-                    // labelKey={t("url")}
-                    // required
-                    // className="w-full"
                     value={item.media.url}
                     onChange={(url) => {
                       item.media.url = url;
                       setData({ ...data });
                     }}
+                    allowedExtensions="*"
+                    // allowedExtensions={[
+                    //   ...ATTACHMENT_URI_EXTENSIONS,
+                    //   ".mp4",
+                    //   ".mov",
+                    // ]}
                   />
                 </div>
                 {item.media.url ? (
@@ -97,13 +142,11 @@ export const MediaGalleryEditor: React.FC<{
                   </>
                 ) : null}
               </div>
-              {itemI < gallery.items.length - 1 ? (
-                <hr className="border border-gray-500/20" />
-              ) : null}
-            </>
-          );
-        })}
+            </EmbedEditorSection>
+          </div>
+        ))}
         <Button
+          className="-mt-2"
           onClick={() => {
             gallery.items.push({ media: { url: "" } });
             setData({ ...data });

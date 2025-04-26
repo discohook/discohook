@@ -5,17 +5,19 @@ import { DraftFile } from "~/routes/_index";
 import {
   ATTACHMENT_URI_EXTENSIONS,
   MAX_FILES_PER_MESSAGE,
+  fileInputChangeHandler,
   transformFileName,
 } from "~/util/files";
 import { randomString } from "~/util/text";
 import { Button } from "./Button";
 import { TextInput } from "./TextInput";
+import { DetectGifUrlFooter } from "./editor/EmbedEditor";
 import { PasteFileButton } from "./editor/PasteFileButton";
 import { CoolIcon } from "./icons/CoolIcon";
 
 export const FileOrUrlInput: React.FC<{
   t: TFunction;
-  key?: string;
+  key_?: string;
   value: string | undefined;
   /** Empty string when the user deletes the URL or the file is cleared */
   onChange: (url: string) => void;
@@ -26,9 +28,12 @@ export const FileOrUrlInput: React.FC<{
   className?: string;
   labelKey?: string;
   required?: boolean;
+  cdn?: string;
+  gifPrompt?: boolean;
+  allowedExtensions?: readonly string[] | "*";
 }> = ({
   t,
-  key,
+  key_: key,
   value,
   onChange,
   files,
@@ -37,23 +42,34 @@ export const FileOrUrlInput: React.FC<{
   className,
   labelKey,
   required,
+  cdn,
+  gifPrompt,
+  allowedExtensions = ATTACHMENT_URI_EXTENSIONS,
 }) => {
+  const id = randomString(10);
   const file = value?.startsWith("attachment://")
     ? files.find((f) => transformFileName(f.file.name) === new URL(value).host)
     : undefined;
 
   return file ? (
     <div>
-      <p>{t(labelKey ?? "media")}</p>
+      <p className="font-medium text-sm cursor-default">
+        <span>{t(labelKey ?? "attachment")}</span>
+        {file.file.type.startsWith("image/") ? (
+          <CoolIcon icon="Image_01" />
+        ) : file.file.type.startsWith("video/") ? (
+          <CoolIcon icon="Monitor_Play" />
+        ) : null}
+      </p>
       <div className="flex gap-2 w-full">
         <div
           className={twJoin(
-            "my-auto rounded-lg",
+            "my-auto rounded-lg truncate",
             "border h-9 px-[14px] bg-white border-border-normal dark:border-border-normal-dark dark:bg-[#333338] flex w-full",
             className,
           )}
         >
-          <p className="font-medium my-auto">{file.file.name}</p>
+          <p className="my-auto truncate">{file.file.name}</p>
         </div>
         {fileClearable !== false ? (
           // TODO: we should determine whether the file is used elsewhere
@@ -61,12 +77,12 @@ export const FileOrUrlInput: React.FC<{
           <button
             type="button"
             className={twJoin(
-              "my-auto rounded-lg",
-              "border h-9 w-9 bg-white border-border-normal dark:border-border-normal-dark dark:bg-[#333338]",
+              "my-auto rounded-lg flex shrink-0",
+              "border h-9 aspect-square bg-white border-border-normal dark:border-border-normal-dark dark:bg-[#333338]",
             )}
             onClick={() => onChange("")}
           >
-            <CoolIcon icon="Close_MD" />
+            <CoolIcon icon="Close_MD" className="m-auto" />
           </button>
         ) : null}
       </div>
@@ -88,11 +104,19 @@ export const FileOrUrlInput: React.FC<{
           value={value ?? ""}
           onChange={({ currentTarget }) => onChange(currentTarget.value)}
         />
+        {gifPrompt ? (
+          <DetectGifUrlFooter
+            t={t}
+            value={value}
+            onChange={onChange}
+            cdn={cdn}
+          />
+        ) : null}
       </div>
       <div
         className={twJoin(
-          "transition-all",
-          value ? "max-w-[4.75rem]" : "max-w-[50%] w-full",
+          "transition-all min-w-[6.75rem]",
+          value ? "max-w-[6.75rem]" : "max-w-[50%] w-full",
         )}
       >
         <p className="text-sm font-medium cursor-default">{t("file")}</p>
@@ -112,15 +136,16 @@ export const FileOrUrlInput: React.FC<{
               if (files.length >= MAX_FILES_PER_MESSAGE) return;
 
               const file = list[0];
-              if (
-                ATTACHMENT_URI_EXTENSIONS.filter((e) =>
-                  file.name.toLowerCase().endsWith(e),
-                ).length === 0
-              ) {
-                // the file cannot be used with attachment://
-                // TODO: visible feedback
-                return;
-              }
+              // if (
+              //   allowedExtensions !== "*" &&
+              //   allowedExtensions.find((e) =>
+              //     file.name.toLowerCase().endsWith(e),
+              //   ) !== undefined
+              // ) {
+              //   // the file cannot be used with attachment://
+              //   // TODO: visible feedback
+              //   return;
+              // }
 
               const newFiles = [...files];
               newFiles.push({
@@ -132,23 +157,46 @@ export const FileOrUrlInput: React.FC<{
               onChange(`attachment://${transformFileName(file.name)}`);
             }}
           />
+          <input
+            id={`files-${id}`}
+            type="file"
+            hidden
+            onChange={async (e) => {
+              const handler = fileInputChangeHandler(
+                files,
+                setFiles,
+                allowedExtensions !== "*" ? allowedExtensions : undefined,
+              );
+              const draftFiles = await handler(e);
+              if (!draftFiles) return;
+
+              onChange(
+                `attachment://${transformFileName(draftFiles[0].file.name)}`,
+              );
+            }}
+            accept={
+              allowedExtensions !== "*"
+                ? allowedExtensions.join(",")
+                : undefined
+            }
+          />
           <Button
             className={twJoin(
               "h-9 min-w-0 px-4 grow max-w-full transition-all",
-              "peer-data-[active=true]:max-w-0 peer-data-[active=true]:opacity-0 peer-data-[active=true]:pointer-events-none",
             )}
+            title={t("addFile")}
             onClick={() => {
-              // const input = document.querySelector<HTMLInputElement>(
-              //   `input#files-${id}`,
-              // );
-              // // Shouldn't happen
-              // if (!input) return;
-              // input.click();
+              const input = document.querySelector<HTMLInputElement>(
+                `input#files-${id}`,
+              );
+              // Shouldn't happen
+              if (!input) return;
+              input.click();
             }}
             disabled={files.length >= MAX_FILES_PER_MESSAGE}
             discordstyle={ButtonStyle.Primary}
           >
-            <CoolIcon icon="File_Upload" title={t("addFile")} />
+            <CoolIcon icon="File_Upload" />
           </Button>
         </div>
       </div>

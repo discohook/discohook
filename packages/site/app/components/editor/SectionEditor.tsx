@@ -1,9 +1,11 @@
 import {
+  APIContainerComponent,
   APISectionComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import { APIButtonComponent, QueryData } from "~/types/QueryData";
@@ -11,6 +13,7 @@ import { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
 import { Button } from "../Button";
 import { useError } from "../Error";
+import { FileOrUrlInput } from "../FileOrUrlInput";
 import { TextArea } from "../TextArea";
 import { CoolIcon } from "../icons/CoolIcon";
 import {
@@ -22,6 +25,7 @@ import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 export const SectionEditor: React.FC<{
   message: QueryData["messages"][number];
   component: APISectionComponent;
+  parent: APIContainerComponent | undefined;
   index: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
@@ -35,6 +39,7 @@ export const SectionEditor: React.FC<{
 }> = ({
   message,
   component: section,
+  parent,
   index: i,
   data,
   setData,
@@ -49,11 +54,26 @@ export const SectionEditor: React.FC<{
   const [error, setError] = useError(t);
 
   const { accessory } = section;
+  const removeAccessory = () => {
+    const siblings = (parent ?? message.data).components;
+    if (!siblings) {
+      console.log("Could not resolve sibling container to splice into");
+      return;
+    }
+    siblings.splice(i, 1, {
+      id: section.id,
+      type: ComponentType.TextDisplay,
+      content: section.components.map((t) => t.content).join("\n"),
+    });
+    setData({ ...data });
+  };
+
   return (
     <TopLevelComponentEditorContainer
       t={t}
       message={message}
       component={section}
+      parent={parent}
       index={i}
       data={data}
       setData={setData}
@@ -61,16 +81,32 @@ export const SectionEditor: React.FC<{
     >
       {error}
       <div className="space-y-2">
-        <div className="">
-          <p className="text-sm font-medium cursor-default">
-            {t("accessory")}
-            <span className="align-baseline text-rose-400">*</span>
-          </p>
+        <div>
+          <div className="flex">
+            <p className="my-auto text-sm font-medium cursor-default truncate">
+              {t("accessory")} –{" "}
+              {t(
+                accessory.type === ComponentType.Button &&
+                  accessory.style === ButtonStyle.Link
+                  ? "linkButton"
+                  : `component.${accessory.type}`,
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={removeAccessory}
+              className="ltr:ml-auto rtl:mr-auto my-auto text-base"
+            >
+              <CoolIcon icon="Trash_Full" />
+            </button>
+          </div>
           {accessory.type === ComponentType.Button ? (
             <div>
               <IndividualComponentEditor
                 component={accessory}
                 index={0}
+                actionsBar={{ up: null, down: null, copy: null, delete: null }}
+                // delete: removeAccessory,
                 row={{
                   type: ComponentType.ActionRow,
                   components: [accessory],
@@ -111,55 +147,78 @@ export const SectionEditor: React.FC<{
               />
             </div>
           ) : accessory.type === ComponentType.Thumbnail ? (
-            <div>img</div>
+            <div className="w-full">
+              <FileOrUrlInput
+                t={t}
+                value={accessory.media.url}
+                onChange={(value) => {
+                  (section.accessory as typeof accessory).media = {
+                    url: value,
+                  };
+                  setData({ ...data });
+                }}
+                files={files}
+                setFiles={setFiles}
+                required
+              />
+            </div>
           ) : null}
         </div>
         {section.components.map((component, ci) => {
           if (component.type !== ComponentType.TextDisplay) return null;
 
           return (
-            <div>
-              <TextArea
-                label={t("content")}
-                className="w-full"
-                key={`${component.type}-${component.id ?? ci}`}
-                maxLength={MAX_TOTAL_COMPONENTS_CHARACTERS}
-                required
-                value={component.content}
-                markdown="full"
-                cache={cache}
-                onChange={({ currentTarget }) => {
-                  component.content = currentTarget.value;
-                  setData({ ...data });
-                }}
-              />
-              <div className="flex gap-2 mt-1 text-sm">
-                <Button
+            <div className="flex gap-2">
+              <div className="grow">
+                <TextArea
+                  label={t("content")}
+                  className="w-full"
+                  key={`${component.type}-${component.id ?? ci}`}
+                  maxLength={MAX_TOTAL_COMPONENTS_CHARACTERS}
+                  required
+                  value={component.content}
+                  markdown="full"
+                  cache={cache}
+                  onChange={({ currentTarget }) => {
+                    component.content = currentTarget.value;
+                    setData({ ...data });
+                  }}
+                />
+              </div>
+              <div className="flex flex-col mt-4 text-lg">
+                <button
+                  type="button"
+                  className={twJoin(
+                    "disabled:cursor-not-allowed disabled:text-muted disabled:dark:text-muted-dark",
+                  )}
+                  disabled={section.components.length <= 1}
+                  title={t("delete")}
                   onClick={() => {
                     section.components = section.components.filter(
                       (_, i) => i !== ci,
                     );
                     setData({ ...data });
                   }}
-                  discordstyle={ButtonStyle.Secondary}
                 >
-                  <CoolIcon icon="Trash_Full" /> {t("delete")}
-                </Button>
-                {section.components.length < 3 &&
-                ci === section.components.length - 1 ? (
-                  <Button
-                    onClick={() => {
-                      section.components = [
-                        ...section.components,
-                        { type: ComponentType.TextDisplay, content: "" },
-                      ];
-                      setData({ ...data });
-                    }}
-                    discordstyle={ButtonStyle.Secondary}
-                  >
-                    <CoolIcon icon="Chat_Add" /> {t("addText")}
-                  </Button>
-                ) : null}
+                  <CoolIcon icon="Trash_Full" className="leading-none" />
+                </button>
+                <button
+                  type="button"
+                  className={twJoin(
+                    "disabled:cursor-not-allowed disabled:text-muted disabled:dark:text-muted-dark",
+                  )}
+                  disabled={section.components.length >= 3}
+                  title={t("addText")}
+                  onClick={() => {
+                    section.components.splice(ci + 1, 0, {
+                      type: ComponentType.TextDisplay,
+                      content: "",
+                    });
+                    setData({ ...data });
+                  }}
+                >
+                  <CoolIcon icon="Chat_Add" className="leading-none" />
+                </button>
               </div>
             </div>
           );

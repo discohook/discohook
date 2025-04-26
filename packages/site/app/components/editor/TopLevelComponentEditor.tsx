@@ -1,16 +1,26 @@
 import {
-  APIActionRowComponent,
-  APIComponentInModalActionRow,
-  APIMessageComponent,
+  type APIActionRowComponent,
+  type APIComponentInContainer,
+  type APIComponentInModalActionRow,
+  type APIContainerComponent,
+  type APIMessageComponent,
   ButtonStyle,
   ComponentType,
+  MessageFlags,
 } from "discord-api-types/v10";
+import { MessageFlagsBitField } from "discord-bitflag";
 import type { TFunction } from "i18next";
+import { twJoin, twMerge } from "tailwind-merge";
 import {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
   QueryData,
 } from "~/types/QueryData";
+import {
+  MAX_CONTAINER_COMPONENTS,
+  MAX_TOP_LEVEL_COMPONENTS,
+  MAX_TOTAL_COMPONENTS,
+} from "~/util/constants";
 import { isActionRow } from "~/util/discord";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -135,6 +145,7 @@ export interface TopLevelComponentEditorContainerProps {
   t: TFunction;
   message: QueryData["messages"][number];
   component: APIMessageTopLevelComponent;
+  parent: APIContainerComponent | undefined;
   index: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
@@ -145,6 +156,7 @@ export const TopLevelComponentEditorContainer = ({
   t,
   message,
   component,
+  parent,
   index: i,
   data,
   setData,
@@ -152,88 +164,22 @@ export const TopLevelComponentEditorContainer = ({
   children,
 }: React.PropsWithChildren<TopLevelComponentEditorContainerProps>) => {
   const errors = getComponentErrors(component);
-  const previewText = getComponentText(component);
-
-  // Count up by type rather than just indicate position in the array
-  const num =
-    (message.data.components ?? [])
-      .filter((c) => c.type === component.type)
-      .indexOf(component) + 1;
 
   return (
     <details
-      className="group/top rounded-lg p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow"
+      className="group/top-1 rounded-lg p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow"
       open={open}
     >
-      <summary className="group-open/top:mb-2 transition-[margin] marker:content-none marker-none flex text-lg text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-        <CoolIcon
-          icon="Chevron_Right"
-          className="group-open/top:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-        />
-        <p className="truncate">
-          {t(`componentN.${component.type}${previewText ? "_text" : ""}`, {
-            replace: { n: num, text: previewText },
-          })}
-        </p>
-        <div className="ltr:ml-auto rtl:mr-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
-          <button
-            type="button"
-            className={i === 0 ? "hidden" : ""}
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              message.data.components?.splice(i - 1, 0, component);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={
-              !!message.data.components &&
-              i === message.data.components.length - 1
-                ? "hidden"
-                : ""
-            }
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              message.data.components?.splice(i + 1, 0, component);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            type="button"
-            className={
-              !!message.data.components && message.data.components.length >= 4
-                ? "hidden"
-                : ""
-            }
-            onClick={() => {
-              const cloned = structuredClone(component);
-              if (isActionRow(cloned)) {
-                for (const child of cloned.components) {
-                  child.custom_id = "";
-                }
-              }
-              message.data.components?.splice(i + 1, 0, cloned);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              message.data.components?.splice(i, 1);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
-      </summary>
+      <TopLevelComponentEditorContainerSummary
+        t={t}
+        component={component}
+        message={message}
+        parent={parent}
+        index={i}
+        data={data}
+        setData={setData}
+        groupNestLevel={1}
+      />
       {errors.length > 0 && (
         <div className="-mt-1 mb-1">
           <InfoBox severity="red" icon="Circle_Warning">
@@ -243,5 +189,129 @@ export const TopLevelComponentEditorContainer = ({
       )}
       {children}
     </details>
+  );
+};
+
+export const TopLevelComponentEditorContainerSummary = ({
+  t,
+  component,
+  index: i,
+  message,
+  parent,
+  data,
+  setData,
+  className,
+  groupNestLevel = 1,
+}: {
+  t: TFunction<"translation", undefined>;
+  message: QueryData["messages"][number];
+  component: APIMessageTopLevelComponent;
+  parent: APIContainerComponent | undefined;
+  index: number;
+  setData: React.Dispatch<QueryData>;
+  data: QueryData;
+  className?: string;
+  // This exists because:
+  // - Nested groups must be named to work like we want
+  // - Tailwind utility names cannot be "dynamically" generated
+  // Our solution is to create two (for now) arbitrary "levels" to use when
+  // rendering this component.
+  groupNestLevel?: 1 | 2;
+}) => {
+  const previewText = getComponentText(component);
+
+  const siblings: APIMessageTopLevelComponent[] | APIComponentInContainer[] =
+    (parent ?? message.data).components ?? [];
+  const MAX_SIBLINGS = new MessageFlagsBitField(message.data.flags ?? 0).has(
+    MessageFlags.IsComponentsV2,
+  )
+    ? parent
+      ? Math.min(
+          // Remaining for the message
+          MAX_TOTAL_COMPONENTS - MAX_CONTAINER_COMPONENTS,
+          // No higher than the max for the parent type
+          MAX_CONTAINER_COMPONENTS,
+        )
+      : MAX_TOP_LEVEL_COMPONENTS
+    : 4;
+
+  // Count up by type rather than just indicate position in the array
+  const num =
+    siblings.filter((c) => c.type === component.type).indexOf(component) + 1;
+
+  return (
+    <summary
+      className={twMerge(
+        groupNestLevel === 1
+          ? "group-open/top-1:mb-2"
+          : "group-open/top-2:mb-2",
+        "transition-[margin] marker:content-none marker-none flex text-lg text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none",
+        className,
+      )}
+    >
+      <CoolIcon
+        icon="Chevron_Right"
+        className={twJoin(
+          groupNestLevel === 1
+            ? "group-open/top-1:rotate-90"
+            : "group-open/top-2:rotate-90",
+          "ltr:mr-2 rtl:ml-2 my-auto transition-transform",
+        )}
+      />
+      <p className="truncate">
+        {t(`componentN.${component.type}${previewText ? "_text" : ""}`, {
+          replace: { n: num, text: previewText },
+        })}
+      </p>
+      <div className="ltr:ml-auto rtl:mr-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
+        <button
+          type="button"
+          className={i === 0 ? "hidden" : ""}
+          onClick={() => {
+            siblings.splice(i, 1);
+            siblings.splice(i - 1, 0, component);
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Chevron_Up" />
+        </button>
+        <button
+          type="button"
+          className={i === siblings.length - 1 ? "hidden" : ""}
+          onClick={() => {
+            siblings.splice(i, 1);
+            siblings.splice(i + 1, 0, component);
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Chevron_Down" />
+        </button>
+        <button
+          type="button"
+          className={siblings.length >= MAX_SIBLINGS ? "hidden" : ""}
+          onClick={() => {
+            const cloned = structuredClone(component);
+            if (isActionRow(cloned)) {
+              for (const child of cloned.components) {
+                child.custom_id = "";
+              }
+            }
+            siblings.splice(i + 1, 0, cloned);
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Copy" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            siblings.splice(i, 1);
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Trash_Full" />
+        </button>
+      </div>
+    </summary>
   );
 };

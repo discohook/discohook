@@ -21,17 +21,13 @@ import {
   PlainModalHeader,
 } from "~/modals/Modal";
 import { DraftFile, getQdMessageId } from "~/routes/_index";
-import {
-  APIMessageTopLevelComponent,
-  QueryData,
-  ZodQueryDataMessage,
-} from "~/types/QueryData";
+import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import {
   MAX_TOP_LEVEL_COMPONENTS,
   MAX_TOTAL_COMPONENTS,
 } from "~/util/constants";
-import { onlyActionRows } from "~/util/discord";
+import { isComponentsV2, onlyActionRows } from "~/util/discord";
 import {
   MAX_FILES_PER_MESSAGE,
   fileInputChangeHandler,
@@ -49,17 +45,14 @@ import { CoolIcon } from "../icons/CoolIcon";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { ActionRowEditor } from "./ComponentEditor";
+import { AutoTopLevelComponentEditor } from "./ContainerEditor";
 import {
   DetectGifUrlFooter,
   EmbedEditor,
   EmbedEditorSection,
   getEmbedLength,
 } from "./EmbedEditor";
-import { MediaGalleryEditor } from "./MediaGalleryEditor";
 import { PasteFileButton } from "./PasteFileButton";
-import { SectionEditor } from "./SectionEditor";
-import { TextDisplayEditor } from "./TextDisplayEditor";
-import { TopLevelComponentEditorContainerProps } from "./TopLevelComponentEditor";
 
 const FilePreview = ({
   file,
@@ -221,7 +214,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = (props) => {
   const { t } = useTranslation();
   const message = props.data.messages[props.index];
   // const id = getQdMessageId(message);
-  const flags = new MessageFlagsBitField(message.data.flags ?? 0);
 
   // Hooks
   const [editingFile, setEditingFile] = useState<DraftFile>();
@@ -239,7 +231,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = (props) => {
           props.setData({ ...props.data });
         }}
       />
-      {flags.has(MessageFlags.IsComponentsV2) ? (
+      {isComponentsV2(message.data) ? (
         <ComponentMessageEditor {...childProps} />
       ) : (
         <StandardMessageEditor {...childProps} />
@@ -751,6 +743,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   <ActionRowEditor
                     message={message}
                     component={row}
+                    parent={undefined}
                     index={ri}
                     data={data}
                     setData={setData}
@@ -936,54 +929,6 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
       </div>
     </details>
   );
-};
-
-const AutoTopLevelComponentEditor = (
-  props: Omit<TopLevelComponentEditorContainerProps, "t"> & {
-    component: APIMessageTopLevelComponent;
-    setEditingComponent: React.Dispatch<
-      React.SetStateAction<EditingComponentData | undefined>
-    >;
-    files: DraftFile[];
-    setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
-  },
-) => {
-  const { component, setEditingComponent, files, setFiles, ...rest } = props;
-  switch (component.type) {
-    case ComponentType.ActionRow:
-      return (
-        <ActionRowEditor
-          {...rest}
-          component={component}
-          setEditingComponent={setEditingComponent}
-        />
-      );
-    // case ComponentType.Container:
-    //   return <ContainerEditor {...props} component={component} />;
-    case ComponentType.Section:
-      return (
-        <SectionEditor
-          {...rest}
-          component={component}
-          setEditingComponent={setEditingComponent}
-          files={files}
-          setFiles={setFiles}
-        />
-      );
-    case ComponentType.TextDisplay:
-      return <TextDisplayEditor {...rest} component={component} />;
-    case ComponentType.MediaGallery:
-      return (
-        <MediaGalleryEditor
-          {...rest}
-          component={component}
-          files={files}
-          setFiles={setFiles}
-        />
-      );
-    default:
-      return null;
-  }
 };
 
 // Blank message with cv2 flag: http://localhost:8788/?data=eyJ2ZXJzaW9uIjoiZDIiLCJtZXNzYWdlcyI6W3siX2lkIjoiOWZNd0QxYzVLZCIsImRhdGEiOnsiY29tcG9uZW50cyI6W10sImZsYWdzIjozMjc2OH19XX0
@@ -1421,43 +1366,22 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           </EmbedEditorSection>
         </div>
         <div className="space-y-1">
-          {components.map((component, i) => {
-            const props = { message, index: i, data, setData, cache };
-
-            switch (component.type) {
-              case ComponentType.ActionRow:
-                return (
-                  <ActionRowEditor
-                    {...props}
-                    component={component}
-                    setEditingComponent={setEditingComponent}
-                  />
-                );
-              case ComponentType.Section:
-                return (
-                  <SectionEditor
-                    {...props}
-                    component={component}
-                    setEditingComponent={setEditingComponent}
-                    files={files}
-                    setFiles={setFiles}
-                  />
-                );
-              case ComponentType.TextDisplay:
-                return <TextDisplayEditor {...props} component={component} />;
-              case ComponentType.MediaGallery:
-                return (
-                  <MediaGalleryEditor
-                    {...props}
-                    component={component}
-                    files={files}
-                    setFiles={setFiles}
-                  />
-                );
-              default:
-                return null;
-            }
-          })}
+          {components.map((component, i) => (
+            <AutoTopLevelComponentEditor
+              key={`top-level-component-${i}`}
+              message={message}
+              index={i}
+              data={data}
+              setData={setData}
+              cache={cache}
+              component={component}
+              parent={undefined}
+              files={files}
+              setFiles={setFiles}
+              setEditingComponent={setEditingComponent}
+              open
+            />
+          ))}
         </div>
         <div className="flex space-x-2 rtl:space-x-reverse">
           <div>
@@ -1474,64 +1398,77 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                         icon="Text"
                         className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
                       />
-                      <span className="my-auto">{t("text")}</span>
+                      <span className="my-auto">{t("content")}</span>
                     </p>
                   ),
-                  value: "textDisplay",
+                  value: ComponentType.TextDisplay,
                 },
                 {
-                  label: t("mediaGallery"),
-                  value: "mediaGallery",
-                },
-                // Any single file
-                {
-                  label: t("file"),
-                  value: "file",
-                },
-                {
-                  label: t("separator"),
-                  value: "separator",
-                },
-                {
-                  label: t("container"),
-                  value: "container",
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Window"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("component.17")}</span>
+                    </p>
+                  ),
+                  value: ComponentType.Container,
                 },
                 {
-                  label: t("actionRow"),
-                  value: "actionRow",
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Image_01"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("component.12")}</span>
+                    </p>
+                  ),
+                  value: ComponentType.MediaGallery,
+                },
+                {
+                  // Any single file
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="File_Blank"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("file")}</span>
+                    </p>
+                  ),
+                  value: ComponentType.File,
+                },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Line_L"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg rotate-90"
+                      />
+                      <span className="my-auto">{t("component.14")}</span>
+                    </p>
+                  ),
+                  value: ComponentType.Separator,
+                },
+                {
+                  label: (
+                    <p className="flex">
+                      <CoolIcon
+                        icon="Rows"
+                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
+                      />
+                      <span className="my-auto">{t("component.1")}</span>
+                    </p>
+                  ),
+                  value: ComponentType.ActionRow,
                 },
               ]}
               onChange={(opt) => {
-                const val = (
-                  opt as {
-                    value:
-                      | "textDisplay"
-                      | "mediaGallery"
-                      | "file"
-                      | "separator"
-                      | "container"
-                      | "actionRow";
-                  }
-                ).value;
+                const val = (opt as { value: number }).value as ComponentType;
                 switch (val) {
-                  // case "section": {
-                  //   message.data.components = [
-                  //     ...components,
-                  //     {
-                  //       type: ComponentType.Section,
-                  //       components: [
-                  //         {
-                  //           type: ComponentType.TextDisplay,
-                  //           content: "",
-                  //         },
-                  //       ],
-                  //       accessory: {} as APISectionAccessoryComponent,
-                  //     },
-                  //   ];
-                  //   setData({ ...data });
-                  //   break;
-                  // }
-                  case "textDisplay": {
+                  case ComponentType.TextDisplay: {
                     message.data.components = [
                       ...components,
                       { type: ComponentType.TextDisplay, content: "" },
@@ -1539,7 +1476,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     setData({ ...data });
                     break;
                   }
-                  case "container": {
+                  case ComponentType.Container: {
                     message.data.components = [
                       ...components,
                       { type: ComponentType.Container, components: [] },
@@ -1547,7 +1484,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     setData({ ...data });
                     break;
                   }
-                  case "file": {
+                  case ComponentType.File: {
                     message.data.components = [
                       ...components,
                       { type: ComponentType.File, file: { url: "" } },
@@ -1555,7 +1492,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     setData({ ...data });
                     break;
                   }
-                  case "mediaGallery": {
+                  case ComponentType.MediaGallery: {
                     message.data.components = [
                       ...components,
                       { type: ComponentType.MediaGallery, items: [] },
@@ -1563,7 +1500,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     setData({ ...data });
                     break;
                   }
-                  case "separator": {
+                  case ComponentType.Separator: {
                     message.data.components = [
                       ...components,
                       { type: ComponentType.Separator },
@@ -1571,7 +1508,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     setData({ ...data });
                     break;
                   }
-                  case "actionRow": {
+                  case ComponentType.ActionRow: {
                     message.data.components = [
                       ...components,
                       { type: ComponentType.ActionRow, components: [] },

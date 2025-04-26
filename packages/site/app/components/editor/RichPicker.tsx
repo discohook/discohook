@@ -39,7 +39,7 @@ export const PopoutRichPicker: React.FC<
         setOpen={setOpen}
         containerClassName="ltr:right-0 rtl:left-0"
       >
-        <div className="bg-gray-300 dark:bg-gray-800 border border-black/5 dark:border-gray-200/20 rounded shadow-md w-[385px]">
+        <div className="bg-gray-300 dark:bg-gray-800 border border-black/5 dark:border-gray-200/20 rounded-lg shadow-md w-[385px]">
           <div className="font-semibold space-x-1 rtl:space-x-reverse px-2 pt-2 text-sm">
             {mentionsTab !== false && (
               <button

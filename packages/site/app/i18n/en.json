@@ -379,7 +379,13 @@
     "5": "User Select Menu",
     "6": "Role Select Menu",
     "7": "User & Role Select Menu",
-    "8": "Channel Select Menu"
+    "8": "Channel Select Menu",
+    "9": "Section",
+    "10": "Text",
+    "11": "Thumbnail",
+    "12": "Media Gallery",
+    "14": "Separator",
+    "17": "Container"
   },
   "componentShort": {
     "1": "Row",
@@ -389,8 +395,15 @@
     "5": "Select",
     "6": "Select",
     "7": "Select",
-    "8": "Select"
+    "8": "Select",
+    "11": "Thumbnail"
   },
+  "accessory": "Accessory",
+  "addAccessory": "Add Accessory",
+  "addMedia": "Add Media",
+  "media": "Media",
+  "mediaItemN": "Item {{n}}",
+  "attachment": "Attachment",
   "linkButton": "Link Button",
   "addComponentType": "Add $t(componentShort.{{type}})",
   "editingComponentFromUser": "Editing a $t(component.{{type}}, lowercase) from",
@@ -414,13 +427,6 @@
     "17_text": "Container {{n}} - {{text}}"
   },
   "addText": "Add Text",
-  "section": "Section",
-  "accessory": "Accessory",
-  "mediaGallery": "Media Gallery",
-  "addMedia": "Add Media",
-  "separator": "Separator",
-  "container": "Container",
-  "actionRow": "Action Row",
   "emoji": "Emoji",
   "label": "Label",
   "disabled": "Disabled",
