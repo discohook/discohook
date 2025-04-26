@@ -23,8 +23,7 @@ import {
   ChannelType,
   ComponentType,
   SelectMenuDefaultValueType,
-  SeparatorSpacingSize,
-  UnfurledMediaItemLoadingState,
+  SeparatorSpacingSize
 } from "discord-api-types/v10";
 import { z } from "zod";
 
@@ -264,13 +263,9 @@ export const ZodAPIUnfurledMediaItemRaw = z.object({
   /** http(s) or attachment:// */
   url: z.string(),
   proxy_url: z.ostring(),
-  width: z.onumber(),
-  height: z.onumber(),
-  // placeholder: z.ostring(),
-  // placeholder_version: z.onumber(),
+  width: z.onumber().nullable(),
+  height: z.onumber().nullable(),
   content_type: z.ostring(),
-  loading_state: z.nativeEnum(UnfurledMediaItemLoadingState).optional(),
-  // flags: z.onumber(),
 }) satisfies z.ZodType<APIUnfurledMediaItem>;
 
 export const ZodAPIThumbnailComponentRaw = z.object({
