@@ -105,12 +105,39 @@ export const submitMessage = async (
   let data: APIMessage | DiscordErrorData;
   const components = message.data.components
     ? structuredClone(message.data.components).map((component) => {
+        // Remove tracking IDs to avoid error from Discord.
+        // We should really just use a custom prop instead.
         if (isActionRow(component)) {
           for (const child of component.components) {
             if (!hasCustomId(child)) {
               child.custom_id = undefined;
             }
           }
+          // TODO: unnecessary duplication, reduce
+        } else if (component.type === ComponentType.Container) {
+          for (const child of component.components) {
+            if (isActionRow(child)) {
+              for (const subChild of child.components) {
+                if (!hasCustomId(subChild)) {
+                  subChild.custom_id = undefined;
+                }
+              }
+            } else if (
+              child.type === ComponentType.Section &&
+              child.accessory.type === ComponentType.Button &&
+              !hasCustomId(child.accessory)
+            ) {
+              // @ts-expect-error
+              child.accessory.custom_id = undefined;
+            }
+          }
+        } else if (
+          component.type === ComponentType.Section &&
+          component.accessory.type === ComponentType.Button &&
+          !hasCustomId(component.accessory)
+        ) {
+          // @ts-expect-error
+          component.accessory.custom_id = undefined;
         }
         return component;
       })
