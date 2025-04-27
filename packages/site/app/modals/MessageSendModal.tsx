@@ -365,7 +365,7 @@ export const useMessageSubmissionManager = (
           // }
           if (isComponentsV2(message.data)) {
             // Don't log for now; in beta
-            return;
+            return [];
           }
           auditLogFetcher.submit(
             {

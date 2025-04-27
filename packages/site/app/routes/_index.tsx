@@ -67,6 +67,7 @@ import {
   DISCORD_API_V,
   cdnImgAttributes,
   getWebhook,
+  isComponentsV2,
   onlyActionRows,
   webhookAvatarUrl,
 } from "~/util/discord";
@@ -1084,18 +1085,26 @@ export default function Index() {
               </Button>
               <hr className="border border-gray-400 dark:border-gray-600 my-4" />
             </div>
+            {data.messages.find((m) => isComponentsV2(m.data)) !== undefined ? (
+              <InfoBox severity="blue" icon="Flag" collapsible>
+                Hey! You're currently using an open beta for Discohook's
+                components V2 support. Some things are still incomplete,
+                including the live preview and interactive components. Please
+                give feedback in the Components V2 thread.
+              </InfoBox>
+            ) : null}
             {data.messages.map((message, i) => {
-              const id = getQdMessageId(message);
+              const mid = getQdMessageId(message);
               return (
                 <Message
-                  key={`preview-message-${id}`}
+                  key={`preview-message-${mid}`}
                   message={message.data}
                   cache={cache}
                   discordApplicationId={discordApplicationId}
                   webhooks={Object.values(targets)}
                   index={i}
                   data={data}
-                  files={files[id]}
+                  files={files[mid]}
                   setImageModalData={setImageModalData}
                   messageDisplay={settings.messageDisplay}
                   compactAvatars={settings.compactAvatars}

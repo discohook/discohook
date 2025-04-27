@@ -22,6 +22,7 @@ import {
   rgbToDecimal,
 } from "./ColorPicker";
 import { ActionRowEditor } from "./ComponentEditor";
+import { FileEditor } from "./FileEditor";
 import { MediaGalleryEditor } from "./MediaGalleryEditor";
 import { SectionEditor } from "./SectionEditor";
 import { SeparatorEditor } from "./SeparatorEditor";
@@ -84,6 +85,15 @@ export const AutoTopLevelComponentEditor = (
       );
     case ComponentType.Separator:
       return <SeparatorEditor {...rest} component={component} />;
+    case ComponentType.File:
+      return (
+        <FileEditor
+          {...rest}
+          component={component}
+          files={files}
+          setFiles={setFiles}
+        />
+      );
     default:
       return <></>;
   }
