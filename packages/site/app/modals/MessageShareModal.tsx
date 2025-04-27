@@ -1,5 +1,5 @@
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
@@ -23,15 +23,6 @@ export const MessageShareModal = (
   const [error, setError] = useError(t);
 
   const [includeTargets, setIncludeTargets] = useState(false);
-  const dataWithTargets = useMemo(
-    () => ({
-      ...data,
-      targets: Object.values(targets).map((t) => ({
-        url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-      })),
-    }),
-    [data, targets],
-  );
 
   const shareFetcher = useSafeFetcher<typeof ApiPostShare>({
     onError: setError,
@@ -40,12 +31,27 @@ export const MessageShareModal = (
   const generateShareData = useCallback(
     (options?: { includeTargets_?: boolean }) => {
       const { includeTargets_ } = options ?? {};
+
+      const submitData =
+        includeTargets_ ?? includeTargets
+          ? {
+              ...data,
+              targets: Object.values(targets).map((t) => ({
+                url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
+              })),
+            }
+          : // On the original site (.org), targets would be stripped upon
+            // loading the page and thus would never be available in the
+            // QueryData, making this spread unnecessary. I think we might
+            // consider doing that again.
+            { ...data, targets: [] };
+
       shareFetcher.submit(
-        { data: includeTargets_ ?? includeTargets ? dataWithTargets : data },
+        { data: submitData },
         { method: "POST", action: apiUrl(BRoutes.share()) },
       );
     },
-    [includeTargets, data, shareFetcher.submit],
+    [includeTargets, data, targets, shareFetcher.submit],
   );
 
   return (

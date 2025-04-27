@@ -39,7 +39,9 @@ export const action = async ({ request, context }: ActionArgs) => {
     throw json({ message: "Must provide Content-Length header." }, 400);
   }
   if (contentLength > 25690112) {
-    // Just under 24.5 MiB. KV limit for values is 25 MiB
+    // Just under 24.5 MiB. This is what it is because the KV limit for values
+    // was 25 MiB, but we no longer use KV. In theory we could make this larger
+    // but there is little reason to.
     throw json({ message: "Data is too large (max. ~24 MiB)." });
   }
 
