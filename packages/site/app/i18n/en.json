@@ -404,6 +404,8 @@
   "media": "Media",
   "mediaItemN": "Item {{n}}",
   "attachment": "Attachment",
+  "separatorLine": "Divider Line",
+  "separatorSize": "Size",
   "linkButton": "Link Button",
   "addComponentType": "Add $t(componentShort.{{type}})",
   "editingComponentFromUser": "Editing a $t(component.{{type}}, lowercase) from",
@@ -423,6 +425,7 @@
     "12_text": "Gallery {{n}} - {{text}}",
     "13": "File {{n}}",
     "13_text": "File {{n}} - {{text}}",
+    "14": "Separator {{n}}",
     "17": "Container {{n}}",
     "17_text": "Container {{n}} - {{text}}"
   },

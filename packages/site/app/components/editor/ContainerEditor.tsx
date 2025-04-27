@@ -24,6 +24,7 @@ import {
 import { ActionRowEditor } from "./ComponentEditor";
 import { MediaGalleryEditor } from "./MediaGalleryEditor";
 import { SectionEditor } from "./SectionEditor";
+import { SeparatorEditor } from "./SeparatorEditor";
 import { TextDisplayEditor } from "./TextDisplayEditor";
 import {
   type TopLevelComponentEditorContainerProps,
@@ -81,6 +82,8 @@ export const AutoTopLevelComponentEditor = (
           setFiles={setFiles}
         />
       );
+    case ComponentType.Separator:
+      return <SeparatorEditor {...rest} component={component} />;
     default:
       return <></>;
   }
