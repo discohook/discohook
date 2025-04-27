@@ -195,6 +195,7 @@ export const TopLevelComponentEditorContainer = ({
         index={i}
         data={data}
         setData={setData}
+        errors={errors}
         groupNestLevel={1}
       />
       {errors.length > 0 && (
@@ -218,6 +219,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   data,
   setData,
   className,
+  errors,
   groupNestLevel = 1,
 }: {
   t: TFunction<"translation", undefined>;
@@ -228,6 +230,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   setData: React.Dispatch<QueryData>;
   data: QueryData;
   className?: string;
+  errors?: string[];
   // This exists because:
   // - Nested groups must be named to work like we want
   // - Tailwind utility names cannot be "dynamically" generated
@@ -275,6 +278,12 @@ export const TopLevelComponentEditorContainerSummary = ({
           "ltr:mr-2 rtl:ml-2 my-auto transition-transform",
         )}
       />
+      {errors && errors.length > 0 ? (
+        <CoolIcon
+          icon="Circle_Warning"
+          className="my-auto text-rose-600 dark:text-rose-400 ltr:mr-1.5 rtl:ml-1.5"
+        />
+      ) : null}
       <p className="truncate">
         {t(`componentN.${component.type}${previewText ? "_text" : ""}`, {
           replace: { n: num, text: previewText },
