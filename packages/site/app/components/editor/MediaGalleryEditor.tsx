@@ -58,14 +58,11 @@ export const MediaGalleryEditor: React.FC<{
       {error}
       <div>
         {gallery.items.map((item, itemI) => (
-          <div
-            key={`message-${mid}-gallery-${i}-item-${itemI}`}
-            className="-mt-4"
-          >
+          <div key={`message-${mid}-gallery-${i}-item-${itemI}`}>
             <EmbedEditorSection
               name={t("mediaItemN", { replace: { n: itemI + 1 } })}
               open={open}
-              className="pl-0 pt-0 open:pb-4"
+              className="pl-0 -my-2 open:pb-4"
               actionsBar={{
                 up: {
                   hidden: itemI === 0,
@@ -143,10 +140,13 @@ export const MediaGalleryEditor: React.FC<{
                 ) : null}
               </div>
             </EmbedEditorSection>
+            {itemI < gallery.items.length - 1 ? (
+              <hr className="border border-gray-500/20" />
+            ) : null}
           </div>
         ))}
         <Button
-          className="-mt-2"
+          // className="-mt-2"
           onClick={() => {
             gallery.items.push({ media: { url: "" } });
             setData({ ...data });
