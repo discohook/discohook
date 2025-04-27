@@ -1,10 +1,10 @@
-import { Slider } from "@base-ui-components/react/slider";
 import {
   type APIContainerComponent,
   APISeparatorComponent,
   SeparatorSpacingSize,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
 import { getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import { Checkbox } from "../Checkbox";
@@ -37,6 +37,53 @@ export const SeparatorEditor: React.FC<{
     >
       {error}
       <div className="space-y-2">
+        <div>
+          <p className="text-sm font-medium cursor-default">
+            {t("separatorSize")}
+          </p>
+          <div className="relative h-8 rounded-lg bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700">
+            <div
+              className={twJoin(
+                "absolute rounded-lg bg-blurple h-6 w-[calc(50%_-_0.25rem)] transition-all top-[3px]",
+                component.spacing === SeparatorSpacingSize.Large
+                  ? "left-1/2"
+                  : "left-1",
+              )}
+            />
+            <div className="absolute top-0 left-0 w-full h-full flex z-10">
+              <button
+                type="button"
+                className={twJoin(
+                  "my-auto w-1/2 text-sm grow transition-all",
+                  component.spacing === SeparatorSpacingSize.Small
+                    ? "text-white font-medium"
+                    : undefined,
+                )}
+                onClick={() => {
+                  component.spacing = SeparatorSpacingSize.Small;
+                  setData({ ...data });
+                }}
+              >
+                {t("small")}
+              </button>
+              <button
+                type="button"
+                className={twJoin(
+                  "my-auto w-1/2 text-sm grow transition-all",
+                  component.spacing === SeparatorSpacingSize.Large
+                    ? "text-white font-medium"
+                    : undefined,
+                )}
+                onClick={() => {
+                  component.spacing = SeparatorSpacingSize.Large;
+                  setData({ ...data });
+                }}
+              >
+                {t("large")}
+              </button>
+            </div>
+          </div>
+        </div>
         <Checkbox
           label={t("separatorLine")}
           checked={component.divider ?? true}
@@ -45,34 +92,6 @@ export const SeparatorEditor: React.FC<{
             setData({ ...data });
           }}
         />
-        <div>
-          <p className="text-sm font-medium cursor-default">
-            {t("separatorSize")}
-          </p>
-          <Slider.Root
-            className="group/range"
-            value={component.spacing ?? SeparatorSpacingSize.Small}
-            min={SeparatorSpacingSize.Small}
-            max={SeparatorSpacingSize.Large}
-            onValueChange={(value) => {
-              component.spacing = value as SeparatorSpacingSize;
-              setData({ ...data });
-            }}
-          >
-            <Slider.Control className="flex items-center w-full pr-2 space-x-4 touch-none select-none h-4">
-              {/* <p className="text-sm my-auto cursor-default text-muted dark:text-muted-dark">
-                {t("small")}
-              </p> */}
-              <Slider.Track className="my-auto bg-gray-100 dark:bg-gray-700 h-1 group-hover/range:h-1.5 w-full rounded select-none transition-[height]">
-                <Slider.Indicator className="rounded bg-blurple select-none" />
-                <Slider.Thumb className="w-3 h-3 group-hover/range:w-4 group-hover/range:h-4 rounded-full bg-white outline outline-1 outline-gray-50 cursor-ew-resize select-none transition-[height,width]" />
-              </Slider.Track>
-              {/* <p className="text-sm my-auto cursor-default text-muted dark:text-muted-dark">
-                {t("large")}
-              </p> */}
-            </Slider.Control>
-          </Slider.Root>
-        </div>
       </div>
     </TopLevelComponentEditorContainer>
   );
