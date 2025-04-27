@@ -6,7 +6,7 @@ import {
   APIWebhook,
   ButtonStyle,
   ComponentType,
-  RESTJSONErrorCodes
+  RESTJSONErrorCodes,
 } from "discord-api-types/v10";
 import { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
@@ -363,31 +363,32 @@ export const useMessageSubmissionManager = (
           //     },
           //   });
           // }
-          if (isComponentsV2(message.data)) {
-            // Don't log for now; in beta
-            return [];
-          }
-          auditLogFetcher.submit(
-            {
-              type: message.reference ? "edit" : "send",
-              threadId:
-                result.data.position !== undefined
-                  ? result.data.channel_id
-                  : undefined,
-            },
-            {
-              method: "POST",
-              action: apiUrl(
-                BRoutes.messageLog(
-                  webhook.id,
-                  // We needed the token in order to arrive at a success state
-                  // biome-ignore lint/style/noNonNullAssertion: ^
-                  webhook.token!,
-                  result.data.id,
+
+          // Don't log V2 for now; in beta. This also means interactive
+          // components won't be registered right away.
+          if (!isComponentsV2(message.data)) {
+            auditLogFetcher.submit(
+              {
+                type: message.reference ? "edit" : "send",
+                threadId:
+                  result.data.position !== undefined
+                    ? result.data.channel_id
+                    : undefined,
+              },
+              {
+                method: "POST",
+                action: apiUrl(
+                  BRoutes.messageLog(
+                    webhook.id,
+                    // We needed the token in order to arrive at a success state
+                    // biome-ignore lint/style/noNonNullAssertion: ^
+                    webhook.token!,
+                    result.data.id,
+                  ),
                 ),
-              ),
-            },
-          );
+              },
+            );
+          }
         }
 
         updateMessages({
