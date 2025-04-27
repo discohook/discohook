@@ -129,8 +129,15 @@ export const FileOrUrlInput: React.FC<{
               // normal size
               if (state === "active_mac") return t("pasteCmd");
               if (state === "active") return t("pasteCtrl");
-              // small
-              return <CoolIcon icon="Archive" />;
+              // conditionally small
+              return value ? (
+                <CoolIcon icon="Archive" />
+              ) : (
+                <>
+                  <CoolIcon icon="Archive" className="lg:hidden" />
+                  <span className="hidden lg:block">{t("pasteFile")}</span>
+                </>
+              );
             }}
             onChange={async (list) => {
               if (files.length >= MAX_FILES_PER_MESSAGE) return;
@@ -196,7 +203,10 @@ export const FileOrUrlInput: React.FC<{
             disabled={files.length >= MAX_FILES_PER_MESSAGE}
             discordstyle={ButtonStyle.Primary}
           >
-            <CoolIcon icon="File_Upload" />
+            <CoolIcon icon="File_Upload" className={value ? "" : "lg:hidden"} />
+            {value ? null : (
+              <span className="hidden lg:block">{t("addFile")}</span>
+            )}
           </Button>
         </div>
       </div>
