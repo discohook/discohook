@@ -7,7 +7,7 @@ import type {
   UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod";
-import { ZodAPIActionRowComponentRaw } from "./components-raw";
+import { ZodAPITopLevelComponentRaw } from "./components-raw";
 import { ZodMessageFlags } from "./discord";
 
 /**
@@ -117,7 +117,7 @@ export interface QueryDataMessageDataRaw {
   thread_name?: string;
 }
 
-const queryDataMessageDataTransform = (value: QueryDataMessageDataRaw) => {
+export const queryDataMessageDataTransform = (value: QueryDataMessageDataRaw) => {
   if (!value.username && value.author?.name) {
     value.username = value.author.name;
   }
@@ -127,42 +127,44 @@ const queryDataMessageDataTransform = (value: QueryDataMessageDataRaw) => {
   return value;
 };
 
-export const ZodQueryDataMessageDataRaw = (
-  z.object({
-    username: z.ostring(),
-    avatar_url: z.ostring(),
-    author: z
-      .object({
-        /** @deprecated use `data.username` */
-        name: z.ostring(),
-        /** @deprecated use `data.avatar_url` */
-        icon_url: z.ostring(),
-        badge: z.ostring().nullable(),
-      })
-      .optional(),
-    content: z.ostring().nullable(),
-    embeds: ZodAPIEmbed.array().nullable().optional(),
-    attachments: z
-      .object({
-        id: z.string(),
-        filename: z.string(),
-        description: z.ostring(),
-        content_type: z.ostring(),
-        size: z.number(),
-        url: z.string(),
-        proxy_url: z.string(),
-        height: z.onumber().nullable(),
-        weight: z.onumber().nullable(),
-        is_thumbnail: z.oboolean(),
-      })
-      .array()
-      .optional(),
-    webhook_id: z.ostring(),
-    components: ZodAPIActionRowComponentRaw.array().optional(),
-    flags: ZodMessageFlags.optional(),
-    thread_name: z.ostring(),
-  }) satisfies z.ZodType<QueryDataMessageDataRaw>
-).transform(queryDataMessageDataTransform);
+export const ZodQueryDataMessageDataBase = z.object({
+  username: z.ostring(),
+  avatar_url: z.ostring(),
+  author: z
+    .object({
+      /** @deprecated use `data.username` */
+      name: z.ostring(),
+      /** @deprecated use `data.avatar_url` */
+      icon_url: z.ostring(),
+      badge: z.ostring().nullable(),
+    })
+    .optional(),
+  content: z.ostring().nullable(),
+  embeds: ZodAPIEmbed.array().nullable().optional(),
+  attachments: z
+    .object({
+      id: z.string(),
+      filename: z.string(),
+      description: z.ostring(),
+      content_type: z.ostring(),
+      size: z.number(),
+      url: z.string(),
+      proxy_url: z.string(),
+      height: z.onumber().nullable(),
+      weight: z.onumber().nullable(),
+      is_thumbnail: z.oboolean(),
+    })
+    .array()
+    .optional(),
+  webhook_id: z.ostring(),
+  components: ZodAPITopLevelComponentRaw.array().optional(),
+  flags: ZodMessageFlags.optional(),
+  thread_name: z.ostring(),
+}) satisfies z.ZodType<QueryDataMessageDataRaw>;
+
+export const ZodQueryDataMessageDataRaw = ZodQueryDataMessageDataBase.transform(
+  queryDataMessageDataTransform,
+);
 
 /** Make zod-transformed payloads compatible with possibly-old API consumers */
 export const retrofitQueryData = <T extends QueryDataRaw>(data: T): T => {

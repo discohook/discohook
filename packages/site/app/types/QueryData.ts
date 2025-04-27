@@ -1,10 +1,4 @@
 import type {
-  APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
-  APIChannelSelectComponent as _APIChannelSelectComponent,
-  APIMentionableSelectComponent as _APIMentionableSelectComponent,
-  APIRoleSelectComponent as _APIRoleSelectComponent,
-  APIStringSelectComponent as _APIStringSelectComponent,
-  APIUserSelectComponent as _APIUserSelectComponent,
   APIActionRowComponent,
   APIButtonComponentBase,
   APIContainerComponent,
@@ -14,6 +8,12 @@ import type {
   APISeparatorComponent,
   APITextDisplayComponent,
   ButtonStyle,
+  APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
+  APIChannelSelectComponent as _APIChannelSelectComponent,
+  APIMentionableSelectComponent as _APIMentionableSelectComponent,
+  APIRoleSelectComponent as _APIRoleSelectComponent,
+  APIStringSelectComponent as _APIStringSelectComponent,
+  APIUserSelectComponent as _APIUserSelectComponent,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import type { DraftFlow } from "~/store.server";
@@ -22,7 +22,8 @@ import {
   type APIEmbed,
   QueryDataMessageDataRaw,
   type QueryDataVersion,
-  ZodQueryDataMessageDataRaw,
+  ZodQueryDataMessageDataBase,
+  queryDataMessageDataTransform
 } from "./QueryData-raw";
 import { ZodAPITopLevelComponent } from "./components";
 
@@ -120,9 +121,9 @@ export interface QueryData {
 
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),
-  data: ZodQueryDataMessageDataRaw.and(
-    z.object({ components: ZodAPITopLevelComponent.array().optional() }),
-  ),
+  data: ZodQueryDataMessageDataBase.omit({ components: true })
+    .merge(z.object({ components: ZodAPITopLevelComponent.array().optional() }))
+    .transform(queryDataMessageDataTransform),
   reference: z.ostring(),
   thread_id: z.ostring(),
 }) satisfies z.ZodType<QueryData["messages"][number]>;

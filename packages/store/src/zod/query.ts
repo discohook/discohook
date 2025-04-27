@@ -68,8 +68,10 @@ export const ZodQueryDataMessage = z.object({
       .array()
       .optional(),
     webhook_id: z.ostring(),
-    components: z.array(z.any()),
-    // components: ZodAPIActionRowComponent.array().optional(),
+    components: z.array(
+      z.object({ id: z.onumber(), type: z.number() }).passthrough(),
+    ),
+    // components: ZodAPITopLevelComponent.array().optional(),
     flags: z.onumber(),
     thread_name: z.ostring(),
   }),

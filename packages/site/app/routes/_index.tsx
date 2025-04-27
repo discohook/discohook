@@ -413,7 +413,7 @@ export default function Index() {
         loadInitialTargets(parsed.data.targets ?? []);
         loadMessageComponents(parsed.data, setData);
       } else {
-        console.error("QueryData failed parsing:", parsed.error.issues);
+        console.log("QueryData failed parsing:", parsed.error.format());
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
       }
     }

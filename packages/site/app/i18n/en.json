@@ -406,7 +406,7 @@
   "attachment": "Attachment",
   "separatorLine": "Divider Line",
   "separatorSize": "Size",
-  "fileMissing": "This component references a file that was not found in the files section. To resolve this issue, re-upload the file or remove the component.<br/><br/>This is expected when opening links, as files are too large to reliably be shared.",
+  "fileMissing": "This component references a file that was not found in the files section. To resolve this issue, re-upload the file or remove the component. This is expected when opening links, as files are too large to reliably be shared.",
   "linkButton": "Link Button",
   "addComponentType": "Add $t(componentShort.{{type}})",
   "editingComponentFromUser": "Editing a $t(component.{{type}}, lowercase) from",
