@@ -1266,7 +1266,9 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
             })}
           >
             {files.length === 0 ? (
-              <p className="text-muted dark:text-muted-dark text-sm italic">{t("filesComponentsOnly")}</p>
+              <p className="text-muted dark:text-muted-dark text-sm italic">
+                {t("filesComponentsOnly")}
+              </p>
             ) : (
               files.map((draftFile) => {
                 const { id, file, embed, is_thumbnail, url } = draftFile;
@@ -1354,7 +1356,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   label: (
                     <p className="flex">
                       <CoolIcon
-                        icon="Window"
+                        icon="Add_Plus_Square"
                         className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
                       />
                       <span className="my-auto">{t("component.17")}</span>

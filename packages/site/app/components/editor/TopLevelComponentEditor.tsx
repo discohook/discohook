@@ -11,6 +11,7 @@ import {
 import { MessageFlagsBitField } from "discord-bitflag";
 import type { TFunction } from "i18next";
 import { twJoin, twMerge } from "tailwind-merge";
+import type { DraftFile } from "~/routes/_index";
 import {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
@@ -22,6 +23,7 @@ import {
   MAX_TOTAL_COMPONENTS,
 } from "~/util/constants";
 import { isActionRow } from "~/util/discord";
+import { transformFileName } from "~/util/files";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
 
@@ -107,6 +109,7 @@ export const getRowWidth = (
 
 export const getComponentErrors = (
   component: APIMessageComponent,
+  files?: DraftFile[],
 ): string[] => {
   const errors: string[] = [];
   switch (component.type) {
@@ -135,6 +138,18 @@ export const getComponentErrors = (
         errors.push("optionsEmpty");
       }
       break;
+    case ComponentType.File:
+      if (files && component.file.url) {
+        const file = files.find(
+          (f) =>
+            `attachment://${transformFileName(f.file.name)}` ===
+            component.file.url,
+        );
+        if (!file) {
+          errors.push("fileMissing");
+        }
+      }
+      break;
     default:
       break;
   }
@@ -150,6 +165,7 @@ export interface TopLevelComponentEditorContainerProps {
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   open?: boolean;
+  files?: DraftFile[];
 }
 
 export const TopLevelComponentEditorContainer = ({
@@ -162,8 +178,9 @@ export const TopLevelComponentEditorContainer = ({
   setData,
   open,
   children,
+  files,
 }: React.PropsWithChildren<TopLevelComponentEditorContainerProps>) => {
-  const errors = getComponentErrors(component);
+  const errors = getComponentErrors(component, files);
 
   return (
     <details

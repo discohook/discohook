@@ -3,7 +3,7 @@ import {
   APIFileComponent,
   ButtonStyle,
 } from "discord-api-types/v10";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
@@ -15,7 +15,6 @@ import {
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
-import { InfoBox } from "../InfoBox";
 import { TextInput } from "../TextInput";
 import { PasteFileButton } from "./PasteFileButton";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
@@ -60,12 +59,8 @@ export const FileEditor: React.FC<{
       data={data}
       setData={setData}
       open={open}
+      files={files}
     >
-      {!file && component.file.url.startsWith("attachment://") ? (
-        <InfoBox severity="red" icon="File_Close">
-          <Trans t={t} i18nKey="fileMissing" components={{ br: <br /> }} />
-        </InfoBox>
-      ) : null}
       <div className="space-y-2">
         <div className="w-full">
           <div className="flex flex-row-reverse grid-cols-2 gap-1">

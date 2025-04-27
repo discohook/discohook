@@ -9,7 +9,10 @@ import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { APIMessageTopLevelComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
-import { MAX_CONTAINER_COMPONENTS } from "~/util/constants";
+import {
+  MAX_CONTAINER_COMPONENTS,
+  MAX_TOTAL_COMPONENTS,
+} from "~/util/constants";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
@@ -128,6 +131,11 @@ export const ContainerEditor: React.FC<{
   const mid = getQdMessageId(message);
   const errors = getComponentErrors(container);
 
+  const allComponentsCount =
+    message.data.components
+      ?.map((c) => 1 + ("components" in c ? c.components.length : 0))
+      .reduce((a, b) => a + b, 0) ?? 0;
+
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
   return (
@@ -233,11 +241,11 @@ export const ContainerEditor: React.FC<{
           />
         ))}
         <div className="flex ltr:ml-2 rtl:mr-2">
-          <div className="">
+          <div>
             <ButtonSelect
               isDisabled={
-                container.components.length >= MAX_CONTAINER_COMPONENTS
-                // allComponentsCount >= MAX_TOTAL_COMPONENTS
+                container.components.length >= MAX_CONTAINER_COMPONENTS ||
+                allComponentsCount >= MAX_TOTAL_COMPONENTS
               }
               options={[
                 {
