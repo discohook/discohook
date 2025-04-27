@@ -12,6 +12,7 @@ import {
   type APIButtonComponent,
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
+  APIEmbed,
   type APIMessage,
   type APIMessageComponent,
   type APISelectMenuComponent,
@@ -39,6 +40,7 @@ import type {
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import { transformFileName } from "./files";
 import { sleep } from "./time";
 
 export const DISCORD_API = "https://discord.com/api";
@@ -165,6 +167,34 @@ export const getWebhookMessage = async (
   return data;
 };
 
+const cascadeFileNameChange = (
+  files: { oldName: string; newName: string }[],
+  embeds: APIEmbed[],
+) => {
+  if (files.length === 0) return embeds;
+
+  const newEmbeds = structuredClone(embeds);
+  for (const { oldName, newName } of files) {
+    const uri = `attachment://${transformFileName(oldName)}`;
+    const newUri = `attachment://${transformFileName(newName)}`;
+    for (const embed of newEmbeds) {
+      if (embed.author?.icon_url?.trim() === uri) {
+        embed.author.icon_url = newUri;
+      }
+      if (embed.image?.url?.trim() === uri) {
+        embed.image.url = newUri;
+      }
+      if (embed.thumbnail?.url?.trim() === uri) {
+        embed.thumbnail.url = newUri;
+      }
+      if (embed.footer?.icon_url?.trim() === uri) {
+        embed.footer.icon_url = newUri;
+      }
+    }
+  }
+  return newEmbeds;
+};
+
 export const executeWebhook = async (
   webhookId: string,
   webhookToken: string,
@@ -190,11 +220,23 @@ export const executeWebhook = async (
     payload.poll = undefined;
   }
 
+  if (files && payload.embeds) {
+    payload.embeds = cascadeFileNameChange(
+      files
+        .filter(({ spoiler }) => spoiler)
+        .map(({ file }) => ({
+          oldName: file.name,
+          newName: `SPOILER_${file.name}`,
+        })),
+      payload.embeds,
+    );
+  }
+
   if (files && !payload.attachments) {
     payload.attachments = files.map((file, i) => ({
       id: i,
       description: file.description,
-      filename: file.file.name,
+      filename: file.spoiler ? `SPOILER_${file.file.name}` : file.file.name,
       // This is undocumented! Therefore we are taking precautions:
       // Only provide any value when it is true and the user is creating a
       // thread; narrows erroneous behavior if is_thumbnail suddenly gets
@@ -207,9 +249,9 @@ export const executeWebhook = async (
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {
-      for (const { file } of files) {
+      for (const { file, spoiler } of files) {
         rawFiles.push({
-          name: file.name,
+          name: spoiler ? `SPOILER_${file.name}` : file.name,
           contentType: file.type,
           data: Buffer.from(await file.arrayBuffer()),
         });
@@ -261,11 +303,23 @@ export const updateWebhookMessage = async (
     query.set("with_components", String(withComponents));
   }
 
+  if (files && payload.embeds) {
+    payload.embeds = cascadeFileNameChange(
+      files
+        .filter(({ spoiler }) => spoiler)
+        .map(({ file }) => ({
+          oldName: file.name,
+          newName: `SPOILER_${file.name}`,
+        })),
+      payload.embeds,
+    );
+  }
+
   if (files && !payload.attachments) {
     payload.attachments = files.map((file, i) => ({
       id: i,
       description: file.description,
-      filename: file.file.name,
+      filename: file.spoiler ? `SPOILER_${file.file.name}` : file.file.name,
       // See comment under `executeWebhook`
       is_thumbnail:
         file.is_thumbnail && threadId !== undefined ? true : undefined,
@@ -275,9 +329,9 @@ export const updateWebhookMessage = async (
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {
-      for (const { file } of files) {
+      for (const { file, spoiler } of files) {
         rawFiles.push({
-          name: file.name,
+          name: spoiler ? `SPOILER_${file.name}` : file.name,
           contentType: file.type,
           data: Buffer.from(await file.arrayBuffer()),
         });
