@@ -73,7 +73,8 @@ export const FileEditor: React.FC<{
 
                 const draftFile = list[0];
                 const newFiles = file
-                  ? files.filter((f) => f.id !== file.id)
+                  ? // Remove the previous file from the payload
+                    files.filter((f) => f.id !== file.id)
                   : [...files];
                 newFiles.push({
                   id: randomString(10),
@@ -97,6 +98,7 @@ export const FileEditor: React.FC<{
                 const draftFiles = await handler(e);
                 if (!draftFiles) return;
                 if (file) {
+                  // Remove the previous file from the payload
                   setFiles(files.filter((f) => f.id !== file.id));
                 }
 

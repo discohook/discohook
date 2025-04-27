@@ -34,6 +34,7 @@ export const fileInputChangeHandler = (
     if (!list) return;
 
     const newFiles = [...files];
+    const added: DraftFile[] = [];
     for (const file of Array.from(list)
       .filter((file) =>
         accept
@@ -42,14 +43,16 @@ export const fileInputChangeHandler = (
           : true,
       )
       .slice(0, MAX_FILES_PER_MESSAGE - newFiles.length)) {
-      newFiles.push({
+      const draft: DraftFile = {
         id: randomString(10),
         file,
         url: URL.createObjectURL(file),
-      });
+      };
+      newFiles.push(draft);
+      added.push(draft);
     }
     setFiles(newFiles);
     event.currentTarget.value = "";
 
-    return newFiles;
+    return added;
   }) satisfies React.ChangeEventHandler<HTMLInputElement>;
