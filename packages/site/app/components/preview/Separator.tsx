@@ -11,7 +11,9 @@ export const PreviewSeparator: React.FC<{
     className={twJoin(
       "rounded",
       // default is true
-      !component.divider ? "border-transparent" : "border-gray-500/20",
+      component.divider || component.divider === undefined
+        ? "border-gray-500/20 dark:border-gray-500/50"
+        : "border-transparent",
       // Small spacing = 0 height; let the row gap create padding
       component.spacing === SeparatorSpacingSize.Large ? "my-2" : undefined,
     )}
