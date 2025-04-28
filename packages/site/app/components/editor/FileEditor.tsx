@@ -15,7 +15,6 @@ import {
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
-import { TextInput } from "../TextInput";
 import { PasteFileButton } from "./PasteFileButton";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
@@ -128,26 +127,14 @@ export const FileEditor: React.FC<{
           </div>
         </div>
         {file ? (
-          <>
-            <TextInput
-              label={t("description")}
-              className="w-full"
-              value={file.description ?? ""}
-              maxLength={256}
-              onChange={({ currentTarget }) => {
-                file.description = currentTarget.value || undefined;
-                setFiles([...files]);
-              }}
-            />
-            <Checkbox
-              label={t("markSpoiler")}
-              checked={component.spoiler ?? false}
-              onChange={({ currentTarget }) => {
-                component.spoiler = currentTarget.checked;
-                setData({ ...data });
-              }}
-            />
-          </>
+          <Checkbox
+            label={t("markSpoiler")}
+            checked={component.spoiler ?? false}
+            onChange={({ currentTarget }) => {
+              component.spoiler = currentTarget.checked;
+              setData({ ...data });
+            }}
+          />
         ) : null}
       </div>
     </TopLevelComponentEditorContainer>
