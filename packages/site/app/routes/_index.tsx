@@ -1086,7 +1086,7 @@ export default function Index() {
               <hr className="border border-gray-400 dark:border-gray-600 my-4" />
             </div>
             {data.messages.find((m) => isComponentsV2(m.data)) !== undefined ? (
-              <InfoBox severity="blue" icon="Flag" collapsible>
+              <InfoBox severity="blue" icon="Flag" collapsible open>
                 Hey! You're currently using an open beta for Discohook's
                 components V2 support. Some things are still incomplete,
                 including the live preview and interactive components. Please
