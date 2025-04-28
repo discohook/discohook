@@ -56,9 +56,9 @@ export const FileOrUrlInput: React.FC<{
       <p className="font-medium text-sm cursor-default">
         <span>{t(labelKey ?? "attachment")}</span>
         {file.file.type.startsWith("image/") ? (
-          <CoolIcon icon="Image_01" />
+          <CoolIcon icon="Image_01" className="ltr:ml-1 rtl:mr-1" />
         ) : file.file.type.startsWith("video/") ? (
-          <CoolIcon icon="Monitor_Play" />
+          <CoolIcon icon="Monitor_Play" className="ltr:ml-1 rtl:mr-1" />
         ) : null}
       </p>
       <div className="flex gap-2 w-full">
