@@ -13,11 +13,11 @@ import { DraftFile } from "~/routes/_index";
 import { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
 import { CacheManager } from "~/util/cache/CacheManager";
-import { cdn, webhookAvatarUrl } from "~/util/discord";
+import { cdn, isComponentsV2, webhookAvatarUrl } from "~/util/discord";
 import { Settings } from "~/util/localstorage";
 import { Svg } from "../icons/Svg";
 import { PostChannelIcon } from "../icons/channel";
-import { MessageComponents } from "./Components";
+import { AutoTopLevelComponentPreview } from "./Container";
 import { Embed, getImageUri } from "./Embed";
 import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
@@ -132,9 +132,9 @@ export const Message: React.FC<{
       : true) ||
     !!message.thread_name;
   // To save time, display components if the user has no webhooks
-  const authorType = webhook
-    ? getAuthorType(discordApplicationId, webhook)
-    : AuthorType.ActionableWebhook;
+  // const authorType = webhook
+  //   ? getAuthorType(discordApplicationId, webhook)
+  //   : AuthorType.ActionableWebhook;
 
   const embeds: { embed: APIEmbed; extraImages: APIEmbedImage[] }[] = [];
   for (const embed of message.embeds ?? []) {
@@ -152,22 +152,26 @@ export const Message: React.FC<{
     });
   }
 
-  const allAttachments = [
-    ...(message.attachments ?? []),
-    ...(files
-      ?.filter((f) => f.embed !== true && f.is_thumbnail !== true)
-      ?.map(
-        ({ id, file, url }) =>
-          ({
-            id,
-            filename: file.name,
-            size: file.size,
-            content_type: file.type,
-            url: url ?? "#",
-            proxy_url: "#",
-          }) satisfies APIAttachment,
-      ) ?? []),
-  ];
+  // Attachments are only to be shown in CV2 messages when explicitly placed
+  // in galleries or with the file component
+  const allAttachments = isComponentsV2(message)
+    ? []
+    : [
+        ...(message.attachments ?? []),
+        ...(files
+          ?.filter((f) => f.embed !== true && f.is_thumbnail !== true)
+          ?.map(
+            ({ id, file, url }) =>
+              ({
+                id,
+                filename: file.name,
+                size: file.size,
+                content_type: file.type,
+                url: url ?? "#",
+                proxy_url: "#",
+              }) satisfies APIAttachment,
+          ) ?? []),
+      ];
   const fileAttachments = allAttachments.filter(
     (a) =>
       !a.content_type ||
@@ -371,12 +375,29 @@ export const Message: React.FC<{
                 </div>
               )}
             {message.components && message.components.length > 0 && (
-              <div className="mt-1">
-                <MessageComponents
-                  components={message.components}
-                  authorType={authorType}
-                  cache={cache}
-                />
+              <div
+                // id={`message-accessories-${mid}`}
+                className={twJoin(
+                  "grid grid-flow-row h-fit min-h-0 min-w-0 py-0.5 relative indent-0",
+                  "gap-y-1 [grid-template-columns:repeat(auto-fill,_minmax(100%,_1fr))]",
+                  // Should do something more elegant than this
+                  !isComponentsV2(message) ? "mt-1" : undefined,
+                )}
+              >
+                <div className="w-full">
+                  <div className="flex flex-col items-stretch max-w-[min(600px,_100%)] gap-y-2 w-fit overflow-hidden">
+                    {message.components.map((component, i) => (
+                      <AutoTopLevelComponentPreview
+                        key={`top-level-component-${i}`}
+                        component={component}
+                        cache={cache}
+                        files={files}
+                        setImageModalData={setImageModalData}
+                        cdn={cdnOrigin}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>

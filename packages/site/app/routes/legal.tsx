@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
 import { Prose } from "~/components/Prose";
-import { MessageComponents } from "~/components/preview/Components";
+import { PreviewActionRow } from "~/components/preview/ActionRow";
 import { linkClassName } from "~/components/preview/Markdown";
 import { getUser } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
@@ -143,32 +143,30 @@ export default function Legal() {
           </li>
         </ul>
         <hr className="border border-gray-500/20 my-4" />
-        <MessageComponents
-          components={[
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Link,
-                  url: "https://github.com/discohook/discohook/commits/main/packages/site/app/routes/legal.tsx",
-                  label: "Page update history",
-                },
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Link,
-                  url: "https://discord.com/terms",
-                  label: "Discord's terms of service",
-                },
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Link,
-                  url: "/discord",
-                  label: "Support server",
-                },
-              ],
-            },
-          ]}
+        <PreviewActionRow
+          component={{
+            type: ComponentType.ActionRow,
+            components: [
+              {
+                type: ComponentType.Button,
+                style: ButtonStyle.Link,
+                url: "https://github.com/discohook/discohook/commits/main/packages/site/app/routes/legal.tsx",
+                label: "Page update history",
+              },
+              {
+                type: ComponentType.Button,
+                style: ButtonStyle.Link,
+                url: "https://discord.com/terms",
+                label: "Discord's terms of service",
+              },
+              {
+                type: ComponentType.Button,
+                style: ButtonStyle.Link,
+                url: "/discord",
+                label: "Support server",
+              },
+            ],
+          }}
         />
       </Prose>
     </div>

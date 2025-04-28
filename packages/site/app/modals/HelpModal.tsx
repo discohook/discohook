@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
-import { PreviewButton } from "~/components/preview/Components";
+import { PreviewButton } from "~/components/preview/ActionRow";
 import { Embed } from "~/components/preview/Embed";
 import { GuideFileMeta } from "~/routes/guide.$";
 import tags_ from "../../public/help/en.json";

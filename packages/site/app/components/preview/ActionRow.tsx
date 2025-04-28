@@ -1,7 +1,7 @@
 import {
+  APIActionRowComponent,
   APIButtonComponent,
   APIComponentInMessageActionRow,
-  APIMessage,
   APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
@@ -15,7 +15,7 @@ import {
   ResolvableAPIGuildMember,
   ResolvableAPIRole,
 } from "~/util/cache/CacheManager";
-import { cdn, cdnImgAttributes, onlyActionRows } from "~/util/discord";
+import { cdn, cdnImgAttributes } from "~/util/discord";
 import { getUserAvatar } from "~/util/users";
 import { Button } from "../Button";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -262,62 +262,53 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
   );
 };
 
-const previewComponentMap = {
-  [ComponentType.Button]: PreviewButton,
-  [ComponentType.StringSelect]: PreviewSelect,
-  [ComponentType.UserSelect]: PreviewSelect,
-  [ComponentType.RoleSelect]: PreviewSelect,
-  [ComponentType.MentionableSelect]: PreviewSelect,
-  [ComponentType.ChannelSelect]: PreviewSelect,
-};
-
-export const GenericPreviewComponent: PreviewComponent<
+export const GenericPreviewComponentInActionRow: PreviewComponent<
   APIComponentInMessageActionRow
 > = (props) => {
-  const fc = previewComponentMap[props.data.type];
-  // @ts-expect-error
-  return fc ? fc(props) : <></>;
+  switch (props.data.type) {
+    case ComponentType.Button:
+      return <PreviewButton {...props} data={props.data} />;
+    case ComponentType.StringSelect:
+    case ComponentType.UserSelect:
+    case ComponentType.RoleSelect:
+    case ComponentType.MentionableSelect:
+    case ComponentType.ChannelSelect:
+      return <PreviewSelect {...props} data={props.data} />;
+    default:
+      return <></>;
+  }
 };
 
-export const MessageComponents: React.FC<{
-  components: NonNullable<APIMessage["components"]>;
+export const PreviewActionRow: React.FC<{
+  component: APIActionRowComponent<APIComponentInMessageActionRow>;
   authorType?: AuthorType;
   cache?: CacheManager;
-}> = ({ components, authorType, cache }) => {
+}> = ({ component: row, authorType, cache }) => {
   const { t } = useTranslation();
-  const isAllLinkButtons = !onlyActionRows(components)
-    .flatMap((r) =>
-      r.components.map(
-        (c) => c.type === ComponentType.Button && c.style === ButtonStyle.Link,
-      ),
-    )
+  const isAllLinkButtons = !row.components
+    .map((c) => c.type === ComponentType.Button && c.style === ButtonStyle.Link)
     .includes(false);
 
   return (
-    <div className="grid gap-1 py-[0.125rem]">
-      {onlyActionRows(components).map((row, i) => (
-        <div
-          key={`action-row-${i}`}
-          className="flex flex-wrap gap-x-1.5 gap-y-0"
-          data-action-row-index={i}
-        >
-          {row.components.map((component, ci) => (
-            <div key={`action-row-${i}-component-${ci}`} className="contents">
-              <GenericPreviewComponent
-                data={component}
-                authorType={
-                  // We shouldn't lie about the author type
-                  (authorType === undefined ||
-                    authorType < AuthorType.ApplicationWebhook) &&
-                  isAllLinkButtons
-                    ? AuthorType.ApplicationWebhook
-                    : authorType
-                }
-                cache={cache}
-                t={t}
-              />
-            </div>
-          ))}
+    <div
+      className="flex flex-wrap gap-x-1.5 gap-y-0"
+      // data-action-row-index={i}
+    >
+      {row.components.map((component, ci) => (
+        <div key={`action-row-component-${ci}`} className="contents">
+          <GenericPreviewComponentInActionRow
+            data={component}
+            authorType={
+              // We shouldn't lie about the author type
+              (authorType === undefined ||
+                authorType < AuthorType.ApplicationWebhook) &&
+              isAllLinkButtons
+                ? AuthorType.ApplicationWebhook
+                : authorType
+            }
+            cache={cache}
+            t={t}
+          />
         </div>
       ))}
     </div>

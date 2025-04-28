@@ -40,7 +40,7 @@ import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { PostChannelIcon } from "~/components/icons/channel";
-import { GenericPreviewComponent } from "~/components/preview/Components";
+import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
 import { Markdown } from "~/components/preview/Markdown";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { useConfirmModal } from "~/modals/ConfirmModal";
@@ -1090,7 +1090,7 @@ export default () => {
                                                     : "contents",
                                                 )}
                                               >
-                                                <GenericPreviewComponent
+                                                <GenericPreviewComponentInActionRow
                                                   // @ts-expect-error the type is close enough for this component
                                                   // TODO: use `buildStorableComponent` for general completeness
                                                   data={{
@@ -1121,7 +1121,7 @@ export default () => {
                                                         <>
                                                           <div className="flex w-full">
                                                             <div className="mx-auto">
-                                                              <GenericPreviewComponent
+                                                              <GenericPreviewComponentInActionRow
                                                                 // @ts-expect-error
                                                                 data={
                                                                   component.data
