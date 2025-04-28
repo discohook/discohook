@@ -11,6 +11,7 @@ import { decimalToHex } from "../editor/ColorPicker";
 import { PreviewActionRow } from "./ActionRow";
 import { PreviewFile } from "./File";
 import { PreviewMediaGallery } from "./MediaGallery";
+import { PreviewSeparator } from "./Separator";
 import { PreviewTextDisplay } from "./TextDisplay";
 
 export interface TopLevelComponentPreviewProps {
@@ -36,8 +37,8 @@ export const AutoTopLevelComponentPreview = (
       return <PreviewMediaGallery {...props} component={component} />;
     // case ComponentType.Section:
     //   return <PreviewSection {...props} component={component} />;
-    // case ComponentType.Separator:
-    //   return <PreviewSeparator component={component} />;
+    case ComponentType.Separator:
+      return <PreviewSeparator component={component} />;
     case ComponentType.TextDisplay:
       return <PreviewTextDisplay {...props} component={component} />;
     default:
