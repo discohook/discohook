@@ -9,6 +9,7 @@ import { APIMessageTopLevelComponent } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { decimalToHex } from "../editor/ColorPicker";
 import { PreviewActionRow } from "./ActionRow";
+import { PreviewMediaGallery } from "./MediaGallery";
 import { PreviewTextDisplay } from "./TextDisplay";
 
 export interface TopLevelComponentPreviewProps {
@@ -30,8 +31,8 @@ export const AutoTopLevelComponentPreview = (
       return <PreviewContainer {...props} component={component} />;
     // case ComponentType.File:
     //   return <PreviewFile {...props} component={component} />;
-    // case ComponentType.MediaGallery:
-    //   return <PreviewMediaGallery {...props} component={component} />;
+    case ComponentType.MediaGallery:
+      return <PreviewMediaGallery {...props} component={component} />;
     // case ComponentType.Section:
     //   return <PreviewSection {...props} component={component} />;
     // case ComponentType.Separator:
@@ -51,11 +52,6 @@ export const PreviewContainer: React.FC<{
   cdn?: string;
 }> = (props) => {
   const { component: container } = props;
-  // const cdnGifVideoUrl = (url: string) =>
-  //   cdn && url.startsWith(`${cdn}/tenor/`) && url.endsWith(".gif")
-  //     ? url.replace(/\.gif$/, ".mp4")
-  //     : undefined;
-
   return (
     <div>
       <div
