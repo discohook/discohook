@@ -55,7 +55,8 @@ export const SeparatorEditor: React.FC<{
                 type="button"
                 className={twJoin(
                   "my-auto w-1/2 text-sm grow transition-all",
-                  component.spacing === SeparatorSpacingSize.Small
+                  component.spacing === SeparatorSpacingSize.Small ||
+                    component.spacing === undefined
                     ? "text-white font-medium"
                     : undefined,
                 )}
