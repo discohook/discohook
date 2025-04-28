@@ -5,7 +5,7 @@ import {
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import { type DraftFile } from "~/routes/_index";
 import { QueryData } from "~/types/QueryData";
 import {
   MAX_FILES_PER_MESSAGE,
@@ -15,6 +15,7 @@ import {
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
+import { resolveAttachmentUri } from "../preview/Embed";
 import { PasteFileButton } from "./PasteFileButton";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
@@ -40,12 +41,8 @@ export const FileEditor: React.FC<{
   setFiles,
 }) => {
   const { t } = useTranslation();
-  const mid = getQdMessageId(message);
-
-  const file = files.find(
-    (f) =>
-      `attachment://${transformFileName(f.file.name)}` === component.file.url,
-  );
+  // const mid = getQdMessageId(message);
+  const file = resolveAttachmentUri(component.file.url, files);
 
   const id = randomString(10);
   return (

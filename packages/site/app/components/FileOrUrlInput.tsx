@@ -14,6 +14,7 @@ import { TextInput } from "./TextInput";
 import { DetectGifUrlFooter } from "./editor/EmbedEditor";
 import { PasteFileButton } from "./editor/PasteFileButton";
 import { CoolIcon } from "./icons/CoolIcon";
+import { resolveAttachmentUri } from "./preview/Embed";
 
 export const FileOrUrlInput: React.FC<{
   t: TFunction;
@@ -48,7 +49,7 @@ export const FileOrUrlInput: React.FC<{
 }) => {
   const id = randomString(10);
   const file = value?.startsWith("attachment://")
-    ? files.find((f) => transformFileName(f.file.name) === new URL(value).host)
+    ? resolveAttachmentUri(value, files)
     : undefined;
 
   return file ? (

@@ -1,16 +1,13 @@
 import { APIFileComponent } from "discord-api-types/v10";
 import { DraftFile } from "~/routes/_index";
-import { transformFileName } from "~/util/files";
+import { resolveAttachmentUri } from "./Embed";
 import { FileAttachment } from "./FileAttachment";
 
 export const PreviewFile: React.FC<{
   component: APIFileComponent;
   files?: DraftFile[];
 }> = ({ component, files }) => {
-  const file = files?.find(
-    (f) =>
-      component.file.url === `attachment://${transformFileName(f.file.name)}`,
-  );
+  const file = resolveAttachmentUri(component.file.url, files);
   return (
     <div className="">
       <FileAttachment

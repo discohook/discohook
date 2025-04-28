@@ -23,9 +23,9 @@ import {
   MAX_TOTAL_COMPONENTS,
 } from "~/util/constants";
 import { isActionRow } from "~/util/discord";
-import { transformFileName } from "~/util/files";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
+import { resolveAttachmentUri } from "../preview/Embed";
 
 /** Also strips query and fragment */
 const stripProtocol = (uri: string) => {
@@ -140,11 +140,7 @@ export const getComponentErrors = (
       break;
     case ComponentType.File:
       if (files && component.file.url) {
-        const file = files.find(
-          (f) =>
-            `attachment://${transformFileName(f.file.name)}` ===
-            component.file.url,
-        );
+        const file = resolveAttachmentUri(component.file.url, files);
         if (!file) {
           errors.push("fileMissing");
         }

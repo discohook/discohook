@@ -2,7 +2,7 @@ import { APIMediaGalleryComponent } from "discord-api-types/v10";
 import mime from "mime";
 import { SetImageModalData } from "~/modals/ImageModal";
 import { DraftFile } from "~/routes/_index";
-import { transformFileName } from "~/util/files";
+import { getImageUri } from "./Embed";
 import { Gallery } from "./Gallery";
 
 export const PreviewMediaGallery: React.FC<{
@@ -21,12 +21,8 @@ export const PreviewMediaGallery: React.FC<{
           let file: DraftFile | undefined;
 
           if (url.startsWith("attachment://") && files) {
-            file = files.find(
-              (f) => `attachment://${transformFileName(f.file.name)}` === url,
-            );
-            if (file?.url) {
-              url = file.url;
-            }
+            const fileUrl = getImageUri(url, files);
+            if (fileUrl) url = fileUrl;
           }
 
           let contentType = file ? file.file.type : null;

@@ -39,7 +39,10 @@ export const resolveAttachmentUri = (
   }
 };
 
-export const getImageUri = (uri: string, files?: DraftFile[] | undefined) => {
+export const getImageUri = (
+  uri: string,
+  files?: DraftFile[] | undefined,
+): string => {
   const file = resolveAttachmentUri(uri.trim(), files);
   if (file) {
     return file.url ?? "";
