@@ -76,7 +76,7 @@ export const submitMessage = async (
   // - the webhook is not owned by an application, and
   // - there are components, and
   // - the message is using components v2 (required), or there are
-  //   non-actionable components
+  //   only non-actionable components (link buttons)
   // and `undefined` otherwise (let default behavior take over)
   const withComponents = target.application_id
     ? undefined
@@ -96,10 +96,11 @@ export const submitMessage = async (
                 child.style === ButtonStyle.Link
               )
             ) {
-              return true;
+              return;
             }
           }
         }
+        return true;
       })();
 
   let data: APIMessage | DiscordErrorData;
