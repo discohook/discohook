@@ -122,7 +122,7 @@ export const MediaGalleryEditor: React.FC<{
                       label={t("description")}
                       className="w-full"
                       value={item.description ?? ""}
-                      maxLength={256}
+                      maxLength={1024}
                       onChange={({ currentTarget }) => {
                         item.description = currentTarget.value || null;
                         setData({ ...data });

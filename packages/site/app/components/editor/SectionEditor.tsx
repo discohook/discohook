@@ -241,7 +241,7 @@ export const SectionEditor: React.FC<{
                     label={t("description")}
                     className="w-full"
                     value={accessory.description ?? ""}
-                    maxLength={256}
+                    maxLength={1024}
                     onChange={({ currentTarget }) => {
                       accessory.description = currentTarget.value || null;
                       setData({ ...data });
