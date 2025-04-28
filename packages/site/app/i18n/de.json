@@ -450,7 +450,7 @@
     "formatDescription": "Einige Nachrichten können dynamisch mit einer Auswahl an Formatierungsoptionen versehen werden, die unten angezeigt werden. Alle Optionen müssen geschweifte Klammern enthalten: <0>{}</0>",
     "formatOptionDescription": {
         "server": {
-            "created_long": "Wann der Server erstellt wurde, in Langform",
+            "created_long": "Wenn der Server erstellt wurde, in Langform",
             "icon_url": "Die URL des Serversymbols",
             "name": "Der Servername",
             "emoji_limit": "Die maximale Anzahl von Emojis, die der Server haben kann",
@@ -459,8 +459,8 @@
             "roles": "Die Anzahl der Rollen auf dem Server",
             "boosts": "Die Anzahl der Boosts, die der Server hat",
             "sticker_limit": "Die maximale Anzahl von Stickern, die der Server haben kann",
-            "created": "Wann der Server erstellt wurde",
-            "created_relative": "Wann der Server erstellt wurde, relativ angegeben"
+            "created": "Wenn der Server erstellt wurde",
+            "created_relative": "Wenn der Server erstellt wurde, relativ angegeben"
         },
         "member": {
             "tag": "Das vollständige Benutzer-Tag des Mitglieds",
@@ -523,8 +523,8 @@
         "relative": {
             "minutes_past_one": "vor einer Minute",
             "minutes_past_other": "vor {{count}} Minuten",
-            "hours_future_one": "in einer Stunde",
-            "hours_future_other": "in {{count}} Stunden",
+            "hours_future_one": "in einer Stunden",
+            "hours_future_other": "vor {{count}} Stunden",
             "hours_past_one": "vor einer Stunde",
             "hours_past_other": "vor {{count}} Stunden",
             "days_future_one": "in einem Tag",
@@ -649,7 +649,7 @@
     "deleteTriggerConfirm": "Bist du sicher, dass du $t(triggerEvent.{{0}}) und seinen Ablauf löschen möchtest?",
     "information": "Information",
     "havingTrouble": "Hast du Schwierigkeiten?",
-    "setMessageLink": "Nachrichtenlink setzen",
+    "setMessageLink": "Nachrichten Link setzen",
     "messageLink": "Nachricht Link",
     "webhook": "Webhook",
     "referenceNoWebhooks": "Du hast keine Webhooks hinzugefügt, die mit dem von dir angegebenen Nachrichtenlink übereinstimmen. Um zu überschreiben oder zu bearbeiten, musst du den korrekten Webhook hinzufügen.",
