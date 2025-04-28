@@ -12,9 +12,11 @@ import { APIButtonComponent, QueryData } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
 import { Button } from "../Button";
+import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
 import { FileOrUrlInput } from "../FileOrUrlInput";
 import { TextArea } from "../TextArea";
+import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import {
   IndividualComponentEditor,
@@ -81,89 +83,6 @@ export const SectionEditor: React.FC<{
     >
       {error}
       <div className="space-y-2">
-        <div>
-          <div className="flex">
-            <p className="my-auto text-sm font-medium cursor-default truncate">
-              {t("accessory")} –{" "}
-              {t(
-                accessory.type === ComponentType.Button &&
-                  accessory.style === ButtonStyle.Link
-                  ? "linkButton"
-                  : `component.${accessory.type}`,
-              )}
-            </p>
-            <button
-              type="button"
-              onClick={removeAccessory}
-              className="ltr:ml-auto rtl:mr-auto my-auto text-base"
-            >
-              <CoolIcon icon="Trash_Full" />
-            </button>
-          </div>
-          {accessory.type === ComponentType.Button ? (
-            <div>
-              <IndividualComponentEditor
-                component={accessory}
-                index={0}
-                actionsBar={{ up: null, down: null, copy: null, delete: null }}
-                // delete: removeAccessory,
-                row={{
-                  type: ComponentType.ActionRow,
-                  components: [accessory],
-                }}
-                updateRow={(row) => {
-                  if (!row) return;
-
-                  const component = row.components[0] as typeof accessory;
-                  section.accessory = { ...component };
-                  setData({ ...data });
-                }}
-                onClick={() => {
-                  const button = accessory as APIButtonComponent;
-                  if (
-                    button.style !== ButtonStyle.Link &&
-                    button.style !== ButtonStyle.Premium
-                  ) {
-                    button.flow = button.flow ?? { actions: [] };
-                  }
-                  setEditingComponent(
-                    getSetEditingComponentProps({
-                      component: button,
-                      row: {
-                        type: ComponentType.ActionRow,
-                        components: [button],
-                      },
-                      componentIndex: 0,
-                      data,
-                      setData,
-                      setEditingComponent,
-                      setComponent(component) {
-                        section.accessory = component as APIButtonComponent;
-                        setData({ ...data });
-                      },
-                    }),
-                  );
-                }}
-              />
-            </div>
-          ) : accessory.type === ComponentType.Thumbnail ? (
-            <div className="w-full">
-              <FileOrUrlInput
-                t={t}
-                value={accessory.media.url}
-                onChange={(value) => {
-                  (section.accessory as typeof accessory).media = {
-                    url: value,
-                  };
-                  setData({ ...data });
-                }}
-                files={files}
-                setFiles={setFiles}
-                required
-              />
-            </div>
-          ) : null}
-        </div>
         {section.components.map((component, ci) => {
           if (component.type !== ComponentType.TextDisplay) return null;
 
@@ -237,6 +156,110 @@ export const SectionEditor: React.FC<{
             <CoolIcon icon="Chat_Add" /> {t("addText")}
           </Button>
         ) : null}
+        <div>
+          <div className="flex">
+            <p className="my-auto text-sm font-medium cursor-default truncate">
+              {t("accessory")} –{" "}
+              {t(
+                accessory.type === ComponentType.Button &&
+                  accessory.style === ButtonStyle.Link
+                  ? "linkButton"
+                  : `component.${accessory.type}`,
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={removeAccessory}
+              className="ltr:ml-auto rtl:mr-auto my-auto text-base"
+            >
+              <CoolIcon icon="Trash_Full" />
+            </button>
+          </div>
+          {accessory.type === ComponentType.Button ? (
+            <div>
+              <IndividualComponentEditor
+                component={accessory}
+                index={0}
+                actionsBar={{ up: null, down: null, copy: null, delete: null }}
+                row={{
+                  type: ComponentType.ActionRow,
+                  components: [accessory],
+                }}
+                updateRow={(row) => {
+                  if (!row) return;
+
+                  const component = row.components[0] as typeof accessory;
+                  section.accessory = { ...component };
+                  setData({ ...data });
+                }}
+                onClick={() => {
+                  const button = accessory as APIButtonComponent;
+                  if (
+                    button.style !== ButtonStyle.Link &&
+                    button.style !== ButtonStyle.Premium
+                  ) {
+                    button.flow = button.flow ?? { actions: [] };
+                  }
+                  setEditingComponent(
+                    getSetEditingComponentProps({
+                      component: button,
+                      row: {
+                        type: ComponentType.ActionRow,
+                        components: [button],
+                      },
+                      componentIndex: 0,
+                      data,
+                      setData,
+                      setEditingComponent,
+                      setComponent(component) {
+                        section.accessory = component as APIButtonComponent;
+                        setData({ ...data });
+                      },
+                    }),
+                  );
+                }}
+              />
+            </div>
+          ) : accessory.type === ComponentType.Thumbnail ? (
+            <div className="space-y-1">
+              <div className="w-full">
+                <FileOrUrlInput
+                  t={t}
+                  value={accessory.media.url}
+                  onChange={(value) => {
+                    accessory.media = { url: value };
+                    setData({ ...data });
+                  }}
+                  files={files}
+                  setFiles={setFiles}
+                  required
+                />
+              </div>
+              {accessory.media.url ? (
+                <>
+                  <TextInput
+                    label={t("description")}
+                    className="w-full"
+                    value={accessory.description ?? ""}
+                    maxLength={256}
+                    onChange={({ currentTarget }) => {
+                      accessory.description = currentTarget.value || null;
+                      setData({ ...data });
+                    }}
+                  />
+                  <Checkbox
+                    label={t("markSpoiler")}
+                    checked={accessory.spoiler ?? false}
+                    onChange={({ currentTarget }) => {
+                      accessory.spoiler = currentTarget.checked;
+                      setData({ ...data });
+                    }}
+                  />
+                </>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
     </TopLevelComponentEditorContainer>
   );

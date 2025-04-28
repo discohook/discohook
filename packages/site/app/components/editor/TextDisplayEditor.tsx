@@ -43,6 +43,21 @@ export const TextDisplayEditor: React.FC<{
       {error}
       <div className="space-y-2">
         <div>
+          <TextArea
+            label={t("content")}
+            className="w-full"
+            maxLength={MAX_TOTAL_COMPONENTS_CHARACTERS}
+            required
+            value={component.content}
+            markdown="full"
+            cache={cache}
+            onChange={({ currentTarget }) => {
+              component.content = currentTarget.value;
+              setData({ ...data });
+            }}
+          />
+        </div>
+        <div>
           <p className="text-sm font-medium cursor-default">{t("accessory")}</p>
           <ButtonSelect
             options={[
@@ -99,21 +114,6 @@ export const TextDisplayEditor: React.FC<{
           >
             {t("addAccessory")}
           </ButtonSelect>
-        </div>
-        <div>
-          <TextArea
-            label={t("content")}
-            className="w-full"
-            maxLength={MAX_TOTAL_COMPONENTS_CHARACTERS}
-            required
-            value={component.content}
-            markdown="full"
-            cache={cache}
-            onChange={({ currentTarget }) => {
-              component.content = currentTarget.value;
-              setData({ ...data });
-            }}
-          />
         </div>
       </div>
     </TopLevelComponentEditorContainer>
