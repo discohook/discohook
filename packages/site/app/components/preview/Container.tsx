@@ -9,6 +9,7 @@ import { APIMessageTopLevelComponent } from "~/types/QueryData";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { decimalToHex } from "../editor/ColorPicker";
 import { PreviewActionRow } from "./ActionRow";
+import { PreviewFile } from "./File";
 import { PreviewMediaGallery } from "./MediaGallery";
 import { PreviewTextDisplay } from "./TextDisplay";
 
@@ -29,8 +30,8 @@ export const AutoTopLevelComponentPreview = (
       return <PreviewActionRow component={component} />;
     case ComponentType.Container:
       return <PreviewContainer {...props} component={component} />;
-    // case ComponentType.File:
-    //   return <PreviewFile {...props} component={component} />;
+    case ComponentType.File:
+      return <PreviewFile {...props} component={component} />;
     case ComponentType.MediaGallery:
       return <PreviewMediaGallery {...props} component={component} />;
     // case ComponentType.Section:
