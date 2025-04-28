@@ -156,7 +156,7 @@ export const GalleryItem: React.FC<{
   ) : contentType === "image/gif" ? (
     <button
       type="button"
-      className={`relative group/gallery-item ${className}`}
+      className={twJoin("relative group/gallery-item", className)}
       onClick={() => {
         if (setImageModalData) {
           setImageModalData({
@@ -191,7 +191,7 @@ export const GalleryItem: React.FC<{
   ) : (
     <button
       type="button"
-      className={`block ${className}`}
+      className={twJoin("block", className)}
       onClick={() => {
         if (setImageModalData) {
           setImageModalData({
@@ -206,7 +206,7 @@ export const GalleryItem: React.FC<{
     >
       <img
         src={url}
-        className={`block object-cover ${itemClassName ?? ""}`}
+        className={twJoin("block object-cover", itemClassName)}
         alt=""
       />
     </button>
