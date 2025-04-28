@@ -101,5 +101,7 @@
     "modern": "Moderno",
     "classic": "Clásico",
     "webhookUrl": "URL del webhook",
-    "invalidWebhookUrl": "URL de webhook no válida. Comienzan con https://discord.com/api/webhooks/..."
+    "invalidWebhookUrl": "URL de webhook no válida. Comienzan con https://discord.com/api/webhooks/...",
+    "createdAtBy": "Creado el {{ createdAt, MMM D, YYYY }} por {{username}}",
+    "someone": "alguien"
 }
