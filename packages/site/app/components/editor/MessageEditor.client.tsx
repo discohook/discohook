@@ -23,10 +23,7 @@ import {
 import { DraftFile, getQdMessageId } from "~/routes/_index";
 import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
-import {
-  MAX_TOP_LEVEL_COMPONENTS,
-  MAX_TOTAL_COMPONENTS,
-} from "~/util/constants";
+import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
 import { isComponentsV2, onlyActionRows } from "~/util/discord";
 import {
   MAX_FILES_PER_MESSAGE,
@@ -1335,10 +1332,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
         <div className="flex space-x-2 rtl:space-x-reverse">
           <div>
             <ButtonSelect
-              isDisabled={
-                components.length >= MAX_TOP_LEVEL_COMPONENTS ||
-                allComponentsCount >= MAX_TOTAL_COMPONENTS
-              }
+              isDisabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
               options={[
                 {
                   label: (

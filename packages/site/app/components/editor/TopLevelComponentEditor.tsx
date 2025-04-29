@@ -19,7 +19,6 @@ import {
 } from "~/types/QueryData";
 import {
   MAX_CONTAINER_COMPONENTS,
-  MAX_TOP_LEVEL_COMPONENTS,
   MAX_TOTAL_COMPONENTS,
 } from "~/util/constants";
 import { isActionRow } from "~/util/discord";
@@ -248,7 +247,7 @@ export const TopLevelComponentEditorContainerSummary = ({
           // No higher than the max for the parent type
           MAX_CONTAINER_COMPONENTS,
         )
-      : MAX_TOP_LEVEL_COMPONENTS
+      : -1
     : 4;
 
   // Count up by type rather than just indicate position in the array
@@ -310,7 +309,11 @@ export const TopLevelComponentEditorContainerSummary = ({
         </button>
         <button
           type="button"
-          className={siblings.length >= MAX_SIBLINGS ? "hidden" : ""}
+          className={
+            MAX_SIBLINGS !== -1 && siblings.length >= MAX_SIBLINGS
+              ? "hidden"
+              : ""
+          }
           onClick={() => {
             const cloned = structuredClone(component);
             if (isActionRow(cloned)) {
