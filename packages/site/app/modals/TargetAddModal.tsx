@@ -167,7 +167,7 @@ export const TargetAddModal = (
           <div className="overflow-y-auto max-h-60">
             {!guildWebhooksFetcher.data ? (
               guildWebhooksFetcher.state === "idle" ? (
-                <p className="text-center opacity-60 text-sm">
+                <p className="text-center text-sm text-muted dark:text-muted-dark">
                   {t("selectWebhookGuildNote")}
                 </p>
               ) : (
@@ -192,7 +192,7 @@ export const TargetAddModal = (
                 </div>
               )
             ) : guildWebhooksFetcher.data.length === 0 ? (
-              <p className="text-center opacity-60 text-sm">
+              <p className="text-center text-muted dark:text-muted-dark text-sm">
                 {t("selectWebhookGuildNoWebhooks")}
               </p>
             ) : (

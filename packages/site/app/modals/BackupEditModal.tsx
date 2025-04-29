@@ -333,7 +333,7 @@ const Inner = ({
                   }}
                 />
               </div>
-              <p className="text-sm opacity-60">{t("scheduleFrequencyNote")}</p>
+              <p className="text-sm text-muted dark:text-muted-dark">{t("scheduleFrequencyNote")}</p>
             </>
           ) : (
             <>
