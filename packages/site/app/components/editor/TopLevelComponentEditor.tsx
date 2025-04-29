@@ -6,9 +6,7 @@ import {
   type APIMessageComponent,
   ButtonStyle,
   ComponentType,
-  MessageFlags,
 } from "discord-api-types/v10";
-import { MessageFlagsBitField } from "discord-bitflag";
 import type { TFunction } from "i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
@@ -17,11 +15,8 @@ import {
   APIMessageTopLevelComponent,
   QueryData,
 } from "~/types/QueryData";
-import {
-  MAX_CONTAINER_COMPONENTS,
-  MAX_TOTAL_COMPONENTS,
-} from "~/util/constants";
-import { isActionRow } from "~/util/discord";
+import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
+import { isActionRow, isComponentsV2 } from "~/util/discord";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
 import { resolveAttachmentUri } from "../preview/Embed";
@@ -235,21 +230,13 @@ export const TopLevelComponentEditorContainerSummary = ({
 }) => {
   const previewText = getComponentText(component);
 
+  const allComponentsCount =
+    message.data.components
+      ?.map((c) => 1 + ("components" in c ? c.components.length : 0))
+      .reduce((a, b) => a + b, 0) ?? 0;
+
   const siblings: APIMessageTopLevelComponent[] | APIComponentInContainer[] =
     (parent ?? message.data).components ?? [];
-  const MAX_SIBLINGS = new MessageFlagsBitField(message.data.flags ?? 0).has(
-    MessageFlags.IsComponentsV2,
-  )
-    ? parent
-      ? Math.min(
-          // Remaining for the message
-          MAX_TOTAL_COMPONENTS - MAX_CONTAINER_COMPONENTS,
-          // No higher than the max for the parent type
-          MAX_CONTAINER_COMPONENTS,
-        )
-      : -1
-    : 4;
-
   // Count up by type rather than just indicate position in the array
   const num =
     siblings.filter((c) => c.type === component.type).indexOf(component) + 1;
@@ -310,7 +297,11 @@ export const TopLevelComponentEditorContainerSummary = ({
         <button
           type="button"
           className={
-            MAX_SIBLINGS !== -1 && siblings.length >= MAX_SIBLINGS
+            (
+              isComponentsV2(message.data)
+                ? siblings.length >= 5
+                : allComponentsCount >= MAX_TOTAL_COMPONENTS
+            )
               ? "hidden"
               : ""
           }
