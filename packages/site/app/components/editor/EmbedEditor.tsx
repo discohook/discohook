@@ -70,7 +70,7 @@ export const getEmbedErrors = (embed: APIEmbed) => {
 };
 
 const GIF_SITE_RE =
-  /^https:\/\/(?:www\.)?(?:(giphy)\.com\/gifs|(tenor)\.com\/view)\//;
+  /^https:\/\/(?:www\.)?(?:(giphy)\.com\/gifs|(tenor)\.com(?:\/[\w-]+)?\/view)\//;
 
 const isGifUrl = (gifUrl: string) => GIF_SITE_RE.test(gifUrl);
 
@@ -82,7 +82,7 @@ const transformGifUrl = (gifUrl: string, cdn: string) => {
 
     if (match[2] === "tenor") {
       return new URL(
-        `${url.pathname.replace(/^\/view\//i, "/tenor/")}.gif`,
+        `${url.pathname.replace(/^.*\/view\//i, "/tenor/")}.gif`,
         cdn,
       ).href;
     }
