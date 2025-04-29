@@ -16,6 +16,7 @@ import {
   type RESTPostAPIGuildForumThreadsJSONBody,
   Routes,
 } from "discord-api-types/v10";
+import { MessageFlagsBitField } from "discord-bitflag";
 import {
   type AnonymousVariable,
   type DBWithSchema,
@@ -488,16 +489,20 @@ export const executeSendMessage = async (
       setVars,
       action.backupMessageIndex,
     );
+    const flags = Number(
+      new MessageFlagsBitField(body.flags ?? 0, action.flags ?? 0).value,
+    );
+
     if (
       ctx &&
       (!setVars.channelId ||
         setVars.channelId === ctx.interaction.channel.id) &&
       !ctx.isExpired()
     ) {
-      message = await ctx.followup.send({ ...body, flags: action.flags });
+      message = await ctx.followup.send({ ...body, flags });
     } else {
       message = (await rest.post(Routes.channelMessages(setVars.channelId), {
-        body: { ...body, flags: action.flags },
+        body: { ...body, flags },
       })) as APIMessage;
     }
   } catch (e) {
@@ -590,10 +595,13 @@ export const executeSendWebhookMessage = async (
     if (typeof vars.threadId === "string" && vars.threadId) {
       query.set("thread_id", vars.threadId);
     }
+    const flags = Number(
+      new MessageFlagsBitField(body.flags ?? 0, action.flags ?? 0).value,
+    );
 
     message = (await rest.post(Routes.webhook(webhook.id, webhook.token), {
       query,
-      body,
+      body: { ...body, flags },
     })) as APIMessage;
   } catch (e) {
     console.error(e);
