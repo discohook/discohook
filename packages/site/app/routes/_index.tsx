@@ -1065,11 +1065,13 @@ export default function Index() {
         </div>
         <div
           className={twMerge(
-            "border-l-gray-400 dark:border-l-[#1E1F22] h-full flex-col",
+            "h-full flex-col",
+            "ltr:border-l-gray-400 ltr:dark:border-l-[#1E1F22]",
+            "rtl:border-r-gray-400 rtl:dark:border-r-[#1E1F22]",
             settings.forceDualPane
-              ? "flex w-1/2 border-l-2"
+              ? "flex w-1/2 ltr:border-l-2 rtl:border-r-2"
               : twJoin(
-                  "md:w-1/2 md:border-l-2",
+                  "md:w-1/2 ltr:md:border-l-2 rtl:md:border-r-2",
                   tab === "preview" ? "flex" : "hidden md:flex",
                 ),
           )}
