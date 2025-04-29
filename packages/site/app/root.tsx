@@ -8,19 +8,25 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  useLoaderData,
   useRouteError,
 } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import i18n from "i18next";
-import moment from "moment";
-import { useEffect } from "react";
-import { initReactI18next } from "react-i18next";
+import { useTranslation } from "react-i18next";
+import { useChangeLanguage } from "remix-i18next/react";
 import { ClientOnly } from "remix-utils/client-only";
 import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message.client";
+import getI18next from "./i18next.server";
 import icons from "./styles/coolicons.css";
-import { resources } from "./util/i18n";
-import { getZodErrorMessage } from "./util/loader";
+import { LoaderArgs, getZodErrorMessage } from "./util/loader";
+
+export const loader = async ({ request, context }: LoaderArgs) => {
+  const locale = await getI18next(context).getLocale(request);
+  return { locale };
+};
+
+export const handle = { i18n: "common" };
 
 export const meta: MetaFunction = () => {
   return [
@@ -55,19 +61,6 @@ export const links: LinksFunction = () => [
   { rel: "manifest", href: "/manifest.json" },
 ];
 
-i18n.use(initReactI18next).init({
-  resources,
-  fallbackLng: "en",
-  interpolation: {
-    escapeValue: false,
-    format: (value, format) => {
-      if (format === "lowercase") return value.toLowerCase();
-      if (value instanceof Date) return moment(value).format(format);
-      return value.toString();
-    },
-  },
-});
-
 const TailwindThemeScript = () => (
   <script
     // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted HTML
@@ -89,19 +82,6 @@ const TailwindThemeScript = () => (
   />
 );
 
-const changeLanguageEffect = () => {
-  const settings = JSON.parse(
-    localStorage.getItem("discohook_settings") ?? "{}",
-  );
-  if (settings.locale) {
-    i18n.changeLanguage(settings.locale);
-    const html = document.querySelector("html");
-    if (html) {
-      html.dir = ["ar"].includes(settings.locale) ? "rtl" : "ltr";
-    }
-  }
-};
-
 export const FullscreenThrobber = () => (
   <div className="h-screen w-full flex absolute top-0 left-0">
     <img
@@ -118,9 +98,12 @@ export const FullscreenThrobber = () => (
 );
 
 export default function App() {
-  useEffect(changeLanguageEffect, []);
+  const { locale } = useLoaderData<typeof loader>();
+  const { i18n } = useTranslation();
+  useChangeLanguage(locale);
+
   return (
-    <html lang="en" className="dark" dir="ltr">
+    <html lang={locale} className="dark" dir={i18n.dir()}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -141,7 +124,6 @@ export default function App() {
 }
 
 export function ErrorBoundary() {
-  useEffect(changeLanguageEffect, []);
   const error = useRouteError();
   // We don't need to log 404s
   if (!(isRouteErrorResponse(error) && error.status === 404)) {

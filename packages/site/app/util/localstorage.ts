@@ -1,19 +1,5 @@
 import { useEffect, useState } from "react";
-
-export type LocaleCode =
-  | "en-US"
-  | "en-GB"
-  | "ar"
-  | "zh"
-  | "fr"
-  | "nl"
-  | "es"
-  | "de"
-  | "it"
-  | "cs"
-  | "id"
-  | "uk"
-  | "ru";
+import type { LocaleCode } from "~/i18n";
 
 export interface Settings {
   theme?: "light" | "dark" | "sync";

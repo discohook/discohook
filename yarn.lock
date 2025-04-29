@@ -366,7 +366,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.23.9":
+"@babel/runtime@npm:^7.23.2":
   version: 7.23.9
   resolution: "@babel/runtime@npm:7.23.9"
   dependencies:
@@ -384,7 +384,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.27.0":
+"@babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.26.10, @babel/runtime@npm:^7.27.0":
   version: 7.27.0
   resolution: "@babel/runtime@npm:7.27.0"
   dependencies:
@@ -4249,6 +4249,15 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
+"cross-fetch@npm:4.0.0":
+  version: 4.0.0
+  resolution: "cross-fetch@npm:4.0.0"
+  dependencies:
+    node-fetch: "npm:^2.6.12"
+  checksum: 10c0/386727dc4c6b044746086aced959ff21101abb85c43df5e1d151547ccb6f338f86dec3f28b9dbddfa8ff5b9ec8662ed2263ad4607a93b2dc354fb7fe3bbb898a
+  languageName: node
+  linkType: hard
+
 "cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.3":
   version: 7.0.3
   resolution: "cross-spawn@npm:7.0.3"
@@ -4543,7 +4552,9 @@ cron-parser@discohook/cron-parser:
     front-matter: "npm:^4.0.2"
     he: "npm:^1.2.0"
     highlight.js: "npm:^11.9.0"
-    i18next: "npm:^23.8.2"
+    i18next: "npm:^25.0.2"
+    i18next-browser-languagedetector: "npm:^8.0.5"
+    i18next-http-backend: "npm:^3.0.2"
     insert-text-at-cursor: "npm:^0.3.0"
     isbot: "npm:^3.6.8"
     jose: "npm:^5.2.4"
@@ -4553,12 +4564,13 @@ cron-parser@discohook/cron-parser:
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.2.0"
     react-emoji-search: "npm:^2.2.26"
-    react-i18next: "npm:^14.0.5"
+    react-i18next: "npm:^15.5.1"
     react-lazy-load-image-component: "npm:^1.6.2"
     react-modal: "npm:^3.16.1"
     react-select: "npm:^5.8.0"
     remix-auth-discord: discohook/remix-auth-discord
     remix-auth-guilded: "npm:^1.0.1"
+    remix-i18next: "npm:6.4.1"
     remix-utils: "npm:^7.6.0"
     robots-parser: "npm:^3.0.1"
     tailwind-merge: "npm:^2.2.0"
@@ -6130,6 +6142,24 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
+"i18next-browser-languagedetector@npm:^8.0.5":
+  version: 8.0.5
+  resolution: "i18next-browser-languagedetector@npm:8.0.5"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.2"
+  checksum: 10c0/a57e4a152c63d76e28ca58a59ab57cab5b813cf03503ef89e6ac7c1bccb4ac45272785dd9b3c3dab609b1ae3b38c44e3782132d83c0e1e80e5e366ec41a8d5ad
+  languageName: node
+  linkType: hard
+
+"i18next-http-backend@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "i18next-http-backend@npm:3.0.2"
+  dependencies:
+    cross-fetch: "npm:4.0.0"
+  checksum: 10c0/2a08b018e4924fefae6ba4c09dfd1ca3aa892f2442779d77d2db52b086af7afe7fbb6f178743d7e02014ea12a711ad20fc03fb55c01bd80f1bc97ba2b3c6bc29
+  languageName: node
+  linkType: hard
+
 "i18next@npm:^23.11.5":
   version: 23.11.5
   resolution: "i18next@npm:23.11.5"
@@ -6139,12 +6169,17 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
-"i18next@npm:^23.8.2":
-  version: 23.8.2
-  resolution: "i18next@npm:23.8.2"
+"i18next@npm:^25.0.2":
+  version: 25.0.2
+  resolution: "i18next@npm:25.0.2"
   dependencies:
-    "@babel/runtime": "npm:^7.23.2"
-  checksum: 10c0/c16ccee81bc1e096fec8d10000de42f10137f7cd27b295eca22492cb174b364ebca72327b2e6be066c4308c79bf72c8585d1c7cde2aedf556e3f423af60cd66c
+    "@babel/runtime": "npm:^7.26.10"
+  peerDependencies:
+    typescript: ^5
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/1f09bce7fa620c26e107c42a356c7e968fedd1f4df948ab5b9c885b3b5abf52113aba4b0042c00e2fadd0ce732ee3e25d994d595215e874136343684c78ce608
   languageName: node
   linkType: hard
 
@@ -8001,7 +8036,7 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.9":
+"node-fetch@npm:^2.6.12, node-fetch@npm:^2.6.9":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
@@ -8853,21 +8888,24 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^14.0.5":
-  version: 14.0.5
-  resolution: "react-i18next@npm:14.0.5"
+"react-i18next@npm:^15.5.1":
+  version: 15.5.1
+  resolution: "react-i18next@npm:15.5.1"
   dependencies:
-    "@babel/runtime": "npm:^7.23.9"
+    "@babel/runtime": "npm:^7.25.0"
     html-parse-stringify: "npm:^3.0.1"
   peerDependencies:
     i18next: ">= 23.2.3"
     react: ">= 16.8.0"
+    typescript: ^5
   peerDependenciesMeta:
     react-dom:
       optional: true
     react-native:
       optional: true
-  checksum: 10c0/60e3bedc6889689cfb96005b134da79d50097d3ff088284b35f213820aacedbdad1ff32e97b8447db70834c16d472ded829675e05c2a099baea9fd96b3a5b72f
+    typescript:
+      optional: true
+  checksum: 10c0/448e190beb3338e5e6e48936c82b5e8610fdb54d0b3dafc14c2af76115a6c931eff601c3e4aee00b3d3c1b78d4d7061bbac443fc9bcff786d131e695c79f5822
   languageName: node
   linkType: hard
 
@@ -9186,6 +9224,28 @@ remix-auth-discord@discohook/remix-auth-discord:
     "@remix-run/react": ^1.0.0 || ^2.0.0
     "@remix-run/server-runtime": ^1.0.0 || ^2.0.0
   checksum: 10c0/25242a94a2de15b0efac2fd81d66af26778fbfd5f34de3de94ff72a9f828f6ec4cc631a23d1f96c8b8c0e6221a10a29e098a1d6c058e264ba06f8739189bcccf
+  languageName: node
+  linkType: hard
+
+"remix-i18next@npm:6.4.1":
+  version: 6.4.1
+  resolution: "remix-i18next@npm:6.4.1"
+  peerDependencies:
+    "@remix-run/cloudflare": ^2.0.0
+    "@remix-run/deno": ^2.0.0
+    "@remix-run/node": ^2.0.0
+    "@remix-run/react": ^2.0.0
+    i18next: ^23.1.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-i18next: ^13.0.0 || ^14.0.0 || ^15.0.0
+  peerDependenciesMeta:
+    "@remix-run/cloudflare":
+      optional: true
+    "@remix-run/deno":
+      optional: true
+    "@remix-run/node":
+      optional: true
+  checksum: 10c0/25d5b1a0ee5529152e14025eb523de46c52e25bef991c82c83c9082984e34e3bc790b215b5e563b7c31ef6a2a302274b8a0075fb2622278210da4e1f97f383bb
   languageName: node
   linkType: hard
 
@@ -9749,7 +9809,7 @@ remix-auth-discord@discohook/remix-auth-discord:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=7246f9&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=79ad5b&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.38.1"
     discord-snowflake: "npm:^2.0.0"
@@ -9759,7 +9819,7 @@ remix-auth-discord@discohook/remix-auth-discord:
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/4fb2924c85e4782794c9d04ecacff81233a757aa53b9783188e797ec948e46117ba10a6a1a3b7cf8d79ff365dbdd0e7d0f2321cee3dfe6a688f68ec7a6151027
+  checksum: 10c0/fe1d3519cefde99c4ce00c09e4f447745d3721af4807c6e2cbe46097065dfa8b7769894d1ae1da610752eb84e14a213e9a7f7c5ea80618e493e67f0493159425
   languageName: node
   linkType: hard
 

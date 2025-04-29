@@ -7,35 +7,41 @@ import { Radio } from "~/components/Radio";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { linkClassName } from "~/components/preview/Markdown";
+import type { LocaleCode } from "~/i18n";
 import { User } from "~/session.server";
-import { LocaleCode, Settings, useLocalStorage } from "~/util/localstorage";
+import { type Settings, useLocalStorage } from "~/util/localstorage";
 import { Modal, ModalProps } from "./Modal";
 
-const languages: Record<LocaleCode, string> = {
-  ar: "🇪🇬",
-  zh: "🇨🇳",
-  nl: "🇳🇱",
-  "en-US": "🇺🇸",
-  "en-GB": "🇬🇧",
-  fr: "🇫🇷",
-  es: "🇪🇸",
-  de: "🇩🇪",
-  it: "🇮🇹",
-  cs: "🇨🇿",
-  // id: "🇮🇩",
-  uk: "🇺🇦",
-  ru: "🇷🇺",
+interface LanguageEntry {
+  native: string;
+  flag: string;
+}
+
+const languages: Partial<Record<LocaleCode, LanguageEntry>> = {
+  ar: { native: "العربية", flag: "🇪🇬" },
+  zh: { native: "中文", flag: "🇨🇳" },
+  nl: { native: "Nederlands", flag: "🇳🇱" },
+  en: { native: "English, US", flag: "🇺🇸" },
+  "en-GB": { native: "English, UK", flag: "🇬🇧" },
+  fr: { native: "Français", flag: "🇫🇷" },
+  es: { native: "Español", flag: "🇪🇸" },
+  de: { native: "Deutsch", flag: "🇩🇪" },
+  it: { native: "Italiano", flag: "🇮🇹" },
+  cs: { native: "Česky", flag: "🇨🇿" },
+  // id: {native: "", flag: "🇮🇩"},
+  uk: { native: "українська", flag: "🇺🇦" },
+  ru: { native: "Русский", flag: "🇷🇺" },
 };
 
 const LocaleRadio = ({
   locale,
-  flag,
+  entry: { native, flag },
   i18n,
   settings,
   updateSettings,
 }: {
   locale: LocaleCode;
-  flag: string;
+  entry: LanguageEntry;
   i18n: i18nT;
   settings: Settings;
   updateSettings: (data: Partial<Settings>) => void;
@@ -48,21 +54,20 @@ const LocaleRadio = ({
           className="h-5 align-text-bottom ltr:mr-2 rtl:ml-2 saturate-[0.8]"
           emoji={flag}
         />
-        {i18n.t(`locales.${locale}`, { lng: locale })}
+        {native}
       </>
     }
     checked={
-      (locale === "en-US" ? !settings.locale : false) ||
-      settings.locale === locale
+      (locale === "en" ? !settings.locale : false) || settings.locale === locale
     }
     onChange={(e) => {
       if (e.currentTarget.checked) {
+        // Set `i18n` cookie
+        fetch(`/api/v1/locale/${locale}`, { method: "POST" }).catch(
+          console.error,
+        );
         updateSettings({ locale });
         i18n.changeLanguage(locale);
-        const html = document.querySelector("html");
-        if (html) {
-          html.dir = ["ar"].includes(locale) ? "rtl" : "ltr";
-        }
       }
     }}
   />
@@ -177,16 +182,14 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         </p>
         <div className="space-y-2 mt-2">
           {Object.entries(languages)
-            .sort(([localeA], [localeB]) => {
-              const nativeA = t(`locales.${localeA}`, { lng: localeA });
-              const nativeB = t(`locales.${localeB}`, { lng: localeB });
-              return nativeA > nativeB ? 1 : -1;
+            .sort(([, entryA], [, entryB]) => {
+              return entryA.native > entryB.native ? 1 : -1;
             })
-            .map(([locale, flag]) => (
+            .map(([locale, entry]) => (
               <LocaleRadio
                 key={`locale-radio-${locale}`}
                 locale={locale as LocaleCode}
-                flag={flag}
+                entry={entry}
                 i18n={i18n}
                 settings={settings}
                 updateSettings={updateSettings}

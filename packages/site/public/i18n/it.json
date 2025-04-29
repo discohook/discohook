@@ -67,7 +67,7 @@
     "sendNoWebhooks": "Non hai nessun webhook a cui inviare.",
     "orgRedirectTitle": "Sei stato appena reindirizzato da discohook.org",
     "locales": {
-        "en-US": "Inglese, US",
+        "en": "Inglese, US",
         "en-GB": "Inglese, UK",
         "zh": "Cinese, Cina",
         "nl": "Olandese",

@@ -1,27 +1,38 @@
-/**
- * By default, Remix will handle generating the HTTP Response for you.
- * You are free to delete this file if you'd like to, but if you ever want it revealed again, you can run `npx remix reveal` ✨
- * For more information, see https://remix.run/file-conventions/entry.server
- */
-
-import type { AppLoadContext, EntryContext } from "@remix-run/cloudflare";
+import { type EntryContext } from "@remix-run/cloudflare";
 import { RemixServer } from "@remix-run/react";
 import isbot from "isbot";
 import { renderToReadableStream } from "react-dom/server";
+
+// i18n
+import { createInstance } from "i18next";
+import { I18nextProvider, initReactI18next } from "react-i18next";
+import i18n from "./i18n";
+import getI18next from "./i18next.server";
+import { Context } from "./util/loader";
 
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
-  // This is ignored so we can keep it in the template for visibility.  Feel
-  // free to delete this parameter in your app if you're not using it!
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  loadContext: AppLoadContext,
+  loadContext: Context,
 ) {
+  const instance = createInstance();
+  const i18next = getI18next(loadContext);
+  const lng = await i18next.getLocale(request);
+
+  await instance.use(initReactI18next).init({
+    ...i18n,
+    lng,
+    // We only use one namespace (for now)
+    ns: "translation",
+  });
+
   let status = responseStatusCode;
   const body = await renderToReadableStream(
-    <RemixServer context={remixContext} url={request.url} />,
+    <I18nextProvider i18n={instance}>
+      <RemixServer context={remixContext} url={request.url} />
+    </I18nextProvider>,
     {
       signal: request.signal,
       onError(error: unknown) {
