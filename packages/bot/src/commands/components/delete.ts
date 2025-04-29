@@ -8,17 +8,16 @@ import {
 } from "@discordjs/builders";
 import {
   APIActionRowComponent,
+  APIComponentInMessageActionRow,
   APIEmoji,
   APIInteraction,
   APIMessage,
-  APIMessageActionRowComponent,
   ButtonStyle,
   ComponentType,
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { getDb } from "store";
-import { discordMessageComponents } from "store/src/schema/schema.js";
+import { discordMessageComponents, getDb } from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import {
   AutoComponentCustomId,
@@ -366,8 +365,8 @@ const registerComponentDelete = async (
   const components = message.components ?? [
     new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
   ];
-  let row: APIActionRowComponent<APIMessageActionRowComponent> | undefined;
-  let current: APIMessageActionRowComponent | undefined;
+  let row: APIActionRowComponent<APIComponentInMessageActionRow> | undefined;
+  let current: APIComponentInMessageActionRow | undefined;
   if (position) {
     row = components[position[0]];
     current = row?.components?.[position[1]];

@@ -16,10 +16,9 @@ import {
   type RESTPostAPIGuildForumThreadsJSONBody,
   Routes,
 } from "discord-api-types/v10";
-import type { DBWithSchema } from "store";
-import { makeSnowflake, messageLogEntries, webhooks } from "store/src/schema";
 import {
   type AnonymousVariable,
+  type DBWithSchema,
   type Flow,
   type FlowActionAddRole,
   type FlowActionCheckFunction,
@@ -33,7 +32,10 @@ import {
   type FlowActionToggleRole,
   FlowActionType,
   type TriggerKVGuild,
-} from "store/src/types";
+  makeSnowflake,
+  messageLogEntries,
+  webhooks,
+} from "store";
 import { getWebhook } from "../commands/webhooks/webhookInfo.js";
 import type { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";

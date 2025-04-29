@@ -1,8 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { ApplicationIntegrationType, Routes } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
-import { getDb } from "store";
-import { discordGuilds, discordRoles, makeSnowflake } from "store/src/schema";
+import { discordGuilds, discordRoles, getDb, makeSnowflake } from "store";
 import { GatewayEventCallback } from "../events.js";
 import {
   APIWebhookEventBodyApplicationAuthorizedBase,

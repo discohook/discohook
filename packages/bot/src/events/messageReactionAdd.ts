@@ -4,8 +4,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
-import { getDb } from "store";
-import { discordReactionRoles, makeSnowflake } from "store/src/schema";
+import { discordReactionRoles, getDb, makeSnowflake } from "store";
 import { GatewayEventCallback } from "../events.js";
 
 export interface DiscordReactionRoleData {

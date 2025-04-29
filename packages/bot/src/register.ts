@@ -24,7 +24,7 @@ import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
 import fs from "fs/promises";
 import process from "node:process";
-import { TriggerEvent } from "store/src/types";
+import { TriggerEvent } from "store";
 
 /**
  * This file is meant to be run from the command line, and is not used by the

@@ -1,12 +1,11 @@
 import {
-  ActionRowBuilder,
+  ComponentBuilder,
   EmbedBuilder,
-  MessageActionRowComponentBuilder,
+  MessageComponentBuilder,
   ModalBuilder,
 } from "@discordjs/builders";
 import type { REST } from "@discordjs/rest";
 import {
-  APIActionRowComponent,
   APIAllowedMentions,
   APIApplicationCommandInteractionDataBooleanOption,
   APIApplicationCommandInteractionDataIntegerOption,
@@ -26,9 +25,9 @@ import {
   APIInteractionResponseDeferredMessageUpdate,
   APIInteractionResponseUpdateMessage,
   APIMessage,
-  APIMessageActionRowComponent,
   APIMessageApplicationCommandInteraction,
   APIMessageComponentInteraction,
+  APIMessageTopLevelComponent,
   APIModalInteractionResponse,
   APIModalInteractionResponseCallbackData,
   APIModalSubmitInteraction,
@@ -43,7 +42,7 @@ import {
   InteractionType,
   MessageFlags,
   ModalSubmitComponent,
-  RESTAPIPollCreate,
+  RESTAPIPoll,
   RESTGetAPIInteractionFollowupResult,
   RESTPatchAPIInteractionFollowupResult,
   RESTPostAPIInteractionFollowupResult,
@@ -65,16 +64,14 @@ export interface MessageConstructorData
     "content" | "attachments" | "flags" | "tts"
   > {
   embeds?: (EmbedBuilder | APIEmbed)[];
-  components?: (
-    | ActionRowBuilder<MessageActionRowComponentBuilder>
-    | APIActionRowComponent<APIMessageActionRowComponent>
-  )[];
-  poll?: RESTAPIPollCreate;
-  // poll?: (PollBuilder | RESTAPIPollCreate);
+  components?: (MessageComponentBuilder | APIMessageTopLevelComponent)[];
+  poll?: RESTAPIPoll;
+  // poll?: (PollBuilder | RESTAPIPoll);
   allowedMentions?: APIAllowedMentions;
   appliedTags?: string[];
   threadName?: string;
   ephemeral?: boolean;
+  componentsV2?: boolean;
 }
 
 const messageConstructorDataToResponseCallbackData = (
@@ -85,6 +82,9 @@ const messageConstructorDataToResponseCallbackData = (
   const flags = new MessageFlagsBitField(data.flags ?? 0);
   if (data.ephemeral !== undefined) {
     flags.set(MessageFlags.Ephemeral, data.ephemeral);
+  }
+  if (data.componentsV2 !== undefined) {
+    flags.set(MessageFlags.IsComponentsV2, data.componentsV2);
   }
   const constructed: APIInteractionResponseCallbackData = {
     content: data.content,
@@ -105,7 +105,9 @@ const messageConstructorDataToResponseCallbackData = (
   }
   if (data.components) {
     constructed.components = data.components.map((e) =>
-      e instanceof ActionRowBuilder ? e.toJSON() : e,
+      e instanceof ComponentBuilder
+        ? (e.toJSON() as APIMessageTopLevelComponent)
+        : e,
     );
   }
   if (data.poll) {
@@ -527,9 +529,19 @@ export class InteractionContext<
     ephemeral?: boolean;
     /** Whether the bot should be displayed as "thinking" in the UI */
     thinking?: boolean;
+    /** Whether the response will use Components V2 */
+    componentsV2?: boolean;
   }):
     | APIInteractionResponseDeferredMessageUpdate
     | APIInteractionResponseDeferredChannelMessageWithSource {
+    const flags = new MessageFlagsBitField();
+    if (options?.ephemeral) {
+      flags.add(MessageFlags.Ephemeral);
+    }
+    if (options?.componentsV2) {
+      flags.add(MessageFlags.IsComponentsV2);
+    }
+
     if (
       this.interaction.type === InteractionType.MessageComponent ||
       this.interaction.type === InteractionType.ModalSubmit
@@ -539,16 +551,14 @@ export class InteractionContext<
           ? InteractionResponseType.DeferredChannelMessageWithSource
           : InteractionResponseType.DeferredMessageUpdate,
         data:
-          options?.thinking && options?.ephemeral
-            ? { flags: MessageFlags.Ephemeral }
+          options?.thinking && flags.value !== 0n
+            ? { flags: Number(flags.value) }
             : undefined,
       };
     } else if (this.interaction.type === InteractionType.ApplicationCommand) {
       return {
         type: InteractionResponseType.DeferredChannelMessageWithSource,
-        data: options?.ephemeral
-          ? { flags: MessageFlags.Ephemeral }
-          : undefined,
+        data: flags.value !== 0n ? { flags: Number(flags.value) } : undefined,
       };
     }
     throw Error(

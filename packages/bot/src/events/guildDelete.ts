@@ -3,8 +3,7 @@ import {
   GatewayGuildDeleteDispatchData,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { getDb } from "store";
-import { discordGuilds, makeSnowflake } from "store/src/schema";
+import { discordGuilds, getDb, makeSnowflake } from "store";
 import { GatewayEventCallback } from "../events.js";
 
 export const guildDeleteCallback: GatewayEventCallback = async (

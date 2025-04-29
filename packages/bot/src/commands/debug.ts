@@ -13,8 +13,7 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { desc, eq } from "drizzle-orm";
-import { getDb } from "store";
-import { getId, messageLogEntries } from "store/src/schema/schema.js";
+import { getDb, getId, messageLogEntries } from "store";
 import { MessageAppCommandCallback } from "../commands.js";
 import { InteractionContext } from "../interactions.js";
 import { userAvatarUrl, webhookAvatarUrl } from "../util/cdn.js";

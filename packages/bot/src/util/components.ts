@@ -15,8 +15,11 @@ import {
   APIButtonComponentWithSKUId,
   APIButtonComponentWithURL,
   APIChannelSelectComponent,
+  APIComponentInMessageActionRow,
   APIMentionableSelectComponent,
+  APIMessage,
   APIMessageComponent,
+  APIMessageTopLevelComponent,
   APIRoleSelectComponent,
   APISelectMenuComponent,
   APIStringSelectComponent,
@@ -24,9 +27,10 @@ import {
   APIUserSelectComponent,
   ButtonStyle,
   ComponentType,
+  MessageFlags,
 } from "discord-api-types/v10";
-import { generateId } from "store/src/schema";
-import { StorableComponent } from "store/src/types/components.js";
+import { MessageFlagsBitField } from "discord-bitflag";
+import { type StorableComponent, generateId } from "store";
 import { MinimumKVComponentState } from "../components.js";
 import { Env } from "../types/env.js";
 
@@ -195,3 +199,14 @@ export const getComponentId = (
     ? BigInt(component.custom_id.replace(/^p_/, ""))
     : undefined;
 };
+
+export const isActionRow = (
+  component: APIMessageTopLevelComponent,
+): component is APIActionRowComponent<APIComponentInMessageActionRow> =>
+  component.type === ComponentType.ActionRow;
+
+export const onlyActionRows = (components: APIMessageTopLevelComponent[]) =>
+  components.filter(isActionRow);
+
+export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>
+  new MessageFlagsBitField(message.flags ?? 0).has(MessageFlags.IsComponentsV2);

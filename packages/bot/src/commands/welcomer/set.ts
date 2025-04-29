@@ -5,20 +5,20 @@ import {
 } from "@discordjs/builders";
 import { APIWebhook } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
-import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
-import {
-  backups,
-  flowActions,
-  flows,
-  generateId,
-  triggers as dTriggers,
-} from "store/src/schema/schema.js";
 import {
   FlowAction,
   FlowActionSetVariableType,
   FlowActionType,
-} from "store/src/types/components.js";
-import { TriggerEvent } from "store/src/types/triggers.js";
+  TriggerEvent,
+  backups,
+  triggers as dTriggers,
+  flowActions,
+  flows,
+  generateId,
+  getDb,
+  getchTriggerGuild,
+  upsertDiscordUser,
+} from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { AutoComponentCustomId } from "../../components.js";
 import { getShareLink } from "../../durable/share-links.js";
@@ -104,7 +104,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
 ) => {
   const event = ctx.getIntegerOption("event").value as WelcomerTriggerEvent;
   const channel = ctx.getChannelOption("channel") ?? undefined;
-  const deleteAfter = ctx.getIntegerOption("delete-after").value;
+  const deleteAfter = ctx.getIntegerOption("delete-after").value as number;
   const shareLink = ctx.getStringOption("share-link").value || undefined;
 
   return [

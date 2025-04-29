@@ -6,8 +6,7 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { getDb } from "store";
-import { makeSnowflake, webhooks } from "store/src/schema";
+import { getDb, makeSnowflake, webhooks } from "store";
 import { GatewayEventCallback } from "../events.js";
 
 export const webhooksUpdateCallback: GatewayEventCallback = async (

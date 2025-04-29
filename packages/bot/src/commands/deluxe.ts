@@ -2,8 +2,7 @@ import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { TimestampStyles, time } from "@discordjs/formatters";
 import { ButtonStyle } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { getDb, upsertDiscordUser } from "store";
-import { users } from "store/src/schema/schema.js";
+import { getDb, upsertDiscordUser, users } from "store";
 import { ChatInputAppCommandCallback } from "../commands.js";
 
 export const deluxeInfoCallback: ChatInputAppCommandCallback = async (ctx) => {

@@ -1,8 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { APIEntitlement, Routes } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { getDb } from "store";
-import { makeSnowflake, users } from "store/src/schema";
+import { getDb, makeSnowflake, users } from "store";
 import { GatewayEventCallback } from "../events.js";
 
 // Discord removed the entitlement. I think in any case this means the user is

@@ -14,10 +14,16 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
 import { t } from "i18next";
-import { getDb, getchTriggerGuild, upsertDiscordUser } from "store";
-import { flows, makeSnowflake, triggers } from "store/src/schema";
-import { FlowActionType } from "store/src/types/components.js";
-import { TriggerEvent } from "store/src/types/triggers.js";
+import {
+  FlowActionType,
+  TriggerEvent,
+  flows,
+  getDb,
+  getchTriggerGuild,
+  makeSnowflake,
+  triggers,
+  upsertDiscordUser,
+} from "store";
 import {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,

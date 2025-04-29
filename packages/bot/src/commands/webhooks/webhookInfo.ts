@@ -21,8 +21,7 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import { Snowflake, getDate } from "discord-snowflake";
 import { and, eq, sql } from "drizzle-orm";
-import { getDb } from "store";
-import { webhooks } from "store/src/schema/schema.js";
+import { getDb, webhooks } from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { ButtonCallback } from "../../components.js";
 import { InteractionContext } from "../../interactions.js";

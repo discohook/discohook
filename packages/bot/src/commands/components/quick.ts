@@ -22,23 +22,21 @@ import {
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { eq } from "drizzle-orm";
 import { t } from "i18next";
-import { getDb } from "store";
-import {
-  backups,
-  discordMessageComponents,
-  discordMessageComponentsToFlows,
-  flowActions,
-  flows,
-  generateId,
-  makeSnowflake,
-} from "store/src/schema";
 import {
   type FlowAction,
   FlowActionCheckFunctionType,
   FlowActionSetVariableType,
   FlowActionType,
   type StorableButtonWithCustomId,
-} from "store/src/types";
+  backups,
+  discordMessageComponents,
+  discordMessageComponentsToFlows,
+  flowActions,
+  flows,
+  generateId,
+  getDb,
+  makeSnowflake,
+} from "store";
 import type { ModalCallback, SelectMenuCallback } from "../../components.js";
 import { getShareLink, getShareLinkExists } from "../../durable/share-links.js";
 import type { InteractionContext } from "../../interactions.js";

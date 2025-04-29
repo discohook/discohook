@@ -10,7 +10,7 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
-import type { QueryData, TriggerKVGuild } from "store/src/types";
+import type { QueryData, TriggerKVGuild } from "store";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
 import { cdn } from "../util/cdn.js";
 import { FlowFailure, LiveVariables } from "./flows.js";

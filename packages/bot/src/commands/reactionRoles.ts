@@ -22,8 +22,7 @@ import {
 } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { and, eq } from "drizzle-orm";
-import { getDb, upsertGuild } from "store";
-import { discordReactionRoles, makeSnowflake } from "store/src/schema";
+import { discordReactionRoles, getDb, makeSnowflake, upsertGuild } from "store";
 import {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,

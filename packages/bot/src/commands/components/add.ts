@@ -29,22 +29,20 @@ import { eq } from "drizzle-orm";
 import { t } from "i18next";
 import { SignJWT } from "jose";
 import {
-  DBWithSchema,
+  type DBWithSchema,
+  type StorableComponent,
+  discordMessageComponents,
+  flows,
+  generateId,
   getDb,
   getSessionManagerStub,
   getchGuild,
   launchComponentDurableObject,
+  makeSnowflake,
+  tokens,
   upsertDiscordUser,
   upsertGuild,
 } from "store";
-import {
-  discordMessageComponents,
-  flows,
-  generateId,
-  makeSnowflake,
-  tokens,
-} from "store/src/schema";
-import { StorableComponent } from "store/src/types";
 import { InteractionInstantOrDeferredResponse } from "../../commands.js";
 import {
   ButtonCallback,

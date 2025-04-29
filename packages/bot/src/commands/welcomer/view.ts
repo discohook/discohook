@@ -6,13 +6,14 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import { APIWebhook, ButtonStyle, MessageFlags } from "discord-api-types/v10";
-import { getDb, getchTriggerGuild } from "store";
 import {
   FlowAction,
   FlowActionType,
   FlowActionWait,
-} from "store/src/types/components.js";
-import { TriggerEvent } from "store/src/types/triggers.js";
+  TriggerEvent,
+  getDb,
+  getchTriggerGuild,
+} from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { EmojiManagerCache, emojiToString, getEmojis } from "../../emojis.js";
 import { getWelcomerConfigurations } from "../../events/guildMemberAdd.js";

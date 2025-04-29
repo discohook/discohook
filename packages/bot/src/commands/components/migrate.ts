@@ -6,8 +6,8 @@ import {
 import { REST } from "@discordjs/rest";
 import {
   APIActionRowComponent,
+  APIComponentInMessageActionRow,
   APIMessage,
-  APIMessageActionRowComponent,
   APIUser,
   ButtonStyle,
   ComponentType,
@@ -20,22 +20,6 @@ import { and, count, eq, notInArray } from "drizzle-orm";
 import { t } from "i18next";
 import {
   DBWithSchema,
-  getDb,
-  getchTriggerGuild,
-  launchComponentDurableObject,
-  upsertDiscordUser,
-} from "store";
-import {
-  backups,
-  buttons,
-  discordMessageComponents,
-  discordMessageComponentsToFlows,
-  flowActions,
-  flows,
-  generateId,
-  makeSnowflake,
-} from "store/src/schema";
-import {
   FlowActionCheck,
   FlowActionCheckFunctionType,
   FlowActionDud,
@@ -44,10 +28,22 @@ import {
   FlowActionStop,
   FlowActionToggleRole,
   FlowActionType,
-  QueryData,
-  StorableButtonWithCustomId,
-  StorableButtonWithUrl,
-} from "store/src/types";
+  type QueryData,
+  type StorableButtonWithCustomId,
+  type StorableButtonWithUrl,
+  backups,
+  buttons,
+  discordMessageComponents,
+  discordMessageComponentsToFlows,
+  flowActions,
+  flows,
+  generateId,
+  getDb,
+  getchTriggerGuild,
+  launchComponentDurableObject,
+  makeSnowflake,
+  upsertDiscordUser,
+} from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { AutoComponentCustomId, ButtonCallback } from "../../components.js";
 import { Env } from "../../types/env.js";
@@ -346,7 +342,7 @@ export const migrateLegacyButtons = async (
         custom_id: button ? `p_${button.id}` : subdata.custom_id,
       };
     }),
-  })) as APIActionRowComponent<APIMessageActionRowComponent>[];
+  })) as APIActionRowComponent<APIComponentInMessageActionRow>[];
   // await ctx.followup.editOriginalMessage({ components: rows });
   return { inserted, rows, guild, emojis, oldIdMap };
 };

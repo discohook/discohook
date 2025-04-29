@@ -3,8 +3,8 @@ import { REST } from "@discordjs/rest";
 import {
   APIActionRowComponent,
   APIApplicationCommandInteractionDataOption,
+  APIComponentInMessageActionRow,
   APIInteraction,
-  APIMessageActionRowComponent,
   APIMessageComponentInteraction,
   APIMessageStringSelectInteractionData,
   ApplicationCommandOptionType,
@@ -23,13 +23,16 @@ import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
 import { IRequest, Router } from "itty-router";
-import { getDb, getRedis, getchTriggerGuild } from "store";
 import {
   DurableStoredComponent,
+  type Flow,
+  type TriggerKVGuild,
+  discordMessageComponents,
+  getDb,
+  getRedis,
+  getchTriggerGuild,
   launchComponentDurableObject,
-} from "store/src/durable/components.js";
-import { discordMessageComponents } from "store/src/schema";
-import { Flow, TriggerKVGuild } from "store/src/types";
+} from "store";
 import { AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import {
@@ -51,7 +54,9 @@ import { Env } from "./types/env.js";
 import { APIWebhookEvent, WebhookEventType } from "./types/webhook-events.js";
 import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
-export { DurableComponentState } from "store/src/durable/components.js";
+
+// durable objects
+export { DurableComponentState } from "store";
 export { EmojiManager } from "./emojis.js";
 
 const resources = {
@@ -564,7 +569,7 @@ const handleInteraction = async (
             typeof discordMessageComponents.$inferSelect,
             "id" | "data"
           >[];
-          let rows: APIActionRowComponent<APIMessageActionRowComponent>[];
+          let rows: APIActionRowComponent<APIComponentInMessageActionRow>[];
           let guild: TriggerKVGuild;
           let oldIdMap: Record<string, string>;
           try {

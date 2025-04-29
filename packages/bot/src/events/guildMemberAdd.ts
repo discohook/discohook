@@ -8,35 +8,31 @@ import {
 import { and, eq } from "drizzle-orm";
 import {
   DBWithSchema,
-  getDb,
-  getchTriggerGuild,
-  upsertDiscordUser,
-  upsertGuild,
-} from "store";
-import {
+  type FlowAction,
+  type FlowActionCheck,
+  FlowActionCheckFunctionType,
+  type FlowActionDeleteMessage,
+  type FlowActionSendMessage,
+  type FlowActionSendWebhookMessage,
+  type FlowActionSetVariable,
+  FlowActionSetVariableType,
+  FlowActionType,
+  type FlowActionWait,
+  TriggerEvent,
+  type TriggerKVGuild,
   backups,
   flowActions,
   flows,
+  getDb,
+  getchTriggerGuild,
   makeSnowflake,
   triggers,
+  upsertDiscordUser,
+  upsertGuild,
   webhooks,
   welcomer_goodbye,
   welcomer_hello,
-} from "store/src/schema";
-import {
-  FlowAction,
-  FlowActionCheck,
-  FlowActionCheckFunctionType,
-  FlowActionDeleteMessage,
-  FlowActionSendMessage,
-  FlowActionSendWebhookMessage,
-  FlowActionSetVariable,
-  FlowActionSetVariableType,
-  FlowActionType,
-  FlowActionWait,
-  TriggerEvent,
-  TriggerKVGuild,
-} from "store/src/types";
+} from "store";
 import { GatewayEventCallback } from "../events.js";
 import { FlowResult, executeFlow } from "../flows/flows.js";
 

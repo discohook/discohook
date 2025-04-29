@@ -13,10 +13,10 @@ import {
 import { isLinkButton } from "discord-api-types/utils";
 import {
   APIActionRowComponent,
+  APIComponentInMessageActionRow,
   APIEmoji,
   APIInteraction,
   APIMessage,
-  APIMessageActionRowComponent,
   APIMessageComponentEmoji,
   APIPartialEmoji,
   APISelectMenuOption,
@@ -27,16 +27,16 @@ import {
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
 import { t } from "i18next";
-import { getDb, launchComponentDurableObject, upsertDiscordUser } from "store";
-import {
-  discordMessageComponents,
-  makeSnowflake,
-  webhooks,
-} from "store/src/schema/schema.js";
 import {
   StorableButtonWithUrl,
   StorableComponent,
-} from "store/src/types/components.js";
+  discordMessageComponents,
+  getDb,
+  launchComponentDurableObject,
+  makeSnowflake,
+  upsertDiscordUser,
+  webhooks,
+} from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import {
   AutoComponentCustomId,
@@ -155,7 +155,7 @@ export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
 };
 
 export const getComponentsAsOptions = (
-  components: APIActionRowComponent<APIMessageActionRowComponent>[],
+  components: APIActionRowComponent<APIComponentInMessageActionRow>[],
   emojis: APIEmoji[],
   dbComponents?: { id: bigint; data: StorableComponent }[],
 ) =>
@@ -689,8 +689,8 @@ const registerComponentUpdate = async (
   const components = message.components ?? [
     new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
   ];
-  let row: APIActionRowComponent<APIMessageActionRowComponent> | undefined;
-  let current: APIMessageActionRowComponent | undefined;
+  let row: APIActionRowComponent<APIComponentInMessageActionRow> | undefined;
+  let current: APIComponentInMessageActionRow | undefined;
   if (position) {
     row = components[position[0]];
     current = row?.components?.[position[1]];

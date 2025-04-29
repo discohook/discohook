@@ -8,8 +8,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { getDb, upsertDiscordUser } from "store";
-import { users } from "store/src/schema/schema.js";
+import { getDb, upsertDiscordUser, users } from "store";
 import { ChatInputAppCommandCallback } from "../commands.js";
 import { InteractionContext } from "../interactions.js";
 

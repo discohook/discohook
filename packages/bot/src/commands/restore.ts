@@ -19,9 +19,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { getDb, upsertDiscordUser } from "store";
-import { shareLinks } from "store/src/schema/index.js";
-import { QueryData } from "store/src/types/backups.js";
+import { type QueryData, getDb, shareLinks, upsertDiscordUser } from "store";
 import {
   ChatInputAppCommandCallback,
   MessageAppCommandCallback,
