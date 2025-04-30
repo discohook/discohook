@@ -18,7 +18,7 @@ import {
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
-import { PermissionFlags } from "discord-bitflag";
+import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { type QueryData, getDb, shareLinks, upsertDiscordUser } from "store";
 import {
   ChatInputAppCommandCallback,
@@ -38,18 +38,26 @@ import { resolveMessageLink } from "./components/entry.js";
 export const messageToQueryData = (
   ...messages: Pick<
     APIMessage,
-    "content" | "embeds" | "components" | "webhook_id" | "attachments"
+    "content" | "embeds" | "components" | "webhook_id" | "attachments" | "flags"
   >[]
 ): QueryData => {
   return {
     version: "d2",
     messages: messages.map((msg) => ({
       data: {
-        content: msg.content,
-        embeds: msg.embeds,
+        content: msg.content || undefined,
+        embeds: !msg.embeds?.length ? undefined : msg.embeds,
         components: msg.components,
         webhook_id: msg.webhook_id,
         attachments: msg.attachments,
+        flags:
+          Number(
+            new MessageFlagsBitField(msg.flags ?? 0).mask(
+              MessageFlags.IsComponentsV2,
+              MessageFlags.SuppressEmbeds,
+              MessageFlags.SuppressNotifications,
+            ),
+          ) || undefined,
       },
     })),
   };
