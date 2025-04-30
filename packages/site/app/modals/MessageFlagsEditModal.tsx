@@ -43,19 +43,26 @@ export const MessageFlagsEditModal = (
                       setData({ ...data });
                     }}
                   />
-                  <BigCheckbox
-                    label={t(`messageFlag.${MessageFlags.SuppressEmbeds}`)}
-                    description={t("messageFlagsNoteSuppressEmbeds")}
-                    checked={flags.has(MessageFlags.SuppressEmbeds)}
-                    onChange={(e) => {
-                      flags.set(
-                        MessageFlags.SuppressEmbeds,
-                        e.currentTarget.checked,
-                      );
-                      message.data.flags = Number(flags.value);
-                      setData({ ...data });
-                    }}
-                  />
+                  {
+                    // If components V2, only show this checkbox if it is
+                    // already enabled, so that it can be disabled
+                    !flags.has(MessageFlags.IsComponentsV2) ||
+                    flags.has(MessageFlags.SuppressEmbeds) ? (
+                      <BigCheckbox
+                        label={t(`messageFlag.${MessageFlags.SuppressEmbeds}`)}
+                        description={t("messageFlagsNoteSuppressEmbeds")}
+                        checked={flags.has(MessageFlags.SuppressEmbeds)}
+                        onChange={(e) => {
+                          flags.set(
+                            MessageFlags.SuppressEmbeds,
+                            e.currentTarget.checked,
+                          );
+                          message.data.flags = Number(flags.value);
+                          setData({ ...data });
+                        }}
+                      />
+                    ) : null
+                  }
                   {/* <BigCheckbox
                     label={t(`messageFlag.${MessageFlags.IsComponentsV2}`)}
                     description={t("messageFlagsNoteIsComponentsV2")}
