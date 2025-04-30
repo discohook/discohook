@@ -14,6 +14,7 @@ import {
   ChannelType,
   GuildChannelType,
   MessageFlags,
+  MessageReferenceType,
   PermissionFlagsBits,
   RouteBases,
   Routes,
@@ -38,28 +39,47 @@ import { resolveMessageLink } from "./components/entry.js";
 export const messageToQueryData = (
   ...messages: Pick<
     APIMessage,
-    "content" | "embeds" | "components" | "webhook_id" | "attachments" | "flags"
+    | "content"
+    | "embeds"
+    | "components"
+    | "webhook_id"
+    | "attachments"
+    | "flags"
+    | "message_reference"
+    | "message_snapshots"
   >[]
 ): QueryData => {
   return {
     version: "d2",
-    messages: messages.map((msg) => ({
-      data: {
-        content: msg.content || undefined,
-        embeds: !msg.embeds?.length ? undefined : msg.embeds,
-        components: msg.components,
-        webhook_id: msg.webhook_id,
-        attachments: msg.attachments,
-        flags:
-          Number(
-            new MessageFlagsBitField(msg.flags ?? 0).mask(
-              MessageFlags.IsComponentsV2,
-              MessageFlags.SuppressEmbeds,
-              MessageFlags.SuppressNotifications,
-            ),
-          ) || undefined,
-      },
-    })),
+    messages: messages.map((msg) => {
+      // Messages that forward other messages have no content outside of the
+      // snapshot, so we can reasonably assume that the user wants to restore
+      // the forwarded message.
+      const isForward =
+        msg.message_reference?.type === MessageReferenceType.Forward &&
+        !!msg.message_snapshots?.length;
+      const innerMsg = isForward
+        ? msg.message_snapshots?.[0]?.message ?? msg
+        : msg;
+
+      return {
+        data: {
+          content: innerMsg.content || undefined,
+          embeds: !innerMsg.embeds?.length ? undefined : innerMsg.embeds,
+          components: innerMsg.components,
+          webhook_id: isForward ? undefined : msg.webhook_id,
+          attachments: innerMsg.attachments,
+          flags:
+            Number(
+              new MessageFlagsBitField(innerMsg.flags ?? 0).mask(
+                MessageFlags.IsComponentsV2,
+                MessageFlags.SuppressEmbeds,
+                MessageFlags.SuppressNotifications,
+              ),
+            ) || undefined,
+        },
+      };
+    }),
   };
 };
 
