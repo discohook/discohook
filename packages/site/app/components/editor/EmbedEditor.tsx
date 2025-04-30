@@ -70,7 +70,7 @@ export const getEmbedErrors = (embed: APIEmbed) => {
 };
 
 const GIF_SITE_RE =
-  /^https:\/\/(?:www\.)?(?:(giphy)\.com\/gifs|(tenor)\.com(?:\/[\w-]+)?\/view)\//;
+  /^https:\/\/(?:www\.)?(?:(giphy)\.com\/gifs|(tenor)\.com(?:\/[\w-]+)?\/view)\/|media\d\.(tenor)\.com\/m\/([\w-]+)\//;
 
 const isGifUrl = (gifUrl: string) => GIF_SITE_RE.test(gifUrl);
 
@@ -80,15 +80,25 @@ const transformGifUrl = (gifUrl: string, cdn: string) => {
     const match = GIF_SITE_RE.exec(url.href);
     if (!match) return null;
 
-    if (match[2] === "tenor") {
-      return new URL(
-        `${url.pathname.replace(/^.*\/view\//i, "/tenor/")}.gif`,
-        cdn,
-      ).href;
-    }
-    if (match[1] === "giphy") {
-      return new URL(`${url.pathname.replace(/^\/gifs\//, "/giphy/")}.gif`, cdn)
-        .href;
+    switch (true) {
+      // tenor.com/view/{key}
+      case match[2] === "tenor":
+        return new URL(
+          `${url.pathname.replace(/^.*\/view\//i, "/tenor/")}.gif`,
+          cdn,
+        ).href;
+      // media1.tenor.com/m/{key}/
+      // ^ almost-direct link that works in browsers but not Discord
+      case match[3] === "tenor":
+        return `https://c.tenor.com/${match[4]}/tenor.gif`;
+      // giphy.com/gifs/{key}
+      case match[1] === "giphy":
+        return new URL(
+          `${url.pathname.replace(/^\/gifs\//, "/giphy/")}.gif`,
+          cdn,
+        ).href;
+      default:
+        break;
     }
   } catch (e) {
     console.error(e);
