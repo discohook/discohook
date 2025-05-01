@@ -270,6 +270,7 @@ export const MessageSetModal = (
                     attachments: msg.attachments,
                     webhook_id: msg.webhook_id,
                     components: msg.components,
+                    flags: msg.flags,
                   },
                   thread_id: threadId,
                   reference: messageLink[0]
