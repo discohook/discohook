@@ -306,5 +306,6 @@
     "everyMonth": "每个月",
     "dayOfMonth": "日期",
     "repeating": "重复",
-    "weekday": "平日"
+    "weekday": "平日",
+    "day": "天"
 }
