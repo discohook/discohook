@@ -329,5 +329,13 @@
     "bots": "机器人",
     "botTokenOwnerWarning": "确保您当前的 Discord 帐户（{{username}}）是此机器人的主人或其团队的成员，否则令牌将被重置作为保障。",
     "botClearToken": "清除令牌",
-    "backToBots": "返回机器人"
+    "backToBots": "返回机器人",
+    "commands": "指令",
+    "appSecretHiddenNote": "出于安全原因，您在此处保存密钥后，密钥将永远不会显示给您。如果您已重置客户端密钥，请按 “Clear Secret” 然后重新保存。",
+    "botName": "机器人名称",
+    "deleteBot": {
+        "title": "删除机器人"
+    },
+    "information": "资讯",
+    "havingTrouble": "有问题？"
 }
