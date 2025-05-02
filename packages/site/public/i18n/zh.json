@@ -373,7 +373,18 @@
     "formatOptionDescription": {
         "member": {
             "name": "成员名称",
-            "display_name": "成员的昵称"
+            "display_name": "成员的昵称",
+            "created": "账户创建时间",
+            "avatar_url": "成员展示头像URL",
+            "default_avatar_url": "成员默认头像URL",
+            "bot": "该会员是否是机器人",
+            "id": "成员 ID"
+        },
+        "server": {
+            "members": "服务器成员数",
+            "icon_url": "服务器图标 URL",
+            "id": "服务器 ID",
+            "name": "服务器名称"
         }
     },
     "howToFormat": "如何格式化您的消息",
