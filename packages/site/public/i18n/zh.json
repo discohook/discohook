@@ -365,5 +365,13 @@
     "linkButton": "链接按钮",
     "messageNText": "消息 {{n}} - {{text}}",
     "addComponentType": "添加 $t(componentShort.{{type}})",
-    "addComponent": "添加组件"
+    "addComponent": "添加组件",
+    "option": "选项",
+    "formatOptionDescription": {
+        "member": {
+            "name": "成员名称",
+            "display_name": "成员的显示名称"
+        }
+    },
+    "howToFormat": "如何格式化您的消息"
 }
