@@ -145,8 +145,8 @@
     "auditLog": "审核日志",
     "permissions": "权限",
     "permission": {
-        "CreateInstantInvite": "创建邀请链接",
-        "KickMembers": "踢除用户",
+        "CreateInstantInvite": "创建邀请",
+        "KickMembers": "踢除、批准和拒绝成员",
         "BanMembers": "封锁用户",
         "Administrator": "管理员",
         "ManageChannels": "管理频道",
@@ -154,7 +154,7 @@
         "ManageGuild": "管理服务器",
         "AddReactions": "添加反应",
         "ViewAuditLog": "查看审核日志",
-        "PrioritySpeaker": "优先发言人",
+        "PrioritySpeaker": "优先扬声器",
         "ViewChannel": "查看频道",
         "SendMessages": "发送消息",
         "ManageMessages": "管理消息",
@@ -182,7 +182,10 @@
         "UseExternalSounds": "使用外部声音",
         "SendVoiceMessages": "发送语音消息",
         "ModerateMembers": "暂时禁言成员",
-        "UseSoundboard": "使用声音板"
+        "UseSoundboard": "使用声音板",
+        "Stream": "视频",
+        "MentionEveryone": "提及@everyone, @here和所有身份组",
+        "ManageEmojisAndStickers": "管理表达"
     },
     "user": "用户",
     "sidebarColor": "侧栏颜色",
