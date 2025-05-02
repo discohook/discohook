@@ -186,7 +186,8 @@
         "UseSoundboard": "使用声音板",
         "Stream": "视频",
         "MentionEveryone": "提及@everyone, @here和所有身份组",
-        "ManageEmojisAndStickers": "管理表达"
+        "ManageEmojisAndStickers": "管理表达",
+        "SendTTSMessages": "发送文字转语音消息"
     },
     "user": "用户",
     "sidebarColor": "侧栏颜色",
@@ -214,7 +215,9 @@
         "it": "意大利语",
         "en-GB": "英语（英国）",
         "fr": "法语",
-        "de": "德语"
+        "de": "德语",
+        "uk": "乌克兰语",
+        "ru": "俄语"
     },
     "cancel": "取消",
     "sendNoWebhooks": "您没有可发送的 Webhook。",
@@ -370,8 +373,30 @@
     "formatOptionDescription": {
         "member": {
             "name": "成员名称",
-            "display_name": "成员的显示名称"
+            "display_name": "成员的昵称"
         }
     },
-    "howToFormat": "如何格式化您的消息"
+    "howToFormat": "如何格式化您的消息",
+    "deleteLinkBackupConfirm": "您确定要删除此链接嵌入吗？此操作无法撤销。",
+    "newBot": "新机器人",
+    "deleteLinkBackup": "删除链接嵌入",
+    "linkEmbeds": "链接嵌入",
+    "orgRedirectTitle": "您刚刚从 discohook.org 被重定向",
+    "createdAtTime": "创建于{{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
+    "webhookChannelMentionAndThreads": "<#{{0}}>（及其子区）",
+    "createTrigger": {
+        "then": "执行此操作：",
+        "when": "当这种情况发生时："
+    },
+    "appClearSecret": "清除密钥",
+    "submitToAll": "提交全部",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "justBeAMember": "只需成为会员",
+    "refreshShareLink": "将分享链接延长 2 周（高级功能！）",
+    "download": "下载",
+    "jsonDownload": {
+        "backup": "作为备份",
+        "plain": "纯 JSON"
+    }
 }
