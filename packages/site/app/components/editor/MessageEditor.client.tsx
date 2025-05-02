@@ -359,7 +359,9 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             type="button"
             className={data.messages.length >= 10 ? "hidden" : ""}
             onClick={() => {
-              data.messages.splice(i + 1, 0, structuredClone(message));
+              const cloned = structuredClone(message);
+              cloned._id = randomString(10);
+              data.messages.splice(i + 1, 0, cloned);
               setData({ ...data });
             }}
           >
