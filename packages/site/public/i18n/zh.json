@@ -184,7 +184,7 @@
         "ModerateMembers": "暂时禁言成员",
         "UseSoundboard": "使用声音板",
         "Stream": "视频",
-        "MentionEveryone": "提及全部人",
+        "MentionEveryone": "提及@everyone, @here和所有身份组",
         "ManageEmojisAndStickers": "管理表达"
     },
     "user": "用户",
