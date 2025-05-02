@@ -67,12 +67,13 @@
         "browse": "浏览频道",
         "customize": "频道和身份组",
         "unknown": "未知",
-        "unknownUser": "未知用户"
+        "unknownUser": "未知用户",
+        "deletedRole": "已删除身份组"
     },
     "timestamp": {
-        "time": "{{ date, hh:mm }}",
-        "time_verbose": "{{ date, hh:mm:ss }}",
-        "full": "{{ date, YYYY M DD h:mm A }}",
+        "time": "{{ date, h:mm A }}",
+        "time_verbose": "{{ date, h:mm:ss A }}",
+        "full": "{{ date, MMMM D, YYYY h:mm A }}",
         "full_verbose": "{{ date, YYYY MM DD dddd h:mm:ss A }}",
         "date": "{{ date, YYYY/MM/DD }}",
         "date_verbose": "{{ date, YYYY[年]MM[月]D[日] }}",
@@ -337,5 +338,32 @@
         "title": "删除机器人"
     },
     "information": "资讯",
-    "havingTrouble": "有问题？"
+    "havingTrouble": "有问题？",
+    "component": {
+        "5": "用户选择菜单",
+        "3": "选择菜单",
+        "2": "按钮",
+        "6": "身份组选择菜单",
+        "7": "用户和身份组选择菜单",
+        "8": "频道选择菜单",
+        "4": "文本输入"
+    },
+    "webhook": "Webhook",
+    "componentShort": {
+        "8": "选择",
+        "5": "选择",
+        "2": "按钮",
+        "3": "选择",
+        "4": "输入",
+        "6": "选择",
+        "7": "选择"
+    },
+    "components": "组件",
+    "addComponents": "添加组件",
+    "message": "消息",
+    "messageN": "消息 {{n}}",
+    "linkButton": "链接按钮",
+    "messageNText": "消息 {{n}} - {{text}}",
+    "addComponentType": "添加 $t(componentShort.{{type}})",
+    "addComponent": "添加组件"
 }
