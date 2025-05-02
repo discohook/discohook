@@ -307,5 +307,25 @@
     "dayOfMonth": "日期",
     "repeating": "重复",
     "weekday": "平日",
-    "day": "天"
+    "day": "天",
+    "botsPremiumNote": "您发现了一项豪华功能！<0>在此处阅读有关自定义机器人的更多信息。</0>",
+    "minute": "分钟",
+    "everyWeekday": "任何平日",
+    "createBot": {
+        "title": "创建机器人",
+        "step1": "访问 <0>开发者门户</0>",
+        "step2": "点击 \"New Application\", 输入名称, 然后点击 \"Create\"",
+        "step3": "在 \"General Information\" 页 (默认选择)中，点击 \"Application ID\" 下的 \"Copy\"",
+        "step4": "粘贴在框中："
+    },
+    "nextRunAtRepeat": "<0/> 下次运行 {{relative}} ($t(timestamp.full))",
+    "updateBot": "更新机器人",
+    "botTokenHiddenNote": "出于安全原因，您在此处保存令牌后，令牌将永远不会显示给您。如果您已重置令牌，请按 “Clear Token” 然后重新保存。",
+    "noDescription": "没有资讯",
+    "time": "时间 ({{timezone}})",
+    "portal": "门户网站",
+    "botTokenCheck": "机器人令牌 <0/>",
+    "everyDayOfMonth": "每月的任何一天",
+    "bots": "机器人",
+    "botTokenOwnerWarning": "确保您当前的 Discord 帐户（{{username}}）是此机器人的主人或其团队的成员，否则令牌将被重置作为保障。"
 }
