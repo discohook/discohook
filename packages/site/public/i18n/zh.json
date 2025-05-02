@@ -74,7 +74,7 @@
         "time": "{{ date, h:mm A }}",
         "time_verbose": "{{ date, h:mm:ss A }}",
         "full": "{{ date, YYYY M DD h:mm A }}",
-        "full_verbose": "{{ date, dddd, MMMM D, YYYY h:mm:ss A }}",
+        "full_verbose": "{{ date, YYYY MM DD dddd h:mm:ss A }}",
         "date": "{{ date, M/D/YYYY }}",
         "date_verbose": "{{ date, YYYY[年]MM[月]D[日] }}",
         "relative": {
