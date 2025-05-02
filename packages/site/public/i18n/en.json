@@ -146,6 +146,7 @@
   "cannotChangeChannel": "Set the webhook's channel in Discord or the <0>server webhooks menu</0>.",
   "requestedBy": "Requested on Discohook by {{username}}",
   "resetAvatar": "Remove",
+  "safariAvatarTooLarge": "Heads up: on Safari and iOS browsers, you may have issues uploading large avatars. If you can't save, try uploading through the Discord app or compressing the image first.",
   "webhookCreated": "Webhook Created",
   "webhookCreateFailed": "Failed to create webhook",
   "webhookCreateSubtitle": "You should be returned to the editor shortly.",
