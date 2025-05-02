@@ -328,5 +328,6 @@
     "everyDayOfMonth": "每月的任何一天",
     "bots": "机器人",
     "botTokenOwnerWarning": "确保您当前的 Discord 帐户（{{username}}）是此机器人的主人或其团队的成员，否则令牌将被重置作为保障。",
-    "botClearToken": "Clear Token"
+    "botClearToken": "Clear Token",
+    "backToBots": "返回机器人"
 }
