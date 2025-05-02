@@ -177,7 +177,7 @@ export const WebhookEditModal = (
                     !currentTarget.accept
                       .split(",")
                       .map((ext) => ext.replace(".", ""))
-                      .includes(file.name.split(".").slice(-1)[0])
+                      .includes(file.name.split(".").slice(-1)[0].toLowerCase())
                   )
                     return;
 
