@@ -2,16 +2,19 @@ import { Form, Link } from "@remix-run/react";
 import {
   APIWebhook,
   ButtonStyle,
+  RESTError,
   RESTPatchAPIWebhookJSONBody,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { ChannelSelect } from "~/components/ChannelSelect";
+import { useError } from "~/components/Error";
+import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Markdown, linkClassName } from "~/components/preview/Markdown";
@@ -39,6 +42,7 @@ export const WebhookEditModal = (
   const channels = props.channels?.filter((c) =>
     ["text", "voice", "forum"].includes(c.type),
   );
+  const [error, setError] = useError(t);
 
   type Payload = {
     name?: string;
@@ -69,9 +73,38 @@ export const WebhookEditModal = (
     }
   }, [webhook]);
 
+  const [uploadedAvatarSize, setUploadedAvatarSize] = useState<number | null>(
+    null,
+  );
+
   return (
-    <Modal {...props}>
+    <Modal
+      {...props}
+      setOpen={(o) => {
+        props.setOpen(o);
+        if (!o) {
+          setError(undefined);
+          setUploadedAvatarSize(null);
+        }
+      }}
+    >
       <PlainModalHeader>{t("editWebhook")}</PlainModalHeader>
+      {error}
+      {uploadedAvatarSize !== null &&
+      // https://developer.apple.com/forums/thread/701895 cites "500K", but I
+      // was having issues with files as small as 396KB. I was seeing truncation
+      // of about 4KB, but we're going to give this warning plenty of room for
+      // error. 350KB might be better, given testing.
+      // Why not just upload the file normally?: Discord requires that the
+      // image data is uploaded as a base64 string in a JSON request.
+      // Discohook would need to proxy the request and upload from the server,
+      // which may happen in the future.
+      uploadedAvatarSize >= 300_000 &&
+      navigator.userAgent.includes("Safari") ? (
+        <InfoBox icon="File_Upload" severity="yellow">
+          {t("safariAvatarTooLarge")}
+        </InfoBox>
+      ) : null}
       <Form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -115,7 +148,17 @@ export const WebhookEditModal = (
             },
             user ? getUserTag(user) : "anonymous",
           );
+          if (!result.id) {
+            const error = result as unknown as RESTError;
+            setError({
+              message: `${error.message}: ${JSON.stringify(
+                error.errors ?? String(error.code),
+              )}`,
+            });
+            return;
+          }
           updateTargets({ [webhook.id]: result });
+          setUploadedAvatarSize(null);
         }}
       >
         <div className="flex">
@@ -148,6 +191,7 @@ export const WebhookEditModal = (
                     updatePayload({ avatarUrl: result });
                   };
                   reader.readAsDataURL(file);
+                  setUploadedAvatarSize(file.size);
                 }}
                 hidden
               />
@@ -171,6 +215,7 @@ export const WebhookEditModal = (
                   className="font-medium text-sm text-[#006ce7] dark:text-[#00a8fc] hover:underline mx-auto"
                   onClick={() => {
                     updatePayload({ avatarUrl: null });
+                    setUploadedAvatarSize(null);
                     const input = document.querySelector<HTMLInputElement>(
                       'input[name="avatar"]',
                     );
