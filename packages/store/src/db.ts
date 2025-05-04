@@ -13,7 +13,8 @@ const getDbWithClient = (client: postgres.Sql) =>
 
 export const getDb = ({ connectionString }: Hyperdrive) => {
   const client = postgres(connectionString, {
-    prepare: false,
+    // https://developers.cloudflare.com/hyperdrive/observability/troubleshooting/#driver-errors
+    prepare: true,
     // Thanks https://github.com/drizzle-team/drizzle-orm/issues/989#issuecomment-1936564267
     types: {
       bigint: postgres.BigInt,
