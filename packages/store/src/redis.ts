@@ -29,13 +29,10 @@ export class RedisKV<Key extends string = string> {
 
   send(command: "GET", ...parameters: string[]): Promise<string | null>;
   send(
-    command: "SET" | "MULTI" | "DISCARD",
+    command: "SET" | "DISCARD",
     ...parameters: string[]
   ): Promise<[boolean, string]>;
-  send(
-    command: "LIST" | "EXEC",
-    ...parameters: string[]
-  ): Promise<string[] | null>;
+  send(command: "LIST", ...parameters: string[]): Promise<string[] | null>;
   send(command: "DEL" | "INCR", ...parameters: string[]): Promise<number>;
   send(command: "EXISTS", ...keys: string[]): Promise<number>;
   send(command: string, ...parameters: string[]): Promise<RedisValue>;
@@ -45,9 +42,12 @@ export class RedisKV<Key extends string = string> {
       commands.splice(0, 0, this.options.database);
     }
 
+    const body = commands
+      .map((x) => encodeURIComponent(x).replace(/'/g, "%27"))
+      .join("/");
     const response = await fetch(this.options.url, {
       method: "POST",
-      body: commands.map(encodeURIComponent).join("/"),
+      body,
       headers: {
         Authorization: this.auth,
         "Content-Type": "text/plain",
@@ -62,6 +62,9 @@ export class RedisKV<Key extends string = string> {
       );
     }
 
+    if (this.debugLogs && !["GET", "SET", "DEL"].includes(command)) {
+      console.log(`[REDIS] ${body.slice(0, 500)}`);
+    }
     const raw = (await response.json()) as Record<string, RedisValue>;
     return raw[command];
   }
