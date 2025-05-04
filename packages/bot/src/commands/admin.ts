@@ -168,3 +168,28 @@ export const grantDeluxeCommandHandler: ChatInputAppCommandCallback<true> =
       ephemeral: true,
     });
   };
+
+export const revokeDeluxeCommandHandler: ChatInputAppCommandCallback<true> =
+  async (ctx) => {
+    if (!canRunDevCommand(ctx)) {
+      return ctx.reply({ content: "Not available", ephemeral: true });
+    }
+
+    const userId = ctx.getStringOption("user-id").value;
+    const discordUser = (await ctx.rest.get(Routes.user(userId))) as APIUser;
+
+    const db = getDb(ctx.env.HYPERDRIVE);
+    await db
+      .update(users)
+      .set({
+        lifetime: false,
+        subscribedSince: null,
+        subscriptionExpiresAt: null,
+      })
+      .where(eq(users.discordId, BigInt(userId)));
+
+    return ctx.reply({
+      content: `Revoked Deluxe membership from ${discordUser.username} (${discordUser.id})`,
+      ephemeral: true,
+    });
+  };

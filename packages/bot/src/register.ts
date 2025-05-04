@@ -841,6 +841,20 @@ const main = async () => {
               },
             ],
           },
+          {
+            type: ApplicationCommandType.ChatInput,
+            name: "revoke-deluxe",
+            description:
+              "Revoke a Deluxe subscription, including lifetime status",
+            options: [
+              {
+                type: ApplicationCommandOptionType.String,
+                name: "user-id",
+                description: "The user ID",
+                required: true,
+              },
+            ],
+          },
         ] satisfies RESTPutAPIApplicationGuildCommandsJSONBody),
       },
     );
