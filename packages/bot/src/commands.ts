@@ -14,6 +14,7 @@ import {
 import {
   grantDeluxeCommandHandler,
   leaveCommandHandler,
+  revokeDeluxeCommandHandler,
 } from "./commands/admin.js";
 import { deleteComponentChatEntry } from "./commands/components/delete.js";
 import { editComponentChatEntry } from "./commands/components/edit.js";
@@ -213,6 +214,9 @@ export const appCommands: Record<
     "grant-deluxe": {
       handlers: { BASE: grantDeluxeCommandHandler },
     },
+    "revoke-deluxe": {
+      handlers: { BASE: revokeDeluxeCommandHandler },
+    },
   },
   [ApplicationCommandType.Message]: {
     "buttons & components": {
@@ -240,6 +244,7 @@ export const appCommands: Record<
     },
   },
   [ApplicationCommandType.User]: {},
+  [ApplicationCommandType.PrimaryEntryPoint]: {},
 };
 
 export type DiscordInteractionResponse =
