@@ -296,17 +296,32 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
 
   const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
   if (memberships.length !== 0) {
-    for (const membership of memberships) {
-      // A user can be in up to 200 guilds, so assuming proper state management
-      // (memberships are deleted when a member is removed), then that should
-      // be the maximum number of transaction members here.
-      await env.KV.put(
-        `token-${token.id}-guild-${membership.guildId}`,
-        JSON.stringify({
-          permissions: membership.permissions,
-          owner: membership.owner,
-        } satisfies KVTokenPermissions),
-        { expiration: Math.floor(permExpireAt) },
+    // Generate a Lua script to mass-SET up to 200 keys and their expiration
+    // dates. Webdis doesn't support MULTI or pipelining, so this is sort of
+    // our only option. This drastically reduces the time that this function
+    // can take: from >10s to less than 2s.
+    // https://github.com/nicolasff/webdis/issues/230#issuecomment-1426869924
+    const scriptCommands = memberships.map(
+      (membership) =>
+        `redis.call(${[
+          "SET",
+          `token-${token.id}-guild-${membership.guildId}`,
+          JSON.stringify({
+            permissions: membership.permissions,
+            owner: membership.owner,
+          } satisfies KVTokenPermissions),
+          "EXAT",
+          String(Math.floor(permExpireAt)),
+        ]
+          .map((x) => `'${x.replace(/'/g, "\\'")}'`)
+          .join(",")})`,
+    );
+    // Load and run the script in the same command. We don't need to cache
+    // because we will never run the same script twice.
+    const result = await env.KV.send("EVAL", scriptCommands.join(";"));
+    if (Array.isArray(result) && result[0] === false) {
+      throw Error(
+        `Failed to write guild permissions: ${JSON.stringify(result)}`,
       );
     }
   }
