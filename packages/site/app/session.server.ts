@@ -318,7 +318,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
     );
     // Load and run the script in the same command. We don't need to cache
     // because we will never run the same script twice.
-    const result = await env.KV.send("EVAL", scriptCommands.join(";"));
+    const result = await env.KV.send("EVAL", scriptCommands.join(";"), "0");
     if (Array.isArray(result) && result[0] === false) {
       throw Error(
         `Failed to write guild permissions: ${JSON.stringify(result)}`,
