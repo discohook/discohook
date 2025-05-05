@@ -15,7 +15,7 @@ import {
   APIMessageTopLevelComponent,
   QueryData,
 } from "~/types/QueryData";
-import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
+import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isActionRow, isComponentsV2 } from "~/util/discord";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -299,8 +299,8 @@ export const TopLevelComponentEditorContainerSummary = ({
           className={
             (
               isComponentsV2(message.data)
-                ? siblings.length >= 5
-                : allComponentsCount >= MAX_TOTAL_COMPONENTS
+                ? allComponentsCount >= MAX_TOTAL_COMPONENTS
+                : siblings.length >= MAX_V1_ROWS
             )
               ? "hidden"
               : ""
