@@ -100,8 +100,7 @@ interface TokenComponentEditorState {
     name: string;
     avatar: string | null;
   };
-  row?: number;
-  column?: number;
+  path?: number[];
 }
 export const getDOToken = async (
   env: Env,

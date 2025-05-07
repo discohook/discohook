@@ -12,9 +12,12 @@ import {
   type APIButtonComponent,
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
+  APIComponentInContainer,
+  APIContainerComponent,
   APIEmbed,
   type APIMessage,
   type APIMessageComponent,
+  APISectionComponent,
   type APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
@@ -36,10 +39,12 @@ import { Snowflake, getDate, isSnowflake } from "discord-snowflake";
 import { TimestampStyle } from "~/components/editor/TimePicker";
 import { DraftFile } from "~/routes/_index";
 import type {
+  APIButtonComponentWithURL,
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import { MAX_TOTAL_COMPONENTS } from "./constants";
 import { transformFileName } from "./files";
 import { sleep } from "./time";
 
@@ -614,8 +619,88 @@ export const isActionRow = (
 ): component is APIActionRowComponent<APIComponentInMessageActionRow> =>
   component.type === ComponentType.ActionRow;
 
-export const onlyActionRows = (components: APIMessageTopLevelComponent[]) =>
-  components.filter(isActionRow);
+export const onlyActionRows = (
+  components: APIMessageTopLevelComponent[],
+  /**
+   * Also look for action rows within containers,
+   * useful if you do not need sibling context.
+   */
+  includeNested?: boolean,
+) => {
+  const rows: APIActionRowComponent<APIComponentInMessageActionRow>[] = [];
+  if (includeNested) {
+    for (const component of components) {
+      if (component.type === ComponentType.Container) {
+        rows.push(...component.components.filter(isActionRow));
+      } else if (component.type === ComponentType.ActionRow) {
+        rows.push(component);
+      }
+    }
+  } else {
+    rows.push(...components.filter(isActionRow));
+  }
+  return rows;
+};
 
 export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>
   new MessageFlagsBitField(message.flags ?? 0).has(MessageFlags.IsComponentsV2);
+
+export const isStorableComponent = (
+  component:
+    | APIComponentInMessageActionRow
+    | APIMessageTopLevelComponent
+    | APIComponentInContainer,
+): component is
+  | APIButtonComponentWithCustomId
+  | APIButtonComponentWithURL
+  | APISelectMenuComponent => {
+  return (
+    [
+      ComponentType.StringSelect,
+      ComponentType.ChannelSelect,
+      ComponentType.MentionableSelect,
+      ComponentType.RoleSelect,
+      ComponentType.UserSelect,
+    ].includes(component.type) ||
+    (component.type === ComponentType.Button &&
+      component.style !== ButtonStyle.Premium)
+  );
+};
+
+export const getTotalComponentsCount = (
+  components: APIMessageTopLevelComponent[],
+): number =>
+  components
+    ?.map((c) => 1 + ("components" in c ? c.components.length : 0))
+    .reduce((a, b) => a + b, 0) ?? 0;
+
+export const getRemainingComponentsCount = (
+  components: APIMessageTopLevelComponent[],
+  v2?: boolean,
+): number => {
+  const isV2 =
+    v2 ??
+    // Auto detect if not provided
+    components.find((c) => c.type !== ComponentType.ActionRow) !== undefined;
+  return (
+    (isV2 ? MAX_TOTAL_COMPONENTS : 5) - getTotalComponentsCount(components)
+  );
+};
+
+// not in love with this function name
+/**
+ * Returns true if the component may house storable components, either
+ * immediately (action row), under another layer of components (container),
+ * or as the section accessory.
+ */
+export const isComponentHousable = (
+  component: APIMessageComponent,
+): component is
+  | APIContainerComponent
+  | APIActionRowComponent<APIComponentInMessageActionRow>
+  | APISectionComponent =>
+  [
+    ComponentType.Container,
+    ComponentType.ActionRow,
+    ComponentType.Section,
+  ].includes(component.type);

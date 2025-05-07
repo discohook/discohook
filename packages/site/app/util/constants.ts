@@ -100,7 +100,7 @@ export const LINK_INDEX_EMBED: LinkQueryData["embed"] = {
     description: [
       "Welcome to the super special Discohook link embed editor! Deluxe members are able to leverage this page to create beautiful embeds that they can use anywhere on Discord. These embeds can even include videos!",
       "",
-      "To save your embed and get posting, type a name in the box on the left, then click Save. Copy your link with Copy Link.",
+      "To save your embed and get posting, type a name in the box on the left, then click Save. Copy your link with the Copy Link button.",
     ].join("\n"),
     color: 0x58b9ff,
   },

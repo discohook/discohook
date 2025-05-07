@@ -9,7 +9,7 @@ If this is your first time using Discohook, you may be confused by the extensive
 
 ## The Editor
 
-When you see someone refer to "the editor", that means the left pane of the discohook.app site. It's where you will entirely design and send your messages. The right side, visible at the same time on wide screens or with a button on mobile, is the preview pane and just shows you what your message will look like when it's sent to Discord.
+When you see someone refer to "the editor", that means the left pane of the discohook.app site. It's where you will entirely design and send your messages. The right side, visible at the same time or with a button at the top, is the preview pane--it shows you what your message will look like when it's sent to Discord.
 
 ## Editor options
 
@@ -20,7 +20,7 @@ If you open a [new Discohook tab](discohook://), you'll see the default message 
 Here's what each of these buttons does:
 - **Share:** Creates a temporary shortlink which other people can click on to see the current editor content. This is also used for creating message buttons via the Discohook Utils bot.
 - **Backups:** Opens a menu that shows you all of your saved backups & lets you create a new one using the current editor content.
-- **Clear All:** Deletes everything in the editor and presents you with a blank editor.
+- **Clear All:** Deletes everything in the editor and presents you with a blank slate.
 - **Add Webhook:** Lets you add a webhook to use to send the message. We'll get to this one later.
 - **Send:** This one sends the message into Discord.
 

@@ -46,8 +46,8 @@ import { getHighestRole } from "../reactionRoles.js";
 import {
   type ComponentFlow,
   generateEditorTokenForComponent,
-  getComponentFlowEmbed,
-  getEditorTokenComponentUrl,
+  getComponentFlowContainer,
+  getEditorTokenComponentUrl
 } from "./add.js";
 
 interface QuickButtonConfig {
@@ -226,11 +226,13 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
         },
       );
 
-      const embed = getComponentFlowEmbed(state);
-      embed.setFooter({ text: t("componentWillExpire") });
+      const container = getComponentFlowContainer(state);
+      container.addTextDisplayComponents((c) =>
+        c.setContent(`-# ${t("componentWillExpire")}`),
+      );
       return ctx.updateMessage({
-        embeds: [embed],
         components: [
+          container,
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
               .setLabel(t("customize"))
@@ -249,8 +251,8 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
         });
       }
       return ctx.updateMessage({
-        embeds: [getComponentFlowEmbed(state)],
         components: [
+          getComponentFlowContainer(state),
           new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
             await storeComponents(ctx.env.KV, [
               new RoleSelectMenuBuilder().setPlaceholder(
@@ -298,8 +300,8 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
         ctx.modal(modal),
         async () => {
           await ctx.followup.editOriginalMessage({
-            embeds: [getComponentFlowEmbed(state)],
             components: [
+              getComponentFlowContainer(state),
               new ActionRowBuilder<ButtonBuilder>().addComponents(
                 await storeComponents(ctx.env.KV, [
                   new ButtonBuilder()
@@ -371,8 +373,8 @@ export const addComponentSetStylePrompt = async (ctx: InteractionContext) => {
   state.step += 1;
 
   return ctx.updateMessage({
-    embeds: [getComponentFlowEmbed(state)],
     components: [
+      getComponentFlowContainer(state),
       new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
         await storeComponents(ctx.env.KV, [
           new StringSelectMenuBuilder().addOptions(
@@ -458,8 +460,8 @@ export const submitButtonQuickStyle: SelectMenuCallback = async (ctx) => {
     ctx.modal(modal),
     async () => {
       await ctx.followup.editOriginalMessage({
-        embeds: [getComponentFlowEmbed(state)],
         components: [
+          getComponentFlowContainer(state),
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             await storeComponents(ctx.env.KV, [
               new ButtonBuilder()
@@ -623,8 +625,8 @@ export const addComponentQuickSendMessageCallback: ModalCallback = async (
   state.step += 1;
 
   return ctx.updateMessage({
-    embeds: [getComponentFlowEmbed(state)],
     components: [
+      getComponentFlowContainer(state),
       new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
         await storeComponents(ctx.env.KV, [
           new StringSelectMenuBuilder()
