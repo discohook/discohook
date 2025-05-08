@@ -5,6 +5,7 @@ import {
   ModalBuilder,
   RoleSelectMenuBuilder,
   StringSelectMenuBuilder,
+  TextDisplayBuilder,
   UserSelectMenuBuilder,
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
@@ -15,6 +16,7 @@ import {
   APIButtonComponentWithSKUId,
   APIButtonComponentWithURL,
   APIChannelSelectComponent,
+  APIComponentInContainer,
   APIComponentInMessageActionRow,
   APIMentionableSelectComponent,
   APIMessage,
@@ -33,6 +35,7 @@ import { MessageFlagsBitField } from "discord-bitflag";
 import { type StorableComponent, generateId } from "store";
 import { MinimumKVComponentState } from "../components.js";
 import { Env } from "../types/env.js";
+import { MAX_TOTAL_COMPONENTS } from "./constants.js";
 
 export const getCustomId = (temporary = false) => {
   if (!temporary) {
@@ -205,8 +208,86 @@ export const isActionRow = (
 ): component is APIActionRowComponent<APIComponentInMessageActionRow> =>
   component.type === ComponentType.ActionRow;
 
-export const onlyActionRows = (components: APIMessageTopLevelComponent[]) =>
-  components.filter(isActionRow);
+export const onlyActionRows = (
+  components: APIMessageTopLevelComponent[],
+  /**
+   * Also look for action rows within containers,
+   * useful if you do not need sibling context.
+   */
+  includeNested?: boolean,
+) => {
+  const rows: APIActionRowComponent<APIComponentInMessageActionRow>[] = [];
+  if (includeNested) {
+    for (const component of components) {
+      if (component.type === ComponentType.Container) {
+        rows.push(...component.components.filter(isActionRow));
+      } else if (component.type === ComponentType.ActionRow) {
+        rows.push(component);
+      }
+    }
+  } else {
+    rows.push(...components.filter(isActionRow));
+  }
+  return rows;
+};
 
 export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>
   new MessageFlagsBitField(message.flags ?? 0).has(MessageFlags.IsComponentsV2);
+
+export const isStorableComponent = (
+  component:
+    | APIComponentInMessageActionRow
+    | APIMessageTopLevelComponent
+    | APIComponentInContainer,
+): component is
+  | APIButtonComponentWithCustomId
+  | APIButtonComponentWithURL
+  | APISelectMenuComponent => {
+  return (
+    [
+      ComponentType.StringSelect,
+      ComponentType.ChannelSelect,
+      ComponentType.MentionableSelect,
+      ComponentType.RoleSelect,
+      ComponentType.UserSelect,
+    ].includes(component.type) ||
+    (component.type === ComponentType.Button &&
+      component.style !== ButtonStyle.Premium)
+  );
+};
+
+export const getTotalComponentsCount = (
+  components: APIMessageTopLevelComponent[],
+): number =>
+  components
+    ?.map((c) => 1 + ("components" in c ? c.components.length : 0))
+    .reduce((a, b) => a + b, 0) ?? 0;
+
+export const getRemainingComponentsCount = (
+  components: APIMessageTopLevelComponent[],
+  v2?: boolean,
+): number => {
+  const isV2 =
+    v2 ??
+    // Auto detect if not provided
+    components.find((c) => c.type !== ComponentType.ActionRow) !== undefined;
+  return (
+    (isV2 ? MAX_TOTAL_COMPONENTS : 5) - getTotalComponentsCount(components)
+  );
+};
+
+// This is used for select option arrays, which is why it's in this file
+/** Slice `array` into multiple chunks of, at maximum, `chunkSize` length */
+export const chunkArray = <T extends Array<unknown>>(
+  array: T,
+  chunkSize: number,
+): T[] => {
+  const chunks: T[] = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize) as T);
+  }
+  return chunks;
+};
+
+export const textDisplay = (content: string) =>
+  new TextDisplayBuilder().setContent(content);

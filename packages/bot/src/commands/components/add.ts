@@ -1,11 +1,12 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  EmbedBuilder,
+  ContainerBuilder,
   MessageActionRowComponentBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  TextDisplayBuilder,
   TextInputBuilder,
   escapeMarkdown,
   formatEmoji,
@@ -55,9 +56,13 @@ import { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentWidth,
+  getRemainingComponentsCount,
   getRowWidth,
+  isComponentsV2,
+  onlyActionRows,
   storeComponents,
 } from "../../util/components.js";
+import { MAX_ACTION_ROW_WIDTH } from "../../util/constants.js";
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
@@ -139,46 +144,58 @@ export interface ComponentFlow extends MinimumKVComponentState {
   component?: StorableComponent;
 }
 
-export const getComponentFlowEmbed = (flow: ComponentFlow) => {
-  const embed = new EmbedBuilder({
-    title:
-      flow.stepTitle +
-      (flow.totalSteps
-        ? ` - Step ${flow.step}/${flow.totalSteps} (${Math.floor(
-            (flow.step / flow.totalSteps) * 100,
-          )}%)`
-        : ""),
-    description: flow.steps
-      ? flow.steps.map((step, i) => `${i + 1}. ${step.label}`).join("\n")
-      : undefined,
-    color,
-  }).addFields({
-    name: "Message",
-    value: messageLink(
-      flow.message.channelId,
-      flow.message.id,
-      flow.message.guildId,
-    ),
-  });
+export const getComponentFlowContainer = (
+  flow: ComponentFlow,
+): ContainerBuilder => {
+  const container = new ContainerBuilder().setAccentColor(color);
+  const bodyText = new TextDisplayBuilder().setContent(
+    [
+      flow.step === 0 || !flow.message.webhookName
+        ? ""
+        : `-# ${flow.message.webhookName}`,
+      `### ${
+        flow.stepTitle +
+        (flow.totalSteps
+          ? ` - Step ${flow.step}/${flow.totalSteps} (${Math.floor(
+              (flow.step / flow.totalSteps) * 100,
+            )}%)`
+          : "")
+      }`,
+      flow.steps
+        ? flow.steps.map((step, i) => `${i + 1}. ${step.label}`).join("\n")
+        : "",
+      "**Message**",
+      messageLink(
+        flow.message.channelId,
+        flow.message.id,
+        flow.message.guildId,
+      ),
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
 
   if (flow.step === 0) {
-    embed.setThumbnail(
-      webhookAvatarUrl({
-        id: flow.message.webhookId,
-        avatar: flow.message.webhookAvatar,
-      }),
+    container.addSectionComponents((s) =>
+      s.addTextDisplayComponents(bodyText).setThumbnailAccessory((a) =>
+        a
+          .setURL(
+            webhookAvatarUrl({
+              id: flow.message.webhookId,
+              avatar: flow.message.webhookAvatar,
+            }),
+          )
+          .setDescription(
+            flow.message.webhookName.slice(0, 1024) || "Webhook Avatar",
+          ),
+      ),
     );
   } else {
-    embed.setAuthor({
-      name: flow.message.webhookName.slice(0, 256) || "Webhook",
-      iconURL: webhookAvatarUrl({
-        id: flow.message.webhookId,
-        avatar: flow.message.webhookAvatar,
-      }),
-    });
+    // Unfortunately we have no alternative for an author w/ icon :(
+    container.addTextDisplayComponents(bodyText);
   }
 
-  return embed;
+  return container;
 };
 
 const registerComponent = async (
@@ -228,19 +245,17 @@ const registerComponent = async (
     console.error(flow.message.id, e);
     throw new Error(`Failed to fetch the message (${flow.message.id}).`);
   }
-  // const components = message.components
-  //   ? message.components.map(c => new ActionRowBuilder(c))
-  //   : [new ActionRowBuilder()];
+  const isCV2 = isComponentsV2(message);
 
   const components = message.components ?? [
-    new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
+    { type: ComponentType.ActionRow, components: [] },
   ];
-  let nextAvailableRow = components.find(
-    (c) => 5 - getRowWidth(c) >= requiredWidth,
-  );
-  if (!nextAvailableRow && components.length < 5) {
-    nextAvailableRow =
-      new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON();
+  let nextAvailableRow = onlyActionRows(components, true).find((c) => {
+    return MAX_ACTION_ROW_WIDTH - getRowWidth(c) >= requiredWidth;
+  });
+
+  if (!nextAvailableRow && getRemainingComponentsCount(components, isCV2) > 0) {
+    nextAvailableRow = { type: ComponentType.ActionRow, components: [] };
     components.push(nextAvailableRow);
   } else if (!nextAvailableRow) {
     throw new Error(
@@ -388,8 +403,8 @@ export const startComponentFlow = async (
 
   return [
     ctx.reply({
-      embeds: [getComponentFlowEmbed(componentFlow)],
       components: [
+        getComponentFlowContainer(componentFlow),
         new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
           await storeComponents(ctx.env.KV, [
             new StringSelectMenuBuilder({
@@ -450,6 +465,7 @@ export const startComponentFlow = async (
         ...(components ?? []),
       ],
       ephemeral: true,
+      componentsV2: true,
     }),
     async () => {
       const guild = await getchGuild(
@@ -499,8 +515,7 @@ interface KVComponentEditorState {
     name: string;
     avatar: string | null;
   };
-  row?: number;
-  column?: number;
+  path?: number[];
 }
 
 export const generateEditorTokenForComponent = async (
@@ -557,13 +572,12 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
       state.stepTitle = "Choose a quick setup or finish on Discohook";
       state.steps.push({
         label:
-          'Choose from the select menu. For more in-depth configuration, click the final "Custom Flow" option.',
+          'Choose from the select menu. For more in-depth configuration, choose the final "Custom Flow" option.',
       });
 
-      const embed = getComponentFlowEmbed(state);
       return ctx.updateMessage({
-        embeds: [embed],
         components: [
+          getComponentFlowContainer(state),
           new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             await storeComponents(ctx.env.KV, [
               new StringSelectMenuBuilder()
@@ -658,8 +672,8 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         ctx.modal(modal),
         async () => {
           await ctx.followup.editOriginalMessage({
-            embeds: [getComponentFlowEmbed(state)],
             components: [
+              getComponentFlowContainer(state),
               new ActionRowBuilder<ButtonBuilder>().addComponents(
                 await storeComponents(ctx.env.KV, [
                   new ButtonBuilder()
@@ -755,11 +769,13 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         },
       );
 
-      const embed = getComponentFlowEmbed(state);
-      embed.setFooter({ text: t("componentWillExpire") });
+      const container = getComponentFlowContainer(state);
+      container.addTextDisplayComponents((c) =>
+        c.setContent(`-# ${t("componentWillExpire")}`),
+      );
       return ctx.updateMessage({
-        embeds: [embed],
         components: [
+          container,
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
               .setStyle(ButtonStyle.Link)
@@ -774,8 +790,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
   }
 
   return ctx.updateMessage({
-    embeds: [getComponentFlowEmbed(state)],
-    components: [],
+    components: [getComponentFlowContainer(state)],
   });
 };
 
@@ -887,8 +902,7 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
     state.step = state.steps?.length ?? 0;
     state.totalSteps = state.steps?.length;
     return ctx.updateMessage({
-      embeds: [getComponentFlowEmbed(state)],
-      components: [],
+      components: [getComponentFlowContainer(state)],
     });
   }
 

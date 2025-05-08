@@ -36,6 +36,7 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
+import { SelectValueTrigger, selectStyles } from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -467,30 +468,21 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                       setFiles([...files]);
                     }}
                   >
-                    <Select.Trigger className="text-sm font-medium cursor-default">
+                    <Select.Trigger className={selectStyles.label}>
                       {t("postThumbnail")}
                     </Select.Trigger>
-                    <Select.Trigger
-                      className={twJoin(
-                        "flex rounded-lg border border-border-normal dark:border-border-normal-dark focus:outline-none h-9 py-0 px-[14px] font-medium !mt-0",
-                        "disabled:text-gray-600 disabled:cursor-not-allowed",
-                        "bg-white dark:bg-[#333338]",
-                      )}
-                    >
+                    <Select.Trigger className={selectStyles.trigger}>
                       <Select.Value
                         placeholder={t("defaultPlaceholder")}
-                        className="my-auto truncate ltr:mr-2 rtl:ml-2"
+                        className={selectStyles.value}
                       />
-                      <Select.Icon className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                      <Select.Icon className={selectStyles.icon}>
                         <CoolIcon icon="Chevron_Down" />
                       </Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner
-                        className={twJoin(
-                          "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
-                          "p-0.5 border border-black/[0.08]",
-                        )}
+                        className={selectStyles.positioner}
                         align="start"
                         alignOffset={2}
                       >
@@ -502,15 +494,16 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                               <Select.Item
                                 key={`thumbnail-select-${file.id}`}
                                 value={file.id}
-                                className={twJoin(
-                                  "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
-                                  "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
-                                )}
+                                className={selectStyles.item}
                               >
-                                <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                                <Select.ItemText
+                                  className={selectStyles.itemText}
+                                >
                                   {transformFileName(file.file.name)}
                                 </Select.ItemText>
-                                <Select.ItemIndicator className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                                <Select.ItemIndicator
+                                  className={selectStyles.itemIndicator}
+                                >
                                   <CoolIcon icon="Check" />
                                 </Select.ItemIndicator>
                               </Select.Item>
@@ -1149,30 +1142,13 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                       setFiles([...files]);
                     }}
                   >
-                    <Select.Trigger className="text-sm font-medium cursor-default">
+                    <Select.Trigger className={selectStyles.label}>
                       {t("postThumbnail")}
                     </Select.Trigger>
-                    <Select.Trigger
-                      className={twJoin(
-                        "flex rounded-lg border border-border-normal dark:border-border-normal-dark focus:outline-none h-9 py-0 px-[14px] font-medium !mt-0",
-                        "disabled:text-gray-600 disabled:cursor-not-allowed",
-                        "bg-white dark:bg-[#333338]",
-                      )}
-                    >
-                      <Select.Value
-                        placeholder={t("defaultPlaceholder")}
-                        className="my-auto truncate ltr:mr-2 rtl:ml-2"
-                      />
-                      <Select.Icon className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
-                        <CoolIcon icon="Chevron_Down" />
-                      </Select.Icon>
-                    </Select.Trigger>
+                    <SelectValueTrigger t={t} />
                     <Select.Portal>
                       <Select.Positioner
-                        className={twJoin(
-                          "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
-                          "p-0.5 border border-black/[0.08]",
-                        )}
+                        className={selectStyles.positioner}
                         align="start"
                         alignOffset={2}
                       >
@@ -1184,15 +1160,16 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                               <Select.Item
                                 key={`thumbnail-select-${file.id}`}
                                 value={file.id}
-                                className={twJoin(
-                                  "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
-                                  "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
-                                )}
+                                className={selectStyles.item}
                               >
-                                <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                                <Select.ItemText
+                                  className={selectStyles.itemText}
+                                >
                                   {transformFileName(file.file.name)}
                                 </Select.ItemText>
-                                <Select.ItemIndicator className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                                <Select.ItemIndicator
+                                  className={selectStyles.itemIndicator}
+                                >
                                   <CoolIcon icon="Check" />
                                 </Select.ItemIndicator>
                               </Select.Item>

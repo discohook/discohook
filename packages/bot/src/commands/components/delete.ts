@@ -1,19 +1,22 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  EmbedBuilder,
-  MessageActionRowComponentBuilder,
-  StringSelectMenuBuilder,
+  ContainerBuilder,
+  TextDisplayBuilder,
   messageLink,
 } from "@discordjs/builders";
 import {
-  APIActionRowComponent,
+  APIComponentInContainer,
   APIComponentInMessageActionRow,
+  APIContainerComponent,
   APIEmoji,
   APIInteraction,
   APIMessage,
+  APIMessageTopLevelComponent,
+  APISectionComponent,
   ButtonStyle,
   ComponentType,
+  RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
@@ -28,10 +31,14 @@ import { InteractionContext } from "../../interactions.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentId,
+  getRemainingComponentsCount,
+  isComponentsV2,
+  isStorableComponent,
   parseAutoComponentId,
   storeComponents,
+  textDisplay,
 } from "../../util/components.js";
-import { getComponentsAsOptions } from "./edit.js";
+import { getComponentsAsV2Menu } from "./edit.js";
 import { getWebhookMessage, resolveMessageLink } from "./entry.js";
 
 export const deleteComponentChatEntry: ChatInputAppCommandCallback<true> =
@@ -64,44 +71,62 @@ const pickWebhookMessageComponentToDelete = async (
     Routes.guildEmojis(guildId),
   )) as APIEmoji[];
 
-  const options = getComponentsAsOptions(message.components ?? [], emojis);
-  if (options.length === 0) {
+  const threadId = message.position === undefined ? "" : message.channel_id;
+  const menu = getComponentsAsV2Menu(message.components ?? [], emojis, {
+    getSelectCustomId: (index) =>
+      `a_delete-component-pick_${message.webhook_id}:${message.id}:${threadId}:${index}` satisfies AutoComponentCustomId,
+  });
+  if (menu.length === 0) {
     return ctx.reply({
-      content: "That message has no components that can be picked from.",
-      embeds: [],
-      components: [],
+      components: [
+        textDisplay("That message has no components that can be picked from."),
+      ],
       ephemeral: true,
+      componentsV2: true,
     });
   }
 
-  const threadId = message.position === undefined ? "" : message.channel_id;
-  const select = new StringSelectMenuBuilder()
-    .setCustomId(
-      `a_delete-component-pick_${message.webhook_id}:${message.id}:${threadId}` satisfies AutoComponentCustomId,
-    )
-    .setPlaceholder("Select a component to delete")
-    .addOptions(options);
-
-  return ctx.reply({
-    embeds: [
-      new EmbedBuilder({
-        title: "Delete Component",
-        color: 0xed4245,
-      })
-        .addFields({
-          name: "Message",
-          value: messageLink(message.channel_id, message.id, guildId),
-        })
-        .setThumbnail(
-          webhookAvatarUrl({
-            id: message.author.id,
-            avatar: message.author.avatar,
-          }),
+  const menuContainer = new ContainerBuilder()
+    .setAccentColor(0xed4245)
+    .addSectionComponents((s) =>
+      s
+        .addTextDisplayComponents((td) =>
+          td.setContent(
+            [
+              "### Delete Component",
+              "**Message**",
+              messageLink(message.channel_id, message.id, guildId),
+            ].join("\n"),
+          ),
+        )
+        .setThumbnailAccessory((t) =>
+          t
+            .setURL(
+              webhookAvatarUrl({
+                id: message.author.id,
+                avatar: message.author.avatar,
+              }),
+            )
+            .setDescription(message.author.username),
         ),
-    ],
-    components: [new ActionRowBuilder<typeof select>().addComponents(select)],
-    ephemeral: true,
-  });
+    )
+    .toJSON();
+  // Due to the reduction taking place to form a menu, at least one of these
+  // should almost always be displayed
+  const free = getRemainingComponentsCount(menu, true);
+  if (free >= 3) {
+    menu.splice(0, 0, menuContainer);
+  } else if (free >= 2) {
+    menu.splice(0, 0, menuContainer.components[0]);
+  } else if (free >= 1) {
+    menu.splice(
+      0,
+      0,
+      (menuContainer.components[0] as APISectionComponent).components[0],
+    );
+  }
+
+  return ctx.reply({ components: menu, ephemeral: true, componentsV2: true });
 };
 
 export const deleteComponentButtonEntry: ButtonCallback = async (ctx) => {
@@ -133,6 +158,111 @@ export const deleteComponentButtonEntry: ButtonCallback = async (ctx) => {
   return ctx.updateMessage(response.data);
 };
 
+export const extractComponentByPath = (
+  message: APIMessage,
+  path: number[],
+  options?: {
+    operation: "remove" | "replace";
+    replacement?:
+      | APIComponentInMessageActionRow
+      | (() => APIComponentInMessageActionRow);
+  },
+): APIComponentInMessageActionRow | null => {
+  let parent: APIContainerComponent | undefined;
+  let siblings: (
+    | APIMessageTopLevelComponent
+    | APIComponentInMessageActionRow
+    | APIComponentInContainer
+  )[] = message.components ?? [];
+  let indexIndex = -1; // where we are in the path; the index of indexes
+  for (const index of path) {
+    indexIndex += 1;
+    const atIndex = siblings[index];
+    if (!atIndex) break;
+
+    if (
+      atIndex.type === ComponentType.Section &&
+      // Sections cannot be navigated into further so we have to get it
+      // in the second-to-last path position (the last value for section
+      // accessories is always 0)
+      indexIndex === path.length - 2
+    ) {
+      if (atIndex.accessory.type !== ComponentType.Button) return null;
+      if (options?.operation === "remove") {
+        siblings.splice(
+          index,
+          1,
+          new TextDisplayBuilder({ id: atIndex.id })
+            .setContent(
+              atIndex.components
+                .map((td) => td.content)
+                .join("\n")
+                .slice(0, 4000),
+            )
+            .toJSON(),
+        );
+      } else if (options?.operation === "replace" && options.replacement) {
+        const replacement =
+          typeof options.replacement === "function"
+            ? options.replacement()
+            : options.replacement;
+        if (replacement.type !== atIndex.accessory.type) {
+          throw Error(
+            `Conflicting type for accessory component replacement (${atIndex.accessory.type} to ${replacement.type})`,
+          );
+        }
+        atIndex.accessory = replacement;
+      }
+      return atIndex.accessory;
+    }
+    if (atIndex.type === ComponentType.Container) {
+      siblings = atIndex.components;
+      parent = atIndex;
+      continue;
+    }
+    if (atIndex.type === ComponentType.ActionRow) {
+      siblings = atIndex.components;
+      continue;
+    }
+    if (isStorableComponent(atIndex)) {
+      if (options?.operation === "remove") {
+        siblings.splice(index, 1);
+        if (siblings.length === 0) {
+          // Remove the empty action row, which should be the second-to-last path index
+          ((parent ?? message).components ?? []).splice(path.slice(-2)[0], 1);
+        }
+      } else if (options?.operation === "replace" && options.replacement) {
+        const replacement =
+          typeof options.replacement === "function"
+            ? options.replacement()
+            : options.replacement;
+        if (replacement.type !== atIndex.type) {
+          throw Error(
+            `Conflicting type for component replacement (${atIndex.type} to ${replacement.type})`,
+          );
+        }
+        siblings.splice(index, 1, replacement);
+      }
+      return atIndex;
+    }
+  }
+  return null;
+};
+
+const componentsOrEmptyBody = (
+  message: Pick<APIMessage, "components" | "flags">,
+): RESTPatchAPIWebhookWithTokenMessageJSONBody => {
+  return message.components?.length !== 0
+    ? { components: message.components }
+    : isComponentsV2(message)
+      ? {
+          components: [textDisplay("Empty message").toJSON()],
+        }
+      : {
+          content: "Empty message",
+        };
+};
+
 export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
   ctx,
 ) => {
@@ -153,10 +283,10 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
   switch (scope as "id" | "link" | "unknown") {
     case "id": {
       const id = BigInt(key);
-      const position = ctx.interaction.data.values[0]
+      const path = ctx.interaction.data.values[0]
         .split(":")[2]
-        .split("-")
-        .map(Number) as [number, number];
+        .split(".")
+        .map(Number);
 
       const component = await db.query.discordMessageComponents.findFirst({
         where: (table, { eq }) => eq(table.id, id),
@@ -173,8 +303,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
           component.messageId?.toString() !== messageId)
       ) {
         return ctx.updateMessage({
-          content: "Unknown component",
-          components: [],
+          components: [textDisplay("Unknown component")],
         });
       }
       if (!component) {
@@ -185,33 +314,21 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
           threadId,
           ctx.rest,
         );
-        const rows = message.components ?? [];
-        let column: number;
-        let row: number;
-        if (position) {
-          column = position[1];
-          row = position[0];
-        } else {
-          column = -1;
-          row = rows.findIndex((r) => {
-            column = r.components.findIndex((c) => getComponentId(c) === id);
-            return column !== -1;
+        const removed = extractComponentByPath(message, path, {
+          operation: "remove",
+        });
+        if (removed === null) {
+          return ctx.updateMessage({
+            components: [
+              textDisplay("Unable to locate the component in the message."),
+            ],
           });
-          if (!row || column === -1) {
-            return ctx.updateMessage({
-              content: "Unable to locate the component in the message by ID.",
-              embeds: [],
-              components: [],
-            });
-          }
         }
 
-        rows[row]?.components.splice(column, 1);
-        const components = rows.filter((r) => r.components.length !== 0);
         await ctx.rest.patch(
           Routes.webhookMessage(webhook.id, webhook.token, message.id),
           {
-            body: { components },
+            body: componentsOrEmptyBody(message),
             auth: false,
             query: threadId
               ? new URLSearchParams({ thread_id: threadId })
@@ -219,17 +336,19 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
           },
         );
         return ctx.updateMessage({
-          content:
-            "The component was already missing from the database, so it has been removed from the message.",
-          embeds: [],
-          components: [],
+          components: [
+            textDisplay(
+              "The component was already missing from the database, so it has been removed from the message.",
+            ),
+          ],
         });
       }
 
       return ctx.updateMessage({
-        content:
-          "Are you sure you want to delete this component? This cannot be undone.",
         components: [
+          textDisplay(
+            "Are you sure you want to delete this component? This cannot be undone.",
+          ),
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             ...(await storeComponents(ctx.env.KV, [
               new ButtonBuilder()
@@ -243,6 +362,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
                 messageId,
                 threadId,
                 componentId: component.id,
+                path,
               },
             ])),
             new ButtonBuilder()
@@ -256,7 +376,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
       });
     }
     case "link": {
-      const [row, column] = key.split("-").map(Number);
+      const path = key.split(".").map(Number);
       const { webhook, message } = await getWebhookMessage(
         ctx.env,
         webhookId,
@@ -264,17 +384,16 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
         threadId,
         ctx.rest,
       );
-      const rows = message.components ?? [];
-      const foundComponent = rows[row]?.components?.[column];
-      if (
-        !foundComponent ||
-        foundComponent.type !== ComponentType.Button ||
-        foundComponent.style !== ButtonStyle.Link
-      ) {
+      const removed = extractComponentByPath(message, path, {
+        operation: "remove",
+      });
+      if (removed === null) {
         return ctx.updateMessage({
-          content:
-            "A button was referenced by its position but it is now missing.",
-          components: [],
+          components: [
+            textDisplay(
+              `The button could not be located in the message (${key}).`,
+            ),
+          ],
         });
       }
 
@@ -289,14 +408,12 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
           data: true,
         },
       });
-      const matchId = getComponentId(foundComponent, dbComponents);
+      const matchId = getComponentId(removed, dbComponents);
       if (matchId === undefined) {
-        rows[row].components.splice(column, 1);
-        const components = rows.filter((row) => row.components.length !== 0);
         await ctx.rest.patch(
           Routes.webhookMessage(webhook.id, webhook.token, message.id),
           {
-            body: { components },
+            body: componentsOrEmptyBody(message),
             auth: false,
             query: threadId
               ? new URLSearchParams({ thread_id: threadId })
@@ -304,17 +421,19 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
           },
         );
         return ctx.updateMessage({
-          content:
-            "The button was already missing from the database, so it has been removed from the message.",
-          embeds: [],
-          components: [],
+          components: [
+            textDisplay(
+              "The button was already missing from the database, so it has been removed from the message.",
+            ),
+          ],
         });
       }
 
       return ctx.updateMessage({
-        content:
-          "Are you sure you want to delete this component? This cannot be undone.",
         components: [
+          textDisplay(
+            "Are you sure you want to delete this component? This cannot be undone.",
+          ),
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             ...(await storeComponents(ctx.env.KV, [
               new ButtonBuilder()
@@ -328,7 +447,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
                 messageId,
                 threadId,
                 componentId: matchId,
-                position: [row, column],
+                path,
               },
             ])),
             new ButtonBuilder()
@@ -343,9 +462,13 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
     }
     default:
       return ctx.reply({
-        content:
-          "Cannot resolve that component from the database. Try editing another component to remove it.",
+        components: [
+          textDisplay(
+            "Cannot resolve that component from the database. Try editing another component to remove it.",
+          ),
+        ],
         ephemeral: true,
+        componentsV2: true,
       });
   }
 };
@@ -356,40 +479,19 @@ const registerComponentDelete = async (
   type: ComponentType,
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
-  position?: [y: number, x: number],
+  path: number[],
   shouldKeepRecord?: boolean,
 ) => {
   const db = getDb(ctx.env.HYPERDRIVE);
   const customId = `p_${id}`;
 
-  const components = message.components ?? [
-    new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
-  ];
-  let row: APIActionRowComponent<APIComponentInMessageActionRow> | undefined;
-  let current: APIComponentInMessageActionRow | undefined;
-  if (position) {
-    row = components[position[0]];
-    current = row?.components?.[position[1]];
-  } else {
-    row = components.find((c) =>
-      c.components
-        .filter((c) => c.type === type)
-        .map((c) => getComponentId(c))
-        .includes(id),
-    );
-    current = row?.components.find(
-      (c) => c.type === type && getComponentId(c) === id,
-    );
-  }
-  if (!row || !current) {
+  const removed = extractComponentByPath(message, path, {
+    operation: "remove",
+  });
+  if (removed === null) {
     throw new Error(
       `Couldn't find the row that this component is on. Try editing via the site instead (choose "Everything")`,
     );
-  }
-  row.components.splice(row.components.indexOf(current), 1);
-  if (row.components.length === 0) {
-    const ri = components.indexOf(row);
-    components.splice(ri, 1);
   }
 
   const editedMsg = await db.transaction(async (tx) => {
@@ -403,7 +505,7 @@ const registerComponentDelete = async (
     return (await ctx.rest.patch(
       Routes.webhookMessage(webhook.id, webhook.token, message.id),
       {
-        body: { components },
+        body: componentsOrEmptyBody(message),
         query:
           message.position !== undefined
             ? new URLSearchParams({ thread_id: message.channel_id })
@@ -422,14 +524,13 @@ const registerComponentDelete = async (
 };
 
 export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
-  const { webhookId, messageId, threadId, componentId, position } =
-    ctx.state as {
-      webhookId: string;
-      messageId: string;
-      threadId?: string;
-      componentId: string;
-      position?: [number, number];
-    };
+  const { webhookId, messageId, threadId, componentId, path } = ctx.state as {
+    webhookId: string;
+    messageId: string;
+    threadId?: string;
+    componentId: string;
+    path: number[];
+  };
 
   const { webhook, message } = await getWebhookMessage(
     ctx.env,
@@ -460,28 +561,27 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
       (component.messageId && component.messageId.toString() !== messageId))
   ) {
     return ctx.updateMessage({
-      content: "That component does not belong to this server.",
-      embeds: [],
-      components: [],
+      components: [
+        textDisplay("That component does not belong to this server."),
+      ],
     });
   }
 
   if (!component) {
-    if (!position) {
+    const removed = extractComponentByPath(message, path, {
+      operation: "remove",
+    });
+    if (removed === null) {
       return ctx.updateMessage({
-        content:
-          "An ID and position were both unavailable, so the component could not be located in the message.",
-        components: [],
+        components: [
+          textDisplay("The component could not be located in the message."),
+        ],
       });
     }
-
-    const rows = message.components ?? [];
-    rows[position[0]].components.splice(position[1], 1);
-    const components = rows.filter((row) => row.components.length !== 0);
     await ctx.rest.patch(
       Routes.webhookMessage(webhook.id, webhook.token, message.id),
       {
-        body: { components },
+        body: componentsOrEmptyBody(message),
         query:
           message.position !== undefined
             ? new URLSearchParams({ thread_id: message.channel_id })
@@ -495,26 +595,26 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
       component.type,
       webhook,
       message,
-      position,
+      path,
       shouldKeepRecord,
     );
   }
   return ctx.updateMessage({
-    content: `Component deleted successfully: ${messageLink(
-      message.channel_id,
-      message.id,
-      // biome-ignore lint/style/noNonNullAssertion:
-      (webhook.guild_id ?? ctx.interaction.guild_id)!,
-    )}`,
-    embeds: [],
-    components: [],
+    components: [
+      textDisplay(
+        `Component deleted successfully: ${messageLink(
+          message.channel_id,
+          message.id,
+          // biome-ignore lint/style/noNonNullAssertion:
+          (webhook.guild_id ?? ctx.interaction.guild_id)!,
+        )}`,
+      ),
+    ],
   });
 };
 
 export const deleteComponentCancel: ButtonCallback = async (ctx) => {
   return ctx.updateMessage({
-    content: "The component is safe and sound.",
-    embeds: [],
-    components: [],
+    components: [textDisplay("The component is safe and sound.")],
   });
 };

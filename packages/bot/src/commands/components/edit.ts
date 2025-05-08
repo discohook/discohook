@@ -1,8 +1,7 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  EmbedBuilder,
-  MessageActionRowComponentBuilder,
+  ContainerBuilder,
   ModalBuilder,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
@@ -12,13 +11,14 @@ import {
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
-  APIActionRowComponent,
   APIComponentInMessageActionRow,
   APIEmoji,
   APIInteraction,
   APIMessage,
   APIMessageComponentEmoji,
+  APIMessageTopLevelComponent,
   APIPartialEmoji,
+  APISectionComponent,
   APISelectMenuOption,
   ButtonStyle,
   ComponentType,
@@ -50,7 +50,15 @@ import {
   MessageConstructorData,
 } from "../../interactions.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
-import { getComponentId, parseAutoComponentId } from "../../util/components.js";
+import {
+  chunkArray,
+  getComponentId,
+  getRemainingComponentsCount,
+  isActionRow,
+  parseAutoComponentId,
+  textDisplay,
+} from "../../util/components.js";
+import { MAX_SELECT_OPTIONS } from "../../util/constants.js";
 import { color } from "../../util/meta.js";
 import { resolveEmoji } from "../reactionRoles.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
@@ -59,6 +67,7 @@ import {
   generateEditorTokenForComponent,
   getEditorTokenComponentUrl,
 } from "./add.js";
+import { extractComponentByPath } from "./delete.js";
 import { getWebhookMessage, resolveMessageLink } from "./entry.js";
 
 export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
@@ -71,8 +80,9 @@ export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
   );
   if (typeof message === "string") {
     return ctx.reply({
-      content: message,
+      components: [textDisplay(message)],
       ephemeral: true,
+      componentsV2: true,
     });
   }
   if (
@@ -81,12 +91,17 @@ export const editComponentChatEntry: ChatInputAppCommandCallback<true> = async (
     !ctx.env.APPLICATIONS[message.application_id]
   ) {
     return ctx.reply({
-      content: !message.webhook_id
-        ? "This is not a webhook message."
-        : !message.application_id
-          ? `This message's webhook is owned by a user, so it cannot have components.`
-          : `This message's webhook is owned by <@${message.application_id}>, so I cannot edit it.`,
+      components: [
+        textDisplay(
+          !message.webhook_id
+            ? "This is not a webhook message."
+            : !message.application_id
+              ? `This message's webhook is owned by a user, so it cannot have components.`
+              : `This message's webhook is owned by <@${message.application_id}>, so I cannot edit it.`,
+        ),
+      ],
       ephemeral: true,
+      componentsV2: true,
     });
   }
 
@@ -154,87 +169,257 @@ export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
   return ctx.updateMessage(response.data);
 };
 
-export const getComponentsAsOptions = (
-  components: APIActionRowComponent<APIComponentInMessageActionRow>[],
+function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
+  emoji: T | undefined,
+  emojis: APIEmoji[],
+  fallback: T,
+): T;
+function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
+  emoji: T | undefined,
+  emojis: APIEmoji[],
+  fallback?: T | undefined,
+): T | undefined;
+function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
+  emoji: T | undefined,
+  emojis: APIEmoji[],
+  fallback?: T,
+): T | undefined {
+  return emoji?.id
+    ? emojis.find((e) => e.id === emoji?.id)
+      ? emoji
+      : fallback
+    : emoji?.name
+      ? emoji
+      : fallback;
+}
+
+/** Don't use this for all message components unless it's CV1 */
+const getComponentsAsOptions = (
+  components: APIMessageTopLevelComponent[],
   emojis: APIEmoji[],
   dbComponents?: { id: bigint; data: StorableComponent }[],
-) =>
-  components.flatMap((row, ri) =>
-    row.components
-      .map((component, ci): APISelectMenuOption | undefined => {
-        const id = getComponentId(component, dbComponents);
-        const value = id
-          ? `id:${id}:${ri}-${ci}`
-          : component.type === ComponentType.Button && isLinkButton(component)
-            ? `link:${ri}-${ci}`
-            : `unknown:${ri}-${ci}`;
+  /**
+   * If we're processing data individually (not as part of the whole message),
+   * we can elect to modify the paths with otherwise unknown parent data.
+   * This ensures components aren't given incorrect top-level paths.
+   */
+  arrayConfig?: {
+    padStart?: number;
+    topLevelIndex?: number;
+  },
+): APISelectMenuOption[] => {
+  const childToOption = (
+    child: APIComponentInMessageActionRow,
+    /** Array of indexes */
+    parents: number[],
+  ): APISelectMenuOption | undefined => {
+    const id = getComponentId(child, dbComponents);
 
-        switch (component.type) {
-          case ComponentType.Button: {
-            if (component.style === ButtonStyle.Premium) {
-              return undefined;
-            }
-            const styleEmoji: Record<typeof component.style, string> = {
-              [ButtonStyle.Danger]: "🟥",
-              [ButtonStyle.Link]: "🌐",
-              [ButtonStyle.Primary]: "🟦",
-              [ButtonStyle.Secondary]: "⬜",
-              [ButtonStyle.Success]: "🟩",
-            };
-            const emoji = component.emoji?.id
-              ? emojis.find((e) => e.id === component.emoji?.id)
-                ? component.emoji
-                : { name: styleEmoji[component.style] }
-              : component.emoji?.name
-                ? component.emoji
-                : { name: styleEmoji[component.style] };
+    // try to naturally describe where the component is
+    let location = "";
+    let column = -1;
+    if (parents.length === 3) {
+      location = `container ${parents[0] + 1}, row ${parents[1] + 1}`;
+      column = parents[2] + 1;
+    } else if (parents.length === 2) {
+      location = `stack row ${parents[0] + 1}`;
+      column = parents[1] + 1;
+    }
+    const path = parents.join(".");
+    const value = id
+      ? `id:${id}:${path}`
+      : child.type === ComponentType.Button && isLinkButton(child)
+        ? `link:${path}`
+        : `unknown:${path}`;
 
-            return {
-              label: component.label ?? "Emoji-only",
-              value,
-              description: `${
-                component.style === ButtonStyle.Link ? "Link button" : "Button"
-              }, row ${ri + 1}, column ${ci + 1}`,
-              emoji,
-            };
-          }
-          case ComponentType.StringSelect:
-            return {
-              label: (
-                component.placeholder ?? `${component.options.length} options`
-              ).slice(0, 100),
-              value,
-              description: `Select menu, row ${ri + 1}`,
-              emoji: { name: "🔽" },
-            };
-          case ComponentType.ChannelSelect:
-          case ComponentType.MentionableSelect:
-          case ComponentType.RoleSelect:
-          case ComponentType.UserSelect:
-            return {
-              label: (
-                component.placeholder ??
-                `${component.default_values?.length ?? 0} defaults`
-              ).slice(0, 100),
-              value,
-              description: `Select menu, row ${ri + 1}`,
-              emoji: {
-                name:
-                  component.type === ComponentType.ChannelSelect
-                    ? "#️⃣"
-                    : component.type === ComponentType.MentionableSelect
-                      ? "*️⃣"
-                      : component.type === ComponentType.RoleSelect
-                        ? "🏷️"
-                        : "👤",
-              },
-            };
-          default:
-            break;
+    switch (child.type) {
+      case ComponentType.Button: {
+        if (child.style === ButtonStyle.Premium) {
+          return undefined;
         }
-      })
-      .filter((c): c is APISelectMenuOption => !!c),
-  );
+        const styleEmoji: Record<typeof child.style, string> = {
+          [ButtonStyle.Danger]: "🟥",
+          [ButtonStyle.Link]: "🌐",
+          [ButtonStyle.Primary]: "🟦",
+          [ButtonStyle.Secondary]: "⬜",
+          [ButtonStyle.Success]: "🟩",
+        };
+        const emoji = ensureValidEmoji(child.emoji, emojis, {
+          name: styleEmoji[child.style],
+        });
+
+        return {
+          label: child.label ?? "Emoji-only",
+          value,
+          description: `${
+            child.style === ButtonStyle.Link ? "Link" : "Button"
+          }, ${location}, column ${column}`,
+          emoji,
+        };
+      }
+      case ComponentType.StringSelect:
+        return {
+          label: (child.placeholder ?? `${child.options.length} options`).slice(
+            0,
+            100,
+          ),
+          value,
+          description: `Select, ${location}`,
+          emoji: { name: "🔽" },
+        };
+      case ComponentType.ChannelSelect:
+      case ComponentType.MentionableSelect:
+      case ComponentType.RoleSelect:
+      case ComponentType.UserSelect:
+        return {
+          label: (
+            child.placeholder ?? `${child.default_values?.length ?? 0} defaults`
+          ).slice(0, 100),
+          value,
+          description: `Select, ${location}`,
+          emoji: {
+            name:
+              child.type === ComponentType.ChannelSelect
+                ? "#️⃣"
+                : child.type === ComponentType.MentionableSelect
+                  ? "*️⃣"
+                  : child.type === ComponentType.RoleSelect
+                    ? "🏷️"
+                    : "👤",
+          },
+        };
+      default:
+        break;
+    }
+  };
+
+  const pad = (array: number[]): number[] => {
+    if (arrayConfig?.topLevelIndex !== undefined) {
+      array.splice(0, 1, arrayConfig.topLevelIndex + array[0]);
+    }
+    if (arrayConfig?.padStart !== undefined)
+      return [arrayConfig.padStart, ...array];
+    return array;
+  };
+
+  return components
+    .flatMap((component, ri) => {
+      if (component.type === ComponentType.Container) {
+        return component.components.flatMap((containerChild, cci) => {
+          if (isActionRow(containerChild)) {
+            return containerChild.components.map((child, ci) =>
+              childToOption(child, pad([ri, cci, ci])),
+            );
+          } else if (
+            containerChild.type === ComponentType.Section &&
+            containerChild.accessory.type === ComponentType.Button &&
+            containerChild.accessory.style !== ButtonStyle.Premium
+          ) {
+            return [childToOption(containerChild.accessory, pad([ri, cci, 0]))];
+          }
+          return [];
+        });
+      } else if (isActionRow(component)) {
+        return component.components.map((child, ci) =>
+          childToOption(child, pad([ri, ci])),
+        );
+      } else if (
+        component.type === ComponentType.Section &&
+        component.accessory.type === ComponentType.Button &&
+        component.accessory.style !== ButtonStyle.Premium
+      ) {
+        return [childToOption(component.accessory, pad([ri, 0]))];
+      }
+      return [];
+    })
+    .filter((c): c is APISelectMenuOption => !!c);
+};
+
+// Create a menu simulating the real positions in the message
+export const getComponentsAsV2Menu = (
+  components: APIMessageTopLevelComponent[],
+  emojis: APIEmoji[],
+  options?: {
+    dbComponents?: { id: bigint; data: StorableComponent }[];
+    getSelectCustomId?: (index: number) => string;
+  },
+): APIMessageTopLevelComponent[] => {
+  const { dbComponents, getSelectCustomId = () => "" } = options ?? {};
+
+  const recreated: typeof components = [];
+  let selectId = 0;
+  let totalI = -1;
+  for (const component of components) {
+    totalI += 1;
+    switch (component.type) {
+      case ComponentType.Container: {
+        const container: typeof component = {
+          type: component.type,
+          accent_color: component.accent_color,
+          components: [],
+        };
+        const allChildren = getComponentsAsOptions(
+          component.components,
+          emojis,
+          dbComponents,
+          { padStart: totalI },
+        );
+        const chunkedOptions = chunkArray(allChildren, MAX_SELECT_OPTIONS);
+        let i = 0;
+        for (const options of chunkedOptions) {
+          if (options.length === 0) continue;
+          const previousCount = i * MAX_SELECT_OPTIONS + 1;
+          const select = new StringSelectMenuBuilder()
+            .setCustomId(getSelectCustomId(selectId))
+            .setPlaceholder(
+              `${previousCount}-${
+                previousCount + options.length - 1
+              } container components`,
+            )
+            .addOptions(options);
+          container.components.push({
+            type: ComponentType.ActionRow,
+            components: [select.toJSON()],
+          });
+          i += 1;
+          selectId += 1;
+        }
+        if (container.components.length > 0) recreated.push(container);
+        break;
+      }
+      // 1:1 for top-level component count
+      case ComponentType.Section:
+      case ComponentType.ActionRow: {
+        const options = getComponentsAsOptions(
+          [component],
+          emojis,
+          dbComponents,
+          { topLevelIndex: totalI },
+        );
+        if (options.length === 0) break;
+
+        const typeName =
+          component.type === ComponentType.Section ? "Section" : "Row";
+        const select = new StringSelectMenuBuilder()
+          .setCustomId(getSelectCustomId(selectId))
+          .setPlaceholder(
+            `${typeName} (num) - ${options.length} component${
+              options.length === 1 ? "" : "s"
+            }`,
+          )
+          .addOptions(options);
+        recreated.push({
+          type: ComponentType.ActionRow,
+          components: [select.toJSON()],
+        });
+        selectId += 1;
+        break;
+      }
+    }
+  }
+
+  return recreated;
+};
 
 const pickWebhookMessageComponentToEdit = async (
   ctx: InteractionContext,
@@ -249,57 +434,79 @@ const pickWebhookMessageComponentToEdit = async (
     Routes.guildEmojis(guildId),
   )) as APIEmoji[];
 
-  const options = getComponentsAsOptions(message.components ?? [], emojis);
-  if (options.length === 0) {
+  const threadId = message.position === undefined ? "" : message.channel_id;
+  const menu = getComponentsAsV2Menu(message.components ?? [], emojis, {
+    getSelectCustomId: (index: number) =>
+      `a_edit-component-flow-pick_${message.webhook_id}:${message.id}:${threadId}:${index}` satisfies AutoComponentCustomId,
+  });
+  if (menu.length === 0) {
     return ctx.reply({
-      content: "That message has no components that can be picked from.",
-      embeds: [],
-      components: [],
+      components: [
+        textDisplay("That message has no components that can be picked from."),
+      ],
       ephemeral: true,
+      componentsV2: true,
     });
   }
 
-  const threadId = message.position === undefined ? "" : message.channel_id;
-  const select = new StringSelectMenuBuilder()
-    .setCustomId(
-      `a_edit-component-flow-pick_${message.webhook_id}:${message.id}:${threadId}` satisfies AutoComponentCustomId,
-    )
-    .setPlaceholder("Select a component to edit")
-    .addOptions(options);
-
-  return ctx.reply({
-    embeds: [
-      new EmbedBuilder()
-        .setTitle("Edit Component")
-        .setColor(color)
-        .addFields({
-          name: "Message",
-          value: messageLink(message.channel_id, message.id, guildId),
-        })
-        .setThumbnail(
-          webhookAvatarUrl({
-            id: message.author.id,
-            avatar: message.author.avatar,
-          }),
+  const menuContainer = new ContainerBuilder()
+    .setAccentColor(color)
+    .addSectionComponents((s) =>
+      s
+        .addTextDisplayComponents((td) =>
+          td.setContent(
+            [
+              "### Edit Component",
+              "**Message**",
+              messageLink(message.channel_id, message.id, guildId),
+            ].join("\n"),
+          ),
+        )
+        .setThumbnailAccessory((t) =>
+          t
+            .setURL(
+              webhookAvatarUrl({
+                id: message.author.id,
+                avatar: message.author.avatar,
+              }),
+            )
+            .setDescription(message.author.username),
         ),
-    ],
-    components: [new ActionRowBuilder<typeof select>().addComponents(select)],
-    ephemeral: true,
-  });
+    )
+    .toJSON();
+  // Due to the reduction taking place to form a menu, at least one of these
+  // should almost always be displayed
+  const free = getRemainingComponentsCount(menu, true);
+  if (free >= 3) {
+    menu.splice(0, 0, menuContainer);
+  } else if (free >= 2) {
+    menu.splice(0, 0, menuContainer.components[0]);
+  } else if (free >= 1) {
+    menu.splice(
+      0,
+      0,
+      (menuContainer.components[0] as APISectionComponent).components[0],
+    );
+  }
+  return ctx.reply({ components: menu, ephemeral: true, componentsV2: true });
 };
 
-export const getComponentPickCallbackData = (
+const getComponentPickCallbackData = (
   messageId: string,
   componentId: bigint,
+  path: number[],
 ): MessageConstructorData => ({
-  content:
-    "What aspect of this component would you like to edit? Surface details are what users can see before clicking on the component.",
-  embeds: [],
+  componentsV2: true,
   components: [
+    textDisplay(
+      "What aspect of this component would you like to edit? Surface details are what users can see before clicking on the component.",
+    ),
     new ActionRowBuilder<SelectMenuBuilder>().addComponents(
       new SelectMenuBuilder()
         .setCustomId(
-          `a_edit-component-flow-mode_${messageId}:${componentId}` satisfies AutoComponentCustomId,
+          `a_edit-component-flow-mode_${messageId}:${componentId}:${path.join(
+            ".",
+          )}` satisfies AutoComponentCustomId,
         )
         .addOptions(
           new SelectMenuOptionBuilder()
@@ -337,12 +544,11 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
   const [scope, key] = ctx.interaction.data.values[0].split(":");
   switch (scope as "id" | "link" | "unknown") {
     case "id": {
+      const path = ctx.interaction.data.values[0]
+        .split(":")[2]
+        .split(".")
+        .map(Number);
       const id = BigInt(key);
-      // const position = ctx.interaction.data.values[0]
-      //   .split(":")[2]
-      //   .split("-")
-      //   .map(Number) as [number, number];
-
       const component = await db.query.discordMessageComponents.findFirst({
         where: (table, { eq }) => eq(table.id, id),
         columns: {
@@ -354,20 +560,20 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
       if (
         !component ||
         component.guildId?.toString() !== ctx.interaction.guild_id ||
-        component.messageId?.toString() !== messageId
+        (component.messageId !== null &&
+          component.messageId?.toString() !== messageId)
       ) {
         return ctx.updateMessage({
-          content: "Unknown component",
-          components: [],
+          components: [textDisplay("Unknown component")],
         });
       }
 
       return ctx.updateMessage(
-        getComponentPickCallbackData(messageId, component.id),
+        getComponentPickCallbackData(messageId, component.id, path),
       );
     }
     case "link": {
-      const [row, column] = key.split("-").map(Number);
+      const path = key.split(".").map(Number);
       const { message } = await getWebhookMessage(
         ctx.env,
         webhookId,
@@ -375,17 +581,16 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
         threadId,
         ctx.rest,
       );
-      const rows = message.components ?? [];
-      const foundComponent = rows[row]?.components?.[column];
+      const foundComponent = extractComponentByPath(message, path);
       if (
         !foundComponent ||
         foundComponent.type !== ComponentType.Button ||
         foundComponent.style !== ButtonStyle.Link
       ) {
         return ctx.updateMessage({
-          content:
-            "A button was referenced by its position but it is now missing.",
-          components: [],
+          components: [
+            textDisplay("The button could not be located in the message."),
+          ],
         });
       }
 
@@ -425,20 +630,19 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
         )[0];
       }
 
-      const modal = getComponentEditModal(dbComponent, messageId, [
-        row,
-        column,
-      ]);
+      const modal = getComponentEditModal(dbComponent, messageId, path);
       return [
         ctx.modal(modal.toJSON()),
         async () => {
           await ctx.followup.editOriginalMessage({
-            content: "Click the button to resume editing the button.",
             components: [
+              textDisplay("Click the button to resume editing."),
               new ActionRowBuilder<ButtonBuilder>().addComponents(
                 new ButtonBuilder()
                   .setCustomId(
-                    `a_edit-component-flow-modal-resend_${messageId}:${dbComponent.id}:${row},${column}` satisfies AutoComponentCustomId,
+                    `a_edit-component-flow-modal-resend_${messageId}:${
+                      dbComponent.id
+                    }:${path.join(".")}` satisfies AutoComponentCustomId,
                   )
                   .setStyle(ButtonStyle.Secondary)
                   .setLabel(t("customize")),
@@ -453,8 +657,11 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
       // it's a type that we can't handle. What do you do here?
       // Answer for a prize: https://github.com/discohook/discohook/issues
       return ctx.reply({
-        content: "Cannot resolve that component from the database.",
+        components: [
+          textDisplay("Cannot resolve that component from the database."),
+        ],
         ephemeral: true,
+        componentsV2: true,
       });
   }
 };
@@ -465,13 +672,13 @@ const getComponentEditModal = (
     data: StorableComponent;
   },
   messageId: string,
-  position?: [number, number],
+  path: number[],
 ) => {
   const modal = new ModalBuilder()
     .setCustomId(
-      `a_edit-component-flow-modal_${messageId}:${component.id}${
-        position ? `:${position[0]},${position[1]}` : ""
-      }` satisfies AutoModalCustomId,
+      `a_edit-component-flow-modal_${messageId}:${component.id}:${path.join(
+        ".",
+      )}` satisfies AutoModalCustomId,
     )
     .setTitle("Edit Component");
 
@@ -587,11 +794,17 @@ const getComponentEditModal = (
 export const editComponentFlowModeCallback: SelectMenuCallback = async (
   ctx,
 ) => {
-  const { messageId, componentId } = parseAutoComponentId(
+  const {
+    messageId,
+    componentId,
+    path: path_,
+  } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "messageId",
     "componentId",
+    "path",
   );
+  const path = path_.split(".").map(Number);
   const mode = ctx.interaction.data.values[0] as "internal" | "external";
 
   const db = getDb(ctx.env.HYPERDRIVE);
@@ -607,26 +820,29 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
   if (
     !component ||
     component.guildId?.toString() !== ctx.interaction.guild_id ||
-    component.messageId?.toString() !== messageId
+    (component.messageId !== null &&
+      component.messageId?.toString() !== messageId)
   ) {
     // This shouldn't happen unless the component was deleted in between
     // running the command and selecting the option
-    return ctx.updateMessage({ content: "Unknown component", components: [] });
+    return ctx.updateMessage({
+      components: [textDisplay("Unknown component")],
+    });
   }
 
   if (mode === "internal") {
-    const modal = getComponentEditModal(component, messageId);
+    const modal = getComponentEditModal(component, messageId, path);
     // TODO: also allow changing button style in this mode
     return [
       ctx.modal(modal.toJSON()),
       async () => {
         await ctx.followup.editOriginalMessage({
-          content: "Click the button to continue editing the component.",
           components: [
+            textDisplay("Click the button to continue editing the component."),
             new ActionRowBuilder<ButtonBuilder>().addComponents(
               new ButtonBuilder()
                 .setCustomId(
-                  `a_edit-component-flow-modal-resend_${messageId}:${componentId}` satisfies AutoComponentCustomId,
+                  `a_edit-component-flow-modal-resend_${messageId}:${componentId}:${path_}` satisfies AutoComponentCustomId,
                 )
                 .setStyle(ButtonStyle.Secondary)
                 .setLabel(t("customize")),
@@ -652,8 +868,10 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
   );
 
   return ctx.updateMessage({
-    content: "Click the button to open your browser and edit the component.",
     components: [
+      textDisplay(
+        "Click the button to open your browser and edit the component.",
+      ),
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
@@ -670,7 +888,7 @@ const registerComponentUpdate = async (
   data: StorableComponent,
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
-  position?: [y: number, x: number],
+  path: number[],
 ) => {
   const db = getDb(ctx.env.HYPERDRIVE);
   const user = await upsertDiscordUser(db, ctx.user);
@@ -686,31 +904,15 @@ const registerComponentUpdate = async (
     throw new Error(`Failed to built the component (type ${data.type}).`);
   }
 
-  const components = message.components ?? [
-    new ActionRowBuilder<MessageActionRowComponentBuilder>().toJSON(),
-  ];
-  let row: APIActionRowComponent<APIComponentInMessageActionRow> | undefined;
-  let current: APIComponentInMessageActionRow | undefined;
-  if (position) {
-    row = components[position[0]];
-    current = row?.components?.[position[1]];
-  } else {
-    row = components.find((c) =>
-      c.components
-        .filter((c) => c.type === built.type)
-        .map((c) => getComponentId(c))
-        .includes(id),
-    );
-    current = row?.components.find(
-      (c) => c.type === built.type && getComponentId(c) === id,
-    );
-  }
-  if (!row || !current) {
+  const foundComponent = extractComponentByPath(message, path, {
+    operation: "replace",
+    replacement: built,
+  });
+  if (!foundComponent) {
     throw new Error(
       `Couldn't find the row that this component is on. Try editing via the site instead (choose "Everything")`,
     );
   }
-  row.components.splice(row.components.indexOf(current), 1, built);
 
   const editedMsg = await db.transaction(async (tx) => {
     await tx
@@ -738,7 +940,7 @@ const registerComponentUpdate = async (
     return (await ctx.rest.patch(
       Routes.webhookMessage(webhook.id, webhook.token, message.id),
       {
-        body: { components },
+        body: { components: message.components },
         query:
           message.position !== undefined
             ? new URLSearchParams({ thread_id: message.channel_id })
@@ -769,16 +971,14 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
   const {
     messageId,
     componentId,
-    position: position_,
+    path: path_,
   } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "messageId",
     "componentId",
-    "position",
+    "path",
   );
-  const position = position_
-    ? (position_.split(",").map(Number) as [number, number])
-    : undefined;
+  const path = path_.split(".").map(Number);
 
   const db = getDb(ctx.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
@@ -794,11 +994,14 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
   if (
     !component ||
     component.guildId?.toString() !== ctx.interaction.guild_id ||
-    component.messageId?.toString() !== messageId
+    (component.messageId !== null &&
+      component.messageId?.toString() !== messageId)
   ) {
     // This shouldn't happen unless the component was deleted in between
     // running the command and selecting the option
-    return ctx.updateMessage({ content: "Unknown component", components: [] });
+    return ctx.updateMessage({
+      components: [textDisplay("Unknown component")],
+    });
   }
   // biome-ignore lint/style/noNonNullAssertion: Only a guild-only command should get us here
   const guildId = (component.guildId?.toString() ?? ctx.interaction.guild_id)!;
@@ -807,8 +1010,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
     component.channelId?.toString() ?? ctx.interaction.channel?.id;
   if (!channelId) {
     return ctx.updateMessage({
-      content: "Channel context was unavailable",
-      components: [],
+      components: [textDisplay("Channel context was unavailable")],
     });
   }
 
@@ -819,22 +1021,31 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
     )) as APIMessage;
   } catch {
     return ctx.updateMessage({
-      content: `Failed to fetch the message (${messageId}). Make sure I am able to view <#${channelId}>.`,
-      components: [],
+      components: [
+        textDisplay(
+          `Failed to fetch the message (${messageId}). Make sure I am able to view <#${channelId}>.`,
+        ),
+      ],
     });
   }
   const webhookId = message.webhook_id;
   if (!webhookId) {
     return ctx.updateMessage({
-      content: `Apparently, the message (${messageId}) was not sent by a webhook. This shouldn't happen.`,
-      components: [],
+      components: [
+        textDisplay(
+          `Apparently, the message (${messageId}) was not sent by a webhook. This shouldn't happen.`,
+        ),
+      ],
     });
   }
   const webhook = await getWebhook(webhookId, ctx.env, message.application_id);
   if (!webhook.token) {
     return ctx.updateMessage({
-      content: `The webhook's token (ID ${webhookId}) is not accessible, so I cannot edit the message.`,
-      components: [],
+      components: [
+        textDisplay(
+          `The webhook's token (ID ${webhookId}) is not accessible, so I cannot edit the message.`,
+        ),
+      ],
     });
   }
 
@@ -851,8 +1062,11 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
         } else {
           if (emojiRaw.includes(" ")) {
             return ctx.reply({
-              content: "Invalid emoji: Contains invalid characters.",
+              components: [
+                textDisplay("Invalid emoji: Contains invalid characters."),
+              ],
               ephemeral: true,
+              componentsV2: true,
             });
           }
 
@@ -865,9 +1079,13 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
           );
           if (!emoji) {
             return ctx.reply({
-              content:
-                "Could not find an emoji that matches the input. For a custom emoji, try using the numeric ID, and make sure Discohook has access to it.",
+              components: [
+                textDisplay(
+                  "Could not find an emoji that matches the input. For a custom emoji, try using the numeric ID, and make sure Discohook has access to it.",
+                ),
+              ],
               ephemeral: true,
+              componentsV2: true,
             });
           }
           data.emoji = partialEmojiToComponentEmoji(emoji);
@@ -882,8 +1100,9 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
           }
         } catch (e) {
           return ctx.reply({
-            content: "Invalid URL",
+            components: [textDisplay("Invalid URL")],
             ephemeral: true,
+            componentsV2: true,
           });
         }
         if (url.searchParams.get("dhc-id")) {
@@ -899,8 +1118,11 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
   if (disabledRaw) {
     if (!["true", "false"].includes(disabledRaw.toLowerCase())) {
       return ctx.reply({
-        content: "Disabled field must be either `true` or `false`.",
+        components: [
+          textDisplay("Disabled field must be either `true` or `false`."),
+        ],
         ephemeral: true,
+        componentsV2: true,
       });
     }
     data.disabled = disabledRaw.toLowerCase() === "true";
@@ -916,16 +1138,19 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
       guild_id: guildId,
     },
     message,
-    position,
+    path,
   );
 
   return ctx.updateMessage({
-    content: `Message edited successfully: ${messageLink(
-      edited.channel_id,
-      edited.id,
-      guildId,
-    )}`,
-    components: [],
+    components: [
+      textDisplay(
+        `Message edited successfully: ${messageLink(
+          edited.channel_id,
+          edited.id,
+          guildId,
+        )}`,
+      ),
+    ],
   });
 };
 
@@ -935,13 +1160,14 @@ export const editComponentFlowModalResendCallback: ButtonCallback = async (
   const {
     messageId,
     componentId,
-    position: position_,
+    path: path_,
   } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "messageId",
     "componentId",
-    "position",
+    "path",
   );
+  const path = path_.split(".").map(Number);
 
   const db = getDb(ctx.env.HYPERDRIVE);
   const component = await db.query.discordMessageComponents.findFirst({
@@ -956,20 +1182,15 @@ export const editComponentFlowModalResendCallback: ButtonCallback = async (
   if (
     !component ||
     component.guildId?.toString() !== ctx.interaction.guild_id ||
-    component.messageId?.toString() !== messageId
+    (component.messageId !== null &&
+      component.messageId?.toString() !== messageId)
   ) {
     // This shouldn't happen unless the component was deleted in between
     // running the command and selecting the option
-    return ctx.updateMessage({ content: "Unknown component", components: [] });
+    return ctx.updateMessage({
+      components: [textDisplay("Unknown component")],
+    });
   }
 
-  return ctx.modal(
-    getComponentEditModal(
-      component,
-      messageId,
-      position_
-        ? (position_.split(",").map(Number) as [number, number])
-        : undefined,
-    ).toJSON(),
-  );
+  return ctx.modal(getComponentEditModal(component, messageId, path).toJSON());
 };

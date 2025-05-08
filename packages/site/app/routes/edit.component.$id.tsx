@@ -5,8 +5,10 @@ import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   APIActionRowComponent,
   APIChannel,
+  APIComponentInContainer,
   APIComponentInModalActionRow,
   APIMessage,
+  APISectionComponent,
   APIWebhook,
   ButtonStyle,
   ChannelType,
@@ -14,8 +16,9 @@ import {
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
+import { TFunction } from "i18next";
 import { JWTPayload } from "jose";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
@@ -37,7 +40,7 @@ import {
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
-import { getDOToken, patchDOToken } from "~/durable/sessions";
+import { getDOToken } from "~/durable/sessions";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
@@ -62,7 +65,9 @@ import {
 import type {
   APIButtonComponentWithCustomId,
   APIComponentInMessageActionRow,
+  APIMessageTopLevelComponent,
 } from "~/types/QueryData";
+import { ZodAPITopLevelComponentRaw } from "~/types/components-raw";
 import {
   ResolutionKey,
   ResolvableAPIChannel,
@@ -70,9 +75,15 @@ import {
   ResolvableAPIRole,
   useCache,
 } from "~/util/cache/CacheManager";
+import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import {
   cdnImgAttributes,
+  getRemainingComponentsCount,
+  isActionRow,
+  isComponentHousable,
+  isComponentsV2,
   isDiscordError,
+  isStorableComponent,
   onlyActionRows,
 } from "~/util/discord";
 import { draftFlowToFlow, flowToDraftFlow } from "~/util/flow";
@@ -88,9 +99,8 @@ import {
 import { safePushState } from "./_index";
 
 const ROW_MAX_WIDTH = 5;
-const MESSAGE_MAX_ROWS = 5;
 const ROW_MAX_INDEX = ROW_MAX_WIDTH - 1;
-const MESSAGE_MAX_ROWS_INDEX = MESSAGE_MAX_ROWS - 1;
+const MAX_V1_ROWS_INDEX = MAX_V1_ROWS - 1;
 
 interface KVComponentEditorState {
   interactionId: string;
@@ -99,8 +109,7 @@ interface KVComponentEditorState {
     name: string;
     avatar: string | null;
   };
-  row?: number;
-  column?: number;
+  path?: number[];
 }
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
@@ -123,10 +132,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   let editingMeta: KVComponentEditorState | undefined;
 
   const processEditorToken = async (tokenValue: string) => {
-    // This is kind of weird but it's the best method I could think of to fall
-    // back to user auth if the editor token is invalid in any way. This block
-    // should always execute exactly one time.
-    while (!needUserAuth) {
+    // Fall back to user auth if the editor token is invalid in any way
+    const needsUserAuthInner = async (): Promise<boolean> => {
       let payload: JWTPayload;
       try {
         ({ payload } = await verifyToken(
@@ -135,12 +142,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           context.origin,
         ));
       } catch {
-        needUserAuth = true;
-        break;
+        return true;
       }
       if (payload.scp !== "editor") {
-        needUserAuth = true;
-        break;
+        return true;
       }
       // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
       const tokenId = payload.jti!;
@@ -160,8 +165,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         // transplanted this token onto a different component editor, then it's
         // been leaked and should be deleted anyway.
         await db.delete(tokens).where(eq(tokens.id, makeSnowflake(tokenId)));
-        needUserAuth = true;
-        break;
+        return true;
       }
 
       const token = await db.query.tokens.findFirst({
@@ -172,11 +176,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         },
       });
       if (!token || token.prefix !== payload.scp) {
-        needUserAuth = true;
-        break;
+        return true;
       }
-      break;
-    }
+      return needUserAuth;
+    };
+    needUserAuth = await needsUserAuthInner();
   };
 
   if (editorToken) {
@@ -232,7 +236,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   let threadId: string | undefined;
-  const message = await (async () => {
+  const message = await (async (): Promise<
+    | Pick<APIMessage, "resolved" | "components" | "webhook_id" | "flags">
+    | undefined
+  > => {
     if (component.channelId && component.messageId) {
       let msg: APIMessage | undefined;
       try {
@@ -242,17 +249,15 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
             String(component.messageId),
           ),
         )) as APIMessage;
-      } catch {}
+      } catch (e) {
+        // console.error(e);
+      }
       if (msg?.position !== undefined) {
         threadId = msg.channel_id;
       }
-
       if (msg) {
-        const { resolved, components: rows, webhook_id } = msg;
-        return { resolved, components: rows, webhook_id } as Pick<
-          APIMessage,
-          "resolved" | "components" | "webhook_id"
-        >;
+        const { resolved, components, webhook_id, flags } = msg;
+        return { resolved, components, webhook_id, flags };
       }
     }
   })();
@@ -342,21 +347,22 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { token, row, column } = await zxParseJson(request, {
+  // const { token, path, initialPath } = await zxParseJson(request, {
+  //   token: z.ostring(),
+  //   path: z.number().array().min(2).max(3).optional(),
+  //   initialPath: z.number().array().min(2).max(3).optional(),
+  // });
+  const { token, components } = await zxParseJson(request, {
     token: z.ostring(),
-    row: z.number().int().min(0).max(MESSAGE_MAX_ROWS_INDEX).optional(),
-    column: z.number().int().min(0).max(ROW_MAX_INDEX).optional(),
+    components: ZodAPITopLevelComponentRaw.array().optional(),
   });
   let tokenData: KVComponentEditorState | undefined;
   if (token) {
-    if (row === undefined || column === undefined) {
+    if (!components) {
       // This is because users logged in regularly (technically a different
       // sort of flow) are permitted to edit directly from the frontend,
       // saving us a Discord request and storage interaction.
-      throw json(
-        { message: "`row` and `column` required when using `token`" },
-        400,
-      );
+      throw json({ message: "`components` required when using `token`" }, 400);
     }
 
     let payload: JWTPayload;
@@ -382,14 +388,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       );
     }
     // Save new data, but do not extend lifespan of the token
-    if (cached.row !== row || cached.column !== column) {
-      tokenData = {
-        ...cached,
-        row,
-        column,
-      };
-      await patchDOToken(context.env, tokenId, id, { data: tokenData });
-    }
+    // if (JSON.stringify(cached.path) !== JSON.stringify(path)) {
+    //   tokenData = { ...cached, path };
+    //   await patchDOToken(context.env, tokenId, id, { data: tokenData });
+    // }
   }
 
   const user = await getUser(request, context);
@@ -447,7 +449,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
 
   const built = buildStorableComponent(component.data, String(component.id));
-  if (tokenData && message.webhook_id) {
+  // Token authorization means the user isn't allowed to see the webhook's
+  // credentials, so we must insert the component and edit the message for
+  // them.
+  if (
+    tokenData &&
+    message.webhook_id &&
+    // type guard; actually ensured above (must exist with token)
+    components
+  ) {
     // TODO: use service binding to take advantage of the bot's token store
     const webhook = (await rest.get(
       Routes.webhook(message.webhook_id),
@@ -462,12 +472,72 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       );
     }
 
-    const components = getRowsWithInsertedComponent(
-      onlyActionRows(message.components ?? []),
-      built,
-      // biome-ignore lint/style/noNonNullAssertion: Non-nullable if token is present
-      [row!, column!],
-    );
+    // TODO:
+    // With components V2 the simple insertion method doesn't really work
+    // anymore. So instead we allow the user to submit all components, but
+    // merge the payloads such that it's not possible for a hijacked editor
+    // token to substantially modify the message content.
+    // const components = message.components ?? [];
+    // if (JSON.stringify(initialPath) === JSON.stringify(path)) {
+    //   replaceComponentByPath(components, path, built);
+    // } else {
+    //   // TODO: determine offsets caused by deleting empty rows post-move
+    //   replaceComponentByPath(components, initialPath, null);
+    //   replaceComponentByPath(components, path, built);
+    // }
+
+    // const submitted = bodyComponents!;
+    // let i = -1;
+    // for (const topRow of submitted) {
+    //   i += 1;
+    //   switch (topRow.type) {
+    //     case ComponentType.ActionRow: {
+    //       if (
+    //         topRow.components.length === 1 &&
+    //         isSameComponent({
+    //           child: topRow.components[0],
+    //           component: component.data,
+    //           componentId: component.id,
+    //         })
+    //       ) {
+    //         const source = components[i];
+    //         if (
+    //           // Checking if insertion is necessary
+    //           source.type !== topRow.type ||
+    //           source.components.length > 1 ||
+    //           !isSameComponent({
+    //             child: source.components[0],
+    //             component: component.data,
+    //             componentId: component.id,
+    //           })
+    //         ) {
+    //           // User created a new row for this component; the top level
+    //           // component in the source message is not the same as this
+    //           // action row.
+    //           components.splice(i, 0, topRow);
+    //         } else {
+    //           source.components.splice(path[1], 1, built);
+    //         }
+    //       } else {
+    //         const x = topRow.components.findIndex((child) =>
+    //           isSameComponent({
+    //             child,
+    //             component: component.data,
+    //             componentId: component.id,
+    //           }),
+    //         );
+    //         if (x !== -1) {
+    //           // The component is in a row that already exists. The user
+    //           // cannot move rows in this editor, but the index might still be
+    //           // mismatched because the component might have been moved from a
+    //           // higher row that is now empty (thus deleted).
+    //         }
+    //       }
+    //       break;
+    //     }
+    //   }
+    // }
+
     try {
       const edited = (await rest.patch(
         Routes.webhookMessage(webhook.id, webhook.token, message.id),
@@ -666,45 +736,31 @@ export const unresolveStorableComponent = (
   }
 };
 
-const getRowsWithInsertedComponent = (
-  rows: APIActionRowComponent<APIComponentInMessageActionRow>[],
-  component: APIComponentInMessageActionRow,
-  position: [number, number],
-) => {
-  // We don't want to send this data to Discord
-  const cleaned = { ...component };
-  if ("flowId" in cleaned) {
-    cleaned.flowId = undefined;
-  }
-  if ("flowIds" in cleaned) {
-    cleaned.flowIds = undefined;
-  }
-
-  if (rows.length === 0 || rows.length < position[0]) {
-    const cloned = structuredClone(rows);
-    cloned.push({
-      type: ComponentType.ActionRow,
-      components: [cleaned],
-    });
-    return cloned; //.filter((row) => row.components.length !== 0);
-  }
-  const cloned = structuredClone(rows).map((row, i) => {
-    if (i === position[0]) {
-      const extant = !!row.components.find(
-        (c) => c.custom_id && c.custom_id === cleaned.custom_id,
-      );
-      row.components.splice(position[1], extant ? 1 : 0, cleaned);
-    }
-    return row;
-  });
-  //.filter((row) => row.components.length !== 0);
-  if (cloned.length - 1 < position[0] && cloned.length <= MESSAGE_MAX_ROWS) {
-    cloned.push({
-      type: ComponentType.ActionRow,
-      components: [cleaned],
-    });
-  }
-  return cloned;
+const isSameComponent = ({
+  child,
+  component,
+  componentId,
+}: {
+  /** Usually a child of an action row, not the one we're editing */
+  child: APIComponentInMessageActionRow;
+  /** The component we're editing and will check against */
+  component: {
+    type: APIComponentInMessageActionRow["type"];
+    style?: ButtonStyle;
+    url?: string;
+    label?: string;
+  };
+  componentId: string | bigint;
+}): boolean => {
+  const childId = getComponentId(child)?.toString();
+  return childId
+    ? childId === componentId.toString()
+    : component.type === ComponentType.Button &&
+        component.style === ButtonStyle.Link &&
+        child.type === component.type &&
+        child.style === component.style
+      ? child.url === component.url && child.label === component.label
+      : false;
 };
 
 const rowHasSpace = <
@@ -713,6 +769,307 @@ const rowHasSpace = <
   row: APIActionRowComponent<T>,
   component: T,
 ) => ROW_MAX_WIDTH - getRowWidth(row) >= getComponentWidth(component);
+
+const IndividualActionRowComponentChild = ({
+  t,
+  component,
+  componentId,
+  child,
+  actionsBar,
+}: {
+  t: TFunction;
+  component: APIComponentInMessageActionRow;
+  componentId: bigint | string;
+  child: APIComponentInMessageActionRow;
+  actionsBar: {
+    up: (() => void) | null;
+    down: (() => void) | null;
+  };
+}) => {
+  const id = getComponentId(child)?.toString();
+  const previewText = getComponentText(child);
+  const isLiveComponent = isSameComponent({
+    child,
+    component,
+    componentId,
+  });
+
+  return (
+    <div
+      className={twJoin(
+        "flex text-base rounded-lg shadow hover:shadow-lg transition font-semibold select-none",
+        "text-gray-600 dark:text-gray-400 bg-blurple/10 hover:bg-blurple/15 border border-blurple/30",
+      )}
+    >
+      <div className="flex p-2 h-full w-full my-auto truncate disabled:animate-pulse">
+        <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6 shrink-0">
+          {child.type === ComponentType.Button ? (
+            <div
+              className={twJoin(
+                "rounded text-gray-50",
+                isLinkButton(child) ? "p-[5px_5px_4px_4px]" : "w-full h-full",
+                {
+                  [ButtonStyle.Primary]: "bg-blurple",
+                  [ButtonStyle.Premium]: "bg-blurple",
+                  [ButtonStyle.Secondary]: "bg-[#6d6f78] dark:bg-[#4e5058]",
+                  [ButtonStyle.Link]: "bg-[#6d6f78] dark:bg-[#4e5058]",
+                  [ButtonStyle.Success]: "bg-[#248046] dark:bg-[#248046]",
+                  [ButtonStyle.Danger]: "bg-[#da373c]",
+                }[child.style],
+              )}
+            >
+              {isLinkButton(child) && (
+                <CoolIcon icon="External_Link" className="block" />
+              )}
+            </div>
+          ) : (
+            <div className="rounded bg-[#6d6f78] dark:bg-[#4e5058] p-[5px_5px_4px_4px]">
+              <CoolIcon
+                icon={
+                  (
+                    {
+                      [ComponentType.StringSelect]: "Chevron_Down",
+                      [ComponentType.UserSelect]: "Users",
+                      [ComponentType.RoleSelect]: "Tag",
+                      [ComponentType.MentionableSelect]: "Mention",
+                      [ComponentType.ChannelSelect]: "Chat",
+                    } as Record<(typeof child)["type"], CoolIconsGlyph>
+                  )[child.type]
+                }
+                className="block"
+              />
+            </div>
+          )}
+        </div>
+        <p className="truncate my-auto">
+          {previewText || t(`component.${child.type}`)}
+        </p>
+      </div>
+      <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
+        <button
+          type="button"
+          className={!isLiveComponent || actionsBar.up === null ? "hidden" : ""}
+          onClick={() => actionsBar.up?.()}
+        >
+          <CoolIcon icon="Chevron_Up" />
+        </button>
+        <button
+          type="button"
+          className={
+            !isLiveComponent || actionsBar.down === null ? "hidden" : ""
+          }
+          onClick={() => actionsBar.down?.()}
+        >
+          <CoolIcon icon="Chevron_Down" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+type Data = Pick<APIMessage, "webhook_id" | "resolved" | "flags"> & {
+  components: NonNullable<APIMessageTopLevelComponent[]>;
+};
+
+const moveUp =
+  ({
+    ci,
+    child,
+    row,
+    setData,
+  }: {
+    ci: number;
+    child: APIComponentInMessageActionRow;
+    row: APIActionRowComponent<APIComponentInMessageActionRow>;
+    setData: React.Dispatch<Partial<Data>>;
+  }) =>
+  () => {
+    row.components.splice(ci, 1);
+    row.components.splice(ci - 1, 0, child);
+    setData({});
+  };
+
+const moveDown =
+  ({
+    ci,
+    child,
+    row,
+    setData,
+  }: {
+    ci: number;
+    child: APIComponentInMessageActionRow;
+    row: APIActionRowComponent<APIComponentInMessageActionRow>;
+    setData: React.Dispatch<Partial<Data>>;
+  }) =>
+  () => {
+    row.components.splice(ci, 1);
+    row.components.splice(ci + 1, 0, child);
+    setData({});
+  };
+
+const AddRowPromptButton = ({
+  t,
+  splice,
+}: { t: TFunction; splice: () => void }) => {
+  return (
+    <button
+      type="button"
+      className={twJoin(
+        "group/row-prompt py-1",
+        "rounded-lg gap-x-2 flex font-medium select-none w-full",
+      )}
+      onClick={splice}
+    >
+      <div className="my-auto grow h-px rounded bg-gray-100 dark:bg-primary-500" />
+      <p
+        className={twJoin(
+          "my-auto mx-auto px-2 py-0.5 transition-colors text-xs rounded-lg",
+          "group-hover/row-prompt:bg-gray-100 group-hover/row-prompt:dark:bg-primary-500",
+        )}
+      >
+        <CoolIcon icon="Add_Row" /> {t("addRow")}
+      </p>
+      <div className="my-auto grow h-px rounded bg-gray-100 dark:bg-primary-500" />
+    </button>
+  );
+};
+
+// This probably shouldn't be its own function
+const isSectionAccessory = (data: Data, path: number[]): boolean => {
+  const first = data.components[path[0]];
+  if (first?.type === ComponentType.Container) {
+    const second = first.components[path[1]];
+    if (second?.type === ComponentType.Section) {
+      return true;
+    }
+  }
+  return first?.type === ComponentType.Section;
+};
+
+const MoveComponentButton = ({
+  t,
+  path,
+  siblings,
+  component,
+  data,
+  setData,
+}: {
+  t: TFunction;
+  path: number[];
+  siblings: APIComponentInMessageActionRow[];
+  component: APIComponentInMessageActionRow;
+  data: Data;
+  setData: React.Dispatch<Partial<Data>>;
+}) => (
+  <Button
+    discordstyle={ButtonStyle.Primary}
+    // disabled={isSectionAccessory(data, path)}
+    onClick={() => {
+      // Remove from where it currently is
+      try {
+        replaceComponentByPath(data.components, path, null);
+      } catch {
+        // It's probably a section accessory, which cannot be removed
+        return;
+      }
+      // It would be nice to be able to also remove the former parent here if
+      // it's been made empty so that we don't have residue to clean up.
+      // Move it to the new location
+      siblings.splice(siblings.length, 0, component);
+      // Calculate path and set state one time, at the end
+      setData({});
+    }}
+  >
+    {t("moveComponentHere", {
+      replace: { type: component.type },
+    })}
+  </Button>
+);
+
+// Modified from bot/src/commands/components/delete.tsx extractComponentByPath
+const replaceComponentByPath = (
+  allComponents: APIMessageTopLevelComponent[],
+  path: number[],
+  replacement: APIComponentInMessageActionRow | null,
+) => {
+  // let parent: APIContainerComponent | undefined;
+  let siblings: (
+    | APIMessageTopLevelComponent
+    | APIComponentInMessageActionRow
+    | APIComponentInContainer
+  )[] = allComponents;
+  let indexIndex = -1; // where we are in the path; the index of indexes
+  for (const index of path) {
+    indexIndex += 1;
+    const atIndex = siblings[index];
+    if (!atIndex) break;
+
+    if (
+      atIndex.type === ComponentType.Section &&
+      // Sections cannot be navigated into further so we have to get it
+      // in the second-to-last path position (the last value for section
+      // accessories is always 0)
+      indexIndex === path.length - 2
+    ) {
+      if (atIndex.accessory.type !== ComponentType.Button) return null;
+      if (!replacement) {
+        throw Error("Must provide replacement for section accessory");
+      }
+      if (replacement.type !== atIndex.accessory.type) {
+        throw Error(
+          `Conflicting type for accessory component replacement (${atIndex.accessory.type} to ${replacement.type})`,
+        );
+      }
+      atIndex.accessory = replacement;
+      return atIndex.accessory;
+    }
+    if (atIndex.type === ComponentType.Container) {
+      siblings = atIndex.components;
+      // parent = atIndex;
+      continue;
+    }
+    if (atIndex.type === ComponentType.ActionRow) {
+      siblings = atIndex.components;
+      continue;
+    }
+    if (isStorableComponent(atIndex)) {
+      if (replacement) siblings.splice(index, 1, replacement);
+      else siblings.splice(index, 1);
+      return atIndex;
+    }
+  }
+  return null;
+};
+
+/** Clean up residue to avoid sending an invalid payload */
+const removeEmptyActionRows = (
+  allComponents: APIMessageTopLevelComponent[],
+) => {
+  let i = -1;
+  for (const component of allComponents) {
+    i += 1;
+    switch (component.type) {
+      case ComponentType.Container: {
+        let ci = -1;
+        for (const child of component.components) {
+          ci += 1;
+          if (isActionRow(child) && child.components.length === 0) {
+            component.components.splice(ci, 1);
+          }
+        }
+        break;
+      }
+      case ComponentType.ActionRow: {
+        if (component.components.length === 0) {
+          allComponents.splice(i, 1);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+};
 
 export default () => {
   const {
@@ -726,6 +1083,7 @@ export default () => {
     roles,
     threadId,
   } = useLoaderData<typeof loader>();
+
   const { t } = useTranslation();
   const [error, setError] = useError(t);
   const cache = useCache(false);
@@ -788,124 +1146,114 @@ export default () => {
   // TODO: use this to reduce "flicker" when opening/closing modal
   // const [editingFlowOpen, setEditingFlowOpen] = useState(false);
   const [editingFlow, setEditingFlow] = useState<EditingFlowData | undefined>();
-  const [position, setPosition] = useState<[number, number]>([0, 0]);
+  // const [initialPath, setInitialPath] = useState<number[]>();
+  const [path, setPath] = useState<number[]>([0, 0]);
 
-  type Data = Pick<APIMessage, "webhook_id" | "resolved"> & {
-    components: NonNullable<
-      APIActionRowComponent<APIComponentInMessageActionRow>[]
-    >;
-  };
   const [data, setData] = useReducer(
     (current: Data, newData: Partial<Data>) => {
       const compiled = { ...current, ...newData } as Data;
-      let found = false;
-      let y = -1;
-      let x = -1;
+      let compPath: number[] = [];
+      let absoluteI = -1;
       for (const row of compiled.components) {
-        y += 1;
-        let live = row.components.find(
-          (c) => getComponentId(c) === BigInt(component_.id),
-        );
-        // We should be injecting `custom_id` into draft link buttons but this is just in case
-        if (
-          !live &&
-          component.type === ComponentType.Button &&
-          component.style === ButtonStyle.Link
-        ) {
-          live = row.components.find(
-            (c) =>
-              c.type === component.type &&
-              c.style === component.style &&
-              c.url === component.url &&
-              c.label === component.label,
-          );
-        }
-        if (live) {
-          found = true;
-          x = row.components.indexOf(live);
-          setComponent(live);
-          break;
+        absoluteI += 1;
+
+        const process = (
+          child: APIComponentInContainer,
+        ):
+          | { live: APIComponentInMessageActionRow; index: number }
+          | undefined => {
+          if (isActionRow(child)) {
+            let live = child.components.find(
+              (c) => getComponentId(c) === BigInt(component_.id),
+            );
+            // We should be injecting `custom_id` into draft link buttons but
+            // this is just in case it's missing
+            if (
+              !live &&
+              component.type === ComponentType.Button &&
+              component.style === ButtonStyle.Link
+            ) {
+              live = child.components.find(
+                (c) =>
+                  c.type === component.type &&
+                  c.style === component.style &&
+                  c.url === component.url &&
+                  c.label === component.label,
+              );
+            }
+            if (live) {
+              return {
+                live,
+                index: child.components.indexOf(live),
+              };
+            }
+          } else if (
+            child.type === ComponentType.Section &&
+            component.type === ComponentType.Button &&
+            child.accessory.type === component.type
+          ) {
+            if (
+              isSameComponent({
+                child: child.accessory,
+                component,
+                componentId: component_.id,
+              })
+            ) {
+              return {
+                live: child.accessory,
+                index: 0,
+              };
+            }
+          }
+        };
+
+        if (row.type === ComponentType.Container) {
+          let innerI = -1;
+          for (const child of row.components) {
+            innerI += 1;
+            const attempt = process(child);
+            if (attempt) {
+              setComponent(attempt.live);
+              compPath = [absoluteI, innerI, attempt.index];
+            }
+          }
+        } else {
+          const attempt = process(row);
+          if (attempt) {
+            setComponent(attempt.live);
+            compPath = [absoluteI, attempt.index];
+          }
         }
       }
 
-      if (!found || y === -1 || x === -1) {
-        console.log(`Missing position (got to Y${y} X${x})`);
+      if (compPath.length === 0) {
+        console.log("Missing position");
         return compiled;
       }
 
-      console.log("New position:", y, x);
-      setPosition([y, x]);
+      console.log("New path:", compPath);
+      setPath(compPath);
+      // if (!initialPath) setInitialPath(compPath);
       return compiled;
     },
     {
       ...message,
-      components: onlyActionRows(message?.components ?? []),
+      components: message?.components ?? [],
     } satisfies Data,
   );
-  // Insert live component
-  // biome-ignore lint/correctness/useExhaustiveDependencies: once
-  useEffect(() => {
-    let y = -1;
-    let x = -1;
-    if (message) {
-      const rows = onlyActionRows(message.components ?? []);
-      const maybeY = rows.findIndex((r) => {
-        let maybeX = r.components.findIndex(
-          (c) => getComponentId(c) === BigInt(component_.id),
-        );
-        if (
-          maybeX === -1 &&
-          component.type === ComponentType.Button &&
-          component.style === ButtonStyle.Link
-        ) {
-          maybeX = r.components.findIndex(
-            (c) =>
-              c.type === component.type &&
-              c.style === component.style &&
-              c.url === component.url &&
-              c.label === component.label,
-          );
-        }
-        if (maybeX !== -1) {
-          x = maybeX;
-          return true;
-        }
-        return false;
-      });
-      if (maybeY !== -1 && x !== -1) {
-        y = maybeY;
-        console.log("spliced", [y, x]);
-        rows[y].components.splice(x, 1, component);
-        setData({ components: rows });
-        return;
-      }
-    }
-    y = 0;
-    x = 0;
+  const isAccessory = useMemo(
+    () => isSectionAccessory(data, path),
+    [data, path],
+  );
+  const canAddRows = useMemo(
+    () =>
+      getRemainingComponentsCount(data.components, isComponentsV2(data)) > 0 &&
+      !isAccessory,
+    [data, isAccessory],
+  );
 
-    const rows = data.components;
-    let nextAvailableRow = rows.find((c, i) => {
-      const valid = rowHasSpace(c, component);
-      if (valid) y = i;
-      return valid;
-    });
-    if (!nextAvailableRow && rows.length < MESSAGE_MAX_ROWS) {
-      nextAvailableRow = { type: ComponentType.ActionRow, components: [] };
-      rows.push(nextAvailableRow);
-      y = rows.length - 1;
-    } else if (!nextAvailableRow) {
-      const requiredWidth = getComponentWidth(component);
-      setError({
-        message: `No available slots for this component (need at least ${requiredWidth}).`,
-      });
-      return;
-    }
-    console.log("insert", [y, x]);
-    nextAvailableRow.components.push(component);
-    x = nextAvailableRow.components.length - 1;
-
-    setData({ components: rows });
-  }, []);
+  // Initialize path value by running this once
+  useEffect(() => setData({}), []);
 
   // const [overflowMessage, setOverflowMessage] = useState(false);
   const webhookTokenFetcher = useSafeFetcher<typeof ApiGetGuildWebhookToken>({
@@ -997,247 +1345,314 @@ export default () => {
             />
           </p>
           <div className="space-y-1 text-base">
-            {data.components.map((row, i) => {
-              const hasLiveComponent = !!row.components.find(
-                (c) =>
-                  c.custom_id === component.custom_id && component.custom_id,
-              );
-              return (
-                <div key={`row-${i}`}>
-                  <details
-                    className="group/action-row rounded-lg p-2 pl-4 bg-gray-100 dark:bg-primary-630 border border-gray-300 dark:border-gray-700 shadow"
-                    open={hasLiveComponent}
-                  >
-                    <summary className="group-open/action-row:mb-2 transition-[margin] marker:content-none marker-none flex text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-                      <CoolIcon
-                        icon="Chevron_Right"
-                        className="group-open/action-row:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-                      />
-                      <span className="my-auto">
-                        {t("componentN.1", { replace: { n: i + 1 } })}
-                      </span>
-                    </summary>
-                    <div className="space-y-1">
-                      {row.components.map((child, ci) => {
-                        const id = getComponentId(child)?.toString();
-                        const previewText = getComponentText(child);
-                        const isLiveComponent = id
-                          ? id === component_.id.toString()
-                          : component.type === ComponentType.Button &&
-                              component.style === ButtonStyle.Link &&
-                              child.type === component.type &&
-                              child.style === component.style
-                            ? child.url === component.url &&
-                              child.label === component.label
-                            : false;
-
+            {isAccessory
+              ? null
+              : data.components.map((row, i) => {
+                  const simpleFindLiveComponent = (
+                    actionRow: APIActionRowComponent<APIComponentInMessageActionRow>,
+                  ) =>
+                    actionRow.components.find(
+                      (c) =>
+                        c.custom_id === component.custom_id &&
+                        component.custom_id,
+                    );
+                  const hasLiveComponent = (
+                    c: APIMessageTopLevelComponent | APIComponentInContainer,
+                  ): boolean => {
+                    switch (c.type) {
+                      case ComponentType.Container:
                         return (
-                          <div
-                            key={`row-${i}-child-${id}-${ci}`}
-                            className="flex text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none ltr:-ml-2 rtl:-mr-2"
-                          >
-                            <div className="flex p-2 h-full w-full my-auto truncate disabled:animate-pulse">
-                              <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6 shrink-0">
-                                {child.type === ComponentType.Button ? (
-                                  <div
-                                    className={twJoin(
-                                      "rounded text-gray-50",
-                                      isLinkButton(child)
-                                        ? "p-[5px_5px_4px_4px]"
-                                        : "w-full h-full",
-                                      {
-                                        [ButtonStyle.Primary]: "bg-blurple",
-                                        [ButtonStyle.Premium]: "bg-blurple",
-                                        [ButtonStyle.Secondary]:
-                                          "bg-[#6d6f78] dark:bg-[#4e5058]",
-                                        [ButtonStyle.Link]:
-                                          "bg-[#6d6f78] dark:bg-[#4e5058]",
-                                        [ButtonStyle.Success]:
-                                          "bg-[#248046] dark:bg-[#248046]",
-                                        [ButtonStyle.Danger]: "bg-[#da373c]",
-                                      }[child.style],
-                                    )}
-                                  >
-                                    {isLinkButton(child) && (
-                                      <CoolIcon
-                                        icon="External_Link"
-                                        className="block"
-                                      />
-                                    )}
-                                  </div>
-                                ) : (
-                                  <div className="rounded bg-[#6d6f78] dark:bg-[#4e5058] p-[5px_5px_4px_4px]">
-                                    <CoolIcon
-                                      icon={
-                                        (
-                                          {
-                                            [ComponentType.StringSelect]:
-                                              "Chevron_Down",
-                                            [ComponentType.UserSelect]: "Users",
-                                            [ComponentType.RoleSelect]: "Tag",
-                                            [ComponentType.MentionableSelect]:
-                                              "Mention",
-                                            [ComponentType.ChannelSelect]:
-                                              "Chat",
-                                          } as Record<
-                                            (typeof child)["type"],
-                                            CoolIconsGlyph
-                                          >
-                                        )[child.type]
-                                      }
-                                      className="block"
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                              <p className="truncate my-auto">
-                                {previewText ||
-                                  `${t(`component.${child.type}`)} ${
-                                    child.type === 2 ? ci + 1 : ""
-                                  }`}
-                              </p>
-                            </div>
-                            <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
-                              <button
-                                type="button"
-                                className={
-                                  !isLiveComponent ||
-                                  (i === 0 &&
-                                    ci === 0 &&
-                                    row.components.length === 1)
-                                    ? "hidden"
-                                    : ""
-                                }
-                                onClick={() => {
-                                  if (ci === 0) {
-                                    const newRow: Data["components"][number] = {
-                                      type: ComponentType.ActionRow,
-                                      components: [child],
-                                    };
-                                    if (row.components.length === 1) {
-                                      const nextAvailableRow = data.components
-                                        .filter(
-                                          (r, ri) =>
-                                            ri < i && rowHasSpace(r, child),
-                                        )
-                                        .reverse()[0];
-                                      if (!nextAvailableRow) {
-                                        if (i <= 0) return;
-                                        if (
-                                          data.components.length <
-                                          MESSAGE_MAX_ROWS
-                                        ) {
-                                          data.components.splice(i, 1);
-                                          data.components.splice(
-                                            Math.max(i - 2, 0),
-                                            0,
-                                            newRow,
-                                          );
-                                        }
-                                        setData({});
-                                        return;
-                                      }
-
-                                      nextAvailableRow.components.splice(
-                                        nextAvailableRow.components.length,
-                                        0,
-                                        child,
-                                      );
-                                      // remove now-empty row
-                                      data.components.splice(i, 1);
-                                    } else {
-                                      row.components.splice(ci, 1);
-                                      data.components.splice(i - 1, 0, newRow);
-                                    }
-                                  } else {
-                                    row.components.splice(ci, 1);
-                                    row.components.splice(ci - 1, 0, child);
-                                  }
-                                  setData({});
-                                }}
-                              >
-                                <CoolIcon icon="Chevron_Up" />
-                              </button>
-                              <button
-                                type="button"
-                                className={
-                                  (i === MESSAGE_MAX_ROWS_INDEX &&
-                                    ci === row.components.length - 1) ||
-                                  !isLiveComponent
-                                    ? "hidden"
-                                    : ""
-                                }
-                                onClick={() => {
-                                  if (ci === row.components.length - 1) {
-                                    const newRow: Data["components"][number] = {
-                                      type: ComponentType.ActionRow,
-                                      components: [child],
-                                    };
-                                    if (row.components.length === 1) {
-                                      const nextAvailableRow =
-                                        data.components.filter(
-                                          (r, ri) =>
-                                            ri > i && rowHasSpace(r, child),
-                                        )[0];
-                                      if (!nextAvailableRow) {
-                                        if (i >= MESSAGE_MAX_ROWS_INDEX) return;
-                                        // Move other rows up if we're not already on the bottom
-                                        if (i + 2 > MESSAGE_MAX_ROWS_INDEX) {
-                                          data.components.splice(i, 1);
-                                          data.components = [
-                                            ...data.components,
-                                            newRow,
-                                          ];
-                                        } else if (
-                                          data.components.length <
-                                          MESSAGE_MAX_ROWS
-                                        ) {
-                                          data.components.splice(
-                                            i + 2,
-                                            0,
-                                            newRow,
-                                          );
-                                          data.components.splice(i, 1);
-                                        }
-                                        setData({});
-                                        return;
-                                      }
-
-                                      nextAvailableRow.components.splice(
-                                        nextAvailableRow.components.length,
-                                        0,
-                                        child,
-                                      );
-                                      // remove now-empty row
-                                      data.components.splice(i, 1);
-                                    } else {
-                                      row.components.splice(ci, 1);
-                                      data.components.splice(i + 1, 0, newRow);
-                                    }
-                                  } else {
-                                    row.components.splice(ci, 1);
-                                    row.components.splice(ci + 1, 0, child);
-                                  }
-                                  setData({});
-                                }}
-                              >
-                                <CoolIcon icon="Chevron_Down" />
-                              </button>
-                            </div>
-                          </div>
+                          c.components.find(hasLiveComponent) !== undefined
                         );
-                      })}
+                      case ComponentType.ActionRow:
+                        return simpleFindLiveComponent(c) !== undefined;
+                      case ComponentType.Section:
+                        return c.accessory.type !== ComponentType.Button
+                          ? false
+                          : simpleFindLiveComponent({
+                              type: ComponentType.ActionRow,
+                              components: [c.accessory],
+                            }) !== undefined;
+                      default:
+                        return false;
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={`component-${row.type}-${i}`}
+                      className="space-y-1"
+                    >
+                      {canAddRows && i === 0 ? (
+                        <AddRowPromptButton
+                          t={t}
+                          splice={() => {
+                            data.components.splice(i, 0, {
+                              type: ComponentType.ActionRow,
+                              components: [],
+                            });
+                            setData({});
+                          }}
+                        />
+                      ) : null}
+                      {isComponentHousable(row) ? (
+                        <details
+                          className="group/top rounded-lg py-2 bg-gray-100 dark:bg-primary-630 border border-gray-300 dark:border-gray-700 shadow"
+                          open={hasLiveComponent(row)}
+                        >
+                          <summary className="group-open/top:mb-2 transition-[margin] marker:content-none marker-none flex text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none px-4">
+                            <CoolIcon
+                              icon="Chevron_Right"
+                              className="group-open/top:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+                            />
+                            <span className="my-auto">
+                              {t(`componentN.${row.type}`, {
+                                // TODO: per-type count like in the main editor
+                                replace: { n: i + 1 },
+                              })}
+                            </span>
+                            {isActionRow(row) && row.components.length === 0 ? (
+                              <button
+                                type="button"
+                                className="ltr:ml-auto rtl:mr-auto my-auto"
+                                onClick={() => {
+                                  data.components.splice(i, 1);
+                                  setData({});
+                                }}
+                              >
+                                <CoolIcon icon="Trash_Full" />
+                              </button>
+                            ) : null}
+                          </summary>
+                          {row.type === ComponentType.Container ? (
+                            <div className="space-y-1 px-4">
+                              {row.components
+                                .filter(
+                                  (
+                                    c,
+                                  ): c is
+                                    | APISectionComponent
+                                    | APIActionRowComponent<APIComponentInMessageActionRow> =>
+                                    (c.type === ComponentType.Section &&
+                                      c.accessory.type ===
+                                        ComponentType.Button) ||
+                                    c.type === ComponentType.ActionRow,
+                                )
+                                .map((containerChild, containerChildI) => (
+                                  <div
+                                    key={`component-${i}-children-${containerChildI}`}
+                                  >
+                                    {canAddRows && containerChildI === 0 ? (
+                                      <AddRowPromptButton
+                                        t={t}
+                                        splice={() => {
+                                          row.components.splice(0, 0, {
+                                            type: ComponentType.ActionRow,
+                                            components: [],
+                                          });
+                                          setData({});
+                                        }}
+                                      />
+                                    ) : null}
+                                    <div className="w-full">
+                                      <p className="text-sm font-medium select-none">
+                                        {t(`component.${containerChild.type}`)}
+                                      </p>
+                                    </div>
+                                    {containerChild.type ===
+                                    ComponentType.Section ? (
+                                      <div className="flex gap-2">
+                                        <div
+                                          className={twJoin(
+                                            "grow truncate flex text-base rounded-lg shadow hover:shadow-lg transition font-medium select-none px-4",
+                                            "text-muted dark:text-muted-dark bg-gray-500/10 hover:bg-gray-500/15 border border-gray-500/30",
+                                          )}
+                                        >
+                                          <p className="truncate my-auto">
+                                            {containerChild.components
+                                              .map((c) => c.content)
+                                              .join(" / ")}
+                                          </p>
+                                        </div>
+                                        <IndividualActionRowComponentChild
+                                          t={t}
+                                          component={component}
+                                          componentId={component_.id}
+                                          child={
+                                            // Definitely a button; see above filter
+                                            containerChild.accessory as APIComponentInMessageActionRow
+                                          }
+                                          actionsBar={{ up: null, down: null }}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-1">
+                                        {containerChild.components.map(
+                                          (rowChild, rowI) => (
+                                            <IndividualActionRowComponentChild
+                                              t={t}
+                                              component={component}
+                                              componentId={component_.id}
+                                              child={rowChild}
+                                              actionsBar={{
+                                                up:
+                                                  rowI === 0
+                                                    ? null
+                                                    : moveUp({
+                                                        ci: rowI,
+                                                        child: rowChild,
+                                                        row: containerChild,
+                                                        setData,
+                                                      }),
+                                                down:
+                                                  rowI >=
+                                                  containerChild.components
+                                                    .length -
+                                                    1
+                                                    ? null
+                                                    : moveDown({
+                                                        ci: rowI,
+                                                        child: rowChild,
+                                                        row: containerChild,
+                                                        setData,
+                                                      }),
+                                              }}
+                                            />
+                                          ),
+                                        )}
+                                        <div className="flex flex-wrap gap-2">
+                                          {!hasLiveComponent(containerChild) &&
+                                          rowHasSpace(
+                                            containerChild,
+                                            component,
+                                          ) ? (
+                                            <MoveComponentButton
+                                              t={t}
+                                              path={path}
+                                              siblings={
+                                                containerChild.components
+                                              }
+                                              component={component}
+                                              data={data}
+                                              setData={setData}
+                                            />
+                                          ) : null}
+                                          {containerChild.components.length ===
+                                          0 ? (
+                                            // Not a fan of this button; it's the
+                                            // only "delete" button on the page;
+                                            // the rest are trash icons.
+                                            <Button
+                                              discordstyle={ButtonStyle.Danger}
+                                              onClick={() => {
+                                                row.components.splice(
+                                                  containerChildI,
+                                                  1,
+                                                );
+                                                setData({});
+                                              }}
+                                            >
+                                              {t("deleteRow")}
+                                            </Button>
+                                          ) : null}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {canAddRows ? (
+                                      <AddRowPromptButton
+                                        t={t}
+                                        splice={() => {
+                                          row.components.splice(
+                                            containerChildI + 1,
+                                            0,
+                                            {
+                                              type: ComponentType.ActionRow,
+                                              components: [],
+                                            },
+                                          );
+                                          setData({});
+                                        }}
+                                      />
+                                    ) : null}
+                                  </div>
+                                ))}
+                            </div>
+                          ) : isActionRow(row) ? (
+                            <div className="space-y-1 px-2">
+                              {row.components.map((child, ci) => (
+                                <IndividualActionRowComponentChild
+                                  t={t}
+                                  key={`component-${i}-child-${ci}`}
+                                  component={component}
+                                  componentId={component_.id}
+                                  child={child}
+                                  actionsBar={{
+                                    up:
+                                      ci === 0
+                                        ? null
+                                        : moveUp({ ci, child, row, setData }),
+                                    down:
+                                      ci >= row.components.length - 1
+                                        ? null
+                                        : moveDown({ ci, child, row, setData }),
+                                  }}
+                                />
+                              ))}
+                              {!hasLiveComponent(row) &&
+                              rowHasSpace(row, component) ? (
+                                <MoveComponentButton
+                                  t={t}
+                                  siblings={row.components}
+                                  component={component}
+                                  path={path}
+                                  data={data}
+                                  setData={setData}
+                                />
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </details>
+                      ) : (
+                        <div className="rounded-lg py-2 px-4 bg-gray-100 dark:bg-primary-630 border border-gray-300 dark:border-gray-700 shadow text-gray-600 dark:text-gray-400 cursor-default select-none">
+                          <p className="font-medium text-base">
+                            {t(`component.${row.type}`)}
+                          </p>
+                        </div>
+                      )}
+                      {canAddRows ? (
+                        <AddRowPromptButton
+                          t={t}
+                          splice={() => {
+                            data.components.splice(i + 1, 0, {
+                              type: ComponentType.ActionRow,
+                              components: [],
+                            });
+                            setData({});
+                          }}
+                        />
+                      ) : null}
                     </div>
-                  </details>
-                </div>
-              );
-            })}
-            {data.components.length >= MESSAGE_MAX_ROWS && (
-              <p className="text-sm text-yellow-500 dark:text-yellow-200">
-                <CoolIcon icon="Triangle_Warning" />{" "}
-                {t("messageMaxRowsNote", { count: MESSAGE_MAX_ROWS })}
+                  );
+                })}
+            {!canAddRows ? (
+              <p
+                className={twJoin(
+                  "text-sm",
+                  isAccessory
+                    ? "text-blurple dark:text-blurple-200"
+                    : "text-yellow-500 dark:text-yellow-200",
+                )}
+              >
+                <CoolIcon icon={isAccessory ? "Info" : "Triangle_Warning"} />{" "}
+                {isComponentsV2(data)
+                  ? isAccessory
+                    ? t("sectionAccessoryNotMovable", {
+                        replace: { type: component.type },
+                      })
+                    : t("messageMaxRowsV2Note", { count: MAX_TOTAL_COMPONENTS })
+                  : t("messageMaxRowsNote", { count: MAX_V1_ROWS })}
               </p>
-            )}
+            ) : null}
           </div>
         </div>
         <hr className="border-black/5 dark:border-gray-200/20 my-4" />
@@ -1245,14 +1660,8 @@ export default () => {
           t={t}
           component={component}
           setComponent={(newComponent) => {
-            setData({
-              components: data.components.map((row, ri) => {
-                if (ri === position[0]) {
-                  row.components.splice(position[1], 1, newComponent);
-                }
-                return row;
-              }),
-            });
+            replaceComponentByPath(data.components, path, newComponent);
+            setData({});
           }}
           cache={cache}
           setEditingFlow={setEditingFlow}
@@ -1266,11 +1675,7 @@ export default () => {
               const updated = await submitComponent(component, setError);
               if (updated) {
                 try {
-                  data.components[position[0]].components.splice(
-                    position[1],
-                    1,
-                    updated,
-                  );
+                  replaceComponentByPath(data.components, path, updated);
                   setData({});
                 } catch (e) {
                   console.error(e);
@@ -1300,11 +1705,8 @@ export default () => {
                 if (!updated) return;
 
                 try {
-                  data.components[position[0]].components.splice(
-                    position[1],
-                    1,
-                    updated,
-                  );
+                  replaceComponentByPath(data.components, path, updated);
+                  removeEmptyActionRows(data.components);
                   setData({});
                 } catch (e) {
                   console.error(e);
@@ -1314,8 +1716,9 @@ export default () => {
                   fetcher.submit(
                     {
                       token,
-                      row: position[0],
-                      column: position[1],
+                      components: data.components,
+                      // path,
+                      // initialPath,
                     },
                     { method: "PATCH", action: actionPath },
                   );
@@ -1360,18 +1763,20 @@ export default () => {
                   });
                   if (result.status === "success") {
                     setError(undefined);
-                    auditLogFetcher.submit(
-                      {
-                        type: "edit",
-                        threadId,
-                      },
-                      {
-                        method: "POST",
-                        action: apiUrl(
-                          BRoutes.messageLog(wt.id, wt.token, result.data.id),
-                        ),
-                      },
-                    );
+                    if (!isComponentsV2(message)) {
+                      auditLogFetcher.submit(
+                        {
+                          type: "edit",
+                          threadId,
+                        },
+                        {
+                          method: "POST",
+                          action: apiUrl(
+                            BRoutes.messageLog(wt.id, wt.token, result.data.id),
+                          ),
+                        },
+                      );
+                    }
 
                     // Tell the server that something changed and it needs to
                     // either fetch the message or ensure that the component's
