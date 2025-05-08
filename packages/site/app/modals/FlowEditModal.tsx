@@ -41,7 +41,11 @@ import {
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
 import { RoleSelect } from "../components/RoleSelect";
-import { StringSelect, selectClassNames } from "../components/StringSelect";
+import {
+  SimpleStringSelect,
+  StringSelect,
+  selectClassNames
+} from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
@@ -458,10 +462,12 @@ const FlowActionEditor: React.FC<{
           </div>
         )}
         <div className="space-y-1">
-          {action.type === 0 ? (
-            <StringSelect
+          {action.type === FlowActionType.Dud ? (
+            <SimpleStringSelect
+              t={t}
               name="type"
               label={t("actionTypeText")}
+              value={action.type}
               options={actionTypes
                 .filter(
                   (type) =>
@@ -472,29 +478,20 @@ const FlowActionEditor: React.FC<{
                       ? [2, 11].includes(type)
                       : true),
                 )
-                .map((value) => ({
-                  label: t(`actionType.${value}`),
-                  value,
-                }))}
-              value={{
-                label: t(`actionType.${action.type}`),
-                value: action.type,
-              }}
-              menuPortalTarget={document.body}
-              onChange={(opt) => {
-                const { value } = opt as { value: number };
+                .map((value) => ({ value, label: t(`actionType.${value}`) }))}
+              onChange={(value: FlowActionType) => {
                 flow.actions.splice(i, 1, {
                   type: value,
-                  ...(value === 1
+                  ...(value === FlowActionType.Wait
                     ? { seconds: 1 }
-                    : value === 2
+                    : value === FlowActionType.Check
                       ? { then: [], else: [] }
                       : {}),
                 });
                 update();
               }}
             />
-          ) : action.type === 1 ? (
+          ) : action.type === FlowActionType.Wait ? (
             <NumberField.Root
               min={0}
               max={60}
@@ -518,7 +515,7 @@ const FlowActionEditor: React.FC<{
                 </NumberField.Increment>
               </NumberField.Group>
             </NumberField.Root>
-          ) : action.type === 2 ? (
+          ) : action.type === FlowActionType.Check ? (
             <div>
               <CheckFunctionEditor
                 t={t}
@@ -615,20 +612,19 @@ const FlowActionEditor: React.FC<{
               const selected = backupsFetcher.data?.find(
                 (b) => b.id === action.backupId,
               );
-              const messageOptions = [
+              const messageOptions: {
+                label: string;
+                value: number | "null";
+              }[] = [
                 ...(selected
                   ? selected.data.messages.map((msg, i) => ({
-                      label: (
-                        <span className="block truncate">
-                          {i + 1}. {msg.text ?? "no content"}
-                        </span>
-                      ),
+                      label: `${i + 1}. ${msg.text ?? "no content"}`,
                       value: i,
                     }))
                   : []),
                 {
                   label: t("random"),
-                  value: null,
+                  value: "null",
                 },
               ];
               const flags = new MessageFlagsBitField(action.flags ?? 0);
@@ -691,32 +687,28 @@ const FlowActionEditor: React.FC<{
                   </div>
                   {
                     // incl. the random option
-                    messageOptions.length > 2 && (
-                      <StringSelect
+                    messageOptions.length > 2 ? (
+                      <SimpleStringSelect
+                        t={t}
                         name="backupMessageIndex"
                         label={t("message")}
-                        required
-                        options={messageOptions}
                         value={
-                          messageOptions.find(
-                            (o) => o.value === action.backupMessageIndex,
-                          ) ?? ""
+                          (action.backupMessageIndex === null
+                            ? "null"
+                            : action.backupMessageIndex ?? 0) as number | "null"
                         }
-                        isDisabled={
+                        options={messageOptions}
+                        onChange={(value) => {
+                          action.backupMessageIndex =
+                            value === "null" ? null : value;
+                          update();
+                        }}
+                        required
+                        disabled={
                           !selected || selected.data.messages.length <= 1
                         }
-                        onChange={(raw) => {
-                          const opt = raw as {
-                            label: string;
-                            value: number | null;
-                          } | null;
-                          if (opt) {
-                            action.backupMessageIndex = opt.value;
-                            update();
-                          }
-                        }}
                       />
-                    )
+                    ) : null
                   }
                   <div>
                     <p className="text-sm font-medium">{t("flags")}</p>
@@ -741,20 +733,19 @@ const FlowActionEditor: React.FC<{
               const selected = backupsFetcher.data?.find(
                 (b) => b.id === action.backupId,
               );
-              const messageOptions = [
+              const messageOptions: {
+                label: string;
+                value: number | "null";
+              }[] = [
                 ...(selected
                   ? selected.data.messages.map((msg, i) => ({
-                      label: (
-                        <span className="block truncate">
-                          {i + 1}. {msg.text ?? "no content"}
-                        </span>
-                      ),
+                      label: `${i + 1}. ${msg.text ?? "no content"}`,
                       value: i,
                     }))
                   : []),
                 {
                   label: t("random"),
-                  value: null,
+                  value: "null",
                 },
               ];
 
@@ -898,29 +889,25 @@ const FlowActionEditor: React.FC<{
                   {
                     // incl. the random option
                     messageOptions.length > 2 && (
-                      <StringSelect
+                      <SimpleStringSelect
+                        t={t}
                         name="backupMessageIndex"
                         label={t("message")}
-                        required
-                        options={messageOptions}
                         value={
-                          messageOptions.find(
-                            (o) => o.value === action.backupMessageIndex,
-                          ) ?? ""
+                          (action.backupMessageIndex === null
+                            ? "null"
+                            : action.backupMessageIndex ?? 0) as number | "null"
                         }
-                        isDisabled={
+                        options={messageOptions}
+                        onChange={(value) => {
+                          action.backupMessageIndex =
+                            value === "null" ? null : value;
+                          update();
+                        }}
+                        required
+                        disabled={
                           !selected || selected.data.messages.length <= 1
                         }
-                        onChange={(raw) => {
-                          const opt = raw as {
-                            label: string;
-                            value: number | null;
-                          } | null;
-                          if (opt) {
-                            action.backupMessageIndex = opt.value;
-                            update();
-                          }
-                        }}
                       />
                     )
                   }
@@ -970,39 +957,32 @@ const FlowActionEditor: React.FC<{
                     }}
                   />
                   {(!channel || channel.type !== "forum") && (
-                    <StringSelect
+                    <SimpleStringSelect
+                      t={t}
                       name="threadType"
                       label={t("type")}
                       required
-                      options={threadTypeOptions}
-                      value={
-                        threadTypeOptions.find(
-                          (o) => o.value === action.threadType,
-                        ) ?? ""
+                      options={
+                        threadTypeOptions as {
+                          label: string;
+                          value: typeof action.threadType;
+                        }[]
                       }
-                      onChange={(raw) => {
-                        const opt = raw as {
-                          value: (typeof action)["threadType"];
-                        } | null;
-                        action.threadType = opt?.value;
+                      value={action.threadType}
+                      onChange={(value) => {
+                        action.threadType = value ?? undefined;
                         update();
                       }}
                     />
                   )}
-                  <StringSelect
+                  <SimpleStringSelect
+                    t={t}
                     name="autoArchiveDuration"
                     label={t("autoArchiveDuration")}
                     options={threadAutoArchiveOptions}
-                    value={
-                      threadAutoArchiveOptions.find(
-                        (o) => o.value === action.autoArchiveDuration,
-                      ) ?? ""
-                    }
-                    onChange={(raw) => {
-                      const opt = raw as {
-                        value: (typeof action)["autoArchiveDuration"];
-                      } | null;
-                      action.autoArchiveDuration = opt?.value;
+                    value={action.autoArchiveDuration}
+                    onChange={(value) => {
+                      action.autoArchiveDuration = value;
                       update();
                     }}
                   />
@@ -1150,18 +1130,14 @@ const FlowActionSetVariableEditor: React.FC<{
   return (
     <div className={twJoin("flex gap-1", flex ? "flex-row" : "flex-col")}>
       <div className={twJoin(flex ? "w-1/3" : "contents")}>
-        <StringSelect
+        <SimpleStringSelect
+          t={t}
           name="varType"
           label={t("type")}
           options={varTypeOptions}
-          value={
-            varTypeOptions.find((o) => o.value === action.varType) ??
-            varTypeOptions[0]
-          }
-          onChange={(opt) => {
-            action.varType = opt
-              ? (opt as { value: FlowActionSetVariableType }).value
-              : undefined;
+          value={action.varType ?? varTypeOptions[0].value}
+          onChange={(value) => {
+            action.varType = value;
             update();
           }}
         />
@@ -1261,33 +1237,20 @@ const CheckFunctionEditor: React.FC<{
           </div>
         </div>
       )}
-      <StringSelect
+      <SimpleStringSelect
+        t={t}
         name="functionType"
         label={t("checkFunctionTypeText")}
+        value={func?.type}
         options={checkFunctionTypes
           // Max recursion. Could definitely be increased in the future
           .filter(level >= 5 ? (t) => ![0, 1, 3].includes(t) : () => true)
-          .map((value) => ({
-            label: t(`checkFunctionType.${value}`),
-            value,
-          }))}
-        value={
-          func
-            ? {
-                label: t(`checkFunctionType.${func.type}`),
-                value: func.type,
-              }
-            : { value: "" }
-        }
-        required
-        menuPortalTarget={document.body}
-        onChange={(opt) => {
-          const { value } = opt as {
-            value: FlowActionCheckFunctionType;
-          };
+          .map((value) => ({ value, label: t(`checkFunctionType.${value}`) }))}
+        onChange={(value) => {
           setFunction(checkFunctionSeed(value));
           update();
         }}
+        required
       />
       {!!func &&
         (func.type === 0 || func.type === 1 || func.type === 3 ? (
