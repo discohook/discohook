@@ -965,7 +965,6 @@ const MoveComponentButton = ({
     discordstyle={ButtonStyle.Primary}
     // disabled={isSectionAccessory(data, path)}
     onClick={() => {
-      console.log({ path });
       // Remove from where it currently is
       try {
         replaceComponentByPath(data.components, path, null);
@@ -1084,7 +1083,6 @@ export default () => {
     roles,
     threadId,
   } = useLoaderData<typeof loader>();
-  console.log(message, token);
 
   const { t } = useTranslation();
   const [error, setError] = useError(t);
