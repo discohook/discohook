@@ -67,11 +67,12 @@
         "browse": "浏览频道",
         "customize": "频道和身份组",
         "unknown": "未知",
-        "unknownUser": "未知用户"
+        "unknownUser": "未知用户",
+        "deletedRole": "已删除身份组"
     },
     "timestamp": {
-        "time": "{{ date, hh:mm }}",
-        "time_verbose": "{{ date, hh:mm:ss }}",
+        "time": "{{ date, h:mm A }}",
+        "time_verbose": "{{ date, h:mm:ss A }}",
         "full": "{{ date, YYYY M DD h:mm A }}",
         "full_verbose": "{{ date, YYYY MM DD dddd h:mm:ss A }}",
         "date": "{{ date, YYYY/MM/DD }}",
@@ -145,8 +146,8 @@
     "auditLog": "审核日志",
     "permissions": "权限",
     "permission": {
-        "CreateInstantInvite": "创建邀请链接",
-        "KickMembers": "踢除用户",
+        "CreateInstantInvite": "创建邀请",
+        "KickMembers": "踢除、批准和拒绝成员",
         "BanMembers": "封锁用户",
         "Administrator": "管理员",
         "ManageChannels": "管理频道",
@@ -154,7 +155,7 @@
         "ManageGuild": "管理服务器",
         "AddReactions": "添加反应",
         "ViewAuditLog": "查看审核日志",
-        "PrioritySpeaker": "优先发言人",
+        "PrioritySpeaker": "优先扬声器",
         "ViewChannel": "查看频道",
         "SendMessages": "发送消息",
         "ManageMessages": "管理消息",
@@ -182,7 +183,11 @@
         "UseExternalSounds": "使用外部声音",
         "SendVoiceMessages": "发送语音消息",
         "ModerateMembers": "暂时禁言成员",
-        "UseSoundboard": "使用声音板"
+        "UseSoundboard": "使用声音板",
+        "Stream": "视频",
+        "MentionEveryone": "提及@everyone, @here和所有身份组",
+        "ManageEmojisAndStickers": "管理表达",
+        "SendTTSMessages": "发送文字转语音消息"
     },
     "user": "用户",
     "sidebarColor": "侧栏颜色",
@@ -210,7 +215,9 @@
         "it": "意大利语",
         "en-GB": "英语（英国）",
         "fr": "法语",
-        "de": "德语"
+        "de": "德语",
+        "uk": "乌克兰语",
+        "ru": "俄语"
     },
     "cancel": "取消",
     "sendNoWebhooks": "您没有可发送的 Webhook。",
@@ -303,5 +310,104 @@
     "everyMonth": "每个月",
     "dayOfMonth": "日期",
     "repeating": "重复",
-    "weekday": "平日"
+    "weekday": "平日",
+    "day": "天",
+    "botsPremiumNote": "您发现了一项高级功能！<0>在此处阅读有关自定义机器人的更多信息。</0>",
+    "minute": "分钟",
+    "everyWeekday": "任何平日",
+    "createBot": {
+        "title": "创建机器人",
+        "step1": "访问 <0>开发者门户</0>",
+        "step2": "点击 \"New Application\", 输入名称, 然后点击 \"Create\"",
+        "step3": "在 \"General Information\" 页 (默认选择)中，点击 \"Application ID\" 下的 \"Copy\"",
+        "step4": "粘贴在框中："
+    },
+    "nextRunAtRepeat": "<0/> 下次运行 {{relative}} ($t(timestamp.full))",
+    "updateBot": "更新机器人",
+    "botTokenHiddenNote": "出于安全原因，您在此处保存令牌后，令牌将永远不会显示给您。如果您已重置令牌，请按 “Clear Token” 然后重新保存。",
+    "noDescription": "没有资讯",
+    "time": "时间 ({{timezone}})",
+    "portal": "门户网站",
+    "botTokenCheck": "机器人令牌 <0/>",
+    "everyDayOfMonth": "每月的任何一天",
+    "bots": "机器人",
+    "botTokenOwnerWarning": "确保您当前的 Discord 帐户（{{username}}）是此机器人的主人或其团队的成员，否则令牌将被重置作为保障。",
+    "botClearToken": "清除令牌",
+    "backToBots": "返回机器人",
+    "commands": "指令",
+    "appSecretHiddenNote": "出于安全原因，您在此处保存密钥后，密钥将永远不会显示给您。如果您已重置客户端密钥，请按 “Clear Secret” 然后重新保存。",
+    "botName": "机器人名称",
+    "deleteBot": {
+        "title": "删除机器人"
+    },
+    "information": "资讯",
+    "havingTrouble": "有困难？",
+    "component": {
+        "5": "用户选择菜单",
+        "3": "选择菜单",
+        "2": "按钮",
+        "6": "身份组选择菜单",
+        "7": "用户和身份组选择菜单",
+        "8": "频道选择菜单",
+        "4": "文本输入"
+    },
+    "webhook": "Webhook",
+    "componentShort": {
+        "8": "选择",
+        "5": "选择",
+        "2": "按钮",
+        "3": "选择",
+        "4": "输入",
+        "6": "选择",
+        "7": "选择"
+    },
+    "components": "组件",
+    "addComponents": "添加组件",
+    "message": "消息",
+    "messageN": "消息 {{n}}",
+    "linkButton": "链接按钮",
+    "messageNText": "消息 {{n}} - {{text}}",
+    "addComponentType": "添加 $t(componentShort.{{type}})",
+    "addComponent": "添加组件",
+    "option": "选项",
+    "formatOptionDescription": {
+        "member": {
+            "name": "成员名称",
+            "display_name": "成员的昵称",
+            "created": "账户创建时间",
+            "avatar_url": "成员展示头像URL",
+            "default_avatar_url": "成员默认头像URL",
+            "bot": "该会员是否是机器人",
+            "id": "成员 ID"
+        },
+        "server": {
+            "members": "服务器成员数",
+            "icon_url": "服务器图标 URL",
+            "id": "服务器 ID",
+            "name": "服务器名称"
+        }
+    },
+    "howToFormat": "如何格式化您的消息",
+    "deleteLinkBackupConfirm": "您确定要删除此链接嵌入吗？此操作无法撤销。",
+    "newBot": "新机器人",
+    "deleteLinkBackup": "删除链接嵌入",
+    "linkEmbeds": "链接嵌入",
+    "orgRedirectTitle": "您刚刚从 discohook.org 被重定向",
+    "createdAtTime": "创建于{{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
+    "webhookChannelMentionAndThreads": "<#{{0}}>（及其子区）",
+    "createTrigger": {
+        "then": "执行此操作：",
+        "when": "当这种情况发生时："
+    },
+    "appClearSecret": "清除密钥",
+    "submitToAll": "提交全部",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "justBeAMember": "只需成为会员",
+    "refreshShareLink": "将分享链接延长 2 周（高级功能！）",
+    "download": "下载",
+    "jsonDownload": {
+        "backup": "作为备份",
+        "plain": "纯 JSON"
+    }
 }
