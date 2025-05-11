@@ -90,7 +90,7 @@ export const TextDisplayEditor: React.FC<{
                   accessory = {
                     type: ComponentType.Button,
                     style: ButtonStyle.Link,
-                    url: "",
+                    url: "https://discohook.app",
                   };
                   break;
                 case "thumbnail":
