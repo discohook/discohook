@@ -23,14 +23,14 @@ import {
   ButtonStyle,
   ComponentType,
   Routes,
-  TextInputStyle
+  TextInputStyle,
 } from "discord-api-types/v10";
-import { eq } from "drizzle-orm";
 import { t } from "i18next";
 import { SignJWT } from "jose";
 import {
   type DBWithSchema,
   type StorableComponent,
+  autoRollbackTx,
   discordMessageComponents,
   flows,
   generateId,
@@ -200,11 +200,11 @@ export const getComponentFlowContainer = (
 
 const registerComponent = async (
   ctx: InteractionContext<APIInteraction>,
-  flow: ComponentFlow,
+  state: ComponentFlow,
   componentId?: bigint,
-) => {
+): Promise<APIMessage> => {
   // biome-ignore lint/style/noNonNullAssertion: It's not null
-  const data = flow.component!;
+  const data = state.component!;
 
   const id = componentId ?? BigInt(generateId());
   const customId =
@@ -222,13 +222,13 @@ const registerComponent = async (
   try {
     message = (await ctx.rest.get(
       Routes.webhookMessage(
-        flow.message.webhookId,
-        flow.webhookToken,
-        flow.message.id,
+        state.message.webhookId,
+        state.webhookToken,
+        state.message.id,
       ),
       {
-        query: flow.message.isInThread
-          ? new URLSearchParams({ thread_id: flow.message.channelId })
+        query: state.message.isInThread
+          ? new URLSearchParams({ thread_id: state.message.channelId })
           : undefined,
       },
     )) as APIMessage;
@@ -236,14 +236,14 @@ const registerComponent = async (
     if (isDiscordError(e)) {
       throw new Error(
         [
-          `Failed to fetch the message (${flow.message.id}).`,
-          `Make sure the webhook (${flow.message.webhookId})`,
+          `Failed to fetch the message (${state.message.id}).`,
+          `Make sure the webhook (${state.message.webhookId})`,
           `exists and is in the same channel. (${e.code})`,
         ].join(" "),
       );
     }
-    console.error(flow.message.id, e);
-    throw new Error(`Failed to fetch the message (${flow.message.id}).`);
+    console.error(state.message.id, e);
+    throw new Error(`Failed to fetch the message (${state.message.id}).`);
   }
   const isCV2 = isComponentsV2(message);
 
@@ -265,62 +265,56 @@ const registerComponent = async (
   nextAvailableRow.components.push(built);
 
   const db = getDb(ctx.env.HYPERDRIVE);
-  const returned = await db
-    .insert(discordMessageComponents)
-    .values({
-      id,
-      guildId: makeSnowflake(flow.message.guildId),
-      channelId: makeSnowflake(flow.message.channelId),
-      messageId: makeSnowflake(flow.message.id),
-      createdById: makeSnowflake(flow.user.id),
-      type: data.type,
-      data,
-    })
-    .onConflictDoUpdate({
-      target: discordMessageComponents.id,
-      set: {
-        data,
-        draft: false,
-        updatedAt: new Date(),
-        updatedById: makeSnowflake(flow.user.id),
-      },
-    })
-    .returning({
-      id: discordMessageComponents.id,
-    });
+  return await db.transaction(
+    autoRollbackTx(async (tx) => {
+      await tx
+        .insert(discordMessageComponents)
+        .values({
+          id,
+          guildId: makeSnowflake(state.message.guildId),
+          channelId: makeSnowflake(state.message.channelId),
+          messageId: makeSnowflake(state.message.id),
+          createdById: makeSnowflake(state.user.id),
+          type: data.type,
+          data,
+        })
+        .onConflictDoUpdate({
+          target: discordMessageComponents.id,
+          set: {
+            data,
+            draft: false,
+            updatedAt: new Date(),
+            updatedById: makeSnowflake(state.user.id),
+          },
+        })
+        .returning({
+          id: discordMessageComponents.id,
+        });
 
-  let editedMsg: APIMessage;
-  try {
-    editedMsg = (await ctx.rest.patch(
-      Routes.webhookMessage(
-        flow.message.webhookId,
-        flow.webhookToken,
-        flow.message.id,
-      ),
-      {
-        body: { components },
-        query: flow.message.isInThread
-          ? new URLSearchParams({ thread_id: flow.message.channelId })
-          : undefined,
-      },
-    )) as APIMessage;
-  } catch (e) {
-    if (isDiscordError(e)) {
-      await db
-        .update(discordMessageComponents)
-        .set({ draft: true })
-        .where(eq(discordMessageComponents.id, returned[0].id));
-    }
-    throw e;
-  }
-  if (customId !== undefined) {
-    await launchComponentDurableObject(ctx.env, {
-      messageId: editedMsg.id,
-      componentId: id,
-      customId,
-    });
-  }
-  return editedMsg;
+      const editedMsg = (await ctx.rest.patch(
+        Routes.webhookMessage(
+          state.message.webhookId,
+          state.webhookToken,
+          state.message.id,
+        ),
+        {
+          body: { components },
+          query: state.message.isInThread
+            ? new URLSearchParams({ thread_id: state.message.channelId })
+            : undefined,
+        },
+      )) as APIMessage;
+
+      if (customId !== undefined) {
+        await launchComponentDurableObject(ctx.env, {
+          messageId: editedMsg.id,
+          componentId: id,
+          customId,
+        });
+      }
+      return editedMsg;
+    }),
+  );
 };
 
 export const startComponentFlow = async (
