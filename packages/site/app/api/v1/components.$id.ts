@@ -12,6 +12,11 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import { getDOToken } from "~/durable/sessions";
 import {
+  getActionRowComponentPath,
+  removeEmptyActionRows,
+  replaceComponentByPath,
+} from "~/routes/edit.component.$id";
+import {
   TokenWithUser,
   User,
   authorizeRequest,
@@ -41,7 +46,6 @@ import { isDiscordError } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
-import { getComponentId } from "./log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 
 // TODO: RPC function in discohook-bot to use stored tokens
 export const getWebhook = async (
@@ -528,6 +532,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             createdById: true,
             channelId: true,
             messageId: true,
+            data: true,
           },
         });
         if (
@@ -559,26 +564,26 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           }
 
           if (message) {
-            let columnIndex = 0;
-            const row = message.components?.find((row) => {
-              const x = row.components.findIndex(
-                (c) => getComponentId(c) === id,
+            if (!message.webhook_id) {
+              throw respond(
+                json(
+                  {
+                    message: "The associated message is not a webhook message.",
+                  },
+                  400,
+                ),
               );
-              columnIndex = x;
-              return x !== -1;
-            });
-            if (message.components && row) {
-              if (!message.webhook_id) {
-                throw respond(
-                  json(
-                    {
-                      message:
-                        "The associated message is not a webhook message.",
-                    },
-                    400,
-                  ),
-                );
-              }
+            }
+            if (message.components && message.components.length !== 0) {
+              const components = message.components;
+              const { path } = getActionRowComponentPath(
+                components,
+                current.data,
+                id,
+              );
+              replaceComponentByPath(components, path, null);
+              removeEmptyActionRows(components);
+
               const webhook = await getWebhook(message.webhook_id, context.env);
               if (!webhook.token) {
                 throw respond(
@@ -591,15 +596,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                   ),
                 );
               }
-              row.components.splice(columnIndex, 1);
-              if (row.components.length === 0) {
-                message.components.splice(message.components.indexOf(row), 1);
-              }
+
               try {
                 await rest.patch(
                   Routes.webhookMessage(webhook.id, webhook.token, message.id),
                   {
-                    body: { components: message.components },
+                    body: { components },
                     query:
                       message.position !== undefined
                         ? new URLSearchParams({ thread_id: message.channel_id })

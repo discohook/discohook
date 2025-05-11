@@ -986,8 +986,97 @@ const MoveComponentButton = ({
   </Button>
 );
 
+export const getActionRowComponentPath = (
+  components: APIMessageTopLevelComponent[],
+  component: {
+    type: APIComponentInMessageActionRow["type"];
+    style?: ButtonStyle;
+    url?: string;
+    label?: string;
+  },
+  componentId: string | bigint,
+): {
+  /** May be  */
+  found: APIComponentInMessageActionRow;
+  path: number[];
+} => {
+  let compPath: number[] = [];
+  let absoluteI = -1;
+  let resultComponent: APIComponentInMessageActionRow | undefined;
+  for (const row of components) {
+    absoluteI += 1;
+
+    const process = (
+      child: APIComponentInContainer,
+    ): { live: APIComponentInMessageActionRow; index: number } | undefined => {
+      if (isActionRow(child)) {
+        let live = child.components.find(
+          (c) => getComponentId(c) === BigInt(componentId),
+        );
+        // We should be injecting `custom_id` into draft link buttons but
+        // this is just in case it's missing
+        if (
+          !live &&
+          component.type === ComponentType.Button &&
+          component.style === ButtonStyle.Link
+        ) {
+          live = child.components.find(
+            (c) =>
+              c.type === ComponentType.Button &&
+              c.style === ButtonStyle.Link &&
+              c.url === component.url &&
+              c.label === component.label,
+          );
+        }
+        if (live) {
+          return {
+            live,
+            index: child.components.indexOf(live),
+          };
+        }
+      } else if (
+        child.type === ComponentType.Section &&
+        component.type === ComponentType.Button &&
+        child.accessory.type === component.type
+      ) {
+        if (
+          isSameComponent({ child: child.accessory, component, componentId })
+        ) {
+          return {
+            live: child.accessory,
+            index: 0,
+          };
+        }
+      }
+    };
+
+    if (row.type === ComponentType.Container) {
+      let innerI = -1;
+      for (const child of row.components) {
+        innerI += 1;
+        const attempt = process(child);
+        if (attempt) {
+          resultComponent = attempt.live;
+          compPath = [absoluteI, innerI, attempt.index];
+        }
+      }
+    } else {
+      const attempt = process(row);
+      if (attempt) {
+        resultComponent = attempt.live;
+        compPath = [absoluteI, attempt.index];
+      }
+    }
+  }
+
+  if (!resultComponent || compPath.length === 0) {
+    throw Error("Failed to find the component");
+  }
+  return { found: resultComponent, path: compPath };
+};
+
 // Modified from bot/src/commands/components/delete.tsx extractComponentByPath
-const replaceComponentByPath = (
+export const replaceComponentByPath = (
   allComponents: APIMessageTopLevelComponent[],
   path: number[],
   replacement: APIComponentInMessageActionRow | null,
@@ -1042,7 +1131,7 @@ const replaceComponentByPath = (
 };
 
 /** Clean up residue to avoid sending an invalid payload */
-const removeEmptyActionRows = (
+export const removeEmptyActionRows = (
   allComponents: APIMessageTopLevelComponent[],
 ) => {
   let i = -1;
@@ -1152,88 +1241,17 @@ export default () => {
   const [data, setData] = useReducer(
     (current: Data, newData: Partial<Data>) => {
       const compiled = { ...current, ...newData } as Data;
-      let compPath: number[] = [];
-      let absoluteI = -1;
-      for (const row of compiled.components) {
-        absoluteI += 1;
-
-        const process = (
-          child: APIComponentInContainer,
-        ):
-          | { live: APIComponentInMessageActionRow; index: number }
-          | undefined => {
-          if (isActionRow(child)) {
-            let live = child.components.find(
-              (c) => getComponentId(c) === BigInt(component_.id),
-            );
-            // We should be injecting `custom_id` into draft link buttons but
-            // this is just in case it's missing
-            if (
-              !live &&
-              component.type === ComponentType.Button &&
-              component.style === ButtonStyle.Link
-            ) {
-              live = child.components.find(
-                (c) =>
-                  c.type === component.type &&
-                  c.style === component.style &&
-                  c.url === component.url &&
-                  c.label === component.label,
-              );
-            }
-            if (live) {
-              return {
-                live,
-                index: child.components.indexOf(live),
-              };
-            }
-          } else if (
-            child.type === ComponentType.Section &&
-            component.type === ComponentType.Button &&
-            child.accessory.type === component.type
-          ) {
-            if (
-              isSameComponent({
-                child: child.accessory,
-                component,
-                componentId: component_.id,
-              })
-            ) {
-              return {
-                live: child.accessory,
-                index: 0,
-              };
-            }
-          }
-        };
-
-        if (row.type === ComponentType.Container) {
-          let innerI = -1;
-          for (const child of row.components) {
-            innerI += 1;
-            const attempt = process(child);
-            if (attempt) {
-              setComponent(attempt.live);
-              compPath = [absoluteI, innerI, attempt.index];
-            }
-          }
-        } else {
-          const attempt = process(row);
-          if (attempt) {
-            setComponent(attempt.live);
-            compPath = [absoluteI, attempt.index];
-          }
-        }
+      try {
+        const { path, found } = getActionRowComponentPath(
+          compiled.components,
+          component,
+          component_.id,
+        );
+        setComponent(found);
+        setPath(path);
+      } catch (e) {
+        console.error(e);
       }
-
-      if (compPath.length === 0) {
-        console.log("Missing position");
-        return compiled;
-      }
-
-      console.log("New path:", compPath);
-      setPath(compPath);
-      // if (!initialPath) setInitialPath(compPath);
       return compiled;
     },
     {
