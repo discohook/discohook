@@ -404,7 +404,7 @@ export const getComponentsAsV2Menu = (
         const select = new StringSelectMenuBuilder()
           .setCustomId(getSelectCustomId(selectId))
           .setPlaceholder(
-            `${typeName} (num) - ${options.length} component${
+            `${typeName} ${totalI + 1} - ${options.length} component${
               options.length === 1 ? "" : "s"
             }`,
           )
