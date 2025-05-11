@@ -624,56 +624,54 @@ export const MessageSendModal = (
       <p className="text-sm font-medium">{t("webhooks")}</p>
       <div className="space-y-1">
         {Object.keys(targets).length > 0 ? (
-          Object.entries(targets).map(([targetId, target]) => {
-            return (
-              <label
-                key={`target-${targetId}`}
-                className="flex rounded bg-gray-200 dark:bg-gray-800 py-2 px-4 w-full cursor-pointer"
-              >
-                <img
-                  {...cdnImgAttributes(64, (size) =>
-                    webhookAvatarUrl(target, { size }),
-                  )}
-                  alt={target.name ?? "Webhook"}
-                  className="rounded-full h-12 w-12 mr-2 my-auto shrink-0"
-                />
-                <div className="my-auto grow text-left truncate mr-2">
-                  <p className="font-semibold text-base truncate">
-                    {target.name ?? "Webhook"}
+          Object.entries(targets).map(([targetId, target]) => (
+            <label
+              key={`target-${targetId}`}
+              className="flex rounded bg-gray-200 dark:bg-gray-800 py-2 px-4 w-full cursor-pointer"
+            >
+              <img
+                {...cdnImgAttributes(64, (size) =>
+                  webhookAvatarUrl(target, { size }),
+                )}
+                alt={target.name ?? "Webhook"}
+                className="rounded-full h-12 w-12 mr-2 my-auto shrink-0"
+              />
+              <div className="my-auto grow text-left truncate mr-2">
+                <p className="font-semibold text-base truncate">
+                  {target.name ?? "Webhook"}
+                </p>
+                {cache && (
+                  <p className="text-sm leading-none text-muted dark:text-muted-dark">
+                    #
+                    {cache.resolve({
+                      scope: "channel",
+                      key: target.channel_id,
+                    })?.name ?? t("mention.unknown")}
                   </p>
-                  {cache && (
-                    <p className="text-sm leading-none">
-                      #
-                      {cache.resolve({
-                        scope: "channel",
-                        key: target.channel_id,
-                      })?.name ?? t("mention.unknown")}
-                    </p>
-                  )}
-                </div>
-                <input
-                  type="checkbox"
-                  name="webhook"
-                  checked={!!selectedWebhooks[target.id]}
-                  onChange={(e) =>
-                    setSelectedWebhooks({
-                      ...selectedWebhooks,
-                      [target.id]: e.currentTarget.checked,
-                    })
-                  }
-                  hidden
-                />
-                <CoolIcon
-                  icon={
-                    selectedWebhooks[target.id]
-                      ? "Checkbox_Check"
-                      : "Checkbox_Unchecked"
-                  }
-                  className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
-                />
-              </label>
-            );
-          })
+                )}
+              </div>
+              <input
+                type="checkbox"
+                name="webhook"
+                checked={!!selectedWebhooks[target.id]}
+                onChange={(e) =>
+                  setSelectedWebhooks({
+                    ...selectedWebhooks,
+                    [target.id]: e.currentTarget.checked,
+                  })
+                }
+                hidden
+              />
+              <CoolIcon
+                icon={
+                  selectedWebhooks[target.id]
+                    ? "Checkbox_Check"
+                    : "Checkbox_Unchecked"
+                }
+                className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
+              />
+            </label>
+          ))
         ) : (
           <div>
             <p>{t("sendNoWebhooks")}</p>
