@@ -85,6 +85,10 @@ export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
  */
 export type QueryDataVersion = "d2";
 
+export enum TargetType {
+  Webhook = 1,
+}
+
 export interface QueryDataRaw {
   version?: QueryDataVersion;
   backup_id?: string;
@@ -94,7 +98,7 @@ export interface QueryDataRaw {
     reference?: string;
     thread_id?: string;
   }[];
-  targets?: { url: string }[];
+  targets?: { type?: TargetType; url: string }[];
 }
 
 export interface QueryDataMessageDataRaw {
@@ -117,7 +121,9 @@ export interface QueryDataMessageDataRaw {
   thread_name?: string;
 }
 
-export const queryDataMessageDataTransform = (value: QueryDataMessageDataRaw) => {
+export const queryDataMessageDataTransform = (
+  value: QueryDataMessageDataRaw,
+) => {
   if (!value.username && value.author?.name) {
     value.username = value.author.name;
   }

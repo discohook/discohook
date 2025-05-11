@@ -30,6 +30,10 @@ export type APIAttachment = _APIAttachment & { is_thumbnail?: boolean };
  */
 export type QueryDataVersion = "d2";
 
+export enum TargetType {
+  Webhook = 1,
+}
+
 export interface QueryData {
   version?: QueryDataVersion;
   backup_id?: string;
@@ -57,7 +61,7 @@ export interface QueryData {
     reference?: string;
     thread_id?: string;
   }[];
-  targets?: { url: string }[];
+  targets?: { type?: TargetType; url: string }[];
 }
 
 export type LinkQueryData = z.infer<typeof ZodLinkQueryData>;

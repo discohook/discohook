@@ -22,8 +22,9 @@ import {
   type APIEmbed,
   QueryDataMessageDataRaw,
   type QueryDataVersion,
+  TargetType,
   ZodQueryDataMessageDataBase,
-  queryDataMessageDataTransform
+  queryDataMessageDataTransform,
 } from "./QueryData-raw";
 import { ZodAPITopLevelComponent } from "./components";
 
@@ -116,7 +117,7 @@ export interface QueryData {
     reference?: string;
     thread_id?: string;
   }[];
-  targets?: { url: string }[];
+  targets?: { type?: TargetType; url: string }[];
 }
 
 export const ZodQueryDataMessage = z.object({
@@ -130,7 +131,10 @@ export const ZodQueryDataMessage = z.object({
 
 export const ZodQueryDataTarget: z.ZodType<
   NonNullable<QueryData["targets"]>[number]
-> = z.object({ url: z.string() });
+> = z.object({
+  type: z.nativeEnum(TargetType).optional(),
+  url: z.string(),
+});
 
 export const ZodQueryData: z.ZodType<QueryData> = z.object({
   version: z.enum(["d2"]).optional(),
