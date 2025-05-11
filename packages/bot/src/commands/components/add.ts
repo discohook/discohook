@@ -22,9 +22,8 @@ import {
   APIStringSelectComponent,
   ButtonStyle,
   ComponentType,
-  MessageFlags,
   Routes,
-  TextInputStyle,
+  TextInputStyle
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { t } from "i18next";
@@ -899,10 +898,8 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
           await registerComponent(ctx, state, BigInt(id));
         } catch (e) {
           console.error(e);
-          return ctx.reply({
-            content: String(e),
-            flags: MessageFlags.Ephemeral,
-          });
+          await ctx.followup.send({ content: String(e), ephemeral: true });
+          return;
         }
 
         state.stepTitle = "Finished!";
