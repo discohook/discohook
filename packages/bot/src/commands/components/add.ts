@@ -47,6 +47,7 @@ import {
 import { InteractionInstantOrDeferredResponse } from "../../commands.js";
 import {
   ButtonCallback,
+  InteractionResponseWithFollowup,
   MinimumKVComponentState,
   ModalCallback,
   SelectMenuCallback,
@@ -891,19 +892,27 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
       state.steps?.push({ label: "Set URL" });
     }
 
-    try {
-      await registerComponent(ctx, state, BigInt(id));
-    } catch (e) {
-      console.error(e);
-      return ctx.reply({ content: String(e), flags: MessageFlags.Ephemeral });
-    }
+    return [
+      ctx.defer(),
+      async () => {
+        try {
+          await registerComponent(ctx, state, BigInt(id));
+        } catch (e) {
+          console.error(e);
+          return ctx.reply({
+            content: String(e),
+            flags: MessageFlags.Ephemeral,
+          });
+        }
 
-    state.stepTitle = "Finished!";
-    state.step = state.steps?.length ?? 0;
-    state.totalSteps = state.steps?.length;
-    return ctx.updateMessage({
-      components: [getComponentFlowContainer(state)],
-    });
+        state.stepTitle = "Finished!";
+        state.step = state.steps?.length ?? 0;
+        state.totalSteps = state.steps?.length;
+        await ctx.followup.editOriginalMessage({
+          components: [getComponentFlowContainer(state)],
+        });
+      },
+    ] as InteractionResponseWithFollowup;
   }
 
   return ctx.reply({

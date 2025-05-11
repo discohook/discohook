@@ -63,20 +63,21 @@ export interface MinimumKVComponentState {
   componentOnce?: boolean;
 }
 
+export type InteractionResponseWithFollowup = [
+  APIInteractionResponse,
+  () => Promise<void>,
+];
+
 export type ComponentCallbackT<T extends APIMessageComponentInteraction> = (
   ctx: InteractionContext<T>,
-) => Promise<
-  APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]
->;
+) => Promise<APIInteractionResponse | InteractionResponseWithFollowup>;
 export type ButtonCallback =
   ComponentCallbackT<APIMessageComponentButtonInteraction>;
 export type SelectMenuCallback =
   ComponentCallbackT<APIMessageComponentSelectMenuInteraction>;
 export type ModalCallback = (
   ctx: InteractionContext<APIModalSubmitInteraction>,
-) => Promise<
-  APIInteractionResponse | [APIInteractionResponse, () => Promise<void>]
->;
+) => Promise<APIInteractionResponse | InteractionResponseWithFollowup>;
 
 export type ComponentCallback = ButtonCallback | SelectMenuCallback;
 
