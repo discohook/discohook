@@ -48,7 +48,7 @@ import {
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { AutoComponentCustomId, ButtonCallback } from "../../components.js";
 import { Env } from "../../types/env.js";
-import { hasCustomId, parseAutoComponentId } from "../../util/components.js";
+import { hasCustomId, isActionRow, parseAutoComponentId } from "../../util/components.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import { resolveMessageLink } from "./entry.js";
 
@@ -315,37 +315,43 @@ export const migrateLegacyButtons = async (
   const emojis = (await rest.get(
     Routes.guildEmojis(guildId),
   )) as RESTGetAPIGuildEmojisResult;
-  const rows = message.components?.map((row) => ({
-    ...row,
-    components: row.components.map((component) => {
-      if (
-        component.type !== ComponentType.Button ||
-        component.style === ButtonStyle.Premium
-      ) {
-        return component;
-      }
 
-      // Remove likely-inaccessible emojis
-      const subdata = { ...component };
-      if (
-        subdata.emoji?.id &&
-        !emojis.find((e) => e.id === subdata.emoji?.id)
-      ) {
-        subdata.emoji = subdata.label ? undefined : { name: "🌫️" };
-      }
-      if (!hasCustomId(subdata)) return subdata;
+  // In the very specific context of this command, the message should always
+  // be CV1, so we're just lazily type guarding for new components here.
+  const rows = message.components?.map((row) => {
+    if (!isActionRow(row)) return row;
+    return {
+      ...row,
+      components: row.components.map((component) => {
+        if (
+          component.type !== ComponentType.Button ||
+          component.style === ButtonStyle.Premium
+        ) {
+          return component;
+        }
 
-      const button = inserted.find(
-        (b) => String(b.id) === oldIdMap[subdata.custom_id],
-      );
-      return {
-        ...subdata,
-        disabled: !button,
-        // This shouldn't happen, but fall back anyway to avoid failure
-        custom_id: button ? `p_${button.id}` : subdata.custom_id,
-      };
-    }),
-  })) as APIActionRowComponent<APIComponentInMessageActionRow>[];
+        // Remove likely-inaccessible emojis
+        const subdata = { ...component };
+        if (
+          subdata.emoji?.id &&
+          !emojis.find((e) => e.id === subdata.emoji?.id)
+        ) {
+          subdata.emoji = subdata.label ? undefined : { name: "🌫️" };
+        }
+        if (!hasCustomId(subdata)) return subdata;
+
+        const button = inserted.find(
+          (b) => String(b.id) === oldIdMap[subdata.custom_id],
+        );
+        return {
+          ...subdata,
+          disabled: !button,
+          // This shouldn't happen, but fall back anyway to avoid failure
+          custom_id: button ? `p_${button.id}` : subdata.custom_id,
+        };
+      }),
+    };
+  }) as APIActionRowComponent<APIComponentInMessageActionRow>[];
   // await ctx.followup.editOriginalMessage({ components: rows });
   return { inserted, rows, guild, emojis, oldIdMap };
 };
