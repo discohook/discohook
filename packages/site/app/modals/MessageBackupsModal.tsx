@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
@@ -14,7 +14,11 @@ import type {
   loader as MeBackupsLoader,
 } from "~/routes/me.backups";
 import { User } from "~/session.server";
-import { QueryData } from "~/types/QueryData";
+import { QueryData, QueryDataTarget } from "~/types/QueryData";
+import { TargetType } from "~/types/QueryData-raw";
+import { CacheManager } from "~/util/cache/CacheManager";
+import { WEBHOOK_URL_RE } from "~/util/constants";
+import { getWebhook } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { action as ApiPostBackups } from "../api/v1/backups";
 import { loader as ApiGetBackup } from "../api/v1/backups.$id";
@@ -26,22 +30,69 @@ export const MessageBackupsModal = (
     targets: Record<string, APIWebhook>;
     data: QueryData;
     setBackupId: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+    updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
     setData: React.Dispatch<QueryData>;
     user?: User | null;
+    cache?: CacheManager;
   },
 ) => {
   const { t } = useTranslation();
-  const { targets, data, setData, setBackupId, user } = props;
+  const { targets, data, setData, updateTargets, setBackupId, user, cache } =
+    props;
   const [error, setError] = useError(t);
 
   const dataWithTargets = useMemo(
-    () => ({
-      ...data,
-      targets: Object.values(targets).map((t) => ({
-        url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-      })),
-    }),
+    () =>
+      ({
+        ...data,
+        targets: Object.values(targets).map((t) => ({
+          type: TargetType.Webhook,
+          url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
+        })),
+      }) satisfies QueryData,
     [data, targets],
+  );
+
+  // Reset existing targets and add from the backup (if any)
+  const setTargets = useCallback(
+    async (newTargets: QueryDataTarget[] | undefined) => {
+      const keys = Object.keys(targets);
+      for (const key of keys) {
+        delete targets[key];
+      }
+      if (!newTargets || newTargets.length === 0) {
+        // state update
+        updateTargets({});
+        return;
+      }
+
+      const cachingGuildIds: string[] = [];
+      for (const target of newTargets) {
+        if (target.type && target.type !== TargetType.Webhook) continue;
+        const match = target.url.match(WEBHOOK_URL_RE);
+        if (!match) continue;
+
+        const webhook = await getWebhook(match[1], match[2]);
+        if (webhook.id) {
+          updateTargets({ [webhook.id]: webhook });
+        }
+        if (
+          webhook.guild_id &&
+          !cachingGuildIds.includes(webhook.guild_id) &&
+          cache
+        ) {
+          cachingGuildIds.push(webhook.guild_id);
+          cache
+            .fetchGuildCacheable(webhook.guild_id)
+            .then(() =>
+              console.log(
+                `Cached cacheables for ${webhook.guild_id} (webhook ID ${webhook.id})`,
+              ),
+            );
+        }
+      }
+    },
+    [targets, updateTargets, cache],
   );
 
   const [backups, setBackups] = useState<LoadedBackup[]>();
@@ -163,6 +214,7 @@ export const MessageBackupsModal = (
                             // Just in case
                             backup_id: b.id.toString(),
                           });
+                          setTargets(loadedBackup.data.targets);
                           setBackupId(b.id);
                         }
                       }}
@@ -202,6 +254,8 @@ export const MessageBackupsModal = (
                             ...loadedBackup.data,
                             backup_id: created.id.toString(),
                           });
+                          // This isn't totally necessary for a duplicated backup
+                          setTargets(loadedBackup.data.targets);
                           setBackupId(created.id);
                         }
                       }}

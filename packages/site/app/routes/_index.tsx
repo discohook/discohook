@@ -52,8 +52,9 @@ import { WebhookEditModal } from "~/modals/WebhookEditModal";
 import { getSessionStorage, getUser } from "~/session.server";
 import { getDb } from "~/store.server";
 import {
-  APIComponentInMessageActionRow,
-  QueryData,
+  type APIComponentInMessageActionRow,
+  type QueryData,
+  type QueryDataTarget,
   ZodQueryData,
 } from "~/types/QueryData";
 import { useCache } from "~/util/cache/CacheManager";
@@ -321,7 +322,7 @@ export default function Index() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
-    const loadInitialTargets = async (targets: { url: string }[]) => {
+    const loadInitialTargets = async (targets: QueryDataTarget[]) => {
       const cachingGuildIds: string[] = [];
       for (const target of targets) {
         const match = target.url.match(WEBHOOK_URL_RE);
@@ -607,8 +608,10 @@ export default function Index() {
         targets={targets}
         data={data}
         setData={setData}
+        updateTargets={updateTargets}
         setBackupId={setBackupId}
         user={user}
+        cache={cache}
       />
       <JsonEditorModal
         open={!!jsonEditor}

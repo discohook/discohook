@@ -106,6 +106,11 @@ export type APIMessageTopLevelComponent =
   | APISeparatorComponent
   | APITextDisplayComponent;
 
+export interface QueryDataTarget {
+  type?: TargetType;
+  url: string;
+}
+
 export interface QueryData {
   version?: QueryDataVersion;
   backup_id?: string;
@@ -117,7 +122,7 @@ export interface QueryData {
     reference?: string;
     thread_id?: string;
   }[];
-  targets?: { type?: TargetType; url: string }[];
+  targets?: QueryDataTarget[];
 }
 
 export const ZodQueryDataMessage = z.object({
@@ -129,9 +134,7 @@ export const ZodQueryDataMessage = z.object({
   thread_id: z.ostring(),
 }) satisfies z.ZodType<QueryData["messages"][number]>;
 
-export const ZodQueryDataTarget: z.ZodType<
-  NonNullable<QueryData["targets"]>[number]
-> = z.object({
+export const ZodQueryDataTarget: z.ZodType<QueryDataTarget> = z.object({
   type: z.nativeEnum(TargetType).optional(),
   url: z.string(),
 });
