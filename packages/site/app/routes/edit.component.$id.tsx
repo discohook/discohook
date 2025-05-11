@@ -1265,8 +1265,9 @@ export default () => {
   );
   const canAddRows = useMemo(
     () =>
-      getRemainingComponentsCount(data.components, isComponentsV2(data)) > 0 &&
-      !isAccessory,
+      (isComponentsV2(data)
+        ? getRemainingComponentsCount(data.components, true) > 0
+        : data.components.length < MAX_V1_ROWS) && !isAccessory,
     [data, isAccessory],
   );
 
