@@ -1,11 +1,12 @@
 import { channelLink, time } from "@discordjs/formatters";
 import {
-  APIEmbed,
-  APIGuildMember,
-  APIInteractionDataResolvedChannel,
-  APIInteractionDataResolvedGuildMember,
-  APIRole,
-  APIUser,
+  type APIComponentInMessageActionRow,
+  type APIEmbed,
+  type APIGuildMember,
+  type APIInteractionDataResolvedChannel,
+  type APIInteractionDataResolvedGuildMember,
+  type APIRole,
+  type APIUser,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
@@ -13,6 +14,7 @@ import { getDate } from "discord-snowflake";
 import type { QueryData, TriggerKVGuild } from "store";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
 import { cdn } from "../util/cdn.js";
+import { isActionRow } from "../util/components.js";
 import { FlowFailure, LiveVariables } from "./flows.js";
 
 export const assertGetSnowflake = (id: string): `${bigint}` => {
@@ -248,16 +250,39 @@ export const processQueryData = async (
       }) || undefined,
     components: message.data.components
       ? structuredClone(message.data.components).map((row) => {
-          for (const child of row.components) {
-            if (
-              child.type === ComponentType.Button &&
-              (child.style === ButtonStyle.Link ||
-                child.style === ButtonStyle.Premium)
-            ) {
-              // @ts-expect-error Prevent doublekeying due to site state
-              child.custom_id = undefined;
+          const removeCustomIds = (
+            children: APIComponentInMessageActionRow[],
+          ) => {
+            for (const child of children) {
+              if (
+                child.type === ComponentType.Button &&
+                (child.style === ButtonStyle.Link ||
+                  child.style === ButtonStyle.Premium)
+              ) {
+                // @ts-expect-error Prevent doublekeying due to site state
+                child.custom_id = undefined;
+              }
+            }
+          };
+          if (row.type === ComponentType.Container) {
+            for (const component of row.components) {
+              if (isActionRow(component)) removeCustomIds(component.components);
+              else if (
+                component.type === ComponentType.Section &&
+                component.accessory.type === ComponentType.Button
+              ) {
+                removeCustomIds([component.accessory]);
+              }
             }
           }
+          if (isActionRow(row)) removeCustomIds(row.components);
+          else if (
+            row.type === ComponentType.Section &&
+            row.accessory.type === ComponentType.Button
+          ) {
+            removeCustomIds([row.accessory]);
+          }
+
           return row;
         })
       : [],
