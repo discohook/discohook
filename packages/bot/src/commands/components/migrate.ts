@@ -31,6 +31,7 @@ import {
   type QueryData,
   type StorableButtonWithCustomId,
   type StorableButtonWithUrl,
+  autoRollbackTx,
   backups,
   buttons,
   discordMessageComponents,
@@ -96,218 +97,220 @@ export const migrateLegacyButtons = async (
   };
 
   const oldIdMap: Record<string, string> = {};
-  const inserted = await db.transaction(async (tx) => {
-    const oldIdToBackupName: Record<string, string> = {};
-    const backupInsertValues: (typeof backups.$inferInsert)[] =
-      oldMessageButtons
-        .filter(
-          (button) =>
-            !!getOldCustomId(button) &&
-            !!(
-              button.customPublicMessageData ||
-              button.customEphemeralMessageData ||
-              button.customDmMessageData
-            ),
-        )
-        .map((button) => {
-          const name = `Button (${
-            button.customPublicMessageData ? "public" : "hidden"
-          } message) ${Math.floor(Math.random() * 1000000)}`;
-          // biome-ignore lint/style/noNonNullAssertion: Filter
-          oldIdToBackupName[getOldCustomId(button)!] = name;
-          // biome-ignore lint/style/noNonNullAssertion: At least one must be non-null according to filter
-          const dataStr = (button.customPublicMessageData ??
-            button.customEphemeralMessageData ??
-            button.customDmMessageData)!;
-          return {
-            name,
-            ownerId: ownerUser.id,
-            data: {
-              messages: [{ data: JSON.parse(dataStr) }],
-            } satisfies QueryData,
-            dataVersion: "d2",
-          };
-        });
-    const insertedBackups =
-      backupInsertValues.length === 0
-        ? []
-        : await tx
-            .insert(backups)
-            .values(backupInsertValues)
-            .returning({ id: backups.id, name: backups.name });
+  const inserted = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      const oldIdToBackupName: Record<string, string> = {};
+      const backupInsertValues: (typeof backups.$inferInsert)[] =
+        oldMessageButtons
+          .filter(
+            (button) =>
+              !!getOldCustomId(button) &&
+              !!(
+                button.customPublicMessageData ||
+                button.customEphemeralMessageData ||
+                button.customDmMessageData
+              ),
+          )
+          .map((button) => {
+            const name = `Button (${
+              button.customPublicMessageData ? "public" : "hidden"
+            } message) ${Math.floor(Math.random() * 1000000)}`;
+            // biome-ignore lint/style/noNonNullAssertion: Filter
+            oldIdToBackupName[getOldCustomId(button)!] = name;
+            // biome-ignore lint/style/noNonNullAssertion: At least one must be non-null according to filter
+            const dataStr = (button.customPublicMessageData ??
+              button.customEphemeralMessageData ??
+              button.customDmMessageData)!;
+            return {
+              name,
+              ownerId: ownerUser.id,
+              data: {
+                messages: [{ data: JSON.parse(dataStr) }],
+              } satisfies QueryData,
+              dataVersion: "d2",
+            };
+          });
+      const insertedBackups =
+        backupInsertValues.length === 0
+          ? []
+          : await tx
+              .insert(backups)
+              .values(backupInsertValues)
+              .returning({ id: backups.id, name: backups.name });
 
-    const values: (typeof discordMessageComponents.$inferInsert)[] = [];
-    for (const button of oldMessageButtons) {
-      const old = getOldCustomId(button);
-      const newId = generateId();
-      const newCustomId = `p_${newId}`;
-      if (old) {
-        oldIdMap[old] = newId;
-      }
+      const values: (typeof discordMessageComponents.$inferInsert)[] = [];
+      for (const button of oldMessageButtons) {
+        const old = getOldCustomId(button);
+        const newId = generateId();
+        const newCustomId = `p_${newId}`;
+        if (old) {
+          oldIdMap[old] = newId;
+        }
 
-      let flowId: string | undefined;
-      if (!button.url) {
-        const backupId = insertedBackups.find(
-          old && oldIdToBackupName[old]
-            ? (backup) => backup.name === oldIdToBackupName[old]
-            : () => false,
-        )?.id;
+        let flowId: string | undefined;
+        if (!button.url) {
+          const backupId = insertedBackups.find(
+            old && oldIdToBackupName[old]
+              ? (backup) => backup.name === oldIdToBackupName[old]
+              : () => false,
+          )?.id;
 
-        flowId = generateId();
-        await tx.insert(flows).values({ id: BigInt(flowId) });
+          flowId = generateId();
+          await tx.insert(flows).values({ id: BigInt(flowId) });
 
-        const actions = [
-          ...(button.roleId
-            ? [
-                {
-                  type: FlowActionType.Check,
-                  function: {
-                    type: FlowActionCheckFunctionType.In,
-                    array: {
-                      varType: FlowActionSetVariableType.Get,
-                      value: "member.role_ids",
-                    },
-                    element: {
-                      varType: FlowActionSetVariableType.Static,
-                      value: String(button.roleId),
-                    },
-                  },
-                  then: [
-                    {
-                      type: FlowActionType.SetVariable,
-                      name: "response",
-                      value: `Removed the <@&${button.roleId}> role from you.`,
-                    },
-                  ],
-                  else: [
-                    {
-                      type: FlowActionType.SetVariable,
-                      name: "response",
-                      value: `Gave you the <@&${button.roleId}> role.`,
-                    },
-                  ],
-                } satisfies FlowActionCheck,
-                {
-                  type: FlowActionType.ToggleRole,
-                  roleId: String(button.roleId),
-                } satisfies FlowActionToggleRole,
-                {
-                  type: FlowActionType.Stop,
-                  message: {
-                    content: "{response}",
-                    flags: MessageFlags.Ephemeral,
-                  },
-                } satisfies FlowActionStop,
-              ]
-            : backupId
+          const actions = [
+            ...(button.roleId
               ? [
                   {
-                    type: FlowActionType.SendMessage,
-                    backupId: backupId.toString(),
-                    backupMessageIndex: 0,
-                    response: true,
-                    flags:
-                      button.customEphemeralMessageData ||
-                      button.customDmMessageData
-                        ? MessageFlags.Ephemeral
-                        : undefined,
-                  } satisfies FlowActionSendMessage,
+                    type: FlowActionType.Check,
+                    function: {
+                      type: FlowActionCheckFunctionType.In,
+                      array: {
+                        varType: FlowActionSetVariableType.Get,
+                        value: "member.role_ids",
+                      },
+                      element: {
+                        varType: FlowActionSetVariableType.Static,
+                        value: String(button.roleId),
+                      },
+                    },
+                    then: [
+                      {
+                        type: FlowActionType.SetVariable,
+                        name: "response",
+                        value: `Removed the <@&${button.roleId}> role from you.`,
+                      },
+                    ],
+                    else: [
+                      {
+                        type: FlowActionType.SetVariable,
+                        name: "response",
+                        value: `Gave you the <@&${button.roleId}> role.`,
+                      },
+                    ],
+                  } satisfies FlowActionCheck,
+                  {
+                    type: FlowActionType.ToggleRole,
+                    roleId: String(button.roleId),
+                  } satisfies FlowActionToggleRole,
+                  {
+                    type: FlowActionType.Stop,
+                    message: {
+                      content: "{response}",
+                      flags: MessageFlags.Ephemeral,
+                    },
+                  } satisfies FlowActionStop,
                 ]
-              : button.type === "do_nothings"
-                ? [{ type: FlowActionType.Dud } satisfies FlowActionDud]
-                : []),
-        ];
-        if (actions.length !== 0) {
-          await tx.insert(flowActions).values(
-            actions.map((action) => ({
-              // biome-ignore lint/style/noNonNullAssertion: non-null by this point
-              flowId: BigInt(flowId!),
-              type: action.type,
-              data: action,
-            })),
-          );
+              : backupId
+                ? [
+                    {
+                      type: FlowActionType.SendMessage,
+                      backupId: backupId.toString(),
+                      backupMessageIndex: 0,
+                      response: true,
+                      flags:
+                        button.customEphemeralMessageData ||
+                        button.customDmMessageData
+                          ? MessageFlags.Ephemeral
+                          : undefined,
+                    } satisfies FlowActionSendMessage,
+                  ]
+                : button.type === "do_nothings"
+                  ? [{ type: FlowActionType.Dud } satisfies FlowActionDud]
+                  : []),
+          ];
+          if (actions.length !== 0) {
+            await tx.insert(flowActions).values(
+              actions.map((action) => ({
+                // biome-ignore lint/style/noNonNullAssertion: non-null by this point
+                flowId: BigInt(flowId!),
+                type: action.type,
+                data: action,
+              })),
+            );
+          }
         }
-      }
 
-      const data = {
-        type: ComponentType.Button,
-        label: button.customLabel ?? undefined,
-        emoji: button.emoji
-          ? button.emoji.startsWith("<")
+        const data = {
+          type: ComponentType.Button,
+          label: button.customLabel ?? undefined,
+          emoji: button.emoji
+            ? button.emoji.startsWith("<")
+              ? {
+                  id: button.emoji.split(":")[2].replace(/\>$/, ""),
+                  name: button.emoji.split(":")[1],
+                  animated: button.emoji.split(":")[0] === "<a",
+                }
+              : {
+                  name: button.emoji,
+                }
+            : undefined,
+          ...(button.url
             ? {
-                id: button.emoji.split(":")[2].replace(/\>$/, ""),
-                name: button.emoji.split(":")[1],
-                animated: button.emoji.split(":")[0] === "<a",
+                url: button.url,
+                style: ButtonStyle.Link,
               }
             : {
-                name: button.emoji,
-              }
-          : undefined,
-        ...(button.url
-          ? {
-              url: button.url,
-              style: ButtonStyle.Link,
-            }
-          : {
-              customId: newCustomId,
-              // biome-ignore lint/style/noNonNullAssertion: non-null by this point
-              flowId: flowId!,
-              style:
-                (
-                  {
-                    // ??? what was I on?
-                    primary: ButtonStyle.Primary,
-                    blurple: ButtonStyle.Primary,
-                    secondary: ButtonStyle.Secondary,
-                    gray: ButtonStyle.Secondary,
-                    link: ButtonStyle.Secondary,
-                    success: ButtonStyle.Success,
-                    green: ButtonStyle.Success,
-                    danger: ButtonStyle.Danger,
-                    red: ButtonStyle.Danger,
-                  } as const
-                )[button.style ?? "primary"] ?? ButtonStyle.Primary,
-            }),
-      } satisfies StorableButtonWithCustomId | StorableButtonWithUrl;
+                customId: newCustomId,
+                // biome-ignore lint/style/noNonNullAssertion: non-null by this point
+                flowId: flowId!,
+                style:
+                  (
+                    {
+                      // ??? what was I on?
+                      primary: ButtonStyle.Primary,
+                      blurple: ButtonStyle.Primary,
+                      secondary: ButtonStyle.Secondary,
+                      gray: ButtonStyle.Secondary,
+                      link: ButtonStyle.Secondary,
+                      success: ButtonStyle.Success,
+                      green: ButtonStyle.Success,
+                      danger: ButtonStyle.Danger,
+                      red: ButtonStyle.Danger,
+                    } as const
+                  )[button.style ?? "primary"] ?? ButtonStyle.Primary,
+              }),
+        } satisfies StorableButtonWithCustomId | StorableButtonWithUrl;
 
-      values.push({
-        id: BigInt(newId),
-        channelId: makeSnowflake(message.channel_id),
-        guildId: makeSnowflake(guildId),
-        messageId: makeSnowflake(message.id),
-        draft: false,
-        type: ComponentType.Button,
-        data,
-      });
-    }
+        values.push({
+          id: BigInt(newId),
+          channelId: makeSnowflake(message.channel_id),
+          guildId: makeSnowflake(guildId),
+          messageId: makeSnowflake(message.id),
+          draft: false,
+          type: ComponentType.Button,
+          data,
+        });
+      }
 
-    if (values.length === 0) return [];
-    const inserted = await tx
-      .insert(discordMessageComponents)
-      .values(values)
-      .onConflictDoNothing()
-      .returning({
-        id: discordMessageComponents.id,
-        data: discordMessageComponents.data,
-      });
-    const withFlowId = inserted.filter(
-      (i): i is { id: bigint; data: StorableButtonWithCustomId } =>
-        "flowId" in i.data && !!i.data.flowId,
-    );
-    if (withFlowId.length !== 0) {
-      await tx
-        .insert(discordMessageComponentsToFlows)
-        .values(
-          withFlowId.map((component) => ({
-            discordMessageComponentId: component.id,
-            flowId: BigInt(component.data.flowId),
-          })),
-        )
-        .onConflictDoNothing();
-    }
+      if (values.length === 0) return [];
+      const inserted = await tx
+        .insert(discordMessageComponents)
+        .values(values)
+        .onConflictDoNothing()
+        .returning({
+          id: discordMessageComponents.id,
+          data: discordMessageComponents.data,
+        });
+      const withFlowId = inserted.filter(
+        (i): i is { id: bigint; data: StorableButtonWithCustomId } =>
+          "flowId" in i.data && !!i.data.flowId,
+      );
+      if (withFlowId.length !== 0) {
+        await tx
+          .insert(discordMessageComponentsToFlows)
+          .values(
+            withFlowId.map((component) => ({
+              discordMessageComponentId: component.id,
+              flowId: BigInt(component.data.flowId),
+            })),
+          )
+          .onConflictDoNothing();
+      }
 
-    return inserted;
-  });
+      return inserted;
+    }),
+  );
 
   const emojis = (await rest.get(
     Routes.guildEmojis(guildId),

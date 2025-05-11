@@ -1,6 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { getDb } from "store";
+import { autoRollbackTx, getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
   DBWithSchema,
@@ -140,24 +140,28 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     throw json({ message: "Unknown Trigger" }, 404);
   }
 
-  await db.transaction(async (tx) => {
-    // if (flow) {
-    await tx.delete(flowActions).where(eq(flowActions.flowId, trigger.flowId));
-    if (flow.actions.length !== 0) {
-      await tx.insert(flowActions).values(
-        flow.actions.map((action) => ({
-          flowId: trigger.flowId,
-          type: action.type,
-          data: action,
-        })),
-      );
-    }
-    await tx
-      .update(flows)
-      .set({ name: flow.name })
-      .where(eq(flows.id, trigger.flowId));
-    // }
-  });
+  await db.transaction(
+    autoRollbackTx(async (tx) => {
+      // if (flow) {
+      await tx
+        .delete(flowActions)
+        .where(eq(flowActions.flowId, trigger.flowId));
+      if (flow.actions.length !== 0) {
+        await tx.insert(flowActions).values(
+          flow.actions.map((action) => ({
+            flowId: trigger.flowId,
+            type: action.type,
+            data: action,
+          })),
+        );
+      }
+      await tx
+        .update(flows)
+        .set({ name: flow.name })
+        .where(eq(flows.id, trigger.flowId));
+      // }
+    }),
+  );
 
   await updateKvTriggers(
     db,

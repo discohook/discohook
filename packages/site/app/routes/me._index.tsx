@@ -12,7 +12,7 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { TabHeader } from "~/components/tabs";
 import { getBucket } from "~/durable/rate-limits";
 import { getUser } from "~/session.server";
-import { discordUsers, eq, getDb, users } from "~/store.server";
+import { autoRollbackTx, discordUsers, eq, getDb, users } from "~/store.server";
 import { getId } from "~/util/id";
 import { LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
@@ -49,28 +49,30 @@ export const action = async ({ request, context }: LoaderArgs) => {
         )) as APIUser;
       }
 
-      const updated = await db.transaction(async (tx) => {
-        await tx
-          .update(discordUsers)
-          .set({
-            name: discordUser.username,
-            globalName: discordUser.global_name,
-            discriminator: discordUser.discriminator,
-            avatar: discordUser.avatar,
-          })
-          .where(eq(discordUsers.id, BigInt(discordUser.id)));
+      const updated = await db.transaction(
+        autoRollbackTx(async (tx) => {
+          await tx
+            .update(discordUsers)
+            .set({
+              name: discordUser.username,
+              globalName: discordUser.global_name,
+              discriminator: discordUser.discriminator,
+              avatar: discordUser.avatar,
+            })
+            .where(eq(discordUsers.id, BigInt(discordUser.id)));
 
-        const [updated] = await tx
-          .update(users)
-          .set({ name: discordUser.global_name ?? discordUser.username })
-          .where(eq(users.id, user.id))
-          .returning({
-            id: users.id,
-            name: users.name,
-            discordId: users.discordId,
-          });
-        return updated;
-      });
+          const [updated] = await tx
+            .update(users)
+            .set({ name: discordUser.global_name ?? discordUser.username })
+            .where(eq(users.id, user.id))
+            .returning({
+              id: users.id,
+              name: users.name,
+              discordId: users.discordId,
+            });
+          return updated;
+        }),
+      );
       return json(updated, { headers });
     }
     default:

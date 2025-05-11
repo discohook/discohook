@@ -28,6 +28,7 @@ import {
   FlowActionSetVariableType,
   FlowActionType,
   type StorableButtonWithCustomId,
+  autoRollbackTx,
   backups,
   discordMessageComponents,
   discordMessageComponentsToFlows,
@@ -47,7 +48,7 @@ import {
   type ComponentFlow,
   generateEditorTokenForComponent,
   getComponentFlowContainer,
-  getEditorTokenComponentUrl
+  getEditorTokenComponentUrl,
 } from "./add.js";
 
 interface QuickButtonConfig {
@@ -559,16 +560,20 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
   const actions = config.build({ roleId: role.id });
 
   const db = getDb(ctx.env.HYPERDRIVE);
-  await db.transaction(async (tx) => {
-    await tx.delete(flowActions).where(eq(flowActions.flowId, BigInt(flowId)));
-    await tx.insert(flowActions).values(
-      actions.map((action) => ({
-        flowId: BigInt(flowId),
-        type: action.type,
-        data: action,
-      })),
-    );
-  });
+  await db.transaction(
+    autoRollbackTx(async (tx) => {
+      await tx
+        .delete(flowActions)
+        .where(eq(flowActions.flowId, BigInt(flowId)));
+      await tx.insert(flowActions).values(
+        actions.map((action) => ({
+          flowId: BigInt(flowId),
+          type: action.type,
+          data: action,
+        })),
+      );
+    }),
+  );
 
   return await addComponentSetStylePrompt(ctx);
 };

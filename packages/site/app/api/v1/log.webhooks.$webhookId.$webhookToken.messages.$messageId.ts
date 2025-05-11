@@ -8,7 +8,7 @@ import {
   APIMessage,
   APISelectMenuComponent,
   ButtonStyle,
-  ComponentType
+  ComponentType,
 } from "discord-api-types/v10";
 import { notInArray } from "drizzle-orm";
 import { Snowflake } from "tif-snowflake";
@@ -26,6 +26,7 @@ import { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
   and,
+  autoRollbackTx,
   discordGuilds,
   discordMessageComponents,
   eq,
@@ -271,179 +272,182 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       .map(getComponentId)
       .filter((id): id is bigint => id !== undefined);
 
-    const createdComponents = await db.transaction(async (tx) => {
-      const stored =
-        componentIds.length !== 0
-          ? await tx.query.discordMessageComponents.findMany({
-              where: inArray(discordMessageComponents.id, componentIds),
-              columns: {
-                id: true,
-                data: true,
-                createdById: true,
-              },
-              with: {
-                componentsToFlows: {
-                  with: {
-                    flow: {
-                      with: {
-                        actions: true,
+    const createdComponents = await db.transaction(
+      autoRollbackTx(async (tx) => {
+        const stored =
+          componentIds.length !== 0
+            ? await tx.query.discordMessageComponents.findMany({
+                where: inArray(discordMessageComponents.id, componentIds),
+                columns: {
+                  id: true,
+                  data: true,
+                  createdById: true,
+                },
+                with: {
+                  componentsToFlows: {
+                    with: {
+                      flow: {
+                        with: {
+                          actions: true,
+                        },
                       },
                     },
                   },
                 },
-              },
-            })
-          : [];
+              })
+            : [];
 
-      await tx.delete(discordMessageComponents).where(
-        and(
-          eq(discordMessageComponents.messageId, BigInt(message.id)),
-          // drizzle throws when using (not)inArray with an empty array
-          componentIds.length === 0
-            ? sql`true`
-            : notInArray(discordMessageComponents.id, componentIds),
-        ),
-      );
+        await tx.delete(discordMessageComponents).where(
+          and(
+            eq(discordMessageComponents.messageId, BigInt(message.id)),
+            // drizzle throws when using (not)inArray with an empty array
+            componentIds.length === 0
+              ? sql`true`
+              : notInArray(discordMessageComponents.id, componentIds),
+          ),
+        );
 
-      const flowsById: Record<string, string[]> = {};
-      const flowsValues: (typeof flows.$inferInsert)[] =
-        storableComponents.flatMap((component) => {
-          const match = stored.find((c) =>
-            "custom_id" in component
-              ? component.custom_id === `p_${c.id}`
-              : false,
-          );
-          const id = getComponentId(component);
-          flowsById[String(id)] = [];
+        const flowsById: Record<string, string[]> = {};
+        const flowsValues: (typeof flows.$inferInsert)[] =
+          storableComponents.flatMap((component) => {
+            const match = stored.find((c) =>
+              "custom_id" in component
+                ? component.custom_id === `p_${c.id}`
+                : false,
+            );
+            const id = getComponentId(component);
+            flowsById[String(id)] = [];
 
-          if (
-            match ||
-            component.type === ComponentType.StringSelect ||
-            (component.type === ComponentType.Button && isLinkButton(component))
-          ) {
-            return [];
-          }
+            if (
+              match ||
+              component.type === ComponentType.StringSelect ||
+              (component.type === ComponentType.Button &&
+                isLinkButton(component))
+            ) {
+              return [];
+            }
 
-          const newId = generateId();
-          flowsById[String(id)].push(newId);
-          return [{ id: BigInt(newId) }];
-        });
-      if (flowsValues.length !== 0) {
-        await tx.insert(flows).values(flowsValues).onConflictDoNothing();
-      }
+            const newId = generateId();
+            flowsById[String(id)].push(newId);
+            return [{ id: BigInt(newId) }];
+          });
+        if (flowsValues.length !== 0) {
+          await tx.insert(flows).values(flowsValues).onConflictDoNothing();
+        }
 
-      const now = new Date();
-      const values: (typeof discordMessageComponents.$inferInsert)[] =
-        storableComponents.flatMap((component) => {
-          const match =
-            "custom_id" in component
-              ? stored.find((c) => component.custom_id === `p_${c.id}`)
-              : undefined;
+        const now = new Date();
+        const values: (typeof discordMessageComponents.$inferInsert)[] =
+          storableComponents.flatMap((component) => {
+            const match =
+              "custom_id" in component
+                ? stored.find((c) => component.custom_id === `p_${c.id}`)
+                : undefined;
 
-          const id = String(getComponentId(component));
+            const id = String(getComponentId(component));
 
-          let data:
-            | (typeof discordMessageComponents.$inferInsert)["data"]
-            | undefined;
-          switch (component.type) {
-            case ComponentType.Button: {
-              if (!hasCustomId(component)) {
-                data = component;
-              } else {
+            let data:
+              | (typeof discordMessageComponents.$inferInsert)["data"]
+              | undefined;
+            switch (component.type) {
+              case ComponentType.Button: {
+                if (!hasCustomId(component)) {
+                  data = component;
+                } else {
+                  const { custom_id: _, ...c } = component;
+                  data = {
+                    ...c,
+                    flowId:
+                      match && "flowId" in match.data
+                        ? match.data.flowId
+                        : flowsById[id][0],
+                  };
+                }
+                break;
+              }
+              case ComponentType.StringSelect: {
                 const { custom_id: _, ...c } = component;
                 data = {
                   ...c,
+                  // Force max 1 value until we support otherwise
+                  // I want to make it so selects with >1 max_values share one
+                  // flow for all options, like with autofill selects. And also
+                  // a way to tell which values have been selected - `{values[n]}`?
+                  minValues: 1,
+                  maxValues: 1,
+                  // minValues: component.min_values,
+                  // maxValues: component.max_values,
+                  flowIds:
+                    match && "flowIds" in match.data ? match.data.flowIds : {},
+                };
+                break;
+              }
+              case ComponentType.UserSelect:
+              case ComponentType.RoleSelect:
+              case ComponentType.MentionableSelect:
+              case ComponentType.ChannelSelect: {
+                const { custom_id: _, ...c } = component;
+                data = {
+                  ...c,
+                  // See above
+                  minValues: 1,
+                  maxValues: 1,
                   flowId:
                     match && "flowId" in match.data
                       ? match.data.flowId
                       : flowsById[id][0],
                 };
+                break;
               }
-              break;
+              default:
+                break;
             }
-            case ComponentType.StringSelect: {
-              const { custom_id: _, ...c } = component;
-              data = {
-                ...c,
-                // Force max 1 value until we support otherwise
-                // I want to make it so selects with >1 max_values share one
-                // flow for all options, like with autofill selects. And also
-                // a way to tell which values have been selected - `{values[n]}`?
-                minValues: 1,
-                maxValues: 1,
-                // minValues: component.min_values,
-                // maxValues: component.max_values,
-                flowIds:
-                  match && "flowIds" in match.data ? match.data.flowIds : {},
-              };
-              break;
+            // Shouldn't happen
+            if (!data) {
+              console.error("Unsupported component type");
+              return [];
             }
-            case ComponentType.UserSelect:
-            case ComponentType.RoleSelect:
-            case ComponentType.MentionableSelect:
-            case ComponentType.ChannelSelect: {
-              const { custom_id: _, ...c } = component;
-              data = {
-                ...c,
-                // See above
-                minValues: 1,
-                maxValues: 1,
-                flowId:
-                  match && "flowId" in match.data
-                    ? match.data.flowId
-                    : flowsById[id][0],
-              };
-              break;
-            }
-            default:
-              break;
-          }
-          // Shouldn't happen
-          if (!data) {
-            console.error("Unsupported component type");
-            return [];
-          }
 
-          return [
-            {
-              id: match?.id,
-              type: component.type,
-              data,
-              draft: false,
-              createdById: match?.createdById ?? userId,
-              updatedById: userId,
-              updatedAt: now,
-              guildId,
-              messageId: BigInt(message.id),
-              channelId: BigInt(message.channel_id),
-            },
-          ];
-        });
-      return values.length === 0
-        ? []
-        : await tx
-            .insert(discordMessageComponents)
-            .values(values)
-            .onConflictDoUpdate({
-              target: discordMessageComponents.id,
-              set: {
-                type: sql`excluded.type`,
-                data: sql`excluded.data`,
-                draft: sql`excluded.draft`,
-                createdById: sql`excluded."createdById"`,
-                updatedById: sql`excluded."updatedById"`,
-                updatedAt: sql`excluded."updatedAt"`,
-                guildId: sql`excluded."guildId"`,
-                channelId: sql`excluded."channelId"`,
-                messageId: sql`excluded."messageId"`,
+            return [
+              {
+                id: match?.id,
+                type: component.type,
+                data,
+                draft: false,
+                createdById: match?.createdById ?? userId,
+                updatedById: userId,
+                updatedAt: now,
+                guildId,
+                messageId: BigInt(message.id),
+                channelId: BigInt(message.channel_id),
               },
-            })
-            .returning({
-              id: discordMessageComponents.id,
-              messageId: discordMessageComponents.messageId,
-              data: discordMessageComponents.data,
-            });
-    });
+            ];
+          });
+        return values.length === 0
+          ? []
+          : await tx
+              .insert(discordMessageComponents)
+              .values(values)
+              .onConflictDoUpdate({
+                target: discordMessageComponents.id,
+                set: {
+                  type: sql`excluded.type`,
+                  data: sql`excluded.data`,
+                  draft: sql`excluded.draft`,
+                  createdById: sql`excluded."createdById"`,
+                  updatedById: sql`excluded."updatedById"`,
+                  updatedAt: sql`excluded."updatedAt"`,
+                  guildId: sql`excluded."guildId"`,
+                  channelId: sql`excluded."channelId"`,
+                  messageId: sql`excluded."messageId"`,
+                },
+              })
+              .returning({
+                id: discordMessageComponents.id,
+                messageId: discordMessageComponents.messageId,
+                data: discordMessageComponents.data,
+              });
+      }),
+    );
     // I want to do this in the background (ctx.waitUntil) but I had issues
     // the last time I tried with this Remix project. TODO: Try again after
     // upgrading to vite?
@@ -463,48 +467,50 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     }
   }
 
-  const entry = await db.transaction(async (tx) => {
-    // Ensure the guild exists for the relationship in messageLogEntries.
-    // Users who are the victim of webhook URL leakage (whereafter the attacker
-    // happens to use Discohook to abuse the URL) would probably not like
-    // to see that there are no logs just because they had never personally
-    // logged into the site before -- which is why we do this instead of just
-    // not creating the log. It's trivial to delete everything here upon request.
-    if (guildId) {
-      await tx
-        .insert(discordGuilds)
-        .values({ id: guildId })
-        .onConflictDoNothing();
-    }
-    return (
-      await tx
-        .insert(messageLogEntries)
-        .values({
-          webhookId,
-          type,
-          discordGuildId: guildId,
-          // How crucial is an accurate message ID? This could definitely be
-          // fabricated when creating `delete` logs
-          messageId: message?.id ?? messageId,
-          channelId: message?.channel_id ?? entryWebhook.channelId,
-          threadId,
-          userId,
-          // Not really a reliable check but it doesn't matter.
-          // We might want to remove this entirely
-          notifiedEveryoneHere: message
-            ? message.mention_everyone || message.content.includes("@here")
-            : undefined,
-          embedCount: message ? message.embeds.length : undefined,
-          hasContent: message ? !!message.content : undefined,
-        })
-        .returning({
-          id: messageLogEntries.id,
-          webhookId: messageLogEntries.webhookId,
-          channelId: messageLogEntries.channelId,
-          messageId: messageLogEntries.messageId,
-        })
-    )[0];
-  });
+  const entry = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      // Ensure the guild exists for the relationship in messageLogEntries.
+      // Users who are the victim of webhook URL leakage (whereafter the attacker
+      // happens to use Discohook to abuse the URL) would probably not like
+      // to see that there are no logs just because they had never personally
+      // logged into the site before -- which is why we do this instead of just
+      // not creating the log. It's trivial to delete everything here upon request.
+      if (guildId) {
+        await tx
+          .insert(discordGuilds)
+          .values({ id: guildId })
+          .onConflictDoNothing();
+      }
+      return (
+        await tx
+          .insert(messageLogEntries)
+          .values({
+            webhookId,
+            type,
+            discordGuildId: guildId,
+            // How crucial is an accurate message ID? This could definitely be
+            // fabricated when creating `delete` logs
+            messageId: message?.id ?? messageId,
+            channelId: message?.channel_id ?? entryWebhook.channelId,
+            threadId,
+            userId,
+            // Not really a reliable check but it doesn't matter.
+            // We might want to remove this entirely
+            notifiedEveryoneHere: message
+              ? message.mention_everyone || message.content.includes("@here")
+              : undefined,
+            embedCount: message ? message.embeds.length : undefined,
+            hasContent: message ? !!message.content : undefined,
+          })
+          .returning({
+            id: messageLogEntries.id,
+            webhookId: messageLogEntries.webhookId,
+            channelId: messageLogEntries.channelId,
+            messageId: messageLogEntries.messageId,
+          })
+      )[0];
+    }),
+  );
 
   return json({ ...entry, webhook: entryWebhook }, { headers });
 };

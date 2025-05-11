@@ -30,6 +30,7 @@ import { t } from "i18next";
 import {
   StorableButtonWithUrl,
   StorableComponent,
+  autoRollbackTx,
   discordMessageComponents,
   getDb,
   launchComponentDurableObject,
@@ -914,40 +915,44 @@ const registerComponentUpdate = async (
     );
   }
 
-  const editedMsg = await db.transaction(async (tx) => {
-    await tx
-      .insert(discordMessageComponents)
-      .values({
-        id,
-        guildId: webhook.guild_id ? makeSnowflake(webhook.guild_id) : undefined,
-        channelId: makeSnowflake(message.channel_id),
-        messageId: makeSnowflake(message.id),
-        createdById: user.id,
-        type: data.type,
-        data,
-      })
-      .onConflictDoUpdate({
-        target: discordMessageComponents.id,
-        set: {
-          data,
-          draft: false,
-          updatedAt: new Date(),
-          updatedById: user.id,
-        },
-      });
-
-    // An error thrown here triggers a rollback
-    return (await ctx.rest.patch(
-      Routes.webhookMessage(webhook.id, webhook.token, message.id),
-      {
-        body: { components: message.components },
-        query:
-          message.position !== undefined
-            ? new URLSearchParams({ thread_id: message.channel_id })
+  const editedMsg = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      await tx
+        .insert(discordMessageComponents)
+        .values({
+          id,
+          guildId: webhook.guild_id
+            ? makeSnowflake(webhook.guild_id)
             : undefined,
-      },
-    )) as APIMessage;
-  });
+          channelId: makeSnowflake(message.channel_id),
+          messageId: makeSnowflake(message.id),
+          createdById: user.id,
+          type: data.type,
+          data,
+        })
+        .onConflictDoUpdate({
+          target: discordMessageComponents.id,
+          set: {
+            data,
+            draft: false,
+            updatedAt: new Date(),
+            updatedById: user.id,
+          },
+        });
+
+      // An error thrown here triggers a rollback
+      return (await ctx.rest.patch(
+        Routes.webhookMessage(webhook.id, webhook.token, message.id),
+        {
+          body: { components: message.components },
+          query:
+            message.position !== undefined
+              ? new URLSearchParams({ thread_id: message.channel_id })
+              : undefined,
+        },
+      )) as APIMessage;
+    }),
+  );
 
   if (customId !== undefined) {
     await launchComponentDurableObject(ctx.env, {

@@ -20,7 +20,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { discordMessageComponents, getDb } from "store";
+import { autoRollbackTx, discordMessageComponents, getDb } from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import {
   AutoComponentCustomId,
@@ -494,25 +494,27 @@ const registerComponentDelete = async (
     );
   }
 
-  const editedMsg = await db.transaction(async (tx) => {
-    if (!shouldKeepRecord) {
-      await tx
-        .delete(discordMessageComponents)
-        .where(eq(discordMessageComponents.id, id));
-    }
+  const editedMsg = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      if (!shouldKeepRecord) {
+        await tx
+          .delete(discordMessageComponents)
+          .where(eq(discordMessageComponents.id, id));
+      }
 
-    // An error thrown here triggers a rollback
-    return (await ctx.rest.patch(
-      Routes.webhookMessage(webhook.id, webhook.token, message.id),
-      {
-        body: componentsOrEmptyBody(message),
-        query:
-          message.position !== undefined
-            ? new URLSearchParams({ thread_id: message.channel_id })
-            : undefined,
-      },
-    )) as APIMessage;
-  });
+      // An error thrown here triggers a rollback
+      return (await ctx.rest.patch(
+        Routes.webhookMessage(webhook.id, webhook.token, message.id),
+        {
+          body: componentsOrEmptyBody(message),
+          query:
+            message.position !== undefined
+              ? new URLSearchParams({ thread_id: message.channel_id })
+              : undefined,
+        },
+      )) as APIMessage;
+    }),
+  );
 
   if (!shouldKeepRecord) {
     const doId = ctx.env.COMPONENTS.idFromName(`${editedMsg.id}-${customId}`);

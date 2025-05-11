@@ -10,7 +10,7 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { DBWithSchema, getDb, webhooks } from "store";
+import { DBWithSchema, autoRollbackTx, getDb, webhooks } from "store";
 import { zx } from "zodix";
 import { getBucket } from "~/durable/rate-limits";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
@@ -26,81 +26,83 @@ const upsertGuildWebhooks = async (
   const incoming = allWebhooks.filter((w) => w.type === WebhookType.Incoming);
 
   return (
-    await db.transaction(async (tx) => {
-      if (incoming.length === 0) {
-        await tx
-          .delete(webhooks)
-          .where(
-            and(
-              eq(webhooks.discordGuildId, guildId),
-              eq(webhooks.platform, "discord"),
+    await db.transaction(
+      autoRollbackTx(async (tx) => {
+        if (incoming.length === 0) {
+          await tx
+            .delete(webhooks)
+            .where(
+              and(
+                eq(webhooks.discordGuildId, guildId),
+                eq(webhooks.platform, "discord"),
+              ),
+            );
+          return [];
+        }
+
+        // We retrieve tokens first in case we have tokens from a different bot;
+        // we don't want to lose that data in the upsert event.
+        const residual = await tx.query.webhooks.findMany({
+          where: and(
+            eq(webhooks.platform, "discord"),
+            inArray(
+              webhooks.id,
+              incoming.map((w) => w.id),
             ),
-          );
-        return [];
-      }
-
-      // We retrieve tokens first in case we have tokens from a different bot;
-      // we don't want to lose that data in the upsert event.
-      const residual = await tx.query.webhooks.findMany({
-        where: and(
-          eq(webhooks.platform, "discord"),
-          inArray(
-            webhooks.id,
-            incoming.map((w) => w.id),
           ),
-        ),
-        columns: { id: true, token: true },
-      });
-
-      const upserted = await tx
-        .insert(webhooks)
-        .values(
-          incoming.map((webhook) => {
-            const extant = residual.find((w) => w.id === webhook.id);
-            return {
-              platform: "discord" as const,
-              id: webhook.id,
-              name: webhook.name ?? "",
-              avatar: webhook.avatar,
-              channelId: webhook.channel_id,
-              discordGuildId: guildId,
-              token: webhook.token ?? extant?.token ?? undefined,
-              applicationId: webhook.application_id,
-            } satisfies typeof webhooks.$inferInsert;
-          }),
-        )
-        .onConflictDoUpdate({
-          target: [webhooks.platform, webhooks.id],
-          set: {
-            name: sql`excluded.name`,
-            avatar: sql`excluded.avatar`,
-            channelId: sql`excluded."channelId"`,
-            token: sql`excluded.token`,
-            applicationId: sql`excluded."applicationId"`,
-          },
-        })
-        .returning({
-          id: webhooks.id,
-          name: webhooks.name,
-          avatar: webhooks.avatar,
-          channelId: webhooks.channelId,
-          applicationId: webhooks.applicationId,
+          columns: { id: true, token: true },
         });
 
-      // Delete stale records
-      await tx.delete(webhooks).where(
-        and(
-          eq(webhooks.platform, "discord"),
-          eq(webhooks.discordGuildId, guildId),
-          notInArray(
-            webhooks.id,
-            incoming.map((w) => w.id),
-          ),
-        ),
-      );
+        const upserted = await tx
+          .insert(webhooks)
+          .values(
+            incoming.map((webhook) => {
+              const extant = residual.find((w) => w.id === webhook.id);
+              return {
+                platform: "discord" as const,
+                id: webhook.id,
+                name: webhook.name ?? "",
+                avatar: webhook.avatar,
+                channelId: webhook.channel_id,
+                discordGuildId: guildId,
+                token: webhook.token ?? extant?.token ?? undefined,
+                applicationId: webhook.application_id,
+              } satisfies typeof webhooks.$inferInsert;
+            }),
+          )
+          .onConflictDoUpdate({
+            target: [webhooks.platform, webhooks.id],
+            set: {
+              name: sql`excluded.name`,
+              avatar: sql`excluded.avatar`,
+              channelId: sql`excluded."channelId"`,
+              token: sql`excluded.token`,
+              applicationId: sql`excluded."applicationId"`,
+            },
+          })
+          .returning({
+            id: webhooks.id,
+            name: webhooks.name,
+            avatar: webhooks.avatar,
+            channelId: webhooks.channelId,
+            applicationId: webhooks.applicationId,
+          });
 
-      return upserted;
-    })
+        // Delete stale records
+        await tx.delete(webhooks).where(
+          and(
+            eq(webhooks.platform, "discord"),
+            eq(webhooks.discordGuildId, guildId),
+            notInArray(
+              webhooks.id,
+              incoming.map((w) => w.id),
+            ),
+          ),
+        );
+
+        return upserted;
+      }),
+    )
   ).map((d) => ({ ...d, user: null }));
 };
 
