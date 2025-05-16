@@ -150,9 +150,6 @@ export const getComponentFlowContainer = (
   const container = new ContainerBuilder().setAccentColor(color);
   const bodyText = new TextDisplayBuilder().setContent(
     [
-      flow.step === 0 || !flow.message.webhookName
-        ? ""
-        : `-# ${flow.message.webhookName}`,
       `### ${
         flow.stepTitle +
         (flow.totalSteps

@@ -559,23 +559,30 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
   const { flowId } = state.component as StorableButtonWithCustomId;
   const actions = config.build({ roleId: role.id });
 
-  const db = getDb(ctx.env.HYPERDRIVE);
-  await db.transaction(
-    autoRollbackTx(async (tx) => {
-      await tx
-        .delete(flowActions)
-        .where(eq(flowActions.flowId, BigInt(flowId)));
-      await tx.insert(flowActions).values(
-        actions.map((action) => ({
-          flowId: BigInt(flowId),
-          type: action.type,
-          data: action,
-        })),
+  return [
+    ctx.defer(),
+    async () => {
+      const db = getDb(ctx.env.HYPERDRIVE);
+      await db.transaction(
+        autoRollbackTx(async (tx) => {
+          await tx
+            .delete(flowActions)
+            .where(eq(flowActions.flowId, BigInt(flowId)));
+          await tx.insert(flowActions).values(
+            actions.map((action) => ({
+              flowId: BigInt(flowId),
+              type: action.type,
+              data: action,
+            })),
+          );
+        }),
       );
-    }),
-  );
 
-  return await addComponentSetStylePrompt(ctx);
+      const response = await addComponentSetStylePrompt(ctx);
+      // biome-ignore lint/style/noNonNullAssertion:
+      await ctx.followup.editOriginalMessage(response.data!);
+    },
+  ];
 };
 
 export const parseShareLink = async (env: Env, raw: string) => {
@@ -677,56 +684,66 @@ export const addComponentQuickSendMessageVisibilityCallback: SelectMenuCallback 
     const { shareId, ...state } = ctx.state as ComponentFlow & {
       shareId: string;
     };
-    const { data } = await getShareLink(ctx.env, shareId);
 
-    // Assume button
-    const { flowId } = state.component as StorableButtonWithCustomId;
+    return [
+      ctx.defer(),
+      async () => {
+        const { data } = await getShareLink(ctx.env, shareId);
 
-    // biome-ignore lint/style/noNonNullAssertion: Options generated from this array
-    const config = quickButtonConfigs.find((c) => c.id === "send-message")!;
-    const backupId = generateId();
-    const backupName = `Button in #${
-      ctx.interaction.channel.name ?? "unknown"
-    } (share ${shareId})`.slice(0, 100);
-    const actions = config.build({ flags, backupId });
+        // Assume button
+        const { flowId } = state.component as StorableButtonWithCustomId;
 
-    const db = getDb(ctx.env.HYPERDRIVE);
-    await db.transaction(async (tx) => {
-      await tx.insert(backups).values({
-        id: BigInt(backupId),
-        ownerId: BigInt(state.user.id),
-        name: backupName,
-        dataVersion: "d2",
-        data,
-      });
-      await tx
-        .delete(flowActions)
-        .where(eq(flowActions.flowId, BigInt(flowId)));
-      await tx.insert(flowActions).values(
-        actions.map((action) => ({
-          flowId: BigInt(flowId),
-          type: action.type,
-          data: action,
-        })),
-      );
-    });
+        // biome-ignore lint/style/noNonNullAssertion: Options generated from this array
+        const config = quickButtonConfigs.find((c) => c.id === "send-message")!;
+        const backupId = generateId();
+        const backupName = `Button in #${
+          ctx.interaction.channel.name ?? "unknown"
+        } (share ${shareId})`.slice(0, 100);
+        const actions = config.build({ flags, backupId });
 
-    state.steps?.splice(
-      // Remove share link step and replace it with editable backup link now
-      // that we have fetched the data and created the backup
-      state.steps.length - 1,
-      1,
-      {
-        label: `Set [message data](${ctx.env.DISCOHOOK_ORIGIN}/?backup=${backupId} "${backupName}") (${shareId})`,
+        const db = getDb(ctx.env.HYPERDRIVE);
+        await db.transaction(
+          autoRollbackTx(async (tx) => {
+            await tx.insert(backups).values({
+              id: BigInt(backupId),
+              ownerId: BigInt(state.user.id),
+              name: backupName,
+              dataVersion: "d2",
+              data,
+            });
+            await tx
+              .delete(flowActions)
+              .where(eq(flowActions.flowId, BigInt(flowId)));
+            await tx.insert(flowActions).values(
+              actions.map((action) => ({
+                flowId: BigInt(flowId),
+                type: action.type,
+                data: action,
+              })),
+            );
+          }),
+        );
+
+        state.steps?.splice(
+          // Remove share link step and replace it with editable backup link now
+          // that we have fetched the data and created the backup
+          state.steps.length - 1,
+          1,
+          {
+            label: `Set [message data](${ctx.env.DISCOHOOK_ORIGIN}/?backup=${backupId} "${backupName}") (${shareId})`,
+          },
+          {
+            label: `Set message visibility (${
+              flags.has(MessageFlags.Ephemeral) ? "hidden" : "public"
+            })`,
+          },
+        );
+        state.stepTitle = "Set visibility";
+        state.step += 1;
+
+        const response = await addComponentSetStylePrompt(ctx);
+        // biome-ignore lint/style/noNonNullAssertion:
+        await ctx.followup.editOriginalMessage(response.data!);
       },
-      {
-        label: `Set message visibility (${
-          flags.has(MessageFlags.Ephemeral) ? "hidden" : "public"
-        })`,
-      },
-    );
-    state.stepTitle = "Set visibility";
-    state.step += 1;
-
-    return await addComponentSetStylePrompt(ctx);
+    ];
   };
