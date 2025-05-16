@@ -326,24 +326,37 @@ export const MessageBackupsModal = (
                   {t("savedAutomatically")}
                 </p>
               </div>
-              <Button
-                disabled={!backup || backupFetcher.state !== "idle"}
-                className="my-auto ml-auto"
-                discordstyle={ButtonStyle.Success}
-                onClick={() => {
-                  if (backup) {
-                    backupFetcher.submit(
-                      { data: dataWithTargets },
-                      {
-                        action: apiUrl(BRoutes.backups(backup.id)),
-                        method: "PATCH",
-                      },
-                    );
-                  }
-                }}
-              >
-                {t("save")}
-              </Button>
+              <div className="my-auto ltr:ml-auto rtl:mr-auto flex flex-col sm:flex-row-reverse gap-1">
+                <Button
+                  disabled={!backup || backupFetcher.state !== "idle"}
+                  discordstyle={ButtonStyle.Success}
+                  onClick={() => {
+                    if (backup) {
+                      backupFetcher.submit(
+                        { data: dataWithTargets },
+                        {
+                          action: apiUrl(BRoutes.backups(backup.id)),
+                          method: "PATCH",
+                        },
+                      );
+                    }
+                  }}
+                >
+                  {t("save")}
+                </Button>
+                <Button
+                  disabled={!backup}
+                  discordstyle={ButtonStyle.Secondary}
+                  onClick={() => {
+                    if (backup) {
+                      setData({ ...data, backup_id: undefined });
+                      setBackupId(undefined);
+                    }
+                  }}
+                >
+                  {t("unlink")}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex">
@@ -354,10 +367,12 @@ export const MessageBackupsModal = (
                   maxLength={100}
                   value={draftName ?? ""}
                   onChange={(e) => setDraftName(e.currentTarget.value)}
+                  required
                 />
               </div>
               <Button
                 className="mt-auto ltr:ml-2 rtl:mr-2 h-9"
+                disabled={!draftName?.trim()}
                 onClick={async () => {
                   const created = await backupFetcher.submitAsync(
                     {

@@ -35,6 +35,7 @@
   "logInToSaveBackups": "Log in to save permanent backups.",
   "savedAutomatically": "Saved automatically",
   "createBackup": "Create Backup",
+  "unlink": "Unlink",
   "sendMessageN_one": "Send Message",
   "sendMessageN_other": "Send Messages",
   "messages": "Messages",
