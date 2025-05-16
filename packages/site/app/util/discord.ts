@@ -44,7 +44,7 @@ import type {
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
 import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
-import { MAX_TOTAL_COMPONENTS } from "./constants";
+import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "./constants";
 import { transformFileName } from "./files";
 import { sleep } from "./time";
 
@@ -682,9 +682,9 @@ export const getRemainingComponentsCount = (
     v2 ??
     // Auto detect if not provided
     components.find((c) => c.type !== ComponentType.ActionRow) !== undefined;
-  return (
-    (isV2 ? MAX_TOTAL_COMPONENTS : 5) - getTotalComponentsCount(components)
-  );
+  return isV2
+    ? MAX_TOTAL_COMPONENTS - getTotalComponentsCount(components)
+    : MAX_V1_ROWS - components.length;
 };
 
 // not in love with this function name

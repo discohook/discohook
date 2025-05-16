@@ -271,9 +271,9 @@ export const getRemainingComponentsCount = (
     v2 ??
     // Auto detect if not provided
     components.find((c) => c.type !== ComponentType.ActionRow) !== undefined;
-  return (
-    (isV2 ? MAX_TOTAL_COMPONENTS : 5) - getTotalComponentsCount(components)
-  );
+  return isV2
+    ? MAX_TOTAL_COMPONENTS - getTotalComponentsCount(components)
+    : 5 - components.length;
 };
 
 // This is used for select option arrays, which is why it's in this file
