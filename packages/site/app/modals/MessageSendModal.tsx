@@ -1,3 +1,4 @@
+import { Dialog } from "@base-ui-components/react/dialog";
 import { DiscordErrorData, REST } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
@@ -39,8 +40,13 @@ import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
 import type { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
-import { MessageTroubleshootModal } from "./MessageTroubleshootModal";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import {
+  DialogPortal,
+  Modal,
+  ModalFooter,
+  ModalProps,
+  PlainModalHeader,
+} from "./Modal";
 
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
@@ -521,17 +527,11 @@ export const MessageSendModal = (
     }
   };
 
-  const [troubleshootOpen, setTroubleshootOpen] = useState(false);
-
   return (
     <Modal {...props} setOpen={setOpen}>
       <PlainModalHeader>
         {t("sendMessageN", { count: data.messages.length })}
       </PlainModalHeader>
-      <MessageTroubleshootModal
-        open={troubleshootOpen}
-        setOpen={setTroubleshootOpen}
-      />
       <p className="text-sm font-medium">{t("messages")}</p>
       <div className="space-y-1">
         {data.messages.length > 0 ? (
@@ -719,20 +719,17 @@ export const MessageSendModal = (
                       : "submit",
           )}
         </Button>
-        <Button
-          discordstyle={ButtonStyle.Secondary}
-          onClick={() => setTroubleshootOpen(true)}
-        >
-          {t("havingTrouble")}
-        </Button>
-        {/* <Button
-          disabled={
-            countSelected(selectedWebhooks) === 0 || enabledMessagesCount === 0
-          }
-          onClick={() => {}}
-        >
-          {t(enabledMessagesCount > 1 ? "scheduleSendAll" : "schedule")}
-        </Button> */}
+        <Dialog.Root>
+          <Dialog.Trigger className="contents">
+            <Button discordstyle={ButtonStyle.Secondary}>
+              {t("havingTrouble")}
+            </Button>
+          </Dialog.Trigger>
+          <DialogPortal>
+            <PlainModalHeader>{t("havingTrouble")}</PlainModalHeader>
+            <Dialog.Description>{t("troubleshootMessage")}</Dialog.Description>
+          </DialogPortal>
+        </Dialog.Root>
       </ModalFooter>
     </Modal>
   );

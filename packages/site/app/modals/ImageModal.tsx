@@ -1,5 +1,6 @@
+import { Dialog } from "@base-ui-components/react/dialog";
 import { useEffect, useState } from "react";
-import ReactModal from "react-modal";
+import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 
 export interface ImageModalProps {
@@ -21,72 +22,78 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
   }, [images, startIndex]);
 
   return (
-    <ReactModal
-      isOpen={!!images && startIndex !== undefined}
-      onRequestClose={props.clear}
-      ariaHideApp={false}
-      closeTimeoutMS={100}
-      style={{
-        overlay: {
-          zIndex: 21,
-          backgroundColor: "rgb(0 0 0 / 0.5)",
-          cursor: "zoom-out",
-        },
-        content: {
-          zIndex: 21,
-          padding: "0",
-          background: "none",
-          border: "none",
-          maxWidth: "100%",
-          height: "fit-content",
-          maxHeight: "100%",
-          margin: "auto",
-          overflow: "visible",
-          cursor: "default",
-        },
-      }}
+    <Dialog.Root
+      open={!!images && startIndex !== undefined}
+      onOpenChange={props.clear}
     >
-      <div className="w-full flex flex-wrap md:flex-nowrap">
-        <div className="w-6 mx-auto md:my-auto md:ml-0 md:mr-8">
-          {images && images.length > 1 && index !== undefined && (
-            <button
-              type="button"
-              className="my-auto text-gray-100 text-2xl"
-              onClick={() => {
-                let siblingIndex = index - 1;
-                if (siblingIndex < 0) {
-                  siblingIndex = images.length - 1;
-                }
-                setIndex(siblingIndex);
-              }}
-            >
-              <CoolIcon icon="Arrow_Left_LG" />
-            </button>
+      <Dialog.Portal>
+        <Dialog.Backdrop
+          className={twJoin(
+            "fixed inset-0 bg-black opacity-20 dark:opacity-70 transition-opacity",
+            // opening/closing animation
+            "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
           )}
-        </div>
-        {image && (
-          <div className="m-auto max-h-[calc(100vh_-_4rem)] overflow-hidden">
-            <img src={image.url} alt={image.alt} className="rounded" />
+        />
+        <Dialog.Popup
+          className={twJoin(
+            // position & size
+            "box-border fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            "max-w-full rounded-xl flex",
+            "h-fit max-h-full overflow-y-auto",
+            // opening/closing animation
+            "transition-all",
+            "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+            "data-[starting-style]:-translate-x-1/2 data-[starting-style]:-translate-y-1/2 data-[starting-style]:scale-90",
+            "data-[ending-style]:-translate-x-1/2 data-[ending-style]:-translate-y-1/2 data-[ending-style]:scale-90",
+          )}
+        >
+          <div className="m-auto w-full flex flex-wrap md:flex-nowrap">
+            {images && images.length > 1 && index !== undefined ? (
+              <div className="w-6 mx-auto md:my-auto md:ml-0 md:mr-8">
+                <button
+                  type="button"
+                  className="my-auto text-gray-100 text-2xl"
+                  onClick={() => {
+                    let siblingIndex = index - 1;
+                    if (siblingIndex < 0) {
+                      siblingIndex = images.length - 1;
+                    }
+                    setIndex(siblingIndex);
+                  }}
+                >
+                  <CoolIcon icon="Arrow_Left_LG" />
+                </button>
+              </div>
+            ) : null}
+            {image ? (
+              <div className="m-auto max-h-[calc(100vh_-_4rem)] overflow-hidden">
+                <img
+                  src={image.url}
+                  alt={image.alt}
+                  className="rounded-lg min-h-12"
+                />
+              </div>
+            ) : null}
+            {images && images.length > 1 && index !== undefined ? (
+              <div className="w-6 mx-auto md:my-auto md:mr-0 md:ml-8">
+                <button
+                  type="button"
+                  className="my-auto text-gray-100 text-2xl"
+                  onClick={() => {
+                    let siblingIndex = index + 1;
+                    if (siblingIndex > images.length - 1) {
+                      siblingIndex = 0;
+                    }
+                    setIndex(siblingIndex);
+                  }}
+                >
+                  <CoolIcon icon="Arrow_Right_LG" />
+                </button>
+              </div>
+            ) : null}
           </div>
-        )}
-        <div className="w-6 mx-auto md:my-auto md:mr-0 md:ml-8">
-          {images && images.length > 1 && index !== undefined && (
-            <button
-              type="button"
-              className="my-auto text-gray-100 text-2xl"
-              onClick={() => {
-                let siblingIndex = index + 1;
-                if (siblingIndex > images.length - 1) {
-                  siblingIndex = 0;
-                }
-                setIndex(siblingIndex);
-              }}
-            >
-              <CoolIcon icon="Arrow_Right_LG" />
-            </button>
-          )}
-        </div>
-      </div>
-    </ReactModal>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

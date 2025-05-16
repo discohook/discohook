@@ -7,53 +7,7 @@ export type ModalProps = React.PropsWithChildren<{
   setOpen: (open: boolean) => void;
 }>;
 
-// export const OldModal: React.FC<ModalProps & { title?: React.ReactNode }> = ({
-//   open,
-//   setOpen,
-//   title,
-//   children,
-// }) => {
-//   return (
-//     <ReactModal
-//       isOpen={open}
-//       onRequestClose={() => setOpen(false)}
-//       ariaHideApp={false}
-//       closeTimeoutMS={100}
-//       style={{
-//         overlay: {
-//           zIndex: 21,
-//           backgroundColor: "rgb(0 0 0 / 0.5)",
-//         },
-//         content: {
-//           zIndex: 21,
-//           padding: 0,
-//           inset: "1rem",
-//           background: "none",
-//           border: "none",
-//           borderRadius: "0.5rem",
-//           maxWidth: "42rem",
-//           height: "fit-content",
-//           maxHeight: "calc(100% - 2rem)",
-//           margin: "auto",
-//           overflow: "visible",
-//           overflowY: "auto",
-//         },
-//       }}
-//     >
-//       <div className="rounded-xl bg-gray-50 text-black dark:bg-[#37373D] dark:text-gray-50 border border-border-normal dark:border-border-normal-dark">
-//         {title && (
-//           <div className="px-5 py-3 bg-gray-200 dark:bg-gray-900 flex rounded-t-xl">
-//             <p className="text-xl font-bold my-auto">{title}</p>
-//             <ModalCloseButton setOpen={setOpen} />
-//           </div>
-//         )}
-//         <div className="p-5">{children}</div>
-//       </div>
-//     </ReactModal>
-//   );
-// };
-
-const ModalPopup: React.FC<
+export const DialogPortal: React.FC<
   React.PropsWithChildren<{ title?: React.ReactNode }>
 > = ({ title, children }) => (
   <Dialog.Portal>
@@ -68,7 +22,7 @@ const ModalPopup: React.FC<
       className={twJoin(
         // position & size
         "box-border fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-        "w-[32rem] md:w-1/2 max-w-[calc(100vw_-_3rem)] rounded-xl",
+        "w-[32rem] md:w-3/4 max-w-[calc(100vw_-_3rem)] rounded-xl",
         "max-h-[calc(100vh_-_8rem)] overflow-y-auto h-fit",
         // colors
         "bg-gray-50 text-black dark:bg-[#37373D] dark:text-gray-50",
@@ -106,7 +60,7 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode }> = (
   props,
 ) => (
   <Dialog.Root open={props.open} onOpenChange={props.setOpen}>
-    <ModalPopup title={props.title}>{props.children}</ModalPopup>
+    <DialogPortal title={props.title}>{props.children}</DialogPortal>
   </Dialog.Root>
 );
 
