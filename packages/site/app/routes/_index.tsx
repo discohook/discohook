@@ -1,7 +1,13 @@
+import { Dialog } from "@base-ui-components/react/dialog";
 import { SerializeFrom, defer } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
-import { APIWebhook, ButtonStyle, ComponentType } from "discord-api-types/v10";
+import {
+  APIWebhook,
+  ButtonStyle,
+  ComponentType,
+  MessageFlags,
+} from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import React, { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -44,7 +50,7 @@ import {
 } from "~/modals/MessageSendModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { MessageShareModal } from "~/modals/MessageShareModal";
-import { ModalFooter } from "~/modals/Modal";
+import { DialogPortal, ModalFooter } from "~/modals/Modal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
@@ -57,6 +63,7 @@ import {
   type QueryDataTarget,
   ZodQueryData,
 } from "~/types/QueryData";
+import { QueryDataMessageDataRaw } from "~/types/QueryData-raw";
 import { useCache } from "~/util/cache/CacheManager";
 import {
   INDEX_FAILURE_MESSAGE,
@@ -74,7 +81,7 @@ import {
 } from "~/util/discord";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { LoaderArgs } from "~/util/loader";
-import { useLocalStorage } from "~/util/localstorage";
+import { Settings, useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
   base64UrlEncode,
@@ -250,10 +257,21 @@ export const loadMessageComponents = async (
   }
 };
 
+const getNewMessageData = (settings: Settings): QueryDataMessageDataRaw => {
+  const data: QueryDataMessageDataRaw = {};
+  if (settings.defaultMessageFlag === "components") {
+    data.flags = MessageFlags.IsComponentsV2;
+  }
+  return data;
+};
+
 export default function Index() {
   const { t } = useTranslation();
   const { user, memberships, cdn, discordApplicationId, debug } =
     useLoaderData<typeof loader>();
+
+  const V2_CREATE_PROMPT = debug.environment === "dev";
+
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
   const cache = useCache(!user);
@@ -514,6 +532,7 @@ export default function Index() {
   const [jsonEditor, setJsonEditor] = useState<JsonEditorProps>();
   const [codeGenerator, setCodeGenerator] = useState<CodeGeneratorProps>();
   const [showOrgMigration, setShowOrgMigration] = useState(dm === "org");
+  const [showAddMessageMenu, setShowAddMessageMenu] = useState(false);
   const [confirm, setConfirm] = useConfirmModal();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
@@ -778,7 +797,9 @@ export default function Index() {
                               className="ltr:ml-auto rtl:mr-auto"
                               onClick={() => {
                                 setData({
-                                  messages: [{ data: {} }],
+                                  messages: [
+                                    { data: getNewMessageData(settings) },
+                                  ],
                                   targets: undefined,
                                 });
                                 setConfirm(undefined);
@@ -984,19 +1005,106 @@ export default function Index() {
             );
           })}
           <div className="px-4">
-            <Button
-              className="mt-4 w-full"
-              disabled={data.messages.length >= 10}
-              onClick={() => {
-                data.messages.push({ data: {} });
-                setData({ ...data });
-              }}
-            >
-              <div className="flex">
-                <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
-                <span className="my-auto">{t("addMessage")}</span>
-              </div>
-            </Button>
+            {V2_CREATE_PROMPT ? (
+              <Dialog.Root
+                open={showAddMessageMenu}
+                onOpenChange={setShowAddMessageMenu}
+              >
+                <Dialog.Trigger
+                  disabled={data.messages.length >= 10}
+                  onClick={(e) => {
+                    if (e.shiftKey) {
+                      // doesn't seem to do anything (for our use case)?
+                      e.preventBaseUIHandler();
+                      setShowAddMessageMenu(false);
+
+                      data.messages.push({
+                        data: getNewMessageData(settings),
+                      });
+                      setData({ ...data });
+                    }
+                  }}
+                  render={
+                    <Button
+                      className="mt-4 w-full"
+                      disabled={data.messages.length >= 10}
+                    >
+                      <div className="flex">
+                        <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
+                        <span className="my-auto">{t("addMessage")}</span>
+                      </div>
+                    </Button>
+                  }
+                />
+                <DialogPortal className="flex flex-col gap-y-2">
+                  <button
+                    className={twJoin(
+                      "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
+                      "border border-gray-300 dark:border-gray-700 hover:border-blurple",
+                      "shadow hover:shadow-md transition",
+                    )}
+                    type="button"
+                    onClick={() => {
+                      data.messages.push({ data: {} });
+                      setData({ ...data });
+                      setShowAddMessageMenu(false);
+                    }}
+                  >
+                    <CoolIcon icon="Text" className="my-auto text-4xl" />
+                    <div className="my-auto">
+                      <p className="font-semibold text-lg">
+                        {t("standardMessage")}
+                      </p>
+                      <p className="text-muted dark:text-muted-dark">
+                        {t("standardMessageDescription")}
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    className={twJoin(
+                      "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
+                      "border border-gray-300 dark:border-gray-700 hover:border-blurple",
+                      "shadow hover:shadow-md transition relative",
+                    )}
+                    type="button"
+                    onClick={() => {
+                      data.messages.push({
+                        data: { flags: MessageFlags.IsComponentsV2 },
+                      });
+                      setData({ ...data });
+                      setShowAddMessageMenu(false);
+                    }}
+                  >
+                    <CoolIcon icon="Rows" className="my-auto text-4xl" />
+                    <div className="my-auto">
+                      <p className="font-semibold text-lg">
+                        {t("componentsMessage")}
+                      </p>
+                      <p className="text-muted dark:text-muted-dark">
+                        {t("componentsMessageDescription")}
+                      </p>
+                    </div>
+                    <div className="absolute -top-1 -right-1 rounded-full bg-red-500 font-bold text-xs px-2 py-0.5 uppercase">
+                      {t("new")}
+                    </div>
+                  </button>
+                </DialogPortal>
+              </Dialog.Root>
+            ) : (
+              <Button
+                className="mt-4 w-full"
+                disabled={data.messages.length >= 10}
+                onClick={() => {
+                  data.messages.push({ data: {} });
+                  setData({ ...data });
+                }}
+              >
+                <div className="flex">
+                  <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
+                  <span className="my-auto">{t("addMessage")}</span>
+                </div>
+              </Button>
+            )}
             <hr className="border border-gray-400 dark:border-gray-600 my-6" />
             <div className="grayscale hover:grayscale-0 group flex text-sm opacity-60 hover:opacity-100 transition-opacity">
               <div className="mb-auto mt-1 ltr:ml-2 rtl:mr-2">

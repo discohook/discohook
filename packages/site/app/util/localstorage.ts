@@ -9,6 +9,7 @@ export interface Settings {
   skinTone?: 0 | 1 | 2 | 3 | 4;
   forceDualPane?: boolean;
   locale?: LocaleCode;
+  defaultMessageFlag?: "standard" | "components";
 }
 
 export const useLocalStorage = (): [

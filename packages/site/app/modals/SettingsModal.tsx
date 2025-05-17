@@ -240,6 +240,35 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           />
         </div>
       </div>
+      {/* <div className="mt-8">
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
+          {t("defaultMessageCreationChoice")}
+        </p>
+        <div className="space-y-2 mt-2">
+          <Radio
+            name="defaultMessageFlag"
+            label={t("standardMessage")}
+            checked={
+              !settings.defaultMessageFlag || settings.defaultMessageFlag === "standard"
+            }
+            onChange={(e) => {
+              if (e.currentTarget.checked) {
+                updateSettings({ defaultMessageFlag: "standard" });
+              }
+            }}
+          />
+          <Radio
+            name="defaultMessageFlag"
+            label={t("componentsMessage")}
+            checked={settings.defaultMessageFlag === "components"}
+            onChange={(e) => {
+              if (e.currentTarget.checked) {
+                updateSettings({ defaultMessageFlag: "components" });
+              }
+            }}
+          />
+        </div>
+      </div> */}
     </Modal>
   );
 };

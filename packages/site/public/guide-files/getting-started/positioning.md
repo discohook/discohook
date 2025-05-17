@@ -5,7 +5,7 @@ description: "How your components are arranged in your message"
 
 # Component Positioning
 
-Message components like buttons and select menus are contained in what are called action rows (or just "rows"). Each standard message can have up to 5 action rows, and stacks-based messages can have up to 40 total components, including the components inside each row. The maximum "width" of a row is 5 units:
+Message components like buttons and select menus are contained in what are called action rows (or just "rows"). Each standard message can have up to 5 action rows, and components-based messages can have up to 40 total components, including the components inside each row. The maximum "width" of a row is 5 units:
 
 - Button: 1 unit wide (5 per row)
 - Select Menu: 5 units wide (1 per row)
