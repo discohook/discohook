@@ -351,6 +351,7 @@ export const MessageBackupsModal = (
                     if (backup) {
                       setData({ ...data, backup_id: undefined });
                       setBackupId(undefined);
+                      backupFetcher.reset();
                     }
                   }}
                 >

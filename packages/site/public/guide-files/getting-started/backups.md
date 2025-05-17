@@ -13,7 +13,7 @@ When using Discohook, click the "Backups" button, right in between "Share" and "
 
 On your [user page](discohook://me/backups), you can see a list of all the backups you have saved. If one of your old button messages has been migrated, you may already have a few backups with names that look like "Button (public/hidden message) <numbers>". This is because previously-named "custom message buttons" are now linked to Discohook backups, which you can edit at any time to modify the message sent by the component.
 
-Click the pencil icon on any of your backups to edit the name and schedule. To edit the content of the backup, click the link button on the right to open it. As the notice at the top explains, autosave is enabled when editing backups. To manually save a backup (always a good idea before closing the tab), go back into the "Backups" menu and select "Save".
+Click the pencil icon on any of your backups to edit the name and schedule. To edit the content of the backup, click the link button on the right to open it. As the notice at the top explains, autosave is enabled when editing backups. To manually save a backup (always a good idea before closing the tab), go back into the "Backups" menu and select "Save". You can also click "Unlink" to keep editing without the ability to overwrite the data in the backup. This is usually used for creating template backups that need to be edited without modifying the original.
 
 ## Scheduling
 
