@@ -2,6 +2,7 @@ import { Dialog } from "@base-ui-components/react/dialog";
 import { useEffect, useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { DialogBackdrop } from "./Modal";
 
 export interface ImageModalProps {
   images?: { url: string; alt?: string }[];
@@ -27,13 +28,7 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
       onOpenChange={props.clear}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop
-          className={twJoin(
-            "fixed inset-0 bg-black opacity-20 dark:opacity-70 transition-opacity",
-            // opening/closing animation
-            "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-          )}
-        />
+        <DialogBackdrop />
         <Dialog.Popup
           className={twJoin(
             // position & size

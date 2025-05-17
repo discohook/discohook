@@ -7,17 +7,21 @@ export type ModalProps = React.PropsWithChildren<{
   setOpen: (open: boolean) => void;
 }>;
 
+export const dialogBackdropClassName = twJoin(
+  "fixed inset-0 bg-black opacity-20 dark:opacity-70 transition-opacity",
+  // opening/closing animation
+  "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+);
+
+export const DialogBackdrop = () => (
+  <Dialog.Backdrop className={dialogBackdropClassName} />
+);
+
 export const DialogPortal: React.FC<
-  React.PropsWithChildren<{ title?: React.ReactNode }>
-> = ({ title, children }) => (
+  React.PropsWithChildren<{ title?: React.ReactNode; className?: string }>
+> = ({ title, children, className }) => (
   <Dialog.Portal>
-    <Dialog.Backdrop
-      className={twJoin(
-        "fixed inset-0 bg-black opacity-20 dark:opacity-70 transition-opacity",
-        // opening/closing animation
-        "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-      )}
-    />
+    <DialogBackdrop />
     <Dialog.Popup
       className={twJoin(
         // position & size
@@ -51,7 +55,7 @@ export const DialogPortal: React.FC<
           </div>
         </div>
       ) : null}
-      <div className="p-5">{children}</div>
+      <div className={twMerge("p-5", className)}>{children}</div>
     </Dialog.Popup>
   </Dialog.Portal>
 );
