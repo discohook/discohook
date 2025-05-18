@@ -59,13 +59,13 @@ export const TextDisplayEditor: React.FC<{
         </div>
         <div>
           <p className="text-sm font-medium cursor-default">{t("accessory")}</p>
-          <ButtonSelect
+          <ButtonSelect<"button" | "linkButton" | "thumbnail">
             options={[
               { label: t("component.2"), value: "button" },
               { label: t("linkButton"), value: "linkButton" },
               { label: t("component.11"), value: "thumbnail" },
             ]}
-            onChange={(opt) => {
+            onValueChange={(value) => {
               const parentChildren =
                 parent?.components ?? message.data.components;
               if (!parentChildren) {
@@ -74,9 +74,6 @@ export const TextDisplayEditor: React.FC<{
                 );
                 return;
               }
-              const { value } = opt as {
-                value: "button" | "linkButton" | "thumbnail";
-              };
               let accessory: APISectionAccessoryComponent | undefined;
               switch (value) {
                 case "button":

@@ -1,36 +1,43 @@
-// Heavily modified from https://react-select.com/advanced#experimental (Popout)
-
+import { Select } from "@base-ui-components/react/select";
 import { ButtonStyle } from "discord-api-types/v10";
-import { ReactNode, useState } from "react";
-import { twJoin, twMerge } from "tailwind-merge";
+import { twJoin } from "tailwind-merge";
 import { Button } from "./Button";
-import {
-  StringSelect,
-  StringSelectProps,
-  selectClassNames,
-} from "./StringSelect";
+import { selectStyles } from "./StringSelect";
 import { CoolIcon, CoolIconsGlyph } from "./icons/CoolIcon";
 
-export const ButtonSelect: React.FC<
-  React.PropsWithChildren<
-    StringSelectProps & {
-      discordstyle?: ButtonStyle;
-      icon?: CoolIconsGlyph | null;
-    }
-  >
-> = (props) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [value, setValue] = useState<{ label: string; value: string } | null>();
-
+export function ButtonSelect<T>(
+  props: React.PropsWithChildren<{
+    name?: string;
+    options: { label: React.ReactNode; value: T; disabled?: boolean }[];
+    value?: T;
+    onValueChange?: (value: T) => void;
+    required?: boolean;
+    disabled?: boolean;
+    readOnly?: boolean;
+    /** Applied to the trigger (Button) */
+    className?: string;
+    discordstyle?: ButtonStyle;
+    icon?: CoolIconsGlyph | null;
+  }>,
+) {
   return (
-    <Dropdown
-      isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
-      target={
+    <Select.Root
+      value={props.value}
+      onValueChange={props.onValueChange}
+      name={props.name}
+      required={props.required}
+      disabled={props.disabled}
+      readOnly={props.readOnly}
+      // open={isOpen}
+      // onOpenChange={setIsOpen}
+    >
+      <Select.Trigger
+        className="group/trigger w-fit h-fit"
+        disabled={props.disabled}
+      >
         <Button
           className={props.className}
-          onClick={() => setIsOpen((prev) => !prev)}
-          disabled={props.isDisabled}
+          disabled={props.disabled}
           discordstyle={props.discordstyle}
         >
           {props.children}
@@ -38,87 +45,45 @@ export const ButtonSelect: React.FC<
             <CoolIcon
               icon={props.icon ?? "Chevron_Down"}
               className={twJoin(
-                "my-auto ml-1.5 transition-all",
-                isOpen ? "rotate-180" : "rotate-0",
+                "my-auto ml-1.5 transition-transform",
+                "rotate-0 group-data-[popup-open]/trigger:rotate-180",
               )}
             />
           ) : null}
         </Button>
-      }
-    >
-      <StringSelect
-        {...{ ...props, className: undefined, children: undefined }}
-        backspaceRemovesValue={false}
-        controlShouldRenderValue={false}
-        hideSelectedOptions={false}
-        isSearchable={false}
-        isClearable={false}
-        classNames={{
-          ...props.classNames,
-          control: (p) =>
-            twMerge(
-              selectClassNames.control?.(p),
-              props.classNames?.control?.(p),
-              "!invisible !min-h-0 !max-h-0 !-mt-3",
-            ),
-          menu: (p) =>
-            twMerge(
-              selectClassNames.menu?.(p),
-              props.classNames?.menu?.(p),
-              "!w-max max-w-44 dark:!bg-[#111214]",
-            ),
-          menuList: (p) =>
-            twMerge(
-              selectClassNames.menuList?.(p),
-              props.classNames?.menuList?.(p),
-              "!p-1",
-            ),
-          option: (p) =>
-            twMerge(
-              props.classNames?.option?.(p),
-              "!rounded !py-1 !px-2.5 !bg-inherit hover:!bg-blurple/40 dark:hover:!bg-blurple !text-base !text-inherit !font-medium",
-              p.isDisabled
-                ? "!cursor-not-allowed opacity-60"
-                : "!cursor-pointer",
-            ),
-        }}
-        menuIsOpen
-        onChange={(newValue, a) => {
-          setValue(newValue as typeof value);
-          setIsOpen(false);
-          if (props.onChange) {
-            props.onChange(newValue, a);
-          }
-        }}
-        tabSelectsValue={false}
-        value={value}
-      />
-    </Dropdown>
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Positioner
+          className={selectStyles.positioner}
+          align="start"
+          alignOffset={2}
+        >
+          <Select.ScrollUpArrow />
+          <Select.Popup>
+            <Select.Arrow />
+            {props.options?.map((option) => (
+              <Select.Item
+                key={`button-string-select-option-${option.value}`}
+                value={option.value}
+                className={selectStyles.item}
+                disabled={option.disabled}
+              >
+                <Select.ItemText className={selectStyles.itemText}>
+                  {option.label}
+                </Select.ItemText>
+                {props.value !== undefined ? (
+                  // Only show indicator if the select has a controlled value;
+                  // most (all) of our ButtonSelects don't need an indicator
+                  <Select.ItemIndicator className={selectStyles.itemIndicator}>
+                    <CoolIcon icon="Check" />
+                  </Select.ItemIndicator>
+                ) : null}
+              </Select.Item>
+            ))}
+          </Select.Popup>
+          <Select.ScrollDownArrow />
+        </Select.Positioner>
+      </Select.Portal>
+    </Select.Root>
   );
-};
-
-const Menu = (props: JSX.IntrinsicElements["div"]) => (
-  <div className="absolute mt-1 z-20" {...props} />
-);
-
-const Blanket = (props: JSX.IntrinsicElements["div"]) => (
-  <div className="bottom-0 left-0 top-0 right-0 fixed z-10" {...props} />
-);
-
-const Dropdown = ({
-  children,
-  isOpen,
-  target,
-  onClose,
-}: {
-  children?: ReactNode;
-  readonly isOpen: boolean;
-  readonly target: ReactNode;
-  readonly onClose: () => void;
-}) => (
-  <div className="relative">
-    {target}
-    {isOpen ? <Menu>{children}</Menu> : null}
-    {isOpen ? <Blanket onClick={onClose} /> : null}
-  </div>
-);
+}

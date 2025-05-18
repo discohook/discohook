@@ -1277,12 +1277,8 @@ const CheckFunctionEditor: React.FC<{
                   label: t(`checkFunctionType.${value}`),
                   value,
                 }))}
-              onChange={(opt) => {
-                func.conditions.push(
-                  checkFunctionSeed(
-                    (opt as { value: FlowActionCheckFunctionType }).value,
-                  ),
-                );
+              onValueChange={(value) => {
+                func.conditions.push(checkFunctionSeed(value));
                 update();
               }}
             >

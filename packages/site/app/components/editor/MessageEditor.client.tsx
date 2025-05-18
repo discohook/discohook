@@ -760,7 +760,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                     </p>
                   ),
                   value: "embed",
-                  isDisabled:
+                  disabled:
                     !!message.data.embeds && message.data.embeds.length >= 10,
                 },
                 {
@@ -781,19 +781,18 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                     </p>
                   ),
                   value: "row",
-                  isDisabled:
+                  disabled:
                     !!message.data.components &&
                     message.data.components.length >= 5,
                 },
                 // {
                 //   label: t("addPoll"),
                 //   value: "poll",
-                //   isDisabled: !!message.data.poll,
+                //   disabled: !!message.data.poll,
                 // },
               ]}
-              onChange={(opt) => {
-                const val = (opt as { value: "embed" | "row" | "poll" }).value;
-                switch (val) {
+              onValueChange={(value) => {
+                switch (value) {
                   case "embed": {
                     message.data.embeds = message.data.embeds
                       ? [...message.data.embeds, {}]
@@ -824,7 +823,9 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             {t("setLink")}
           </Button>
           <div>
-            <ButtonSelect
+            <ButtonSelect<
+              "flags" | "jsonEditor" | "codeGenerator" | "copyQueryData"
+            >
               discordstyle={ButtonStyle.Secondary}
               options={[
                 {
@@ -876,17 +877,8 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   value: "copyQueryData",
                 },
               ]}
-              onChange={(opt) => {
-                const val = (
-                  opt as {
-                    value:
-                      | "flags"
-                      | "jsonEditor"
-                      | "codeGenerator"
-                      | "copyQueryData";
-                  }
-                ).value;
-                switch (val) {
+              onValueChange={(value) => {
+                switch (value) {
                   case "flags": {
                     setEditingMessageFlags(i);
                     break;
@@ -1308,7 +1300,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
         <div className="flex space-x-2 rtl:space-x-reverse">
           <div>
             <ButtonSelect
-              isDisabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
+              disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
               options={[
                 {
                   label: (
@@ -1384,9 +1376,8 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   value: ComponentType.ActionRow,
                 },
               ]}
-              onChange={(opt) => {
-                const val = (opt as { value: number }).value as ComponentType;
-                switch (val) {
+              onValueChange={(value) => {
+                switch (value) {
                   case ComponentType.TextDisplay: {
                     message.data.components = [
                       ...components,
@@ -1450,7 +1441,9 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
             {t("setLink")}
           </Button>
           <div>
-            <ButtonSelect
+            <ButtonSelect<
+              "flags" | "jsonEditor" | "codeGenerator" | "copyQueryData"
+            >
               discordstyle={ButtonStyle.Secondary}
               options={[
                 {
@@ -1502,17 +1495,8 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   value: "copyQueryData",
                 },
               ]}
-              onChange={(opt) => {
-                const val = (
-                  opt as {
-                    value:
-                      | "flags"
-                      | "jsonEditor"
-                      | "codeGenerator"
-                      | "copyQueryData";
-                  }
-                ).value;
-                switch (val) {
+              onValueChange={(value) => {
+                switch (value) {
                   case "flags": {
                     setEditingMessageFlags(i);
                     break;

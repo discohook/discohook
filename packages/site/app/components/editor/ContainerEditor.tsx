@@ -193,7 +193,7 @@ export const ContainerEditor: React.FC<{
         <div className="flex ltr:ml-2 rtl:mr-2">
           <div>
             <ButtonSelect
-              isDisabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
+              disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
               options={[
                 {
                   label: (
@@ -257,9 +257,8 @@ export const ContainerEditor: React.FC<{
                   value: ComponentType.ActionRow,
                 },
               ]}
-              onChange={(opt) => {
-                const val = (opt as { value: number }).value as ComponentType;
-                switch (val) {
+              onValueChange={(value) => {
+                switch (value) {
                   case ComponentType.TextDisplay: {
                     container.components.push({
                       type: ComponentType.TextDisplay,

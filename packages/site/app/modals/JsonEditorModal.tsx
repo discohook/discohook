@@ -112,10 +112,10 @@ export const JsonEditorModal = (
           </Button>
         </div>
         <div className="ltr:ml-auto rtl:mr-auto">
-          <ButtonSelect
+          <ButtonSelect<"backup" | "plain">
             // This select assumes that the JSON editor is for message data.
             // Currently, it always will be, but it was designed to be generic.
-            isDisabled={!valid}
+            disabled={!valid}
             discordstyle={ButtonStyle.Secondary}
             options={[
               {
@@ -127,12 +127,7 @@ export const JsonEditorModal = (
                 value: "plain",
               },
             ]}
-            onChange={(opt) => {
-              const { value: val } = opt as {
-                label: string;
-                value: "backup" | "plain";
-              };
-
+            onValueChange={(val) => {
               const now = new Date();
               const datePretty = now.toLocaleString(undefined, {
                 year: "numeric",

@@ -19,9 +19,7 @@ import { CoolIcon } from "../icons/CoolIcon";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import DatePicker from "../pickers/DatePicker";
 import { linkClassName } from "../preview/Markdown";
-import {
-  decimalToHex
-} from "./ColorPicker";
+import { decimalToHex } from "./ColorPicker";
 
 export const isEmbedEmpty = (embed: APIEmbed): boolean =>
   !embed.author &&
@@ -995,17 +993,16 @@ const EmbedFileSelect = (props: {
   return (
     <ButtonSelect
       discordstyle={ButtonStyle.Secondary}
-      isDisabled={files.length === 0}
+      disabled={files.length === 0}
       options={files.map(({ file }) => ({
         label: file.name,
         value: file.name,
       }))}
       className="h-9"
-      onChange={(o) => {
-        const opt = o as { label: string; value: string };
+      onValueChange={(value) => {
         onChange({
-          filename: opt.value,
-          url: `attachment://${transformFileName(opt.value)}`,
+          filename: value,
+          url: `attachment://${transformFileName(value)}`,
         });
       }}
     >

@@ -274,48 +274,47 @@ export const ActionRowEditor: React.FC<{
           );
         })}
       </div>
-      <ButtonSelect
+      <ButtonSelect<ComponentType | "linkButton">
         name="component-type"
         options={[
           {
             label: t("component.2"),
             value: ComponentType.Button,
-            isDisabled: getRowWidth(row) >= 5,
+            disabled: getRowWidth(row) >= 5,
           },
           {
             label: t("linkButton"),
             value: "linkButton",
-            isDisabled: getRowWidth(row) >= 5,
+            disabled: getRowWidth(row) >= 5,
           },
           {
             label: t("component.3"),
             value: ComponentType.StringSelect,
-            isDisabled: getRowWidth(row) > 0,
+            disabled: getRowWidth(row) > 0,
           },
           {
             label: t("component.5"),
             value: ComponentType.UserSelect,
-            isDisabled: getRowWidth(row) > 0,
+            disabled: getRowWidth(row) > 0,
           },
           {
             label: t("component.6"),
             value: ComponentType.RoleSelect,
-            isDisabled: getRowWidth(row) > 0,
+            disabled: getRowWidth(row) > 0,
           },
           {
             label: t("component.7"),
             value: ComponentType.MentionableSelect,
-            isDisabled: getRowWidth(row) > 0,
+            disabled: getRowWidth(row) > 0,
           },
           {
             label: t("component.8"),
             value: ComponentType.ChannelSelect,
-            isDisabled: getRowWidth(row) > 0,
+            disabled: getRowWidth(row) > 0,
           },
         ]}
-        isDisabled={getRowWidth(row) >= 5}
-        onChange={async (v) => {
-          const { value: type } = v as { value: ComponentType | "linkButton" };
+        disabled={getRowWidth(row) >= 5}
+        onValueChange={async (type) => {
           let submitData:
             | z.infer<typeof ZodAPIMessageActionRowComponent>
             | undefined;
