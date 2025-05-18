@@ -13,13 +13,10 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import DatePicker from "../pickers/DatePicker";
-import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
 import {
-  ColorPicker,
-  decimalToHex,
-  decimalToRgb,
-  rgbToDecimal,
+  decimalToHex
 } from "./ColorPicker";
 import { EmbedEditorSection } from "./EmbedEditor";
 
@@ -326,26 +323,11 @@ export const LinkEmbedEditor: React.FC<{
               }}
             />
           </button>
-          <PickerOverlayWrapper
-            open={colorPickerOpen}
-            setOpen={setColorPickerOpen}
-            containerClassName="ltr:right-0 rtl:left-0 top-0"
-          >
-            <ColorPicker
-              t={t}
-              color={
-                typeof embed.color === "number"
-                  ? decimalToRgb(embed.color)
-                  : undefined
-              }
-              onChange={(color) => {
-                updateEmbed({ color: rgbToDecimal(color.rgb) });
-              }}
-              onReset={() => {
-                updateEmbed({ color: undefined });
-              }}
-            />
-          </PickerOverlayWrapper>
+          <ColorPickerPopoverWithTrigger
+            t={t}
+            value={embed.color}
+            onValueChange={(color) => updateEmbed({ color })}
+          />
         </div>
         <TextArea
           label={t("description")}

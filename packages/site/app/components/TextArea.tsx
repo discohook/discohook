@@ -114,6 +114,7 @@ export const TextArea = (
         />
         {markdown && (
           <PopoutRichPicker
+            t={t}
             cache={cache}
             insertText={(text) => {
               if (ref.current) {

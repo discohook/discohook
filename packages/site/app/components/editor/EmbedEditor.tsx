@@ -16,14 +16,11 @@ import { InfoBox } from "../InfoBox";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import DatePicker from "../pickers/DatePicker";
-import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
 import { linkClassName } from "../preview/Markdown";
 import {
-  ColorPicker,
-  decimalToHex,
-  decimalToRgb,
-  rgbToDecimal,
+  decimalToHex
 } from "./ColorPicker";
 
 export const isEmbedEmpty = (embed: APIEmbed): boolean =>
@@ -522,55 +519,13 @@ export const EmbedEditor: React.FC<{
               </button>
             </div>
           )}
-          {!isChild && (
-            <>
-              <button
-                type="button"
-                className="flex cursor-pointer text-start"
-                onClick={() => setColorPickerOpen((v) => !v)}
-              >
-                <div className="grow">
-                  <p className="text-sm font-medium">{t("sidebarColor")}</p>
-                  <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
-                    <span className="align-middle">
-                      {typeof embed.color === "number"
-                        ? decimalToHex(embed.color)
-                        : t("clickToSet")}
-                    </span>
-                  </p>
-                </div>
-                <div
-                  className="h-9 w-9 mt-auto rounded-lg ltr:ml-2 rtl:mr-2 bg-gray-500"
-                  style={{
-                    backgroundColor:
-                      typeof embed.color === "number"
-                        ? decimalToHex(embed.color)
-                        : undefined,
-                  }}
-                />
-              </button>
-              <PickerOverlayWrapper
-                open={colorPickerOpen}
-                setOpen={setColorPickerOpen}
-                containerClassName="ltr:right-0 rtl:left-0 top-0"
-              >
-                <ColorPicker
-                  t={t}
-                  color={
-                    typeof embed.color === "number"
-                      ? decimalToRgb(embed.color)
-                      : undefined
-                  }
-                  onChange={(color) => {
-                    updateEmbed({ color: rgbToDecimal(color.rgb) });
-                  }}
-                  onReset={() => {
-                    updateEmbed({ color: undefined });
-                  }}
-                />
-              </PickerOverlayWrapper>
-            </>
-          )}
+          {!isChild ? (
+            <ColorPickerPopoverWithTrigger
+              t={t}
+              value={embed.color}
+              onValueChange={(color) => updateEmbed({ color })}
+            />
+          ) : null}
         </div>
         {!isChild && (
           <TextArea

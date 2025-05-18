@@ -1,3 +1,4 @@
+import { Popover } from "@base-ui-components/react/popover";
 import emojiData, {
   Category,
   Emoji,
@@ -28,7 +29,7 @@ import {
   EmojiIconSymbols,
   EmojiIconTravel,
 } from "../icons/emoji";
-import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
+import { popoverStyles } from "../pickers/Popover";
 
 // Dec x 2023
 // We were originally using emoji-mart since it seemed more fit for our
@@ -321,7 +322,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
         </div>
       ) : (
         <>
-          <div className="p-2 shadow border-b border-b-black/5 flex">
+          <div className="p-2 shadow border-b border-b-black/5 flex items-center gap-3 ltr:mr-1 rtl:ml-1">
             <div className="grow">
               <TextInput
                 label=""
@@ -332,43 +333,42 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                 }
               />
             </div>
-            <div className="shrink-0 ml-3 mr-1 my-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  if (skinTone === undefined) {
-                    setSettings({ skinTone: 0 });
-                  } else if (skinTone < 4) {
-                    setSettings({
-                      skinTone: (skinTone + 1) as typeof skinTone,
-                    });
-                  } else {
-                    setSettings({ skinTone: undefined });
-                  }
-                }}
-              >
-                <Twemoji
-                  emoji={
-                    skinTone === 0
-                      ? "👏🏻"
-                      : skinTone === 1
-                        ? "👏🏼"
-                        : skinTone === 2
-                          ? "👏🏽"
-                          : skinTone === 3
-                            ? "👏🏾"
-                            : skinTone === 4
-                              ? "👏🏿"
-                              : "👏"
-                  }
-                  className="h-6 align-[-0.3em] w-6"
-                  title="Set skin tone"
-                />
-              </button>
-            </div>
+            <button
+              type="button"
+              className="shrink-0"
+              onClick={() => {
+                if (skinTone === undefined) {
+                  setSettings({ skinTone: 0 });
+                } else if (skinTone < 4) {
+                  setSettings({
+                    skinTone: (skinTone + 1) as typeof skinTone,
+                  });
+                } else {
+                  setSettings({ skinTone: undefined });
+                }
+              }}
+            >
+              <Twemoji
+                emoji={
+                  skinTone === 0
+                    ? "👏🏻"
+                    : skinTone === 1
+                      ? "👏🏼"
+                      : skinTone === 2
+                        ? "👏🏽"
+                        : skinTone === 3
+                          ? "👏🏾"
+                          : skinTone === 4
+                            ? "👏🏿"
+                            : "👏"
+                }
+                className="h-6 align-[-0.3em] w-6"
+                title="Set skin tone"
+              />
+            </button>
           </div>
           <div className="flex grow h-full overflow-hidden">
-            <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full rounded-bl-lg scrollbar-none space-y-1 p-1 py-2 flex flex-col">
+            <div className="w-10 shrink-0 bg-gray-400 dark:bg-gray-900 overflow-y-auto h-full ltr:rounded-bl-lg rtl:rounded-br-lg scrollbar-none space-y-1 p-1 py-2 flex flex-col">
               {categories
                 .filter(
                   (c) => (c.id === "custom" && cache) || c.emojis.length > 0,
@@ -445,9 +445,9 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                                   />
                                   <path
                                     fill="currentColor"
-                                    fill-rule="evenodd"
+                                    fillRule="evenodd"
                                     d="M12 23a11 11 0 1 0 0-22 11 11 0 0 0 0 22zm0-17a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2h-4v4a1 1 0 1 1-2 0v-4H7a1 1 0 1 1 0-2h4V7a1 1 0 0 1 1-1z"
-                                    clip-rule="evenodd"
+                                    clipRule="evenodd"
                                   />
                                 </Svg>
                               </button>
@@ -477,7 +477,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                       ))}
               </div>
               {hoverEmoji && (
-                <div className="sticky bottom-0 left-0 w-full rounded-br-lg bg-gray-400 dark:bg-gray-900 flex items-center px-4 py-2">
+                <div className="sticky bottom-0 left-0 w-full ltr:rounded-br-lg rtl:rounded-bl-lg bg-gray-400 dark:bg-gray-900 flex items-center gap-2 px-4 py-2">
                   {hoverEmoji.keywords.includes("discord") ? (
                     <img
                       loading="lazy"
@@ -488,17 +488,17 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                           : "webp",
                       )}
                       alt={hoverEmoji.name}
-                      className="h-7 my-auto shrink-0 !align-bottom"
+                      className="h-7 shrink-0 !align-bottom"
                     />
                   ) : (
                     <Twemoji
                       emoji={hoverEmoji.skin.native}
-                      className="h-7 my-auto shrink-0 !align-bottom"
+                      className="h-7 shrink-0 !align-bottom"
                       title={hoverEmoji.id}
                       loading="lazy"
                     />
                   )}
-                  <p className="ml-2 text-base font-semibold my-auto truncate">
+                  <p className="text-base font-semibold truncate">
                     :
                     {hoverEmoji.keywords.includes("discord")
                       ? hoverEmoji.name
@@ -528,12 +528,8 @@ export const PopoutEmojiPicker: React.FC<{
   const [open, setOpen] = useState(false);
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex cursor-pointer marker:hidden marker-none"
-      >
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger className="flex cursor-pointer marker:hidden marker-none">
         <div className="h-9 w-9 rounded-lg flex bg-gray-300 dark:bg-[#292b2f]">
           <div className="m-auto">
             {emoji ? (
@@ -544,7 +540,10 @@ export const PopoutEmojiPicker: React.FC<{
                   alt={emoji.name}
                 />
               ) : (
-                <Twemoji emoji={emoji.name ?? ""} className="h-[22px] align-[-0.3em]" />
+                <Twemoji
+                  emoji={emoji.name ?? ""}
+                  className="h-[22px] align-[-0.3em]"
+                />
               )
             ) : (
               <Twemoji
@@ -554,41 +553,41 @@ export const PopoutEmojiPicker: React.FC<{
             )}
           </div>
         </div>
-      </button>
-      <PickerOverlayWrapper
-        open={open}
-        setOpen={setOpen}
-        containerClassName="pb-8"
-      >
-        <EmojiPicker
-          id={id}
-          cache={cache}
-          customEmojis={emojis}
-          onEmojiClick={(selectedEmoji) => {
-            const newEmoji: APIMessageComponentEmoji =
-              selectedEmoji.keywords.includes("discord")
-                ? {
-                    id: selectedEmoji.id.replace(/^discord_/, ""),
-                    name: selectedEmoji.name,
-                    animated: selectedEmoji.keywords.includes("animated"),
-                  }
-                : {
-                    name: selectedEmoji.skin.native,
-                  };
-            if (
-              emoji &&
-              emoji.id === newEmoji.id &&
-              emoji.name === newEmoji.name
-            ) {
-              // Clear on double click
-              setEmoji(undefined);
-            } else {
-              setEmoji(newEmoji);
-            }
-            setOpen(false);
-          }}
-        />
-      </PickerOverlayWrapper>
-    </div>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={8}>
+          <Popover.Popup className={popoverStyles.popup}>
+            <EmojiPicker
+              id={id}
+              cache={cache}
+              customEmojis={emojis}
+              onEmojiClick={(selectedEmoji) => {
+                const newEmoji: APIMessageComponentEmoji =
+                  selectedEmoji.keywords.includes("discord")
+                    ? {
+                        id: selectedEmoji.id.replace(/^discord_/, ""),
+                        name: selectedEmoji.name,
+                        animated: selectedEmoji.keywords.includes("animated"),
+                      }
+                    : {
+                        name: selectedEmoji.skin.native,
+                      };
+                if (
+                  emoji &&
+                  emoji.id === newEmoji.id &&
+                  emoji.name === newEmoji.name
+                ) {
+                  // Clear on double click
+                  setEmoji(undefined);
+                } else {
+                  setEmoji(newEmoji);
+                }
+                setOpen(false);
+              }}
+            />
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 };

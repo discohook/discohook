@@ -28,7 +28,7 @@ export const TimePicker: React.FC<{
   return (
     <div
       className={twJoin(
-        "rounded bg-gray-300 dark:bg-gray-800 w-[385px] border border-black/5 dark:border-gray-200/20 shadow-md",
+        "rounded-lg bg-gray-300 dark:bg-gray-800 w-[385px] border border-black/5 dark:border-gray-200/20 shadow-md",
         className,
       )}
     >
@@ -74,7 +74,7 @@ export const TimePicker: React.FC<{
                   onClick={() => {
                     onTimeClick({ date, style: style as TimestampStyle });
                   }}
-                  className="rounded p-1 px-2 text-left bg-gray-200 dark:bg-[#292b2f] hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+                  className="rounded-lg p-1 px-2 text-left bg-gray-200 dark:bg-[#292b2f] hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                 >
                   <CoolIcon icon="Clock" />{" "}
                   <Trans

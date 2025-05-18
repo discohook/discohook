@@ -14,12 +14,9 @@ import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
-import { PickerOverlayWrapper } from "../pickers/PickerOverlayWrapper";
+import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import {
-  ColorPicker,
-  decimalToHex,
-  decimalToRgb,
-  rgbToDecimal,
+  decimalToHex
 } from "./ColorPicker";
 import { ActionRowEditor } from "./ComponentEditor";
 import { FileEditor } from "./FileEditor";
@@ -204,28 +201,14 @@ export const ContainerEditor: React.FC<{
             }}
           />
         </button>
-        <PickerOverlayWrapper
-          open={colorPickerOpen}
-          setOpen={setColorPickerOpen}
-          containerClassName="ltr:right-0 rtl:left-0 top-0"
-        >
-          <ColorPicker
-            t={t}
-            color={
-              typeof container.accent_color === "number"
-                ? decimalToRgb(container.accent_color)
-                : undefined
-            }
-            onChange={(color) => {
-              container.accent_color = rgbToDecimal(color.rgb);
-              setData({ ...data });
-            }}
-            onReset={() => {
-              container.accent_color = null;
-              setData({ ...data });
-            }}
-          />
-        </PickerOverlayWrapper>
+        <ColorPickerPopoverWithTrigger
+          t={t}
+          value={container.accent_color}
+          onValueChange={(color) => {
+            container.accent_color = color || null;
+            setData({ ...data });
+          }}
+        />
       </div>
       <div className="space-y-2">
         {container.components.map((child, ci) => (
