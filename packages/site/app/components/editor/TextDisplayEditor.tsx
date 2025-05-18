@@ -61,9 +61,17 @@ export const TextDisplayEditor: React.FC<{
           <p className="text-sm font-medium cursor-default">{t("accessory")}</p>
           <ButtonSelect<"button" | "linkButton" | "thumbnail">
             options={[
-              { label: t("component.2"), value: "button" },
-              { label: t("linkButton"), value: "linkButton" },
-              { label: t("component.11"), value: "thumbnail" },
+              { label: t("component.2"), icon: "Mouse", value: "button" },
+              {
+                label: t("linkButton"),
+                icon: "External_Link",
+                value: "linkButton",
+              },
+              {
+                label: t("component.11"),
+                icon: "Image_01",
+                value: "thumbnail",
+              },
             ]}
             onValueChange={(value) => {
               const parentChildren =

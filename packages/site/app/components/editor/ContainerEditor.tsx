@@ -12,7 +12,6 @@ import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
-import { CoolIcon } from "../icons/CoolIcon";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import { decimalToHex } from "./ColorPicker";
 import { ActionRowEditor } from "./ComponentEditor";
@@ -196,64 +195,29 @@ export const ContainerEditor: React.FC<{
               disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
               options={[
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Text"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("content")}</span>
-                    </p>
-                  ),
+                  label: t("content"),
+                  icon: "Text",
                   value: ComponentType.TextDisplay,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Image_01"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("component.12")}</span>
-                    </p>
-                  ),
+                  label: t("component.12"),
+                  icon: "Image_01",
                   value: ComponentType.MediaGallery,
                 },
                 {
                   // Any single file
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="File_Blank"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("file")}</span>
-                    </p>
-                  ),
+                  label: t("file"),
+                  icon: "File_Blank",
                   value: ComponentType.File,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Line_L"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg rotate-90"
-                      />
-                      <span className="my-auto">{t("component.14")}</span>
-                    </p>
-                  ),
+                  label: t("component.14"),
+                  icon: "Line_L",
                   value: ComponentType.Separator,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Rows"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("component.1")}</span>
-                    </p>
-                  ),
+                  label: t("component.1"),
+                  icon: "Rows",
                   value: ComponentType.ActionRow,
                 },
               ]}

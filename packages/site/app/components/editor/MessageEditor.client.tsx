@@ -750,36 +750,20 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             <ButtonSelect
               options={[
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Add_Plus_Square"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("addEmbed")}</span>
-                    </p>
-                  ),
+                  label: t("addEmbed"),
+                  icon: "Add_Plus_Square",
                   value: "embed",
                   disabled:
                     !!message.data.embeds && message.data.embeds.length >= 10,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Add_Row"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">
-                        {t(
-                          message.data.components &&
-                            message.data.components.length >= 1
-                            ? "addRow"
-                            : "addComponents",
-                        )}
-                      </span>
-                    </p>
+                  label: t(
+                    message.data.components &&
+                      message.data.components.length >= 1
+                      ? "addRow"
+                      : "addComponents",
                   ),
+                  icon: "Add_Row",
                   value: "row",
                   disabled:
                     !!message.data.components &&
@@ -829,51 +813,23 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
               discordstyle={ButtonStyle.Secondary}
               options={[
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Flag"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("flags")}</span>
-                    </p>
-                  ),
+                  label: t("flags"),
+                  icon: "Flag",
                   value: "flags",
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Terminal"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("jsonEditor")}</span>
-                    </p>
-                  ),
+                  label: t("jsonEditor"),
+                  icon: "Terminal",
                   value: "jsonEditor",
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Code"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("codeGenerator")}</span>
-                    </p>
-                  ),
+                  label: t("codeGenerator"),
+                  icon: "Code",
                   value: "codeGenerator",
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Copy"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("copyQueryData")}</span>
-                    </p>
-                  ),
+                  label: t("copyQueryData"),
+                  icon: "Copy",
                   value: "copyQueryData",
                 },
               ]}
@@ -1303,76 +1259,34 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
               disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
               options={[
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Text"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("content")}</span>
-                    </p>
-                  ),
+                  label: t("content"),
+                  icon: "Text",
                   value: ComponentType.TextDisplay,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Add_Plus_Square"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("component.17")}</span>
-                    </p>
-                  ),
+                  label: t("component.17"),
+                  icon: "Add_Plus_Square",
                   value: ComponentType.Container,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Image_01"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("component.12")}</span>
-                    </p>
-                  ),
+                  label: t("component.12"),
+                  icon: "Image_01",
                   value: ComponentType.MediaGallery,
                 },
                 {
                   // Any single file
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="File_Blank"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("file")}</span>
-                    </p>
-                  ),
+                  label: t("file"),
+                  icon: "File_Blank",
                   value: ComponentType.File,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Line_L"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg rotate-90"
-                      />
-                      <span className="my-auto">{t("component.14")}</span>
-                    </p>
-                  ),
+                  label: t("component.14"),
+                  icon: "Line_L",
                   value: ComponentType.Separator,
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Rows"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("component.1")}</span>
-                    </p>
-                  ),
+                  label: t("component.1"),
+                  icon: "Rows",
                   value: ComponentType.ActionRow,
                 },
               ]}
@@ -1447,51 +1361,23 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
               discordstyle={ButtonStyle.Secondary}
               options={[
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Flag"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("flags")}</span>
-                    </p>
-                  ),
+                  label: t("flags"),
+                  icon: "Flag",
                   value: "flags",
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Terminal"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("jsonEditor")}</span>
-                    </p>
-                  ),
+                  label: t("jsonEditor"),
+                  icon: "Terminal",
                   value: "jsonEditor",
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Code"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("codeGenerator")}</span>
-                    </p>
-                  ),
+                  label: t("codeGenerator"),
+                  icon: "Code",
                   value: "codeGenerator",
                 },
                 {
-                  label: (
-                    <p className="flex">
-                      <CoolIcon
-                        icon="Copy"
-                        className="ltr:mr-1.5 rtl:ml-1.5 my-auto text-lg"
-                      />
-                      <span className="my-auto">{t("copyQueryData")}</span>
-                    </p>
-                  ),
+                  label: t("copyQueryData"),
+                  icon: "Copy",
                   value: "copyQueryData",
                 },
               ]}

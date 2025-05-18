@@ -8,7 +8,12 @@ import { CoolIcon, CoolIconsGlyph } from "./icons/CoolIcon";
 export function ButtonSelect<T>(
   props: React.PropsWithChildren<{
     name?: string;
-    options: { label: React.ReactNode; value: T; disabled?: boolean }[];
+    options: {
+      label: React.ReactNode;
+      icon?: CoolIconsGlyph;
+      value: T;
+      disabled?: boolean;
+    }[];
     value?: T;
     onValueChange?: (value: T) => void;
     required?: boolean;
@@ -28,12 +33,12 @@ export function ButtonSelect<T>(
       required={props.required}
       disabled={props.disabled}
       readOnly={props.readOnly}
-      // open={isOpen}
-      // onOpenChange={setIsOpen}
     >
       <Select.Trigger
-        className="group/trigger w-fit h-fit"
+        className="w-fit h-fit"
         disabled={props.disabled}
+        // don't duplicate trigger in tab nav
+        tabIndex={-1}
       >
         <Button
           className={props.className}
@@ -44,10 +49,7 @@ export function ButtonSelect<T>(
           {props.icon !== null ? (
             <CoolIcon
               icon={props.icon ?? "Chevron_Down"}
-              className={twJoin(
-                "my-auto ml-1.5 transition-transform",
-                "rotate-0 group-data-[popup-open]/trigger:rotate-180",
-              )}
+              className="my-auto ltr:ml-1.5 rtl:mr-1.5 transition-transform"
             />
           ) : null}
         </Button>
@@ -68,7 +70,15 @@ export function ButtonSelect<T>(
                 className={selectStyles.item}
                 disabled={option.disabled}
               >
-                <Select.ItemText className={selectStyles.itemText}>
+                <Select.ItemText
+                  className={twJoin(selectStyles.itemText, "flex items-center")}
+                >
+                  {option.icon ? (
+                    <CoolIcon
+                      icon={option.icon}
+                      className="text-lg ltr:mr-1.5 rtl:ml-1.5"
+                    />
+                  ) : null}
                   {option.label}
                 </Select.ItemText>
                 {props.value !== undefined ? (
