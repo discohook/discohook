@@ -8,7 +8,7 @@ export type ModalProps = React.PropsWithChildren<{
 }>;
 
 export const dialogBackdropClassName = twJoin(
-  "fixed inset-0 bg-black opacity-20 dark:opacity-70 transition-opacity",
+  "fixed z-30 inset-0 bg-black opacity-20 dark:opacity-70 transition-opacity",
   // opening/closing animation
   "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
 );
@@ -25,7 +25,7 @@ export const DialogPortal: React.FC<
     <Dialog.Popup
       className={twJoin(
         // position & size
-        "box-border fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+        "box-border fixed z-[31] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
         "w-[32rem] md:w-3/4 max-w-[calc(100vw_-_3rem)] rounded-xl",
         "max-h-[calc(100vh_-_8rem)] overflow-y-auto h-fit",
         // colors

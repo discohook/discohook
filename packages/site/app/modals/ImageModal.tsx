@@ -32,7 +32,7 @@ export const ImageModal = (props: { clear: () => void } & ImageModalProps) => {
         <Dialog.Popup
           className={twJoin(
             // position & size
-            "box-border fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            "box-border fixed z-[32] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
             "max-w-full rounded-xl flex",
             "h-fit max-h-full overflow-y-auto",
             // opening/closing animation
