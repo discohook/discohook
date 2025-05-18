@@ -1066,7 +1066,7 @@ const commandMentionRule = defineRule({
 });
 
 const emojiStyle =
-  "inline size-[1.375em] object-contain [[data-large-emoji]_&]:size-[calc(var(--font-size)*3)]";
+  "inline size-[1.375em] align-bottom object-contain [[data-large-emoji]_&]:size-[calc(var(--font-size)*3)]";
 
 const customEmojiRule = defineRule({
   capture(source) {
