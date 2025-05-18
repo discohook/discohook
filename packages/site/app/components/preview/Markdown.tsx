@@ -180,14 +180,14 @@ const headingRule = defineRule({
   },
   render(capture, render) {
     const common =
-      "mx-0 mb-[8px] mt-[16px] font-display font-bold leading-[1.375em] text-primary-860 dark:text-primary-130";
+      "mx-0 mb-2 mt-4 font-display font-bold leading-[1.375em] text-primary-860 dark:text-primary-130";
 
     if (capture.level === 1) {
       return (
         <h4
-          className={twJoin(
+          className={twMerge(
             common,
-            "text-[calc(var(--font-size)*1.5)] first:mt-[8px]",
+            "text-[calc(var(--font-size)*1.5)] first:mt-2",
           )}
         >
           {render(capture.content)}
@@ -197,9 +197,9 @@ const headingRule = defineRule({
     if (capture.level === 2) {
       return (
         <h5
-          className={twJoin(
+          className={twMerge(
             common,
-            "text-[calc(var(--font-size)*1.25)] first:mt-[8px]",
+            "text-[calc(var(--font-size)*1.25)] first:mt-2",
           )}
         >
           {render(capture.content)}
@@ -207,7 +207,7 @@ const headingRule = defineRule({
       );
     }
     return (
-      <h6 className={twJoin(common, "text-[length:--font-size]")}>
+      <h6 className={twMerge(common, "text-[length:--font-size] first:mt-1")}>
         {render(capture.content)}
       </h6>
     );
