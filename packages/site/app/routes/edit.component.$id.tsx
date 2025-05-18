@@ -1332,7 +1332,7 @@ export default () => {
         {/* <Checkbox
           label="Full width message preview"
           checked={overflowMessage}
-          onChange={(e) => setOverflowMessage(e.currentTarget.checked)}
+          onCheckedChange={(checked) => setOverflowMessage(checked)}
           className="mb-1"
         /> */}
         <p className="text-sm font-medium cursor-default">{t("preview")}</p>

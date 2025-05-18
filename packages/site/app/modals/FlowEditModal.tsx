@@ -44,7 +44,7 @@ import { RoleSelect } from "../components/RoleSelect";
 import {
   SimpleStringSelect,
   StringSelect,
-  selectClassNames
+  selectClassNames,
 } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
@@ -715,8 +715,8 @@ const FlowActionEditor: React.FC<{
                     <Checkbox
                       label={t(`messageFlag.${MessageFlags.Ephemeral}`)}
                       checked={flags.has(MessageFlags.Ephemeral)}
-                      onChange={({ currentTarget }) => {
-                        currentTarget.checked
+                      onCheckedChange={(checked) => {
+                        checked
                           ? flags.add(MessageFlags.Ephemeral)
                           : flags.remove(MessageFlags.Ephemeral);
 
@@ -1088,10 +1088,8 @@ const FlowActionEditor: React.FC<{
                         key={`edit-flow-action-${i}-${action.type}-flag-${flag}`}
                         label={t(`messageFlag.${flag}`)}
                         checked={flags.has(flag)}
-                        onChange={({ currentTarget }) => {
-                          currentTarget.checked
-                            ? flags.add(flag)
-                            : flags.remove(flag);
+                        onCheckedChange={(checked) => {
+                          checked ? flags.add(flag) : flags.remove(flag);
 
                           action.message = action.message ?? {};
                           action.message.flags =

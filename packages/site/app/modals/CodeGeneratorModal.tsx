@@ -378,7 +378,7 @@ export const CodeGeneratorModal = (props: ModalProps & CodeGeneratorProps) => {
         <Checkbox
           label={t("wordWrap")}
           checked={wordWrap}
-          onChange={(e) => setWordWrap(e.currentTarget.checked)}
+          onCheckedChange={(checked) => setWordWrap(checked)}
         />
       </div>
       <ModalFooter className="flex gap-2 flex-wrap">

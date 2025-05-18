@@ -173,8 +173,8 @@ export const ContainerEditor: React.FC<{
           <Checkbox
             label={t("markSpoiler")}
             checked={container.spoiler ?? false}
-            onChange={({ currentTarget }) => {
-              container.spoiler = currentTarget.checked;
+            onCheckedChange={(checked) => {
+              container.spoiler = checked;
               setData({ ...data });
             }}
           />

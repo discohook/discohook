@@ -117,10 +117,10 @@ export const MessageShareModal = (
         label={t("includeWebhookUrls")}
         checked={includeTargets}
         disabled={Object.keys(targets).length === 0}
-        onChange={(e) => {
-          setIncludeTargets(e.currentTarget.checked);
+        onCheckedChange={(checked) => {
+          setIncludeTargets(checked);
           if (shareFetcher.data) {
-            generateShareData({ includeTargets_: e.currentTarget.checked });
+            generateShareData({ includeTargets_: checked });
           }
         }}
       />

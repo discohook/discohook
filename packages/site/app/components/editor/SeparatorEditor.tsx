@@ -88,8 +88,8 @@ export const SeparatorEditor: React.FC<{
         <Checkbox
           label={t("separatorLine")}
           checked={component.divider ?? true}
-          onChange={({ currentTarget }) => {
-            component.divider = currentTarget.checked;
+          onCheckedChange={(checked) => {
+            component.divider = checked;
             setData({ ...data });
           }}
         />

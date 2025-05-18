@@ -145,8 +145,8 @@ export const ComponentEditForm = ({
   <div>
     {component.type === ComponentType.Button ? (
       <>
-        <div className="flex">
-          <div className="ltr:mr-2 rtl:ml-2 mt-auto">
+        <div className="flex items-center gap-2">
+          <div>
             <p className="text-sm cursor-default font-medium">{t("emoji")}</p>
             <PopoutEmojiPicker
               cache={cache}
@@ -170,12 +170,12 @@ export const ComponentEditForm = ({
               maxLength={80}
             />
           </div>
-          <div className="ltr:ml-2 rtl:mr-2 my-auto">
+          <div className="mt-4.5">
             <Checkbox
               label={t("disabled")}
               checked={component.disabled ?? false}
-              onChange={(e) => {
-                component.disabled = e.currentTarget.checked;
+              onCheckedChange={(checked) => {
+                component.disabled = checked;
                 setComponent(component);
               }}
             />
@@ -257,7 +257,7 @@ export const ComponentEditForm = ({
         ComponentType.ChannelSelect,
       ].includes(component.type) && (
         <>
-          <div className="flex">
+          <div className="flex items-center gap-2">
             <div className="grow">
               <TextInput
                 label="Placeholder"
@@ -271,12 +271,12 @@ export const ComponentEditForm = ({
                 }}
               />
             </div>
-            <div className="ltr:ml-2 rtl:mr-2 my-auto">
+            <div className="mt-4.5">
               <Checkbox
                 label={t("disabled")}
                 checked={component.disabled ?? false}
-                onChange={(e) => {
-                  component.disabled = e.currentTarget.checked;
+                onCheckedChange={(checked) => {
+                  component.disabled = checked;
                   setComponent(component);
                 }}
               />
@@ -295,8 +295,8 @@ export const ComponentEditForm = ({
                     component={component}
                     update={() => setComponent(component)}
                   >
-                    <div className="flex">
-                      <div className="ltr:mr-2 rtl:ml-2 mt-auto">
+                    <div className="flex items-center gap-2">
+                      <div>
                         <p className="text-sm cursor-default font-medium">
                           {t("emoji")}
                         </p>
@@ -323,12 +323,12 @@ export const ComponentEditForm = ({
                           required
                         />
                       </div>
-                      <div className="ltr:ml-2 rtl:mr-2 my-auto">
+                      <div className="mt-4.5">
                         <Checkbox
                           label={t("default")}
                           checked={option.default ?? false}
-                          onChange={(e) => {
-                            option.default = e.currentTarget.checked;
+                          onCheckedChange={(checked) => {
+                            option.default = checked;
                             setComponent(component);
                           }}
                         />

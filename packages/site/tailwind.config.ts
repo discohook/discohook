@@ -26,6 +26,7 @@ export default {
     extend: {
       spacing: {
         inherit: "inherit",
+        "4.5": "1.125rem",
       },
       colors: {
         brand: {

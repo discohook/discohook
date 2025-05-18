@@ -604,7 +604,7 @@ export const EmbedEditor: React.FC<{
                     t={t}
                     open={open}
                   >
-                    <div className="flex">
+                    <div className="flex items-center gap-2">
                       <div className="grow">
                         <TextArea
                           label={t("name")}
@@ -622,12 +622,12 @@ export const EmbedEditor: React.FC<{
                           }}
                         />
                       </div>
-                      <div className="ltr:ml-2 rtl:mr-2 my-auto">
+                      <div className="mt-4.5">
                         <Checkbox
                           label={t("inline")}
                           checked={field.inline ?? false}
-                          onChange={(e) => {
-                            field.inline = e.currentTarget.checked;
+                          onCheckedChange={(checked) => {
+                            field.inline = checked;
                             updateEmbed({});
                           }}
                         />

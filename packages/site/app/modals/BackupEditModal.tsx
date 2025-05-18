@@ -160,12 +160,12 @@ const Inner = ({
         <Checkbox
           label={t("scheduleBackup")}
           checked={scheduled}
-          onChange={(e) => setScheduled(e.currentTarget.checked)}
+          onCheckedChange={(checked) => setScheduled(checked)}
         />
         <Checkbox
           label={t("repeating")}
           checked={repeating}
-          onChange={(e) => setRepeating(e.currentTarget.checked)}
+          onCheckedChange={(checked) => setRepeating(checked)}
           disabled={!scheduled}
         />
         <div
@@ -333,7 +333,9 @@ const Inner = ({
                   }}
                 />
               </div>
-              <p className="text-sm text-muted dark:text-muted-dark">{t("scheduleFrequencyNote")}</p>
+              <p className="text-sm text-muted dark:text-muted-dark">
+                {t("scheduleFrequencyNote")}
+              </p>
             </>
           ) : (
             <>

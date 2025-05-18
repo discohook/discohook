@@ -131,8 +131,8 @@ export const MediaGalleryEditor: React.FC<{
                     <Checkbox
                       label={t("markSpoiler")}
                       checked={item.spoiler ?? false}
-                      onChange={({ currentTarget }) => {
-                        item.spoiler = currentTarget.checked;
+                      onCheckedChange={(checked) => {
+                        item.spoiler = checked;
                         setData({ ...data });
                       }}
                     />

@@ -1,44 +1,52 @@
+import { Checkbox as MuiCheckbox } from "@base-ui-components/react/checkbox";
 import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 
 export const Checkbox = (
-  props: React.DetailedHTMLProps<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
+  props: Pick<
+    React.DetailedHTMLProps<
+      React.InputHTMLAttributes<HTMLInputElement>,
+      HTMLInputElement
+    >,
+    "checked" | "disabled" | "readOnly"
   > & {
     label: React.ReactNode;
     description?: React.ReactNode;
+    onCheckedChange?: (checked: boolean, event: Event) => void;
   },
-) => {
-  const { label, description } = props;
-
-  return (
-    <div>
-      <label className="flex group/checkbox select-none">
-        <input type="checkbox" {...props} className="hidden peer" />
-        <ConditionalBox className={props.className} check />
-        <ConditionalBox className={props.className} />
-        <p className="text-sm font-medium flex">{label}</p>
-      </label>
-      {description && <div>{description}</div>}
-    </div>
-  );
-};
-
-const ConditionalBox: React.FC<{ check?: boolean; className?: string }> = ({
-  check,
-  className,
-}) => (
-  <div
-    className={twJoin(
-      "rounded border h-5 w-5 shrink-0 bg-gray-300 border-gray-200 group-hover/checkbox:bg-gray-400 peer-focus:border-blurple-500 dark:border-gray-600 dark:group-hover/checkbox:bg-gray-600 dark:bg-gray-700 transition-all ltr:mr-1 rtl:ml-1",
-      check
-        ? "hidden peer-checked:inline-flex"
-        : "inline-flex peer-checked:hidden",
-      className,
-    )}
-  >
-    {check && <CoolIcon icon="Check" className="m-auto mr-[2px] transition" />}
+) => (
+  <div>
+    <label className="flex items-center gap-2">
+      <MuiCheckbox.Root
+        className={(s) =>
+          twJoin(
+            "box-border flex w-6 h-6 items-center justify-center p-0 m-0",
+            // anomalous 6px border radius
+            "outline-0 border rounded-md",
+            s.checked
+              ? "border-transparent bg-blurple"
+              : "border-[#73747A] dark:border-[#82838A] bg-transparent",
+            s.focused
+              ? "outline-2 outline-blue-430 outline-offset-2"
+              : undefined,
+          )
+        }
+        checked={props.checked}
+        disabled={props.disabled}
+        readOnly={props.readOnly}
+        onCheckedChange={props.onCheckedChange}
+      >
+        <MuiCheckbox.Indicator
+          className={(s) =>
+            twJoin("flex text-gray-50", !s.checked ? "hidden" : undefined)
+          }
+        >
+          <CoolIcon icon="Check" className="text-lg m-auto" />
+        </MuiCheckbox.Indicator>
+      </MuiCheckbox.Root>
+      <p className="text-sm font-normal">{props.label}</p>
+    </label>
+    {props.description ? <div>{props.description}</div> : null}
   </div>
 );
 

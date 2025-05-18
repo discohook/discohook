@@ -127,8 +127,8 @@ export const FileEditor: React.FC<{
           <Checkbox
             label={t("markSpoiler")}
             checked={component.spoiler ?? false}
-            onChange={({ currentTarget }) => {
-              component.spoiler = currentTarget.checked;
+            onCheckedChange={(checked) => {
+              component.spoiler = checked;
               setData({ ...data });
             }}
           />

@@ -153,13 +153,15 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
               }
             }}
           />
-          <Checkbox
-            label={t("compactAvatars")}
-            checked={settings.compactAvatars === true}
-            onChange={(e) =>
-              updateSettings({ compactAvatars: e.currentTarget.checked })
-            }
-          />
+          {settings.messageDisplay === "compact" ? (
+            <Checkbox
+              label={t("compactAvatars")}
+              checked={settings.compactAvatars === true}
+              onCheckedChange={(checked) =>
+                updateSettings({ compactAvatars: checked })
+              }
+            />
+          ) : null}
         </div>
       </div>
       <div className="mt-8">
@@ -170,8 +172,8 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           <Checkbox
             label={t("forceDualPane")}
             checked={settings.forceDualPane === true}
-            onChange={(e) =>
-              updateSettings({ forceDualPane: e.currentTarget.checked })
+            onCheckedChange={(checked) =>
+              updateSettings({ forceDualPane: checked })
             }
           />
         </div>

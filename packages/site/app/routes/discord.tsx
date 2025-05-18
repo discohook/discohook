@@ -144,7 +144,7 @@ export default function DiscordPage() {
               </p>
             }
             checked={agree}
-            onChange={(e) => setAgree(e.currentTarget.checked)}
+            onCheckedChange={(checked) => setAgree(checked)}
           />
           <a href={`https://discord.gg/${code}`} aria-disabled={!agree}>
             <Button

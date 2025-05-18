@@ -133,11 +133,8 @@ const FileEditModal = (
             <div>
               <Checkbox
                 label={t("markSpoiler")}
-                onChange={(e) => {
-                  setDraft({
-                    ...draft,
-                    spoiler: e.currentTarget.checked,
-                  });
+                onCheckedChange={(checked) => {
+                  setDraft({ ...draft, spoiler: checked });
                 }}
                 checked={draft.spoiler}
               />

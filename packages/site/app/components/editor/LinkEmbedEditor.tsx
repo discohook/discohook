@@ -373,9 +373,7 @@ export const LinkEmbedEditor: React.FC<{
           label={t("useLargeImages")}
           checked={embed.large_images ?? false}
           disabled={!embed.images?.length && !!embed.video?.url}
-          onChange={(e) =>
-            updateEmbed({ large_images: e.currentTarget.checked })
-          }
+          onCheckedChange={(checked) => updateEmbed({ large_images: checked })}
         />
         <div>
           <div className="space-y-1">

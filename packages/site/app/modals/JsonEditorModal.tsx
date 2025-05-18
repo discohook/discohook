@@ -80,7 +80,7 @@ export const JsonEditorModal = (
         <Checkbox
           label={t("wordWrap")}
           checked={wordWrap}
-          onChange={(e) => setWordWrap(e.currentTarget.checked)}
+          onCheckedChange={(checked) => setWordWrap(checked)}
         />
       </div>
       <div className="flex mt-4">

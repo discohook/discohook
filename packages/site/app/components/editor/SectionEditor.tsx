@@ -250,8 +250,8 @@ export const SectionEditor: React.FC<{
                   <Checkbox
                     label={t("markSpoiler")}
                     checked={accessory.spoiler ?? false}
-                    onChange={({ currentTarget }) => {
-                      accessory.spoiler = currentTarget.checked;
+                    onCheckedChange={(checked) => {
+                      accessory.spoiler = checked;
                       setData({ ...data });
                     }}
                   />
