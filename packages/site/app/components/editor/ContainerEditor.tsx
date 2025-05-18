@@ -2,7 +2,6 @@ import {
   type APIContainerComponent,
   ComponentType,
 } from "discord-api-types/v10";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
@@ -15,9 +14,7 @@ import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
-import {
-  decimalToHex
-} from "./ColorPicker";
+import { decimalToHex } from "./ColorPicker";
 import { ActionRowEditor } from "./ComponentEditor";
 import { FileEditor } from "./FileEditor";
 import { MediaGalleryEditor } from "./MediaGalleryEditor";
@@ -130,8 +127,6 @@ export const ContainerEditor: React.FC<{
       ?.map((c) => 1 + ("components" in c ? c.components.length : 0))
       .reduce((a, b) => a + b, 0) ?? 0;
 
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
-
   return (
     <details
       className={twJoin(
@@ -176,31 +171,6 @@ export const ContainerEditor: React.FC<{
             }}
           />
         </div>
-        <button
-          type="button"
-          className="flex cursor-pointer text-start"
-          onClick={() => setColorPickerOpen((v) => !v)}
-        >
-          <div className="grow">
-            <p className="text-sm font-medium">{t("sidebarColor")}</p>
-            <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
-              <span className="align-middle">
-                {typeof container.accent_color === "number"
-                  ? decimalToHex(container.accent_color)
-                  : t("clickToSet")}
-              </span>
-            </p>
-          </div>
-          <div
-            className="h-9 w-9 mt-auto rounded-lg ltr:ml-2 rtl:mr-2 bg-gray-500"
-            style={{
-              backgroundColor:
-                typeof container.accent_color === "number"
-                  ? decimalToHex(container.accent_color)
-                  : undefined,
-            }}
-          />
-        </button>
         <ColorPickerPopoverWithTrigger
           t={t}
           value={container.accent_color}
@@ -210,7 +180,7 @@ export const ContainerEditor: React.FC<{
           }}
         />
       </div>
-      <div className="space-y-2">
+      <div className="mt-2 space-y-2">
         {container.components.map((child, ci) => (
           <AutoTopLevelComponentEditor
             key={`message-${mid}-container-${i}-child-${ci}`}

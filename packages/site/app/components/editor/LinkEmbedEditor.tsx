@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import {
@@ -15,9 +14,7 @@ import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import DatePicker from "../pickers/DatePicker";
-import {
-  decimalToHex
-} from "./ColorPicker";
+import { decimalToHex } from "./ColorPicker";
 import { EmbedEditorSection } from "./EmbedEditor";
 
 export const getEmbedText = (embed: LinkEmbed): string | undefined =>
@@ -57,7 +54,6 @@ export const LinkEmbedEditor: React.FC<{
   const strategy = embed.strategy ?? LinkEmbedStrategy.Link;
 
   const { t } = useTranslation();
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
   const updateEmbed = (partialEmbed: Partial<LinkEmbed>) => {
     if (
@@ -298,31 +294,6 @@ export const LinkEmbedEditor: React.FC<{
           </div>
         </div>
         <div className="grid gap-2">
-          <button
-            type="button"
-            className="flex cursor-pointer text-start"
-            onClick={() => setColorPickerOpen((v) => !v)}
-          >
-            <div className="grow">
-              <p className="text-sm font-medium">{t("sidebarColor")}</p>
-              <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
-                <span className="align-middle">
-                  {typeof embed.color === "number"
-                    ? decimalToHex(embed.color)
-                    : t("clickToSet")}
-                </span>
-              </p>
-            </div>
-            <div
-              className="h-9 w-9 mt-auto rounded-lg ltr:ml-2 rtl:mr-2 bg-gray-500"
-              style={{
-                backgroundColor:
-                  typeof embed.color === "number"
-                    ? decimalToHex(embed.color)
-                    : undefined,
-              }}
-            />
-          </button>
           <ColorPickerPopoverWithTrigger
             t={t}
             value={embed.color}
