@@ -236,31 +236,39 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   let threadId: string | undefined;
-  const message = await (async (): Promise<
+  let message:
     | Pick<APIMessage, "resolved" | "components" | "webhook_id" | "flags">
-    | undefined
-  > => {
-    if (component.channelId && component.messageId) {
-      let msg: APIMessage | undefined;
-      try {
-        msg = (await rest.get(
-          Routes.channelMessage(
-            String(component.channelId),
-            String(component.messageId),
-          ),
-        )) as APIMessage;
-      } catch (e) {
-        // console.error(e);
+    | undefined;
+  if (component.channelId && component.messageId) {
+    let msg: APIMessage | undefined;
+    try {
+      msg = (await rest.get(
+        Routes.channelMessage(
+          String(component.channelId),
+          String(component.messageId),
+        ),
+      )) as APIMessage;
+    } catch (e) {
+      if (isDiscordError(e)) {
+        throw json(e.rawError, 500);
       }
-      if (msg?.position !== undefined) {
-        threadId = msg.channel_id;
-      }
-      if (msg) {
-        const { resolved, components, webhook_id, flags } = msg;
-        return { resolved, components, webhook_id, flags };
-      }
+      console.error(e);
+      throw json({ message: "Failed to fetch message" }, 500);
     }
-  })();
+    if (msg.position !== undefined) {
+      threadId = msg.channel_id;
+    }
+    const { resolved, components, webhook_id, flags } = msg;
+    message = { resolved, components, webhook_id, flags };
+  } else {
+    console.log({
+      message: "Component is missing a channelId or messageId",
+      componentId: component.id,
+      guildId: component.guildId,
+      channelId: component.channelId,
+      messageId: component.messageId,
+    });
+  }
 
   let emojis: ResolvableAPIEmoji[] = [];
   let roles: ResolvableAPIRole[] = [];
