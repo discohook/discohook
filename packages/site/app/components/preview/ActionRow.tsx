@@ -1,3 +1,4 @@
+import { Popover } from "@base-ui-components/react/popover";
 import {
   APIActionRowComponent,
   APIButtonComponent,
@@ -67,9 +68,9 @@ const PreviewSelectOption: React.FC<{
   icon?: React.ReactNode;
 }> = ({ label, description, icon }) => {
   return (
-    <div className="flex last:rounded-b hover:bg-[#e0e1e5] hover:dark:bg-[#36373d] w-full p-2 cursor-pointer">
+    <div className="flex items-center gap-2 last:rounded-b-lg hover:bg-[#F2F2F3] hover:dark:bg-[#43444B] w-full p-2 cursor-pointer">
       {icon}
-      <div className="truncate text-sm font-medium my-auto">
+      <div className="truncate text-sm font-medium">
         <p className="truncate leading-[18px]">{label}</p>
         {description && (
           <p className="truncate text-[#4e5058] dark:text-[#b5bac1] leading-[18px]">
@@ -95,7 +96,7 @@ const PreviewMemberSelectOption: React.FC<{
             avatar: null,
           },
         })}
-        className="w-[22px] h-[22px] mr-2 my-auto shrink-0 rounded-full"
+        className="w-[22px] h-[22px] shrink-0 rounded-full"
         alt=""
       />
     }
@@ -114,13 +115,14 @@ const PreviewRoleSelectOption: React.FC<{
             // biome-ignore lint/style/noNonNullAssertion: Conditional render
             cdn.roleIcon(role.id, role.icon!, { size }),
           )}
-          className="w-[22px] h-[22px] mr-2 my-auto shrink-0 rounded-full"
+          className="w-[22px] h-[22px] shrink-0 rounded-full object-contain"
           alt={role.name}
         />
       ) : role.unicode_emoji ? (
         <Twemoji
           emoji={role.unicode_emoji}
-          className="w-[22px] h-[22px] mr-2 my-auto shrink-0 align-middle"
+          className="w-[22px] h-[22px] shrink-0 align-middle"
+          spanClassName="contents"
         />
       ) : (
         <RoleShield
@@ -155,110 +157,124 @@ export const PreviewSelect: PreviewComponent<APISelectMenuComponent> = ({
     : undefined;
 
   return (
-    <div className="w-[90%] max-w-[400px] mr-4 relative">
-      <button
-        type="button"
-        data-custom-id={data.custom_id}
-        data-type={data.type}
-        data-open={false}
-        data-disabled={data.disabled}
-        className={twJoin(
-          "peer/select group/select rounded data-[open=true]:rounded-b-none p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full data-[disabled=true]:opacity-60 data-[disabled=true]:cursor-not-allowed",
-          nonSendable ? "hidden" : undefined,
-        )}
+    <Popover.Root>
+      <Popover.Trigger
+        disabled={data.disabled}
         onClick={(e) => {
           if (onClick) {
+            e.preventBaseUIHandler();
             onClick(e);
           } else if (!data.disabled) {
-            e.currentTarget.dataset.open = String(
-              e.currentTarget.dataset.open === "false",
-            );
+            // e.currentTarget.dataset.open = String(
+            //   e.currentTarget.dataset.open === "false",
+            // );
           }
         }}
+        render={
+          <button
+            type="button"
+            data-type={data.type}
+            data-custom-id={data.custom_id}
+            className={twJoin(
+              "group/trigger",
+              "max-w-[400px] mr-4 box-border items-center gap-x-2",
+              "rounded-lg p-2 text-left bg-[#ebebeb] dark:bg-[#1e1f22] border border-black/[0.08] dark:border-transparent hover:border-[#c4c9ce] dark:hover:border-[#020202] transition-[border,_opacity] duration-200 font-medium cursor-pointer grid grid-cols-[1fr_auto] items-center w-full disabled:opacity-60 disabled:cursor-not-allowed",
+              nonSendable ? "hidden" : undefined,
+            )}
+          />
+        }
       >
         <span className="truncate text-[#5c5e66] dark:text-[#949ba4] leading-none">
           {data.placeholder ?? (t ? t("defaultPlaceholder") : "")}
         </span>
-        <div className="flex items-center gap-1">
-          <CoolIcon
-            icon="Chevron_Down"
-            className="group-data-[open=true]/select:rotate-180"
-          />
-        </div>
-      </button>
-      <div className="hidden peer-data-[open=true]/select:block absolute left-0 w-full bg-background-secondary dark:bg-background-secondary-dark rounded-b border border-[#e3e5e8] dark:border-[#1e1f22] overflow-y-auto max-h-64">
-        {data.type === ComponentType.StringSelect
-          ? data.options.map((option, oi) => (
-              <PreviewSelectOption
-                key={`preview-select-option-${oi}-${option.value}`}
-                label={option.label}
-                description={option.description}
-                icon={
-                  option.emoji?.id ? (
-                    <img
-                      src={cdn.emoji(option.emoji.id)}
-                      className="w-[22px] h-[22px] mr-2 my-auto shrink-0"
-                      alt={option.emoji.name}
-                    />
-                  ) : option.emoji?.name ? (
-                    <Twemoji
-                      emoji={option.emoji.name}
-                      className="w-[22px] h-[22px] mr-2 my-auto shrink-0 align-middle"
-                    />
-                  ) : shouldLeftPad ? (
-                    <div className="w-[22px] mr-2 shrink-0" />
-                  ) : undefined
-                }
-              />
-            ))
-          : cache &&
-            (data.type === ComponentType.UserSelect ? (
-              cache.member
-                .getAll()
-                .map((member) => (
-                  <PreviewMemberSelectOption
-                    key={`preview-select-${data.type}-option-${member.user.id}`}
-                    member={member}
+        <CoolIcon
+          icon="Chevron_Down"
+          className="group-data-[popup-open]/trigger:rotate-180"
+        />
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={4} side="bottom" className="z-[35]">
+          <Popover.Popup
+            className={twJoin(
+              "box-border rounded-lg w-[--anchor-width] overflow-y-auto max-h-64",
+              "bg-white dark:bg-[#3C3D44] border border-[#e3e5e8] dark:border-[#1e1f22]",
+            )}
+          >
+            {data.type === ComponentType.StringSelect
+              ? data.options.map((option, oi) => (
+                  <PreviewSelectOption
+                    key={`preview-select-option-${oi}-${option.value}`}
+                    label={option.label}
+                    description={option.description}
+                    icon={
+                      option.emoji?.id ? (
+                        <img
+                          src={cdn.emoji(option.emoji.id)}
+                          className="w-[22px] h-[22px] shrink-0 object-contain"
+                          alt={option.emoji.name}
+                        />
+                      ) : option.emoji?.name ? (
+                        <Twemoji
+                          emoji={option.emoji.name}
+                          className="w-[22px] h-[22px] shrink-0 align-middle"
+                          spanClassName="contents"
+                        />
+                      ) : shouldLeftPad ? (
+                        <div className="w-[22px] shrink-0" />
+                      ) : undefined
+                    }
                   />
                 ))
-            ) : data.type === ComponentType.RoleSelect ? (
-              cache.role
-                .getAll()
-                .map((role) => (
-                  <PreviewRoleSelectOption
-                    key={`preview-select-${data.type}-option-${role.id}`}
-                    role={role}
-                  />
-                ))
-            ) : data.type === ComponentType.MentionableSelect ? (
-              <>
-                {cache.role.getAll().map((role) => (
-                  <PreviewRoleSelectOption
-                    key={`preview-select-${data.type}-option-${role.id}-role`}
-                    role={role}
-                  />
+              : cache &&
+                (data.type === ComponentType.UserSelect ? (
+                  cache.member
+                    .getAll()
+                    .map((member) => (
+                      <PreviewMemberSelectOption
+                        key={`preview-select-${data.type}-option-${member.user.id}`}
+                        member={member}
+                      />
+                    ))
+                ) : data.type === ComponentType.RoleSelect ? (
+                  cache.role
+                    .getAll()
+                    .map((role) => (
+                      <PreviewRoleSelectOption
+                        key={`preview-select-${data.type}-option-${role.id}`}
+                        role={role}
+                      />
+                    ))
+                ) : data.type === ComponentType.MentionableSelect ? (
+                  <>
+                    {cache.role.getAll().map((role) => (
+                      <PreviewRoleSelectOption
+                        key={`preview-select-${data.type}-option-${role.id}-role`}
+                        role={role}
+                      />
+                    ))}
+                    {cache.member.getAll().map((member) => (
+                      <PreviewMemberSelectOption
+                        key={`preview-select-${data.type}-option-${member.user.id}-user`}
+                        member={member}
+                      />
+                    ))}
+                  </>
+                ) : data.type === ComponentType.ChannelSelect ? (
+                  cache.channel
+                    .getAll()
+                    .map((channel) => (
+                      <PreviewChannelSelectOption
+                        key={`preview-select-${data.type}-option-${channel.id}`}
+                        channel={channel}
+                      />
+                    ))
+                ) : (
+                  <></>
                 ))}
-                {cache.member.getAll().map((member) => (
-                  <PreviewMemberSelectOption
-                    key={`preview-select-${data.type}-option-${member.user.id}-user`}
-                    member={member}
-                  />
-                ))}
-              </>
-            ) : data.type === ComponentType.ChannelSelect ? (
-              cache.channel
-                .getAll()
-                .map((channel) => (
-                  <PreviewChannelSelectOption
-                    key={`preview-select-${data.type}-option-${channel.id}`}
-                    channel={channel}
-                  />
-                ))
-            ) : (
-              <></>
-            ))}
-      </div>
-    </div>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 };
 

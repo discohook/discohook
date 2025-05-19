@@ -23,7 +23,7 @@ export const selectClassNames: ClassNamesConfig<
   menu: () => "!rounded-lg dark:!bg-background-secondary-dark",
   option: (p) =>
     twJoin(
-      "!rounded-lg dark:!bg-background-secondary-dark dark:hover:!bg-gray-500 !font-semibold !text-sm",
+      "!rounded-lg dark:!bg-background-secondary-dark dark:hover:!bg-[#43444B] !font-semibold !text-sm",
       p.isDisabled ? "!cursor-not-allowed opacity-60" : undefined,
     ),
   menuPortal: () => "!z-30",

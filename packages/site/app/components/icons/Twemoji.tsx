@@ -31,11 +31,20 @@ const Twemoji_: React.FC<
     | { emoji?: undefined; unified: string }
   ) & {
     className?: string;
+    spanClassName?: string;
     title?: string;
     loading?: "lazy" | "eager";
     lazyPlaceholder?: LazyLoadImageProps["placeholder"];
   }
-> = ({ emoji, unified, className, title, loading, lazyPlaceholder }) => {
+> = ({
+  emoji,
+  unified,
+  className,
+  spanClassName,
+  title,
+  loading,
+  lazyPlaceholder,
+}) => {
   const icon = emoji
     ? // twemoji - grabTheRightIcon
       t.convert.toCodePoint(
@@ -62,7 +71,7 @@ const Twemoji_: React.FC<
   };
 
   return (
-    <span title={title}>
+    <span title={title} className={spanClassName}>
       {loading === "lazy" ? (
         <LazyLoadImage {...props} placeholder={lazyPlaceholder} />
       ) : (
