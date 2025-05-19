@@ -28,6 +28,7 @@ import {
 import {
   StorableComponent,
   autoRollbackTx,
+  destroyComponentDurableObject,
   discordMessageComponents,
   discordMessageComponentsToFlows,
   eq,
@@ -543,6 +544,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
 
         if (current.channelId && current.messageId) {
+          await destroyComponentDurableObject(context.env, {
+            messageId: String(current.messageId),
+            customId: `p_${id}`,
+            componentId: id,
+          });
+
           const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
           let message: APIMessage | undefined;
           try {

@@ -132,3 +132,23 @@ export const launchComponentDurableObject = async (
   const data = JSON.parse(raw) as DurableStoredComponent;
   return data;
 };
+
+export const destroyComponentDurableObject = async (
+  env: MockStoreEnv,
+  options: {
+    messageId: string;
+    customId: string;
+    componentId: string | bigint;
+  },
+) => {
+  const doId = env.COMPONENTS.idFromName(
+    `${options.messageId}-${options.customId}`,
+  );
+  const stub = env.COMPONENTS.get(doId);
+  const response = await stub.fetch(`http://do/?id=${options.componentId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw Error(`${response.status} ${response.statusText}`);
+  }
+};

@@ -20,7 +20,12 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
-import { autoRollbackTx, discordMessageComponents, getDb } from "store";
+import {
+  autoRollbackTx,
+  destroyComponentDurableObject,
+  discordMessageComponents,
+  getDb,
+} from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import {
   AutoComponentCustomId,
@@ -517,9 +522,11 @@ const registerComponentDelete = async (
   );
 
   if (!shouldKeepRecord) {
-    const doId = ctx.env.COMPONENTS.idFromName(`${editedMsg.id}-${customId}`);
-    const stub = ctx.env.COMPONENTS.get(doId);
-    await stub.fetch(`http://do/?id=${id}`, { method: "DELETE" });
+    await destroyComponentDurableObject(ctx.env, {
+      messageId: editedMsg.id,
+      customId,
+      componentId: id,
+    });
   }
 
   return editedMsg;
