@@ -468,6 +468,7 @@ const handleInteraction = async (
         default:
           break;
       }
+      if (env.ENVIRONMENT === "dev") console.log(flows.map((f) => f.actions));
       if (flows.length === 0) {
         return respond(
           liveVars.guild?.owner_id === ctx.user.id ||
