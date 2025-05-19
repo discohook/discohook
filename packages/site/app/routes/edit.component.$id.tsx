@@ -1011,6 +1011,22 @@ const MoveComponentButton = ({
   </Button>
 );
 
+// Maintain flows from previous component to new "found" component
+const injectFlows = (
+  parent: APIComponentInMessageActionRow,
+  child: APIComponentInMessageActionRow,
+) => {
+  if ("flow" in parent) {
+    // @ts-expect-error
+    child.flow = parent.flow;
+  }
+  if ("flows" in parent) {
+    // @ts-expect-error
+    child.flows = parent.flows;
+  }
+  return child;
+};
+
 export const getActionRowComponentPath = (
   components: APIMessageTopLevelComponent[],
   component: {
@@ -1055,6 +1071,7 @@ export const getActionRowComponentPath = (
           );
         }
         if (live) {
+          injectFlows(component as APIComponentInMessageActionRow, live);
           return {
             live,
             index: child.components.indexOf(live),
@@ -1068,6 +1085,10 @@ export const getActionRowComponentPath = (
         if (
           isSameComponent({ child: child.accessory, component, componentId })
         ) {
+          injectFlows(
+            component as APIComponentInMessageActionRow,
+            child.accessory,
+          );
           return {
             live: child.accessory,
             index: 0,
