@@ -491,7 +491,7 @@ export default () => {
                   <Select.Positioner
                     className={twJoin(
                       "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
-                      "p-0.5 border border-black/[0.08]",
+                      "p-0.5 border border-black/[0.08] z-[35]",
                     )}
                     align="start"
                     alignOffset={2}

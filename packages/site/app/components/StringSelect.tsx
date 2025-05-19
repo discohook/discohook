@@ -60,9 +60,8 @@ export const selectStyles = {
   icon: "ltr:ml-auto rtl:mr-auto my-auto text-lg",
   positioner: twJoin(
     "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
-    "p-0.5 border border-black/[0.08]",
+    "p-0.5 border border-black/[0.08] z-[35]",
   ),
-
   item: twJoin(
     "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
     "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",

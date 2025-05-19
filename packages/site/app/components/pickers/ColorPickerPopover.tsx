@@ -40,6 +40,7 @@ export const ColorPickerPopoverWithTrigger = ({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner
+          className="z-[35]"
           // label is part of the trigger so it looks weird unless we trim some padding
           sideOffset={(s) => (s.side === "top" ? -12 : 8)}
         >

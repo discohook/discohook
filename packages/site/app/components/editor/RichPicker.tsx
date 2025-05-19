@@ -34,7 +34,7 @@ export const PopoutRichPicker: React.FC<
         {children}
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={8}>
+        <Popover.Positioner sideOffset={8} className="z-[35]">
           <Popover.Popup className={popoverStyles.popup}>
             <div className="bg-gray-300 dark:bg-gray-800 border border-black/5 dark:border-gray-200/20 rounded-lg shadow-md w-[385px]">
               <div className="font-semibold space-x-1 rtl:space-x-reverse px-2 pt-2 text-sm">

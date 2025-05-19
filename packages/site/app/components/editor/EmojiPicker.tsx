@@ -555,7 +555,7 @@ export const PopoutEmojiPicker: React.FC<{
         </div>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={8}>
+        <Popover.Positioner sideOffset={8} className="z-[35]">
           <Popover.Popup className={popoverStyles.popup}>
             <EmojiPicker
               id={id}
