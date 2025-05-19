@@ -760,7 +760,7 @@ export default () => {
                               {webhook ? ` with ${webhook.name}` : ""}
                             </p>
                           </div>
-                          <p className="text-gray-600 dark:text-gray-500 text-xs">
+                          <p className="text-muted dark:text-muted-dark text-xs">
                             {new Date(createdAt).toLocaleDateString()}
                           </p>
                         </div>
