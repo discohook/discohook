@@ -13,6 +13,7 @@ import {
   ButtonStyle,
   ChannelType,
   ComponentType,
+  RESTJSONErrorCodes,
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
@@ -54,6 +55,7 @@ import {
   DraftComponent,
   Flow,
   StorableComponent,
+  autoRollbackTx,
   discordMessageComponents,
   eq,
   getDb,
@@ -75,7 +77,11 @@ import {
   ResolvableAPIRole,
   useCache,
 } from "~/util/cache/CacheManager";
-import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
+import {
+  MAX_ACTION_ROW_WIDTH,
+  MAX_TOTAL_COMPONENTS,
+  MAX_V1_ROWS,
+} from "~/util/constants";
 import {
   cdnImgAttributes,
   getRemainingComponentsCount,
@@ -97,10 +103,6 @@ import {
   zxParseQuery,
 } from "~/util/zod";
 import { safePushState } from "./_index";
-
-const ROW_MAX_WIDTH = 5;
-const ROW_MAX_INDEX = ROW_MAX_WIDTH - 1;
-const MAX_V1_ROWS_INDEX = MAX_V1_ROWS - 1;
 
 interface KVComponentEditorState {
   interactionId: string;
@@ -355,11 +357,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  // const { token, path, initialPath } = await zxParseJson(request, {
-  //   token: z.ostring(),
-  //   path: z.number().array().min(2).max(3).optional(),
-  //   initialPath: z.number().array().min(2).max(3).optional(),
-  // });
   const { token, components } = await zxParseJson(request, {
     token: z.ostring(),
     components: ZodAPITopLevelComponentRaw.array().optional(),
@@ -395,6 +392,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         404,
       );
     }
+    tokenData = cached;
     // Save new data, but do not extend lifespan of the token
     // if (JSON.stringify(cached.path) !== JSON.stringify(path)) {
     //   tokenData = { ...cached, path };
@@ -405,160 +403,57 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   const user = await getUser(request, context);
 
   const db = getDb(context.env.HYPERDRIVE);
-  const component = await db.query.discordMessageComponents.findFirst({
-    where: (table, { eq }) => eq(table.id, id),
-    columns: {
-      id: true,
-      data: true,
-      draft: true,
-      // createdById: true,
-      // guildId: true,
-      channelId: true,
-      messageId: true,
-    },
-  });
-  if (!component) {
-    throw json({ message: "Unknown Component" }, 404);
-  }
-  if (!component.channelId || !component.messageId) {
-    throw json(
-      { message: "Cannot use this route to modify a message-less component" },
-      400,
-    );
-  }
-
-  const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-
-  let message: APIMessage;
-  try {
-    message = (await rest.get(
-      Routes.channelMessage(
-        String(component.channelId),
-        String(component.messageId),
-      ),
-    )) as APIMessage;
-  } catch {
-    throw json({ message: "Failed to retrieve the message" }, 400);
-  }
-  const threadId =
-    message.position !== undefined ? message.channel_id : undefined;
-
-  let isDraft = component.draft;
-  for (const row of onlyActionRows(message.components ?? [])) {
-    for (const rowComponent of row.components) {
-      if (
-        getComponentId(rowComponent) === component.id &&
-        rowComponent.type === component.data.type
-      ) {
-        isDraft = false;
-        break;
+  const updated = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      const component = await tx.query.discordMessageComponents.findFirst({
+        where: (table, { eq }) => eq(table.id, id),
+        columns: {
+          id: true,
+          data: true,
+          draft: true,
+          // createdById: true,
+          // guildId: true,
+          channelId: true,
+          messageId: true,
+        },
+      });
+      if (!component) {
+        throw json({ message: "Unknown Component" }, 404);
       }
-    }
-  }
+      if (!component.channelId || !component.messageId) {
+        throw json(
+          {
+            message: "Cannot use this route to modify a message-less component",
+          },
+          400,
+        );
+      }
 
-  const built = buildStorableComponent(component.data, String(component.id));
-  // Token authorization means the user isn't allowed to see the webhook's
-  // credentials, so we must insert the component and edit the message for
-  // them.
-  if (
-    tokenData &&
-    message.webhook_id &&
-    // type guard; actually ensured above (must exist with token)
-    components
-  ) {
-    // TODO: use service binding to take advantage of the bot's token store
-    const webhook = (await rest.get(
-      Routes.webhook(message.webhook_id),
-    )) as APIWebhook;
-    if (!webhook.token) {
-      throw json(
-        {
-          message:
-            "Cannot edit the message because the webhook token is inaccessible.",
-        },
-        401,
-      );
-    }
+      const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
 
-    // TODO:
-    // With components V2 the simple insertion method doesn't really work
-    // anymore. So instead we allow the user to submit all components, but
-    // merge the payloads such that it's not possible for a hijacked editor
-    // token to substantially modify the message content.
-    // const components = message.components ?? [];
-    // if (JSON.stringify(initialPath) === JSON.stringify(path)) {
-    //   replaceComponentByPath(components, path, built);
-    // } else {
-    //   // TODO: determine offsets caused by deleting empty rows post-move
-    //   replaceComponentByPath(components, initialPath, null);
-    //   replaceComponentByPath(components, path, built);
-    // }
+      let message: APIMessage;
+      try {
+        message = (await rest.get(
+          Routes.channelMessage(
+            String(component.channelId),
+            String(component.messageId),
+          ),
+        )) as APIMessage;
+      } catch (e) {
+        if (isDiscordError(e)) {
+          if (e.code === RESTJSONErrorCodes.UnknownMessage) {
+            // TODO: delete records and destroy DO
+          }
+          throw json(e, 500);
+        }
+        throw json({ message: "Failed to retrieve the message" }, 400);
+      }
+      const threadId =
+        message.position !== undefined ? message.channel_id : undefined;
 
-    // const submitted = bodyComponents!;
-    // let i = -1;
-    // for (const topRow of submitted) {
-    //   i += 1;
-    //   switch (topRow.type) {
-    //     case ComponentType.ActionRow: {
-    //       if (
-    //         topRow.components.length === 1 &&
-    //         isSameComponent({
-    //           child: topRow.components[0],
-    //           component: component.data,
-    //           componentId: component.id,
-    //         })
-    //       ) {
-    //         const source = components[i];
-    //         if (
-    //           // Checking if insertion is necessary
-    //           source.type !== topRow.type ||
-    //           source.components.length > 1 ||
-    //           !isSameComponent({
-    //             child: source.components[0],
-    //             component: component.data,
-    //             componentId: component.id,
-    //           })
-    //         ) {
-    //           // User created a new row for this component; the top level
-    //           // component in the source message is not the same as this
-    //           // action row.
-    //           components.splice(i, 0, topRow);
-    //         } else {
-    //           source.components.splice(path[1], 1, built);
-    //         }
-    //       } else {
-    //         const x = topRow.components.findIndex((child) =>
-    //           isSameComponent({
-    //             child,
-    //             component: component.data,
-    //             componentId: component.id,
-    //           }),
-    //         );
-    //         if (x !== -1) {
-    //           // The component is in a row that already exists. The user
-    //           // cannot move rows in this editor, but the index might still be
-    //           // mismatched because the component might have been moved from a
-    //           // higher row that is now empty (thus deleted).
-    //         }
-    //       }
-    //       break;
-    //     }
-    //   }
-    // }
-
-    try {
-      const edited = (await rest.patch(
-        Routes.webhookMessage(webhook.id, webhook.token, message.id),
-        {
-          body: {
-            components,
-          } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
-          query: threadId
-            ? new URLSearchParams({ thread_id: threadId })
-            : undefined,
-        },
-      )) as APIMessage;
-      for (const row of onlyActionRows(edited.components ?? [])) {
+      let isDraft = component.draft;
+      for (const row of onlyActionRows(message.components ?? [], true)) {
+        // TODO: also iterate sections to undraft those buttons as well
         for (const rowComponent of row.components) {
           if (
             getComponentId(rowComponent) === component.id &&
@@ -569,51 +464,173 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           }
         }
       }
-    } catch (e) {
-      if (isDiscordError(e)) {
-        throw json(e.rawError, e.status);
+
+      const built = buildStorableComponent(
+        component.data,
+        String(component.id),
+      );
+      // Token authorization means the user isn't allowed to see the webhook's
+      // credentials, so we must edit the message for them.
+      if (
+        tokenData &&
+        message.webhook_id &&
+        // type guard; actually ensured above (must exist with token)
+        components !== undefined
+      ) {
+        // TODO: use service binding to take advantage of the bot's token store
+        const webhook = (await rest.get(
+          Routes.webhook(message.webhook_id),
+        )) as APIWebhook;
+        if (!webhook.token) {
+          throw json(
+            {
+              message:
+                "Cannot edit the message because the webhook token is inaccessible.",
+            },
+            401,
+          );
+        }
+
+        // TODO:
+        // With components V2 the simple insertion method doesn't really work
+        // anymore. So instead we allow the user to submit all components, but
+        // merge the payloads such that it's not possible for a hijacked editor
+        // token to substantially modify the message content.
+        // const components = message.components ?? [];
+        // if (JSON.stringify(initialPath) === JSON.stringify(path)) {
+        //   replaceComponentByPath(components, path, built);
+        // } else {
+        //   // TODO: determine offsets caused by deleting empty rows post-move
+        //   replaceComponentByPath(components, initialPath, null);
+        //   replaceComponentByPath(components, path, built);
+        // }
+
+        // const submitted = bodyComponents!;
+        // let i = -1;
+        // for (const topRow of submitted) {
+        //   i += 1;
+        //   switch (topRow.type) {
+        //     case ComponentType.ActionRow: {
+        //       if (
+        //         topRow.components.length === 1 &&
+        //         isSameComponent({
+        //           child: topRow.components[0],
+        //           component: component.data,
+        //           componentId: component.id,
+        //         })
+        //       ) {
+        //         const source = components[i];
+        //         if (
+        //           // Checking if insertion is necessary
+        //           source.type !== topRow.type ||
+        //           source.components.length > 1 ||
+        //           !isSameComponent({
+        //             child: source.components[0],
+        //             component: component.data,
+        //             componentId: component.id,
+        //           })
+        //         ) {
+        //           // User created a new row for this component; the top level
+        //           // component in the source message is not the same as this
+        //           // action row.
+        //           components.splice(i, 0, topRow);
+        //         } else {
+        //           source.components.splice(path[1], 1, built);
+        //         }
+        //       } else {
+        //         const x = topRow.components.findIndex((child) =>
+        //           isSameComponent({
+        //             child,
+        //             component: component.data,
+        //             componentId: component.id,
+        //           }),
+        //         );
+        //         if (x !== -1) {
+        //           // The component is in a row that already exists. The user
+        //           // cannot move rows in this editor, but the index might still be
+        //           // mismatched because the component might have been moved from a
+        //           // higher row that is now empty (thus deleted).
+        //         }
+        //       }
+        //       break;
+        //     }
+        //   }
+        // }
+
+        try {
+          const edited = (await rest.patch(
+            Routes.webhookMessage(webhook.id, webhook.token, message.id),
+            {
+              body: {
+                components,
+              } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,
+              query: threadId
+                ? new URLSearchParams({ thread_id: threadId })
+                : undefined,
+            },
+          )) as APIMessage;
+
+          // TODO: also iterate sections to undraft those buttons as well
+          for (const row of onlyActionRows(edited.components ?? [], true)) {
+            for (const rowComponent of row.components) {
+              if (
+                getComponentId(rowComponent) === component.id &&
+                rowComponent.type === component.data.type
+              ) {
+                isDraft = false;
+                break;
+              }
+            }
+          }
+        } catch (e) {
+          if (isDiscordError(e)) {
+            throw json(e.rawError, e.status);
+          }
+          throw e;
+        }
+        await tx
+          .insert(messageLogEntries)
+          .values({
+            type: "edit",
+            channelId: message.channel_id,
+            discordGuildId: webhook.guild_id
+              ? makeSnowflake(webhook.guild_id)
+              : undefined,
+            webhookId: webhook.id,
+            messageId: message.id,
+            threadId,
+            // Considered defaulting to token creator since they "authorized" this
+            // edit but I think that would be misleading since a token could have
+            // theoretically been hijacked and you don't want to pin that on the
+            // wrong user.
+            userId: user?.id,
+          })
+          .onConflictDoNothing();
       }
-      throw e;
-    }
-    await db
-      .insert(messageLogEntries)
-      .values({
-        type: "edit",
-        channelId: message.channel_id,
-        discordGuildId: webhook.guild_id
-          ? makeSnowflake(webhook.guild_id)
-          : undefined,
-        webhookId: webhook.id,
-        messageId: message.id,
-        threadId,
-        // Considered defaulting to token creator since they "authorized" this
-        // edit but I think that would be misleading since a token could have
-        // theoretically been hijacked and you don't want to pin that on the
-        // wrong user.
-        userId: user?.id,
-      })
-      .onConflictDoNothing();
-  }
 
-  const updated = (
-    await db
-      .update(discordMessageComponents)
-      .set({ draft: isDraft })
-      .where(eq(discordMessageComponents.id, id))
-      .returning({
-        id: discordMessageComponents.id,
-        data: discordMessageComponents.data,
-        draft: discordMessageComponents.draft,
-      })
-  )[0];
+      const updated = (
+        await tx
+          .update(discordMessageComponents)
+          .set({ draft: isDraft })
+          .where(eq(discordMessageComponents.id, id))
+          .returning({
+            id: discordMessageComponents.id,
+            data: discordMessageComponents.data,
+            draft: discordMessageComponents.draft,
+          })
+      )[0];
 
-  if (built.custom_id) {
-    await launchComponentDurableObject(context.env, {
-      messageId: message.id,
-      customId: built.custom_id,
-      componentId: component.id,
-    });
-  }
+      if (built.custom_id) {
+        await launchComponentDurableObject(context.env, {
+          messageId: message.id,
+          customId: built.custom_id,
+          componentId: component.id,
+        });
+      }
+
+      return updated;
+    }),
+  );
   return updated;
 };
 
@@ -776,7 +793,7 @@ const rowHasSpace = <
 >(
   row: APIActionRowComponent<T>,
   component: T,
-) => ROW_MAX_WIDTH - getRowWidth(row) >= getComponentWidth(component);
+) => MAX_ACTION_ROW_WIDTH - getRowWidth(row) >= getComponentWidth(component);
 
 const IndividualActionRowComponentChild = ({
   t,
@@ -1003,8 +1020,9 @@ export const getActionRowComponentPath = (
     label?: string;
   },
   componentId: string | bigint,
+  isCV2?: boolean,
+  draft?: boolean,
 ): {
-  /** May be  */
   found: APIComponentInMessageActionRow;
   path: number[];
 } => {
@@ -1078,6 +1096,41 @@ export const getActionRowComponentPath = (
   }
 
   if (!resultComponent || compPath.length === 0) {
+    if (draft) {
+      console.log(
+        "Couldn't find draft component in message, attempting to find or add an action row as appropriate",
+      );
+      // We need to automatically place this component since it doesn't
+      // exist on the message yet
+      const requiredWidth = getComponentWidth(component);
+      let nextAvailableRow = onlyActionRows(components, true).find((c) => {
+        return MAX_ACTION_ROW_WIDTH - getRowWidth(c) >= requiredWidth;
+      });
+
+      if (
+        !nextAvailableRow &&
+        getRemainingComponentsCount(components, isCV2) > 0
+      ) {
+        nextAvailableRow = { type: ComponentType.ActionRow, components: [] };
+        components.push(nextAvailableRow);
+      } else if (!nextAvailableRow) {
+        throw new Error(
+          `No available slots for this component (need at least ${requiredWidth}).`,
+        );
+      }
+      nextAvailableRow.components.push(
+        // our weird type is narrow on purpose, but we're actually passing a
+        // full, valid component to this function
+        component as APIComponentInMessageActionRow,
+      );
+      return getActionRowComponentPath(
+        components,
+        component,
+        componentId,
+        isCV2,
+        false, // don't cause infinite-ish loop
+      );
+    }
     throw Error("Failed to find the component");
   }
   return { found: resultComponent, path: compPath };
@@ -1254,6 +1307,8 @@ export default () => {
           compiled.components,
           component,
           component_.id,
+          isComponentsV2(compiled),
+          component_.draft,
         );
         setComponent(found);
         setPath(path);

@@ -114,6 +114,7 @@ export const LINK_INDEX_FAILURE_EMBED: LinkQueryData["embed"] = {
 
 // Components
 export const MAX_V1_ROWS = 5;
+export const MAX_ACTION_ROW_WIDTH = 5;
 export const MAX_GALLERY_ITEMS = 10;
 export const MAX_TOTAL_COMPONENTS = 40;
 export const MAX_TOTAL_COMPONENTS_CHARACTERS = 4000;
