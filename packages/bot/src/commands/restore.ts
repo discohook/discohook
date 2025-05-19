@@ -188,7 +188,13 @@ export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
   const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
   const message = ctx.getMessage();
 
-  if (!message.webhook_id || message.interaction_metadata) {
+  const flags = new MessageFlagsBitField(message.flags ?? 0);
+  if (
+    !message.webhook_id ||
+    message.interaction_metadata ||
+    // incoming webhooks have no credentials
+    flags.has(MessageFlags.Crossposted)
+  ) {
     const data = messageToQueryData(message);
     const share = await createShareLink(ctx.env, data, { userId: user.id });
     return ctx.reply({
@@ -329,11 +335,11 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
       }
       if (!webhook.token) {
         return ctx.updateMessage({
-          content: dedent`
-            Webhook token (ID ${webhookId}) was not available.\
-            It may be an incompatible type of webhook, or it may have been\
-            created by a different bot user.
-          `,
+          content: [
+            `Webhook token (ID ${webhookId}) was not available. `,
+            "It may be an incompatible type of webhook, or it may have been ",
+            "created by a different bot user.",
+          ].join(""),
           components: [],
         });
       }
