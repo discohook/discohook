@@ -402,7 +402,7 @@ export const IndividualComponentEditor: React.FC<{
       .length !== 0;
 
   return (
-    <div className="flex text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none">
+    <div className="flex text-base text-gray-600 dark:text-gray-400 rounded-lg bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none">
       <button
         type="button"
         className="flex p-2 h-full w-full my-auto truncate disabled:animate-pulse"
