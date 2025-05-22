@@ -1,5 +1,5 @@
 import { Dialog } from "@base-ui-components/react/dialog";
-import { SerializeFrom, defer } from "@remix-run/cloudflare";
+import { SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
@@ -8,7 +8,6 @@ import {
   ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
-import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import React, { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -16,6 +15,7 @@ import { UAParser } from "ua-parser-js";
 import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { InvalidShareIdData } from "~/api/v1/share.$shareId";
+import { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -55,8 +55,7 @@ import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { TargetAddModal } from "~/modals/TargetAddModal";
 import { WebhookEditModal } from "~/modals/WebhookEditModal";
-import { getSessionStorage, getUser } from "~/session.server";
-import { getDb } from "~/store.server";
+import { getSessionStorage, getUserId } from "~/session.server";
 import {
   type APIComponentInMessageActionRow,
   type QueryData,
@@ -80,7 +79,7 @@ import {
   webhookAvatarUrl,
 } from "~/util/discord";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
-import { LoaderArgs } from "~/util/loader";
+import { LoaderArgs, useApiLoader } from "~/util/loader";
 import { Settings, useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
@@ -98,47 +97,17 @@ import {
 } from "./edit.component.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
-  const user = await getUser(request, context);
-  const db = getDb(context.env.HYPERDRIVE);
-  const memberships = (async () => {
-    return user?.discordId
-      ? (
-          await db.query.discordMembers.findMany({
-            where: (discordMembers, { eq }) =>
-              // biome-ignore lint/style/noNonNullAssertion: Checked above
-              eq(discordMembers.userId, user.discordId!),
-            with: {
-              guild: {
-                columns: {
-                  id: true,
-                  name: true,
-                  icon: true,
-                  botJoinedAt: true,
-                },
-              },
-            },
-          })
-        ).filter(
-          (m) =>
-            m.owner ||
-            new PermissionsBitField(BigInt(m.permissions ?? "0")).has(
-              PermissionFlags.ManageWebhooks,
-            ),
-        )
-      : [];
-  })();
-
+  const userId = await getUserId(request, context);
   let authFailure: string | undefined;
   const defaultModal = new URL(request.url).searchParams.get("m");
-  if (!user && defaultModal === "auth-failure") {
+  if (!userId && defaultModal === "auth-failure") {
     const storage = getSessionStorage(context);
     const session = await storage.getSession(request.headers.get("Cookie"));
     authFailure = session.get("auth:error")?.toString() ?? undefined;
   }
 
-  return defer({
-    user,
-    memberships,
+  return {
+    userId,
     discordApplicationId: context.env.DISCORD_CLIENT_ID,
     cdn: context.env.CDN_ORIGIN,
     debug: {
@@ -146,12 +115,8 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       version: context.env.VERSION,
       authFailure,
     },
-  });
+  };
 };
-
-export type LoadedMembership = Awaited<
-  SerializeFrom<typeof loader>["memberships"]
->[number];
 
 export interface DraftFile {
   id: string;
@@ -267,7 +232,8 @@ const getNewMessageData = (settings: Settings): QueryDataMessageDataRaw => {
 
 export default function Index() {
   const { t } = useTranslation();
-  const { user, memberships, cdn, discordApplicationId, debug } =
+  const user = useApiLoader<ApiGetCurrentUser>("/users/@me");
+  const { userId, cdn, discordApplicationId, debug } =
     useLoaderData<typeof loader>();
 
   const V2_CREATE_PROMPT = debug.environment === "dev";
@@ -651,10 +617,9 @@ export default function Index() {
       />
       <TargetAddModal
         open={addingTarget}
-        hasAuthentication={!!user}
+        hasAuthentication={!!userId}
         setOpen={setAddingTarget}
         updateTargets={updateTargets}
-        memberships={memberships}
         discordApplicationId={discordApplicationId}
         cache={cache}
       />

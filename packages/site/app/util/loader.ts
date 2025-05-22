@@ -4,7 +4,7 @@ import type {
   ActionFunctionArgs as RRActionFunctionArgs,
   LoaderFunctionArgs as RRLoaderFunctionArgs,
 } from "@remix-run/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ZodError } from "zod";
 import { Env } from "~/types/env";
 
@@ -256,3 +256,28 @@ export const useSafeFetcher = <TData = any>({
 };
 
 export type SafeFetcher<TData = any> = ReturnType<typeof useSafeFetcher<TData>>;
+
+export const useApiLoader = <L = any, T = Awaited<SerializeFrom<L>>>(
+  route: string,
+  options?: {
+    method?: string;
+    version?: number;
+  },
+): T | undefined => {
+  const [data, setData] = useState<T>();
+
+  useEffect(() => {
+    const apiPath = `/api/v${options?.version ?? 1}${route}`;
+    fetch(apiPath, { method: options?.method ?? "GET" }).then((response) => {
+      if (!response.ok) {
+        console.error(response);
+        return;
+      }
+      response.json().then((resolved) => {
+        setData(resolved as T);
+      });
+    });
+  }, [route, options]);
+
+  return data;
+};

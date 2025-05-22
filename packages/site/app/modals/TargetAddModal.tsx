@@ -1,21 +1,25 @@
 import { Link } from "@remix-run/react";
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import {
+  APIWebhook,
+  ButtonStyle,
+  PermissionFlagsBits,
+} from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
 import { ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
+import { ApiGetCurrentUserMemberships } from "~/api/v1/users.@me.memberships";
 import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
-import { LoadedMembership } from "~/routes/_index";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
-import { useSafeFetcher } from "~/util/loader";
+import { useApiLoader, useSafeFetcher } from "~/util/loader";
 import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
@@ -26,15 +30,15 @@ export const TargetAddModal = (
     discordApplicationId: string;
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
     hasAuthentication?: boolean;
-    memberships?: Promise<LoadedMembership[]>;
     cache?: CacheManager;
   },
 ) => {
   const { t } = useTranslation();
   const [webhook, setWebhook] = useState<APIWebhook>();
   const [urlError, setUrlError] = useState<ReactNode>();
-  const [manualWebhook, setManualWebhook] = useState(
-    !props.hasAuthentication || !props.memberships,
+  const [manualWebhook, setManualWebhook] = useState(!props.hasAuthentication);
+  const memberships = useApiLoader<ApiGetCurrentUserMemberships>(
+    `/users/@me/memberships?permissions=${PermissionFlagsBits.ManageWebhooks}`,
   );
 
   const [error, setError] = useError(t);
@@ -117,8 +121,7 @@ export const TargetAddModal = (
           <p className="text-sm">{t("chooseServer")}</p>
           <AsyncGuildSelect
             guilds={(async () =>
-              // biome-ignore lint/style/noNonNullAssertion: Must not be null to arrive at this point
-              (await props.memberships!).map(({ guild, favorite }) => ({
+              (memberships ?? []).map(({ guild, favorite }) => ({
                 ...guild,
                 botJoinedAt: guild.botJoinedAt
                   ? new Date(guild.botJoinedAt)
@@ -301,7 +304,7 @@ export const TargetAddModal = (
               }
             }}
           />
-          {props.memberships && props.hasAuthentication ? (
+          {memberships && props.hasAuthentication ? (
             <button
               className={twJoin(linkClassName, "text-sm")}
               onClick={() => setManualWebhook(false)}

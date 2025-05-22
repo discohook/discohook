@@ -3,7 +3,9 @@ import { User } from "~/session.server";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { Modal, ModalProps } from "./Modal";
 
-export const AuthSuccessModal = (props: ModalProps & { user: User | null }) => {
+export const AuthSuccessModal = (
+  props: ModalProps & { user: User | undefined },
+) => {
   return (
     <Modal title="Success" {...props}>
       {props.user && (
