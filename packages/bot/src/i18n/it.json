@@ -132,7 +132,6 @@
                             "description": "Il nome del webhook"
                         },
                         "avatar": {
-                            "name": "",
                             "description": "L'immagine di profilo del webhook"
                         },
                         "channel": {
