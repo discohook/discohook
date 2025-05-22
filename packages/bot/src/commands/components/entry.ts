@@ -4,11 +4,13 @@ import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
 import {
   APIApplicationCommandAutocompleteInteraction,
+  APIGuildChannel,
   APIMessage,
   APIWebhook,
   ApplicationCommandOptionType,
   ButtonStyle,
-  Routes,
+  ChannelType,
+  Routes
 } from "discord-api-types/v10";
 import { Snowflake, getDate } from "discord-snowflake";
 import {
@@ -28,7 +30,7 @@ const MESSAGE_LINK_RE =
 export const resolveMessageLink = async (
   rest: REST,
   messageLink: string,
-  guildId: string | undefined,
+  checkGuildId: string | undefined,
 ): Promise<APIMessage | string> => {
   const match = messageLink.match(MESSAGE_LINK_RE);
   if (!match) {
@@ -36,6 +38,18 @@ export const resolveMessageLink = async (
       Invalid message link. Select an option from the autocomplete menu, or
       right click or long-press a message, then use "Copy Message Link".
     `;
+  }
+  if (checkGuildId && checkGuildId !== match[1]) {
+    return "That message is not from this server.";
+  }
+
+  if (checkGuildId) {
+    const channel = (await rest.get(
+      Routes.channel(match[2]),
+    )) as APIGuildChannel<ChannelType>;
+    if (!channel.guild_id || channel.guild_id !== checkGuildId) {
+      return "That message is not from this server.";
+    }
   }
 
   let message: APIMessage;
@@ -45,10 +59,6 @@ export const resolveMessageLink = async (
     )) as APIMessage;
   } catch (e) {
     return "Unable to resolve that message. Make sure you are pasting a valid message link in a channel that I can access.";
-  }
-
-  if (guildId && guildId !== match[1]) {
-    return "That message is not from this server.";
   }
 
   return message;

@@ -413,6 +413,9 @@
       "webhook": {
         "name": "Webhook Info"
       },
+      "quickedit": {
+        "name": "Quick Edit"
+      },
       "debug": {
         "name": "Debug"
       }

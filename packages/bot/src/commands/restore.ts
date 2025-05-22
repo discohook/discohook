@@ -184,17 +184,42 @@ const createShareLink = async (
   };
 };
 
-export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
-  const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
-  const message = ctx.getMessage();
-
+/**
+ * Returns whether a message could be feasibly edited using webhook credentials
+ * that the bot can obtain. This does not determine whether a message absolutely
+ * _can_ be edited, because it doesn't take into account whether the webhook is
+ * deleted.
+ */
+export const isMessageWebhookEditable = (
+  env: Env,
+  message: Pick<
+    APIMessage,
+    "webhook_id" | "application_id" | "interaction_metadata" | "flags"
+  >,
+) => {
   const flags = new MessageFlagsBitField(message.flags ?? 0);
   if (
-    !message.webhook_id ||
     message.interaction_metadata ||
     // incoming webhooks have no credentials
     flags.has(MessageFlags.Crossposted)
   ) {
+    return false;
+  }
+  if (
+    message.webhook_id &&
+    message.application_id &&
+    Object.keys(env.APPLICATIONS).includes(message.application_id)
+  ) {
+    return true;
+  }
+  return false;
+};
+
+export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
+  const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
+  const message = ctx.getMessage();
+
+  if (!isMessageWebhookEditable(ctx.env, message)) {
     const data = messageToQueryData(message);
     const share = await createShareLink(ctx.env, data, { userId: user.id });
     return ctx.reply({

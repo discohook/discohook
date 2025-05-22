@@ -743,6 +743,14 @@ const main = async () => {
       .setDefaultMemberPermissions(PermissionFlags.ViewChannel),
     new ContextMenuCommandBuilder()
       .setType(ApplicationCommandType.Message)
+      .setName(getEnglish("_ctx.quickedit.name"))
+      .setNameLocalizations(localize("_ctx.quickedit.name"))
+      .setContexts(InteractionContextType.Guild)
+      .setDefaultMemberPermissions(
+        PermissionFlags.ManageMessages | PermissionFlags.ManageWebhooks,
+      ),
+    new ContextMenuCommandBuilder()
+      .setType(ApplicationCommandType.Message)
       .setName(getEnglish("_ctx.debug.name"))
       .setNameLocalizations(localize("_ctx.debug.name"))
       .setContexts(InteractionContextType.Guild)

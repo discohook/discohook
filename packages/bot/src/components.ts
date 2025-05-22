@@ -34,6 +34,9 @@ import {
   addComponentQuickToggleRoleCallback,
   submitButtonQuickStyle,
 } from "./commands/components/quick.js";
+import { quickEditSelectElement } from "./commands/quick-edit/entry.js";
+import { quickEditAttachmentReopen, quickEditEmbedPartOpen } from "./commands/quick-edit/open.js";
+import { quickEditSubmitAttachment, quickEditSubmitContent, quickEditSubmitEmbed } from "./commands/quick-edit/submit.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import {
@@ -87,7 +90,12 @@ export type StoredModalData = ModalCallback;
 export type ModalRoutingId =
   | "add-component-flow-customize-modal"
   | "edit-component-flow-modal"
-  | "add-component-quick-send-message-modal";
+  | "add-component-quick-send-message-modal"
+  // quick edit
+  | "qe-submit-content"
+  | "qe-submit-embed"
+  | "qe-submit-attachment";
+// | "qe-submit-component";
 
 export type ComponentRoutingId =
   | "add-component-flow"
@@ -114,7 +122,11 @@ export type ComponentRoutingId =
   | "migrate-buttons-cancel"
   | "delete-triggers-confirm"
   | "delete-triggers-cancel"
-  | "trigger-test";
+  | "trigger-test"
+  // quick edit
+  | "qe-select-element"
+  | "qe-embed-part"
+  | "qe-attachment";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
 
@@ -150,6 +162,10 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "delete-triggers-cancel": triggersDeleteCancel,
   "trigger-test": triggerTestButtonCallback,
   // "clone-webhook-message": cloneWebhookMessage,
+  // quick edit
+  "qe-select-element": quickEditSelectElement,
+  "qe-embed-part": quickEditEmbedPartOpen,
+  "qe-attachment": quickEditAttachmentReopen,
 };
 
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {
@@ -157,4 +173,8 @@ export const modalStore: Record<ModalRoutingId, StoredModalData> = {
   "edit-component-flow-modal": editComponentFlowModalCallback,
   "add-component-quick-send-message-modal":
     addComponentQuickSendMessageCallback,
+  // quick edit
+  "qe-submit-content": quickEditSubmitContent,
+  "qe-submit-embed": quickEditSubmitEmbed,
+  "qe-submit-attachment": quickEditSubmitAttachment,
 };

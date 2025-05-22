@@ -19,6 +19,7 @@ import {
   APIGuildMember,
   APIInteraction,
   APIInteractionDataResolved,
+  APIInteractionResponse,
   APIInteractionResponseCallbackData,
   APIInteractionResponseChannelMessageWithSource,
   APIInteractionResponseDeferredChannelMessageWithSource,
@@ -73,6 +74,12 @@ export interface MessageConstructorData
   ephemeral?: boolean;
   componentsV2?: boolean;
 }
+
+export const isInteractionResponse = (
+  response: any,
+): response is APIInteractionResponse =>
+  "type" in response &&
+  Object.keys(InteractionResponseType).includes(response.type);
 
 const messageConstructorDataToResponseCallbackData = (
   data: string | MessageConstructorData,
@@ -243,6 +250,11 @@ export class InteractionContext<
     return new Date().getTime() > this.expiresAt.getTime() - 100;
   }
 
+  /**
+   * For message command interactions, the message that the command was
+   * performed on. For component interactions, the message that the component
+   * is attached to. Otherwise, undefined.
+   */
   getMessage(): T extends APIMessageApplicationCommandInteraction
     ? APIMessage
     : undefined;
@@ -351,6 +363,7 @@ export class InteractionContext<
         this.interaction.type === InteractionType.ApplicationCommand ||
         this.interaction.type === InteractionType.ApplicationCommandAutocomplete
       ) ||
+      this.interaction.data.type === ApplicationCommandType.PrimaryEntryPoint ||
       !this.interaction.data.resolved
     ) {
       return null;
