@@ -1,5 +1,12 @@
 import type { REST } from "@discordjs/rest";
-import { APIGuild, GuildPremiumTier, Routes } from "discord-api-types/v10";
+import {
+  APIGuild,
+  APIGuildChannel,
+  APIMessage,
+  GuildChannelType,
+  GuildPremiumTier,
+  Routes,
+} from "discord-api-types/v10";
 import { RedisKV } from "./redis.js";
 import { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
 
@@ -128,4 +135,119 @@ export const getchTriggerGuild = async (
     return reduced;
   }
   return cached;
+};
+
+export type APIMessageReduced = Pick<
+  APIMessage,
+  | "channel_id"
+  | "type"
+  | "application_id"
+  | "webhook_id"
+  | "author"
+  | "content"
+  | "components"
+  | "embeds"
+  | "attachments"
+  | "flags"
+  | "poll"
+  // | "message_reference"
+  // | "message_snapshots"
+  | "position"
+> & {
+  guild_id?: string;
+};
+
+export type APIMessageReducedWithId = APIMessageReduced &
+  Pick<APIMessage, "id">;
+
+const reduceMessage = (
+  message: APIMessage,
+  guildId?: string,
+): APIMessageReduced => ({
+  channel_id: message.channel_id,
+  type: message.type,
+  application_id: message.application_id,
+  webhook_id: message.webhook_id,
+  author: message.author,
+  content: message.content,
+  components: message.components,
+  embeds: message.embeds,
+  attachments: message.attachments,
+  flags: message.flags,
+  poll: message.poll,
+  position: message.position,
+  guild_id: guildId,
+});
+
+export const cacheMessage = async (
+  env: Env,
+  message: APIMessage,
+  guildId?: string,
+  // 15m
+  ttl = 900,
+): Promise<APIMessageReducedWithId> => {
+  const reduced = reduceMessage(message, guildId);
+  console.log(message, reduced);
+  await env.KV.put(`cache-message-${message.id}`, JSON.stringify(reduced), {
+    expirationTtl: ttl,
+  });
+  return { id: message.id, ...reduced };
+};
+
+export const getchMessage = async (
+  rest: REST,
+  env: Env,
+  channelId: string,
+  messageId: string,
+  options?: {
+    guildId?: string;
+    /** Defaults to 15 minutes (900s) per `cacheMessage` */
+    ttl?: number;
+    /**
+     * If `false`, do not automatically renew the key. Otherwise, and if `ttl`
+     * is provided, the key's expiry is renewed.
+     */
+    renew?: boolean;
+  },
+): Promise<APIMessageReducedWithId> => {
+  try {
+    const key = `cache-message-${messageId}`;
+    const cached = await env.KV.get<APIMessageReduced>(key, "json");
+    if (cached) {
+      if (
+        options?.guildId &&
+        cached.guild_id &&
+        cached.guild_id !== options.guildId
+      ) {
+        throw Error("Message is not from the provided guild.");
+      }
+
+      if (options?.renew !== false && options?.ttl !== undefined) {
+        // I wanted to be able to determine when the key would expire and
+        // dynamically renew based on that, but it proved too complex for the
+        // simple solution I wanted.
+        // const ttl = Number(await env.KV.send("TTL", key));
+        // const now = Math.floor(new Date().getTime() / 1000);
+        // const remaining = cached.metadata.ttl - now - cached.metadata.created;
+        await env.KV.send("EXPIRE", key, String(options.ttl));
+      }
+
+      return { id: messageId, ...cached };
+    }
+  } catch {
+    // Able to fetch from discord in the event that our redis is down
+  }
+  if (options?.guildId) {
+    const channel = (await rest.get(
+      Routes.channel(channelId),
+    )) as APIGuildChannel<GuildChannelType>;
+    if (!channel.guild_id || channel.guild_id !== options.guildId) {
+      throw Error("Message is not from the provided guild.");
+    }
+  }
+
+  const message = (await rest.get(
+    Routes.channelMessage(channelId, messageId),
+  )) as APIMessage;
+  return await cacheMessage(env, message, options?.guildId, options?.ttl);
 };

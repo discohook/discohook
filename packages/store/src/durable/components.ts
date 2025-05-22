@@ -24,10 +24,21 @@ enum AlarmType {
 }
 
 export class DurableComponentState implements DurableObject {
+  private component: DurableStoredComponent | undefined;
+
   constructor(
     private state: DurableObjectState,
     private env: MockStoreEnv,
-  ) {}
+  ) {
+    // https://developers.cloudflare.com/durable-objects/reference/in-memory-state/
+    // May not be necessary because get() does have some caching, but this
+    // might make things faster.
+    this.state.blockConcurrencyWhile(async () => {
+      const component =
+        await this.state.storage.get<DurableStoredComponent>("component");
+      this.component = component;
+    });
+  }
 
   async fetch(request: Request) {
     const hyperdrive = this.env.HYPERDRIVE ?? {
@@ -79,7 +90,8 @@ export class DurableComponentState implements DurableObject {
       }
       case "GET": {
         const component =
-          await this.state.storage.get<DurableStoredComponent>("component");
+          this.component ??
+          (await this.state.storage.get<DurableStoredComponent>("component"));
         if (!component) {
           return new Response(null, { status: 404 });
         }
@@ -87,7 +99,8 @@ export class DurableComponentState implements DurableObject {
         return Response.json(component, { status: 200 });
       }
       case "DELETE": {
-        await this.state.storage.delete("component");
+        this.component = undefined;
+        await this.state.storage.deleteAll();
         return new Response(null, { status: 204 });
       }
       default:
