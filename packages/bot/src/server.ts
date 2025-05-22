@@ -33,6 +33,7 @@ import {
   getchTriggerGuild,
   launchComponentDurableObject,
 } from "store";
+import { Snowflake } from "tif-snowflake";
 import { AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import {
@@ -470,6 +471,13 @@ const handleInteraction = async (
       }
       if (env.ENVIRONMENT === "dev") console.log(flows.map((f) => f.actions));
       if (flows.length === 0) {
+        const messageCreatedAt = Snowflake.parse(
+          interaction.message.id,
+          new Date(2015, 0),
+        ).timestamp;
+        const maybeMigrate =
+          messageCreatedAt < new Date("2024-09-06").valueOf();
+
         return respond(
           liveVars.guild?.owner_id === ctx.user.id ||
             ctx.userPermissons.has(
@@ -477,7 +485,9 @@ const handleInteraction = async (
               PermissionFlags.ManageWebhooks,
             )
             ? ctx.reply({
-                content: t("noComponentFlow"),
+                content: `${t("noComponentFlow")} ${
+                  maybeMigrate ? t("noComponentFlowMigratePrompt") : ""
+                }`,
                 components: [
                   new ActionRowBuilder<ButtonBuilder>().addComponents(
                     new ButtonBuilder()
