@@ -483,12 +483,6 @@ export const cdnImgAttributes = (
   if (generate()) {
     return {
       src: generate(base),
-      // srcSet: `${generate(
-      //   base
-      //     ? (Math.min(base * 2, 4096) as BaseImageURLOptions["size"])
-      //     : undefined,
-      // )} 2x`,
-
       // Is this really necessary?
       srcSet: base
         ? `
@@ -502,15 +496,6 @@ export const cdnImgAttributes = (
           ${generate(2048)} ${2048 / base}x
         `.trim()
         : "",
-      // srcSet: `
-      //   ${generate(16)} 16w,
-      //   ${generate(128)} 128w,
-      //   ${generate(256)} 256w,
-      //   ${generate(1024)} 1024w,
-      //   ${generate(2048)} 2048w
-      // `.trim(),
-      // sizes: `
-      // `.trim()
     };
   }
 };
