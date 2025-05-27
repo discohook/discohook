@@ -627,6 +627,34 @@ export const onlyActionRows = (
   return rows;
 };
 
+export const extractInteractiveComponents = (
+  components: APIMessageTopLevelComponent[],
+) => {
+  const children: APIComponentInMessageActionRow[] = [];
+  for (const component of components) {
+    if (component.type === ComponentType.Container) {
+      for (const r of component.components) {
+        if (r.type === ComponentType.ActionRow) {
+          children.push(...r.components);
+        } else if (
+          r.type === ComponentType.Section &&
+          r.accessory.type === ComponentType.Button
+        ) {
+          children.push(r.accessory);
+        }
+      }
+    } else if (component.type === ComponentType.ActionRow) {
+      children.push(...component.components);
+    } else if (
+      component.type === ComponentType.Section &&
+      component.accessory.type === ComponentType.Button
+    ) {
+      children.push(component.accessory);
+    }
+  }
+  return children;
+};
+
 export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>
   new MessageFlagsBitField(message.flags ?? 0).has(MessageFlags.IsComponentsV2);
 

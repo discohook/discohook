@@ -73,10 +73,10 @@ import {
   DISCORD_API,
   DISCORD_API_V,
   cdnImgAttributes,
+  extractInteractiveComponents,
   getWebhook,
   isComponentsV2,
-  onlyActionRows,
-  webhookAvatarUrl,
+  webhookAvatarUrl
 } from "~/util/discord";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { LoaderArgs, useApiLoader } from "~/util/loader";
@@ -168,14 +168,14 @@ export const loadMessageComponents = async (
 ) => {
   const allComponentsById = Object.fromEntries(
     data.messages.flatMap((m) =>
-      onlyActionRows(m.data.components ?? [])
-        .flatMap((r) => r.components)
+      extractInteractiveComponents(m.data.components ?? [])
         .map((c) => {
           if (!!c.custom_id && /^p_\d+/.test(c.custom_id)) {
             return [c.custom_id.replace(/^p_/, ""), c];
           }
           // We don't really need to load data for link buttons.
           // This is pretty much just to reduce residue.
+          // @deprecated - we don't assign dhc-id anymore
           if (c.type === ComponentType.Button && isLinkButton(c)) {
             try {
               const url = new URL(c.url);
