@@ -187,7 +187,6 @@ export const cacheMessage = async (
   ttl = 900,
 ): Promise<APIMessageReducedWithId> => {
   const reduced = reduceMessage(message, guildId);
-  console.log(message, reduced);
   await env.KV.put(`cache-message-${message.id}`, JSON.stringify(reduced), {
     expirationTtl: ttl,
   });
