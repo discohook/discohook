@@ -5,7 +5,7 @@ import {
   AllowedMentionsTypes,
 } from "discord-api-types/v10";
 import type { TFunction } from "i18next";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Button } from "~/components/Button";
@@ -84,11 +84,6 @@ const Inner: React.FC<
       message.data.allowed_mentions = undefined;
     }
     setData({ ...data });
-    // wait for data update just in case
-    setTimeout(() => {
-      recalculatePanelSize(userPanelRef);
-      recalculatePanelSize(rolePanelRef);
-    }, 50);
   };
 
   const am = useMemo(
@@ -96,16 +91,13 @@ const Inner: React.FC<
     [message.data.allowed_mentions],
   );
 
-  // if (cache && (am.users || am.roles)) {
-  //   const requests = new Set<string>();
-  //   for (const id of am.users ?? []) {
-  //     requests.add(`member:@global-${id}`);
-  //   }
-  //   for (const id of am.roles ?? []) {
-  //     requests.add(`role:${id}`);
-  //   }
-  //   cache.resolveMany(requests);
-  // }
+  // resize panels to fit content in case an allowed_mentions update changed
+  // their vertical height
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ^
+  useEffect(() => {
+    recalculatePanelSize(userPanelRef);
+    recalculatePanelSize(rolePanelRef);
+  }, [message.data.allowed_mentions]);
 
   return (
     <>

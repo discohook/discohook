@@ -598,8 +598,8 @@
   "allowedMentionsProps": {
     "mentionEveryone": "@everyone and @here",
     "automatic": "Automatic",
-    "automaticUsersNote": "All user mentions in content will be delivered. This is the default behavior without allowed mentions control.",
-    "automaticRolesNote": "All role mentions in content will be delivered. This is the default behavior without allowed mentions control."
+    "automaticUsersNote": "All user mentions in content will be delivered. This is the default behavior without controlling allowed mentions.",
+    "automaticRolesNote": "All role mentions in content will be delivered. This is the default behavior without controlling allowed mentions."
   },
   "random": "Random",
   "messageActionGuideNote": "Confused? Check out <0>recipes - message buttons</0>.",
