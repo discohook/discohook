@@ -167,6 +167,7 @@ export const submitMessage = async (
             return e as APIEmbed;
           }) ?? [],
         components,
+        allowed_mentions: message.data.allowed_mentions,
       },
       files,
       message.thread_id ?? orThreadId,
@@ -190,6 +191,7 @@ export const submitMessage = async (
         components,
         flags: message.data.flags,
         thread_name: threadName || undefined,
+        allowed_mentions: message.data.allowed_mentions,
       },
       files,
       threadName ? undefined : message.thread_id ?? orThreadId,
