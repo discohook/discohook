@@ -62,7 +62,7 @@ export const BigCheckbox = (
   const { label, description } = props;
 
   return (
-    <label className="flex group/checkbox select-none rounded py-2 px-3 bg-gray-200 dark:bg-gray-800 cursor-pointer">
+    <label className="flex group/checkbox select-none rounded-lg py-2 px-3 bg-gray-200 dark:bg-gray-800 cursor-pointer">
       <input type="checkbox" {...props} className="hidden peer" />
       <BigConditionalBox className={props.className} />
       <BigConditionalBox className={props.className} check />

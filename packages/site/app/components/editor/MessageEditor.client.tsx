@@ -191,6 +191,9 @@ interface MessageEditorProps {
   setEditingMessageFlags: React.Dispatch<
     React.SetStateAction<number | undefined>
   >;
+  setEditingAllowedMentions: React.Dispatch<
+    React.SetStateAction<number | undefined>
+  >;
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
   >;
@@ -249,6 +252,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   setFiles,
   setSettingMessageIndex,
   setEditingMessageFlags,
+  setEditingAllowedMentions,
   setEditingComponent,
   setJsonEditor,
   setCodeGenerator,
@@ -808,7 +812,11 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
           </Button>
           <div>
             <ButtonSelect<
-              "flags" | "jsonEditor" | "codeGenerator" | "copyQueryData"
+              | "flags"
+              | "allowedMentions"
+              | "jsonEditor"
+              | "codeGenerator"
+              | "copyQueryData"
             >
               discordstyle={ButtonStyle.Secondary}
               options={[
@@ -816,6 +824,11 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   label: t("flags"),
                   icon: "Flag",
                   value: "flags",
+                },
+                {
+                  label: t("allowedMentions"),
+                  icon: "Mention",
+                  value: "allowedMentions",
                 },
                 {
                   label: t("jsonEditor"),
@@ -837,6 +850,10 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                 switch (value) {
                   case "flags": {
                     setEditingMessageFlags(i);
+                    break;
+                  }
+                  case "allowedMentions": {
+                    setEditingAllowedMentions(i);
                     break;
                   }
                   case "jsonEditor":
@@ -879,6 +896,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   setFiles,
   setSettingMessageIndex,
   setEditingMessageFlags,
+  setEditingAllowedMentions,
   setEditingComponent,
   setJsonEditor,
   setCodeGenerator,
@@ -1356,7 +1374,11 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           </Button>
           <div>
             <ButtonSelect<
-              "flags" | "jsonEditor" | "codeGenerator" | "copyQueryData"
+              | "flags"
+              | "allowedMentions"
+              | "jsonEditor"
+              | "codeGenerator"
+              | "copyQueryData"
             >
               discordstyle={ButtonStyle.Secondary}
               options={[
@@ -1364,6 +1386,11 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   label: t("flags"),
                   icon: "Flag",
                   value: "flags",
+                },
+                {
+                  label: t("allowedMentions"),
+                  icon: "Mention",
+                  value: "allowedMentions",
                 },
                 {
                   label: t("jsonEditor"),
@@ -1385,6 +1412,10 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                 switch (value) {
                   case "flags": {
                     setEditingMessageFlags(i);
+                    break;
+                  }
+                  case "allowedMentions": {
+                    setEditingAllowedMentions(i);
                     break;
                   }
                   case "jsonEditor":

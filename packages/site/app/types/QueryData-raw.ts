@@ -1,10 +1,12 @@
-import type {
-  APIAttachment as _APIAttachment,
-  APIEmbed as _APIEmbed,
-  APIEmbedField,
-  APIMessageTopLevelComponent,
-  MessageFlags,
-  UserFlags,
+import {
+  type APIAllowedMentions,
+  type APIEmbedField,
+  type APIMessageTopLevelComponent,
+  AllowedMentionsTypes,
+  type MessageFlags,
+  type UserFlags,
+  type APIAttachment as _APIAttachment,
+  type APIEmbed as _APIEmbed,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { ZodAPITopLevelComponentRaw } from "./components-raw";
@@ -119,7 +121,16 @@ export interface QueryDataMessageDataRaw {
   webhook_id?: string;
   flags?: MessageFlags;
   thread_name?: string;
+  allowed_mentions?: APIAllowedMentions;
 }
+
+export const ZodAPIAllowedMentions = z.object({
+  parse: z.nativeEnum(AllowedMentionsTypes).array().optional(),
+  roles: z.string().array().optional(),
+  users: z.string().array().optional(),
+  // not relevant; discard data
+  // replied_user: z.oboolean(),
+}) satisfies z.ZodType<APIAllowedMentions>;
 
 export const queryDataMessageDataTransform = (
   value: QueryDataMessageDataRaw,
@@ -166,6 +177,7 @@ export const ZodQueryDataMessageDataBase = z.object({
   components: ZodAPITopLevelComponentRaw.array().optional(),
   flags: ZodMessageFlags.optional(),
   thread_name: z.ostring(),
+  allowed_mentions: ZodAPIAllowedMentions.optional(),
 }) satisfies z.ZodType<QueryDataMessageDataRaw>;
 
 export const ZodQueryDataMessageDataRaw = ZodQueryDataMessageDataBase.transform(

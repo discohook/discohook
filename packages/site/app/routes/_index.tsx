@@ -42,6 +42,7 @@ import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
+import { MessageAllowedMentionsModal } from "~/modals/MessageAllowedMentionsModal";
 import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
 import { MessageFlagsEditModal } from "~/modals/MessageFlagsEditModal";
 import {
@@ -76,7 +77,7 @@ import {
   extractInteractiveComponents,
   getWebhook,
   isComponentsV2,
-  webhookAvatarUrl
+  webhookAvatarUrl,
 } from "~/util/discord";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { LoaderArgs, useApiLoader } from "~/util/loader";
@@ -487,6 +488,8 @@ export default function Index() {
     dm?.startsWith("set-reference") ? Number(dm.split("-")[2]) : undefined,
   );
   const [editingMessageFlags, setEditingMessageFlags] = useState<number>();
+  const [editingAllowedMentions, setEditingAllowedMentions] =
+    useState<number>();
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
   const [authSuccessOpen, setAuthSuccessOpen] = useState(dm === "auth-success");
   const [authFailureOpen, setAuthFailureOpen] = useState(dm === "auth-failure");
@@ -557,6 +560,14 @@ export default function Index() {
         data={data}
         setData={setData}
         messageIndex={editingMessageFlags}
+      />
+      <MessageAllowedMentionsModal
+        open={editingAllowedMentions !== undefined}
+        setOpen={() => setEditingAllowedMentions(undefined)}
+        data={data}
+        setData={setData}
+        cache={cache}
+        messageIndex={editingAllowedMentions}
       />
       <MessageSendModal
         open={sendingMessages}
@@ -960,6 +971,7 @@ export default function Index() {
                 }
                 setSettingMessageIndex={setSettingMessageIndex}
                 setEditingMessageFlags={setEditingMessageFlags}
+                setEditingAllowedMentions={setEditingAllowedMentions}
                 setJsonEditor={setJsonEditor}
                 setCodeGenerator={setCodeGenerator}
                 webhooks={Object.values(targets)}
