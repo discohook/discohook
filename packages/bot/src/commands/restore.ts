@@ -207,8 +207,8 @@ export const isMessageWebhookEditable = (
   }
   if (
     message.webhook_id &&
-    message.application_id &&
-    Object.keys(env.APPLICATIONS).includes(message.application_id)
+    (!message.application_id ||
+      Object.keys(env.APPLICATIONS).includes(message.application_id))
   ) {
     return true;
   }
