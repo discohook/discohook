@@ -167,7 +167,7 @@ const Inner: React.FC<
               icon="Chevron_Right"
               className="block group-data-[panel-open]/trigger:rotate-90 transition text-2xl"
             />
-            <span className="text-base font-medium">Users</span>
+            <span className="text-base font-medium">{t("members")}</span>
           </Collapsible.Trigger>
           <Collapsible.Panel
             ref={userPanelRef}
@@ -217,7 +217,7 @@ const Inner: React.FC<
               </p>
             </div>
             <div>
-              <p>Manual</p>
+              <p>{t("allowedMentionsProps.manual")}</p>
               <div className="space-y-1">
                 {cache
                   ? cache.member.getAll().map(({ user }) => (
@@ -317,7 +317,7 @@ const Inner: React.FC<
                   <div className="grow">
                     <TextInput
                       name="id"
-                      placeholder="User ID"
+                      placeholder={t("memberId")}
                       className="w-full h-8 min-h-0 text-sm"
                     />
                   </div>
@@ -335,7 +335,7 @@ const Inner: React.FC<
               icon="Chevron_Right"
               className="block group-data-[panel-open]/trigger:rotate-90 transition text-2xl"
             />
-            <span className="text-base font-medium">Roles</span>
+            <span className="text-base font-medium">{t("roles")}</span>
           </Collapsible.Trigger>
           <Collapsible.Panel
             ref={rolePanelRef}
@@ -385,7 +385,7 @@ const Inner: React.FC<
               </p>
             </div>
             <div>
-              <p>Manual</p>
+              <p>{t("allowedMentionsProps.manual")}</p>
               <div className="space-y-1">
                 {cache
                   ? cache.role.getAll().map((role) => (
@@ -479,7 +479,7 @@ const Inner: React.FC<
                   <div className="grow">
                     <TextInput
                       name="id"
-                      placeholder="Role ID"
+                      placeholder={t("roleId")}
                       className="w-full h-8 min-h-0 text-sm"
                     />
                   </div>

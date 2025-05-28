@@ -593,14 +593,17 @@
     "32768": "Components V2"
   },
   "allowedMentions": "Allowed Mentions",
-  "allowedMentionsNote": "If this is enabled, Discord will only send notifications & highlight messages for users and roles that are specified below. Mentions in embeds are never delivered.",
+  "allowedMentionsNote": "If this is enabled, Discord will only send notifications & highlight the message for users and roles that are specified below. Mentions in embeds are never delivered.",
   "enableAllowedMentions": "Control mentions in this message",
   "allowedMentionsProps": {
     "mentionEveryone": "@everyone and @here",
     "automatic": "Automatic",
+    "manual": "Manual",
     "automaticUsersNote": "All user mentions in content will be delivered. This is the default behavior without controlling allowed mentions.",
     "automaticRolesNote": "All role mentions in content will be delivered. This is the default behavior without controlling allowed mentions."
   },
+  "memberId": "Member ID",
+  "roleId": "Role ID",
   "random": "Random",
   "messageActionGuideNote": "Confused? Check out <0>recipes - message buttons</0>.",
   "autoArchiveDuration": "Auto Archive Duration",
