@@ -11,7 +11,11 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { APIMessageReducedWithId, cacheMessage, getchMessage } from "store";
-import { ModalCallback } from "../../components.js";
+import {
+  AutoComponentCustomId,
+  ButtonCallback,
+  ModalCallback,
+} from "../../components.js";
 import {
   InteractionContext,
   isInteractionResponse,
@@ -20,10 +24,12 @@ import { parseAutoComponentId, textDisplay } from "../../util/components.js";
 import { isDiscordError } from "../../util/error.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import {
-  getQuickEditAttachmentContainer,
+  getQuickEditContainerContainer,
   getQuickEditEmbedContainer,
-  missingElement
+  getQuickEditMediaGalleryItemContainer,
+  missingElement,
 } from "./entry.js";
+import { getQuickEditComponentByPath } from "./open.js";
 
 const submitWebhookMessageEdit = async (
   ctx: InteractionContext,
@@ -383,12 +389,12 @@ export const quickEditSubmitEmbed: ModalCallback = async (ctx) => {
   );
 };
 
-export const quickEditSubmitAttachment: ModalCallback = async (ctx) => {
-  const { channelId, messageId, attachmentId } = parseAutoComponentId(
+export const quickEditToggleContainerSpoiler: ButtonCallback = async (ctx) => {
+  const { channelId, messageId, componentIndex } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "channelId",
     "messageId",
-    "attachmentId",
+    "componentIndex",
   );
   let webhook: APIWebhook;
   let message: APIMessageReducedWithId;
@@ -402,32 +408,93 @@ export const quickEditSubmitAttachment: ModalCallback = async (ctx) => {
     if (isInteractionResponse(e)) return e;
     throw e;
   }
-  const attachment = message.attachments?.find((a) => a.id === attachmentId);
-  if (!attachment) {
+  const container = message.components?.[Number(componentIndex)];
+  if (!container || container.type !== ComponentType.Container) {
     return ctx.reply({ content: missingElement, ephemeral: true });
   }
 
-  let filename = ctx.getModalComponent("filename").value;
-  if (ctx.getModalComponent("spoiler").value === "true") {
-    if (!filename.startsWith("SPOILER_")) {
-      filename = `SPOILER_${filename}`;
-    }
-  } else if (filename.startsWith("SPOILER_")) {
-    filename = filename.replace(/^SPOILER_/, "");
-  }
-  const description =
-    ctx.getModalComponent("description").value.trim() || undefined;
-
-  attachment.filename = filename;
-  attachment.description = description;
+  container.spoiler = !container.spoiler;
   return submitWebhookMessageEdit(
     ctx,
     webhook,
     message,
-    { attachments: message.attachments },
+    { components: message.components },
     async (updated) => {
       await ctx.followup.editOriginalMessage({
-        components: [getQuickEditAttachmentContainer(updated, attachment)],
+        components: [
+          getQuickEditContainerContainer(
+            updated,
+            container,
+            Number(componentIndex),
+          ),
+        ],
+      });
+    },
+  );
+};
+
+export const quickEditSubmitGalleryItem: ModalCallback = async (ctx) => {
+  const {
+    channelId,
+    messageId,
+    path: path_,
+  } = parseAutoComponentId(
+    ctx.interaction.data.custom_id,
+    "channelId",
+    "messageId",
+    "path",
+  );
+  let webhook: APIWebhook;
+  let message: APIMessageReducedWithId;
+  try {
+    ({ webhook, message } = await verifyWebhookMessageEditPermissions(
+      ctx,
+      channelId,
+      messageId,
+    ));
+  } catch (e) {
+    if (isInteractionResponse(e)) return e;
+    throw e;
+  }
+  const path = path_.split(".").map(Number);
+  const { component } = getQuickEditComponentByPath(
+    message.components ?? [],
+    path,
+  );
+  if (!component || component.type !== ComponentType.MediaGallery) {
+    return ctx.reply({ content: missingElement, ephemeral: true });
+  }
+
+  const index = path[path.length - 1];
+  const item = component.items[index];
+
+  const url = ctx.getModalComponent("url")?.value;
+  const { content_type } = item.media;
+  item.media = { url };
+  item.description =
+    ctx.getModalComponent("description")?.value.trim() || undefined;
+  item.spoiler = ctx.getModalComponent("spoiler")?.value === "true";
+
+  return submitWebhookMessageEdit(
+    ctx,
+    webhook,
+    message,
+    { components: message.components },
+    async (updated) => {
+      // We do this so that the container builder can assume the content type
+      // of the previous URL (if any), since it's unlikely that it would have
+      // changed e.g. from an image to a video. But if it does, it's fine,
+      // they just have to bring up the menu again.
+      // We could fetch the URL to determine the content type ourselves but
+      // that does not seem worth the effort at the moment.
+      const containerItem = { ...item, media: { url, content_type } };
+      await ctx.followup.editOriginalMessage({
+        components: [
+          getQuickEditMediaGalleryItemContainer(
+            containerItem,
+            `a_qe-reopen-component-modal_${updated.channel_id}:${updated.id}:${path_}` satisfies AutoComponentCustomId,
+          ),
+        ],
       });
     },
   );

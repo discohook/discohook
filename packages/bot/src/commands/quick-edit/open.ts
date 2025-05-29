@@ -3,35 +3,93 @@ import {
   ModalBuilder,
   TextInputBuilder,
 } from "@discordjs/builders";
-import { ComponentType, TextInputStyle } from "discord-api-types/v10";
+import {
+  APIComponentInContainer,
+  APIContainerComponent,
+  APIMessageTopLevelComponent,
+  ComponentType,
+  TextInputStyle,
+} from "discord-api-types/v10";
 import { getchMessage } from "store";
 import {
   AutoModalCustomId,
   ButtonCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import { parseAutoComponentId } from "../../util/components.js";
+import { parseAutoComponentId, textDisplay } from "../../util/components.js";
 import {
-  getQuickEditAttachmentModal,
   getQuickEditEmbedContainer,
+  getQuickEditMediaGalleryItemModal,
   missingElement,
 } from "./entry.js";
 
-export const quickEditAttachmentReopen: ButtonCallback = async (ctx) => {
-  const { channelId, messageId, attachmentId } = parseAutoComponentId(
+// Not designed to work with interactive components - nesting support
+// is only for containers.
+export const getQuickEditComponentByPath = (
+  components: APIMessageTopLevelComponent[],
+  path: number[],
+) => {
+  let parent: APIContainerComponent | undefined;
+  let component:
+    | APIMessageTopLevelComponent
+    | APIComponentInContainer
+    | undefined;
+  if (path.length > 1) {
+    const container = components[path[0]];
+    if (container?.type === ComponentType.Container) {
+      parent = container;
+      component = container.components[path[1]];
+    }
+  } else {
+    component = components[path[0]];
+  }
+  return { parent, component };
+};
+
+export const quickEditComponentModalReopen: ButtonCallback = async (ctx) => {
+  const {
+    channelId,
+    messageId,
+    path: path_,
+  } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "channelId",
     "messageId",
-    "attachmentId",
+    "path",
   );
 
   const message = await getchMessage(ctx.rest, ctx.env, channelId, messageId);
-  const attachment = message.attachments?.find((a) => a.id === attachmentId);
-  if (!attachment) {
+  const path = path_.split(".").map(Number);
+  const { component } = getQuickEditComponentByPath(
+    message.components ?? [],
+    path,
+  );
+  if (!component) {
     return ctx.reply({ content: missingElement, ephemeral: true });
   }
 
-  return ctx.modal(getQuickEditAttachmentModal(message, attachment));
+  const index = path[path.length - 1];
+  switch (component.type) {
+    case ComponentType.MediaGallery: {
+      // the value is the index of an item
+      const item = component.items[index];
+      if (!item) {
+        return ctx.reply({ content: missingElement, ephemeral: true });
+      }
+      return ctx.modal(
+        getQuickEditMediaGalleryItemModal(
+          item,
+          `a_qe-submit-gallery-item_${message.channel_id}:${message.id}:${path_}` satisfies AutoModalCustomId,
+        ),
+      );
+    }
+    default:
+      break;
+  }
+
+  return ctx.updateMessage({
+    components: [textDisplay(`Couldn't determine what data to edit. ${path_}`)],
+  });
 };
 
 export const buildTextInputRow = (

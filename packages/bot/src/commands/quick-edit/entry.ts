@@ -9,11 +9,14 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIAttachment,
   type APIChatInputApplicationCommandGuildInteraction,
+  APIComponentInContainer,
+  APIContainerComponent,
   APIEmbed,
+  APIMediaGalleryItem,
   type APIMessage,
   type APIMessageApplicationCommandGuildInteraction,
+  APIMessageTopLevelComponent,
   ButtonStyle,
   ComponentType,
   EmbedType,
@@ -40,7 +43,44 @@ import {
 import { boolEmoji } from "../../util/meta.js";
 import { resolveMessageLink } from "../components/entry.js";
 import { isMessageWebhookEditable } from "../restore.js";
-import { buildTextInputRow } from "./open.js";
+import { buildTextInputRow, getQuickEditComponentByPath } from "./open.js";
+
+const getCV2TopLevelOptions = (
+  components: (APIMessageTopLevelComponent | APIComponentInContainer)[],
+) => {
+  const options: StringSelectMenuOptionBuilder[] = [];
+  let hasActionRows = false;
+  let i = -1;
+  for (const component of components) {
+    i += 1;
+    switch (component.type) {
+      case ComponentType.Container:
+      // case ComponentType.File:
+      case ComponentType.MediaGallery:
+      case ComponentType.Section:
+      case ComponentType.Separator:
+      case ComponentType.TextDisplay:
+        options.push(
+          new StringSelectMenuOptionBuilder()
+            .setLabel(
+              `[${i + 1}] ${ComponentType[component.type].replace(
+                // Add space before capital
+                /([a-z])([A-Z])/g,
+                "$1 $2",
+              )}`,
+            )
+            .setValue(`components.${i}`),
+        );
+        break;
+      case ComponentType.ActionRow:
+        hasActionRows = true;
+        break;
+      default:
+        break;
+    }
+  }
+  return { options, hasActionRows };
+};
 
 export const quickEditChatEntry: ChatInputAppCommandCallback<true> = async (
   ctx,
@@ -81,36 +121,9 @@ const quickEditPart1 = async (
   const options: StringSelectMenuOptionBuilder[] = [];
   let hasActionRows = false;
   if (isComponentsV2(message)) {
-    // Max 40 items, may need to split options to 2 arrays
-    let i = -1;
-    for (const component of message.components ?? []) {
-      i += 1;
-      switch (component.type) {
-        case ComponentType.Container:
-        case ComponentType.File:
-        case ComponentType.MediaGallery:
-        case ComponentType.Section:
-        case ComponentType.Separator:
-        case ComponentType.TextDisplay:
-          options.push(
-            new StringSelectMenuOptionBuilder()
-              .setLabel(
-                `[${i + 1}] ${ComponentType[component.type].replace(
-                  // Add space before capital
-                  /([a-z])([A-Z])/g,
-                  "$1 $2",
-                )}`,
-              )
-              .setValue(`components.${i}`),
-          );
-          break;
-        case ComponentType.ActionRow:
-          hasActionRows = true;
-          break;
-        default:
-          break;
-      }
-    }
+    const result = getCV2TopLevelOptions(message.components ?? []);
+    options.push(...result.options);
+    hasActionRows = result.hasActionRows;
   } else {
     // Should be max 21 items
     options.push(
@@ -122,23 +135,6 @@ const quickEditPart1 = async (
         )
         .setValue("content"),
     );
-    // It turns out that you can't actually change any of this data. Whoops!
-    // I'm keeping this code though in case we decide to have a feature where
-    // the bot can remove and re-upload an attachment with the updated info.
-    // if (message.attachments) {
-    //   let i = -1;
-    //   for (const attachment of message.attachments) {
-    //     i += 1;
-    //     options.push(
-    //       new StringSelectMenuOptionBuilder()
-    //         .setLabel(
-    //           `Attachment ${i + 1}: ${attachment.filename}`.slice(0, 100),
-    //         )
-    //         // Prefer a unique identifier since we're not labeling by index
-    //         .setValue(`attachments.${attachment.id}`),
-    //     );
-    //   }
-    // }
     if (message.embeds) {
       let i = -1;
       for (const embed of message.embeds) {
@@ -218,7 +214,7 @@ export const quickEditSelectElement: SelectMenuCallback = async (ctx) => {
     ctx.interaction.data.custom_id,
     "channelId",
     "messageId",
-    "i",
+    "i", // index of which overflow select was used, not useful here
   );
   const message = await getchMessage(ctx.rest, ctx.env, channelId, messageId, {
     guildId: ctx.interaction.guild_id,
@@ -256,23 +252,6 @@ export const quickEditSelectElement: SelectMenuCallback = async (ctx) => {
         ],
       });
     }
-    case "attachments": {
-      const attachment = message.attachments?.find((a) => a.id === index);
-      if (!attachment) {
-        return ctx.reply({
-          content: missingElement,
-          ephemeral: true,
-        });
-      }
-      return [
-        ctx.modal(getQuickEditAttachmentModal(message, attachment)),
-        async () => {
-          await ctx.followup.editOriginalMessage({
-            components: [getQuickEditAttachmentContainer(message, attachment)],
-          });
-        },
-      ];
-    }
     case "components": {
       const component = message.components?.[Number(index)];
       if (!component) {
@@ -281,7 +260,12 @@ export const quickEditSelectElement: SelectMenuCallback = async (ctx) => {
           ephemeral: true,
         });
       }
-      break;
+      return await getQuickEditComponentUpdateResponse(
+        ctx,
+        message,
+        component,
+        Number(index),
+      );
     }
     default:
       break;
@@ -292,6 +276,48 @@ export const quickEditSelectElement: SelectMenuCallback = async (ctx) => {
       textDisplay(`Couldn't determine what data to edit. Value: ${value}`),
     ],
   });
+};
+
+// Part 3 if editing a container
+export const quickEditSelectContainerElement: SelectMenuCallback = async (
+  ctx,
+) => {
+  const { channelId, messageId, componentIndex } = parseAutoComponentId(
+    ctx.interaction.data.custom_id,
+    "channelId",
+    "messageId",
+    "componentIndex",
+    "i", // index of which overflow select was used, not useful here
+  );
+  const message = await getchMessage(ctx.rest, ctx.env, channelId, messageId, {
+    guildId: ctx.interaction.guild_id,
+  });
+
+  const container = message.components?.[Number(componentIndex)];
+  if (!container || container.type !== ComponentType.Container) {
+    return ctx.reply({
+      content: missingElement,
+      ephemeral: true,
+    });
+  }
+
+  const value = ctx.interaction.data.values[0];
+  const [, index] = value.split(".");
+  const component = container.components[Number(index)];
+  if (!component) {
+    return ctx.reply({
+      content: missingElement,
+      ephemeral: true,
+    });
+  }
+
+  return await getQuickEditComponentUpdateResponse(
+    ctx,
+    message,
+    component,
+    Number(index),
+    Number(componentIndex),
+  );
 };
 
 const getQuickEditContentModal = (
@@ -503,31 +529,26 @@ export const getQuickEditEmbedContainer = (
   return container;
 };
 
-export const getQuickEditAttachmentModal = (
-  message: APIMessageReducedWithId,
-  attachment: APIAttachment,
+export const getQuickEditMediaGalleryItemModal = (
+  item: APIMediaGalleryItem,
+  customId: string,
 ) => {
   const modal = new ModalBuilder()
-    .setCustomId(
-      `a_qe-submit-attachment_${message.channel_id}:${message.id}:${attachment.id}` satisfies AutoModalCustomId,
-    )
-    .setTitle("Edit Attachment")
+    .setCustomId(customId)
+    .setTitle("Edit Media")
     .addComponents(
-      buildTextInputRow(
-        (input) =>
-          input
-            .setCustomId("filename")
-            .setStyle(TextInputStyle.Short)
-            .setLabel("Filename (with extension)")
-            .setPlaceholder("Like image.png or my_game.zip")
-            .setValue(attachment.filename)
-            .setRequired(),
-        // What is this limit?
-        // .setMaxLength(100)
+      buildTextInputRow((input) =>
+        input
+          .setCustomId("url")
+          .setStyle(TextInputStyle.Short)
+          .setLabel("URL")
+          .setPlaceholder("A full, direct URL to the media")
+          .setValue(item.media.url)
+          .setRequired(),
       ),
     );
 
-  if (attachment.content_type?.startsWith("image/")) {
+  if (item.media.content_type?.startsWith("image/")) {
     modal
       .addComponents(
         buildTextInputRow((input) =>
@@ -535,7 +556,7 @@ export const getQuickEditAttachmentModal = (
             .setCustomId("description")
             .setStyle(TextInputStyle.Short)
             .setLabel("Description (alt text)")
-            .setValue(attachment.description ?? "")
+            .setValue(item.description ?? "")
             .setMaxLength(1024)
             .setRequired(false),
         ),
@@ -549,7 +570,7 @@ export const getQuickEditAttachmentModal = (
               'Type "true" or "false" for whether the image should be blurred.',
             )
             .setStyle(TextInputStyle.Short)
-            .setValue(String(attachment.filename.startsWith("SPOILER_")))
+            .setValue(String(item.spoiler))
             .setMinLength(4)
             .setMaxLength(5),
         ),
@@ -559,36 +580,47 @@ export const getQuickEditAttachmentModal = (
   return modal;
 };
 
-export const getQuickEditAttachmentContainer = (
-  message: APIMessageReducedWithId,
-  attachment: APIAttachment,
+export const getQuickEditMediaGalleryItemContainer = (
+  item: APIMediaGalleryItem,
+  buttonCustomId: string,
 ) => {
   const container = new ContainerBuilder();
-  // .setAccentColor(color);
 
-  if (attachment.content_type?.startsWith("image/")) {
+  let filename: string;
+  let validThumbnailUrl = true;
+  try {
+    const { pathname } = new URL(item.media.url);
+    filename = pathname.split("/")[pathname.split("/").length - 1];
+    // discord.js validation
+    new ThumbnailBuilder().setURL(item.media.url).toJSON();
+  } catch {
+    // Can be a user-provided value not checked by discord
+    filename = item.media.url;
+    validThumbnailUrl = false;
+  }
+  if (item.media.content_type?.startsWith("image/") && validThumbnailUrl) {
     container.addSectionComponents((s) =>
       s
-        .addTextDisplayComponents((td) =>
-          td.setContent(`### ${attachment.filename.replace(/^SPOILER_/, "")}`),
-        )
+        .addTextDisplayComponents((td) => td.setContent(`### ${filename}`))
         .addTextDisplayComponents((td) =>
           td.setContent(dedent`
-            Spoiler: ${boolEmoji(attachment.filename.startsWith("SPOILER_"))}
-            Description: ${boolEmoji(!!attachment.description)}
+            Spoiler: ${boolEmoji(item.spoiler ?? null)}
+            Description: ${boolEmoji(!!item.description)}
           `),
         )
         .setThumbnailAccessory(
           new ThumbnailBuilder({
-            description: attachment.description,
-            media: { url: attachment.url },
+            description: item.description,
+            media: { url: item.media.url },
           }),
         ),
     );
   } else {
     container.addTextDisplayComponents((td) =>
       td.setContent(dedent`
-        ### ${attachment.filename}
+        ### ${filename}
+        Spoiler: ${boolEmoji(item.spoiler ?? null)}
+        Description: ${boolEmoji(!!item.description)}
       `),
     );
   }
@@ -596,13 +628,212 @@ export const getQuickEditAttachmentContainer = (
   container.addActionRowComponents((row) =>
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(
-          `a_qe-attachment_${message.channel_id}:${message.id}:${attachment.id}` satisfies AutoComponentCustomId,
-        )
+        .setCustomId(buttonCustomId)
         .setStyle(ButtonStyle.Primary)
         .setLabel("Edit"),
     ),
   );
 
   return container;
+};
+
+export const getQuickEditContainerContainer = (
+  message: APIMessageReducedWithId,
+  component: APIContainerComponent,
+  componentIndex: number,
+) => {
+  const container = new ContainerBuilder({
+    accent_color: component.accent_color,
+  });
+
+  container
+    .addActionRowComponents((row) =>
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(
+            `a_qe-container-spoiler_${message.channel_id}:${message.id}:${componentIndex}` satisfies AutoComponentCustomId,
+          )
+          .setStyle(ButtonStyle.Secondary)
+          .setLabel(component.spoiler ? "Unmark as spoiler" : "Mark as spoiler")
+          .setEmoji({ name: component.spoiler ? "👓" : "🕶️" }),
+      ),
+    )
+    .addSeparatorComponents((s) => s.setDivider());
+
+  const { options, hasActionRows } = getCV2TopLevelOptions(
+    component.components,
+  );
+  if (options.length === 0) {
+    const actionRowWarning = hasActionRows
+      ? "To edit interactive components, use the **Buttons & Components** message command."
+      : "";
+    container.addTextDisplayComponents((td) =>
+      td.setContent(
+        `There's nothing else in this container that Discohook Utils can edit. ${actionRowWarning}`,
+      ),
+    );
+  } else {
+    // TODO: see comment in part 1
+    const options1 = options.slice(0, 25);
+    const options2 = options.slice(25, 50);
+
+    container
+      .addTextDisplayComponents((td) =>
+        td.setContent(
+          `There ${
+            options.length === 1
+              ? "is 1 element"
+              : `are ${options.length} elements`
+          } in this container that Discohook Utils can edit. Pick one below and follow the instructions to edit it.`,
+        ),
+      )
+      .addActionRowComponents((row) =>
+        row.addComponents(
+          new StringSelectMenuBuilder()
+            .setCustomId(
+              `a_qe-select-c-element_${message.channel_id}:${message.id}:${componentIndex}:0` satisfies AutoComponentCustomId,
+            )
+            .addOptions(options1)
+            .setPlaceholder(
+              options2.length === 0
+                ? "Select what to edit"
+                : "Select what to edit (1/2)",
+            ),
+        ),
+      );
+    if (options2.length !== 0) {
+      container.addActionRowComponents((row) =>
+        row.addComponents(
+          new StringSelectMenuBuilder()
+            .setCustomId(
+              `a_qe-select-c-element_${message.channel_id}:${message.id}:${componentIndex}:1` satisfies AutoComponentCustomId,
+            )
+            .addOptions(options2)
+            .setPlaceholder("Select what to edit (2/2)"),
+        ),
+      );
+    }
+  }
+
+  return container;
+};
+
+const getQuickEditComponentUpdateResponse = async (
+  ctx: InteractionContext,
+  message: APIMessageReducedWithId,
+  component: APIMessageTopLevelComponent | APIComponentInContainer,
+  componentIndex: number,
+  parentIndex?: number,
+) => {
+  const path =
+    parentIndex !== undefined
+      ? `${parentIndex}.${componentIndex}`
+      : String(componentIndex);
+  switch (component.type) {
+    case ComponentType.Container:
+      return ctx.updateMessage({
+        components: [
+          getQuickEditContainerContainer(message, component, componentIndex),
+        ],
+      });
+    case ComponentType.MediaGallery: {
+      // max 10 items per gallery
+      const select = new StringSelectMenuBuilder()
+        .setCustomId(
+          `a_qe-select-component_${message.channel_id}:${message.id}:${path}` satisfies AutoComponentCustomId,
+        )
+        .setPlaceholder("Select a gallery item to edit")
+        .addOptions(
+          component.items.map((item, i) => {
+            const { pathname } = new URL(item.media.url);
+            const filename =
+              pathname.split("/")[pathname.split("/").length - 1];
+            return new StringSelectMenuOptionBuilder({
+              description: item.description ?? undefined,
+            })
+              .setLabel(`[${i + 1}] ${filename}`.slice(0, 100))
+              .setValue(String(i))
+              .setEmoji({
+                name: item.media.content_type?.startsWith("image/")
+                  ? "🖼️"
+                  : item.media.content_type?.startsWith("video/")
+                    ? "🎞️"
+                    : "📄",
+              });
+          }),
+        );
+      return ctx.updateMessage({
+        components: [
+          new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select),
+        ],
+      });
+    }
+    default:
+      return ctx.reply({
+        content: `Couldn't determine what data to edit. Component: type ${component.type}, index ${componentIndex}`,
+        ephemeral: true,
+      });
+  }
+};
+
+export const quickEditSelectComponent: SelectMenuCallback = async (ctx) => {
+  const {
+    channelId,
+    messageId,
+    path: path_,
+  } = parseAutoComponentId(
+    ctx.interaction.data.custom_id,
+    "channelId",
+    "messageId",
+    "path",
+  );
+  const message = await getchMessage(ctx.rest, ctx.env, channelId, messageId, {
+    guildId: ctx.interaction.guild_id,
+  });
+
+  const path = path_.split(".").map(Number);
+  const { component } = getQuickEditComponentByPath(
+    message.components ?? [],
+    path,
+  );
+  if (!component) {
+    return ctx.reply({ content: missingElement, ephemeral: true });
+  }
+
+  const value = ctx.interaction.data.values[0];
+  switch (component.type) {
+    case ComponentType.MediaGallery: {
+      // the value is the index of an item
+      const item = component.items[Number(value)];
+      if (!item) {
+        return ctx.reply({ content: missingElement, ephemeral: true });
+      }
+      return [
+        ctx.modal(
+          getQuickEditMediaGalleryItemModal(
+            item,
+            `a_qe-submit-gallery-item_${message.channel_id}:${message.id}:${path_}.${value}` satisfies AutoModalCustomId,
+          ),
+        ),
+        async () => {
+          await ctx.followup.editOriginalMessage({
+            components: [
+              getQuickEditMediaGalleryItemContainer(
+                item,
+                `a_qe-reopen-component-modal_${message.channel_id}:${message.id}:${path_}.${value}` satisfies AutoComponentCustomId,
+              ),
+            ],
+          });
+        },
+      ];
+    }
+    default:
+      break;
+  }
+
+  return ctx.updateMessage({
+    components: [
+      textDisplay(`Couldn't determine what data to edit. ${path_} > ${value}`),
+    ],
+  });
 };

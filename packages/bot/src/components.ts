@@ -34,9 +34,21 @@ import {
   addComponentQuickToggleRoleCallback,
   submitButtonQuickStyle,
 } from "./commands/components/quick.js";
-import { quickEditSelectElement } from "./commands/quick-edit/entry.js";
-import { quickEditAttachmentReopen, quickEditEmbedPartOpen } from "./commands/quick-edit/open.js";
-import { quickEditSubmitAttachment, quickEditSubmitContent, quickEditSubmitEmbed } from "./commands/quick-edit/submit.js";
+import {
+  quickEditSelectComponent,
+  quickEditSelectContainerElement,
+  quickEditSelectElement,
+} from "./commands/quick-edit/entry.js";
+import {
+  quickEditComponentModalReopen,
+  quickEditEmbedPartOpen,
+} from "./commands/quick-edit/open.js";
+import {
+  quickEditSubmitContent,
+  quickEditSubmitEmbed,
+  quickEditSubmitGalleryItem,
+  quickEditToggleContainerSpoiler,
+} from "./commands/quick-edit/submit.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import {
@@ -94,8 +106,7 @@ export type ModalRoutingId =
   // quick edit
   | "qe-submit-content"
   | "qe-submit-embed"
-  | "qe-submit-attachment";
-// | "qe-submit-component";
+  | "qe-submit-gallery-item";
 
 export type ComponentRoutingId =
   | "add-component-flow"
@@ -126,7 +137,10 @@ export type ComponentRoutingId =
   // quick edit
   | "qe-select-element"
   | "qe-embed-part"
-  | "qe-attachment";
+  | "qe-select-component"
+  | "qe-container-spoiler"
+  | "qe-select-c-element"
+  | "qe-reopen-component-modal";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
 
@@ -165,7 +179,10 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   // quick edit
   "qe-select-element": quickEditSelectElement,
   "qe-embed-part": quickEditEmbedPartOpen,
-  "qe-attachment": quickEditAttachmentReopen,
+  "qe-select-component": quickEditSelectComponent,
+  "qe-select-c-element": quickEditSelectContainerElement,
+  "qe-container-spoiler": quickEditToggleContainerSpoiler,
+  "qe-reopen-component-modal": quickEditComponentModalReopen,
 };
 
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {
@@ -176,5 +193,5 @@ export const modalStore: Record<ModalRoutingId, StoredModalData> = {
   // quick edit
   "qe-submit-content": quickEditSubmitContent,
   "qe-submit-embed": quickEditSubmitEmbed,
-  "qe-submit-attachment": quickEditSubmitAttachment,
+  "qe-submit-gallery-item": quickEditSubmitGalleryItem,
 };
