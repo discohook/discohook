@@ -576,3 +576,41 @@ export const quickEditToggleSeparatorSize: ButtonCallback = async (ctx) => {
     },
   );
 };
+
+export const quickEditSubmitTextDisplay: ModalCallback = async (ctx) => {
+  const { channelId, messageId, path } = parsePathCustomId(ctx);
+  let webhook: APIWebhook;
+  let message: APIMessageReducedWithId;
+  try {
+    ({ webhook, message } = await verifyWebhookMessageEditPermissions(
+      ctx,
+      channelId,
+      messageId,
+    ));
+  } catch (e) {
+    if (isInteractionResponse(e)) return e;
+    throw e;
+  }
+  const { component } = getQuickEditComponentByPath(
+    message.components ?? [],
+    path,
+  );
+  if (!component || component.type !== ComponentType.TextDisplay) {
+    return ctx.reply({ content: missingElement, ephemeral: true });
+  }
+
+  const content = ctx.getModalComponent("content").value;
+  component.content = content;
+
+  return submitWebhookMessageEdit(
+    ctx,
+    webhook,
+    message,
+    { components: message.components },
+    async () => {
+      await ctx.followup.editOriginalMessage({
+        components: [textDisplay("Updated text display content.")],
+      });
+    },
+  );
+};

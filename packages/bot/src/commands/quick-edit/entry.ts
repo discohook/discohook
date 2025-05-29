@@ -18,6 +18,7 @@ import {
   type APIMessageApplicationCommandGuildInteraction,
   APIMessageTopLevelComponent,
   APISeparatorComponent,
+  APITextDisplayComponent,
   ButtonStyle,
   ComponentType,
   EmbedType,
@@ -321,10 +322,7 @@ export const quickEditSelectContainerElement: SelectMenuCallback = async (
   );
 };
 
-const getQuickEditContentModal = (
-  // ctx: InteractionContext,
-  message: APIMessageReducedWithId,
-) => {
+const getQuickEditContentModal = (message: APIMessageReducedWithId) => {
   const modal = new ModalBuilder()
     .setCustomId(
       `a_qe-submit-content_${message.channel_id}:${message.id}` satisfies AutoModalCustomId,
@@ -777,6 +775,32 @@ export const getQuickEditContainerContainer = (
   return container;
 };
 
+const getQuickEditTextDisplayModal = (
+  message: APIMessageReducedWithId,
+  component: APITextDisplayComponent,
+  path: number[],
+) => {
+  const modal = new ModalBuilder()
+    .setCustomId(
+      `a_qe-submit-text-display_${message.channel_id}:${message.id}:${path.join(
+        ".",
+      )}` satisfies AutoModalCustomId,
+    )
+    .setTitle("Set Text Display Content")
+    .addComponents(
+      buildTextInputRow((input) =>
+        input
+          .setCustomId("content")
+          .setStyle(TextInputStyle.Paragraph)
+          .setLabel("Content")
+          .setValue((component.content ?? "").slice(0, 2000))
+          .setMaxLength(2000)
+          .setRequired(),
+      ),
+    );
+  return modal;
+};
+
 const getQuickEditComponentUpdateResponse = async (
   ctx: InteractionContext,
   message: APIMessageReducedWithId,
@@ -837,6 +861,14 @@ const getQuickEditComponentUpdateResponse = async (
           ),
         ],
       });
+    case ComponentType.TextDisplay:
+      return ctx.modal(
+        getQuickEditTextDisplayModal(
+          message,
+          component,
+          path.split(".").map(Number),
+        ),
+      );
     default:
       return ctx.reply({
         content: `Couldn't determine what data to edit. Component: type ${component.type}, index ${componentIndex}`,
