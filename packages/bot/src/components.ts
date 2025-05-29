@@ -48,6 +48,8 @@ import {
   quickEditSubmitEmbed,
   quickEditSubmitGalleryItem,
   quickEditToggleContainerSpoiler,
+  quickEditToggleSeparatorDivider,
+  quickEditToggleSeparatorSize,
 } from "./commands/quick-edit/submit.js";
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
@@ -140,7 +142,9 @@ export type ComponentRoutingId =
   | "qe-select-component"
   | "qe-container-spoiler"
   | "qe-select-c-element"
-  | "qe-reopen-component-modal";
+  | "qe-reopen-component-modal"
+  | "qe-separator-size"
+  | "qe-separator-divider";
 
 export type StorableRoutingId = ComponentRoutingId | ModalRoutingId;
 
@@ -183,6 +187,8 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "qe-select-c-element": quickEditSelectContainerElement,
   "qe-container-spoiler": quickEditToggleContainerSpoiler,
   "qe-reopen-component-modal": quickEditComponentModalReopen,
+  "qe-separator-divider": quickEditToggleSeparatorDivider,
+  "qe-separator-size": quickEditToggleSeparatorSize,
 };
 
 export const modalStore: Record<ModalRoutingId, StoredModalData> = {

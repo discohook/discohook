@@ -4,17 +4,18 @@ import {
   APIEmbedField,
   APIInteractionResponse,
   APIMessage,
+  APIMessageComponentButtonInteraction,
+  APIMessageComponentSelectMenuInteraction,
+  APIModalSubmitInteraction,
   APIWebhook,
   ComponentType,
   PermissionFlagsBits,
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
+  SeparatorSpacingSize,
 } from "discord-api-types/v10";
 import { APIMessageReducedWithId, cacheMessage, getchMessage } from "store";
-import {
-  ButtonCallback,
-  ModalCallback
-} from "../../components.js";
+import { ButtonCallback, ModalCallback } from "../../components.js";
 import {
   InteractionContext,
   isInteractionResponse,
@@ -26,6 +27,7 @@ import {
   getQuickEditContainerContainer,
   getQuickEditEmbedContainer,
   getQuickEditMediaGalleryItemContainer,
+  getQuickEditSeparatorContainer,
   missingElement,
 } from "./entry.js";
 import { getQuickEditComponentByPath } from "./open.js";
@@ -388,13 +390,28 @@ export const quickEditSubmitEmbed: ModalCallback = async (ctx) => {
   );
 };
 
-export const quickEditToggleContainerSpoiler: ButtonCallback = async (ctx) => {
-  const { channelId, messageId, componentIndex } = parseAutoComponentId(
+const parsePathCustomId = (
+  ctx: InteractionContext<
+    | APIMessageComponentButtonInteraction
+    | APIMessageComponentSelectMenuInteraction
+    | APIModalSubmitInteraction
+  >,
+) => {
+  const {
+    channelId,
+    messageId,
+    path: path_,
+  } = parseAutoComponentId(
     ctx.interaction.data.custom_id,
     "channelId",
     "messageId",
-    "componentIndex",
+    "path",
   );
+  return { channelId, messageId, path: path_.split(".").map(Number) };
+};
+
+export const quickEditToggleContainerSpoiler: ButtonCallback = async (ctx) => {
+  const { channelId, messageId, path } = parsePathCustomId(ctx);
   let webhook: APIWebhook;
   let message: APIMessageReducedWithId;
   try {
@@ -407,7 +424,7 @@ export const quickEditToggleContainerSpoiler: ButtonCallback = async (ctx) => {
     if (isInteractionResponse(e)) return e;
     throw e;
   }
-  const container = message.components?.[Number(componentIndex)];
+  const container = message.components?.[path[0]];
   if (!container || container.type !== ComponentType.Container) {
     return ctx.reply({ content: missingElement, ephemeral: true });
   }
@@ -421,11 +438,7 @@ export const quickEditToggleContainerSpoiler: ButtonCallback = async (ctx) => {
     async (updated) => {
       await ctx.followup.editOriginalMessage({
         components: [
-          getQuickEditContainerContainer(
-            updated,
-            container,
-            Number(componentIndex),
-          ),
+          getQuickEditContainerContainer(updated, container, path[0]),
         ],
       });
     },
@@ -433,16 +446,7 @@ export const quickEditToggleContainerSpoiler: ButtonCallback = async (ctx) => {
 };
 
 export const quickEditSubmitGalleryItem: ModalCallback = async (ctx) => {
-  const {
-    channelId,
-    messageId,
-    path: path_,
-  } = parseAutoComponentId(
-    ctx.interaction.data.custom_id,
-    "channelId",
-    "messageId",
-    "path",
-  );
+  const { channelId, messageId, path } = parsePathCustomId(ctx);
   let webhook: APIWebhook;
   let message: APIMessageReducedWithId;
   try {
@@ -455,7 +459,6 @@ export const quickEditSubmitGalleryItem: ModalCallback = async (ctx) => {
     if (isInteractionResponse(e)) return e;
     throw e;
   }
-  const path = path_.split(".").map(Number);
   const { component } = getQuickEditComponentByPath(
     message.components ?? [],
     path,
@@ -491,6 +494,84 @@ export const quickEditSubmitGalleryItem: ModalCallback = async (ctx) => {
         components: [
           getQuickEditMediaGalleryItemContainer(updated, containerItem, path),
         ],
+      });
+    },
+  );
+};
+
+export const quickEditToggleSeparatorDivider: ButtonCallback = async (ctx) => {
+  const { channelId, messageId, path } = parsePathCustomId(ctx);
+  let webhook: APIWebhook;
+  let message: APIMessageReducedWithId;
+  try {
+    ({ webhook, message } = await verifyWebhookMessageEditPermissions(
+      ctx,
+      channelId,
+      messageId,
+    ));
+  } catch (e) {
+    if (isInteractionResponse(e)) return e;
+    throw e;
+  }
+  const { component } = getQuickEditComponentByPath(
+    message.components ?? [],
+    path,
+  );
+  if (!component || component.type !== ComponentType.Separator) {
+    return ctx.reply({ content: missingElement, ephemeral: true });
+  }
+
+  // Defaults to true if undefined so we can't just negate
+  component.divider = component.divider === false;
+
+  return submitWebhookMessageEdit(
+    ctx,
+    webhook,
+    message,
+    { components: message.components },
+    async (updated) => {
+      await ctx.followup.editOriginalMessage({
+        components: [getQuickEditSeparatorContainer(updated, component, path)],
+      });
+    },
+  );
+};
+
+export const quickEditToggleSeparatorSize: ButtonCallback = async (ctx) => {
+  const { channelId, messageId, path } = parsePathCustomId(ctx);
+  let webhook: APIWebhook;
+  let message: APIMessageReducedWithId;
+  try {
+    ({ webhook, message } = await verifyWebhookMessageEditPermissions(
+      ctx,
+      channelId,
+      messageId,
+    ));
+  } catch (e) {
+    if (isInteractionResponse(e)) return e;
+    throw e;
+  }
+  const { component } = getQuickEditComponentByPath(
+    message.components ?? [],
+    path,
+  );
+  if (!component || component.type !== ComponentType.Separator) {
+    return ctx.reply({ content: missingElement, ephemeral: true });
+  }
+
+  component.spacing =
+    component.spacing === SeparatorSpacingSize.Large
+      ? SeparatorSpacingSize.Small
+      : SeparatorSpacingSize.Large;
+
+  return submitWebhookMessageEdit(
+    ctx,
+    webhook,
+    message,
+    { components: message.components },
+    async (updated) => {
+      await ctx.followup.editOriginalMessage({
+        components: [getQuickEditSeparatorContainer(updated, component, path)],
       });
     },
   );

@@ -17,6 +17,7 @@ import {
   type APIMessage,
   type APIMessageApplicationCommandGuildInteraction,
   APIMessageTopLevelComponent,
+  APISeparatorComponent,
   ButtonStyle,
   ComponentType,
   EmbedType,
@@ -530,11 +531,16 @@ export const getQuickEditEmbedContainer = (
 };
 
 export const getQuickEditMediaGalleryItemModal = (
+  message: APIMessageReducedWithId,
   item: APIMediaGalleryItem,
-  customId: string,
+  path: number[],
 ) => {
   const modal = new ModalBuilder()
-    .setCustomId(customId)
+    .setCustomId(
+      `a_qe-submit-gallery-item_${message.channel_id}:${message.id}:${path.join(
+        ".",
+      )}` satisfies AutoModalCustomId,
+    )
     .setTitle("Edit Media")
     .addComponents(
       buildTextInputRow((input) =>
@@ -581,8 +587,9 @@ export const getQuickEditMediaGalleryItemModal = (
 };
 
 export const getQuickEditMediaGalleryItemContainer = (
+  message: APIMessageReducedWithId,
   item: APIMediaGalleryItem,
-  buttonCustomId: string,
+  path: number[],
 ) => {
   const container = new ContainerBuilder();
 
@@ -628,12 +635,64 @@ export const getQuickEditMediaGalleryItemContainer = (
   container.addActionRowComponents((row) =>
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(buttonCustomId)
+        .setCustomId(
+          `a_qe-reopen-component-modal_${message.channel_id}:${
+            message.id
+          }:${path.join(".")}` satisfies AutoComponentCustomId,
+        )
         .setStyle(ButtonStyle.Primary)
         .setLabel("Edit"),
     ),
   );
 
+  return container;
+};
+
+export const getQuickEditSeparatorContainer = (
+  message: APIMessageReducedWithId,
+  component: APISeparatorComponent,
+  path: number[],
+) => {
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents((td) =>
+      td.setContent(
+        `### ${
+          SeparatorSpacingSize[component.spacing ?? SeparatorSpacingSize.Small]
+        } ${component.divider ?? true ? "Divider" : "Separator"}`,
+      ),
+    )
+    .addActionRowComponents((row) =>
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(
+            `a_qe-separator-size_${message.channel_id}:${
+              message.id
+            }:${path.join(".")}` satisfies AutoComponentCustomId,
+          )
+          .setLabel(
+            component.spacing === SeparatorSpacingSize.Small
+              ? "More spacing"
+              : "Less spacing",
+          )
+          .setEmoji({
+            name: component.spacing === SeparatorSpacingSize.Small ? "⬆️" : "⬇️",
+          })
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(
+            `a_qe-separator-divider_${message.channel_id}:${
+              message.id
+            }:${path.join(".")}` satisfies AutoComponentCustomId,
+          )
+          .setLabel(
+            component.divider === false ? "Show divider" : "Hide divider",
+          )
+          .setEmoji({
+            name: component.divider === false ? "👓" : "🕶️",
+          })
+          .setStyle(ButtonStyle.Secondary),
+      ),
+    );
   return container;
 };
 
@@ -768,6 +827,16 @@ const getQuickEditComponentUpdateResponse = async (
         ],
       });
     }
+    case ComponentType.Separator:
+      return ctx.updateMessage({
+        components: [
+          getQuickEditSeparatorContainer(
+            message,
+            component,
+            path.split(".").map(Number),
+          ),
+        ],
+      });
     default:
       return ctx.reply({
         content: `Couldn't determine what data to edit. Component: type ${component.type}, index ${componentIndex}`,
@@ -810,18 +879,18 @@ export const quickEditSelectComponent: SelectMenuCallback = async (ctx) => {
       }
       return [
         ctx.modal(
-          getQuickEditMediaGalleryItemModal(
-            item,
-            `a_qe-submit-gallery-item_${message.channel_id}:${message.id}:${path_}.${value}` satisfies AutoModalCustomId,
-          ),
+          getQuickEditMediaGalleryItemModal(message, item, [
+            ...path,
+            Number(value),
+          ]),
         ),
         async () => {
           await ctx.followup.editOriginalMessage({
             components: [
-              getQuickEditMediaGalleryItemContainer(
-                item,
-                `a_qe-reopen-component-modal_${message.channel_id}:${message.id}:${path_}.${value}` satisfies AutoComponentCustomId,
-              ),
+              getQuickEditMediaGalleryItemContainer(message, item, [
+                ...path,
+                Number(value),
+              ]),
             ],
           });
         },
