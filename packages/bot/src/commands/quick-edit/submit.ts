@@ -12,9 +12,8 @@ import {
 } from "discord-api-types/v10";
 import { APIMessageReducedWithId, cacheMessage, getchMessage } from "store";
 import {
-  AutoComponentCustomId,
   ButtonCallback,
-  ModalCallback,
+  ModalCallback
 } from "../../components.js";
 import {
   InteractionContext,
@@ -490,10 +489,7 @@ export const quickEditSubmitGalleryItem: ModalCallback = async (ctx) => {
       const containerItem = { ...item, media: { url, content_type } };
       await ctx.followup.editOriginalMessage({
         components: [
-          getQuickEditMediaGalleryItemContainer(
-            containerItem,
-            `a_qe-reopen-component-modal_${updated.channel_id}:${updated.id}:${path_}` satisfies AutoComponentCustomId,
-          ),
+          getQuickEditMediaGalleryItemContainer(updated, containerItem, path),
         ],
       });
     },

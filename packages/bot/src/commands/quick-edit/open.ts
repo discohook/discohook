@@ -76,12 +76,7 @@ export const quickEditComponentModalReopen: ButtonCallback = async (ctx) => {
       if (!item) {
         return ctx.reply({ content: missingElement, ephemeral: true });
       }
-      return ctx.modal(
-        getQuickEditMediaGalleryItemModal(
-          item,
-          `a_qe-submit-gallery-item_${message.channel_id}:${message.id}:${path_}` satisfies AutoModalCustomId,
-        ),
-      );
+      return ctx.modal(getQuickEditMediaGalleryItemModal(message, item, path));
     }
     default:
       break;
