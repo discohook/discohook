@@ -8,6 +8,7 @@
   "scripts": {
     "start": "tsx src/server.ts",
     "dev": "wrangler dev src/server.ts --persist-to=../../persistence",
+    "tunnel": "cloudflared tunnel --url http://localhost:8787",
     "register": "tsx src/register.ts",
     "deploy": "wrangler deploy --env=production",
     "deploy-preview": "wrangler deploy --env=preview"
