@@ -17,6 +17,7 @@ import {
   type APIMessage,
   type APIMessageApplicationCommandGuildInteraction,
   APIMessageTopLevelComponent,
+  APISectionComponent,
   APISeparatorComponent,
   APITextDisplayComponent,
   ButtonStyle,
@@ -801,17 +802,172 @@ const getQuickEditTextDisplayModal = (
   return modal;
 };
 
+export const getQuickEditSectionModal = (
+  message: APIMessageReducedWithId,
+  component: APISectionComponent,
+  path: number[],
+) => {
+  const modal = new ModalBuilder()
+    .setCustomId(
+      `a_qe-submit-section_${message.channel_id}:${message.id}:${path.join(
+        ".",
+      )}` satisfies AutoModalCustomId,
+    )
+    .setTitle("Set Section Text Content")
+    .addComponents(
+      component.components
+        .filter((c) => c.type === ComponentType.TextDisplay)
+        .map((text, i, a) =>
+          buildTextInputRow((input) =>
+            input
+              .setCustomId(`components.${i}.content`)
+              .setStyle(TextInputStyle.Paragraph)
+              .setLabel(`Content ${a.length === 1 ? "" : i + 1}`)
+              .setValue((text.content ?? "").slice(0, 2000))
+              .setMaxLength(2000)
+              // bot will requires at least one of these on submit
+              .setRequired(false),
+          ),
+        ),
+    );
+  // we don't plan on supporting a button thumbnail here, except maybe link
+  // buttons since we hardly care about those in the database
+  if (component.accessory.type === ComponentType.Thumbnail) {
+    const thumbnail = component.accessory;
+    modal
+      .addComponents(
+        buildTextInputRow((input) =>
+          input
+            .setCustomId("accessory.media.url")
+            .setStyle(TextInputStyle.Short)
+            .setLabel("Thumbnail URL")
+            .setPlaceholder("A full, direct URL to the media")
+            .setValue(thumbnail.media.url)
+            .setRequired(),
+        ),
+      )
+      .addComponents(
+        buildTextInputRow((input) =>
+          input
+            .setCustomId("accessory.description")
+            .setStyle(TextInputStyle.Short)
+            .setLabel("Description (alt text)")
+            .setValue(thumbnail.description ?? "")
+            .setMaxLength(1024)
+            .setRequired(false),
+        ),
+      );
+    // sacrifice spoiler if we are over the row limit due to text inputs
+    if (modal.components.length < 5) {
+      modal.addComponents(
+        buildTextInputRow((input) =>
+          input
+            .setCustomId("accessory.spoiler")
+            .setLabel("Spoiler?")
+            .setPlaceholder(
+              'Type "true" or "false" for whether the image should be blurred.',
+            )
+            .setStyle(TextInputStyle.Short)
+            .setValue(String(thumbnail.spoiler))
+            .setMinLength(4)
+            .setMaxLength(5),
+        ),
+      );
+    }
+  }
+
+  return modal;
+};
+
+export const getQuickEditSectionContainer = (
+  message: APIMessageReducedWithId,
+  component: APISectionComponent,
+  path: number[],
+) => {
+  const container = new ContainerBuilder();
+  const description = dedent`
+    ### Section
+    Text: ${boolEmoji(true)} ${component.components.length} item${
+      component.components.length === 1 ? "" : "s"
+    }
+  `;
+  if (component.accessory.type === ComponentType.Thumbnail) {
+    const thumbnail = component.accessory;
+    let filename: string;
+    let validThumbnailUrl = true;
+    try {
+      const { pathname } = new URL(thumbnail.media.url);
+      filename = pathname.split("/")[pathname.split("/").length - 1];
+      // discord.js validation
+      new ThumbnailBuilder().setURL(thumbnail.media.url).toJSON();
+    } catch {
+      // Can be a user-provided value not checked by discord
+      filename = thumbnail.media.url;
+      validThumbnailUrl = false;
+    }
+    if (validThumbnailUrl) {
+      container.addSectionComponents((s) =>
+        s
+          .addTextDisplayComponents((td) =>
+            td.setContent(dedent`
+              ${description}
+              Thumbnail: ${boolEmoji(true)} ${filename}
+              Spoiler: ${boolEmoji(thumbnail.spoiler ?? null)}
+              Description: ${boolEmoji(!!thumbnail.description)}
+            `),
+          )
+          .setThumbnailAccessory(
+            new ThumbnailBuilder({
+              description: thumbnail.description,
+              media: { url: thumbnail.media.url },
+            }),
+          ),
+      );
+    } else {
+      container.addTextDisplayComponents((td) =>
+        td.setContent(dedent`
+          ${description}
+          Thumbnail: ${boolEmoji(false)} ${filename}
+          Spoiler: ${boolEmoji(thumbnail.spoiler ?? null)}
+          Description: ${boolEmoji(!!thumbnail.description)}
+        `),
+      );
+    }
+  } else {
+    container.addTextDisplayComponents((td) =>
+      td.setContent(
+        `${description}\nAccessory: ${ComponentType[component.accessory.type]}`,
+      ),
+    );
+  }
+
+  container.addActionRowComponents((row) =>
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(
+          `a_qe-reopen-component-modal_${message.channel_id}:${
+            message.id
+          }:${path.join(".")}` satisfies AutoComponentCustomId,
+        )
+        .setStyle(ButtonStyle.Primary)
+        .setLabel("Edit"),
+    ),
+  );
+
+  return container;
+};
+
 const getQuickEditComponentUpdateResponse = async (
   ctx: InteractionContext,
   message: APIMessageReducedWithId,
   component: APIMessageTopLevelComponent | APIComponentInContainer,
   componentIndex: number,
   parentIndex?: number,
-) => {
+): Promise<InteractionInstantOrDeferredResponse> => {
   const path =
     parentIndex !== undefined
-      ? `${parentIndex}.${componentIndex}`
-      : String(componentIndex);
+      ? [parentIndex, componentIndex]
+      : [componentIndex];
   switch (component.type) {
     case ComponentType.Container:
       return ctx.updateMessage({
@@ -823,7 +979,9 @@ const getQuickEditComponentUpdateResponse = async (
       // max 10 items per gallery
       const select = new StringSelectMenuBuilder()
         .setCustomId(
-          `a_qe-select-component_${message.channel_id}:${message.id}:${path}` satisfies AutoComponentCustomId,
+          `a_qe-select-component_${message.channel_id}:${
+            message.id
+          }:${path.join(".")}` satisfies AutoComponentCustomId,
         )
         .setPlaceholder("Select a gallery item to edit")
         .addOptions(
@@ -853,22 +1011,21 @@ const getQuickEditComponentUpdateResponse = async (
     }
     case ComponentType.Separator:
       return ctx.updateMessage({
-        components: [
-          getQuickEditSeparatorContainer(
-            message,
-            component,
-            path.split(".").map(Number),
-          ),
-        ],
+        components: [getQuickEditSeparatorContainer(message, component, path)],
       });
     case ComponentType.TextDisplay:
-      return ctx.modal(
-        getQuickEditTextDisplayModal(
-          message,
-          component,
-          path.split(".").map(Number),
-        ),
-      );
+      return ctx.modal(getQuickEditTextDisplayModal(message, component, path));
+    case ComponentType.Section:
+      return [
+        ctx.modal(getQuickEditSectionModal(message, component, path)),
+        async () => {
+          await ctx.followup.editOriginalMessage({
+            components: [
+              getQuickEditSectionContainer(message, component, path),
+            ],
+          });
+        },
+      ];
     default:
       return ctx.reply({
         content: `Couldn't determine what data to edit. Component: type ${component.type}, index ${componentIndex}`,

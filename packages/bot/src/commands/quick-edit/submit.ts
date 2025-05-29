@@ -27,6 +27,7 @@ import {
   getQuickEditContainerContainer,
   getQuickEditEmbedContainer,
   getQuickEditMediaGalleryItemContainer,
+  getQuickEditSectionContainer,
   getQuickEditSeparatorContainer,
   missingElement,
 } from "./entry.js";
@@ -610,6 +611,93 @@ export const quickEditSubmitTextDisplay: ModalCallback = async (ctx) => {
     async () => {
       await ctx.followup.editOriginalMessage({
         components: [textDisplay("Updated text display content.")],
+      });
+    },
+  );
+};
+
+export const quickEditSubmitSection: ModalCallback = async (ctx) => {
+  const { channelId, messageId, path } = parsePathCustomId(ctx);
+  let webhook: APIWebhook;
+  let message: APIMessageReducedWithId;
+  try {
+    ({ webhook, message } = await verifyWebhookMessageEditPermissions(
+      ctx,
+      channelId,
+      messageId,
+    ));
+  } catch (e) {
+    if (isInteractionResponse(e)) return e;
+    throw e;
+  }
+  const { component } = getQuickEditComponentByPath(
+    message.components ?? [],
+    path,
+  );
+  if (!component || component.type !== ComponentType.Section) {
+    return ctx.reply({ content: missingElement, ephemeral: true });
+  }
+
+  for (const row of ctx.interaction.data.components) {
+    const [input] = row.components;
+    switch (input.custom_id) {
+      // ew
+      case "components.0.content":
+      case "components.1.content":
+      case "components.2.content": {
+        const index = Number(input.custom_id.split(".")[1]);
+        const text = component.components[index];
+        if (!text) {
+          return ctx.reply({ content: missingElement, ephemeral: true });
+        }
+        text.content = input.value.trim();
+        break;
+      }
+      case "accessory.media.url":
+      case "accessory.description":
+      case "accessory.spoiler": {
+        const thumbnail = component.accessory;
+        if (thumbnail.type !== ComponentType.Thumbnail) {
+          return ctx.reply({ content: missingElement, ephemeral: true });
+        }
+        switch (input.custom_id) {
+          case "accessory.media.url":
+            thumbnail.media.url = input.value;
+            break;
+          case "accessory.description":
+            thumbnail.description = input.value.trim() || undefined;
+            break;
+          case "accessory.spoiler":
+            thumbnail.spoiler = input.value === "true";
+            break;
+          default:
+            break;
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  component.components = component.components.filter((td) =>
+    Boolean(td.content),
+  );
+  if (component.components.length === 0) {
+    return ctx.reply({
+      content: "Section content cannot be empty.",
+      ephemeral: true,
+    });
+  }
+
+  return submitWebhookMessageEdit(
+    ctx,
+    webhook,
+    message,
+    { components: message.components },
+    async (updated) => {
+      await ctx.followup.editOriginalMessage({
+        components: [getQuickEditSectionContainer(updated, component, path)],
       });
     },
   );

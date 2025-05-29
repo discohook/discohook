@@ -20,6 +20,7 @@ import { parseAutoComponentId, textDisplay } from "../../util/components.js";
 import {
   getQuickEditEmbedContainer,
   getQuickEditMediaGalleryItemModal,
+  getQuickEditSectionModal,
   missingElement,
 } from "./entry.js";
 
@@ -77,6 +78,9 @@ export const quickEditComponentModalReopen: ButtonCallback = async (ctx) => {
         return ctx.reply({ content: missingElement, ephemeral: true });
       }
       return ctx.modal(getQuickEditMediaGalleryItemModal(message, item, path));
+    }
+    case ComponentType.Section: {
+      return ctx.modal(getQuickEditSectionModal(message, component, path));
     }
     default:
       break;

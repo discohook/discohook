@@ -47,6 +47,7 @@ import {
   quickEditSubmitContent,
   quickEditSubmitEmbed,
   quickEditSubmitGalleryItem,
+  quickEditSubmitSection,
   quickEditSubmitTextDisplay,
   quickEditToggleContainerSpoiler,
   quickEditToggleSeparatorDivider,
@@ -110,7 +111,8 @@ export type ModalRoutingId =
   | "qe-submit-content"
   | "qe-submit-embed"
   | "qe-submit-gallery-item"
-  | "qe-submit-text-display";
+  | "qe-submit-text-display"
+  | "qe-submit-section";
 
 export type ComponentRoutingId =
   | "add-component-flow"
@@ -203,4 +205,5 @@ export const modalStore: Record<ModalRoutingId, StoredModalData> = {
   "qe-submit-embed": quickEditSubmitEmbed,
   "qe-submit-gallery-item": quickEditSubmitGalleryItem,
   "qe-submit-text-display": quickEditSubmitTextDisplay,
+  "qe-submit-section": quickEditSubmitSection,
 };
