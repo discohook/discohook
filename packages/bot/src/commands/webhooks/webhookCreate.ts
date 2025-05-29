@@ -22,6 +22,7 @@ import {
   webhooks,
 } from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";
+import { getErrorEmbed } from "../../errors.js";
 import { APIPartialResolvedChannel } from "../../types/api.js";
 import { readAttachment } from "../../util/cdn.js";
 import { isDiscordError } from "../../util/error.js";
@@ -154,10 +155,15 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
             });
             return;
           }
+          await ctx.followup.editOriginalMessage({
+            content:
+              "Failed to create the webhook. It is likely that some information was invalid or I am missing permissions. A description of the error is below:",
+            embeds: [getErrorEmbed(e.rawError)],
+          });
+          return;
         }
         await ctx.followup.editOriginalMessage({
-          content:
-            "Failed to create the webhook. It may have an invalid name or avatar, or I may be missing permissions.",
+          content: "Failed to create the webhook.",
         });
         return;
       }

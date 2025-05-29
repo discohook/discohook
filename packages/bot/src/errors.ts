@@ -1,7 +1,10 @@
+import { EmbedBuilder } from "@discordjs/builders";
+import { DiscordAPIError } from "@discordjs/rest";
 import {
   APIInteraction,
   APIInteractionResponseChannelMessageWithSource,
   RESTError,
+  RESTJSONErrorCodes,
 } from "discord-api-types/v10";
 import { InteractionContext } from "./interactions.js";
 
@@ -99,17 +102,44 @@ export const getErrorMessage = (
         return invalidX("a role");
       case 50034:
         return "One of the messages is too old to bulk delete.";
-      case 50035:
-        return "Invalid form body. This shouldn't happen.";
       default:
         break;
     }
   })();
 
   if (message) {
-    return ctx.reply({
-      content: message,
-      ephemeral: true,
-    });
+    return ctx.reply({ content: message, ephemeral: true });
   }
+  if ([RESTJSONErrorCodes.InvalidFormBodyOrContentType].includes(error.code)) {
+    return ctx.reply({ embeds: [getErrorEmbed(error)], ephemeral: true });
+  }
+};
+
+export const getErrorEmbed = (error: RESTError) => {
+  const embed = new EmbedBuilder().setColor(0xff587b).setTitle("Discord Error");
+  if (
+    error.errors &&
+    [RESTJSONErrorCodes.InvalidFormBodyOrContentType].includes(error.code)
+  ) {
+    const djsError = new DiscordAPIError(
+      error,
+      error.code,
+      // doesn't matter
+      400,
+      "GET",
+      "/",
+      {},
+    );
+    // remove unnecessary "invalid form body", which confuses some people
+    embed.setDescription(
+      djsError.message.replace(error.message, "").trim().slice(0, 4096) ||
+        "No message",
+    );
+  } else {
+    embed.setDescription(
+      `[${error.code}] ${error.message?.trim().slice(0, 4096) || "No message"}`,
+    );
+  }
+
+  return embed;
 };
