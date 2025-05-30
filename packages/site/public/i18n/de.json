@@ -662,5 +662,6 @@
     "addPoll": "Umfrage hinzufügen",
     "addDefaultValue": "Standardwert hinzufügen",
     "addComponent": "Komponente hinzufügen",
-    "componentsNoUsableWebhook": "Keiner deiner Webhooks ist mit nicht-verlinkten Knöpfen kompatibel, daher wird keiner sichtbar sein. Füge einen Webhook hinzu, der Discohook gehört."
+    "componentsNoUsableWebhook": "Keiner deiner Webhooks ist mit nicht-verlinkten Knöpfen kompatibel, daher wird keiner sichtbar sein. Füge einen Webhook hinzu, der Discohook gehört.",
+    "expiresIn": "Lauft Ab {{0}}"
 }
