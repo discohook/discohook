@@ -9,6 +9,6 @@ export const switchStyles = {
   ),
   thumb: twJoin(
     "aspect-square h-full rounded-full bg-white",
-    "data-[checked]:translate-x-4 transition",
+    "ltr:data-[checked]:translate-x-4 rtl:data-[checked]:-translate-x-4 transition",
   ),
 };
