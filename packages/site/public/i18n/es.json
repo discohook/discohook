@@ -153,5 +153,6 @@
     "copyImports": "Copiar importaciones",
     "copyCode": "Copiar código",
     "embedExample": "Ejemplo",
-    "previewInfo": "Previsualizar información"
+    "previewInfo": "Previsualizar información",
+    "openBackupLoad": "Comienza a editar esta copia de seguridad sin abrir una nueva pestaña"
 }
