@@ -28,7 +28,9 @@
         "fr": "Francés",
         "en": "Inglés, US",
         "de": "Alemán",
-        "it": "Italiano"
+        "it": "Italiano",
+        "ru": "Ruso",
+        "uk": "Ucraniano"
     },
     "search": "Busqueda",
     "helpSearchPlaceholder": "Como hago…",
