@@ -201,7 +201,7 @@ export const isMessageWebhookEditable = (
   if (
     message.interaction_metadata ||
     // incoming webhooks have no credentials
-    flags.has(MessageFlags.Crossposted)
+    flags.has(MessageFlags.IsCrosspost)
   ) {
     return false;
   }
