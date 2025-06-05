@@ -31,6 +31,11 @@ export const DialogPortal: React.FC<
         // colors
         "bg-gray-50 text-black dark:bg-[#37373D] dark:text-gray-50",
         "outline outline-1 outline-border-normal dark:outline-border-normal-dark",
+        // modal nesting - https://base-ui.com/react/components/dialog
+        "scale-[calc(1_-_0.1_*_var(--nested-dialogs))]",
+        "[translate:0_calc(0px_+_1.25rem_*_var(--nested-dialogs))]",
+        "data-[nested-dialog-open]:after:content-[''] data-[nested-dialog-open]:after:inset-0 data-[nested-dialog-open]:after:rounded-[inherit]",
+        "data-[nested-dialog-open]:after:absolute data-[nested-dialog-open]:after:bg-black/5",
         // opening/closing animation
         "transition-all",
         "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
