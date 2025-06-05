@@ -593,12 +593,13 @@ const FlowActionEditor: React.FC<{
               )}
               <p className="text-sm font-medium select-none">{t("role")}</p>
               <RoleSelect
+                t={t}
                 name="roleId"
                 roles={roles}
                 value={roles.find((r) => r.id === action.roleId)}
-                onChange={(opt) => {
-                  if (opt) {
-                    action.roleId = opt.id;
+                onChange={(role) => {
+                  if (role) {
+                    action.roleId = role.id;
                     update();
                   }
                 }}
