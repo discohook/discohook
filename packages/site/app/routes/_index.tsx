@@ -241,7 +241,7 @@ export default function Index() {
 
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
-  const cache = useCache(!user);
+  const cache = useCache(!userId);
   const [error, setError] = useError(t);
 
   const [searchParams] = useSearchParams();
