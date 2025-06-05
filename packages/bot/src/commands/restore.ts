@@ -8,10 +8,14 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
+  APIAllowedMentions,
   APIGuildChannel,
   APIMessage,
+  APIMessageTopLevelComponent,
   APIWebhook,
+  AllowedMentionsTypes,
   ChannelType,
+  ComponentType,
   GuildChannelType,
   MessageFlags,
   MessageReferenceType,
@@ -28,7 +32,7 @@ import {
 import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
 import { getShareLinkExists, putShareLink } from "../durable/share-links.js";
 import { Env } from "../types/env.js";
-import { parseAutoComponentId } from "../util/components.js";
+import { isComponentsV2, parseAutoComponentId } from "../util/components.js";
 import { isDiscordError } from "../util/error.js";
 import { isThread } from "../util/guards.js";
 import { boolEmoji, color } from "../util/meta.js";
@@ -36,17 +40,114 @@ import { base64UrlEncode, randomString } from "../util/text.js";
 import { getUserTag } from "../util/user.js";
 import { resolveMessageLink } from "./components/entry.js";
 
+// essentially flattens all content components
+const getAllComponentContent = (
+  components: APIMessageTopLevelComponent[],
+): string[] => {
+  const content: string[] = [];
+  for (const component of components) {
+    switch (component.type) {
+      case ComponentType.Container:
+      case ComponentType.Section:
+        content.push(...getAllComponentContent(component.components));
+        break;
+      case ComponentType.TextDisplay:
+        content.push(component.content);
+        break;
+      default:
+        break;
+    }
+  }
+  return content;
+};
+
+const allowedMentionsIsBlank = (am: APIAllowedMentions) =>
+  !Object.entries(am)
+    .map(([, val]) => !val || val.length === 0)
+    .includes(false);
+
+export const inferAllowedMentions = (
+  message: Pick<
+    APIMessage,
+    | "author"
+    | "content"
+    | "components"
+    | "flags"
+    | "mentions"
+    | "mention_everyone"
+    | "mention_roles"
+  >,
+) => {
+  if (!message.author.bot) {
+    // only bots can specify allowed mentions
+    return;
+  }
+  const allContent = isComponentsV2(message)
+    ? getAllComponentContent(message.components ?? []).join("\n")
+    : message.content;
+
+  // our strategy here ignores code blocks
+  const mentionEveryone =
+    allContent.includes("@everyone") || allContent.includes("@here");
+  const mentionedUserIds = [...allContent.matchAll(/<@!?(\d+)>/g)]
+    .map((mention) => mention[1])
+    .filter((id, i, a) => a.indexOf(id) === i);
+  const mentionedRoleIds = [...allContent.matchAll(/<@&(\d+)>/g)]
+    .map((mention) => mention[1])
+    .filter((id, i, a) => a.indexOf(id) === i);
+
+  if (
+    mentionedUserIds.length === message.mentions.length &&
+    mentionedRoleIds.length === message.mention_roles.length &&
+    mentionEveryone === message.mention_everyone
+  ) {
+    // everything is identical (barring code blocks), so
+    // allowed_mentions probably was not used
+    return;
+  }
+
+  const data: APIAllowedMentions = {
+    parse: [],
+    users: [],
+    roles: [],
+  };
+  if (mentionedUserIds.length === message.mentions.length) {
+    data.parse?.push(AllowedMentionsTypes.User);
+  } else {
+    data.users = message.mentions.map((u) => u.id);
+  }
+  if (mentionedRoleIds.length === message.mention_roles.length) {
+    data.parse?.push(AllowedMentionsTypes.Role);
+  } else {
+    data.roles = message.mention_roles;
+  }
+  if (message.mention_everyone && allowedMentionsIsBlank(data)) {
+    return;
+  } else if (message.mention_everyone) {
+    data.parse?.push(AllowedMentionsTypes.Everyone);
+  }
+
+  if (allowedMentionsIsBlank(data)) return;
+  return data;
+};
+
 export const messageToQueryData = (
   ...messages: Pick<
     APIMessage,
+    | "author"
     | "content"
     | "embeds"
     | "components"
     | "webhook_id"
     | "attachments"
     | "flags"
+    // restore from fwd
     | "message_reference"
     | "message_snapshots"
+    // recreate allowed mentions
+    | "mentions"
+    | "mention_everyone"
+    | "mention_roles"
   >[]
 ): QueryData => {
   return {
@@ -69,6 +170,7 @@ export const messageToQueryData = (
           components: innerMsg.components,
           webhook_id: isForward ? undefined : msg.webhook_id,
           attachments: innerMsg.attachments,
+          allowed_mentions: isForward ? undefined : inferAllowedMentions(msg),
           flags:
             Number(
               new MessageFlagsBitField(innerMsg.flags ?? 0).mask(
