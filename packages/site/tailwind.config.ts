@@ -83,8 +83,8 @@ export default {
         },
         border: {
           normal: "#D9D9DC",
-          "normal-dark": "#4A4A51"
-        }
+          "normal-dark": "#4A4A51",
+        },
       },
     },
   },

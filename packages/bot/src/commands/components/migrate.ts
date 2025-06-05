@@ -48,7 +48,11 @@ import {
 import { ChatInputAppCommandCallback } from "../../commands.js";
 import { AutoComponentCustomId, ButtonCallback } from "../../components.js";
 import { Env } from "../../types/env.js";
-import { hasCustomId, isActionRow, parseAutoComponentId } from "../../util/components.js";
+import {
+  hasCustomId,
+  isActionRow,
+  parseAutoComponentId,
+} from "../../util/components.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import { resolveMessageLink } from "./entry.js";
 

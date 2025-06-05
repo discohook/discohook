@@ -12,12 +12,12 @@ import {
   TriggerEvent,
   autoRollbackTx,
   backups,
-  triggers as dTriggers,
   flowActions,
   flows,
   generateId,
   getDb,
   getchTriggerGuild,
+  triggers as dTriggers,
   upsertDiscordUser,
 } from "store";
 import { ChatInputAppCommandCallback } from "../../commands.js";

@@ -16,7 +16,7 @@ import {
   getDb,
   makeSnowflake,
   oauthInfo,
-  upsertDiscordUser
+  upsertDiscordUser,
 } from "./store.server";
 import { Env } from "./types/env";
 import {

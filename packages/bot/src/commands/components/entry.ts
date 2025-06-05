@@ -10,7 +10,7 @@ import {
   ApplicationCommandOptionType,
   ButtonStyle,
   ChannelType,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { Snowflake, getDate } from "discord-snowflake";
 import {

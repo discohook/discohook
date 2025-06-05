@@ -23,7 +23,7 @@ import {
   ChannelType,
   ComponentType,
   SelectMenuDefaultValueType,
-  SeparatorSpacingSize
+  SeparatorSpacingSize,
 } from "discord-api-types/v10";
 import { z } from "zod";
 

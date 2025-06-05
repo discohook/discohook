@@ -5,8 +5,7 @@
       "node_modules/",
       "build/",
       "./packages/site/functions/",
-      "./packages/site/public/emoji.json",
-      "./packages/site/public/guide-index.json",
+      "./packages/site/public/",
       "./packages/site/app/util/highlights.json",
       "./persistence/"
     ]
