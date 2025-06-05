@@ -43,7 +43,7 @@ import {
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
-import { isDiscordError } from "~/util/discord";
+import { isComponentsV2, isDiscordError } from "~/util/discord";
 import { ActionArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
@@ -583,49 +583,73 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             }
             if (message.components && message.components.length !== 0) {
               const components = message.components;
-              const { path } = getActionRowComponentPath(
-                components,
-                current.data,
-                id,
-              );
-              replaceComponentByPath(components, path, null);
-              removeEmptyActionRows(components);
-
-              const webhook = await getWebhook(message.webhook_id, context.env);
-              if (!webhook.token) {
-                throw respond(
-                  json(
-                    {
-                      message:
-                        "Could not obtain the token for the associated webhook. Try deleting through Discord.",
-                    },
-                    400,
-                  ),
-                );
-              }
-
+              let path: number[] | undefined;
               try {
-                await rest.patch(
-                  Routes.webhookMessage(webhook.id, webhook.token, message.id),
-                  {
-                    body: { components },
-                    query:
-                      message.position !== undefined
-                        ? new URLSearchParams({ thread_id: message.channel_id })
-                        : undefined,
-                  },
-                );
+                ({ path } = getActionRowComponentPath(
+                  components,
+                  current.data,
+                  id,
+                  isComponentsV2(message),
+                ));
               } catch (e) {
-                if (isDiscordError(e) && e.status !== 404) {
+                if (
+                  !(
+                    e instanceof Error &&
+                    e.message.startsWith("Failed to find the component")
+                  )
+                ) {
+                  throw e;
+                }
+              }
+              if (path) {
+                replaceComponentByPath(components, path, null);
+                removeEmptyActionRows(components);
+
+                const webhook = await getWebhook(
+                  message.webhook_id,
+                  context.env,
+                );
+                if (!webhook.token) {
                   throw respond(
                     json(
                       {
-                        message: `The component removal was rejected by Discord. You may have to edit or remove other components before removing this one. The error from Discord was: ${e.code} ${e.rawError.message}`,
-                        raw: e.rawError,
+                        message:
+                          "Could not obtain the token for the associated webhook. Try deleting through Discord.",
                       },
                       400,
                     ),
                   );
+                }
+
+                try {
+                  await rest.patch(
+                    Routes.webhookMessage(
+                      webhook.id,
+                      webhook.token,
+                      message.id,
+                    ),
+                    {
+                      body: { components },
+                      query:
+                        message.position !== undefined
+                          ? new URLSearchParams({
+                              thread_id: message.channel_id,
+                            })
+                          : undefined,
+                    },
+                  );
+                } catch (e) {
+                  if (isDiscordError(e) && e.status !== 404) {
+                    throw respond(
+                      json(
+                        {
+                          message: `The component removal was rejected by Discord. You may have to edit or remove other components before removing this one. The error from Discord was: ${e.code} ${e.rawError.message}`,
+                          raw: e.rawError,
+                        },
+                        400,
+                      ),
+                    );
+                  }
                 }
               }
             }
@@ -652,7 +676,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     console.error(`Component ${request.method} error: ${eid}`, e);
     throw respond(
       json(
-        { message: `Unexpected server error. Reference number: ${eid}` },
+        {
+          message: `Unexpected server error. Reference number: ${eid}${
+            e instanceof Error ? `, message: ${e.message}` : ""
+          }`,
+        },
         { status: 500 },
       ),
     );
