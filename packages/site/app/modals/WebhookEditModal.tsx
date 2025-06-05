@@ -240,10 +240,11 @@ export const WebhookEditModal = (
               <p className="text-sm font-medium">{t("channel")}</p>
               {channels ? (
                 <ChannelSelect
+                  t={t}
                   name="channelId"
                   channels={channels}
                   value={channels.find((c) => c.id === payload.channelId)}
-                  onChange={(o) => updatePayload({ channelId: o?.id })}
+                  onChange={(c) => updatePayload({ channelId: c?.id })}
                 />
               ) : (
                 webhook &&

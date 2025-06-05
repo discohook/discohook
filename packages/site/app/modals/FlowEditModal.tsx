@@ -930,6 +930,7 @@ const FlowActionEditor: React.FC<{
                   <div>
                     <p className="text-sm select-none">{t("channel")}</p>
                     <ChannelSelect
+                      t={t}
                       name="channelId"
                       channels={channels.filter((c) =>
                         ["text", "forum"].includes(c.type),
