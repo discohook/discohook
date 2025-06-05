@@ -65,6 +65,7 @@ export const selectStyles = {
   item: twJoin(
     "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
     "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
+    "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
   ),
   itemText: "my-auto ltr:mr-2 rtl:ml-2",
   itemIndicator: "ltr:ml-auto rtl:mr-auto my-auto text-lg",
