@@ -863,31 +863,41 @@ export default () => {
           ) : tab === "triggers" ? (
             openTrigger ? (
               <div>
-                <button
-                  type="button"
-                  onClick={() => setOpenTriggerId(undefined)}
-                >
-                  <CoolIcon icon="Arrow_Left_MD" rtl="Arrow_Right_MD" />{" "}
-                  {t("backToTriggers")}
-                </button>
-                <TabHeader>{t(`triggerEvent.${openTrigger.event}`)}</TabHeader>
-                <div className="rounded px-4 py-3 bg-gray-200 dark:bg-gray-900 shadow">
-                  <div className="flex">
-                    <div>
-                      <p className="text-sm font-medium">
-                        {t("createTrigger.when")}
-                      </p>
-                      <p className="font-semibold text-lg">
-                        {t(`triggerEventDescription.${openTrigger.event}`)}
-                      </p>
+                <div className="flex gap-2 items-center mb-2 text-muted dark:text-muted-dark text-sm">
+                  <button
+                    type="button"
+                    onClick={() => setOpenTriggerId(undefined)}
+                    className="hover:text-black dark:hover:text-gray-50 transition-colors"
+                  >
+                    {t("triggers")}
+                  </button>
+                  <span>/</span>
+                  <span>{t(`triggerEvent.${openTrigger.event}`)}</span>
+                </div>
+                <div className="rounded-lg p-4 border border-black/10 dark:border-[#44454B] flex">
+                  <div className="grow ltr:mr-2 rtl:ml-2">
+                    <p className="font-normal text-base mb-1">
+                      {t("createTrigger.when")}
+                    </p>
+                    <div className="rounded-lg flex items-center h-9 px-[14px] w-full bg-gray-200 dark:bg-gray-900">
+                      {t(`triggerEventDescription.${openTrigger.event}`)}
                     </div>
-                    <CoolIcon
-                      icon={flowEventsDetails[openTrigger.event].icon}
-                      className="text-4xl my-auto ml-auto"
-                    />
+                    <div className="h-full flex flex-col">
+                      <CoolIcon
+                        icon={flowEventsDetails[openTrigger.event].icon}
+                        className="text-[4rem] m-auto"
+                      />
+                    </div>
                   </div>
-                  <hr className="border border-gray-400 dark:border-gray-600 my-2" />
-                  <p className="text-sm font-medium">
+                </div>
+                <div className="w-full flex my-0.5">
+                  <CoolIcon
+                    icon="Arrow_Down_MD"
+                    className="m-auto text-base text-muted dark:text-muted-dark opacity-50"
+                  />
+                </div>
+                <div className="rounded-lg p-4 border border-black/10 dark:border-[#44454B]">
+                  <p className="font-normal text-base mb-1">
                     {t("createTrigger.then")}
                   </p>
                   <div className="flex gap-2">
@@ -916,69 +926,80 @@ export default () => {
                     </Button>
                   </div>
                 </div>
-                <Button
-                  className="mt-2"
-                  discordstyle={ButtonStyle.Success}
-                  disabled={triggerSaveFetcher.state !== "idle"}
-                  onClick={async () => {
-                    if (draftFlow) {
-                      await triggerSaveFetcher.submitAsync(
-                        { flow: draftFlow },
-                        {
-                          action: apiUrl(
-                            BRoutes.guildTrigger(guild.id, openTrigger.id),
+                <div className="w-full flex my-0.5">
+                  <CoolIcon
+                    icon="Edit_Pencil_01"
+                    className="m-auto text-base text-muted dark:text-muted-dark opacity-50"
+                  />
+                </div>
+                <div className="rounded-lg p-4 border border-black/10 dark:border-[#44454B]">
+                  <div className="flex gap-2">
+                    <Button
+                      discordstyle={ButtonStyle.Success}
+                      disabled={triggerSaveFetcher.state !== "idle"}
+                      onClick={async () => {
+                        if (draftFlow) {
+                          await triggerSaveFetcher.submitAsync(
+                            { flow: draftFlow },
+                            {
+                              action: apiUrl(
+                                BRoutes.guildTrigger(guild.id, openTrigger.id),
+                              ),
+                              method: "PATCH",
+                            },
+                          );
+                        }
+                      }}
+                    >
+                      {t("save")}
+                    </Button>
+                    <Button
+                      discordstyle={ButtonStyle.Danger}
+                      disabled={triggerSaveFetcher.state !== "idle"}
+                      onClick={() =>
+                        setConfirm({
+                          title: t("deleteTrigger"),
+                          children: (
+                            <>
+                              <p>
+                                {t("deleteTriggerConfirm", {
+                                  replace: [openTrigger.event],
+                                })}
+                              </p>
+                              <Button
+                                onClick={async () => {
+                                  await triggerSaveFetcher.submitAsync(
+                                    undefined,
+                                    {
+                                      action: apiUrl(
+                                        BRoutes.guildTrigger(
+                                          guild.id,
+                                          openTrigger.id,
+                                        ),
+                                      ),
+                                      method: "DELETE",
+                                    },
+                                  );
+                                  setOpenTriggerId(undefined);
+                                  setConfirm(undefined);
+                                  triggersFetcher.load(
+                                    apiUrl(BRoutes.guildTriggers(guild.id)),
+                                  );
+                                }}
+                                className="mt-2"
+                                discordstyle={ButtonStyle.Danger}
+                              >
+                                {t("delete")}
+                              </Button>
+                            </>
                           ),
-                          method: "PATCH",
-                        },
-                      );
-                    }
-                  }}
-                >
-                  {t("save")}
-                </Button>
-                <Button
-                  className="ltr:ml-2 rtl:mr-2"
-                  discordstyle={ButtonStyle.Danger}
-                  disabled={triggerSaveFetcher.state !== "idle"}
-                  onClick={() =>
-                    setConfirm({
-                      title: t("deleteTrigger"),
-                      children: (
-                        <>
-                          <p>
-                            {t("deleteTriggerConfirm", {
-                              replace: [openTrigger.event],
-                            })}
-                          </p>
-                          <Button
-                            onClick={async () => {
-                              await triggerSaveFetcher.submitAsync(undefined, {
-                                action: apiUrl(
-                                  BRoutes.guildTrigger(
-                                    guild.id,
-                                    openTrigger.id,
-                                  ),
-                                ),
-                                method: "DELETE",
-                              });
-                              setOpenTriggerId(undefined);
-                              setConfirm(undefined);
-                              triggersFetcher.load(
-                                apiUrl(BRoutes.guildTriggers(guild.id)),
-                              );
-                            }}
-                            className="mt-2"
-                            discordstyle={ButtonStyle.Danger}
-                          >
-                            {t("delete")}
-                          </Button>
-                        </>
-                      ),
-                    })
-                  }
-                >
-                  {t("delete")}
-                </Button>
+                        })
+                      }
+                    >
+                      {t("delete")}
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div>

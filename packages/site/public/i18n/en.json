@@ -337,8 +337,8 @@
   },
   "createTrigger": {
     "title": "Create Trigger",
-    "when": "When this happens:",
-    "then": "Do this:"
+    "when": "When this happens",
+    "then": "Perform these actions"
   },
   "triggers": "Triggers",
   "newTrigger": "New Trigger",
@@ -351,7 +351,6 @@
     "1": "A member leaves the server (or is removed)"
   },
   "sendTestEvent": "Send Test Event",
-  "backToTriggers": "Back to Triggers",
   "deleteTrigger": "Delete Trigger",
   "deleteTriggerConfirm": "Are you sure you want to delete $t(triggerEvent.{{0}}) and its flow?",
   "information": "Information",
