@@ -96,6 +96,11 @@ const data = {
         url: "https://discohook.app/help/privacy_badger.png",
       },
     },
+    ise: {
+      title: 'I get "500: Internal Server Error" while sending my message',
+      description:
+        "This is an error from Discord that indicates they had trouble processing your message. Discohook can't really provide any diagnostic for it since it's generic, but some users have reported success reducing the number of characters in the message. If you still can't send the message, try again at a later date or try using a different webhook/channel configuration.",
+    },
     nothing: {
       title: "I set up my webhook, but clicking send does nothing.",
       description:

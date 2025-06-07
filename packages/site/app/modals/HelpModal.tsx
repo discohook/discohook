@@ -6,14 +6,22 @@ import { TextInput } from "~/components/TextInput";
 import { PreviewButton } from "~/components/preview/ActionRow";
 import { Embed } from "~/components/preview/Embed";
 import { GuideFileMeta } from "~/routes/guide.$";
-import tags_ from "../../public/help/en.json";
 import { ExampleModal } from "./ExampleModal";
 import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
 
 export const HelpModal = (props: ModalProps) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
-  const tags: Record<string, string | APIEmbed> = tags_;
+  const [tags, setTags] = useState<Record<string, string | APIEmbed>>({});
+  useEffect(() => {
+    if (props.open) {
+      fetch("/help/en.json", { method: "GET" }).then((response) => {
+        if (response.ok) {
+          response.json().then((data) => setTags(data as typeof tags));
+        }
+      });
+    }
+  }, [props.open]);
 
   const [exampleOpen, setExampleOpen] = useState(false);
 
