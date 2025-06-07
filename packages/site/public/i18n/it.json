@@ -339,7 +339,6 @@
         "title": "Elimina il Bot",
         "note": "Per eliminare questo bot personalizzato, scrivi il suo nome qui sotto. Questo non eliminerà l'application di Discord corrispondente."
     },
-    "backToTriggers": "Torna ai Trigger",
     "botTokenHiddenNote": "Per motivi di sicurezza, il tuo token non ti sarà mai mostrato dopo che lo salvi qui. Se hai resettato il tuo token, premi \"Resetta Token\" e salva il nuovo.",
     "embedN": "Embed {{n}}",
     "componentsNotLoggedIn": "Non hai eseguito l'accesso, quindi non puoi salvare questo componente sul tuo account, e i componenti con più azioni non saranno eseguiti. Se vuoi solo far vedere i pulsanti, puoi selezionare l'opzione $t(disabled).",

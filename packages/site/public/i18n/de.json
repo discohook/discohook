@@ -644,7 +644,6 @@
     "triggers": "Auslöser",
     "newTrigger": "Neuer Auslöser",
     "sendTestEvent": "Sende Test Event",
-    "backToTriggers": "Zurück zu Auslöser",
     "deleteTrigger": "Auslöser Löschen",
     "deleteTriggerConfirm": "Bist du sicher, dass du $t(triggerEvent.{{0}}) und seinen Ablauf löschen möchtest?",
     "information": "Information",
