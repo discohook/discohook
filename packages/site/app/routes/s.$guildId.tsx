@@ -882,12 +882,12 @@ export default () => {
                     <div className="rounded-lg flex items-center h-9 px-[14px] w-full bg-gray-200 dark:bg-gray-900">
                       {t(`triggerEventDescription.${openTrigger.event}`)}
                     </div>
-                    <div className="h-full flex flex-col">
-                      <CoolIcon
-                        icon={flowEventsDetails[openTrigger.event].icon}
-                        className="text-[4rem] m-auto"
-                      />
-                    </div>
+                  </div>
+                  <div className="h-full flex flex-col">
+                    <CoolIcon
+                      icon={flowEventsDetails[openTrigger.event].icon}
+                      className="text-[4rem] m-auto"
+                    />
                   </div>
                 </div>
                 <div className="w-full flex my-0.5">
