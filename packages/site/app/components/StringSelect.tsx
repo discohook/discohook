@@ -59,6 +59,11 @@ export const selectStyles = {
   value: "my-auto truncate ltr:mr-2 rtl:ml-2",
   icon: "ltr:ml-auto rtl:mr-auto my-auto text-lg",
   positioner: twJoin(
+    // avoid scrolling issues on mobile by using a sheet-type design. kind of
+    // weird for selects with not very many items, but at least it's consistent.
+    // TODO: would like to also dim the rest of the app.
+    "max-sm:bottom-0 max-sm:!top-auto max-sm:w-full max-sm:w-full max-sm:max-h-72 max-sm:overflow-y-auto max-sm:!transform-none",
+    // colors, fonts, spacing
     "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
     "p-0.5 border border-black/[0.08] z-[35]",
   ),
