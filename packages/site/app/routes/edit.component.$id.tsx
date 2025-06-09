@@ -1375,6 +1375,7 @@ export default () => {
         {...editingFlow}
         cache={cache}
         premium={user ? userIsPremium(user) : false}
+        parentContext={`component.${component.type}`}
       />
       <Header user={user} />
       <Prose className="max-w-xl">

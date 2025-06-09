@@ -26,13 +26,14 @@ export const DialogPortal: React.FC<
       className={twJoin(
         // position & size
         "box-border fixed z-[31] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-        "w-[32rem] md:w-3/4 max-w-[calc(100vw_-_3rem)] rounded-xl",
+        "w-screen sm:w-[32rem] md:w-3/4 max-w-[100vw] sm:max-w-[calc(100vw_-_3rem)] rounded-xl",
         "max-h-[calc(100vh_-_8rem)] overflow-y-auto h-fit",
         // colors
         "bg-gray-50 text-black dark:bg-[#37373D] dark:text-gray-50",
         "outline outline-1 outline-border-normal dark:outline-border-normal-dark",
         // modal nesting - https://base-ui.com/react/components/dialog
         "scale-[calc(1_-_0.1_*_var(--nested-dialogs))]",
+        "brightness-[calc(1_-_0.1_*_var(--nested-dialogs))]",
         "[translate:0_calc(0px_+_1.25rem_*_var(--nested-dialogs))]",
         "data-[nested-dialog-open]:after:content-[''] data-[nested-dialog-open]:after:inset-0 data-[nested-dialog-open]:after:rounded-[inherit]",
         "data-[nested-dialog-open]:after:absolute data-[nested-dialog-open]:after:bg-black/5",
@@ -73,9 +74,27 @@ export const Modal: React.FC<ModalProps & { title?: React.ReactNode }> = (
   </Dialog.Root>
 );
 
-export const PlainModalHeader: React.FC<React.PropsWithChildren> = ({
-  children,
-}) => <div className="font-medium text-lg mb-2 w-full">{children}</div>;
+export const PlainModalHeader: React.FC<
+  React.PropsWithChildren & { onClose?: () => void }
+> = ({ children, onClose }) => (
+  <div
+    className={twJoin("font-medium text-lg mb-2 w-full", "flex items-center")}
+  >
+    <div className="flex">{children}</div>
+    {onClose ? (
+      <button
+        type="button"
+        className="self-baseline [margin-inline-start:auto]"
+        onClick={onClose}
+      >
+        <CoolIcon
+          icon="Close_MD"
+          className="text-2xl text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-gray-300 transition"
+        />
+      </button>
+    ) : null}
+  </div>
+);
 
 export const ModalCloseButton: React.FC<Pick<ModalProps, "setOpen">> = ({
   setOpen,

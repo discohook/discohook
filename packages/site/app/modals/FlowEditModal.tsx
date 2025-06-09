@@ -2,6 +2,7 @@ import {
   APIWebhook,
   ButtonStyle,
   ChannelType,
+  ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
@@ -28,6 +29,7 @@ import {
   FlowActionCreateThread,
   FlowActionSetVariable,
   FlowActionSetVariableType,
+  TriggerEvent,
 } from "~/store.server";
 import { FlowActionType, ZodDraftFlow } from "~/types/flows";
 import { CacheManager } from "~/util/cache/CacheManager";
@@ -35,8 +37,8 @@ import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
 import { SafeFetcher, getZodErrorMessage, useSafeFetcher } from "~/util/loader";
 import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import {
-  PartialBackupsWithMessages,
   loader as ApiGetUserBackups,
+  PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -49,7 +51,7 @@ import {
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalProps, PlainModalHeader } from "./Modal";
 
 type FlowWithPartials = DraftFlow & {
   actions: (Partial<FlowAction> & Pick<FlowAction, "type">)[];
@@ -66,6 +68,7 @@ export const FlowEditModal = (
       guildId?: string;
       cache?: CacheManager;
       premium?: boolean;
+      parentContext?: FlowParentContext;
     },
 ) => {
   const { t } = useTranslation();
@@ -88,82 +91,99 @@ export const FlowEditModal = (
   const counted = allActions.filter(
     (a) => a.type !== FlowActionType.Check && a.type !== FlowActionType.Stop,
   );
+  const hasMaxActions = counted.length >= actionMax;
 
   const parsed = ZodDraftFlow.safeParse(flow);
 
   return (
-    <Modal
-      title={t("editFlow")}
-      {...props}
-      // setOpen={(v) => {
-      //   if (parsed.success) props.setOpen(v);
-      // }}
-    >
+    <Modal {...props}>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("editFlow")}
+      </PlainModalHeader>
       {!parsed.success && flow && flow.actions.length !== 0 && (
-        <InfoBox severity="yellow" icon="Info" collapsible open>
-          {getZodErrorMessage(parsed.error)}
-          <br />
-          {t("flowParseNotice")}
-        </InfoBox>
+        <div className="-mx-2">
+          <InfoBox severity="yellow" icon="Info" collapsible open>
+            {getZodErrorMessage(parsed.error)}
+            <br />
+            {t("flowParseNotice")}
+          </InfoBox>
+        </div>
       )}
       {error}
       {flow && setFlow && (
-        <div className="-mt-2 -mx-2">
-          {flow.actions.length > 0 && (
-            <div className="space-y-2">
-              {counted.length >= actionMax && (
-                <InfoBox severity="yellow" icon="Circle_Warning">
-                  <Trans
+        <div className="-mt-2">
+          <div className="-mx-2">
+            {flow.actions.length > 0 && (
+              <div className="space-y-2">
+                {hasMaxActions && (
+                  <InfoBox severity="yellow" icon="Circle_Warning">
+                    <Trans
+                      t={t}
+                      i18nKey={
+                        props.premium
+                          ? "maxActionsWarningPremium"
+                          : "maxActionsWarningFree"
+                      }
+                      values={{ limit: actionMax, premiumLimit: 40 }}
+                      components={[
+                        <Link
+                          to="/donate"
+                          className={linkClassName}
+                          target="_blank"
+                        />,
+                      ]}
+                    />
+                  </InfoBox>
+                )}
+                {flow.actions.map((action, ai) => (
+                  <FlowActionEditor
                     t={t}
-                    i18nKey={
-                      props.premium
-                        ? "maxActionsWarningPremium"
-                        : "maxActionsWarningFree"
-                    }
-                    values={{ limit: actionMax, premiumLimit: 40 }}
-                    components={[
-                      <Link
-                        to="/donate"
-                        className={linkClassName}
-                        target="_blank"
-                      />,
-                    ]}
+                    key={`edit-flow-action-${ai}`}
+                    guildId={guildId}
+                    flow={flow}
+                    action={action}
+                    actionIndex={ai}
+                    update={() => setFlow(structuredClone(flow))}
+                    backupsFetcher={backupsFetcher}
+                    webhooksFetcher={webhooksFetcher}
+                    cache={cache}
+                    premium={props.premium}
+                    parentContext={props.parentContext}
                   />
-                </InfoBox>
-              )}
-              {flow.actions.map((action, ai) => (
-                <FlowActionEditor
-                  key={`edit-flow-action-${ai}`}
-                  guildId={guildId}
-                  flow={flow}
-                  action={action}
-                  actionIndex={ai}
-                  update={() => setFlow(structuredClone(flow))}
-                  backupsFetcher={backupsFetcher}
-                  webhooksFetcher={webhooksFetcher}
-                  cache={cache}
-                  t={t}
-                />
-              ))}
-            </div>
-          )}
-          <div className="w-full flex mt-4">
-            <div className="mx-auto space-x-2 rtl:space-x-reverse">
-              <Button
-                onClick={() => {
-                  flow.actions.push({ type: 0 });
+                ))}
+              </div>
+            )}
+            {flow.actions.length !== 0 ? (
+              <hr className="border border-gray-500/20 mt-4 mb-2 rounded" />
+            ) : null}
+          </div>
+          <div className="w-full flex items-start">
+            <div className="flex gap-x-2">
+              <ButtonSelect
+                options={actionTypes.map((value) => ({
+                  value,
+                  label: t(`actionType.${value}`),
+                  disabled:
+                    value === FlowActionType.Stop ||
+                    value === FlowActionType.Check
+                      ? false
+                      : hasMaxActions,
+                }))}
+                onValueChange={(value) => {
+                  flow.actions.push(getActionSeed(value));
                   setFlow(structuredClone(flow));
                 }}
               >
                 {t("addAction")}
-              </Button>
-              <Button
-                discordstyle={ButtonStyle.Secondary}
+              </ButtonSelect>
+              <button
+                type="button"
                 onClick={() => props.setOpen(false)}
                 // disabled={!parsed.success}
+                className="text-blurple-400 font-medium hover:text-blurple dark:hover:text-blurple-300"
               >
-                {t("ok")}
-              </Button>
+                {t("close")}
+              </button>
             </div>
           </div>
         </div>
@@ -328,6 +348,31 @@ const getWebhookSelectOption = (
   webhook,
 });
 
+// const defaultSetVars = ["guildId", "channelId", "messageId", "userId"];
+
+const getActionSeed = (type: FlowActionType): FlowAction => {
+  switch (type) {
+    case FlowActionType.Wait:
+      return { type, seconds: 1 };
+    case FlowActionType.Check:
+      // @ts-expect-error
+      return { type, then: [], else: [] };
+    default:
+      // @ts-expect-error
+      return { type };
+  }
+};
+
+type FlowParentContext =
+  | `component.${
+      | ComponentType.Button
+      | ComponentType.StringSelect
+      | ComponentType.UserSelect
+      | ComponentType.RoleSelect
+      | ComponentType.MentionableSelect
+      | ComponentType.ChannelSelect}`
+  | `trigger.${TriggerEvent}`;
+
 const FlowActionEditor: React.FC<{
   guildId?: string;
   flow: FlowWithPartials;
@@ -340,6 +385,7 @@ const FlowActionEditor: React.FC<{
   cache?: CacheManager;
   checkLevel?: number;
   premium?: boolean;
+  parentContext?: FlowParentContext;
 }> = ({
   guildId,
   flow,
@@ -352,6 +398,7 @@ const FlowActionEditor: React.FC<{
   cache,
   checkLevel,
   premium,
+  parentContext,
 }) => {
   const previewText = t(`actionDescription.${action.type}`, {
     replace: { action },
@@ -364,6 +411,7 @@ const FlowActionEditor: React.FC<{
     : [];
   const channels = cache ? cache.channel.getAll() : [];
 
+  // action limit tracking
   const actionMax = premium ? 40 : 10;
   const localIndexMax = actionMax - 1;
   const flattenAction = (a: FlowAction): FlowAction[] =>
@@ -374,11 +422,15 @@ const FlowActionEditor: React.FC<{
   const counted = allActions.filter(
     (a) => a.type !== FlowActionType.Check && a.type !== FlowActionType.Stop,
   );
-
   const absoluteI = allActions.indexOf(action);
-  // const stopAction = allActions.find((a, subI): a is FlowActionStop => {
-  //   return subI < absoluteI && a.type === 11;
-  // });
+  const hasMaxActions = counted.length >= actionMax;
+
+  // 'guess' which default setVars will be available
+  const isComponent = parentContext
+    ? parentContext.startsWith("component.")
+    : false;
+  // const isButton = parentContext === `component.${ComponentType.Button}`;
+  // const isMemberTrigger = parentContext && [`trigger.${TriggerEvent.MemberAdd}`, `trigger.${TriggerEvent.MemberRemove}`].includes(parentContext);
 
   return (
     <div
@@ -463,34 +515,7 @@ const FlowActionEditor: React.FC<{
         )}
         <div className="space-y-1">
           {action.type === FlowActionType.Dud ? (
-            <SimpleStringSelect
-              t={t}
-              name="type"
-              label={t("actionTypeText")}
-              value={action.type}
-              options={actionTypes
-                .filter(
-                  (type) =>
-                    (checkLevel !== undefined && checkLevel !== 0
-                      ? type !== 2
-                      : true) &&
-                    (counted.length > actionMax && absoluteI >= actionMax
-                      ? [2, 11].includes(type)
-                      : true),
-                )
-                .map((value) => ({ value, label: t(`actionType.${value}`) }))}
-              onChange={(value: FlowActionType) => {
-                flow.actions.splice(i, 1, {
-                  type: value,
-                  ...(value === FlowActionType.Wait
-                    ? { seconds: 1 }
-                    : value === FlowActionType.Check
-                      ? { then: [], else: [] }
-                      : {}),
-                });
-                update();
-              }}
-            />
+            <div />
           ) : action.type === FlowActionType.Wait ? (
             <NumberField.Root
               min={0}
@@ -545,16 +570,26 @@ const FlowActionEditor: React.FC<{
                   />
                 ))}
               </div>
-              <Button
+              <ButtonSelect
                 className="mt-1"
-                onClick={() => {
+                options={actionTypes.map((value) => ({
+                  value,
+                  label: t(`actionType.${value}`),
+                  disabled:
+                    value === FlowActionType.Stop
+                      ? false
+                      : value === FlowActionType.Check
+                        ? checkLevel !== undefined && checkLevel !== 0
+                        : hasMaxActions,
+                }))}
+                onValueChange={(value) => {
                   action.then = action.then ?? [];
-                  action.then.push({ type: 0 });
+                  action.then.push(getActionSeed(value));
                   update();
                 }}
               >
                 {t("addAction")}
-              </Button>
+              </ButtonSelect>
               <p className="text-sm mt-2">{t("checkFunctionElse")}</p>
               <div className="space-y-1">
                 {(action.else ?? []).map((a, ai) => (
@@ -573,16 +608,26 @@ const FlowActionEditor: React.FC<{
                   />
                 ))}
               </div>
-              <Button
+              <ButtonSelect
                 className="mt-1"
-                onClick={() => {
+                options={actionTypes.map((value) => ({
+                  value,
+                  label: t(`actionType.${value}`),
+                  disabled:
+                    value === FlowActionType.Stop
+                      ? false
+                      : value === FlowActionType.Check
+                        ? checkLevel !== undefined && checkLevel !== 0
+                        : hasMaxActions,
+                }))}
+                onValueChange={(value) => {
                   action.else = action.else ?? [];
-                  action.else.push({ type: 0 });
+                  action.else.push(getActionSeed(value));
                   update();
                 }}
               >
                 {t("addAction")}
-              </Button>
+              </ButtonSelect>
             </div>
           ) : action.type === 3 || action.type === 4 || action.type === 5 ? (
             <>
@@ -1017,9 +1062,13 @@ const FlowActionEditor: React.FC<{
                 <p className="text-sm">
                   <Trans
                     t={t}
-                    i18nKey={`deleteMessageIdNote.${!!varAction}`}
+                    i18nKey={
+                      isComponent
+                        ? `deleteMessageIdOnComponent.${!!varAction}`
+                        : `deleteMessageIdNote.${!!varAction}`
+                    }
                     components={[
-                      varAction ? (
+                      !!varAction || isComponent ? (
                         <CoolIcon
                           icon="Circle_Check"
                           className="text-green-400"

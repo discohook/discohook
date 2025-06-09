@@ -9,6 +9,7 @@
   "save": "Save",
   "cancel": "Cancel",
   "ok": "OK",
+  "close": "Close",
   "edit": "Edit",
   "delete": "Delete",
   "required": "Required",
@@ -536,6 +537,10 @@
   "deleteMessageIdNote": {
     "true": "<0/> Variable <1>messageId</1> is set as <1>{{value}}</1>.",
     "false": "<0/> Variable <1>messageId</1> is not set."
+  },
+  "deleteMessageIdOnComponent": {
+    "true": "<0/> Will delete a message with ID <1>{{value}}</1> (set by your <1>messageId</1> variable).",
+    "false": "<0/> Will delete the message that this component is on. Set <1>messageId</1> to override."
   },
   "description": "Description",
   "default": "Default",

@@ -27,7 +27,7 @@ import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName } from "../components/preview/Markdown";
 import { EditingFlowData, FlowEditModal } from "./FlowEditModal";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalProps, PlainModalHeader } from "./Modal";
 
 export type EditingComponentData = {
   component: APIComponentInMessageActionRow;
@@ -605,7 +605,10 @@ export const ComponentEditModal = (
   const [editingFlow, setEditingFlow] = useState<EditingFlowData>();
 
   return (
-    <Modal title={t("editComponent")} {...props}>
+    <Modal {...props}>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("editComponent")}
+      </PlainModalHeader>
       {error}
       {!submit && !cache && (
         <InfoBox icon="User_02" collapsible>
@@ -619,6 +622,7 @@ export const ComponentEditModal = (
         {...editingFlow}
         cache={cache}
         premium={props.isPremium}
+        parentContext={component ? `component.${component.type}` : undefined}
       />
       {component && setComponent && (
         <div className="-mt-2">
