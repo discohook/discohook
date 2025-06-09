@@ -7,7 +7,7 @@ import {
   SelectMenuDefaultValueType,
 } from "discord-api-types/v10";
 import { TFunction } from "i18next";
-import React from "react";
+import React, { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
@@ -26,7 +26,7 @@ import { StringSelect } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName } from "../components/preview/Markdown";
-import { EditingFlowData } from "./FlowEditModal";
+import { EditingFlowData, FlowEditModal } from "./FlowEditModal";
 import { Modal, ModalProps } from "./Modal";
 
 export type EditingComponentData = {
@@ -595,14 +595,14 @@ export const ComponentEditModal = (
   props: ModalProps &
     Partial<EditingComponentData> & {
       cache?: CacheManager;
-      setEditingFlow: React.Dispatch<
-        React.SetStateAction<EditingFlowData | undefined>
-      >;
+      guildId?: string;
+      isPremium?: boolean;
     },
 ) => {
   const { t } = useTranslation();
-  const { component, setComponent, submit, cache, setEditingFlow } = props;
+  const { component, setComponent, submit, cache } = props;
   const [error, setError] = useError();
+  const [editingFlow, setEditingFlow] = useState<EditingFlowData>();
 
   return (
     <Modal title={t("editComponent")} {...props}>
@@ -612,6 +612,14 @@ export const ComponentEditModal = (
           {t("componentsNotLoggedIn")}
         </InfoBox>
       )}
+      <FlowEditModal
+        open={!!editingFlow}
+        setOpen={() => setEditingFlow(undefined)}
+        guildId={props.guildId}
+        {...editingFlow}
+        cache={cache}
+        premium={props.isPremium}
+      />
       {component && setComponent && (
         <div className="-mt-2">
           <ComponentEditForm

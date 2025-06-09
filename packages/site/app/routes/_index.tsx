@@ -38,7 +38,6 @@ import {
   EditingComponentData,
 } from "~/modals/ComponentEditModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
-import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
 import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
@@ -300,7 +299,6 @@ export default function Index() {
   );
   const [editingComponent, setEditingComponent] =
     useState<EditingComponentData>();
-  const [editingFlow, setEditingFlow] = useState<EditingFlowData>();
 
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
@@ -532,17 +530,10 @@ export default function Index() {
         setOpen={() => setEditingComponent(undefined)}
         {...editingComponent}
         submit={user ? editingComponent?.submit : undefined}
-        setEditingFlow={setEditingFlow}
         cache={cache}
-      />
-      <FlowEditModal
-        open={!!editingFlow}
-        setOpen={() => setEditingFlow(undefined)}
         // confusing
         guildId={Object.values(targets)[0]?.guild_id}
-        {...editingFlow}
-        cache={cache}
-        premium={isPremium}
+        isPremium={isPremium}
       />
       <MessageSetModal
         open={settingMessageIndex !== undefined}
