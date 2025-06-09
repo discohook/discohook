@@ -63,7 +63,11 @@ export default () => {
                   {files.map((file) => (
                     <Link
                       key={`file-${path}-${file.file}`}
-                      className="block rounded-lg px-4 py-2 bg-primary-200 dark:bg-gray-900 border border-gray-100/10 shadow hover:shadow-lg hover:-translate-y-1 transition-all"
+                      className={twJoin(
+                        "block rounded-lg px-4 py-2 border transition-all",
+                        "bg-gray-50 dark:bg-gray-800 border-[#DFDFE1] dark:border-[#424349] hover:border-[#D2D2D5] dark:hover:border-[#626369]",
+                        "hover:bg-white hover:dark:bg-gray-700",
+                      )}
                       to={`/guide/${path}/${file.file}`}
                     >
                       <p className="font-semibold">{file.title}</p>
