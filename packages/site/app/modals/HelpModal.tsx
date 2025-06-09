@@ -65,40 +65,48 @@ export const HelpModal = (props: ModalProps) => {
 
               return <Embed key={`help-tag-${key}`} embed={data} />;
             })}
-          {indexData &&
-            Object.entries(indexData)
-              .flatMap((entries) =>
-                entries[1].map((e) => {
-                  e.path = entries[0];
-                  return e;
-                }),
-              )
-              .filter(
-                (entry) =>
-                  entry.file === query ||
-                  entry.title.toLowerCase().includes(query.toLowerCase()),
-              )
-              .map((entry) => {
-                const data: APIEmbed = {
-                  provider: { name: "Discohook Guides", url: "/guide" },
-                  title: entry.title,
-                  description: entry.description,
-                  thumbnail: entry.thumbnail
-                    ? { url: entry.thumbnail }
-                    : undefined,
-                  url: `/guide/${entry.path ? `${entry.path}/` : ""}${
-                    entry.file
-                  }`,
-                  color: entry.color || 0x58b9ff,
-                };
+          {indexData
+            ? Object.entries(indexData)
+                .flatMap((entries) =>
+                  entries[1].map((e) => {
+                    e.path = entries[0];
+                    return e;
+                  }),
+                )
+                .filter(
+                  (entry) =>
+                    (entry.file === query ||
+                      entry.title
+                        .toLowerCase()
+                        .includes(query.toLowerCase())) &&
+                    // clutter
+                    entry.path !== "changelogs",
+                )
+                .map((entry) => {
+                  const data: APIEmbed = {
+                    provider: {
+                      name: "Discohook Guides",
+                      url: "/guide",
+                    },
+                    title: entry.title,
+                    description: entry.description,
+                    thumbnail: entry.thumbnail
+                      ? { url: entry.thumbnail }
+                      : undefined,
+                    url: `/guide/${entry.path ? `${entry.path}/` : ""}${
+                      entry.file
+                    }`,
+                    color: entry.color || 0x58b9ff,
+                  };
 
-                return (
-                  <Embed
-                    key={`help-guide-${entry.path}/${entry.file}`}
-                    embed={data}
-                  />
-                );
-              })}
+                  return (
+                    <Embed
+                      key={`help-guide-${entry.path}/${entry.file}`}
+                      embed={data}
+                    />
+                  );
+                })
+            : null}
         </div>
       </div>
       <ModalFooter className="flex gap-2 flex-wrap">

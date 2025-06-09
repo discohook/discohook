@@ -732,5 +732,12 @@
     "now": "The current time upon formatting",
     "now_relative": "The current time, relative",
     "now_long": "The current time, long-form"
+  },
+  "guidePath": {
+    "getting-started": "Getting Started",
+    "deprecated": "Deprecated",
+    "recipes": "Recipes",
+    "debug": "Debug",
+    "changelogs": "Changelogs"
   }
 }

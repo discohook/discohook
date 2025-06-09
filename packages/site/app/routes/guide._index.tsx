@@ -1,5 +1,6 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
@@ -41,6 +42,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default () => {
+  const { t } = useTranslation();
   const { user, index } = useLoaderData<typeof loader>();
 
   return (
@@ -55,9 +57,7 @@ export default () => {
             return (
               <div key={`guide-path-${path}`} className="mb-4">
                 <p className="text-lg font-semibold">
-                  {path.replace(/(?:-|^)(\w)/g, (sub) =>
-                    sub.replace(/^-/, " ").toUpperCase(),
-                  )}
+                  {t(`guidePath.${path}`)}
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {files.map((file) => (
