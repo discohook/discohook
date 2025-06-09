@@ -3,7 +3,10 @@ import insertTextAtCursor from "insert-text-at-cursor";
 import { ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { CacheManager } from "~/util/cache/CacheManager";
-import { PopoutRichPicker } from "./editor/RichPicker";
+import {
+  PopoutRichPicker,
+  type PopoutRichPickerState,
+} from "./editor/RichPicker";
 import { CoolIcon } from "./icons/CoolIcon";
 import { FeatureConfig, getEnabledRuleKeys } from "./preview/Markdown";
 
@@ -44,6 +47,8 @@ export const TextArea = (
   }
 
   const mdKeys = markdown ? getEnabledRuleKeys(markdown) : [];
+  const [popoutState, setPopoutState] = useState<PopoutRichPickerState>();
+
   return (
     <label className="block">
       <p className="text-sm font-medium">
@@ -105,6 +110,65 @@ export const TextArea = (
               return onInput(event);
             }
           }}
+          onKeyDown={(e) => {
+            // "meta key" = command key on mac/ios, but also I think the
+            // windows key. Hopefully this doesn't interfere with windows
+            // shortcuts.
+            if (markdown && (e.metaKey || e.ctrlKey)) {
+              if (["e", "m", "p"].includes(e.key)) {
+                // avoid the print dialog and minimization/muting
+                e.preventDefault();
+              }
+              // we want to be sure not to use B, I, or U since we are
+              // reserving those for markdown shortcuts
+              switch (e.key) {
+                // ctrl+e and cmd+e are barren enough to use, plus this is
+                // what discord uses for opening the emoji picker
+                case "e": {
+                  if (
+                    mdKeys.includes("unicodeEmojis") ||
+                    mdKeys.includes("customEmojis")
+                  ) {
+                    popoutState?.openWithTab("emoji");
+                  }
+                  break;
+                }
+                // cmd/ctrl+m = minimize/mute tab by default, but i don't think
+                //              that many people will want to do those while in
+                //              an input
+                // cmd/ctrl+e = emoji
+                // cmd/ctrl+n = new window
+                // cmd/ctrl+t = new tab
+                // cmd/ctrl+i = reserved for italics
+                // cmd/ctrl+o = open file
+                // cmd/ctrl+s = save (useless for this page, but too broad)
+                case "m": {
+                  if (
+                    mdKeys.includes("channelMentions") &&
+                    mdKeys.includes("guildSectionMentions") &&
+                    mdKeys.includes("memberMentions") &&
+                    mdKeys.includes("roleMentions")
+                  ) {
+                    popoutState?.openWithTab("mentions");
+                  }
+                  break;
+                }
+                // cmd/ctrl+t = new tab
+                // cmd/ctrl+i = reserved for italics
+                // cmd/ctrl+m = minimize/mute tab
+                // cmd/ctrl+e = emoji
+                // p (timestamp) = opens print dialog, but we prevent it above
+                case "p": {
+                  if (mdKeys.includes("timestamps")) {
+                    popoutState?.openWithTab("time");
+                  }
+                  break;
+                }
+                default:
+                  break;
+              }
+            }
+          }}
           className={twJoin(
             "rounded-lg border bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition resize-y",
             short ? "min-h-9 py-1 px-[14px]" : "min-h-11 p-2",
@@ -115,6 +179,7 @@ export const TextArea = (
         {markdown && (
           <PopoutRichPicker
             t={t}
+            setState={setPopoutState}
             cache={cache}
             insertText={(text) => {
               if (ref.current) {

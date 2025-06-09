@@ -1,6 +1,6 @@
 import { Popover } from "@base-ui-components/react/popover";
 import type { TFunction } from "i18next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
@@ -8,6 +8,17 @@ import { popoverStyles } from "../pickers/Popover";
 import { EmojiPicker } from "./EmojiPicker";
 import { MentionsPicker } from "./MentionsPicker";
 import { TimePicker } from "./TimePicker";
+
+// Do we want a gif picker too?
+type Tab = "mentions" | "time" | "emoji";
+
+export interface PopoutRichPickerState {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  tab: Tab;
+  setTab: React.Dispatch<React.SetStateAction<Tab>>;
+  openWithTab: (tab: Tab) => void;
+}
 
 export const PopoutRichPicker: React.FC<
   React.PropsWithChildren<{
@@ -17,16 +28,41 @@ export const PopoutRichPicker: React.FC<
     mentionsTab?: boolean;
     timeTab?: boolean;
     emojiTab?: boolean;
+    setState?: React.Dispatch<
+      React.SetStateAction<PopoutRichPickerState | undefined>
+    >;
   }>
-> = ({ t, insertText, cache, children, mentionsTab, timeTab, emojiTab }) => {
+> = ({
+  t,
+  insertText,
+  cache,
+  children,
+  mentionsTab,
+  timeTab,
+  emojiTab,
+  setState,
+}) => {
   const id = randomString(10);
   const [open, setOpen] = useState(false);
 
-  // Do we want a gif picker too?
-  type Tab = "mentions" | "time" | "emoji";
   const [tab, setTab] = useState<Tab>(
     mentionsTab === false ? (timeTab === false ? "emoji" : "time") : "mentions",
   );
+
+  useEffect(() => {
+    if (setState) {
+      setState({
+        open,
+        setOpen,
+        tab,
+        setTab,
+        openWithTab: (tab: Tab) => {
+          setTab(tab);
+          setOpen(true);
+        },
+      });
+    }
+  }, [setState, tab, open]);
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
