@@ -10,7 +10,7 @@ import { linkClassName } from "~/components/preview/Markdown";
 import type { LocaleCode } from "~/i18n";
 import { User } from "~/session.server";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, ModalProps, PlainModalHeader } from "./Modal";
 
 interface LanguageEntry {
   native: string;
@@ -79,7 +79,10 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
   const [settings, updateSettings] = useLocalStorage();
 
   return (
-    <Modal title={t("settings")} {...props}>
+    <Modal {...props}>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("settings")}
+      </PlainModalHeader>
       <div>
         <p className="text-sm font-bold uppercase dark:text-gray-400">
           {t("theme")}
