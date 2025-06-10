@@ -1,3 +1,4 @@
+import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
@@ -23,7 +24,6 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
 import fs from "fs/promises";
-import process from "node:process";
 import { TriggerEvent } from "store";
 
 /**

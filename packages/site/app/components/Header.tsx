@@ -183,10 +183,8 @@ export const Header: React.FC<{
                               )}
                               className="rounded-xl size-full aspect-square"
                             />
-                            <Avatar.Fallback className="text-xl flex rounded-xl size-full items-center justify-center bg-gray-100 dark:bg-gray-900 truncate">
-                              {guild.name
-                                .split(" ")
-                                .map((seg) => seg[0].toUpperCase())}
+                            <Avatar.Fallback className="text-xl flex rounded-xl size-full items-center justify-center bg-gray-100 dark:bg-gray-900 truncate uppercase">
+                              {guild.name.split(" ").map((seg) => seg[0] ?? "")}
                             </Avatar.Fallback>
                           </Avatar.Root>
                         </Link>
