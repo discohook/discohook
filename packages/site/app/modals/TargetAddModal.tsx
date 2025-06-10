@@ -39,7 +39,9 @@ export const TargetAddModal = (
   const [urlError, setUrlError] = useState<ReactNode>();
   const [manualWebhook, setManualWebhook] = useState(!props.hasAuthentication);
   const memberships = useApiLoader<ApiGetCurrentUserMemberships>(
-    `/users/@me/memberships?permissions=${PermissionFlagsBits.ManageWebhooks}`,
+    `${BRoutes.currentUserMemberships()}?permissions=${
+      PermissionFlagsBits.ManageWebhooks
+    }`,
   );
 
   const [, setCache] = useLocalStorage<{ memberships: typeof memberships }>(

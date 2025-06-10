@@ -29,10 +29,24 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /users/@me
+   */
+  currentUser() {
+    return "/users/@me" as const;
+  },
+
+  /**
    * - GET /users/@me/backups
    */
   currentUserBackups() {
     return "/users/@me/backups" as const;
+  },
+
+  /**
+   * - GET /users/@me/memberships
+   */
+  currentUserMemberships() {
+    return "/users/@me/memberships" as const;
   },
 
   /**

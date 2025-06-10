@@ -232,7 +232,7 @@ const getNewMessageData = (settings: Settings): QueryDataMessageDataRaw => {
 
 export default function Index() {
   const { t } = useTranslation();
-  const user = useApiLoader<ApiGetCurrentUser>("/users/@me");
+  const user = useApiLoader<ApiGetCurrentUser>(BRoutes.currentUser());
   const { userId, cdn, discordApplicationId, debug } =
     useLoaderData<typeof loader>();
 
