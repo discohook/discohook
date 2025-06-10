@@ -4541,7 +4541,6 @@ cron-parser@discohook/cron-parser:
     react-lazy-load-image-component: "npm:^1.6.2"
     react-select: "npm:^5.8.0"
     remix-auth-discord: discohook/remix-auth-discord
-    remix-auth-guilded: "npm:^1.0.1"
     remix-i18next: "npm:6.4.1"
     remix-utils: "npm:^7.6.0"
     robots-parser: "npm:^3.0.1"
@@ -9107,18 +9106,6 @@ remix-auth-discord@discohook/remix-auth-discord:
   languageName: node
   linkType: hard
 
-"remix-auth-guilded@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "remix-auth-guilded@npm:1.0.1"
-  dependencies:
-    remix-auth: "npm:^3.0.0"
-    remix-auth-oauth2: "npm:^1.11.2"
-  peerDependencies:
-    "@remix-run/server-runtime": ^1.0.0
-  checksum: 10c0/b7961b9ba0ab9a9045466b25f4c5095a656d04f15ef9994299f30910487937ecc9ff69816e80bcaf839b5fbe2e7583d0f119bb82619f95f832d5231002f2a783
-  languageName: node
-  linkType: hard
-
 "remix-auth-oauth2@npm:^1.11.2":
   version: 1.11.2
   resolution: "remix-auth-oauth2@npm:1.11.2"
@@ -9129,18 +9116,6 @@ remix-auth-discord@discohook/remix-auth-discord:
     "@remix-run/server-runtime": ^1.0.0 || ^2.0.0
     remix-auth: ^3.6.0
   checksum: 10c0/382cfcc05d4261d98f34b4d1af79f4b526718b2ff4713c374f4a811f08340b52903458b06d98266de40ab5b786326004417d48a05f38f8a10058ee5f0c2066f5
-  languageName: node
-  linkType: hard
-
-"remix-auth@npm:^3.0.0":
-  version: 3.6.0
-  resolution: "remix-auth@npm:3.6.0"
-  dependencies:
-    uuid: "npm:^8.3.2"
-  peerDependencies:
-    "@remix-run/react": ^1.0.0 || ^2.0.0
-    "@remix-run/server-runtime": ^1.0.0 || ^2.0.0
-  checksum: 10c0/2b9d9f5ad02e7addbf2082d0968b8a23cb7569d68c322b713b35864e21028ceca9d554c36e33f42e7ece04c826a08411e120fdc827595cee3932facd5071fcf5
   languageName: node
   linkType: hard
 
@@ -9738,7 +9713,7 @@ remix-auth-discord@discohook/remix-auth-discord:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=3381ee&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=13341b&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.38.1"
     discord-snowflake: "npm:^2.0.0"
@@ -9748,7 +9723,7 @@ remix-auth-discord@discohook/remix-auth-discord:
     tif-snowflake: discohook/snowflake
     zod: "npm:^3.23.8"
     zodix: "npm:^0.4.4"
-  checksum: 10c0/5ed81df4a588dfe4eb5fc4964d1480a1916b4c894b26e9678016bc2dd773da80652f1a9fd68899cbc4192129300a30c18cee01e1f3bdbddb05e6b738e5a5c31a
+  checksum: 10c0/acc0dcdbde50eca0e8e6c5c380ea0ad62c64b9c6a2bccd948ab0d5add5145768d58ae089071c42ee85e2c9f13d6cd6e45601ab2b8107afbb86cb79cfab8cde64
   languageName: node
   linkType: hard
 

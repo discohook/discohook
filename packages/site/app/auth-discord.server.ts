@@ -30,7 +30,6 @@ import { base64Encode } from "./util/text";
 export type UserAuth = {
   id: string;
   discordId?: string;
-  guildedId?: string;
 };
 
 export const getDiscordAuth = (

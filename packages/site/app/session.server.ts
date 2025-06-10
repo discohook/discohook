@@ -201,7 +201,6 @@ export async function getUser(
       subscriptionExpiresAt: true,
       lifetime: true,
       discordId: true,
-      guildedId: true,
     },
     with: {
       discordUser: {
@@ -211,13 +210,6 @@ export async function getUser(
           globalName: true,
           discriminator: true,
           avatar: true,
-        },
-      },
-      guildedUser: {
-        columns: {
-          id: true,
-          name: true,
-          avatarUrl: true,
         },
       },
     },

@@ -3,14 +3,13 @@ import { z } from "zod";
 import { zx } from "zodix";
 import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
 import { getDiscordAuth } from "~/auth-discord.server";
-import { getGuildedAuth } from "~/auth-guilded.server";
 import { getSessionStorage, getUser, getUserId } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams, zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { method } = zxParseParams(params, {
-    method: z.enum(["discord", "discord-webhook", "guilded"]),
+    method: z.enum(["discord", "discord-webhook"]),
   });
 
   if (method === "discord-webhook") {
@@ -66,8 +65,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   //   request.headers.delete("Cookie");
   // }
 
-  const auth =
-    method === "discord" ? getDiscordAuth(context) : getGuildedAuth(context);
+  const auth = getDiscordAuth(context);
   const userAuth = await auth.isAuthenticated(request);
 
   if (!userAuth || !userAuth[`${method}Id`] || force) {
@@ -80,8 +78,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     // cancelled (forced) auth requests to log the user out. If you have a
     // solution to this please open an issue.
     session.unset("user");
-    // Also: What to do about having both a Discord and Guilded account
-    // associated with the same User? This is really a no-good solution.
 
     if (
       redirectTo &&
