@@ -12,34 +12,32 @@ export interface Settings {
   defaultMessageFlag?: "standard" | "components";
 }
 
-export const useLocalStorage = (): [
-  Settings,
-  (data: Partial<Settings>) => void,
-] => {
+export const useLocalStorage = <T = Settings>(
+  key = "discohook_settings",
+): [T, (data: Partial<T>) => void] => {
   try {
     localStorage;
   } catch {
-    return [{}, (data: Partial<Settings>) => {}];
+    return [{} as T, (data: Partial<T>) => {}];
   }
+  const eventKey = `storage_${key}`;
 
-  const settings = JSON.parse(
-    localStorage.getItem("discohook_settings") ?? "{}",
-  );
+  const settings = JSON.parse(localStorage.getItem(key) ?? "{}");
   // biome-ignore lint/correctness/useHookAtTopLevel: server/client case
-  const [state, setState] = useState(settings as Settings);
+  const [state, setState] = useState(settings as T);
   // biome-ignore lint/correctness/useHookAtTopLevel: ^
   useEffect(() => {
     const listenStorageChange = () => {
-      setState(JSON.parse(localStorage.getItem("discohook_settings") ?? "{}"));
+      setState(JSON.parse(localStorage.getItem(key) ?? "{}"));
     };
-    window.addEventListener("storage", listenStorageChange);
-    return () => window.removeEventListener("storage", listenStorageChange);
+    window.addEventListener(eventKey, listenStorageChange);
+    return () => window.removeEventListener(eventKey, listenStorageChange);
   }, []);
 
-  const update = (data: Partial<Settings>) => {
+  const update = (data: Partial<T>) => {
     const newData = { ...settings, ...data };
-    localStorage.setItem("discohook_settings", JSON.stringify(newData));
-    window.dispatchEvent(new Event("storage"));
+    localStorage.setItem(key, JSON.stringify(newData));
+    window.dispatchEvent(new Event(eventKey));
   };
 
   return [state, update];

@@ -20,6 +20,7 @@ import { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { useApiLoader, useSafeFetcher } from "~/util/loader";
+import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
@@ -41,17 +42,19 @@ export const TargetAddModal = (
     `/users/@me/memberships?permissions=${PermissionFlagsBits.ManageWebhooks}`,
   );
 
+  const [, setCache] = useLocalStorage<{ memberships: typeof memberships }>(
+    "discohook_cache",
+  );
+  useEffect(() => {
+    if (memberships) setCache({ memberships });
+    // clear this cache if the user logged out
+    else if (!props.hasAuthentication) setCache({ memberships: [] });
+  }, [memberships, props.hasAuthentication]);
+
   const [error, setError] = useError(t);
   const [guildId, setGuildId] = useState<string>();
   const guildWebhooksFetcher = useSafeFetcher<typeof ApiGetGuildWebhooks>({
     onError: setError,
-    // onError(e) {
-    //   if (e.status === 404) {
-    //     setError({ ...e, message: "Discohook Utils is not in this server." });
-    //   } else {
-    //     setError(e);
-    //   }
-    // },
   });
   const guildWebhookTokenFetcher = useSafeFetcher<
     typeof ApiGetGuildWebhookToken

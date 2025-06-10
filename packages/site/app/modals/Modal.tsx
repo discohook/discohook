@@ -82,11 +82,7 @@ export const PlainModalHeader: React.FC<
   >
     <div className="flex">{children}</div>
     {onClose ? (
-      <button
-        type="button"
-        className="self-baseline [margin-inline-start:auto]"
-        onClick={onClose}
-      >
+      <button type="button" className="self-baseline ms-auto" onClick={onClose}>
         <CoolIcon
           icon="Close_MD"
           className="text-2xl text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-gray-300 transition"

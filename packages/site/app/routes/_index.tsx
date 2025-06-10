@@ -80,7 +80,7 @@ import {
 } from "~/util/discord";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { LoaderArgs, useApiLoader } from "~/util/loader";
-import { Settings, useLocalStorage } from "~/util/localstorage";
+import { type Settings, useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
   base64UrlEncode,

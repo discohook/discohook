@@ -205,6 +205,8 @@
   "server_one": "Server",
   "server_other": "Servers",
   "noServers": "You don't appear to share any servers with Discohook Utils.",
+  "usingDiscohook": "Using Discohook",
+  "guides": "Guides",
   "inviteBot": "Invite Bot",
   "addToServer": "Add to Server",
   "favorite": "Favorite",
