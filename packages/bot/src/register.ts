@@ -1,4 +1,3 @@
-import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
@@ -7,23 +6,24 @@ import {
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
-  ToAPIApplicationCommandOptions,
+  type ToAPIApplicationCommandOptions,
 } from "@discordjs/builders";
 import {
-  APIApplicationCommandOptionChoice,
+  type APIApplicationCommandOptionChoice,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ChannelType,
   InteractionContextType,
-  LocaleString,
-  LocalizationMap,
-  RESTPutAPIApplicationGuildCommandsJSONBody,
+  type Locale,
+  type LocalizationMap,
+  type RESTPutAPIApplicationGuildCommandsJSONBody,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
 import fs from "fs/promises";
+import process from "node:process";
 import { TriggerEvent } from "store";
 
 /**
@@ -77,7 +77,7 @@ const loadLocalization = async (lang: string) =>
   {};
 
 const localizeProp = (
-  languages: Partial<Record<LocaleString, any>>,
+  languages: Partial<Record<Locale, any>>,
   key: string,
   maxLength?: number,
 ) => {
@@ -95,7 +95,7 @@ const localizeProp = (
               return [lang, final.slice(0, maxLength)];
             }
           } else {
-            final = languages[lang as LocaleString]?.[drillKey];
+            final = languages[lang as Locale]?.[drillKey];
             if (!final) {
               return [lang, undefined];
             }
