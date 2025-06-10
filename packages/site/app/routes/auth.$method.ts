@@ -7,6 +7,15 @@ import { getSessionStorage, getUser, getUserId } from "~/session.server";
 import { LoaderArgs } from "~/util/loader";
 import { zxParseParams, zxParseQuery } from "~/util/zod";
 
+const isValidRedirect = (path: string | undefined): path is string => {
+  // I don't know what's causing this but we have this weird bug where,
+  // somehow, `/api/v1/users/@me` is getting passed to the redirect when
+  // authorizing. I think it might have something to do with the "fetchers"
+  // that we now use instead of waiting for the route loader (one of which
+  // fetches that API route asynchronously on the index page).
+  return !!path && path.startsWith("/") && !path.startsWith("/api/");
+};
+
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { method } = zxParseParams(params, {
     method: z.enum(["discord", "discord-webhook"]),
@@ -45,11 +54,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const userId = await getUserId(request, context);
   const user = await getUser(request, context);
   if (user) {
-    if (
-      redirectTo &&
-      (redirectTo.startsWith("/") ||
-        ["discohook.app", "discohook.org"].includes(new URL(redirectTo).host))
-    ) {
+    if (isValidRedirect(redirectTo)) {
       return redirect(redirectTo);
     }
     return redirect("/?m=auth-success");
@@ -79,12 +84,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     // solution to this please open an issue.
     session.unset("user");
 
-    if (
-      redirectTo &&
-      (redirectTo.startsWith("/") ||
-        ["discohook.app", "discohook.org"].includes(new URL(redirectTo).host))
-    ) {
+    if (isValidRedirect(redirectTo)) {
       session.flash("redirectTo", redirectTo);
+    } else {
+      // No lingering
+      session.unset("redirectTo");
     }
 
     request.headers.set("Cookie", await commitSession(session));
