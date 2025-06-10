@@ -1,16 +1,5 @@
 {
     "language": "Langue",
-    "locales": {
-        "ar": "Arabe",
-        "zh": "Chinois, Chine",
-        "nl": "Néerlandais",
-        "en": "Anglais, États-Unis",
-        "en-GB": "Anglais, Royaume-Uni",
-        "fr": "Français",
-        "it": "Italien",
-        "es": "Espagnol",
-        "de": "Allemand"
-    },
     "settings": "Paramètres",
     "help": "Aide",
     "name": "Nom",

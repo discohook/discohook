@@ -68,18 +68,6 @@
     "editorPanes": "Panely editoru",
     "forceDualPane": "Vždy používat editor s dvěma panely",
     "language": "Jazyk",
-    "locales": {
-        "ar": "Arabsky",
-        "zh": "Čínsky, Čína",
-        "nl": "Holandsky",
-        "en": "Anglicky, USA",
-        "en-GB": "Anglicky, UK",
-        "fr": "Francouzsky",
-        "es": "Španělsky",
-        "de": "Německy",
-        "it": "Italsky",
-        "cs": "Česky"
-    },
     "translatePrompt": "Chceš pomoci přeložit Discohook do svého jazyka? Podívej se na <0>překladatelský portál</0> a připoj se k <1>podpůrnému serveru</1>, aby ses s námi mohl koordinovat.",
     "webhookInput": "Vstup webhooku",
     "modern": "Moderní",

@@ -1,12 +1,4 @@
 {
-    "locales": {
-        "nl": "Nederlands",
-        "ar": "Arabisch",
-        "en": "Engels, VS",
-        "en-GB": "Engels, VK",
-        "fr": "Frans",
-        "zh": "Chinees, China"
-    },
     "mention": {
         "unknown": "onbekend",
         "unknownUser": "onbekende-gebruiker",
