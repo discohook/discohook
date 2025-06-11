@@ -3,7 +3,7 @@ title: "Link Embeds"
 description: "How to use link embeds to post embeds everywhere"
 ---
 
-> <:pinkhook:1356993126513901599> This article is about a [Deluxe](discohook://deluxe) feature!
+> <:pinkhook:1356993126513901599> This article is about a [Deluxe](discohook://donate) feature!
 
 # Link Embeds
 
