@@ -22,7 +22,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^1.5.1",
+    "@biomejs/biome": "^1.9.4",
     "drizzle-kit": "^0.23.1"
   },
   "packageManager": "yarn@4.1.0"
