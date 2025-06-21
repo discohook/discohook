@@ -11,10 +11,10 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { Membership } from "~/api/v1/users.@me.memberships";
+import type { Membership } from "~/api/v1/users.@me.memberships";
 import { HelpModal } from "~/modals/HelpModal";
 import { SettingsModal } from "~/modals/SettingsModal";
-import { User } from "~/session.server";
+import type { User } from "~/session.server";
 import { cdn, cdnImgAttributes } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { getUserAvatar, getUserPremiumDetails, getUserTag } from "~/util/users";
@@ -61,7 +61,7 @@ export const Header: React.FC<{
   }>("discohook_cache");
   useEffect(() => {
     if (memberships_) setCache({ memberships: memberships_ });
-  }, [memberships_]);
+  }, [memberships_, setCache]);
 
   const currentGuild = useMemo(() => {
     const serverPathMatch = location.pathname.match(/^\/s\/(\d+)/);
