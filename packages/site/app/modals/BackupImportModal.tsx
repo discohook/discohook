@@ -14,7 +14,7 @@ import type {
   MessageData,
 } from "~/types/discohook";
 import { base64UrlEncode, toSnakeCase } from "~/util/text";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const backupDataAsNewest = (
   data: DiscohookBackupExportData,

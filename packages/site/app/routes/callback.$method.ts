@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getDiscordAuth } from "~/auth-discord.server";
 import { getSessionStorage } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {

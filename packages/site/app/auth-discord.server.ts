@@ -1,7 +1,7 @@
-import { SessionStorage } from "@remix-run/cloudflare";
+import type { SessionStorage } from "@remix-run/cloudflare";
 import {
-  APIUser,
-  RESTPostOAuth2AccessTokenResult,
+  type APIUser,
+  type RESTPostOAuth2AccessTokenResult,
   Routes,
 } from "discord-api-types/v10";
 import { and, eq, notInArray, sql } from "drizzle-orm";
@@ -9,7 +9,7 @@ import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
 import { getSessionStorage } from "./session.server";
 import {
-  DBWithSchema,
+  type DBWithSchema,
   autoRollbackTx,
   discordGuilds,
   discordMembers,
@@ -18,13 +18,13 @@ import {
   oauthInfo,
   upsertDiscordUser,
 } from "./store.server";
-import { Env } from "./types/env";
+import type { Env } from "./types/env";
 import {
   DISCORD_API,
   DISCORD_API_V,
   getCurrentUserGuilds,
 } from "./util/discord";
-import { Context } from "./util/loader";
+import type { Context } from "./util/loader";
 import { base64Encode } from "./util/text";
 
 export type UserAuth = {

@@ -1,9 +1,9 @@
 import { useLoaderData } from "@remix-run/react";
-import { APIWebhook } from "discord-api-types/v10";
+import type { APIWebhook } from "discord-api-types/v10";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 
 export const loader = async ({
   request,

@@ -1,6 +1,6 @@
 import { redirect } from "@remix-run/cloudflare";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 
 const permissions = new PermissionsBitField(0);
 // permissions.set(PermissionFlags.ManageGuild, true);

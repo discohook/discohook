@@ -1,4 +1,4 @@
-import { APIUser } from "discord-api-types/v10";
+import type { APIUser } from "discord-api-types/v10";
 import { type TablesRelationalConfig, sql } from "drizzle-orm";
 import { type PostgresJsTransaction, drizzle } from "drizzle-orm/postgres-js";
 import JSONbig_ from "json-bigint";

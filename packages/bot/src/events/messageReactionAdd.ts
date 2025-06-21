@@ -1,11 +1,11 @@
 import { REST } from "@discordjs/rest";
 import {
-  GatewayMessageReactionAddDispatchData,
+  type GatewayMessageReactionAddDispatchData,
   Routes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { discordReactionRoles, getDb, makeSnowflake } from "store";
-import { GatewayEventCallback } from "../events.js";
+import type { GatewayEventCallback } from "../events.js";
 
 export interface DiscordReactionRoleData {
   roleId: string | null;

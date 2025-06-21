@@ -1,11 +1,8 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "lib": [
-        "es2021",
-        "dom",
-    ],
-    "types": ["@cloudflare/workers-types/2023-03-01"],
+    "lib": ["es2021", "dom"],
+    "types": ["@cloudflare/workers-types/2023-03-01"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

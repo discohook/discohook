@@ -1,9 +1,9 @@
 import { Select } from "@base-ui-components/react/select";
-import { ButtonStyle } from "discord-api-types/v10";
+import type { ButtonStyle } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
 import { Button } from "./Button";
 import { selectStyles } from "./StringSelect";
-import { CoolIcon, CoolIconsGlyph } from "./icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "./icons/CoolIcon";
 
 export function ButtonSelect<T>(
   props: React.PropsWithChildren<{

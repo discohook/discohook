@@ -1,4 +1,4 @@
-import { DraftFile } from "~/routes/_index";
+import type { DraftFile } from "~/routes/_index";
 import { randomString } from "./text";
 
 export const MAX_FILES_PER_MESSAGE = 10;

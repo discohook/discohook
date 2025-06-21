@@ -1,8 +1,8 @@
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
   ChannelType,
-  ComponentType,
+  type ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
@@ -12,15 +12,15 @@ import { twJoin } from "tailwind-merge";
 import { NumberField } from "@base-ui-components/react/number-field";
 import { Link } from "@remix-run/react";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { TFunction } from "i18next";
-import React from "react";
+import type { TFunction } from "i18next";
+import type React from "react";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { TextArea } from "~/components/TextArea";
-import {
+import type {
   AnonymousVariable,
   DraftFlow,
   FlowAction,
@@ -32,13 +32,17 @@ import {
   TriggerEvent,
 } from "~/store.server";
 import { FlowActionType, ZodDraftFlow } from "~/types/flows";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
-import { SafeFetcher, getZodErrorMessage, useSafeFetcher } from "~/util/loader";
-import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import {
-  PartialBackupsWithMessages,
+  type SafeFetcher,
+  getZodErrorMessage,
+  useSafeFetcher,
+} from "~/util/loader";
+import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
+import type {
   loader as ApiGetUserBackups,
+  PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
@@ -51,7 +55,7 @@ import {
 import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
-import { Modal, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 type FlowWithPartials = DraftFlow & {
   actions: (Partial<FlowAction> & Pick<FlowAction, "type">)[];
@@ -741,7 +745,9 @@ const FlowActionEditor: React.FC<{
                         value={
                           (action.backupMessageIndex === null
                             ? "null"
-                            : action.backupMessageIndex ?? 0) as number | "null"
+                            : (action.backupMessageIndex ?? 0)) as
+                            | number
+                            | "null"
                         }
                         options={messageOptions}
                         onChange={(value) => {
@@ -942,7 +948,9 @@ const FlowActionEditor: React.FC<{
                         value={
                           (action.backupMessageIndex === null
                             ? "null"
-                            : action.backupMessageIndex ?? 0) as number | "null"
+                            : (action.backupMessageIndex ?? 0)) as
+                            | number
+                            | "null"
                         }
                         options={messageOptions}
                         onChange={(value) => {

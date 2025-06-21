@@ -7,7 +7,8 @@
       "./packages/site/functions/",
       "./packages/site/public/",
       "./packages/site/app/util/highlights.json",
-      "./persistence/"
+      "./persistence/",
+      ".wrangler/"
     ]
   },
   "organizeImports": {
@@ -18,7 +19,10 @@
     "rules": {
       "recommended": true,
       "style": {
-        "noUselessElse": "off"
+        "noUselessElse": "off",
+        "useImportType": {
+          "fix": "safe"
+        }
       },
       "suspicious": {
         "noExplicitAny": "off"

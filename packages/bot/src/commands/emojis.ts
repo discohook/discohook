@@ -1,4 +1,4 @@
-import { Env } from "../types/env.js";
+import type { Env } from "../types/env.js";
 
 type EmojiDataEntry = [
   string | [string, string] | [string, string, string],

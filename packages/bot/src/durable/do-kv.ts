@@ -1,5 +1,5 @@
 import { getSessionManagerStub } from "store";
-import { Env } from "../types/env.js";
+import type { Env } from "../types/env.js";
 
 export const patchGeneric = async <T>(
   env: Env,

@@ -11,7 +11,7 @@ import { Twemoji } from "~/components/icons/Twemoji";
 import { getUser } from "~/session.server";
 import { and, discordMembers, eq, getDb } from "~/store.server";
 import { cdn, cdnImgAttributes } from "~/util/discord";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseForm } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {

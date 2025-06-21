@@ -1,4 +1,4 @@
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import { useCallback, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
@@ -6,11 +6,11 @@ import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
-import { QueryData } from "~/types/QueryData";
+import type { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
 import { cycleCopyText } from "~/util/text";
-import { action as ApiPostShare } from "../api/v1/share";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import type { action as ApiPostShare } from "../api/v1/share";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageShareModal = (
   props: ModalProps & {
@@ -33,7 +33,7 @@ export const MessageShareModal = (
       const { includeTargets_ } = options ?? {};
 
       const submitData =
-        includeTargets_ ?? includeTargets
+        (includeTargets_ ?? includeTargets)
           ? {
               ...data,
               targets: Object.values(targets).map((t) => ({

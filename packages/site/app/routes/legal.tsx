@@ -1,4 +1,4 @@
-import { MetaFunction, useLoaderData } from "@remix-run/react";
+import { type MetaFunction, useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Header } from "~/components/Header";
@@ -7,7 +7,7 @@ import { Prose } from "~/components/Prose";
 import { PreviewActionRow } from "~/components/preview/ActionRow";
 import { linkClassName } from "~/components/preview/Markdown";
 import { getUser } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 
 export const loader = ({ request, context }: LoaderArgs) =>
   getUser(request, context);

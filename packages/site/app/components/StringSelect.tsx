@@ -1,7 +1,11 @@
 import { Select as MuiSelect } from "@base-ui-components/react/select";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import Select, { ClassNamesConfig, GroupBase, Props } from "react-select";
+import Select, {
+  type ClassNamesConfig,
+  type GroupBase,
+  type Props,
+} from "react-select";
 import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 

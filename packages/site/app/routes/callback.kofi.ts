@@ -3,7 +3,7 @@ import {
   ZodKofiDonationPayload,
   ZodKofiGetSupporterDetails,
 } from "~/types/kofi";
-import { ActionArgs } from "~/util/loader";
+import type { ActionArgs } from "~/util/loader";
 import Scraper from "~/util/scraper";
 import { zxParseForm, zxParseJson } from "~/util/zod";
 

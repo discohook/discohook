@@ -2,14 +2,14 @@ import { REST } from "@discordjs/rest";
 import { defer, json, redirect } from "@remix-run/cloudflare";
 import { Form, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import {
-  APIApplication,
-  APIGuild,
-  APIGuildMember,
+  type APIApplication,
+  type APIGuild,
+  type APIGuildMember,
   ButtonStyle,
-  RESTGetAPIOAuth2CurrentApplicationResult,
-  RESTGetAPIOAuth2CurrentAuthorizationResult,
+  type RESTGetAPIOAuth2CurrentApplicationResult,
+  type RESTGetAPIOAuth2CurrentAuthorizationResult,
   RESTJSONErrorCodes,
-  RESTPostOAuth2AccessTokenResult,
+  type RESTPostOAuth2AccessTokenResult,
   Routes,
   TeamMemberRole,
 } from "discord-api-types/v10";
@@ -18,7 +18,10 @@ import { type SQL, isNotNull } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
-import { AsyncGuildSelect, OptionGuild } from "~/components/AsyncGuildSelect";
+import {
+  AsyncGuildSelect,
+  type OptionGuild,
+} from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -38,17 +41,17 @@ import {
   makeSnowflake,
   sql,
 } from "~/store.server";
-import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import {
   DISCORD_BOT_TOKEN_RE,
   botAppAvatar,
   isDiscordError,
 } from "~/util/discord";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { base64Encode, cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseParams } from "~/util/zod";
-import { KVCustomBot } from "./me.bots";
+import type { KVCustomBot } from "./me.bots";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });

@@ -3,10 +3,10 @@ import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
   SlashCommandChannelOption,
-  SlashCommandOptionsOnlyBuilder,
+  type SlashCommandOptionsOnlyBuilder,
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
-  SlashCommandSubcommandsOnlyBuilder,
+  type SlashCommandSubcommandsOnlyBuilder,
   type ToAPIApplicationCommandOptions,
 } from "@discordjs/builders";
 import {

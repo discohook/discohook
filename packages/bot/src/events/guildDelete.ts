@@ -1,10 +1,10 @@
-import {
+import type {
   APIUnavailableGuild,
   GatewayGuildDeleteDispatchData,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { discordGuilds, getDb, makeSnowflake } from "store";
-import { GatewayEventCallback } from "../events.js";
+import type { GatewayEventCallback } from "../events.js";
 
 export const guildDeleteCallback: GatewayEventCallback = async (
   env,

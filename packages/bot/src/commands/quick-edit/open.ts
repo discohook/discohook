@@ -4,14 +4,14 @@ import {
   TextInputBuilder,
 } from "@discordjs/builders";
 import {
-  APIComponentInContainer,
-  APIContainerComponent,
-  APIMessageTopLevelComponent,
+  type APIComponentInContainer,
+  type APIContainerComponent,
+  type APIMessageTopLevelComponent,
   ComponentType,
   TextInputStyle,
 } from "discord-api-types/v10";
 import { getchMessage } from "store";
-import {
+import type {
   AutoModalCustomId,
   ButtonCallback,
   SelectMenuCallback,

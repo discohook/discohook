@@ -1,12 +1,12 @@
 import { REST } from "@discordjs/rest";
 import {
-  GatewayMessageReactionRemoveDispatchData,
+  type GatewayMessageReactionRemoveDispatchData,
   Routes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { discordReactionRoles, getDb, makeSnowflake } from "store";
-import { GatewayEventCallback } from "../events.js";
-import { DiscordReactionRoleData } from "./messageReactionAdd.js";
+import type { GatewayEventCallback } from "../events.js";
+import type { DiscordReactionRoleData } from "./messageReactionAdd.js";
 
 export const messageReactionRemoveCallback: GatewayEventCallback = async (
   env,

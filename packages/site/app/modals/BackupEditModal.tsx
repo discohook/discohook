@@ -1,16 +1,16 @@
 import { Form } from "@remix-run/react";
 import {
-  CronFields,
-  DayOfTheMonthRange,
-  DayOfTheWeekRange,
-  HourRange,
-  MonthRange,
-  SixtyRange,
+  type CronFields,
+  type DayOfTheMonthRange,
+  type DayOfTheWeekRange,
+  type HourRange,
+  type MonthRange,
+  type SixtyRange,
   fieldsToExpression,
   parseExpression,
 } from "cron-parser";
-import { TFunction } from "i18next";
-import moment, { Moment } from "moment";
+import type { TFunction } from "i18next";
+import moment, { type Moment } from "moment";
 import { useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -22,7 +22,7 @@ import { StringSelect } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import DatePicker, { generateDateRange } from "~/components/pickers/DatePicker";
-import { LoadedBackup } from "~/routes/me.backups";
+import type { LoadedBackup } from "~/routes/me.backups";
 import { useSafeFetcher } from "~/util/loader";
 import {
   cronDaysOfMonth,
@@ -33,8 +33,8 @@ import {
   cronToEnglish,
   getTimezone,
 } from "~/util/time";
-import { action as ApiBackupsIdAction } from "../api/v1/backups.$id";
-import { Modal, ModalProps } from "./Modal";
+import type { action as ApiBackupsIdAction } from "../api/v1/backups.$id";
+import { Modal, type ModalProps } from "./Modal";
 
 const isSameCalendarDay = (a: Moment, b: Moment) =>
   a.date() === b.date() && a.month() === b.month() && a.year() === b.year();

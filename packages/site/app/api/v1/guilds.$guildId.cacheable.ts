@@ -2,7 +2,7 @@ import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
   ChannelType,
-  RESTGetAPIGuildChannelsResult,
+  type RESTGetAPIGuildChannelsResult,
   Routes,
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
@@ -13,13 +13,13 @@ import {
 } from "~/session.server";
 import { discordRoles, getDb, makeSnowflake } from "~/store.server";
 import {
-  ResolvableAPIChannel,
-  ResolvableAPIEmoji,
-  ResolvableAPIRole,
+  type ResolvableAPIChannel,
+  type ResolvableAPIEmoji,
+  type ResolvableAPIRole,
   tagToResolvableTag,
 } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 import { getChannelIconType } from "./channels.$channelId";
 

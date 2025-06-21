@@ -3,7 +3,7 @@ import { TimestampStyles, time } from "@discordjs/formatters";
 import { ButtonStyle } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb, upsertDiscordUser, users } from "store";
-import { ChatInputAppCommandCallback } from "../commands.js";
+import type { ChatInputAppCommandCallback } from "../commands.js";
 
 export const deluxeInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
   const components = [
@@ -38,7 +38,7 @@ export const deluxeSyncCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   return ctx.reply({
     content: `Synced successfully: ${
-      user.lifetime ?? premium.lifetime
+      (user.lifetime ?? premium.lifetime)
         ? "You have a lifetime subscription."
         : premium.grace && premium.graceEndsAt
           ? `You can access your Deluxe subscription until ${time(

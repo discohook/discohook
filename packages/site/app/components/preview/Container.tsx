@@ -3,10 +3,10 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
-import { SetImageModalData } from "~/modals/ImageModal";
-import { DraftFile } from "~/routes/_index";
-import { APIMessageTopLevelComponent } from "~/types/QueryData";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { SetImageModalData } from "~/modals/ImageModal";
+import type { DraftFile } from "~/routes/_index";
+import type { APIMessageTopLevelComponent } from "~/types/QueryData";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { decimalToHex } from "../editor/ColorPicker";
 import { PreviewActionRow } from "./ActionRow";
 import { PreviewFile } from "./File";

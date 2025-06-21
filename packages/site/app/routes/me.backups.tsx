@@ -1,4 +1,4 @@
-import { SerializeFrom, json } from "@remix-run/cloudflare";
+import { type SerializeFrom, json } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
@@ -17,9 +17,9 @@ import { BackupImportModal } from "~/modals/BackupImportModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import {
-  QueryDataVersion,
-  backups as dBackups,
+  type QueryDataVersion,
   count,
+  backups as dBackups,
   eq,
   getDb,
   inArray,
@@ -27,7 +27,11 @@ import {
 } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import { getId } from "~/util/id";
-import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
+import {
+  type ActionArgs,
+  type LoaderArgs,
+  useSafeFetcher,
+} from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { relativeTime } from "~/util/time";
 import {

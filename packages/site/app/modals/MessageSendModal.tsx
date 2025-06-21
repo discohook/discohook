@@ -1,30 +1,30 @@
 import { Dialog } from "@base-ui-components/react/dialog";
-import { DiscordErrorData, REST } from "@discordjs/rest";
+import type { DiscordErrorData, REST } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIEmbed,
-  APIMessage,
-  APIWebhook,
+  type APIEmbed,
+  type APIMessage,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
-import { SetErrorFunction } from "~/components/Error";
+import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { DraftFile, getQdMessageId } from "~/routes/_index";
-import {
+import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
   QueryData,
 } from "~/types/QueryData";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
   cdnImgAttributes,
@@ -44,7 +44,7 @@ import {
   DialogPortal,
   Modal,
   ModalFooter,
-  ModalProps,
+  type ModalProps,
   PlainModalHeader,
 } from "./Modal";
 
@@ -194,7 +194,7 @@ export const submitMessage = async (
         allowed_mentions: message.data.allowed_mentions,
       },
       files,
-      threadName ? undefined : message.thread_id ?? orThreadId,
+      threadName ? undefined : (message.thread_id ?? orThreadId),
       rest,
       withComponents,
     );

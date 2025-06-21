@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import {
-  LinkEmbed,
-  LinkEmbedContainer,
+  type LinkEmbed,
+  type LinkEmbedContainer,
   LinkEmbedStrategy,
-  LinkQueryData,
+  type LinkQueryData,
 } from "~/types/QueryData";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";

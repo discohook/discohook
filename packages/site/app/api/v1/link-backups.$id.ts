@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getUser, getUserId } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { requirePremiumOrThrow } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";

@@ -2,10 +2,10 @@ import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { getUser, getUserId } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { zxParseJson, zxParseQuery } from "~/util/zod";
 import {
-  QueryData,
+  type QueryData,
   backups,
   generateId,
   getDb,

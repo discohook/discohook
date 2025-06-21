@@ -11,15 +11,15 @@ import {
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
-  APIComponentInMessageActionRow,
-  APIEmoji,
-  APIInteraction,
-  APIMessage,
-  APIMessageComponentEmoji,
-  APIMessageTopLevelComponent,
-  APIPartialEmoji,
-  APISectionComponent,
-  APISelectMenuOption,
+  type APIComponentInMessageActionRow,
+  type APIEmoji,
+  type APIInteraction,
+  type APIMessage,
+  type APIMessageComponentEmoji,
+  type APIMessageTopLevelComponent,
+  type APIPartialEmoji,
+  type APISectionComponent,
+  type APISelectMenuOption,
   ButtonStyle,
   ComponentType,
   Routes,
@@ -28,8 +28,8 @@ import {
 import { sql } from "drizzle-orm";
 import { t } from "i18next";
 import {
-  StorableButtonWithUrl,
-  StorableComponent,
+  type StorableButtonWithUrl,
+  type StorableComponent,
   autoRollbackTx,
   discordMessageComponents,
   getDb,
@@ -38,15 +38,15 @@ import {
   upsertDiscordUser,
   webhooks,
 } from "store";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import {
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type {
   AutoComponentCustomId,
   AutoModalCustomId,
   ButtonCallback,
   ModalCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import {
+import type {
   InteractionContext,
   MessageConstructorData,
 } from "../../interactions.js";

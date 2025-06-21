@@ -11,7 +11,7 @@ import type {
   ThreadAutoArchiveDuration,
 } from "discord-api-types/v10";
 import type { flowActions, flows } from "../schema/schema.js";
-import { QueryData } from "./backups.js";
+import type { QueryData } from "./backups.js";
 
 export interface StorableButtonWithCustomId {
   type: ComponentType.Button;

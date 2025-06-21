@@ -1,6 +1,6 @@
 import {
-  APIContainerComponent,
-  APISectionComponent,
+  type APIContainerComponent,
+  type APISectionComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
@@ -8,8 +8,8 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
-import { APIButtonComponent, QueryData } from "~/types/QueryData";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { APIButtonComponent, QueryData } from "~/types/QueryData";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";

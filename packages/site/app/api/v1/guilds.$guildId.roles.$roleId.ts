@@ -1,17 +1,17 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
-  APIRole,
-  RESTGetAPIGuildRolesResult,
+  type APIRole,
+  type RESTGetAPIGuildRolesResult,
   Routes,
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { authorizeRequest } from "~/session.server";
 import { discordRoles, getDb, makeSnowflake } from "~/store.server";
-import { ResolvableAPIRole } from "~/util/cache/CacheManager";
+import type { ResolvableAPIRole } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {

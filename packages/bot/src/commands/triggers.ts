@@ -4,12 +4,12 @@ import {
   EmbedBuilder,
 } from "@discordjs/builders";
 import {
-  APIInteractionGuildMember,
+  type APIInteractionGuildMember,
   ButtonStyle,
   GatewayDispatchEvents,
-  GatewayGuildMemberAddDispatchData,
-  GatewayGuildMemberRemoveDispatchData,
-  GuildMemberFlags,
+  type GatewayGuildMemberAddDispatchData,
+  type GatewayGuildMemberRemoveDispatchData,
+  type GuildMemberFlags,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
@@ -24,15 +24,15 @@ import {
   triggers,
   upsertDiscordUser,
 } from "store";
-import {
+import type {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
 } from "../commands.js";
-import { ButtonCallback } from "../components.js";
+import type { ButtonCallback } from "../components.js";
 import { emojiToString, getEmojis } from "../emojis.js";
 import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
-import { FlowResult } from "../flows/flows.js";
+import type { FlowResult } from "../flows/flows.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import { spaceEnum } from "../util/regex.js";

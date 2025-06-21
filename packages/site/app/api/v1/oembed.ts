@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { jsonAsString, zxParseQuery } from "~/util/zod";
 
 // Schemas and descriptions from https://oembed.com/#section2

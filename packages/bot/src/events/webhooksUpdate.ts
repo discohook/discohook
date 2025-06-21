@@ -1,13 +1,13 @@
 import { REST } from "@discordjs/rest";
 import {
-  APIWebhook,
-  GatewayWebhooksUpdateDispatchData,
+  type APIWebhook,
+  type GatewayWebhooksUpdateDispatchData,
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { autoRollbackTx, getDb, makeSnowflake, webhooks } from "store";
-import { GatewayEventCallback } from "../events.js";
+import type { GatewayEventCallback } from "../events.js";
 
 export const webhooksUpdateCallback: GatewayEventCallback = async (
   env,

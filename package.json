@@ -9,18 +9,16 @@
     "bot-ws": "cd packages/bot-ws && npm run bot",
     "dev:site": "cd packages/site && npm run dev",
     "dev:backups": "cd packages/magic-backup-importer && npm run dev",
+    "lint": "biome lint .",
     "format": "biome format . --write",
-    "lint": "biome lint . --apply",
-    "fix": "biome check --apply .",
+    "fix": "biome check --write .",
     "db-generate": "drizzle-kit generate",
     "db-migrate": "drizzle-kit migrate",
     "db-push": "drizzle-kit push",
     "db-studio": "drizzle-kit studio",
     "refresh-store": "cd packages/bot && yarn && cd ../site && yarn"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "drizzle-kit": "^0.23.1"

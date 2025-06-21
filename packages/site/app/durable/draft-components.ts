@@ -5,7 +5,7 @@ import {
   getDb,
   makeSnowflake,
 } from "~/store.server";
-import { Env } from "~/types/env";
+import type { Env } from "~/types/env";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";
 
 /**

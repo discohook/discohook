@@ -1,12 +1,12 @@
-import { APIEmbedField, ButtonStyle } from "discord-api-types/v10";
-import { TFunction } from "i18next";
+import { type APIEmbedField, ButtonStyle } from "discord-api-types/v10";
+import type { TFunction } from "i18next";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
-import { DraftFile } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
-import { APIEmbed } from "~/types/QueryData-raw";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { DraftFile } from "~/routes/_index";
+import type { QueryData } from "~/types/QueryData";
+import type { APIEmbed } from "~/types/QueryData-raw";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { transformFileName } from "~/util/files";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";

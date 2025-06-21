@@ -15,7 +15,7 @@ import type { QueryData, TriggerKVGuild } from "store";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
 import { cdn } from "../util/cdn.js";
 import { isActionRow } from "../util/components.js";
-import { FlowFailure, LiveVariables } from "./flows.js";
+import { FlowFailure, type LiveVariables } from "./flows.js";
 
 export const assertGetSnowflake = (id: string): `${bigint}` => {
   if (isSnowflakeSafe(id)) return id;

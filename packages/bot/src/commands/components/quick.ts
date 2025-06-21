@@ -9,10 +9,10 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIButtonComponentWithCustomId,
-  APIGuild,
-  APIGuildMember,
-  APIMessageComponentEmoji,
+  type APIButtonComponentWithCustomId,
+  type APIGuild,
+  type APIGuildMember,
+  type APIMessageComponentEmoji,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -41,7 +41,7 @@ import {
 import type { ModalCallback, SelectMenuCallback } from "../../components.js";
 import { getShareLink, getShareLinkExists } from "../../durable/share-links.js";
 import type { InteractionContext } from "../../interactions.js";
-import { Env } from "../../types/env.js";
+import type { Env } from "../../types/env.js";
 import { storeComponents } from "../../util/components.js";
 import { getHighestRole } from "../reactionRoles.js";
 import {

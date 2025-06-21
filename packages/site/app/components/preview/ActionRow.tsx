@@ -1,16 +1,16 @@
 import { Popover } from "@base-ui-components/react/popover";
 import {
-  APIActionRowComponent,
-  APIButtonComponent,
-  APIComponentInMessageActionRow,
-  APISelectMenuComponent,
+  type APIActionRowComponent,
+  type APIButtonComponent,
+  type APIComponentInMessageActionRow,
+  type APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import {
+import type {
   CacheManager,
   ResolvableAPIChannel,
   ResolvableAPIGuildMember,

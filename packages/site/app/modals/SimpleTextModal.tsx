@@ -1,5 +1,5 @@
 import { Button } from "~/components/Button";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export interface SimpleTextModalProps {
   title: string;

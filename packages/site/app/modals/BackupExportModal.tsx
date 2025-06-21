@@ -1,18 +1,18 @@
-import { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "@remix-run/cloudflare";
 import { Await, Link } from "@remix-run/react";
 import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BRoutes, apiUrl } from "~/api/routing";
-import { loader as ApiGetBackups } from "~/api/v1/backups";
+import type { loader as ApiGetBackups } from "~/api/v1/backups";
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { LoadedBackup } from "~/routes/me.backups";
-import {
+import type { LoadedBackup } from "~/routes/me.backups";
+import type {
   DiscohookBackup,
   DiscohookBackupExportDataWithBackups,
 } from "~/types/discohook";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 // https://github.com/discohook/site/blob/main/common/dom/downloadBlob.ts
 export const downloadBlob = (blob: Blob, name: string) => {

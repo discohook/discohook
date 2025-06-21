@@ -6,17 +6,17 @@ import {
   messageLink,
 } from "@discordjs/builders";
 import {
-  APIComponentInContainer,
-  APIComponentInMessageActionRow,
-  APIContainerComponent,
-  APIEmoji,
-  APIInteraction,
-  APIMessage,
-  APIMessageTopLevelComponent,
-  APISectionComponent,
+  type APIComponentInContainer,
+  type APIComponentInMessageActionRow,
+  type APIContainerComponent,
+  type APIEmoji,
+  type APIInteraction,
+  type APIMessage,
+  type APIMessageTopLevelComponent,
+  type APISectionComponent,
   ButtonStyle,
   ComponentType,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
@@ -26,13 +26,13 @@ import {
   discordMessageComponents,
   getDb,
 } from "store";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import {
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type {
   AutoComponentCustomId,
   ButtonCallback,
   SelectMenuCallback,
 } from "../../components.js";
-import { InteractionContext } from "../../interactions.js";
+import type { InteractionContext } from "../../interactions.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import {
   getComponentId,
@@ -46,22 +46,23 @@ import {
 import { getComponentsAsV2Menu } from "./edit.js";
 import { getWebhookMessage, resolveMessageLink } from "./entry.js";
 
-export const deleteComponentChatEntry: ChatInputAppCommandCallback<true> =
-  async (ctx) => {
-    const message = await resolveMessageLink(
-      ctx.rest,
-      ctx.getStringOption("message").value,
-      ctx.interaction.guild_id,
-    );
-    if (typeof message === "string") {
-      return ctx.reply({
-        content: message,
-        ephemeral: true,
-      });
-    }
+export const deleteComponentChatEntry: ChatInputAppCommandCallback<
+  true
+> = async (ctx) => {
+  const message = await resolveMessageLink(
+    ctx.rest,
+    ctx.getStringOption("message").value,
+    ctx.interaction.guild_id,
+  );
+  if (typeof message === "string") {
+    return ctx.reply({
+      content: message,
+      ephemeral: true,
+    });
+  }
 
-    return await pickWebhookMessageComponentToDelete(ctx, message);
-  };
+  return await pickWebhookMessageComponentToDelete(ctx, message);
+};
 
 const pickWebhookMessageComponentToDelete = async (
   ctx: InteractionContext,

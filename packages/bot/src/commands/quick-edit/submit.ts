@@ -1,23 +1,27 @@
 import {
-  APIAttachment,
-  APIEmbed,
-  APIEmbedField,
-  APIInteractionResponse,
-  APIMessage,
-  APIMessageComponentButtonInteraction,
-  APIMessageComponentSelectMenuInteraction,
-  APIModalSubmitInteraction,
-  APIWebhook,
+  type APIAttachment,
+  type APIEmbed,
+  type APIEmbedField,
+  type APIInteractionResponse,
+  type APIMessage,
+  type APIMessageComponentButtonInteraction,
+  type APIMessageComponentSelectMenuInteraction,
+  type APIModalSubmitInteraction,
+  type APIWebhook,
   ComponentType,
   PermissionFlagsBits,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
   SeparatorSpacingSize,
 } from "discord-api-types/v10";
-import { APIMessageReducedWithId, cacheMessage, getchMessage } from "store";
-import { ButtonCallback, ModalCallback } from "../../components.js";
 import {
-  InteractionContext,
+  type APIMessageReducedWithId,
+  cacheMessage,
+  getchMessage,
+} from "store";
+import type { ButtonCallback, ModalCallback } from "../../components.js";
+import {
+  type InteractionContext,
   isInteractionResponse,
 } from "../../interactions.js";
 import { parseAutoComponentId, textDisplay } from "../../util/components.js";

@@ -1,6 +1,7 @@
 import { Link } from "@remix-run/react";
-import { APIWebhook, ButtonStyle } from "discord-api-types/v10";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
@@ -13,17 +14,17 @@ import type {
   LoadedBackup,
   loader as MeBackupsLoader,
 } from "~/routes/me.backups";
-import { User } from "~/session.server";
-import { QueryData, QueryDataTarget } from "~/types/QueryData";
+import type { User } from "~/session.server";
+import type { QueryData, QueryDataTarget } from "~/types/QueryData";
 import { TargetType } from "~/types/QueryData-raw";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { getWebhook } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
-import { action as ApiPostBackups } from "../api/v1/backups";
-import { loader as ApiGetBackup } from "../api/v1/backups.$id";
+import type { action as ApiPostBackups } from "../api/v1/backups";
+import type { loader as ApiGetBackup } from "../api/v1/backups.$id";
 import { BackupEditModal } from "./BackupEditModal";
-import { Modal, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageBackupsModal = (
   props: ModalProps & {

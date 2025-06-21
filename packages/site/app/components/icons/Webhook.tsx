@@ -1,4 +1,4 @@
-import { IconFC, Svg } from "./Svg";
+import { type IconFC, Svg } from "./Svg";
 
 export const WebhookIcon: IconFC = (props) => (
   <Svg {...props}>

@@ -1,7 +1,7 @@
 // From https://github.com/discohook/site/blob/main/common/input/file/PasteFileButton.tsx
 
 import { ButtonStyle } from "discord-api-types/v10";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import mime from "mime";
 import { useRef, useState } from "react";
 import { Button } from "../Button";

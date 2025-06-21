@@ -10,8 +10,8 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
-import { getDb, inArray, linkBackups as dLinkBackups } from "~/store.server";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import { linkBackups as dLinkBackups, getDb, inArray } from "~/store.server";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import {
   jsonAsString,

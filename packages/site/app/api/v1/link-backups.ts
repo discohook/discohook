@@ -2,7 +2,7 @@ import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { getUser } from "~/session.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
-import { ActionArgs } from "~/util/loader";
+import type { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { requirePremiumOrThrow } from "~/util/users";
 import { zxParseJson } from "~/util/zod";

@@ -1,22 +1,22 @@
 import { Link } from "@remix-run/react";
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
   PermissionFlagsBits,
 } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { BRoutes, apiUrl } from "~/api/routing";
-import { ApiGetCurrentUserMemberships } from "~/api/v1/users.@me.memberships";
+import type { ApiGetCurrentUserMemberships } from "~/api/v1/users.@me.memberships";
 import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
 import { useApiLoader, useSafeFetcher } from "~/util/loader";
@@ -24,7 +24,7 @@ import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
-import { Modal, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const TargetAddModal = (
   props: ModalProps & {

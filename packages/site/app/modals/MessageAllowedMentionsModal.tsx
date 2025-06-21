@@ -1,7 +1,7 @@
 import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Switch } from "@base-ui-components/react/switch";
 import {
-  APIAllowedMentions,
+  type APIAllowedMentions,
   AllowedMentionsTypes,
 } from "discord-api-types/v10";
 import type { TFunction } from "i18next";
@@ -15,9 +15,9 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { codeStyle } from "~/components/preview/Markdown";
 import { switchStyles } from "~/components/switch";
 import { getQdMessageId } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
-import { CacheManager } from "~/util/cache/CacheManager";
-import { Modal, ModalFooter, ModalProps, PlainModalHeader } from "./Modal";
+import type { QueryData } from "~/types/QueryData";
+import type { CacheManager } from "~/util/cache/CacheManager";
+import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 interface MessageAllowedMentionsModalProps {
   data: QueryData;

@@ -1,7 +1,7 @@
 import { REST } from "@discordjs/rest";
 import {
-  MetaFunction,
-  SerializeFrom,
+  type MetaFunction,
+  type SerializeFrom,
   json,
   redirect,
 } from "@remix-run/cloudflare";
@@ -13,15 +13,15 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import {
-  APIGuild,
-  APIWebhook,
+  type APIGuild,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
   WebhookType,
 } from "discord-api-types/v10";
 import {
-  BitFlagResolvable,
+  type BitFlagResolvable,
   PermissionFlags,
   PermissionsBitField,
 } from "discord-bitflag";
@@ -37,7 +37,7 @@ import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
-import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { PostChannelIcon } from "~/components/icons/channel";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
@@ -52,7 +52,7 @@ import {
   getGuild,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { DraftFlow } from "~/store.server";
+import type { DraftFlow } from "~/store.server";
 import { useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
@@ -62,18 +62,18 @@ import {
 } from "~/util/discord";
 import { flowToDraftFlow } from "~/util/flow";
 import { getId } from "~/util/id";
-import { LoaderArgs, useSafeFetcher } from "~/util/loader";
+import { type LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
-import { action as ApiDeleteComponent } from "../api/v1/components.$id";
-import { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
-import { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
-import { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
-import { action as ApiPutGuildTriggerEvent } from "../api/v1/guilds.$guildId.trigger-events.$event";
-import { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
-import { action as ApiPatchGuildTrigger } from "../api/v1/guilds.$guildId.triggers.$triggerId";
-import { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
-import { action as ApiPatchGuildWebhook } from "../api/v1/guilds.$guildId.webhooks.$webhookId";
+import type { action as ApiDeleteComponent } from "../api/v1/components.$id";
+import type { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
+import type { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
+import type { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
+import type { action as ApiPutGuildTriggerEvent } from "../api/v1/guilds.$guildId.trigger-events.$event";
+import type { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
+import type { action as ApiPatchGuildTrigger } from "../api/v1/guilds.$guildId.triggers.$triggerId";
+import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
+import type { action as ApiPatchGuildWebhook } from "../api/v1/guilds.$guildId.webhooks.$webhookId";
 import { Cell } from "./donate";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {

@@ -1,13 +1,13 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIChatInputApplicationCommandInteraction,
-  APIPartialEmoji,
-  APIRole,
+  type APIChatInputApplicationCommandInteraction,
+  type APIPartialEmoji,
+  type APIRole,
   FormattingPatterns,
 } from "discord-api-types/v10";
-import { ChatInputAppCommandCallback } from "../commands.js";
-import { InteractionContext } from "../interactions.js";
+import type { ChatInputAppCommandCallback } from "../commands.js";
+import type { InteractionContext } from "../interactions.js";
 import { color } from "../util/meta.js";
 import { fetchEmojiData, resolveEmojiData } from "./emojis.js";
 

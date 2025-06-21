@@ -5,22 +5,26 @@ import {
   bold,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
-import { APIWebhook, ButtonStyle, MessageFlags } from "discord-api-types/v10";
 import {
-  FlowAction,
+  type APIWebhook,
+  ButtonStyle,
+  type MessageFlags,
+} from "discord-api-types/v10";
+import {
+  type FlowAction,
   FlowActionType,
-  FlowActionWait,
+  type FlowActionWait,
   TriggerEvent,
   getDb,
   getchTriggerGuild,
 } from "store";
-import { ChatInputAppCommandCallback } from "../../commands.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
 import { EmojiManagerCache, emojiToString, getEmojis } from "../../emojis.js";
 import { getWelcomerConfigurations } from "../../events/guildMemberAdd.js";
-import { Env } from "../../types/env.js";
+import type { Env } from "../../types/env.js";
 import { color } from "../../util/meta.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
-import { WelcomerTriggerEvent } from "./set.js";
+import type { WelcomerTriggerEvent } from "./set.js";
 
 export interface AutoWelcomerConfig {
   webhookId?: string;

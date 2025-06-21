@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 export interface ConfirmModalProps {
   title: string;

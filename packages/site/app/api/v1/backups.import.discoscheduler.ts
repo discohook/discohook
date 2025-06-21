@@ -8,8 +8,8 @@ import {
   inArray,
   scheduled_posts,
 } from "~/store.server";
-import { QueryData } from "~/types/QueryData";
-import { LoaderArgs } from "~/util/loader";
+import type { QueryData } from "~/types/QueryData";
+import type { LoaderArgs } from "~/util/loader";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const action = async ({ request, context }: LoaderArgs) => {

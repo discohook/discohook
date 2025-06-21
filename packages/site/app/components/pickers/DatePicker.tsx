@@ -1,12 +1,12 @@
 // Borrowed and modified from https://react-select.com/advanced#experimental
 
 import * as chrono from "chrono-node";
-import moment, { Moment } from "moment";
+import moment, { type Moment } from "moment";
 import { useState } from "react";
 import Select, {
-  GroupProps,
-  MenuProps,
-  OptionProps,
+  type GroupProps,
+  type MenuProps,
+  type OptionProps,
   components as SelectComponents,
 } from "react-select";
 import { twJoin } from "tailwind-merge";

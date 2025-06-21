@@ -3,11 +3,11 @@ import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
 import { zx } from "zodix";
 import {
-  KVTokenPermissions,
+  type KVTokenPermissions,
   authorizeRequest,
   getTokenGuildPermissions,
 } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {

@@ -2,16 +2,16 @@ import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { parseQuery } from "zodix";
 import { getUserId } from "~/session.server";
 import {
-  DraftComponent,
-  DraftFlow,
-  StorableComponent,
+  type DraftComponent,
+  type DraftFlow,
+  type StorableComponent,
   discordMessageComponents,
   flows,
   getDb,
   inArray,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {

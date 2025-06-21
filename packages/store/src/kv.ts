@@ -1,14 +1,14 @@
 import type { REST } from "@discordjs/rest";
 import {
-  APIGuild,
-  APIGuildChannel,
-  APIMessage,
-  GuildChannelType,
+  type APIGuild,
+  type APIGuildChannel,
+  type APIMessage,
+  type GuildChannelType,
   GuildPremiumTier,
   Routes,
 } from "discord-api-types/v10";
-import { RedisKV } from "./redis.js";
-import { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
+import type { RedisKV } from "./redis.js";
+import type { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
 
 export type Env = {
   ENVIRONMENT: "dev" | "preview" | "production";

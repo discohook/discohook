@@ -1,4 +1,4 @@
-import { MetaFunction } from "@remix-run/cloudflare";
+import type { MetaFunction } from "@remix-run/cloudflare";
 import {
   Outlet,
   useLoaderData,
@@ -10,7 +10,7 @@ import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);

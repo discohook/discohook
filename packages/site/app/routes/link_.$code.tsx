@@ -1,7 +1,7 @@
 import {
-  MetaDescriptor,
-  MetaFunction,
-  SerializeFrom,
+  type MetaDescriptor,
+  type MetaFunction,
+  type SerializeFrom,
   json,
   redirect,
 } from "@remix-run/cloudflare";
@@ -19,8 +19,8 @@ import {
   getYoutubeVideoParameters,
 } from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
-import { LinkEmbedStrategy, LinkQueryData } from "~/types/QueryData";
-import { LoaderArgs } from "~/util/loader";
+import { LinkEmbedStrategy, type LinkQueryData } from "~/types/QueryData";
+import type { LoaderArgs } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
 import { linkEmbedToAPIEmbed } from "./link";

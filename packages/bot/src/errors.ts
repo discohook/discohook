@@ -1,12 +1,12 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { DiscordAPIError } from "@discordjs/rest";
 import {
-  APIInteraction,
-  APIInteractionResponseChannelMessageWithSource,
-  RESTError,
+  type APIInteraction,
+  type APIInteractionResponseChannelMessageWithSource,
+  type RESTError,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { InteractionContext } from "./interactions.js";
+import type { InteractionContext } from "./interactions.js";
 
 const xNotFound = (x: string) =>
   `Could not find the ${x}. There may be a permissions issue.`;

@@ -1,7 +1,7 @@
 import { supportedLanguages } from "~/i18n";
 import { i18nCookie } from "~/i18next.server";
 import { zodUnionFromReadonly } from "~/types/zod";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
 export const action = async ({ params }: LoaderArgs) => {

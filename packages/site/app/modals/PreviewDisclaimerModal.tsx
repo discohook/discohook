@@ -1,5 +1,5 @@
 import { Button } from "~/components/Button";
-import { Modal, ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const PreviewDisclaimerModal = (props: ModalProps) => {
   return (

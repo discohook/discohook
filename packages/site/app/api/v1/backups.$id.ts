@@ -1,13 +1,13 @@
-import { SerializeFrom, json } from "@remix-run/cloudflare";
+import { type SerializeFrom, json } from "@remix-run/cloudflare";
 import { parseExpression } from "cron-parser";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { zx } from "zodix";
 import { doubleDecode, getUserId } from "~/session.server";
 import { backups, getDb } from "~/store.server";
-import { QueryData, ZodQueryData } from "~/types/QueryData";
+import { type QueryData, ZodQueryData } from "~/types/QueryData";
 import { onlyActionRows } from "~/util/discord";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import {
   snowflakeAsString,
   zxParseJson,

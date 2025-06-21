@@ -1,5 +1,5 @@
-import { TFunction } from "i18next";
-import { ReactNode, useRef, useState } from "react";
+import type { TFunction } from "i18next";
+import { type ReactNode, useRef, useState } from "react";
 import { twJoin, twMerge } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 

@@ -1,5 +1,5 @@
 import { t } from "i18next";
-import { ChatInputAppCommandCallback } from "../commands.js";
+import type { ChatInputAppCommandCallback } from "../commands.js";
 import { parseEmojiOption } from "./format.js";
 
 export const idMentionCallback: ChatInputAppCommandCallback = async (ctx) => {
@@ -35,7 +35,8 @@ export const idEmojiCallback: ChatInputAppCommandCallback = async (ctx) => {
   }
 
   return ctx.reply({
-    content: typeof emoji === "object" ? emoji.id ?? t("idUnavailable") : emoji,
+    content:
+      typeof emoji === "object" ? (emoji.id ?? t("idUnavailable")) : emoji,
     ephemeral: true,
   });
 };

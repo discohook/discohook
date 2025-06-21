@@ -1,7 +1,7 @@
-import { APIMediaGalleryComponent } from "discord-api-types/v10";
+import type { APIMediaGalleryComponent } from "discord-api-types/v10";
 import mime from "mime";
-import { SetImageModalData } from "~/modals/ImageModal";
-import { DraftFile } from "~/routes/_index";
+import type { SetImageModalData } from "~/modals/ImageModal";
+import type { DraftFile } from "~/routes/_index";
 import { getImageUri } from "./Embed";
 import { Gallery } from "./Gallery";
 

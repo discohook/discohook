@@ -1,5 +1,5 @@
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import { LinkQueryData, QueryData } from "~/types/QueryData";
+import type { LinkQueryData, QueryData } from "~/types/QueryData";
 
 export const WEBHOOK_URL_RE =
   /^https?:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/api(?:\/v\d+)?\/webhooks\/(\d+)\/([\w-]+)$/;

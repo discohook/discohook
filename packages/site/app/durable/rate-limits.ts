@@ -1,8 +1,8 @@
 import { json } from "@remix-run/cloudflare";
-import { BRoutes } from "~/api/routing";
+import type { BRoutes } from "~/api/routing";
 import { getUserId } from "~/session.server";
-import { Env } from "~/types/env";
-import { Context } from "~/util/loader";
+import type { Env } from "~/types/env";
+import type { Context } from "~/util/loader";
 
 // Modified from https://developers.cloudflare.com/durable-objects/examples/build-a-rate-limiter
 

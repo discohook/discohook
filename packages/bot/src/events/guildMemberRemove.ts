@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
 import {
-  GatewayGuildMemberRemoveDispatchData,
+  type GatewayGuildMemberRemoveDispatchData,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
@@ -12,10 +12,10 @@ import {
   getchTriggerGuild,
   makeSnowflake,
 } from "store";
-import { GatewayEventCallback } from "../events.js";
-import { FlowResult, executeFlow } from "../flows/flows.js";
+import type { GatewayEventCallback } from "../events.js";
+import { type FlowResult, executeFlow } from "../flows/flows.js";
 import { isDiscordError } from "../util/error.js";
-import { Trigger, getWelcomerConfigurations } from "./guildMemberAdd.js";
+import { type Trigger, getWelcomerConfigurations } from "./guildMemberAdd.js";
 
 export const guildMemberRemoveCallback: GatewayEventCallback = async (
   env,

@@ -1,16 +1,16 @@
 import dedent from "dedent-js";
 import {
-  APIDMChannel,
-  APIGuild,
-  APIUser,
-  RESTPostAPIChannelMessageJSONBody,
-  RESTPostAPICurrentUserCreateDMChannelJSONBody,
+  type APIDMChannel,
+  type APIGuild,
+  type APIUser,
+  type RESTPostAPIChannelMessageJSONBody,
+  type RESTPostAPICurrentUserCreateDMChannelJSONBody,
   Routes,
 } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb, upsertDiscordUser, users } from "store";
-import { ChatInputAppCommandCallback } from "../commands.js";
-import { InteractionContext } from "../interactions.js";
+import type { ChatInputAppCommandCallback } from "../commands.js";
+import type { InteractionContext } from "../interactions.js";
 
 const canRunDevCommand = (ctx: InteractionContext) =>
   ctx.env.DEV_OWNER_ID !== undefined &&
@@ -85,111 +85,113 @@ const TIME_REGEX = /^(\d+)(d|w|m|y)$/i;
 // $6 / 30 days = 20c per day
 const USD_PER_DAY = 6 / 30;
 
-export const grantDeluxeCommandHandler: ChatInputAppCommandCallback<true> =
-  async (ctx) => {
-    if (!canRunDevCommand(ctx)) {
-      return ctx.reply({ content: "Not available", ephemeral: true });
+export const grantDeluxeCommandHandler: ChatInputAppCommandCallback<
+  true
+> = async (ctx) => {
+  if (!canRunDevCommand(ctx)) {
+    return ctx.reply({ content: "Not available", ephemeral: true });
+  }
+
+  const userId = ctx.getStringOption("user-id").value;
+  const duration = ctx.getStringOption("duration").value;
+
+  let days: number;
+  switch (true) {
+    case USD_REGEX.test(duration): {
+      // biome-ignore lint/style/noNonNullAssertion: above
+      const match = USD_REGEX.exec(duration)!;
+      const dollars = Number(match[1]);
+      days = dollars / USD_PER_DAY;
+      break;
     }
-
-    const userId = ctx.getStringOption("user-id").value;
-    const duration = ctx.getStringOption("duration").value;
-
-    let days: number;
-    switch (true) {
-      case USD_REGEX.test(duration): {
-        // biome-ignore lint/style/noNonNullAssertion: above
-        const match = USD_REGEX.exec(duration)!;
-        const dollars = Number(match[1]);
-        days = dollars / USD_PER_DAY;
-        break;
+    case TIME_REGEX.test(duration): {
+      // biome-ignore lint/style/noNonNullAssertion: above
+      const match = TIME_REGEX.exec(duration)!;
+      const amount = Number(match[1]);
+      const unit = match[2].toLowerCase() as "d" | "w" | "m" | "y";
+      switch (unit) {
+        case "d":
+          days = amount;
+          break;
+        case "w":
+          days = amount * 7;
+          break;
+        case "m":
+          days = amount * 31;
+          break;
+        case "y":
+          days = amount * 366;
+          break;
+        default:
+          return ctx.reply({
+            content: `Could not resolve value of unit "${unit}"`,
+            ephemeral: true,
+          });
       }
-      case TIME_REGEX.test(duration): {
-        // biome-ignore lint/style/noNonNullAssertion: above
-        const match = TIME_REGEX.exec(duration)!;
-        const amount = Number(match[1]);
-        const unit = match[2].toLowerCase() as "d" | "w" | "m" | "y";
-        switch (unit) {
-          case "d":
-            days = amount;
-            break;
-          case "w":
-            days = amount * 7;
-            break;
-          case "m":
-            days = amount * 31;
-            break;
-          case "y":
-            days = amount * 366;
-            break;
-          default:
-            return ctx.reply({
-              content: `Could not resolve value of unit "${unit}"`,
-              ephemeral: true,
-            });
-        }
-        break;
-      }
-      default:
-        return ctx.reply({
-          content: "Invalid duration format",
-          ephemeral: true,
-        });
+      break;
     }
-    days = Math.ceil(days);
+    default:
+      return ctx.reply({
+        content: "Invalid duration format",
+        ephemeral: true,
+      });
+  }
+  days = Math.ceil(days);
 
-    const discordUser = (await ctx.rest.get(Routes.user(userId))) as APIUser;
+  const discordUser = (await ctx.rest.get(Routes.user(userId))) as APIUser;
 
-    const db = getDb(ctx.env.HYPERDRIVE);
-    const dbUser = await upsertDiscordUser(db, discordUser);
+  const db = getDb(ctx.env.HYPERDRIVE);
+  const dbUser = await upsertDiscordUser(db, discordUser);
 
-    const now = new Date();
-    const expiresAt = new Date(
-      // Stack renewals as much as possible
-      (dbUser.subscriptionExpiresAt &&
-      dbUser.subscriptionExpiresAt.getTime() > now.getTime()
-        ? dbUser.subscriptionExpiresAt
-        : now
-      ).getTime() +
-        days * 86_400_000,
-    );
+  const now = new Date();
+  const expiresAt = new Date(
+    // Stack renewals as much as possible
+    (dbUser.subscriptionExpiresAt &&
+    dbUser.subscriptionExpiresAt.getTime() > now.getTime()
+      ? dbUser.subscriptionExpiresAt
+      : now
+    ).getTime() +
+      days * 86_400_000,
+  );
 
-    // TODO: create entitlement and expire it after time allotted
-    await db
-      .update(users)
-      .set({
-        firstSubscribed: dbUser.firstSubscribed ?? now,
-        subscribedSince: dbUser.subscribedSince ?? now,
-        subscriptionExpiresAt: expiresAt,
-      })
-      .where(eq(users.id, dbUser.id));
+  // TODO: create entitlement and expire it after time allotted
+  await db
+    .update(users)
+    .set({
+      firstSubscribed: dbUser.firstSubscribed ?? now,
+      subscribedSince: dbUser.subscribedSince ?? now,
+      subscriptionExpiresAt: expiresAt,
+    })
+    .where(eq(users.id, dbUser.id));
 
-    return ctx.reply({
-      content: `Granted ${days} days of Deluxe membership to ${discordUser.username} (${discordUser.id})`,
-      ephemeral: true,
-    });
-  };
+  return ctx.reply({
+    content: `Granted ${days} days of Deluxe membership to ${discordUser.username} (${discordUser.id})`,
+    ephemeral: true,
+  });
+};
 
-export const revokeDeluxeCommandHandler: ChatInputAppCommandCallback<true> =
-  async (ctx) => {
-    if (!canRunDevCommand(ctx)) {
-      return ctx.reply({ content: "Not available", ephemeral: true });
-    }
+export const revokeDeluxeCommandHandler: ChatInputAppCommandCallback<
+  true
+> = async (ctx) => {
+  if (!canRunDevCommand(ctx)) {
+    return ctx.reply({ content: "Not available", ephemeral: true });
+  }
 
-    const userId = ctx.getStringOption("user-id").value;
-    const discordUser = (await ctx.rest.get(Routes.user(userId))) as APIUser;
+  const userId = ctx.getStringOption("user-id").value;
+  const discordUser = (await ctx.rest.get(Routes.user(userId))) as APIUser;
 
-    const db = getDb(ctx.env.HYPERDRIVE);
-    await db
-      .update(users)
-      .set({
-        lifetime: false,
-        subscribedSince: null,
-        subscriptionExpiresAt: null,
-      })
-      .where(eq(users.discordId, BigInt(userId)));
+  const db = getDb(ctx.env.HYPERDRIVE);
+  await db
+    .update(users)
+    .set({
+      lifetime: false,
+      subscribedSince: null,
+      subscriptionExpiresAt: null,
+    })
+    .where(eq(users.discordId, BigInt(userId)));
 
-    return ctx.reply({
-      content: `Revoked Deluxe membership from ${discordUser.username} (${discordUser.id})`,
-      ephemeral: true,
-    });
-  };
+  return ctx.reply({
+    content: `Revoked Deluxe membership from ${discordUser.username} (${discordUser.id})`,
+    ephemeral: true,
+  });
+};

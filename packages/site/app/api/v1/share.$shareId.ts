@@ -2,9 +2,9 @@ import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
 import { getShareLink } from "~/durable/share-links";
-import { QueryData } from "~/types/QueryData";
+import type { QueryData } from "~/types/QueryData";
 import { retrofitQueryData } from "~/types/QueryData-raw";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
 export interface InvalidShareIdData {

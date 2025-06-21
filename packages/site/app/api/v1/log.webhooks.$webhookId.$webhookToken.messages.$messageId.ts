@@ -2,11 +2,11 @@ import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIButtonComponentWithCustomId,
-  APIButtonComponentWithSKUId,
-  APIButtonComponentWithURL,
-  APIMessage,
-  APISelectMenuComponent,
+  type APIButtonComponentWithCustomId,
+  type APIButtonComponentWithSKUId,
+  type APIButtonComponentWithURL,
+  type APIMessage,
+  type APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
@@ -15,14 +15,14 @@ import { Snowflake } from "tif-snowflake";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
 import { getUserId } from "~/session.server";
-import { APIComponentInMessageActionRow } from "~/types/QueryData";
+import type { APIComponentInMessageActionRow } from "~/types/QueryData";
 import {
   getWebhook,
   getWebhookMessage,
   hasCustomId,
   isComponentsV2,
 } from "~/util/discord";
-import { ActionArgs } from "~/util/loader";
+import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
   and,

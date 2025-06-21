@@ -5,8 +5,8 @@ import { getShareLinkExists, putShareLink } from "~/durable/share-links";
 import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
-import { Env } from "~/types/env";
-import { ActionArgs } from "~/util/loader";
+import type { Env } from "~/types/env";
+import type { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { zxParseJson } from "~/util/zod";
 

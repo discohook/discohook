@@ -1,11 +1,11 @@
 import {
-  APIGuildChannel,
-  APIWebhook,
-  GuildChannelType,
+  type APIGuildChannel,
+  type APIWebhook,
+  type GuildChannelType,
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
-import { AppCommandAutocompleteCallback } from "../../commands.js";
+import type { AppCommandAutocompleteCallback } from "../../commands.js";
 
 export const webhookAutocomplete: AppCommandAutocompleteCallback = async (
   ctx,

@@ -1,7 +1,7 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { getGeneric, getSessionManagerStub } from "~/store.server";
-import { Env } from "~/types/env";
+import type { Env } from "~/types/env";
 import { zxParseJson } from "~/util/zod";
 
 // This is so generic I feel like I've written it 100 times. Is there anything

@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { type i18n as i18nT } from "i18next";
+import type { i18n as i18nT } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
@@ -8,9 +8,9 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { linkClassName } from "~/components/preview/Markdown";
 import type { LocaleCode } from "~/i18n";
-import { User } from "~/session.server";
+import type { User } from "~/session.server";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
-import { Modal, ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 interface LanguageEntry {
   native: string;

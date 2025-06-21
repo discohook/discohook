@@ -2,7 +2,7 @@ import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { getDb } from "~/store.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {

@@ -3,8 +3,8 @@ import { getDb } from "store";
 import { z } from "zod";
 import { backups, makeSnowflake } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
-import { Env } from "~/types/env";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { Env } from "~/types/env";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
 import { findMessagesPreviewImageUrl } from "./backups";
 

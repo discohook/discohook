@@ -1,4 +1,4 @@
-import { ComponentType } from "discord-api-types/v10";
+import type { ComponentType } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { relations } from "drizzle-orm";
 import {
@@ -14,17 +14,17 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 import { Snowflake } from "tif-snowflake";
-import {
+import type {
   LinkQueryData,
   QueryData,
   ScheduledRunData,
 } from "../types/backups.js";
-import {
+import type {
   FlowAction,
   FlowActionType,
   StorableComponent,
 } from "../types/components.js";
-import { TriggerEvent } from "../types/triggers.js";
+import type { TriggerEvent } from "../types/triggers.js";
 // import { buttons } from "./schema-v1.js";
 
 // @ts-ignore

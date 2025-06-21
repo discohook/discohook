@@ -1,5 +1,5 @@
 import {
-  APISeparatorComponent,
+  type APISeparatorComponent,
   SeparatorSpacingSize,
 } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";

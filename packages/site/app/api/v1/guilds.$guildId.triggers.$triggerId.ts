@@ -3,17 +3,17 @@ import { PermissionFlags } from "discord-bitflag";
 import { autoRollbackTx, getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
-  DBWithSchema,
-  TriggerEvent,
+  type DBWithSchema,
+  type TriggerEvent,
   eq,
   flowActions,
   flows,
   putGeneric,
   triggers,
 } from "~/store.server";
-import { Env } from "~/types/env";
+import type { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 

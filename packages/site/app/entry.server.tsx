@@ -1,4 +1,4 @@
-import { type EntryContext } from "@remix-run/cloudflare";
+import type { EntryContext } from "@remix-run/cloudflare";
 import { RemixServer } from "@remix-run/react";
 import isbot from "isbot";
 import { renderToReadableStream } from "react-dom/server";
@@ -8,7 +8,7 @@ import { createInstance } from "i18next";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import i18n from "./i18n";
 import getI18next from "./i18next.server";
-import { Context } from "./util/loader";
+import type { Context } from "./util/loader";
 
 export default async function handleRequest(
   request: Request,

@@ -5,7 +5,7 @@ import { twJoin } from "tailwind-merge";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { getUser } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import type { GuideFileMeta } from "./guide.$";
 
 export const loader = async ({ request, context }: LoaderArgs) => {

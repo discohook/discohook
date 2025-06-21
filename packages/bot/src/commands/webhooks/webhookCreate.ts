@@ -5,8 +5,8 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIInteraction,
-  APIWebhook,
+  type APIInteraction,
+  type APIWebhook,
   ButtonStyle,
   ChannelType,
   RESTJSONErrorCodes,
@@ -21,9 +21,9 @@ import {
   upsertGuild,
   webhooks,
 } from "store";
-import { ChatInputAppCommandCallback } from "../../commands.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
 import { getErrorEmbed } from "../../errors.js";
-import { APIPartialResolvedChannel } from "../../types/api.js";
+import type { APIPartialResolvedChannel } from "../../types/api.js";
 import { readAttachment } from "../../util/cdn.js";
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";

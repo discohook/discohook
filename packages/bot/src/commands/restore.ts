@@ -8,15 +8,15 @@ import {
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
-  APIAllowedMentions,
-  APIGuildChannel,
-  APIMessage,
-  APIMessageTopLevelComponent,
-  APIWebhook,
+  type APIAllowedMentions,
+  type APIGuildChannel,
+  type APIMessage,
+  type APIMessageTopLevelComponent,
+  type APIWebhook,
   AllowedMentionsTypes,
   ChannelType,
   ComponentType,
-  GuildChannelType,
+  type GuildChannelType,
   MessageFlags,
   MessageReferenceType,
   PermissionFlagsBits,
@@ -25,13 +25,16 @@ import {
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { type QueryData, getDb, shareLinks, upsertDiscordUser } from "store";
-import {
+import type {
   ChatInputAppCommandCallback,
   MessageAppCommandCallback,
 } from "../commands.js";
-import { AutoComponentCustomId, SelectMenuCallback } from "../components.js";
+import type {
+  AutoComponentCustomId,
+  SelectMenuCallback,
+} from "../components.js";
 import { getShareLinkExists, putShareLink } from "../durable/share-links.js";
-import { Env } from "../types/env.js";
+import type { Env } from "../types/env.js";
 import { isComponentsV2, parseAutoComponentId } from "../util/components.js";
 import { isDiscordError } from "../util/error.js";
 import { isThread } from "../util/guards.js";
@@ -160,7 +163,7 @@ export const messageToQueryData = (
         msg.message_reference?.type === MessageReferenceType.Forward &&
         !!msg.message_snapshots?.length;
       const innerMsg = isForward
-        ? msg.message_snapshots?.[0]?.message ?? msg
+        ? (msg.message_snapshots?.[0]?.message ?? msg)
         : msg;
 
       return {

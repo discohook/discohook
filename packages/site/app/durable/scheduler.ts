@@ -4,14 +4,14 @@ import { RESTJSONErrorCodes } from "discord-api-types/v10";
 import { z } from "zod";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
-  ScheduledRunData,
+  type ScheduledRunData,
   ScheduledRunStatus,
   backups,
   eq,
   getDb,
   makeSnowflake,
 } from "~/store.server";
-import { Env } from "~/types/env";
+import type { Env } from "~/types/env";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { isDiscordError } from "~/util/discord";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";

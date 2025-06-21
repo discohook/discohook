@@ -12,12 +12,12 @@ import {
   type APIButtonComponent,
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
-  APIComponentInContainer,
-  APIContainerComponent,
-  APIEmbed,
+  type APIComponentInContainer,
+  type APIContainerComponent,
+  type APIEmbed,
   type APIMessage,
   type APIMessageComponent,
-  APISectionComponent,
+  type APISectionComponent,
   type APISelectMenuComponent,
   ButtonStyle,
   ComponentType,
@@ -35,15 +35,15 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { Snowflake, getDate, isSnowflake } from "discord-snowflake";
-import { TimestampStyle } from "~/components/editor/TimePicker";
-import { DraftFile } from "~/routes/_index";
+import { type Snowflake, getDate, isSnowflake } from "discord-snowflake";
+import type { TimestampStyle } from "~/components/editor/TimePicker";
+import type { DraftFile } from "~/routes/_index";
 import type {
   APIButtonComponentWithURL,
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
-import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "./constants";
 import { transformFileName } from "./files";
 import { sleep } from "./time";

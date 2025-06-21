@@ -1,8 +1,8 @@
-import { APISectionComponent, ComponentType } from "discord-api-types/v10";
+import { type APISectionComponent, ComponentType } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
-import { SetImageModalData } from "~/modals/ImageModal";
-import { DraftFile } from "~/routes/_index";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { SetImageModalData } from "~/modals/ImageModal";
+import type { DraftFile } from "~/routes/_index";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { PreviewButton } from "./ActionRow";
 import { getImageUri } from "./Embed";
 import { PreviewTextDisplay } from "./TextDisplay";

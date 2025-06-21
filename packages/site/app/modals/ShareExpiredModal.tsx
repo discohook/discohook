@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { InvalidShareIdData } from "~/api/v1/share.$shareId";
-import { Modal, ModalProps } from "./Modal";
+import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
+import { Modal, type ModalProps } from "./Modal";
 
 export const ShareExpiredModal = (
   props: ModalProps & { data?: InvalidShareIdData },

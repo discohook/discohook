@@ -1,4 +1,4 @@
-import { APIMessageComponentEmoji } from "discord-api-types/v10";
+import type { APIMessageComponentEmoji } from "discord-api-types/v10";
 
 export const color = 0x58b9ff;
 

@@ -1,6 +1,6 @@
-import { APITextDisplayComponent } from "discord-api-types/v10";
+import type { APITextDisplayComponent } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { Markdown } from "./Markdown";
 
 export const PreviewTextDisplay: React.FC<{

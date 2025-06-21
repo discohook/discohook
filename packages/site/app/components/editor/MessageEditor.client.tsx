@@ -1,7 +1,7 @@
 import { Select } from "@base-ui-components/react/select";
 import { Link } from "@remix-run/react";
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -11,18 +11,21 @@ import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
-import { EditingComponentData } from "~/modals/ComponentEditModal";
-import { JsonEditorProps } from "~/modals/JsonEditorModal";
+import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
+import type { EditingComponentData } from "~/modals/ComponentEditModal";
+import type { JsonEditorProps } from "~/modals/JsonEditorModal";
 import {
   Modal,
   ModalFooter,
-  ModalProps,
+  type ModalProps,
   PlainModalHeader,
 } from "~/modals/Modal";
-import { DraftFile, getQdMessageId } from "~/routes/_index";
-import { QueryData, ZodQueryDataMessage } from "~/types/QueryData";
-import { CacheManager, ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
+import type {
+  CacheManager,
+  ResolvableAPIChannel,
+} from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
 import { isComponentsV2, onlyActionRows } from "~/util/discord";
 import {

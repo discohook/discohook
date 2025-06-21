@@ -1,5 +1,5 @@
 import { Avatar } from "@base-ui-components/react/avatar";
-import { APIEmbedImage, APIWebhook } from "discord-api-types/v10";
+import type { APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import {
   MessageFlags,
   MessageFlagsBitField,
@@ -8,13 +8,13 @@ import {
 } from "discord-bitflag";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { SetImageModalData } from "~/modals/ImageModal";
-import { DraftFile } from "~/routes/_index";
-import { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
+import type { SetImageModalData } from "~/modals/ImageModal";
+import type { DraftFile } from "~/routes/_index";
+import type { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
 import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
-import { CacheManager } from "~/util/cache/CacheManager";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdn, isComponentsV2, webhookAvatarUrl } from "~/util/discord";
-import { Settings } from "~/util/localstorage";
+import type { Settings } from "~/util/localstorage";
 import { Svg } from "../icons/Svg";
 import { PostChannelIcon } from "../icons/channel";
 import { AutoTopLevelComponentPreview } from "./Container";
@@ -94,8 +94,8 @@ export const Message: React.FC<{
 }) => {
   const { t } = useTranslation();
   const webhook = webhooks
-    ? webhooks.find((w) => w.application_id === discordApplicationId) ??
-      webhooks[0]
+    ? (webhooks.find((w) => w.application_id === discordApplicationId) ??
+      webhooks[0])
     : undefined;
   const username = message.username ?? webhook?.name ?? "Discohook";
   // Trim out obviously bad data before attempting to load the image
@@ -117,7 +117,7 @@ export const Message: React.FC<{
   const badge =
     message.author?.badge === null
       ? null
-      : message.author?.badge ?? t("badge.app");
+      : (message.author?.badge ?? t("badge.app"));
   const isVerified =
     message.author?.flags &&
     new UserFlagsBitField(message.author.flags).has(UserFlags.VerifiedBot);

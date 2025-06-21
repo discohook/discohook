@@ -12,7 +12,7 @@ import { guildMemberRemoveCallback } from "./events/guildMemberRemove.js";
 import { messageReactionAddCallback } from "./events/messageReactionAdd.js";
 import { messageReactionRemoveCallback } from "./events/messageReactionRemove.js";
 import { webhooksUpdateCallback } from "./events/webhooksUpdate.js";
-import { Env } from "./types/env.js";
+import type { Env } from "./types/env.js";
 import { WebhookEvents } from "./types/webhook-events.js";
 
 export type GatewayEventCallback = (env: Env, payload: any) => Promise<any>;

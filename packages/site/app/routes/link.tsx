@@ -1,10 +1,14 @@
-import { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import { APIEmbed, APIEmbedImage, ButtonStyle } from "discord-api-types/v10";
+import {
+  type APIEmbed,
+  type APIEmbedImage,
+  ButtonStyle,
+} from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
-import { SafeParseReturnType, z } from "zod";
+import type { SafeParseReturnType, z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Header } from "~/components/Header";
@@ -17,17 +21,17 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
-import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
+import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
 import { ModalFooter } from "~/modals/Modal";
 import { getUser } from "~/session.server";
 import {
   LinkEmbedStrategy,
-  LinkQueryData,
-  ZodLinkEmbed,
+  type LinkQueryData,
+  type ZodLinkEmbed,
   ZodLinkQueryData,
 } from "~/types/QueryData";
 import { LINK_INDEX_EMBED, LINK_INDEX_FAILURE_EMBED } from "~/util/constants";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
@@ -37,7 +41,7 @@ import {
 } from "~/util/text";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
-import { loader as ApiGetLinkBackup } from "../api/v1/link-backups.$id";
+import type { loader as ApiGetLinkBackup } from "../api/v1/link-backups.$id";
 import { safePushState } from "./_index";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -172,7 +176,7 @@ export default () => {
         parsed = ZodLinkQueryData.safeParse(
           JSON.parse(
             searchParams.get("data")
-              ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
+              ? (base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
               : JSON.stringify({ embed: LINK_INDEX_EMBED }),
           ),
         );

@@ -1,4 +1,4 @@
-import { IconFC, Svg } from "./Svg";
+import { type IconFC, Svg } from "./Svg";
 
 export const RoleShield: IconFC = (props) => (
   <Svg width={24} height={24} {...props}>

@@ -4,7 +4,7 @@ import {
   ButtonStyle,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
-import { DraftFile, getQdMessageId } from "~/routes/_index";
+import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_GALLERY_ITEMS } from "~/util/constants";

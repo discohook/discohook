@@ -13,7 +13,7 @@ import { Markdown } from "~/components/preview/Markdown";
 import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
 import { useCache } from "~/util/cache/CacheManager";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {

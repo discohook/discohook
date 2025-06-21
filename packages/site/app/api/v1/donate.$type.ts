@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getUserId } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
 

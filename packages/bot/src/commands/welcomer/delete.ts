@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord-api-types/v10";
 import { TriggerEvent, getDb, getchTriggerGuild } from "store";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import { AutoComponentCustomId } from "../../components.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type { AutoComponentCustomId } from "../../components.js";
 import { getWelcomerConfigurations } from "../../events/guildMemberAdd.js";
-import { WelcomerTriggerEvent } from "./set.js";
+import type { WelcomerTriggerEvent } from "./set.js";
 
 export const welcomerDeleteEntry: ChatInputAppCommandCallback<true> = async (
   ctx,

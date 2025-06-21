@@ -1,21 +1,22 @@
 import { Dialog } from "@base-ui-components/react/dialog";
-import { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIWebhook,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
-import React, { useEffect, useReducer, useState } from "react";
+import type React from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
-import { SafeParseError, SafeParseReturnType, ZodError } from "zod";
+import type { SafeParseError, SafeParseReturnType, ZodError } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
-import { InvalidShareIdData } from "~/api/v1/share.$shareId";
-import { ApiGetCurrentUser } from "~/api/v1/users.@me";
+import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
+import type { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -31,16 +32,19 @@ import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import {
   CodeGeneratorModal,
-  CodeGeneratorProps,
+  type CodeGeneratorProps,
 } from "~/modals/CodeGeneratorModal";
 import {
   ComponentEditModal,
-  EditingComponentData,
+  type EditingComponentData,
 } from "~/modals/ComponentEditModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
-import { ImageModal, ImageModalProps } from "~/modals/ImageModal";
-import { JsonEditorModal, JsonEditorProps } from "~/modals/JsonEditorModal";
+import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
+import {
+  JsonEditorModal,
+  type JsonEditorProps,
+} from "~/modals/JsonEditorModal";
 import { MessageAllowedMentionsModal } from "~/modals/MessageAllowedMentionsModal";
 import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
 import { MessageFlagsEditModal } from "~/modals/MessageFlagsEditModal";
@@ -62,7 +66,7 @@ import {
   type QueryDataTarget,
   ZodQueryData,
 } from "~/types/QueryData";
-import { QueryDataMessageDataRaw } from "~/types/QueryData-raw";
+import type { QueryDataMessageDataRaw } from "~/types/QueryData-raw";
 import { useCache } from "~/util/cache/CacheManager";
 import {
   INDEX_FAILURE_MESSAGE,
@@ -79,7 +83,7 @@ import {
   webhookAvatarUrl,
 } from "~/util/discord";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
-import { LoaderArgs, useApiLoader } from "~/util/loader";
+import { type LoaderArgs, useApiLoader } from "~/util/loader";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
@@ -89,8 +93,8 @@ import {
 } from "~/util/text";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
-import { type ApiGetBackupWithData } from "../api/v1/backups.$id";
-import { loader as ApiGetComponents } from "../api/v1/components";
+import type { ApiGetBackupWithData } from "../api/v1/backups.$id";
+import type { loader as ApiGetComponents } from "../api/v1/components";
 import {
   buildStorableComponent,
   unresolveStorableComponent,
@@ -378,7 +382,7 @@ export default function Index() {
         parsed = ZodQueryData.safeParse(
           JSON.parse(
             searchParams.get("data")
-              ? base64Decode(searchParams.get("data") ?? "{}") ?? "{}"
+              ? (base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
               : JSON.stringify({ messages: [INDEX_MESSAGE] }),
           ),
         );

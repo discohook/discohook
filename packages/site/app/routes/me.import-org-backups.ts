@@ -1,6 +1,6 @@
 import { json, redirect } from "@remix-run/cloudflare";
 import { getUserId } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 
 export const loader = async ({ request, context }: LoaderArgs) => {

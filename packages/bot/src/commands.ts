@@ -1,14 +1,14 @@
 import {
-  APIApplicationCommandAutocompleteInteraction,
-  APIApplicationCommandAutocompleteResponse,
-  APIChatInputApplicationCommandDMInteraction,
-  APIChatInputApplicationCommandGuildInteraction,
-  APIChatInputApplicationCommandInteraction,
-  APIInteraction,
-  APIInteractionResponse,
-  APIMessageApplicationCommandDMInteraction,
-  APIMessageApplicationCommandGuildInteraction,
-  APIUserApplicationCommandInteraction,
+  type APIApplicationCommandAutocompleteInteraction,
+  type APIApplicationCommandAutocompleteResponse,
+  type APIChatInputApplicationCommandDMInteraction,
+  type APIChatInputApplicationCommandGuildInteraction,
+  type APIChatInputApplicationCommandInteraction,
+  type APIInteraction,
+  type APIInteractionResponse,
+  type APIMessageApplicationCommandDMInteraction,
+  type APIMessageApplicationCommandGuildInteraction,
+  type APIUserApplicationCommandInteraction,
   ApplicationCommandType,
 } from "discord-api-types/v10";
 import {
@@ -63,7 +63,7 @@ import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
 import { welcomerDeleteEntry } from "./commands/welcomer/delete.js";
 import { welcomerSetupEntry } from "./commands/welcomer/set.js";
 import { welcomerViewEntry } from "./commands/welcomer/view.js";
-import { InteractionContext } from "./interactions.js";
+import type { InteractionContext } from "./interactions.js";
 
 export type InteractionInstantOrDeferredResponse =
   | APIInteractionResponse

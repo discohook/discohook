@@ -1,40 +1,40 @@
 import {
-  ButtonBuilder,
-  ChannelSelectMenuBuilder,
-  MentionableSelectMenuBuilder,
+  type ButtonBuilder,
+  type ChannelSelectMenuBuilder,
+  type MentionableSelectMenuBuilder,
   ModalBuilder,
-  RoleSelectMenuBuilder,
-  StringSelectMenuBuilder,
+  type RoleSelectMenuBuilder,
+  type StringSelectMenuBuilder,
   TextDisplayBuilder,
-  UserSelectMenuBuilder,
+  type UserSelectMenuBuilder,
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
-  APIActionRowComponent,
-  APIButtonComponent,
-  APIButtonComponentWithCustomId,
-  APIButtonComponentWithSKUId,
-  APIButtonComponentWithURL,
-  APIChannelSelectComponent,
-  APIComponentInContainer,
-  APIComponentInMessageActionRow,
-  APIMentionableSelectComponent,
-  APIMessage,
-  APIMessageComponent,
-  APIMessageTopLevelComponent,
-  APIRoleSelectComponent,
-  APISelectMenuComponent,
-  APIStringSelectComponent,
-  APITextInputComponent,
-  APIUserSelectComponent,
+  type APIActionRowComponent,
+  type APIButtonComponent,
+  type APIButtonComponentWithCustomId,
+  type APIButtonComponentWithSKUId,
+  type APIButtonComponentWithURL,
+  type APIChannelSelectComponent,
+  type APIComponentInContainer,
+  type APIComponentInMessageActionRow,
+  type APIMentionableSelectComponent,
+  type APIMessage,
+  type APIMessageComponent,
+  type APIMessageTopLevelComponent,
+  type APIRoleSelectComponent,
+  type APISelectMenuComponent,
+  type APIStringSelectComponent,
+  type APITextInputComponent,
+  type APIUserSelectComponent,
   ButtonStyle,
   ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
 import { type StorableComponent, generateId } from "store";
-import { MinimumKVComponentState } from "../components.js";
-import { Env } from "../types/env.js";
+import type { MinimumKVComponentState } from "../components.js";
+import type { Env } from "../types/env.js";
 import { MAX_TOTAL_COMPONENTS } from "./constants.js";
 
 export const getCustomId = (temporary = false) => {

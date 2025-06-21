@@ -3,29 +3,29 @@ import { defer, json, redirect } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useLocation } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  APIActionRowComponent,
-  APIChannel,
-  APIComponentInContainer,
-  APIComponentInModalActionRow,
-  APIMessage,
-  APISectionComponent,
-  APIWebhook,
+  type APIActionRowComponent,
+  type APIChannel,
+  type APIComponentInContainer,
+  type APIComponentInModalActionRow,
+  type APIMessage,
+  type APISectionComponent,
+  type APIWebhook,
   ButtonStyle,
   ChannelType,
   ComponentType,
   RESTJSONErrorCodes,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
-import { TFunction } from "i18next";
-import { JWTPayload } from "jose";
+import type { TFunction } from "i18next";
+import type { JWTPayload } from "jose";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { BRoutes, apiUrl } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
-import { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
+import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
@@ -38,12 +38,12 @@ import {
   getComponentWidth,
   getRowWidth,
 } from "~/components/editor/TopLevelComponentEditor";
-import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { getDOToken } from "~/durable/sessions";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
-import { EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
+import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
   getEditorTokenStorage,
@@ -52,9 +52,9 @@ import {
   verifyToken,
 } from "~/session.server";
 import {
-  DraftComponent,
-  Flow,
-  StorableComponent,
+  type DraftComponent,
+  type Flow,
+  type StorableComponent,
   autoRollbackTx,
   discordMessageComponents,
   eq,
@@ -71,10 +71,10 @@ import type {
 } from "~/types/QueryData";
 import { ZodAPITopLevelComponentRaw } from "~/types/components-raw";
 import {
-  ResolutionKey,
-  ResolvableAPIChannel,
-  ResolvableAPIEmoji,
-  ResolvableAPIRole,
+  type ResolutionKey,
+  type ResolvableAPIChannel,
+  type ResolvableAPIEmoji,
+  type ResolvableAPIRole,
   useCache,
 } from "~/util/cache/CacheManager";
 import {
@@ -93,7 +93,11 @@ import {
   onlyActionRows,
 } from "~/util/discord";
 import { draftFlowToFlow, flowToDraftFlow } from "~/util/flow";
-import { ActionArgs, LoaderArgs, useSafeFetcher } from "~/util/loader";
+import {
+  type ActionArgs,
+  type LoaderArgs,
+  useSafeFetcher,
+} from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import {

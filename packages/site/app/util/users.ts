@@ -1,6 +1,6 @@
-import { ImageURLOptions } from "@discordjs/rest";
+import type { ImageURLOptions } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
-import { User } from "~/session.server";
+import type { User } from "~/session.server";
 import { cdn } from "./discord";
 
 export const getUserPremiumDetails = (

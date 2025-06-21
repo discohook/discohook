@@ -1,5 +1,5 @@
-import { APIFileComponent } from "discord-api-types/v10";
-import { DraftFile } from "~/routes/_index";
+import type { APIFileComponent } from "discord-api-types/v10";
+import type { DraftFile } from "~/routes/_index";
 import { resolveAttachmentUri } from "./Embed";
 import { FileAttachment } from "./FileAttachment";
 

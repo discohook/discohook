@@ -3,7 +3,7 @@ import { PermissionFlags } from "discord-bitflag";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { getDb, webhooks } from "~/store.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {

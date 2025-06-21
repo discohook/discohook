@@ -1,8 +1,8 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
-  APIMessage,
-  APIWebhook,
+  type APIMessage,
+  type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
@@ -17,8 +17,8 @@ import {
   replaceComponentByPath,
 } from "~/routes/edit.component.$id";
 import {
-  TokenWithUser,
-  User,
+  type TokenWithUser,
+  type User,
   authorizeRequest,
   doubleDecode,
   getEditorTokenStorage,
@@ -26,7 +26,7 @@ import {
   verifyToken,
 } from "~/session.server";
 import {
-  StorableComponent,
+  type StorableComponent,
   autoRollbackTx,
   destroyComponentDurableObject,
   discordMessageComponents,
@@ -41,10 +41,10 @@ import {
   sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
-import { Env } from "~/types/env";
+import type { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
 import { isComponentsV2, isDiscordError } from "~/util/discord";
-import { ActionArgs } from "~/util/loader";
+import type { ActionArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 

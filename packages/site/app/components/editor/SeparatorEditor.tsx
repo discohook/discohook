@@ -1,6 +1,6 @@
 import {
   type APIContainerComponent,
-  APISeparatorComponent,
+  type APISeparatorComponent,
   SeparatorSpacingSize,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";

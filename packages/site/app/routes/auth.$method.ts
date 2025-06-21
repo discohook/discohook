@@ -4,7 +4,7 @@ import { zx } from "zodix";
 import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
 import { getDiscordAuth } from "~/auth-discord.server";
 import { getSessionStorage, getUser, getUserId } from "~/session.server";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams, zxParseQuery } from "~/util/zod";
 
 const isValidRedirect = (path: string | undefined): path is string => {

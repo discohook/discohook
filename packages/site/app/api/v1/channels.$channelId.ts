@@ -1,18 +1,18 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
-  APIChannel,
+  type APIChannel,
   ChannelType,
-  RESTGetAPIChannelResult,
+  type RESTGetAPIChannelResult,
   Routes,
 } from "discord-api-types/v10";
 import { authorizeRequest } from "~/session.server";
 import {
-  ResolvableAPIChannel,
+  type ResolvableAPIChannel,
   tagToResolvableTag,
 } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 export const getChannelIconType = (channel: APIChannel) => {

@@ -1,12 +1,12 @@
-import { SerializeFrom } from "@remix-run/cloudflare";
-import { SubmitOptions } from "@remix-run/react";
+import type { SerializeFrom } from "@remix-run/cloudflare";
+import type { SubmitOptions } from "@remix-run/react";
 import type {
   ActionFunctionArgs as RRActionFunctionArgs,
   LoaderFunctionArgs as RRLoaderFunctionArgs,
 } from "@remix-run/router";
 import { useEffect, useState } from "react";
-import { ZodError } from "zod";
-import { Env } from "~/types/env";
+import type { ZodError } from "zod";
+import type { Env } from "~/types/env";
 
 export interface Context {
   origin: string;

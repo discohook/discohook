@@ -10,7 +10,7 @@ import {
 import type { TFunction } from "i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
-import {
+import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
   QueryData,
@@ -38,7 +38,7 @@ export const getComponentText = (
   switch (component.type) {
     case ComponentType.Button:
       return component.style !== ButtonStyle.Premium
-        ? component.label ?? component.emoji?.name
+        ? (component.label ?? component.emoji?.name)
         : `SKU ${component.sku_id}`;
     case ComponentType.StringSelect:
     case ComponentType.RoleSelect:
@@ -52,8 +52,8 @@ export const getComponentText = (
       return component.content;
     case ComponentType.MediaGallery:
       return component.items[0]
-        ? component.items[0].description ??
-            stripProtocol(component.items[0].media.url)
+        ? (component.items[0].description ??
+            stripProtocol(component.items[0].media.url))
         : undefined;
     case ComponentType.File:
       return stripProtocol(component.file.url);

@@ -8,7 +8,7 @@
 import { json, redirect } from "@remix-run/cloudflare";
 import { getDb } from "~/store.server";
 import { LinkEmbedStrategy } from "~/types/QueryData";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {

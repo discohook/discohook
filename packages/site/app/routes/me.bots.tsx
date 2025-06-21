@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { SerializeFrom, json } from "@remix-run/cloudflare";
+import { type SerializeFrom, json } from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -11,9 +11,9 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { BotCreateModal } from "~/modals/BotCreateModal";
 import { getUser, getUserId } from "~/session.server";
 import { customBots, desc, getDb, makeSnowflake } from "~/store.server";
-import { RESTGetAPIApplicationRpcResult } from "~/types/discord";
+import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, isDiscordError } from "~/util/discord";
-import { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseQuery } from "~/util/zod";
 

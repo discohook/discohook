@@ -1,7 +1,7 @@
-import { APIGuildChannel, ChannelType } from "discord-api-types/v10";
+import type { APIGuildChannel, ChannelType } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import { getDb, webhooks } from "store";
-import { GatewayEventCallback } from "../events.js";
+import type { GatewayEventCallback } from "../events.js";
 
 export const channelDeleteCallback: GatewayEventCallback = async (
   env,

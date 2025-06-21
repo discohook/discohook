@@ -10,8 +10,8 @@ import {
 import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
 import {
-  APIMessageComponentButtonInteraction,
-  APIWebhook,
+  type APIMessageComponentButtonInteraction,
+  type APIWebhook,
   ButtonStyle,
   ChannelType,
   RouteBases,
@@ -19,13 +19,13 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { Snowflake, getDate } from "discord-snowflake";
+import { type Snowflake, getDate } from "discord-snowflake";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
-import { ChatInputAppCommandCallback } from "../../commands.js";
-import { ButtonCallback } from "../../components.js";
-import { InteractionContext } from "../../interactions.js";
-import { Env } from "../../types/env.js";
+import type { ChatInputAppCommandCallback } from "../../commands.js";
+import type { ButtonCallback } from "../../components.js";
+import type { InteractionContext } from "../../interactions.js";
+import type { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { parseAutoComponentId } from "../../util/components.js";
 import { color } from "../../util/meta.js";

@@ -1,7 +1,7 @@
 import { Select } from "@base-ui-components/react/select";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { twJoin } from "tailwind-merge";
-import { ResolvableAPIChannel } from "~/util/cache/CacheManager";
+import type { ResolvableAPIChannel } from "~/util/cache/CacheManager";
 import { SelectValueTrigger, selectStyles } from "./StringSelect";
 import { CoolIcon } from "./icons/CoolIcon";
 import { channelIcons } from "./preview/Markdown";

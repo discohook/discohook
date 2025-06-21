@@ -1,12 +1,12 @@
 import {
-  APIContainerComponent,
-  APIFileComponent,
+  type APIContainerComponent,
+  type APIFileComponent,
   ButtonStyle,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { type DraftFile } from "~/routes/_index";
-import { QueryData } from "~/types/QueryData";
+import type { DraftFile } from "~/routes/_index";
+import type { QueryData } from "~/types/QueryData";
 import {
   MAX_FILES_PER_MESSAGE,
   fileInputChangeHandler,

@@ -1,13 +1,13 @@
 import { REST } from "@discordjs/rest";
 import {
-  APIUser,
-  APIWebhook,
-  GatewayGuildMemberAddDispatchData,
+  type APIUser,
+  type APIWebhook,
+  type GatewayGuildMemberAddDispatchData,
   Routes,
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import {
-  DBWithSchema,
+  type DBWithSchema,
   type FlowAction,
   type FlowActionCheck,
   FlowActionCheckFunctionType,
@@ -33,8 +33,8 @@ import {
   welcomer_goodbye,
   welcomer_hello,
 } from "store";
-import { GatewayEventCallback } from "../events.js";
-import { FlowResult, executeFlow } from "../flows/flows.js";
+import type { GatewayEventCallback } from "../events.js";
+import { type FlowResult, executeFlow } from "../flows/flows.js";
 
 export const getWelcomerConfigurations = async (
   db: DBWithSchema,

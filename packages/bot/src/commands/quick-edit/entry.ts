@@ -10,34 +10,38 @@ import {
 import dedent from "dedent-js";
 import {
   type APIChatInputApplicationCommandGuildInteraction,
-  APIComponentInContainer,
-  APIContainerComponent,
-  APIEmbed,
-  APIMediaGalleryItem,
+  type APIComponentInContainer,
+  type APIContainerComponent,
+  type APIEmbed,
+  type APIMediaGalleryItem,
   type APIMessage,
   type APIMessageApplicationCommandGuildInteraction,
-  APIMessageTopLevelComponent,
-  APISectionComponent,
-  APISeparatorComponent,
-  APITextDisplayComponent,
+  type APIMessageTopLevelComponent,
+  type APISectionComponent,
+  type APISeparatorComponent,
+  type APITextDisplayComponent,
   ButtonStyle,
   ComponentType,
   EmbedType,
   SeparatorSpacingSize,
   TextInputStyle,
 } from "discord-api-types/v10";
-import { APIMessageReducedWithId, cacheMessage, getchMessage } from "store";
+import {
+  type APIMessageReducedWithId,
+  cacheMessage,
+  getchMessage,
+} from "store";
 import type {
   ChatInputAppCommandCallback,
   InteractionInstantOrDeferredResponse,
   MessageAppCommandCallback,
 } from "../../commands.js";
-import {
+import type {
   AutoComponentCustomId,
   AutoModalCustomId,
   SelectMenuCallback,
 } from "../../components.js";
-import { InteractionContext } from "../../interactions.js";
+import type { InteractionContext } from "../../interactions.js";
 import {
   isComponentsV2,
   parseAutoComponentId,
@@ -657,7 +661,7 @@ export const getQuickEditSeparatorContainer = (
       td.setContent(
         `### ${
           SeparatorSpacingSize[component.spacing ?? SeparatorSpacingSize.Small]
-        } ${component.divider ?? true ? "Divider" : "Separator"}`,
+        } ${(component.divider ?? true) ? "Divider" : "Separator"}`,
       ),
     )
     .addActionRowComponents((row) =>

@@ -2,7 +2,7 @@ import { Avatar } from "@base-ui-components/react/avatar";
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
-import { APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
+import { type APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
@@ -14,7 +14,7 @@ import { getBucket } from "~/durable/rate-limits";
 import { getUser } from "~/session.server";
 import { autoRollbackTx, discordUsers, eq, getDb, users } from "~/store.server";
 import { getId } from "~/util/id";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
 import { zxParseForm } from "~/util/zod";
 

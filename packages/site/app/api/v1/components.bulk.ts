@@ -6,7 +6,7 @@ import {
   inArray,
   launchComponentDurableObject,
 } from "~/store.server";
-import { ActionArgs } from "~/util/loader";
+import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson } from "~/util/zod";
 
 export const action = async ({ request, context }: ActionArgs) => {

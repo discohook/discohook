@@ -19,7 +19,7 @@ import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message.client";
 import getI18next from "./i18next.server";
 import icons from "./styles/coolicons.css";
-import { LoaderArgs, getZodErrorMessage } from "./util/loader";
+import { type LoaderArgs, getZodErrorMessage } from "./util/loader";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const locale = await getI18next(context).getLocale(request);

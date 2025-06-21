@@ -1,7 +1,7 @@
 import { ButtonStyle } from "discord-api-types/v10";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { twJoin } from "tailwind-merge";
-import { DraftFile } from "~/routes/_index";
+import type { DraftFile } from "~/routes/_index";
 import {
   ATTACHMENT_URI_EXTENSIONS,
   MAX_FILES_PER_MESSAGE,
