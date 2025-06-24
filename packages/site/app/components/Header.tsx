@@ -24,9 +24,6 @@ import { CoolIcon } from "./icons/CoolIcon";
 import { Logo } from "./icons/Logo";
 import { Twemoji } from "./icons/Twemoji";
 
-const drawerHeaderClassName =
-  "px-3 uppercase font-semibold text-sm text-muted dark:text-muted-dark select-none cursor-default";
-
 const drawerListItemClassName =
   "flex items-center rounded-lg py-1 px-2 gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors";
 
