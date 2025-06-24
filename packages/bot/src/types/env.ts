@@ -9,6 +9,7 @@ export interface Env {
   DISCORD_PUBLIC_KEY: string;
   DISCORD_TOKEN: string;
   DISCOHOOK_ORIGIN: string;
+  BOUNCER_ORIGIN?: string;
   TOKEN_SECRET: string;
   DATABASE_URL: string;
   REDIS_URL: string;

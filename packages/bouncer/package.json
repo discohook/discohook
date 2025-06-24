@@ -1,0 +1,21 @@
+{
+  "name": "bouncer",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "PORT=8792 bun --hot index.ts",
+    "start": "PORT=8792 bun index.ts"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "^1.2.16"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "itty-router": "^5.0.18",
+    "jose": "^6.0.11",
+    "zod": "^3.25.64"
+  }
+}

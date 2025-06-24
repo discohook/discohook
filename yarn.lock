@@ -2906,6 +2906,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bun@npm:^1.2.16":
+  version: 1.2.16
+  resolution: "@types/bun@npm:1.2.16"
+  dependencies:
+    bun-types: "npm:1.2.16"
+  checksum: 10c0/f1fe2dda61e8ab962c5fe90cacb949f25f8d66257693fd32d3771211f478e517f8e2787f322e0429882da9b5878d4619d829c32cc0ad5c7859de74c3b0ff90e0
+  languageName: node
+  linkType: hard
+
 "@types/caniuse-lite@npm:^1":
   version: 1.0.5
   resolution: "@types/caniuse-lite@npm:1.0.5"
@@ -3644,6 +3653,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bouncer@workspace:packages/bouncer":
+  version: 0.0.0-use.local
+  resolution: "bouncer@workspace:packages/bouncer"
+  dependencies:
+    "@types/bun": "npm:^1.2.16"
+    itty-router: "npm:^5.0.18"
+    jose: "npm:^6.0.11"
+    zod: "npm:^3.25.64"
+  peerDependencies:
+    typescript: ^5
+  languageName: unknown
+  linkType: soft
+
 "brace-expansion@npm:^1.1.7":
   version: 1.1.11
   resolution: "brace-expansion@npm:1.1.11"
@@ -3739,6 +3761,15 @@ __metadata:
   dependencies:
     semver: "npm:^7.0.0"
   checksum: 10c0/9390a51a9abbc0233dac79c66715f927508b9d0c62cb7a42448fe8c52def60c707e6e9eb2cc4c9b7aba11601899935bca4e4064ae5e19c04c7e1bb9309e69134
+  languageName: node
+  linkType: hard
+
+"bun-types@npm:1.2.16":
+  version: 1.2.16
+  resolution: "bun-types@npm:1.2.16"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/ce19844e4dbba6f48cb20af540f9e2b8f89bcfe9c9fd86821c4703d2e9731ce5f4ac8e27af33eae1e1f831f96a895b542fe79948b6a30e62bfbe7b4d8f8e304a
   languageName: node
   linkType: hard
 
@@ -6535,6 +6566,13 @@ cron-parser@discohook/cron-parser:
   languageName: node
   linkType: hard
 
+"itty-router@npm:^5.0.18":
+  version: 5.0.18
+  resolution: "itty-router@npm:5.0.18"
+  checksum: 10c0/f21afcf16135622de665b340e16262add2c35dab037c051448df8a2dd49bd83dfa1cf9323000839994157202befaa79f95bbc9e0ed106114cb9da66275ad9408
+  languageName: node
+  linkType: hard
+
 "jackspeak@npm:^2.3.5":
   version: 2.3.6
   resolution: "jackspeak@npm:2.3.6"
@@ -6575,6 +6613,13 @@ cron-parser@discohook/cron-parser:
   version: 5.4.1
   resolution: "jose@npm:5.4.1"
   checksum: 10c0/51234a7383eda796ac0b0a61ac1020efab8ee53717ffa74987aeab9c40c6fc2dd203ff5de805731399fc846a94d9be3ae0f140561d4c390cff0ac6c69300e897
+  languageName: node
+  linkType: hard
+
+"jose@npm:^6.0.11":
+  version: 6.0.11
+  resolution: "jose@npm:6.0.11"
+  checksum: 10c0/d290be4532174e7a53730b7fb84c74327531172bd403b196c592b312b73eedb7489949837bfe831fdbd280799bfc5ba778bc807495a73eda08ae6c49414f405a
   languageName: node
   linkType: hard
 
@@ -11293,6 +11338,13 @@ tif-snowflake@discohook/snowflake:
   version: 3.23.8
   resolution: "zod@npm:3.23.8"
   checksum: 10c0/8f14c87d6b1b53c944c25ce7a28616896319d95bc46a9660fe441adc0ed0a81253b02b5abdaeffedbeb23bdd25a0bf1c29d2c12dd919aef6447652dd295e3e69
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.25.64":
+  version: 3.25.64
+  resolution: "zod@npm:3.25.64"
+  checksum: 10c0/00d76093a999e377e4ffd037fa7185e861c35917e8c4272f514115c206a0654995168f57fb71708b11e0a9243206d988b7f63b543404e1796402e50d346a6bd7
   languageName: node
   linkType: hard
 
