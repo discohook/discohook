@@ -29,7 +29,7 @@ import type {
 } from "../commands.js";
 import type { AutoComponentCustomId, ButtonCallback } from "../components.js";
 import type { Env } from "../types/env.js";
-import { parseAutoComponentId } from "../util/components.js";
+import { isActionRow, parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import {
   autocompleteMessageCallback,
@@ -527,15 +527,19 @@ export const deleteReactionRoleButtonCallback: ButtonCallback = async (ctx) => {
   // Remove the button that was just clicked
   // biome-ignore lint/style/noNonNullAssertion: We're in a component callback for this message
   const components = ctx.interaction.message
-    .components!.map((row) => ({
-      ...row,
-      components: row.components.filter((c) =>
-        "custom_id" in c
-          ? c.custom_id !== ctx.interaction.data.custom_id
-          : true,
-      ),
-    }))
-    .filter((row) => row.components.length !== 0);
+    .components!.map((row) =>
+      isActionRow(row)
+        ? {
+            ...row,
+            components: row.components.filter((c) =>
+              "custom_id" in c
+                ? c.custom_id !== ctx.interaction.data.custom_id
+                : true,
+            ),
+          }
+        : row,
+    )
+    .filter((row) => !isActionRow(row) || row.components.length !== 0);
 
   return ctx.updateMessage({ components });
 };
