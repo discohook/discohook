@@ -490,8 +490,7 @@ const createEditorToken = async (env: Env, data: KVComponentEditorState) => {
     // We expand the object instead of passing it directly just to make sure
     // there are no superfluous values
     sub: JSON.stringify({
-      // as far as I know we never ended up using interactionId so we could probably remove it.
-      interactionId: data.interactionId,
+      componentId: data.componentId,
       user: data.user,
       path: data.path,
     }),
@@ -507,7 +506,7 @@ const createEditorToken = async (env: Env, data: KVComponentEditorState) => {
 };
 
 interface KVComponentEditorState {
-  interactionId: string;
+  componentId: string;
   user: {
     id: string;
     name: string;
@@ -519,9 +518,12 @@ interface KVComponentEditorState {
 export const generateEditorTokenForComponent = async (
   env: Env,
   componentId: bigint,
-  data: KVComponentEditorState,
+  data: Omit<KVComponentEditorState, "componentId">,
 ) => {
-  const editorToken = await createEditorToken(env, data);
+  const editorToken = await createEditorToken(env, {
+    ...data,
+    componentId: String(componentId),
+  });
   return { ...editorToken, componentId };
 };
 
@@ -729,7 +731,6 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
         ctx.env,
         component.id,
         {
-          interactionId: ctx.interaction.id,
           user: {
             id: ctx.user.id,
             name: ctx.user.username,

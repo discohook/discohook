@@ -108,7 +108,7 @@ import {
 import { safePushState } from "./_index";
 
 interface KVComponentEditorState {
-  interactionId: string;
+  componentId: string;
   user: {
     id: string;
     name: string;
@@ -158,13 +158,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       const subject = payload.sub
         ? (JSON.parse(payload.sub) as KVComponentEditorState)
         : undefined;
-      if (subject) {
+      if (subject?.componentId && BigInt(subject.componentId) === id) {
         editingMeta = subject;
 
         const storage = getEditorTokenStorage(context);
         const session = await storage.getSession(request.headers.get("Cookie"));
         session.set("Authorization", `Editor ${tokenValue}`);
         headers.append("Set-Cookie", await storage.commitSession(session));
+        return false;
       } else {
         // Token does not have permission data for this component. At the moment
         // this means the token is expired, since we don't generate multiple
@@ -174,7 +175,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         await db.delete(tokens).where(eq(tokens.id, makeSnowflake(tokenId)));
         return true;
       }
-      return needUserAuth;
     };
     needUserAuth = await needsUserAuthInner();
   };
@@ -218,16 +218,18 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   if (!component) {
     throw json({ message: "Unknown Component" }, 404);
   }
-  if (needUserAuth) {
-    if (!user) {
-      throw redirect(redirectUrl);
-    }
-    if (component.createdById !== BigInt(user.id)) {
-      throw json(
-        { message: "You do not have edit access to this component." },
-        403,
-      );
-    }
+  if (needUserAuth && !user) {
+    throw redirect(redirectUrl);
+  }
+  if (
+    // (needUserAuth || !editingMeta) &&
+    user &&
+    component.createdById !== BigInt(user.id)
+  ) {
+    throw json(
+      { message: "You do not have edit access to this component." },
+      403,
+    );
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
@@ -374,6 +376,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       throw json({ message: "Invalid token" }, 401);
     }
     const subject = JSON.parse(payload.sub) as KVComponentEditorState;
+    if (!subject.componentId || BigInt(subject.componentId) !== id) {
+      throw json({ message: "Missing access to this component" }, 403);
+    }
+
     tokenData = subject;
   }
 
@@ -388,13 +394,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           id: true,
           data: true,
           draft: true,
-          // createdById: true,
+          createdById: true,
           // guildId: true,
           channelId: true,
           messageId: true,
         },
       });
-      if (!component) {
+      if (!component || (user && user.id !== component.createdById)) {
         throw json({ message: "Unknown Component" }, 404);
       }
       if (!component.channelId || !component.messageId) {

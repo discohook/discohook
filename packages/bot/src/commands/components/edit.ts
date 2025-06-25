@@ -858,7 +858,6 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
     ctx.env,
     component.id,
     {
-      interactionId: ctx.interaction.id,
       user: {
         id: ctx.user.id,
         name: ctx.user.username,

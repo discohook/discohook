@@ -218,7 +218,6 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
         ctx.env,
         component.id,
         {
-          interactionId: ctx.interaction.id,
           user: {
             id: ctx.user.id,
             name: ctx.user.username,
