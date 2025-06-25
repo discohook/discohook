@@ -400,8 +400,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           messageId: true,
         },
       });
-      if (!component || (user && user.id !== component.createdById)) {
+      if (!component) {
         throw json({ message: "Unknown Component" }, 404);
+      }
+      if (
+        user &&
+        component.createdById &&
+        BigInt(user.id) !== component.createdById
+      ) {
+        throw json({ message: "You do not own this component" }, 403);
       }
       if (!component.channelId || !component.messageId) {
         throw json(
