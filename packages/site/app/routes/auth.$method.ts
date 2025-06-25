@@ -83,6 +83,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     // cancelled (forced) auth requests to log the user out. If you have a
     // solution to this please open an issue.
     session.unset("user");
+    session.unset("updatedAt");
 
     if (isValidRedirect(redirectTo)) {
       session.flash("redirectTo", redirectTo);

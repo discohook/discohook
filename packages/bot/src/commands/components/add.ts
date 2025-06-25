@@ -28,18 +28,15 @@ import {
 import { t } from "i18next";
 import { SignJWT } from "jose";
 import {
-  type DBWithSchema,
   type StorableComponent,
   autoRollbackTx,
   discordMessageComponents,
   flows,
   generateId,
   getDb,
-  getSessionManagerStub,
   getchGuild,
   launchComponentDurableObject,
   makeSnowflake,
-  tokens,
   upsertDiscordUser,
   upsertGuild,
 } from "store";
@@ -479,7 +476,7 @@ export const startComponentFlow = async (
  * The drawback is that if the user wants to add a custom message action, they
  * will need to log in the long way through OAuth to access their backups.
  */
-const createEditorToken = async (env: Env) => {
+const createEditorToken = async (env: Env, data: KVComponentEditorState) => {
   const secretKey = Uint8Array.from(
     env.TOKEN_SECRET.split("").map((x) => x.charCodeAt(0)),
   );
@@ -488,7 +485,17 @@ const createEditorToken = async (env: Env) => {
   // 2 hours
   const expiresAt = new Date(now.getTime() + 7_200_000);
   const id = generateId(now);
-  const token = await new SignJWT({ scp: "editor" })
+  const token = await new SignJWT({
+    scp: "editor",
+    // We expand the object instead of passing it directly just to make sure
+    // there are no superfluous values
+    sub: JSON.stringify({
+      // as far as I know we never ended up using interactionId so we could probably remove it.
+      interactionId: data.interactionId,
+      user: data.user,
+      path: data.path,
+    }),
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setJti(id)
     .setIssuedAt(now)
@@ -510,27 +517,11 @@ interface KVComponentEditorState {
 }
 
 export const generateEditorTokenForComponent = async (
-  db: DBWithSchema,
   env: Env,
   componentId: bigint,
   data: KVComponentEditorState,
 ) => {
-  const editorToken = await createEditorToken(env);
-  await db.insert(tokens).values({
-    platform: "discord",
-    id: makeSnowflake(editorToken.id),
-    prefix: "editor",
-    expiresAt: editorToken.expiresAt,
-    // userId: makeSnowflake(state.user.id),
-  });
-
-  const key = `token:${editorToken.id}-component-${componentId}`;
-  const stub = getSessionManagerStub(env, key);
-  await stub.fetch("http://do/", {
-    method: "PUT",
-    body: JSON.stringify({ data, expires: editorToken.expiresAt }),
-    headers: { "Content-Type": "application/json" },
-  });
+  const editorToken = await createEditorToken(env, data);
   return { ...editorToken, componentId };
 };
 
@@ -735,7 +726,6 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
       await stub.fetch(`http://do/?id=${component.id}`);
 
       const editorToken = await generateEditorTokenForComponent(
-        db,
         ctx.env,
         component.id,
         {

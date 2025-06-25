@@ -855,7 +855,6 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
   }
 
   const editorToken = await generateEditorTokenForComponent(
-    db,
     ctx.env,
     component.id,
     {

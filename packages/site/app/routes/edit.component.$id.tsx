@@ -41,7 +41,6 @@ import {
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
-import { getDOToken } from "~/durable/sessions";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
@@ -156,9 +155,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
       const tokenId = payload.jti!;
 
-      const cached = await getDOToken(context.env, tokenId, id);
-      if (cached) {
-        editingMeta = cached;
+      const subject = payload.sub
+        ? (JSON.parse(payload.sub) as KVComponentEditorState)
+        : undefined;
+      if (subject) {
+        editingMeta = subject;
 
         const storage = getEditorTokenStorage(context);
         const session = await storage.getSession(request.headers.get("Cookie"));
@@ -171,17 +172,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         // transplanted this token onto a different component editor, then it's
         // been leaked and should be deleted anyway.
         await db.delete(tokens).where(eq(tokens.id, makeSnowflake(tokenId)));
-        return true;
-      }
-
-      const token = await db.query.tokens.findFirst({
-        where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
-        columns: {
-          id: true,
-          prefix: true,
-        },
-      });
-      if (!token || token.prefix !== payload.scp) {
         return true;
       }
       return needUserAuth;
@@ -380,28 +370,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     } catch {
       throw json({ message: "Invalid token" }, 401);
     }
-    if (payload.scp !== "editor") {
+    if (payload.scp !== "editor" || !payload.sub) {
       throw json({ message: "Invalid token" }, 401);
     }
-    // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
-    const tokenId = payload.jti!;
-
-    const cached = await getDOToken(context.env, tokenId, id);
-    if (!cached) {
-      throw json(
-        {
-          message:
-            "Interaction has timed out, log in normally to edit the message.",
-        },
-        404,
-      );
-    }
-    tokenData = cached;
-    // Save new data, but do not extend lifespan of the token
-    // if (JSON.stringify(cached.path) !== JSON.stringify(path)) {
-    //   tokenData = { ...cached, path };
-    //   await patchDOToken(context.env, tokenId, id, { data: tokenData });
-    // }
+    const subject = JSON.parse(payload.sub) as KVComponentEditorState;
+    tokenData = subject;
   }
 
   const user = await getUser(request, context);

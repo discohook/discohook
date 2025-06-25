@@ -10,7 +10,6 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { getDOToken } from "~/durable/sessions";
 import {
   getActionRowComponentPath,
   removeEmptyActionRows,
@@ -145,53 +144,49 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     if (payload.scp !== "editor") {
       throw json({ message: "Invalid token" }, 401);
     }
+    if (!payload.sub) throw e;
+    const subject = JSON.parse(payload.sub) as {
+      user: {
+        id: string;
+        name: string;
+        avatar: string | null;
+      };
+    };
 
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
-    if (!(await getDOToken(context.env, tokenId, id))) {
-      throw e;
-    }
 
     const db = getDb(context.env.HYPERDRIVE);
-    const dbToken = await db.query.tokens.findFirst({
-      where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
+    const dbUser = await db.query.users.findFirst({
+      where: (table, { eq }) =>
+        eq(table.discordId, makeSnowflake(subject.user.id)),
       columns: {
         id: true,
-        prefix: true,
+        name: true,
+        firstSubscribed: true,
+        subscribedSince: true,
+        subscriptionExpiresAt: true,
+        lifetime: true,
+        discordId: true,
       },
       with: {
-        user: {
+        discordUser: {
           columns: {
             id: true,
             name: true,
-            firstSubscribed: true,
-            subscribedSince: true,
-            subscriptionExpiresAt: true,
-            lifetime: true,
-            discordId: true,
-          },
-          with: {
-            discordUser: {
-              columns: {
-                id: true,
-                name: true,
-                globalName: true,
-                discriminator: true,
-                avatar: true,
-              },
-            },
+            globalName: true,
+            discriminator: true,
+            avatar: true,
           },
         },
       },
     });
-    if (!dbToken || !dbToken.user) {
-      throw e;
-    }
+    if (!dbUser) throw e;
 
     token = doubleDecode<TokenWithUser>({
-      id: dbToken.id,
-      prefix: dbToken.prefix,
-      user: dbToken.user as User,
+      id: BigInt(tokenId),
+      prefix: "editor",
+      user: dbUser as User,
     });
     respond = (response) => response;
   }

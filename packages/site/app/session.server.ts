@@ -1,9 +1,9 @@
 import { REST } from "@discordjs/rest";
 import {
-  type Cookie,
   type SerializeFrom,
+  type Session,
   createCookie,
-  createSessionStorage,
+  createCookieSessionStorage,
   json,
   redirect,
 } from "@remix-run/cloudflare";
@@ -20,65 +20,22 @@ import {
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
-import { getSessionManagerStub } from "~/store.server";
+import { z } from "zod";
 import { getDiscordUserOAuth } from "./auth-discord.server";
 import {
   discordMembers,
   generateId,
   getDb,
   makeSnowflake,
-  tokens,
+  type tokens,
   type upsertDiscordUser,
 } from "./store.server";
 import type { Env } from "./types/env";
 import { isDiscordError } from "./util/discord";
 import type { Context } from "./util/loader";
 
-export const createWorkersDOSessionStorage = ({
-  env,
-  cookie,
-}: { env: Env; cookie: Cookie }) =>
-  createSessionStorage({
-    cookie,
-    async createData(data, expires) {
-      const id = generateId();
-      const stub = getSessionManagerStub(env, id);
-      await stub.fetch("http://do/", {
-        method: "PUT",
-        body: JSON.stringify({ data, expires }),
-        headers: { "Content-Type": "application/json" },
-      });
-      // console.log("[Create Session]", id, data);
-      return id;
-    },
-    async readData(id) {
-      const stub = getSessionManagerStub(env, id);
-      const response = await stub.fetch("http://do/", { method: "GET" });
-      const { data } = response.ok
-        ? ((await response.json()) as { data: any })
-        : { data: null };
-      // console.log("[Read Session]", id, data);
-      return data;
-    },
-    async updateData(id, data, expires) {
-      const stub = getSessionManagerStub(env, id);
-      await stub.fetch("http://do/", {
-        method: "PUT",
-        body: JSON.stringify({ data, expires }),
-        headers: { "Content-Type": "application/json" },
-      });
-      // console.log("[Update Session]", id, data);
-    },
-    async deleteData(id) {
-      const stub = getSessionManagerStub(env, id);
-      await stub.fetch("http://do/", { method: "DELETE" });
-      // console.log("[Destroy Session]", id);
-    },
-  });
-
 export const getSessionStorage = (context: Context) => {
-  const sessionStorage = createWorkersDOSessionStorage({
-    env: context.env,
+  const sessionStorage = createCookieSessionStorage({
     cookie: createCookie("__discohook_session", {
       sameSite: "lax",
       path: "/",
@@ -94,9 +51,8 @@ export const getSessionStorage = (context: Context) => {
 };
 
 export const getTokenStorage = (context: Context) => {
-  const sessionStorage = createWorkersDOSessionStorage({
-    env: context.env,
-    cookie: createCookie("__discohook_token", {
+  const sessionStorage = createCookieSessionStorage({
+    cookie: createCookie("_discohook_token", {
       sameSite: "lax",
       path: "/",
       httpOnly: true,
@@ -111,9 +67,8 @@ export const getTokenStorage = (context: Context) => {
 };
 
 export const getEditorTokenStorage = (context: Context) => {
-  const sessionStorage = createWorkersDOSessionStorage({
-    env: context.env,
-    cookie: createCookie("__discohook_editor_token", {
+  const sessionStorage = createCookieSessionStorage({
+    cookie: createCookie("_discohook_editor_token", {
       sameSite: "lax",
       path: "/",
       httpOnly: true,
@@ -163,71 +118,138 @@ export async function getUserId(
   return BigInt(userId);
 }
 
+const UpsertUserSchema = z.object({
+  id: z.bigint().or(z.string()),
+  name: z.string(),
+  firstSubscribed: z.string().nullable(),
+  subscribedSince: z.string().nullable(),
+  subscriptionExpiresAt: z.string().nullable(),
+  lifetime: z.boolean().nullable(),
+  discordId: z.bigint().or(z.string()).nullable(),
+  discordUser: z
+    .object({
+      id: z.bigint().or(z.string()),
+      name: z.string(),
+      globalName: z.string().nullable(),
+      discriminator: z.string().nullable(),
+      avatar: z.string().nullable(),
+    })
+    .nullable(),
+});
+// satisfies z.ZodType<User>;
+
+const disabledUserIds: bigint[] = [];
+
 export async function getUser(
   request: Request,
   context: Context,
   throwIfNull?: false,
+  session?: Session,
 ): Promise<User | null>;
 export async function getUser(
   request: Request,
   context: Context,
   throwIfNull?: true,
+  session?: Session,
 ): Promise<User>;
 export async function getUser(
   request: Request,
   context: Context,
   throwIfNull?: boolean,
+  // allow custom session so that it can be committed after this function returns
+  session?: Session,
 ): Promise<User | null> {
-  const userId = await getUserId(request, context, false);
-  if (!userId && throwIfNull) {
+  let sesh = session;
+  if (!sesh) {
+    const { getSession } = getSessionStorage(context);
+    sesh = await getSession(request.headers.get("Cookie"));
+  }
+  const userRaw = sesh.get("user");
+
+  const throwFn = () => {
+    const { pathname } = new URL(request.url);
+    if (pathname.startsWith("/api/")) {
+      throw json({ message: "Must be logged in." }, 401);
+    }
     throw redirect(
       `/auth/discord?redirect=${encodeURIComponent(
         // Return to the same page
         request.url.replace(context.origin, ""),
       )}`,
     );
-  } else if (!userId) {
+  };
+  if (!userRaw) {
+    if (throwIfNull) throwFn();
     return null;
   }
 
-  const db = getDb(context.env.HYPERDRIVE);
-  const user = await db.query.users.findFirst({
-    where: (users, { eq }) => eq(users.id, userId),
-    columns: {
-      id: true,
-      name: true,
-      firstSubscribed: true,
-      subscribedSince: true,
-      subscriptionExpiresAt: true,
-      lifetime: true,
-      discordId: true,
-    },
-    with: {
-      discordUser: {
-        columns: {
-          id: true,
-          name: true,
-          globalName: true,
-          discriminator: true,
-          avatar: true,
+  const parsed = await UpsertUserSchema.spa(userRaw);
+  // I thought there might be a scenario (albeit unlikely) in which a user
+  // leaks their own token and then an attacker has access to their Discohook
+  // data. In the absolute worst case, we can hardcode their ID to prevent
+  // all authorization attempts.
+  // TODO: an identifier for each token/session which we can invalidate
+  // remotely - this solution became harder when we stopped requesting the DB
+  // on every `getUser` but it would still be possible to check when the
+  // `updatedAt` soft-expiry is reached.
+  // The best solution is prevention: DON'T SHARE YOUR TOKEN!
+  if (parsed.success && disabledUserIds.includes(BigInt(parsed.data.id))) {
+    throwFn();
+  }
+
+  const now = new Date();
+  const updatedAt = sesh.get("updatedAt");
+  if (
+    !updatedAt ||
+    // more than 1 day ago
+    now.getTime() - Number(updatedAt) > 86_400_000 ||
+    // bad session data
+    !parsed.success
+  ) {
+    if (!userRaw.id) throwFn();
+
+    const db = getDb(context.env.HYPERDRIVE);
+    const user = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.id, BigInt(String(userRaw.id))),
+      columns: {
+        id: true,
+        name: true,
+        firstSubscribed: true,
+        subscribedSince: true,
+        subscriptionExpiresAt: true,
+        lifetime: true,
+        discordId: true,
+      },
+      with: {
+        discordUser: {
+          columns: {
+            id: true,
+            name: true,
+            globalName: true,
+            discriminator: true,
+            avatar: true,
+          },
         },
       },
-    },
-  });
-  if (!user && throwIfNull) {
+    });
     // A note here about how the user's data was
     // previously removed might be useful
-    throw redirect(
-      `/auth/discord?redirect=${encodeURIComponent(
-        // Return to the same page
-        request.url.replace(context.origin, ""),
-      )}`,
-    );
-  } else if (!user) {
-    return null;
+    if (!user) {
+      if (throwIfNull) throwFn();
+      return null;
+    }
+
+    // This is our cache busting solution. The session will only be committed
+    // in some routes (get current user) but that route is requested so often
+    // that it shouldn't be a problem. If a user needs to manually refresh,
+    // they can push the button on their profile.
+    sesh.set("user", user);
+    sesh.set("updatedAt", now.getTime());
+    return doubleDecode<typeof user>(user) satisfies User;
   }
 
-  return doubleDecode<typeof user>(user) satisfies User;
+  // bad
+  return doubleDecode<User>(parsed.data as User);
 }
 
 const createToken = async (env: Env, origin: string, userId: bigint) => {
@@ -383,17 +405,21 @@ export async function authorizeRequest(
       throw json({ message: "Must provide proper authorization" }, 401);
     }
     const token = await regenerateToken(context.env, context.origin, user.id);
-    const countryCode = request.headers.get("CF-IPCountry") ?? undefined;
 
-    const db = getDb(context.env.HYPERDRIVE);
-    await db.insert(tokens).values({
-      platform: "discord",
-      prefix: "user",
-      id: makeSnowflake(token.id),
-      userId: user.id,
-      country: countryCode,
-      expiresAt: token.expiresAt,
-    });
+    // TODO: Allow users to see a list of these w/ country code to inspect
+    // suspicious activity. Not super useful since it would also mean access
+    // to the Discord account at which point you could do anything you could
+    // do through Discohook, but undetected.
+    // const countryCode = request.headers.get("CF-IPCountry") ?? undefined;
+    // const db = getDb(context.env.HYPERDRIVE);
+    // await db.insert(tokens).values({
+    //   platform: "discord",
+    //   prefix: "user",
+    //   id: makeSnowflake(token.id),
+    //   userId: user.id,
+    //   country: countryCode,
+    //   expiresAt: token.expiresAt,
+    // });
 
     session.set("Authorization", `User ${token.value}`);
     const committed = await storage.commitSession(session);
@@ -447,51 +473,46 @@ export async function authorizeRequest(
       throw e;
     }
     if (payload.scp !== prefix.toLowerCase()) {
-      // TMI?
-      // throw json(
-      //   { message: `${payload.scp}-scoped token used with "${prefix}" prefix` },
-      //   401,
-      // );
       throw json({ message: "Invalid token" }, 401);
     }
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
-    // const userId = BigInt(payload.uid as string);
+    const userId = payload.uid?.toString();
+    if (!userId) {
+      if (!options?.requireToken) {
+        return await serveNewToken();
+      }
+      throw json(
+        { message: "User or token data missing, obtain a new token" },
+        401,
+      );
+    }
 
     const db = getDb(context.env.HYPERDRIVE);
-    const token = await db.query.tokens.findFirst({
-      where: (tokens, { eq }) => eq(tokens.id, makeSnowflake(tokenId)),
+    const dbUser = await db.query.users.findFirst({
+      where: (table, { eq }) => eq(table.id, makeSnowflake(userId)),
       columns: {
         id: true,
-        prefix: true,
-        // country: true,
+        name: true,
+        firstSubscribed: true,
+        subscribedSince: true,
+        subscriptionExpiresAt: true,
+        lifetime: true,
+        discordId: true,
       },
       with: {
-        user: {
+        discordUser: {
           columns: {
             id: true,
             name: true,
-            firstSubscribed: true,
-            subscribedSince: true,
-            subscriptionExpiresAt: true,
-            lifetime: true,
-            discordId: true,
-          },
-          with: {
-            discordUser: {
-              columns: {
-                id: true,
-                name: true,
-                globalName: true,
-                discriminator: true,
-                avatar: true,
-              },
-            },
+            globalName: true,
+            discriminator: true,
+            avatar: true,
           },
         },
       },
     });
-    if (!token || !token.user) {
+    if (!dbUser) {
       if (!options?.requireToken) {
         return await serveNewToken();
       }
@@ -508,12 +529,12 @@ export async function authorizeRequest(
 
     return [
       doubleDecode<TokenWithUser>({
-        id: token.id,
-        prefix: token.prefix,
+        id: BigInt(tokenId),
+        prefix: prefix as TokenPrefix,
         // Yuck! This `as` assignment kind of nullifies the purpose of the
         // doubleDecode call; to ensure our `with` result matches `User`.
         // Nonetheless, we jsonify to match `upsertDiscordUser`
-        user: token.user as User,
+        user: dbUser as User,
       }),
       (response) => response,
     ];

@@ -4,6 +4,12 @@ import { getGeneric, getSessionManagerStub } from "~/store.server";
 import type { Env } from "~/types/env";
 import { zxParseJson } from "~/util/zod";
 
+// !!!
+// TODO: This entire file, including the durable object, are to be removed.
+// It's still here in limbo to make sure nothing breaks without it for the
+// time being. We should see 0 requests/24h after deploying.
+// !!!
+
 // This is so generic I feel like I've written it 100 times. Is there anything
 // unique to sessions that we could add? If not, maybe we should change this
 // into a more reusable class with keyed IDs. Something like an `ExpirableData`

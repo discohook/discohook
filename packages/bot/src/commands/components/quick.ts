@@ -215,7 +215,6 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
   switch (value) {
     case "_": {
       const editorToken = await generateEditorTokenForComponent(
-        db,
         ctx.env,
         component.id,
         {

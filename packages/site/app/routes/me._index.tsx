@@ -11,8 +11,15 @@ import { Button } from "~/components/Button";
 import { linkClassName } from "~/components/preview/Markdown";
 import { TabHeader } from "~/components/tabs";
 import { getBucket } from "~/durable/rate-limits";
-import { getUser } from "~/session.server";
-import { autoRollbackTx, discordUsers, eq, getDb, users } from "~/store.server";
+import { getSessionStorage, getUser } from "~/session.server";
+import {
+  autoRollbackTx,
+  discordUsers,
+  eq,
+  getDb,
+  type upsertDiscordUser,
+  users,
+} from "~/store.server";
 import { getId } from "~/util/id";
 import type { LoaderArgs } from "~/util/loader";
 import { getUserAvatar, getUserTag } from "~/util/users";
@@ -24,14 +31,20 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 };
 
 export const action = async ({ request, context }: LoaderArgs) => {
-  const user = await getUser(request, context, true);
+  const { getSession, commitSession } = getSessionStorage(context);
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = await getUser(request, context, true, session);
   const { action } = await zxParseForm(request, {
     action: z.literal("refresh"),
   });
 
   switch (action) {
     case "refresh": {
-      const headers = await getBucket(request, context, "profileRefresh");
+      const headers: Record<string, string> = await getBucket(
+        request,
+        context,
+        "profileRefresh",
+      );
       if (!user.discordId) return new Response(null, { headers });
 
       const db = getDb(context.env.HYPERDRIVE);
@@ -51,7 +64,7 @@ export const action = async ({ request, context }: LoaderArgs) => {
 
       const updated = await db.transaction(
         autoRollbackTx(async (tx) => {
-          await tx
+          const [updatedDiscordUser] = await tx
             .update(discordUsers)
             .set({
               name: discordUser.username,
@@ -59,9 +72,17 @@ export const action = async ({ request, context }: LoaderArgs) => {
               discriminator: discordUser.discriminator,
               avatar: discordUser.avatar,
             })
-            .where(eq(discordUsers.id, BigInt(discordUser.id)));
+            .where(eq(discordUsers.id, BigInt(discordUser.id)))
+            // for session
+            .returning({
+              id: discordUsers.id,
+              name: discordUsers.name,
+              globalName: discordUsers.globalName,
+              discriminator: discordUsers.discriminator,
+              avatar: discordUsers.avatar,
+            });
 
-          const [updated] = await tx
+          const [updatedUser] = await tx
             .update(users)
             .set({ name: discordUser.global_name ?? discordUser.username })
             .where(eq(users.id, user.id))
@@ -69,8 +90,20 @@ export const action = async ({ request, context }: LoaderArgs) => {
               id: users.id,
               name: users.name,
               discordId: users.discordId,
+              // for session
+              firstSubscribed: users.firstSubscribed,
+              subscribedSince: users.subscribedSince,
+              subscriptionExpiresAt: users.subscriptionExpiresAt,
+              lifetime: users.lifetime,
             });
-          return updated;
+
+          session.set("user", {
+            ...updatedUser,
+            discordUser: updatedDiscordUser,
+          } satisfies Awaited<ReturnType<typeof upsertDiscordUser>>);
+          headers["Set-Cookie"] = await commitSession(session);
+
+          return updatedUser;
         }),
       );
       return json(updated, { headers });

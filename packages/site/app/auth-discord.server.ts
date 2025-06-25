@@ -7,7 +7,7 @@ import {
 import { and, eq, notInArray, sql } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
-import { getSessionStorage } from "./session.server";
+import { type User, getSessionStorage } from "./session.server";
 import {
   type DBWithSchema,
   autoRollbackTx,
@@ -27,16 +27,11 @@ import {
 import type { Context } from "./util/loader";
 import { base64Encode } from "./util/text";
 
-export type UserAuth = {
-  id: string;
-  discordId?: string;
-};
-
 export const getDiscordAuth = (
   context: Context,
   sessionStorage?: SessionStorage,
 ) => {
-  const discordAuth = new Authenticator<UserAuth>(
+  const discordAuth = new Authenticator<User>(
     sessionStorage ?? getSessionStorage(context).sessionStorage,
   );
   const strategy = new DiscordStrategy(
@@ -52,7 +47,7 @@ export const getDiscordAuth = (
       refreshToken,
       extraParams,
       profile,
-    }): Promise<UserAuth> => {
+    }): Promise<User> => {
       try {
         const j = profile.__json as APIUser;
         const db = getDb(context.env.HYPERDRIVE);
@@ -183,10 +178,7 @@ export const getDiscordAuth = (
           }),
         );
 
-        return {
-          id: String(user.id),
-          discordId: j.id,
-        };
+        return user as User;
       } catch (e) {
         console.error(e);
         throw e;

@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { createCookie } from "@remix-run/cloudflare";
+import { createCookie, createCookieSessionStorage } from "@remix-run/cloudflare";
 import type {
   APIUser,
   APIWebhook,
@@ -7,7 +7,6 @@ import type {
 } from "discord-api-types/v10";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
-import { createWorkersDOSessionStorage } from "./session.server";
 import {
   getDb,
   getchGuild,
@@ -19,9 +18,8 @@ import { DISCORD_API_V } from "./util/discord";
 import type { Context } from "./util/loader";
 
 export const getDiscordWebhookAuth = (context: Context) => {
-  const dudSessionStorage = createWorkersDOSessionStorage({
-    env: context.env,
-    cookie: createCookie("__discohook_webhook", {
+  const dudSessionStorage = createCookieSessionStorage({
+    cookie: createCookie("discohook_webhook", {
       sameSite: "lax",
       path: "/",
       httpOnly: true,
