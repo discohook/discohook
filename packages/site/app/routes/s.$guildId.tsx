@@ -671,12 +671,11 @@ export default () => {
                       .fill(undefined)
                       .map((_, i) => (
                         <div
+                          // biome-ignore lint/suspicious/noArrayIndexKey:
                           key={`webhook-skeleton-${i}`}
                           className="rounded-lg p-4 bg-gray-100 dark:bg-[#1E1F22]/50 flex animate-pulse"
                           // Not sure if I like the fading look more than the uniform pulse
-                          // style={{
-                          //   opacity: 1 - i / a.length,
-                          // }}
+                          // style={{ opacity: 1 - i / a.length }}
                         >
                           <div className="bg-gray-400 dark:bg-gray-500 rounded-full my-auto w-10 h-10 ltr:mr-4 rtl:ml-4" />
                           <div className="my-auto">
@@ -695,7 +694,7 @@ export default () => {
                     <Trans
                       t={t}
                       i18nKey="auditLogSubtitle"
-                      components={[<span className="font-semibold" />]}
+                      components={[<span key="0" className="font-semibold" />]}
                       values={{ guild }}
                     />
                   </p>
@@ -1293,6 +1292,7 @@ export default () => {
                       .fill(undefined)
                       .map((_, i) => (
                         <div
+                          // biome-ignore lint/suspicious/noArrayIndexKey:
                           key={`component-skeleton-${i}`}
                           className="h-16 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition mb-2"
                         />

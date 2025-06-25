@@ -278,6 +278,7 @@ export const WebhookEditModal = (
                         i18nKey="cannotChangeChannel"
                         components={[
                           <Link
+                            key="0"
                             to={`/s/${webhook.guild_id}?t=webhooks`}
                             className={linkClassName}
                             target="_blank"
