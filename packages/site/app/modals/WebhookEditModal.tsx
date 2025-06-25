@@ -246,7 +246,9 @@ export const WebhookEditModal = (
                   t={t}
                   name="channelId"
                   channels={channels}
-                  value={channels.find((c) => c.id === payload.channelId)}
+                  value={
+                    channels.find((c) => c.id === payload.channelId) ?? null
+                  }
                   onChange={(c) => updatePayload({ channelId: c?.id })}
                 />
               ) : (
