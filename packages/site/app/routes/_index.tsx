@@ -753,6 +753,7 @@ export default function Index() {
                               i18nKey="resetEditorFootnote"
                               components={[
                                 <button
+                                  key="0"
                                   type="button"
                                   className={twJoin(linkClassName, "contents")}
                                   onClick={() => {

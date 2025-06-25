@@ -84,6 +84,7 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
               value: "member.role_ids",
             },
           },
+          // biome-ignore lint/suspicious/noThenProperty: sorry! maybe we will rename this in a future version
           then: [
             {
               type: FlowActionType.RemoveRole,

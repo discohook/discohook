@@ -1445,6 +1445,7 @@ export default () => {
               i18nKey="positionLink"
               components={[
                 <Link
+                  key="0"
                   to="/guide/getting-started/positioning"
                   target="_blank"
                   className={twJoin(linkClassName, "cursor-pointer")}
@@ -1548,6 +1549,7 @@ export default () => {
                                 )
                                 .map((containerChild, containerChildI) => (
                                   <div
+                                    // biome-ignore lint/suspicious/noArrayIndexKey:
                                     key={`component-${i}-children-${containerChildI}`}
                                   >
                                     {canAddRows && containerChildI === 0 ? (
@@ -1598,6 +1600,7 @@ export default () => {
                                         {containerChild.components.map(
                                           (rowChild, rowI) => (
                                             <IndividualActionRowComponentChild
+                                              key=""
                                               t={t}
                                               component={component}
                                               componentId={component_.id}
@@ -1690,6 +1693,7 @@ export default () => {
                               {row.components.map((child, ci) => (
                                 <IndividualActionRowComponentChild
                                   t={t}
+                                  // biome-ignore lint/suspicious/noArrayIndexKey:
                                   key={`component-${i}-child-${ci}`}
                                   component={component}
                                   componentId={component_.id}
