@@ -16,11 +16,13 @@ import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
 import { getUserId } from "~/session.server";
 import type { APIComponentInMessageActionRow } from "~/types/QueryData";
+import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import {
   getWebhook,
   getWebhookMessage,
   hasCustomId,
   isComponentsV2,
+  isErrorData,
 } from "~/util/discord";
 import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
@@ -78,7 +80,7 @@ const DISCORD_EPOCH = 1420070400000;
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { webhookId, webhookToken, messageId } = zxParseParams(params, {
     webhookId: snowflakeAsString().transform(String),
-    webhookToken: z.string(),
+    webhookToken: z.string().regex(WEBHOOK_TOKEN_RE),
     messageId: snowflakeAsString().transform(String),
   });
   const { type, threadId } = await zxParseJson(request, {
@@ -98,11 +100,19 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const now = new Date();
   const messageIdSnowflake = Snowflake.parse(messageId, DISCORD_EPOCH);
-  if (type === "send" && now.getTime() - messageIdSnowflake.timestamp > 15000) {
+  if (
+    type === "send" &&
     // Allow 15 seconds to send the log request
     // This disallows people from logging any old message sent by a webhook
     // they have access to (and reduces our server's API calls in such cases)
-    throw json({ message: "Message is too old" }, { status: 400, headers });
+    (now.getTime() - messageIdSnowflake.timestamp > 15000 ||
+      // Don't allow future timestamps
+      messageIdSnowflake.timestamp - now.getTime() > 0)
+  ) {
+    throw json(
+      { message: "Message is too old or the snowflake is invalid" },
+      { status: 400, headers },
+    );
   }
 
   const rest = new REST({ api: context.env.DISCORD_PROXY_API }).setToken(
@@ -131,7 +141,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       threadId,
       rest,
     );
-    if (!message.id) {
+    if (isErrorData(message)) {
       throw json(message, 404);
     }
     if (isComponentsV2(message)) {
@@ -194,20 +204,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   let guildId = entryWebhook?.discordGuildId;
   if (!entryWebhook) {
     const webhook = await getWebhook(webhookId, webhookToken, rest);
-    if (!webhook.id) {
+    if (isErrorData(webhook)) {
       throw json(webhook, 404);
     }
 
     if (webhook.guild_id) {
       guildId = BigInt(webhook.guild_id);
-      // I hope this wasn't important, it seemed unnecessary? jan 2 2024
-      // try {
-      //   const guild = await getchGuild(rest, context.env, webhook.guild_id);
-      //   const upserted = await upsertGuild(db, guild);
-      //   guildId = upserted.id;
-      // } catch {
-      //   guildId = undefined;
-      // }
     }
 
     entryWebhook = (

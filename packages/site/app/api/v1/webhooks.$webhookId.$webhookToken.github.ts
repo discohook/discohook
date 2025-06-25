@@ -9,10 +9,11 @@ import {
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { getDb, githubPosts } from "~/store.server";
+import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
-type GitHubType = (typeof githubPosts)["type"]["_"]["data"];
+type GitHubType = typeof githubPosts.type._.data;
 
 const GitHubResource = z.object({
   id: z.number().int(),
@@ -62,7 +63,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const { webhookId, webhookToken } = zxParseParams(params, {
     webhookId: snowflakeAsString().transform(String),
-    webhookToken: z.string(),
+    webhookToken: z.string().regex(WEBHOOK_TOKEN_RE),
   });
 
   let githubType: GitHubType | undefined;

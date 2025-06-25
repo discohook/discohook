@@ -36,6 +36,7 @@ import {
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
 import { type Snowflake, getDate, isSnowflake } from "discord-snowflake";
+import { z } from "zod";
 import type { TimestampStyle } from "~/components/editor/TimePicker";
 import type { DraftFile } from "~/routes/_index";
 import type {
@@ -577,9 +578,17 @@ interface DiscordError {
   url: string;
 }
 
+const RESTErrorSchema: z.ZodType<RESTError> = z.object({
+  code: z.number().int(),
+  message: z.string(),
+});
+
 export const isDiscordError = (error: any): error is DiscordError => {
   return "code" in error && "rawError" in error;
 };
+
+export const isErrorData = (data: any): data is RESTError =>
+  RESTErrorSchema.safeParse(data).success;
 
 export const isSkuButton = (
   component: Pick<APIButtonComponent, "type" | "style">,
