@@ -72,7 +72,7 @@ As far as style preferences not covered by the [Biome configuration](/biome.json
 
 ### Bot
 
-Run `yarn dev:bot` to start a miniflare server for the "primary" portion of the bot. To expose the local server to the internet so that Discord can request it, [we use `cloudflared`](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/), but you may find it more convenient to simply install [ngrok](https://ngrok.com/download) instead. Once you're done with that, copy your tunneled URL to your Discord application's "Interactions Endpoint URL" field.
+Run `yarn dev:bot` to start a miniflare server for the "primary" portion of the bot. To expose the local server to the internet so that Discord can request it, use the `tunnel` script in the bot directory (requires cloudflared to be installed). Once you're done with that, copy your tunneled URL to your Discord application's "Interactions Endpoint URL" field.
 
 ![interactions-endpoint](https://user-images.githubusercontent.com/534619/157510959-6cf0327a-052a-432c-855b-c662824f15ce.png)
 
