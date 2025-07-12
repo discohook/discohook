@@ -21,11 +21,13 @@
       "style": {
         "noUselessElse": "off",
         "useImportType": {
-          "fix": "safe"
+          "fix": "safe",
+          "level": "info"
         }
       },
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off"
       },
       "complexity": {
         "noBannedTypes": "off"
