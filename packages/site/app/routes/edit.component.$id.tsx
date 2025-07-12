@@ -311,6 +311,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
               ChannelType.GuildText,
               ChannelType.GuildAnnouncement,
               ChannelType.GuildForum,
+              ChannelType.GuildMedia,
               ChannelType.PublicThread,
               ChannelType.PrivateThread,
               ChannelType.AnnouncementThread,
@@ -1535,7 +1536,6 @@ export default () => {
                                 )
                                 .map((containerChild, containerChildI) => (
                                   <div
-                                    // biome-ignore lint/suspicious/noArrayIndexKey:
                                     key={`component-${i}-children-${containerChildI}`}
                                   >
                                     {canAddRows && containerChildI === 0 ? (
@@ -1679,7 +1679,6 @@ export default () => {
                               {row.components.map((child, ci) => (
                                 <IndividualActionRowComponentChild
                                   t={t}
-                                  // biome-ignore lint/suspicious/noArrayIndexKey:
                                   key={`component-${i}-child-${ci}`}
                                   component={component}
                                   componentId={component_.id}

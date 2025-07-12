@@ -43,7 +43,7 @@ export const WebhookEditModal = (
   const { webhookId, targets, updateTargets, user, cache } = props;
   const webhook = webhookId ? targets[webhookId] : undefined;
   const channels = props.channels?.filter((c) =>
-    ["text", "voice", "forum"].includes(c.type),
+    ["text", "voice", "forum", "media"].includes(c.type),
   );
   const [error, setError] = useError(t);
 

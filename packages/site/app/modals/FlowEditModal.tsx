@@ -131,6 +131,7 @@ export const FlowEditModal = (
                       values={{ limit: actionMax, premiumLimit: 40 }}
                       components={[
                         <Link
+                          key="0"
                           to="/donate"
                           className={linkClassName}
                           target="_blank"
@@ -360,6 +361,7 @@ const getActionSeed = (type: FlowActionType): FlowAction => {
       return { type, seconds: 1 };
     case FlowActionType.Check:
       // @ts-expect-error
+      // biome-ignore lint/suspicious/noThenProperty: see note in bot about this
       return { type, then: [], else: [] };
     default:
       // @ts-expect-error
@@ -587,6 +589,7 @@ const FlowActionEditor: React.FC<{
                         : hasMaxActions,
                 }))}
                 onValueChange={(value) => {
+                  // biome-ignore lint/suspicious/noThenProperty: see note in bot about this
                   action.then = action.then ?? [];
                   action.then.push(getActionSeed(value));
                   update();
@@ -686,6 +689,7 @@ const FlowActionEditor: React.FC<{
                       i18nKey="messageActionGuideNote"
                       components={[
                         <Link
+                          key="0"
                           to="/guide/recipes/message-buttons"
                           target="_blank"
                           className={linkClassName}
@@ -813,6 +817,7 @@ const FlowActionEditor: React.FC<{
                       i18nKey="messageActionGuideNote"
                       components={[
                         <Link
+                          key="0"
                           to="/guide/recipes/message-buttons"
                           target="_blank"
                           className={linkClassName}
@@ -986,13 +991,13 @@ const FlowActionEditor: React.FC<{
                       t={t}
                       name="channelId"
                       channels={channels.filter((c) =>
-                        ["text", "forum"].includes(c.type),
+                        ["text", "forum", "media"].includes(c.type),
                       )}
                       value={channel}
                       onChange={(c) => {
                         if (c) {
                           action.channel = { value: c.id };
-                          if (c.type === "forum") {
+                          if (["forum", "media"].includes(c.type)) {
                             action.threadType = ChannelType.PublicThread;
                           }
                           update();
@@ -1011,7 +1016,7 @@ const FlowActionEditor: React.FC<{
                       update();
                     }}
                   />
-                  {(!channel || channel.type !== "forum") && (
+                  {(!channel || !["forum", "media"].includes(channel.type)) && (
                     <SimpleStringSelect
                       t={t}
                       name="threadType"
@@ -1041,13 +1046,14 @@ const FlowActionEditor: React.FC<{
                       update();
                     }}
                   />
-                  {channel?.type === "forum" && (
-                    <StringSelect
-                      name="appliedTags"
-                      label="Tags"
-                      options={[]}
-                    />
-                  )}
+                  {channel?.type &&
+                    ["forum", "media"].includes(channel.type) && (
+                      <StringSelect
+                        name="appliedTags"
+                        label="Tags"
+                        options={[]}
+                      />
+                    )}
                 </>
               );
             })()
@@ -1078,16 +1084,21 @@ const FlowActionEditor: React.FC<{
                     components={[
                       !!varAction || isComponent ? (
                         <CoolIcon
+                          key="0"
                           icon="Circle_Check"
                           className="text-green-400"
                         />
                       ) : (
                         <CoolIcon
+                          key="0"
                           icon="Close_Circle"
                           className="text-red-400"
                         />
                       ),
-                      <span className={twJoin(mentionStyle, "font-code")} />,
+                      <span
+                        key="0"
+                        className={twJoin(mentionStyle, "font-code")}
+                      />,
                     ]}
                     values={{
                       value: varAction?.value,
@@ -1104,6 +1115,7 @@ const FlowActionEditor: React.FC<{
                   i18nKey="stopMessageNote"
                   components={[
                     <Link
+                      key="0"
                       to="/guide/getting-started/formatting"
                       className={linkClassName}
                       target="_blank"

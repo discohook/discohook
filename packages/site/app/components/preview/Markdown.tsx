@@ -26,6 +26,7 @@ import {
   BrowseChannelIcon,
   ForumChannelIcon,
   GuideChannelIcon,
+  MediaChannelIcon,
   PostChannelIcon,
   TextChannelIcon,
   ThreadChannelIcon,
@@ -347,8 +348,10 @@ const listRule = defineRule({
     };
   },
   render(capture, render) {
-    const items = capture.content.map((item) => (
-      <li className="mb-[4px] whitespace-break-spaces">{render(item)}</li>
+    const items = capture.content.map((item, i) => (
+      <li key={i} className="mb-[4px] whitespace-break-spaces">
+        {render(item)}
+      </li>
     ));
 
     if (capture.ordered) {
@@ -893,6 +896,9 @@ export const channelIcons: Record<
   ),
   forum: (props?: { className?: string }) => (
     <ForumChannelIcon className={twMerge(channelIconStyle, props?.className)} />
+  ),
+  media: (props?: { className?: string }) => (
+    <MediaChannelIcon className={twMerge(channelIconStyle, props?.className)} />
   ),
   post: (props?: { className?: string }) => (
     <PostChannelIcon className={twMerge(channelIconStyle, props?.className)} />

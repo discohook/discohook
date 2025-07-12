@@ -671,7 +671,6 @@ export default () => {
                       .fill(undefined)
                       .map((_, i) => (
                         <div
-                          // biome-ignore lint/suspicious/noArrayIndexKey:
                           key={`webhook-skeleton-${i}`}
                           className="rounded-lg p-4 bg-gray-100 dark:bg-[#1E1F22]/50 flex animate-pulse"
                           // Not sure if I like the fading look more than the uniform pulse
@@ -1292,7 +1291,6 @@ export default () => {
                       .fill(undefined)
                       .map((_, i) => (
                         <div
-                          // biome-ignore lint/suspicious/noArrayIndexKey:
                           key={`component-skeleton-${i}`}
                           className="h-16 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition mb-2"
                         />

@@ -22,8 +22,8 @@ export const getChannelIconType = (channel: APIChannel) => {
       return "text";
     case ChannelType.GuildForum:
       return "forum";
-    // case ChannelType.GuildMedia:
-    //   return "media";
+    case ChannelType.GuildMedia:
+      return "media";
     case ChannelType.PublicThread:
     case ChannelType.PrivateThread:
     case ChannelType.AnnouncementThread:
@@ -52,7 +52,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   const key = `cache-channel-${channelId}`;
   const cached = await context.env.KV.get<ResolvableAPIChannel>(key, "json");
-  if (cached) return cached;
+  if (cached) return respond(json(cached));
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   let channel: ResolvableAPIChannel;

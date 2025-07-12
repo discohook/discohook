@@ -58,6 +58,7 @@ export const extractWebhookableChannel = (
         ChannelType.GuildText,
         ChannelType.GuildVoice,
         ChannelType.GuildForum,
+        ChannelType.GuildMedia,
       ].includes(ctxChannel.type)
     ) {
       channelId = ctxChannel.id;

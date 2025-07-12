@@ -292,7 +292,8 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   const isAllForum =
     !!webhooks &&
     webhooks.length !== 0 &&
-    channels.filter((c) => c.type === "forum").length === webhooks.length;
+    channels.filter((c) => ["forum", "media"].includes(c.type)).length ===
+      webhooks.length;
   const isNoneForum =
     // There are webhooks
     !!webhooks &&
@@ -300,7 +301,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
     // All of their channels are resolved
     channels.length === webhooks?.length &&
     // None of them are forums
-    channels.filter((c) => c.type === "forum").length === 0;
+    channels.filter((c) => ["forum", "media"].includes(c.type)).length === 0;
 
   const imageFiles = useMemo(
     () => files.filter((f) => f.file.type.startsWith("image/")),
@@ -414,6 +415,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                 i18nKey="threadsNote"
                 components={[
                   <Link
+                    key="0"
                     to="/guide/getting-started/threads"
                     className={linkClassName}
                     target="_blank"
@@ -943,7 +945,8 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   const isAllForum =
     !!webhooks &&
     webhooks.length !== 0 &&
-    channels.filter((c) => c.type === "forum").length === webhooks.length;
+    channels.filter((c) => ["forum", "media"].includes(c.type)).length ===
+      webhooks.length;
   const isNoneForum =
     // There are webhooks
     !!webhooks &&
@@ -951,7 +954,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
     // All of their channels are resolved
     channels.length === webhooks?.length &&
     // None of them are forums
-    channels.filter((c) => c.type === "forum").length === 0;
+    channels.filter((c) => ["forum", "media"].includes(c.type)).length === 0;
 
   const imageFiles = useMemo(
     () => files.filter((f) => f.file.type.startsWith("image/")),
@@ -1050,6 +1053,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                 i18nKey="threadsNote"
                 components={[
                   <Link
+                    key="0"
                     to="/guide/getting-started/threads"
                     className={linkClassName}
                     target="_blank"

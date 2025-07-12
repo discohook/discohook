@@ -66,6 +66,7 @@ export type ResolvableAPIChannelType =
   | "voice"
   | "thread"
   | "forum"
+  | "media"
   | "post";
 
 export const tagToResolvableTag = (
