@@ -613,6 +613,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
           c.data.url === foundComponent.url,
       );
       if (!dbComponent) {
+        const user = await upsertDiscordUser(db, ctx.user);
         dbComponent = (
           await db
             .insert(discordMessageComponents)
@@ -623,6 +624,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
               guildId: makeSnowflake(ctx.interaction.guild_id!),
               type: ComponentType.Button,
               data: foundComponent satisfies StorableButtonWithUrl,
+              createdById: user.id,
             })
             .returning({
               id: discordMessageComponents.id,
