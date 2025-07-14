@@ -4,7 +4,7 @@ import type { LinkQueryData, QueryData } from "~/types/QueryData";
 export const WEBHOOK_TOKEN_RE = /^[\w-]+$/;
 
 export const WEBHOOK_URL_RE =
-  /^https?:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/api(?:\/v\d+)?\/webhooks\/(\d+)\/([\w-]+)$/;
+  /^https?:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/api(?:\/v\d+)?\/webhooks\/(\d+)\/([\w-]+)(?:\?thread_id=(\d+))?$/;
 
 export const MESSAGE_REF_RE =
   /^(?:https:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/channels\/(\d+)\/(\d+)\/)?(\d+)$/;

@@ -137,7 +137,7 @@ export class DurableScheduler implements DurableObject {
           message: statusMessage,
         } satisfies ScheduledRunData,
         nextRunAt,
-        scheduled: backup.cron ? true : false,
+        scheduled: !!backup.cron,
       })
       .where(eq(backups.id, makeSnowflake(backupId)));
 

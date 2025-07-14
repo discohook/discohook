@@ -32,6 +32,7 @@ export const TargetAddModal = (
     updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
     hasAuthentication?: boolean;
     cache?: CacheManager;
+    applyThreadId?: (threadId: string) => void;
   },
 ) => {
   const { t } = useTranslation();
@@ -43,10 +44,13 @@ export const TargetAddModal = (
       PermissionFlagsBits.ManageWebhooks
     }`,
   );
+  const [threadId, setThreadId] = useState<string>();
+  const [willApplyThread, setWillApplyThread] = useState(false);
 
   const [, setCache] = useLocalStorage<{ memberships: typeof memberships }>(
     "discohook_cache",
   );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setCache is not relevant
   useEffect(() => {
     if (memberships) setCache({ memberships });
     // clear this cache if the user logged out
@@ -115,7 +119,7 @@ export const TargetAddModal = (
       props.updateTargets({ [result.id]: result });
       setOpen(false);
     };
-  }, [webhook, setOpen, props.updateTargets]);
+  }, [webhook, props.updateTargets]);
 
   return (
     <Modal {...props} setOpen={setOpen}>
@@ -152,6 +156,7 @@ export const TargetAddModal = (
               i18nKey="selectWebhookGuildMissing"
               components={[
                 <Link
+                  key="0"
                   to="/auth/discord?force=true&redirect=/?m=add-target"
                   className={linkClassName}
                   target="_blank"
@@ -164,6 +169,7 @@ export const TargetAddModal = (
               i18nKey="selectWebhookGuildManual"
               components={[
                 <button
+                  key="0"
                   type="button"
                   className={linkClassName}
                   onClick={() => setManualWebhook(true)}
@@ -304,8 +310,12 @@ export const TargetAddModal = (
               const webhook = await getWebhook(match[1], match[2]);
               if (webhook.id) {
                 setWebhook(webhook);
+                setThreadId(match[3] || undefined);
+                setWillApplyThread(false);
               } else if ("message" in webhook) {
                 setUrlError(webhook.message as string);
+                setThreadId(undefined);
+                setWillApplyThread(false);
               }
             }}
           />
@@ -335,13 +345,44 @@ export const TargetAddModal = (
               {webhook ? (
                 <>
                   <p className="font-bold text-xl">{webhook.name}</p>
+                  {threadId && props.applyThreadId !== undefined ? (
+                    <p className="text-gray-500 dark:text-gray-400 transition">
+                      <Trans
+                        t={t}
+                        i18nKey={
+                          willApplyThread
+                            ? "threadWebhookApplyConfirm"
+                            : "threadWebhookApplyPrompt"
+                        }
+                        components={{
+                          open: (
+                            // biome-ignore lint/a11y/useAnchorContent: supplied by <Trans/>
+                            <a
+                              className="hover:underline"
+                              href={`https://discord.com/channels/${webhook.guild_id}/${threadId}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            />
+                          ),
+                          toggle: (
+                            <button
+                              type="button"
+                              className={linkClassName}
+                              onClick={() => setWillApplyThread((s) => !s)}
+                            />
+                          ),
+                        }}
+                      />
+                    </p>
+                  ) : null}
                   <hr className="border border-gray-400 dark:border-gray-600 my-2" />
-                  <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
+                  <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-400 transition">
                     <Trans
                       t={t}
                       i18nKey="channelId"
                       components={[
                         <a
+                          key="0"
                           className="hover:underline"
                           href={`https://discord.com/channels/${webhook.guild_id}/${webhook.channel_id}`}
                           target="_blank"
@@ -352,12 +393,13 @@ export const TargetAddModal = (
                       ]}
                     />
                   </p>
-                  <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-500 transition">
+                  <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-400 transition">
                     <Trans
                       t={t}
                       i18nKey="guildId"
                       components={[
                         <a
+                          key="0"
                           className="hover:underline"
                           href={`https://discord.com/channels/${webhook.guild_id}`}
                           target="_blank"
@@ -393,6 +435,9 @@ export const TargetAddModal = (
                     props.cache.fetchGuildCacheable(webhook.guild_id);
                   }
                   props.updateTargets({ [webhook.id]: webhook });
+                  if (willApplyThread && props.applyThreadId && threadId) {
+                    props.applyThreadId(threadId);
+                  }
                   setOpen(false);
                 }
               }}

@@ -628,6 +628,12 @@ export default function Index() {
         updateTargets={updateTargets}
         discordApplicationId={discordApplicationId}
         cache={cache}
+        applyThreadId={(threadId: string) => {
+          for (const message of data.messages) {
+            message.thread_id = threadId;
+          }
+          setData({ ...data });
+        }}
       />
       <ShareExpiredModal
         open={!!badShareData}
