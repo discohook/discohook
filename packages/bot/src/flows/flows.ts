@@ -1,4 +1,4 @@
-import type { REST, RouteLike } from "@discordjs/rest";
+import { REST, type RouteLike } from "@discordjs/rest";
 import {
   type APIGuildMember,
   type APIMessage,
@@ -9,6 +9,8 @@ import {
   type APIMessageUserSelectInteractionData,
   type APIUser,
   ChannelType,
+  GuildPremiumTier,
+  InteractionType,
   type RESTError,
   type RESTGetAPIChannelResult,
   type RESTPostAPIChannelThreadsJSONBody,
@@ -17,10 +19,12 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
+import { SignJWT } from "jose";
 import {
   type AnonymousVariable,
   type DBWithSchema,
   type Flow,
+  type FlowAction,
   type FlowActionAddRole,
   type FlowActionCheckFunction,
   FlowActionCheckFunctionType,
@@ -33,12 +37,14 @@ import {
   type FlowActionToggleRole,
   FlowActionType,
   type TriggerKVGuild,
+  getDb,
   makeSnowflake,
   messageLogEntries,
   webhooks,
 } from "store";
+import z from "zod";
 import { getWebhook } from "../commands/webhooks/webhookInfo.js";
-import type { InteractionContext } from "../interactions.js";
+import { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";
 import { isDiscordError } from "../util/error.js";
 import { sleep } from "../util/sleep.js";
@@ -72,9 +78,19 @@ export class FlowStop extends Error {
   }
 }
 
+// export class FlowPause extends Error {
+//   constructor(until: Date) {
+//     const sec = Math.floor((until.valueOf() - new Date().valueOf()) / 1000);
+//     super(
+//       `Paused due to wait-type action, thus ended in this process. Flow will resume in ${sec} seconds`,
+//     );
+//   }
+// }
+
 export interface FlowResult {
   status: "success" | "failure";
   stopped?: boolean;
+  paused?: boolean;
   message: string;
   discordError?: RESTError;
 }
@@ -82,6 +98,135 @@ export interface FlowResult {
 type SetVariables = Record<string, string | boolean>;
 
 type SentMessages = Record<string, { route: RouteLike }>;
+
+const TriggerKVGuildScheme: z.ZodType<TriggerKVGuild> = z.object({
+  id: z.string(),
+  name: z.string(),
+  icon: z.string(),
+  owner_id: z.string(),
+  members: z.number(),
+  online_members: z.number(),
+  roles: z.number(),
+  boosts: z.number(),
+  boost_level: z.enum(GuildPremiumTier),
+  vanity_code: z.string().nullable(),
+  emoji_limit: z.number().optional(),
+  sticker_limit: z.number().optional(),
+});
+
+const BouncerPayloadScheme = z.object({
+  liveVars: z.object({
+    member: z
+      .object({ user: z.object({ id: z.string() }).loose() })
+      .loose()
+      .optional(),
+    user: z.object({ id: z.string() }).loose().loose().optional(),
+    guild: TriggerKVGuildScheme.optional(),
+    selected_values: z.string().array().optional(),
+    selected_resolved: z.record(z.string(), z.object({}).loose()).optional(),
+  }) as z.ZodType<LiveVariables>,
+  setVars: (
+    z.record(
+      z.string(),
+      z.union([z.string(), z.boolean()]),
+    ) satisfies z.ZodType<SetVariables>
+  ).optional(),
+  sentMessages: (
+    z.record(
+      z.string(),
+      z.object({ route: z.string().regex(/^\//) as z.ZodType<RouteLike> }),
+    ) satisfies z.ZodType<SentMessages>
+  ).optional(),
+  lastReturnValue: z.any().optional(),
+  recursion: z.number().int().min(0).optional(),
+  interaction: (
+    (
+      z.object({
+        type: z.literal(InteractionType.MessageComponent),
+        id: z.string(),
+        token: z.string(),
+        guild_id: z.string().optional(),
+      }) satisfies z.ZodType<
+        Pick<
+          APIMessageComponentInteraction,
+          "id" | "token" | "guild_id" | "type"
+        >
+      >
+    ).loose() as unknown as z.ZodType<APIMessageComponentInteraction>
+  ).optional(),
+  flow: z
+    .object({
+      actions: z
+        .object({ data: z.object({ type: z.enum(FlowActionType) }).loose() })
+        .loose()
+        .array(),
+    })
+    .loose() as unknown as z.ZodType<Pick<Flow, "actions">>,
+});
+
+export const bounceFlow = async (
+  env: Env,
+  payload: z.infer<typeof BouncerPayloadScheme>,
+  until?: Date,
+) => {
+  if (!env.BOUNCER_ORIGIN || !env.BOUNCER_JWT_KEY) {
+    throw Error("Worker is not configured with bouncer details");
+  }
+
+  const key = new TextEncoder().encode(env.BOUNCER_JWT_KEY);
+  const jwt = await new SignJWT()
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setIssuer("discohook:bot")
+    .setAudience("discohook:bouncer")
+    .setExpirationTime("1 minute")
+    .sign(key);
+  await fetch(`${env.BOUNCER_ORIGIN}/flow/pause`, {
+    method: "POST",
+    body: JSON.stringify({
+      until: until ? until.valueOf() : undefined,
+      payload,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: jwt,
+    },
+  });
+};
+
+export const resumeFlowFromBouncer = async (
+  env: Env,
+  raw: unknown,
+): Promise<FlowResult> => {
+  const parsed = await z.object({ payload: BouncerPayloadScheme }).spa(raw);
+  if (!parsed.success) {
+    return {
+      status: "failure",
+      message: `Invalid payload to resume: ${JSON.stringify(z.treeifyError(parsed.error))}`,
+    };
+  }
+  const { payload } = parsed.data;
+
+  const db = getDb(env.HYPERDRIVE);
+  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const ctx = payload.interaction
+    ? new InteractionContext(rest, payload.interaction, env)
+    : undefined;
+
+  // console.log("running from bounce", payload.flow);
+  return await executeFlow(
+    env,
+    payload.flow,
+    rest,
+    db,
+    payload.liveVars,
+    payload.setVars,
+    ctx,
+    payload.recursion,
+    payload.lastReturnValue,
+    payload.sentMessages,
+  );
+};
 
 export const executeFlow = async (
   env: Env,
@@ -94,12 +239,57 @@ export const executeFlow = async (
   recursion = 0,
   lastReturnValue_?: any,
   sentMessages_?: SentMessages,
+  deferred = false,
 ): Promise<FlowResult> => {
   if (recursion > 50) {
     return {
       status: "failure",
       message: `Too much recursion (${recursion} layers)`,
     };
+  }
+
+  if (recursion === 0 && deferred) {
+    const processWait = (action: FlowAction): number => {
+      switch (action.type) {
+        case FlowActionType.Wait:
+          return action.seconds;
+        case FlowActionType.Check: {
+          // only one branch can happen, but we don't know which yet,
+          // so we take the maximum
+          const thenWait = action.then
+            .map(processWait)
+            .reduce((a, b) => a + b, 0);
+          const elseWait = action.else
+            .map(processWait)
+            .reduce((a, b) => a + b, 0);
+          return Math.max(thenWait, elseWait);
+        }
+        default:
+          return 0;
+      }
+    };
+
+    let cumulativeWait = 0;
+    for (const { data: action } of flow.actions) {
+      cumulativeWait += processWait(action);
+    }
+
+    // May need to lower or raise this
+    if (cumulativeWait >= 30) {
+      await bounceFlow(env, {
+        liveVars,
+        setVars,
+        recursion,
+        interaction: ctx?.interaction,
+        flow,
+      });
+      return {
+        status: "success",
+        message: `Flow bounced to another process due to ≤${cumulativeWait}s of waiting time. Unfortunately Discohook is currently unable to give detailed feedback on this flow.`,
+        paused: true,
+        // TODO: some sort of job ID/a way to, at least, send a message in a channel to give feedback
+      };
+    }
   }
 
   // For now, this exists for more efficient operation of the delete message
@@ -424,6 +614,14 @@ export const executeFlow = async (
           flow.actions.length + subActionsCompleted
         } actions completed successfully`,
       };
+      // } else if (e instanceof FlowPause) {
+      //   return {
+      //     status: "success",
+      //     paused: true,
+      //     message: `${
+      //       flow.actions.length + subActionsCompleted
+      //     } actions completed prior to pause due to wait action - flow will resume automatically`,
+      //   };
     } else {
       if (e instanceof FlowFailure) {
         return {

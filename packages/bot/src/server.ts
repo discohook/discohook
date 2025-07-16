@@ -23,6 +23,7 @@ import { PlatformAlgorithm, isValidRequest } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next, { t } from "i18next";
 import { type IRequest, Router } from "itty-router";
+import { jwtVerify } from "jose";
 import {
   type DurableStoredComponent,
   type Flow,
@@ -49,7 +50,11 @@ import {
   gatewayEventNameToCallback,
   webhookEventNameToCallback,
 } from "./events.js";
-import { type LiveVariables, executeFlow } from "./flows/flows.js";
+import {
+  type LiveVariables,
+  executeFlow,
+  resumeFlowFromBouncer,
+} from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
 import type { Env } from "./types/env.js";
 import {
@@ -526,6 +531,10 @@ const handleInteraction = async (
                 userId: ctx.user.id,
               },
               ctx,
+              undefined,
+              undefined,
+              undefined,
+              true,
             );
             if (env.ENVIRONMENT === "dev") console.log(result);
           }
@@ -636,6 +645,10 @@ const handleInteraction = async (
                 userId: ctx.user.id,
               },
               ctx,
+              undefined,
+              undefined,
+              undefined,
+              true,
             );
             if (env.ENVIRONMENT === "dev") console.log(result);
           }
@@ -891,6 +904,30 @@ router.post("/events", async (request, env: Env, eCtx: ExecutionContext) => {
     console.error("No event callback found for", body.event.type);
   }
   return new Response(null, { status: 204 });
+});
+
+router.post("/flow/resume", async (request, env: Env) => {
+  const token = request.headers.get("Authorization");
+  if (!token || !env.BOUNCER_JWT_KEY) {
+    return new Response(null, { status: 401 });
+  }
+
+  const key = new TextEncoder().encode(env.BOUNCER_JWT_KEY);
+  try {
+    await jwtVerify(token, key, {
+      issuer: "discohook:bouncer",
+      audience: "discohook:bot",
+    });
+  } catch {
+    return new Response(null, { status: 403 });
+  }
+
+  const raw = await request.json();
+  const result = await resumeFlowFromBouncer(env, raw);
+  return new Response(JSON.stringify(result), {
+    status: result.status === "success" ? 200 : 500,
+    headers: { "Content-Type": "application/json" },
+  });
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));

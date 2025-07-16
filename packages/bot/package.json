@@ -26,7 +26,8 @@
     "i18next": "^23.11.5",
     "itty-router": "^4.0.13",
     "jose": "^5.4.0",
-    "store": "../store"
+    "store": "../store",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240405.0",

@@ -262,9 +262,7 @@ const createToken = async (env: Env, origin: string, userId: bigint) => {
   const expiresAt = new Date(now.getTime() + 604_800_000);
   const id = generateId(now);
   const token = await new SignJWT({ uid: String(userId), scp: "user" })
-    .setProtectedHeader({
-      alg: "HS256",
-    })
+    .setProtectedHeader({ alg: "HS256" })
     .setJti(id)
     .setIssuedAt(now)
     .setIssuer(origin)

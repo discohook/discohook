@@ -180,6 +180,7 @@ export const getWelcomerConfigurations = async (
                         value: true,
                       },
                     },
+                    // biome-ignore lint/suspicious/noThenProperty: see note in quick.ts about this
                     then: [{ type: FlowActionType.Stop }],
                     else: [],
                   } satisfies FlowActionCheck,

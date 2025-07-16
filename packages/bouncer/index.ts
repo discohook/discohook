@@ -16,7 +16,6 @@ const getIp = (request: IRequest) => {
 const router = AutoRouter({
   before: [
     async (request) => {
-      console.log([...request.headers.keys()]);
       const token = request.headers.get("Authorization");
       if (!token) {
         console.log("401:", getIp(request));
@@ -53,7 +52,8 @@ router.post("/flow/pause", async (request) => {
         .int()
         // 60s - 2hr
         .min(received + 60_000)
-        .max(received + 7_200_000),
+        .max(received + 7_200_000)
+        .optional(),
       payload: z.object({}).passthrough(),
     })
     .parseAsync(await request.json());
@@ -70,9 +70,7 @@ router.post("/flow/pause", async (request) => {
     const bench1 = now();
     await fetch(Bun.env.BOT_ORIGIN, {
       method: "GET",
-      headers: {
-        "User-Agent": USER_AGENT,
-      },
+      headers: { "User-Agent": USER_AGENT },
     });
     const bench2 = now();
     ping = {
@@ -81,35 +79,43 @@ router.post("/flow/pause", async (request) => {
     };
   }
 
-  const startSleeping = async (pingLatency: number) => {
-    const key = new TextEncoder().encode(Bun.env.JWT_KEY);
-    const jwt = await new SignJWT()
-      .setIssuedAt()
-      .setIssuer("discohook:bouncer")
-      .setAudience("discohook:bot")
-      .setExpirationTime("1 minute")
-      .sign(key);
+  const key = new TextEncoder().encode(Bun.env.JWT_KEY);
+  const jwt = await new SignJWT()
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setIssuer("discohook:bouncer")
+    .setAudience("discohook:bot")
+    .setExpirationTime("1 minute")
+    .sign(key);
+  const resumeRequest = new Request(`${Bun.env.BOT_ORIGIN}/flow/resume`, {
+    method: "POST",
+    body: JSON.stringify({ payload: data.payload }),
+    headers: { Authorization: jwt, "User-Agent": USER_AGENT },
+  });
 
-    const request = new Request(`${Bun.env.BOT_ORIGIN}/flow/resume`, {
-      method: "POST",
-      body: JSON.stringify(data.payload),
-      headers: {
-        Authorization: jwt,
-        "User-Agent": USER_AGENT,
-      },
-    });
-
+  const startSleeping = async (until: number, pingLatency: number) => {
     const processingLatency = now() - received;
-    const until = new Date(data.until - pingLatency - processingLatency);
-    await Bun.sleep(until);
+    await Bun.sleep(new Date(until - pingLatency - processingLatency));
 
     // this should never allow a timeout so that the worker can run for as
     // long as it wants
     // https://developers.cloudflare.com/workers/platform/limits/#duration
-    await fetch(request);
+    const response = await fetch(resumeRequest);
+    if (!response.ok) {
+      console.log(await response.json());
+    }
   };
 
-  startSleeping(ping.latency);
+  if (data.until !== undefined) {
+    startSleeping(data.until, ping.latency);
+  } else {
+    (async () => {
+      const response = await fetch(resumeRequest);
+      if (!response.ok) {
+        console.log(await response.json());
+      }
+    })();
+  }
   return new Response(null, { status: 204 });
 });
 
