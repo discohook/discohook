@@ -248,53 +248,59 @@ export const executeFlow = async (
     };
   }
 
-  if (
-    recursion === 0 &&
-    deferred &&
-    env.BOUNCER_ORIGIN &&
-    env.BOUNCER_JWT_KEY
-  ) {
-    const processWait = (action: FlowAction): number => {
-      switch (action.type) {
-        case FlowActionType.Wait:
-          return action.seconds;
-        case FlowActionType.Check: {
-          // only one branch can happen, but we don't know which yet,
-          // so we take the maximum
-          const thenWait = action.then
-            .map(processWait)
-            .reduce((a, b) => a + b, 0);
-          const elseWait = action.else
-            .map(processWait)
-            .reduce((a, b) => a + b, 0);
-          return Math.max(thenWait, elseWait);
+  try {
+    if (
+      recursion === 0 &&
+      deferred &&
+      env.BOUNCER_ORIGIN &&
+      env.BOUNCER_JWT_KEY
+    ) {
+      const processWait = (action: FlowAction): number => {
+        switch (action.type) {
+          case FlowActionType.Wait:
+            return action.seconds;
+          case FlowActionType.Check: {
+            // only one branch can happen, but we don't know which yet,
+            // so we take the maximum
+            const thenWait = action.then
+              .map(processWait)
+              .reduce((a, b) => a + b, 0);
+            const elseWait = action.else
+              .map(processWait)
+              .reduce((a, b) => a + b, 0);
+            return Math.max(thenWait, elseWait);
+          }
+          default:
+            return 0;
         }
-        default:
-          return 0;
-      }
-    };
-
-    let cumulativeWait = 0;
-    for (const { data: action } of flow.actions) {
-      cumulativeWait += processWait(action);
-    }
-
-    // May need to lower or raise this
-    if (cumulativeWait >= 30) {
-      await bounceFlow(env, {
-        liveVars,
-        setVars,
-        recursion,
-        interaction: ctx?.interaction,
-        flow,
-      });
-      return {
-        status: "success",
-        message: `Flow bounced to another process due to ≤${cumulativeWait}s of waiting time. Unfortunately Discohook is currently unable to give detailed feedback on this flow.`,
-        paused: true,
-        // TODO: some sort of job ID/a way to, at least, send a message in a channel to give feedback
       };
+
+      let cumulativeWait = 0;
+      for (const { data: action } of flow.actions) {
+        cumulativeWait += processWait(action);
+      }
+      // console.log({ message: "Calculated possible wait", cumulativeWait });
+
+      // May need to lower or raise this
+      if (cumulativeWait >= 30) {
+        await bounceFlow(env, {
+          liveVars,
+          setVars,
+          recursion,
+          interaction: ctx?.interaction,
+          flow,
+        });
+        return {
+          status: "success",
+          message: `Flow bounced to another process due to ≤${cumulativeWait}s of waiting time. Unfortunately Discohook is currently unable to give detailed feedback on this flow.`,
+          paused: true,
+          // TODO: some sort of job ID/a way to, at least, send a message in a channel to give feedback
+        };
+      }
     }
+  } catch (e) {
+    console.error(e);
+    // try to continue without bouncing
   }
 
   // For now, this exists for more efficient operation of the delete message

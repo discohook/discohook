@@ -25,8 +25,8 @@ import i18next, { t } from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
-  type DurableStoredComponent,
   discordMessageComponents,
+  type DurableStoredComponent,
   type Flow,
   getchTriggerGuild,
   getDb,
@@ -35,8 +35,8 @@ import {
   type TriggerKVGuild,
 } from "store";
 import { Snowflake } from "tif-snowflake";
-import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
+import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import {
   type ComponentCallbackT,
   type ComponentRoutingId,
@@ -531,7 +531,7 @@ const handleInteraction = async (
                 userId: ctx.user.id,
               },
               ctx,
-              undefined,
+              0,
               undefined,
               undefined,
               true,
@@ -645,7 +645,7 @@ const handleInteraction = async (
                 userId: ctx.user.id,
               },
               ctx,
-              undefined,
+              0,
               undefined,
               undefined,
               true,
