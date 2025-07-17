@@ -1,187 +1,187 @@
 {
-    "commands": {
-        "invite": {
-            "name": "ajouter"
-        },
-        "webhook": {
-            "options": {
-                "create": {
-                    "name": "créer",
-                    "description": "Créer un webhook",
-                    "options": {
-                        "name": {
-                            "name": "nom",
-                            "description": "Le nom du webhook"
-                        },
-                        "channel": {
-                            "name": "salon",
-                            "description": "Le canal dans lequel créer le webhook"
-                        },
-                        "avatar": {
-                            "description": "L'avatar du webhook"
-                        },
-                        "show-url": {
-                            "description": "Activez ce paramètre uniquement si vous avez besoin de l'URL pour une application externe"
-                        }
-                    }
-                },
-                "delete": {
-                    "name": "supprimer",
-                    "description": "Supprimer un webhook",
-                    "options": {
-                        "webhook": {
-                            "name": "webhook",
-                            "description": "Le webhook à supprimer"
-                        },
-                        "filter-channel": {
-                            "name": "filtrer",
-                            "description": "Filtrer les résultats par salon"
-                        }
-                    }
-                },
-                "info": {
-                    "name": "info",
-                    "options": {
-                        "webhook": {
-                            "name": "webhook",
-                            "description": "Sélectionner un webhook"
-                        },
-                        "filter-channel": {
-                            "description": "Filtrer les résultats par salon",
-                            "name": "filtre"
-                        },
-                        "show-url": {
-                            "name": "afficher-url"
-                        }
-                    },
-                    "description": "Afficher des infos sur un webhook"
-                }
+  "commands": {
+    "invite": {
+      "name": "ajouter"
+    },
+    "webhook": {
+      "options": {
+        "create": {
+          "name": "créer",
+          "description": "Créer un webhook",
+          "options": {
+            "name": {
+              "name": "nom",
+              "description": "Le nom du webhook"
             },
-            "description": "Gérer les webhooks"
-        },
-        "buttons": {
-            "description": "Ajouter, supprimer ou gérer les composants",
-            "options": {
-                "add": {
-                    "options": {
-                        "channel": {
-                            "description": "Le salon dans lequel le message est posté, pour l'autocomplétion"
-                        },
-                        "message": {
-                            "description": "Ajouter un composant à ce message (un lien de message marche aussi)"
-                        }
-                    },
-                    "description": "Ajouter un composant"
-                },
-                "edit": {
-                    "description": "Modifier un composant",
-                    "options": {
-                        "message": {
-                            "description": "Modifie un des composants de ce message (un lien de message est aussi accepté)"
-                        },
-                        "channel": {
-                            "description": "Le salon dans lequel ce message a été posté",
-                            "name": "salon"
-                        }
-                    }
-                },
-                "delete": {
-                    "description": "Supprime un composant",
-                    "options": {
-                        "message": {
-                            "description": "Supprime un des composants de ce message (un lien de message est également accepté)"
-                        }
-                    },
-                    "name": "supprimé"
-                }
+            "channel": {
+              "name": "salon",
+              "description": "Le canal dans lequel créer le webhook"
+            },
+            "avatar": {
+              "description": "L'avatar du webhook"
+            },
+            "show-url": {
+              "description": "Activez ce paramètre uniquement si vous avez besoin de l'URL pour une application externe"
             }
+          }
         },
-        "deluxe": {
-            "options": {
-                "info": {
-                    "name": "information",
-                    "description": "Affiche des infos sur Discohook Deluxe, notre offre premium"
-                },
-                "sync": {
-                    "name": "synchroniser",
-                    "description": "Vérifie que le site Discohook a pris en compte votre abonnement Deluxe"
-                }
-            }
-        },
-        "_options": {
+        "delete": {
+          "name": "supprimer",
+          "description": "Supprimer un webhook",
+          "options": {
             "webhook": {
-                "description": "Sélectionnez un webhook"
+              "name": "webhook",
+              "description": "Le webhook à supprimer"
             },
             "filter-channel": {
-                "description": "Filtre les résultats de l'autocomplétion en fonction de ce salon"
+              "name": "filtrer",
+              "description": "Filtrer les résultats par salon"
             }
+          }
         },
-        "help": {
-            "description": "Obtenir de l'aide",
-            "options": {
-                "tag": {
-                    "description": "Choisir un sujet",
-                    "name": "tag"
-                },
-                "mention": {
-                    "name": "mention",
-                    "description": "Si vous aidez quelqu'un, la personne sera mentionnée dans le message"
-                }
-            }
-        },
-        "reaction-role": {
-            "options": {
-                "create": {
-                    "options": {
-                        "role": {
-                            "description": "Le rôle qui doit être assigné ou retiré quand la réaction est cliquée"
-                        },
-                        "message": {
-                            "description": "Sur quel message ajouter la réaction ? Un lien de message marche"
-                        },
-                        "emoji": {
-                            "description": "Choisissez un emoji pour la réaction, si il est custom, réagissez avant le bot"
-                        }
-                    },
-                    "description": "Créer un nouveau rôle-réaction"
-                },
-                "delete": {
-                    "description": "Supprime un rôle-réaction d'un message",
-                    "options": {
-                        "message": {
-                            "description": "De quel message retirer le rôle-réaction ? Un lien de message marche"
-                        }
-                    }
-                }
-            }
-        },
-        "triggers": {
-            "options": {
-                "add": {
-                    "description": "Ajouter un nouveau déclencheur",
-                    "options": {
-                        "name": {
-                            "description": "Nom du déclencheur"
-                        },
-                        "event": {
-                            "choices": {
-                                "1": "Un membre a quitté",
-                                "0": "Un membre a rejoint"
-                            },
-                            "description": "L'événement déclencheur"
-                        }
-                    }
-                },
-                "view": {
-                    "description": "Voir et gérer un déclencheur",
-                    "options": {
-                        "name": {
-                            "description": "Nom du déclencheur"
-                        }
-                    }
-                }
+        "info": {
+          "name": "info",
+          "options": {
+            "webhook": {
+              "name": "webhook",
+              "description": "Sélectionner un webhook"
             },
-            "description": "Configurez des déclencheurs pour réagir à des événements dans votre serveur"
+            "filter-channel": {
+              "description": "Filtrer les résultats par salon",
+              "name": "filtre"
+            },
+            "show-url": {
+              "name": "afficher-url"
+            }
+          },
+          "description": "Afficher des infos sur un webhook"
         }
+      },
+      "description": "Gérer les webhooks"
+    },
+    "buttons": {
+      "description": "Ajouter, supprimer ou gérer les composants",
+      "options": {
+        "add": {
+          "options": {
+            "channel": {
+              "description": "Le salon dans lequel le message est posté, pour l'autocomplétion"
+            },
+            "message": {
+              "description": "Ajouter un composant à ce message (un lien de message marche aussi)"
+            }
+          },
+          "description": "Ajouter un composant"
+        },
+        "edit": {
+          "description": "Modifier un composant",
+          "options": {
+            "message": {
+              "description": "Modifie un des composants de ce message (un lien de message est aussi accepté)"
+            },
+            "channel": {
+              "description": "Le salon dans lequel ce message a été posté",
+              "name": "salon"
+            }
+          }
+        },
+        "delete": {
+          "description": "Supprime un composant",
+          "options": {
+            "message": {
+              "description": "Supprime un des composants de ce message (un lien de message est également accepté)"
+            }
+          },
+          "name": "supprimé"
+        }
+      }
+    },
+    "deluxe": {
+      "options": {
+        "info": {
+          "name": "information",
+          "description": "Affiche des infos sur Discohook Deluxe, notre offre premium"
+        },
+        "sync": {
+          "name": "synchroniser",
+          "description": "Vérifie que le site Discohook a pris en compte votre abonnement Deluxe"
+        }
+      }
+    },
+    "_options": {
+      "webhook": {
+        "description": "Sélectionnez un webhook"
+      },
+      "filter-channel": {
+        "description": "Filtre les résultats de l'autocomplétion en fonction de ce salon"
+      }
+    },
+    "help": {
+      "description": "Obtenir de l'aide",
+      "options": {
+        "tag": {
+          "description": "Choisir un sujet",
+          "name": "tag"
+        },
+        "mention": {
+          "name": "mention",
+          "description": "Si vous aidez quelqu'un, la personne sera mentionnée dans le message"
+        }
+      }
+    },
+    "reaction-role": {
+      "options": {
+        "create": {
+          "options": {
+            "role": {
+              "description": "Le rôle qui doit être assigné ou retiré quand la réaction est cliquée"
+            },
+            "message": {
+              "description": "Sur quel message ajouter la réaction ? Un lien de message marche"
+            },
+            "emoji": {
+              "description": "Choisissez un emoji pour la réaction, si il est custom, réagissez avant le bot"
+            }
+          },
+          "description": "Créer un nouveau rôle-réaction"
+        },
+        "delete": {
+          "description": "Supprime un rôle-réaction d'un message",
+          "options": {
+            "message": {
+              "description": "De quel message retirer le rôle-réaction ? Un lien de message marche"
+            }
+          }
+        }
+      }
+    },
+    "triggers": {
+      "options": {
+        "add": {
+          "description": "Ajouter un nouveau déclencheur",
+          "options": {
+            "name": {
+              "description": "Nom du déclencheur"
+            },
+            "event": {
+              "choices": {
+                "1": "Un membre a quitté",
+                "0": "Un membre a rejoint"
+              },
+              "description": "L'événement déclencheur"
+            }
+          }
+        },
+        "view": {
+          "description": "Voir et gérer un déclencheur",
+          "options": {
+            "name": {
+              "description": "Nom du déclencheur"
+            }
+          }
+        }
+      },
+      "description": "Configurez des déclencheurs pour réagir à des événements dans votre serveur"
     }
+  }
 }

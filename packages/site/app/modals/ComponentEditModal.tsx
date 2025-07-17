@@ -13,8 +13,8 @@ import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
 import { type SetErrorFunction, useError } from "~/components/Error";
-import { InfoBox } from "~/components/InfoBox";
 import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
+import { InfoBox } from "~/components/InfoBox";
 import type {
   APIButtonComponent,
   APIComponentInMessageActionRow,
@@ -23,10 +23,10 @@ import type { CacheManager } from "~/util/cache/CacheManager";
 import { isSnowflakeSafe } from "~/util/discord";
 import { randomString } from "~/util/text";
 import { Button } from "../components/Button";
-import { StringSelect } from "../components/StringSelect";
-import { TextInput } from "../components/TextInput";
 import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName } from "../components/preview/Markdown";
+import { StringSelect } from "../components/StringSelect";
+import { TextInput } from "../components/TextInput";
 import { type EditingFlowData, FlowEditModal } from "./FlowEditModal";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 

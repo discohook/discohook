@@ -49,7 +49,7 @@ const defaultOptions: (DateOption | CalendarGroup)[] = [
 
 const createCalendarOptions = (date = new Date()) => {
   const daysInMonth = Array.apply(null, Array(moment(date).daysInMonth())).map(
-    (x, i) => {
+    (_, i) => {
       const d = moment(date).date(i + 1);
       return { ...createOptionForDate(d), display: "calendar" };
     },
@@ -134,7 +134,7 @@ const Group = (props: GroupProps<DateOption, false>) => {
     }
   }
   return (
-    <div aria-label={label as string}>
+    <div>
       <Heading
         selectProps={selectProps}
         theme={theme}
@@ -194,8 +194,8 @@ const Group = (props: GroupProps<DateOption, false>) => {
 const Option = (props: OptionProps<DateOption, false>) => {
   const { data, innerRef, innerProps } = props;
   if (data.display === "calendar") {
-    const weekOfMonth = Math.ceil(data.date.date() / 7);
-    const day = data.date.day();
+    // const weekOfMonth = Math.ceil(data.date.date() / 7);
+    // const day = data.date.day();
     return (
       <div
         {...innerProps}

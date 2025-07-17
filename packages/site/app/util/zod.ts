@@ -2,12 +2,12 @@ import { json } from "@remix-run/cloudflare";
 import type { Params } from "@remix-run/react";
 import { isSnowflake } from "discord-snowflake";
 import {
+  type output,
   type SafeParseReturnType,
   ZodError,
   type ZodObject,
   type ZodRawShape,
   type ZodTypeAny,
-  type output,
   z,
 } from "zod";
 import { zx } from "zodix";
@@ -118,7 +118,7 @@ export const zxParseForm = async <T extends ZodRawShape | ZodTypeAny>(
 export const zxParseJsonSafe = async <T extends ZodRawShape | ZodTypeAny>(
   request: Request,
   schema: T,
-  options?: Options,
+  _options?: Options,
 ): Promise<SafeParsedData<T>> => {
   const data = await request.json();
   // @ts-expect-error

@@ -5,17 +5,17 @@ import {
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import {
+  discordMembers,
+  getchTriggerGuild,
+  getDb,
+  makeSnowflake,
   TriggerEvent,
   type TriggerKVGuild,
-  discordMembers,
-  getDb,
-  getchTriggerGuild,
-  makeSnowflake,
 } from "store";
 import type { GatewayEventCallback } from "../events.js";
-import { type FlowResult, executeFlow } from "../flows/flows.js";
+import { executeFlow, type FlowResult } from "../flows/flows.js";
 import { isDiscordError } from "../util/error.js";
-import { type Trigger, getWelcomerConfigurations } from "./guildMemberAdd.js";
+import { getWelcomerConfigurations, type Trigger } from "./guildMemberAdd.js";
 
 export const guildMemberRemoveCallback: GatewayEventCallback = async (
   env,

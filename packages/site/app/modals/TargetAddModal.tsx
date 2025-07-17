@@ -8,14 +8,14 @@ import { getDate } from "discord-snowflake";
 import { type ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import type { ApiGetCurrentUserMemberships } from "~/api/v1/users.@me.memberships";
 import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
-import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
+import { TextInput } from "~/components/TextInput";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
@@ -66,7 +66,7 @@ export const TargetAddModal = (
     typeof ApiGetGuildWebhookToken
   >({ onError: setError });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only update when I want
   useEffect(() => {
     if (
       guildWebhookTokenFetcher.data &&

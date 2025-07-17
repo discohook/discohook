@@ -7,7 +7,7 @@ const redirect = (url: string) =>
   });
 
 export default {
-  async fetch(request: Request, env: Env, context: ExecutionContext) {
+  async fetch(request: Request, env: Env, _context: ExecutionContext) {
     const path = new URL(request.url).pathname;
     if (path === "/") {
       return redirect(`${env.DISCOHOOK_ORIGIN}/link`);

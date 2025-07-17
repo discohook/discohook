@@ -1,8 +1,8 @@
 import { redirect } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { zx } from "zodix";
-import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
 import { getDiscordAuth } from "~/auth-discord.server";
+import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
 import { getSessionStorage, getUser, getUserId } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams, zxParseQuery } from "~/util/zod";

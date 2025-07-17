@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord-api-types/v10";
-import { TriggerEvent, getDb, getchTriggerGuild } from "store";
+import { getchTriggerGuild, getDb, TriggerEvent } from "store";
 import type { ChatInputAppCommandCallback } from "../../commands.js";
 import type { AutoComponentCustomId } from "../../components.js";
 import { getWelcomerConfigurations } from "../../events/guildMemberAdd.js";

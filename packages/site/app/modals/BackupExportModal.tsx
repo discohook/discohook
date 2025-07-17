@@ -2,7 +2,7 @@ import type { SerializeFrom } from "@remix-run/cloudflare";
 import { Await, Link } from "@remix-run/react";
 import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import type { loader as ApiGetBackups } from "~/api/v1/backups";
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";

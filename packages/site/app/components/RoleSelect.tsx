@@ -2,10 +2,10 @@ import { Select } from "@base-ui-components/react/select";
 import type { TFunction } from "i18next";
 import { twJoin } from "tailwind-merge";
 import type { ResolvableAPIRole } from "~/util/cache/CacheManager";
-import { SelectValueTrigger, selectStyles } from "./StringSelect";
 import { decimalToHex } from "./editor/ColorPicker";
 import { CoolIcon } from "./icons/CoolIcon";
 import { RoleShield } from "./icons/role";
+import { SelectValueTrigger, selectStyles } from "./StringSelect";
 
 export const RoleSelect = (props: {
   t: TFunction;

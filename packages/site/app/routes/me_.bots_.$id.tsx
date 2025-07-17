@@ -14,7 +14,7 @@ import {
   TeamMemberRole,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { type SQL, isNotNull } from "drizzle-orm";
+import { isNotNull, type SQL } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -25,10 +25,10 @@ import {
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
-import { Prose } from "~/components/Prose";
-import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { Prose } from "~/components/Prose";
 import { linkClassName } from "~/components/preview/Markdown";
+import { TextInput } from "~/components/TextInput";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BotDeleteConfirmModal } from "~/modals/BotDeleteConfirmModal";
 import { getUser } from "~/session.server";
@@ -43,8 +43,8 @@ import {
 } from "~/store.server";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import {
-  DISCORD_BOT_TOKEN_RE,
   botAppAvatar,
+  DISCORD_BOT_TOKEN_RE,
   isDiscordError,
 } from "~/util/discord";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";

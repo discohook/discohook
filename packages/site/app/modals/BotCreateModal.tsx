@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
-import { TextInput } from "~/components/TextInput";
 import { linkClassName } from "~/components/preview/Markdown";
+import { TextInput } from "~/components/TextInput";
 import type { action } from "~/routes/me.bots";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, getApplicationRpc } from "~/util/discord";
@@ -18,7 +18,7 @@ export const BotCreateModal = (props: ModalProps) => {
   const [application, setApplication] =
     useState<RESTGetAPIApplicationRpcResult>();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only update on open change
   useEffect(() => {
     if (!props.open) {
       setError(undefined);

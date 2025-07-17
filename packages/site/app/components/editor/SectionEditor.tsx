@@ -7,7 +7,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
-import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import type { DraftFile } from "~/routes/_index";
 import type { APIButtonComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
@@ -15,12 +15,12 @@ import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
 import { FileOrUrlInput } from "../FileOrUrlInput";
+import { CoolIcon } from "../icons/CoolIcon";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
-import { CoolIcon } from "../icons/CoolIcon";
 import {
-  IndividualComponentEditor,
   getSetEditingComponentProps,
+  IndividualComponentEditor,
 } from "./ComponentEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
@@ -52,8 +52,7 @@ export const SectionEditor: React.FC<{
   setFiles,
 }) => {
   const { t } = useTranslation();
-  const mid = getQdMessageId(message);
-  const [error, setError] = useError(t);
+  const [error] = useError(t);
 
   const { accessory } = section;
   const removeAccessory = () => {
@@ -87,7 +86,7 @@ export const SectionEditor: React.FC<{
           if (component.type !== ComponentType.TextDisplay) return null;
 
           return (
-            <div className="flex gap-2">
+            <div key={String(component.id ?? ci)} className="flex gap-2">
               <div className="grow">
                 <TextArea
                   label={t("content")}

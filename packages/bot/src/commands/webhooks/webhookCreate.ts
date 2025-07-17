@@ -14,8 +14,8 @@ import {
 } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import {
-  getDb,
   getchGuild,
+  getDb,
   makeSnowflake,
   upsertDiscordUser,
   upsertGuild,
@@ -34,7 +34,7 @@ export const extractWebhookableChannel = (
   channel: APIPartialResolvedChannel | null,
   ctxChannel: APIInteraction["channel"],
 ): [string | undefined, ChannelType | undefined] => {
-  let channelId: string | undefined = undefined;
+  let channelId: string | undefined;
   let channelType: ChannelType | undefined = ctxChannel?.type;
   if (channel) {
     channelType = channel.type;
@@ -102,7 +102,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
     // Defer because attachment handling takes so long
     ctx.defer({ ephemeral: true }),
     async () => {
-      let avatarData: string | undefined = undefined;
+      let avatarData: string | undefined;
       if (avatar) {
         if (
           !avatar.content_type ||
@@ -211,7 +211,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
           id: webhook.id,
           token: webhook.token,
           name: webhook.name ?? name,
-          // biome-ignore lint/style/noNonNullAssertion:
+          // biome-ignore lint/style/noNonNullAssertion: we are in a guild
           discordGuildId: makeSnowflake(webhook.guild_id!),
           channelId: webhook.channel_id,
           avatar: webhook.avatar,

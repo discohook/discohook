@@ -16,11 +16,11 @@ import { inArray } from "drizzle-orm";
 import { t } from "i18next";
 import {
   FlowActionType,
-  TriggerEvent,
   flows,
-  getDb,
   getchTriggerGuild,
+  getDb,
   makeSnowflake,
+  TriggerEvent,
   triggers,
   upsertDiscordUser,
 } from "store";
@@ -30,8 +30,8 @@ import type {
 } from "../commands.js";
 import type { ButtonCallback } from "../components.js";
 import { emojiToString, getEmojis } from "../emojis.js";
-import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
+import { gatewayEventNameToCallback } from "../events.js";
 import type { FlowResult } from "../flows/flows.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";

@@ -3,7 +3,7 @@ import type { TFunction } from "i18next";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import type { action as ApiPostGuildTriggers } from "~/api/v1/guilds.$guildId.triggers";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
@@ -39,7 +39,7 @@ export const TriggerCreateModal = (
     onError: setError,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only update on open change
   useEffect(() => {
     if (!props.open) {
       setError(undefined);

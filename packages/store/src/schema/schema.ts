@@ -25,6 +25,7 @@ import type {
   StorableComponent,
 } from "../types/components.js";
 import type { TriggerEvent } from "../types/triggers.js";
+
 // import { buttons } from "./schema-v1.js";
 
 // @ts-ignore
@@ -409,7 +410,7 @@ export const linkBackups = pgTable("LinkBackup", {
     .notNull(),
 });
 
-export const linkBackupsRelations = relations(backups, ({ one, many }) => ({
+export const linkBackupsRelations = relations(backups, ({ one }) => ({
   owner: one(users, {
     fields: [backups.ownerId],
     references: [users.id],
@@ -437,7 +438,7 @@ export const webhooks = pgTable(
   }),
 );
 
-export const webhooksRelations = relations(webhooks, ({ one, many }) => ({
+export const webhooksRelations = relations(webhooks, ({ one }) => ({
   user: one(users, {
     fields: [webhooks.userId],
     references: [users.id],
@@ -719,7 +720,7 @@ export const customBots = pgTable("CustomBot", {
   guildId: snowflake("guildId").references(() => discordGuilds.id),
 });
 
-export const customBotsRelations = relations(customBots, ({ one, many }) => ({
+export const customBotsRelations = relations(customBots, ({ one }) => ({
   // discordGuilds: many(discordGuilds, {
   //   relationName: "DiscordGuild_CustomBot",
   // }),

@@ -7,10 +7,10 @@ import {
 import { and, eq, notInArray, sql } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
-import { type User, getSessionStorage } from "./session.server";
+import { getSessionStorage, type User } from "./session.server";
 import {
-  type DBWithSchema,
   autoRollbackTx,
+  type DBWithSchema,
   discordGuilds,
   discordMembers,
   getDb,

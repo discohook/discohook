@@ -22,7 +22,7 @@ export const TextInput = (
 
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
-  if (props.freeLength) {
+  if (freeLength) {
     newProps.maxLength = undefined;
   }
 

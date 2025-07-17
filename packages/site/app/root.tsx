@@ -1,13 +1,13 @@
 import type { LinksFunction, MetaFunction } from "@remix-run/cloudflare";
 import { cssBundleHref } from "@remix-run/css-bundle";
 import {
+  isRouteErrorResponse,
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  isRouteErrorResponse,
   useLoaderData,
   useRouteError,
 } from "@remix-run/react";
@@ -19,7 +19,7 @@ import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message.client";
 import getI18next from "./i18next.server";
 import icons from "./styles/coolicons.css";
-import { type LoaderArgs, getZodErrorMessage } from "./util/loader";
+import { getZodErrorMessage, type LoaderArgs } from "./util/loader";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const locale = await getI18next(context).getLocale(request);

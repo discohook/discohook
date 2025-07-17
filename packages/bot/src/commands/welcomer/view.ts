@@ -1,8 +1,8 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  EmbedBuilder,
   bold,
+  EmbedBuilder,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
@@ -14,9 +14,9 @@ import {
   type FlowAction,
   FlowActionType,
   type FlowActionWait,
-  TriggerEvent,
-  getDb,
   getchTriggerGuild,
+  getDb,
+  TriggerEvent,
 } from "store";
 import type { ChatInputAppCommandCallback } from "../../commands.js";
 import { EmojiManagerCache, emojiToString, getEmojis } from "../../emojis.js";
@@ -101,10 +101,6 @@ export const getWelcomerConfigEmbed = (
   const trueEmoji = emojiToString(emojis.get("true", true));
   const falseEmoji = emojiToString(emojis.get("false", true));
   const nullEmoji = emojiToString(emojis.get("null", true));
-
-  const backupUrl = config.backupId
-    ? `${env.DISCOHOOK_ORIGIN}/?backup=${config.backupId}`
-    : undefined;
 
   return new EmbedBuilder()
     .setColor(color)

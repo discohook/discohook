@@ -18,7 +18,7 @@ export const useLocalStorage = <T = Settings>(
   try {
     localStorage;
   } catch {
-    return [{} as T, (data: Partial<T>) => {}];
+    return [{} as T, (_data: Partial<T>) => {}];
   }
 
   const settings = JSON.parse(localStorage.getItem(key) ?? "{}");

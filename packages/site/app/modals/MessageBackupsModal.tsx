@@ -4,12 +4,12 @@ import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
-import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
+import { TextInput } from "~/components/TextInput";
 import type {
   LoadedBackup,
   loader as MeBackupsLoader,
@@ -142,7 +142,7 @@ export const MessageBackupsModal = (
     }
   }, [backups, data.backup_id, backupFetcher]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only update on open change
   useEffect(() => {
     if (props.open && user && !backups && meBackupsFetcher.state === "idle") {
       meBackupsFetcher.load("/me/backups?_data=routes/me.backups");

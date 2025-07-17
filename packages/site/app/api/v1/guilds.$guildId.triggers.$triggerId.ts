@@ -4,11 +4,11 @@ import { autoRollbackTx, getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
   type DBWithSchema,
-  type TriggerEvent,
   eq,
   flowActions,
   flows,
   putGeneric,
+  type TriggerEvent,
   triggers,
 } from "~/store.server";
 import type { Env } from "~/types/env";

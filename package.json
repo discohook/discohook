@@ -18,9 +18,11 @@
     "db-studio": "drizzle-kit studio",
     "refresh-store": "cd packages/bot && yarn && cd ../site && yarn"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "2.0.6",
     "drizzle-kit": "^0.23.1"
   },
   "packageManager": "yarn@4.1.0"

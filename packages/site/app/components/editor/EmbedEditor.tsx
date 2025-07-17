@@ -1,6 +1,5 @@
 import { type APIEmbedField, ButtonStyle } from "discord-api-types/v10";
 import type { TFunction } from "i18next";
-import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
@@ -13,12 +12,12 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
-import { TextArea } from "../TextArea";
-import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import DatePicker from "../pickers/DatePicker";
 import { linkClassName } from "../preview/Markdown";
+import { TextArea } from "../TextArea";
+import { TextInput } from "../TextInput";
 import { decimalToHex } from "./ColorPicker";
 
 export const isEmbedEmpty = (embed: APIEmbed): boolean =>
@@ -176,7 +175,6 @@ export const EmbedEditor: React.FC<{
   cdn,
 }) => {
   const { t } = useTranslation();
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
   const messageEmbeds = message.data.embeds ?? [];
 
@@ -442,40 +440,38 @@ export const EmbedEditor: React.FC<{
         </>
       )}
       <EmbedEditorSection name={t("body")} open={open}>
-        {!isChild && (
-          <>
-            <div className="flex">
-              <div className="grow">
-                <TextArea
-                  label={t("title")}
-                  className="w-full"
-                  maxLength={256}
-                  value={embed.title ?? ""}
-                  markdown="title"
-                  cache={cache}
-                  short
-                  onInput={(e) =>
-                    updateEmbed({
-                      title: e.currentTarget.value || undefined,
-                    })
-                  }
-                />
-              </div>
-              {embed.url === undefined && (
-                <Button
-                  className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
-                  onClick={() =>
-                    updateEmbed({
-                      url: `${location.origin}#default-${randomString(8)}`,
-                    })
-                  }
-                >
-                  {t("addUrl")}
-                </Button>
-              )}
+        {!isChild ? (
+          <div className="flex">
+            <div className="grow">
+              <TextArea
+                label={t("title")}
+                className="w-full"
+                maxLength={256}
+                value={embed.title ?? ""}
+                markdown="title"
+                cache={cache}
+                short
+                onInput={(e) =>
+                  updateEmbed({
+                    title: e.currentTarget.value || undefined,
+                  })
+                }
+              />
             </div>
-          </>
-        )}
+            {embed.url === undefined && (
+              <Button
+                className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
+                onClick={() =>
+                  updateEmbed({
+                    url: `${location.origin}#default-${randomString(8)}`,
+                  })
+                }
+              >
+                {t("addUrl")}
+              </Button>
+            )}
+          </div>
+        ) : null}
         <div className="grid gap-2">
           {(isChild || embed.url !== undefined) && (
             <div className="flex">

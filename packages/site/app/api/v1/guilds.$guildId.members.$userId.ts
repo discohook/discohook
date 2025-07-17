@@ -34,7 +34,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     );
     if (userMember && userId === token.user.discordId) {
       // Self-mention and fresh token assignment
-      // biome-ignore lint/style/noNonNullAssertion:
+      // biome-ignore lint/style/noNonNullAssertion: only null in some events
       const user = userMember.user!;
       const member = {
         nick: userMember.nick,
@@ -80,7 +80,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       const rawMember = (await rest.get(
         Routes.guildMember(String(guildId), String(userId)),
       )) as RESTGetAPIGuildMemberResult;
-      // biome-ignore lint/style/noNonNullAssertion:
+      // biome-ignore lint/style/noNonNullAssertion: only null in some events
       const user = rawMember.user!;
       member = {
         nick: rawMember.nick,

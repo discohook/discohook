@@ -1,11 +1,11 @@
 import { REST } from "@discordjs/rest";
 import {
-  type SerializeFrom,
-  type Session,
   createCookie,
   createCookieSessionStorage,
   json,
   redirect,
+  type SerializeFrom,
+  type Session,
 } from "@remix-run/cloudflare";
 import {
   type APIGuild,
@@ -19,7 +19,7 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
-import { type JWTPayload, SignJWT, jwtVerify } from "jose";
+import { type JWTPayload, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
 import { getDiscordUserOAuth } from "./auth-discord.server";
 import {
@@ -742,7 +742,7 @@ export const getTokenGuildChannelPermissions = async (
           headers: { Authorization: `Bearer ${oauth.accessToken}` },
           auth: false,
         })) as RESTGetAPIGuildMemberResult;
-      } catch (e) {
+      } catch {
         throw json(
           { message: "Server does not exist or you are not a member of it" },
           404,
@@ -753,7 +753,7 @@ export const getTokenGuildChannelPermissions = async (
         member = (await rest.get(
           Routes.guildMember(channel.guild_id, String(token.user.discordId)),
         )) as RESTGetAPIGuildMemberResult;
-      } catch (e) {
+      } catch {
         throw json(
           { message: "Server does not exist or you are not a member of it" },
           404,

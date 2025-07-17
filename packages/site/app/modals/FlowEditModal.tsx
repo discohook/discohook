@@ -1,3 +1,5 @@
+import { NumberField } from "@base-ui-components/react/number-field";
+import { Link } from "@remix-run/react";
 import {
   type APIWebhook,
   ButtonStyle,
@@ -5,16 +7,13 @@ import {
   type ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
-import { Trans, useTranslation } from "react-i18next";
-import AsyncSelect from "react-select/async";
-import { twJoin } from "tailwind-merge";
-
-import { NumberField } from "@base-ui-components/react/number-field";
-import { Link } from "@remix-run/react";
 import { MessageFlagsBitField } from "discord-bitflag";
 import type { TFunction } from "i18next";
 import type React from "react";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { Trans, useTranslation } from "react-i18next";
+import AsyncSelect from "react-select/async";
+import { twJoin } from "tailwind-merge";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
@@ -35,8 +34,8 @@ import { FlowActionType, ZodDraftFlow } from "~/types/flows";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
 import {
-  type SafeFetcher,
   getZodErrorMessage,
+  type SafeFetcher,
   useSafeFetcher,
 } from "~/util/loader";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
@@ -46,6 +45,8 @@ import type {
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
 import { InfoBox } from "../components/InfoBox";
+import { CoolIcon } from "../components/icons/CoolIcon";
+import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { RoleSelect } from "../components/RoleSelect";
 import {
   SimpleStringSelect,
@@ -53,8 +54,6 @@ import {
   selectClassNames,
 } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
-import { CoolIcon } from "../components/icons/CoolIcon";
-import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 type FlowWithPartials = DraftFlow & {
@@ -260,20 +259,11 @@ const varTypeOptions: {
   },
 ];
 
-const messageFlagOptions = [
-  {
-    label: "Hidden (ephemeral)",
-    value: MessageFlags.Ephemeral,
-  },
-  {
-    label: "Silent",
-    value: MessageFlags.SuppressNotifications,
-  },
-  {
-    label: "Suppress All Embeds",
-    value: MessageFlags.SuppressEmbeds,
-  },
-];
+// const messageFlagOptions = [
+//   { label: "Hidden (ephemeral)", value: MessageFlags.Ephemeral },
+//   { label: "Silent", value: MessageFlags.SuppressNotifications },
+//   { label: "Suppress All Embeds", value: MessageFlags.SuppressEmbeds },
+// ];
 
 const getBackupSelectOption = (backup: PartialBackupsWithMessages[number]) => ({
   label: (

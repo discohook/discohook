@@ -4,7 +4,7 @@ import { flows as dFlows, triggers as dTriggers, getDb } from "store";
 import { z } from "zod";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { TriggerEvent, flowActions } from "~/store.server";
+import { flowActions, TriggerEvent } from "~/store.server";
 import { refineZodDraftFlowMax } from "~/types/flows";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";

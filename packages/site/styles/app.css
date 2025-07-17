@@ -74,24 +74,23 @@ details summary.marker-none::-webkit-details-marker {
 
 /* Foreground */
 :root::-webkit-scrollbar-thumb {
-  @apply bg-[#C5C9CD] dark:bg-[#1A1B1E] rounded-full
+  @apply bg-[#C5C9CD] dark:bg-[#1A1B1E] rounded-full;
 }
 
 /* Background */
 :root::-webkit-scrollbar-track {
-  @apply bg-[#EBEDEF] dark:bg-[#2B2D31] rounded-full
+  @apply bg-[#EBEDEF] dark:bg-[#2B2D31] rounded-full;
 }
-
 
 /* Color picker */
 input[id^="rc-editable-input-"] {
-  @apply rounded border bg-gray-300 border-gray-200 !shadow-none focus:outline-none focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 transition !w-full
+  @apply rounded border bg-gray-300 border-gray-200 !shadow-none focus:outline-none focus:border-blurple-500 dark:border-transparent dark:bg-[#292b2f] invalid:border-rose-400 dark:invalid:border-rose-400 transition !w-full;
 }
 
 label[for^="rc-editable-input-"] {
-  @apply dark:!text-primary-230
+  @apply dark:!text-primary-230;
 }
 
-.sketch-picker>.flexbox-fix:last-child {
-  @apply pt-3 mt-3 !border-t-gray-400 dark:!border-t-gray-600
+.sketch-picker > .flexbox-fix:last-child {
+  @apply pt-3 mt-3 !border-t-gray-400 dark:!border-t-gray-600;
 }

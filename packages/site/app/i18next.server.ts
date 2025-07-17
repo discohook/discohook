@@ -11,7 +11,7 @@ export const i18nCookie = createCookie("i18n", {
 // TODO: Custom backend for fetching from workers assets. For now, since
 // we rarely SSR, we don't really need a server i18next instance so this
 // is low priority.
-const getI18next = (ctx: Context) =>
+const getI18next = (_ctx: Context) =>
   new RemixI18Next({
     detection: {
       supportedLanguages: [...i18n.supportedLngs],

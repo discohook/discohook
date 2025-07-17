@@ -54,7 +54,7 @@ import {
   PermissionFlags,
   PermissionsBitField,
 } from "discord-bitflag";
-import { type Snowflake, getDate } from "discord-snowflake";
+import { getDate, type Snowflake } from "discord-snowflake";
 import type { MinimumKVComponentState } from "./components.js";
 import type { APIPartialResolvedChannel } from "./types/api.js";
 import type { Env } from "./types/env.js";

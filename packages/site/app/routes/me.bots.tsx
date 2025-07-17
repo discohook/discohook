@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { type SerializeFrom, json } from "@remix-run/cloudflare";
+import { json, type SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";

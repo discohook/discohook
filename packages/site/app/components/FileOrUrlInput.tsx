@@ -4,17 +4,17 @@ import { twJoin } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
 import {
   ATTACHMENT_URI_EXTENSIONS,
-  MAX_FILES_PER_MESSAGE,
   fileInputChangeHandler,
+  MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
 import { randomString } from "~/util/text";
 import { Button } from "./Button";
-import { TextInput } from "./TextInput";
 import { DetectGifUrlFooter } from "./editor/EmbedEditor";
 import { PasteFileButton } from "./editor/PasteFileButton";
 import { CoolIcon } from "./icons/CoolIcon";
 import { resolveAttachmentUri } from "./preview/Embed";
+import { TextInput } from "./TextInput";
 
 export const FileOrUrlInput: React.FC<{
   t: TFunction;

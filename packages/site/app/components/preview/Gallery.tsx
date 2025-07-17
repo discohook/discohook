@@ -3,7 +3,7 @@ import { twJoin } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
 
 export const YOUTUBE_REGEX =
-  /^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)\/((?:shorts\/|embed\/|v\/|live\/)?([\w\-]{5,}))/i;
+  /^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)\/((?:shorts\/|embed\/|v\/|live\/)?([\w-]{5,}))/i;
 
 export const VIMEO_REGEX =
   /^https?:\/\/(?:www\.)?vimeo\.com\/(?:video\/)?(\d+)/i;

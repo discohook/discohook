@@ -14,20 +14,20 @@ import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
 import type { SafeParseError, SafeParseReturnType, ZodError } from "zod";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import type { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
+import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
-import { TextInput } from "~/components/TextInput";
-import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Logo } from "~/components/icons/Logo";
 import { PostChannelIcon } from "~/components/icons/channel";
+import { Logo } from "~/components/icons/Logo";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { TextInput } from "~/components/TextInput";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
 import {
@@ -74,9 +74,9 @@ import {
   WEBHOOK_URL_RE,
 } from "~/util/constants";
 import {
+  cdnImgAttributes,
   DISCORD_API,
   DISCORD_API_V,
-  cdnImgAttributes,
   extractInteractiveComponents,
   getWebhook,
   isComponentsV2,
@@ -258,7 +258,7 @@ export default function Index() {
   const [backupId, setBackupId] = useState<bigint>();
   const [files, setFiles] = useState<Record<string, DraftFile[]>>({});
   const [data, setData] = useReducer(
-    (cur: QueryData, d: QueryData) => {
+    (_cur: QueryData, d: QueryData) => {
       const newData = d;
 
       // Update file preview if any are referenced in embeds
@@ -412,7 +412,7 @@ export default function Index() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to run this when `data` changes
   useEffect(() => setUpdateCount(updateCount + 1), [data]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only update when I want
   useEffect(() => {
     if (updateCount % 20 === 0) {
       const lastHistoryItem = localHistory.slice(-1)[0];
@@ -521,7 +521,7 @@ export default function Index() {
       .then(() => {
         setBlockTest("success");
       })
-      .catch((e) => {
+      .catch(() => {
         setBlockTest("failure");
       });
   };

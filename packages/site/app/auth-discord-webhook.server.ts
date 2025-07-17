@@ -1,5 +1,8 @@
 import { REST } from "@discordjs/rest";
-import { createCookie, createCookieSessionStorage } from "@remix-run/cloudflare";
+import {
+  createCookie,
+  createCookieSessionStorage,
+} from "@remix-run/cloudflare";
 import type {
   APIUser,
   APIWebhook,
@@ -8,8 +11,8 @@ import type {
 import { Authenticator } from "remix-auth";
 import { DiscordStrategy } from "remix-auth-discord";
 import {
-  getDb,
   getchGuild,
+  getDb,
   upsertDiscordUser,
   upsertGuild,
   webhooks,
@@ -46,7 +49,7 @@ export const getDiscordWebhookAuth = (context: Context) => {
         extraParams as unknown as RESTPostOAuth2AccessTokenWithBotAndGuildsAndWebhookIncomingScopeResult;
 
       const db = getDb(context.env.HYPERDRIVE);
-      let guildId: bigint | undefined = undefined;
+      let guildId: bigint | undefined;
       if (webhook.guild_id) {
         const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
         try {

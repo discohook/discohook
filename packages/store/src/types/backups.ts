@@ -1,9 +1,9 @@
 import type {
+  APIAttachment as _APIAttachment,
+  APIEmbed as _APIEmbed,
   APIMessageTopLevelComponent,
   MessageFlags,
   UserFlags,
-  APIAttachment as _APIAttachment,
-  APIEmbed as _APIEmbed,
 } from "discord-api-types/v10";
 import type { z } from "zod";
 import type { ZodLinkEmbed, ZodLinkQueryData } from "../zod/query.js";

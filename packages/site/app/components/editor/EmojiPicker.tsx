@@ -18,10 +18,7 @@ import { cdn } from "~/util/discord";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
-import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
-import { type IconFC, type IconFCProps, Svg } from "../icons/Svg";
-import { Twemoji } from "../icons/Twemoji";
 import {
   EmojiIconActivities,
   EmojiIconFlags,
@@ -32,7 +29,10 @@ import {
   EmojiIconSymbols,
   EmojiIconTravel,
 } from "../icons/emoji";
+import { type IconFC, type IconFCProps, Svg } from "../icons/Svg";
+import { Twemoji } from "../icons/Twemoji";
 import { popoverStyles } from "../pickers/Popover";
+import { TextInput } from "../TextInput";
 
 // Dec x 2023
 // We were originally using emoji-mart since it seemed more fit for our

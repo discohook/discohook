@@ -1,6 +1,7 @@
 @font-face {
   font-family: "coolicons";
-  src: url("/fonts/coolicons.ttf?44fbbv") format("truetype"),
+  src:
+    url("/fonts/coolicons.ttf?44fbbv") format("truetype"),
     url("/fonts/coolicons.woff?44fbbv") format("woff"),
     url("/fonts/coolicons.svg?44fbbv#coolicons") format("svg");
   font-weight: normal;
@@ -10,6 +11,7 @@
 
 i {
   /* use !important to prevent issues with browser extensions that change fonts */
+  /* biome-ignore lint/a11y/useGenericFontNames: it's an icon font, there's no sensible fallback */
   font-family: "coolicons" !important;
   speak: never;
   font-style: normal;

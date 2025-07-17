@@ -2,8 +2,8 @@ import { calculateUserDefaultAvatarIndex } from "@discordjs/rest";
 import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
 import { cdn } from "~/util/discord";
-import { selectClassNames } from "./StringSelect";
 import { Twemoji } from "./icons/Twemoji";
+import { selectClassNames } from "./StringSelect";
 
 export interface OptionGuild {
   id: string | bigint;

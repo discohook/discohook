@@ -42,7 +42,7 @@ async function getEmojiBlob() {
         js,
       );
     if (match) {
-      // eslint-disable-next-line no-eval
+      // biome-ignore lint/security/noGlobalEval: trusted source (?)
       blob = eval(`(()=>(${match[1]}))()`);
       break;
     }

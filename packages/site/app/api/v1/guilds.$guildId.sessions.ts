@@ -3,9 +3,9 @@ import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
 import { zx } from "zodix";
 import {
-  type KVTokenPermissions,
   authorizeRequest,
   getTokenGuildPermissions,
+  type KVTokenPermissions,
 } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";

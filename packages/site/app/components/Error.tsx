@@ -12,14 +12,17 @@ export const useError = (t?: TFunction) => {
   const [raw, setRaw] = useState<string>();
 
   return [
-    <>
-      {text && (
-        <InfoBox severity="red" icon="Triangle_Warning" collapsible={!!raw}>
-          {text}
-          {!!raw && <pre className={codeBlockStyle}>{raw}</pre>}
-        </InfoBox>
-      )}
-    </>,
+    text ? (
+      <InfoBox
+        key="0"
+        severity="red"
+        icon="Triangle_Warning"
+        collapsible={!!raw}
+      >
+        {text}
+        {!!raw && <pre className={codeBlockStyle}>{raw}</pre>}
+      </InfoBox>
+    ) : null,
     (params: ErrorParams | undefined) => {
       if (!params) {
         setText(undefined);

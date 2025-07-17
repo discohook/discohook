@@ -1,19 +1,19 @@
 import {
   ActionRowBuilder,
   EmbedBuilder,
+  messageLink,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
-  messageLink,
   time,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
+  AllowedMentionsTypes,
   type APIAllowedMentions,
   type APIGuildChannel,
   type APIMessage,
   type APIMessageTopLevelComponent,
   type APIWebhook,
-  AllowedMentionsTypes,
   ChannelType,
   ComponentType,
   type GuildChannelType,
@@ -24,7 +24,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
-import { type QueryData, getDb, shareLinks, upsertDiscordUser } from "store";
+import { getDb, type QueryData, shareLinks, upsertDiscordUser } from "store";
 import type {
   ChatInputAppCommandCallback,
   MessageAppCommandCallback,
@@ -266,9 +266,7 @@ const createShareLink = async (
   const ttl = options?.ttl ?? 604800000;
   const expires = new Date(new Date().getTime() + ttl);
 
-  // biome-ignore lint/performance/noDelete: We don't want to store this property at all
   delete data.backup_id;
-
   const shareId = await generateUniqueShortenKey(env, 8);
   await putShareLink(env, shareId, data, expires, options?.origin);
   if (userId) {
@@ -530,7 +528,7 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
       });
     }
     case "link": {
-      const url = new URL(ctx.env.DISCOHOOK_ORIGIN);
+      // const url = new URL(ctx.env.DISCOHOOK_ORIGIN);
       break;
     }
     default:
@@ -662,7 +660,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
       });
     }
     case "link": {
-      const url = new URL(ctx.env.DISCOHOOK_ORIGIN);
+      // const url = new URL(ctx.env.DISCOHOOK_ORIGIN);
       break;
     }
     default:

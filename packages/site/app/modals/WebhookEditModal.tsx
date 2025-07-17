@@ -15,9 +15,9 @@ import { Button } from "~/components/Button";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { useError } from "~/components/Error";
 import { InfoBox } from "~/components/InfoBox";
-import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Markdown, linkClassName } from "~/components/preview/Markdown";
+import { linkClassName, Markdown } from "~/components/preview/Markdown";
+import { TextInput } from "~/components/TextInput";
 import type { User } from "~/session.server";
 import type {
   CacheManager,

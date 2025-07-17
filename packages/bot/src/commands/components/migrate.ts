@@ -19,7 +19,12 @@ import {
 import { and, count, eq, notInArray } from "drizzle-orm";
 import { t } from "i18next";
 import {
+  autoRollbackTx,
+  backups,
+  buttons,
   type DBWithSchema,
+  discordMessageComponents,
+  discordMessageComponentsToFlows,
   type FlowActionCheck,
   FlowActionCheckFunctionType,
   type FlowActionDud,
@@ -28,21 +33,16 @@ import {
   type FlowActionStop,
   type FlowActionToggleRole,
   FlowActionType,
-  type QueryData,
-  type StorableButtonWithCustomId,
-  type StorableButtonWithUrl,
-  autoRollbackTx,
-  backups,
-  buttons,
-  discordMessageComponents,
-  discordMessageComponentsToFlows,
   flowActions,
   flows,
   generateId,
-  getDb,
   getchTriggerGuild,
+  getDb,
   launchComponentDurableObject,
   makeSnowflake,
+  type QueryData,
+  type StorableButtonWithCustomId,
+  type StorableButtonWithUrl,
   upsertDiscordUser,
 } from "store";
 import type { ChatInputAppCommandCallback } from "../../commands.js";
@@ -181,6 +181,7 @@ export const migrateLegacyButtons = async (
                         value: String(button.roleId),
                       },
                     },
+                    // biome-ignore lint/suspicious/noThenProperty: see note in quick.ts
                     then: [
                       {
                         type: FlowActionType.SetVariable,
@@ -244,7 +245,7 @@ export const migrateLegacyButtons = async (
           emoji: button.emoji
             ? button.emoji.startsWith("<")
               ? {
-                  id: button.emoji.split(":")[2].replace(/\>$/, ""),
+                  id: button.emoji.split(":")[2].replace(/>$/, ""),
                   name: button.emoji.split(":")[1],
                   animated: button.emoji.split(":")[0] === "<a",
                 }

@@ -8,8 +8,8 @@ import { twJoin } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import {
-  MAX_FILES_PER_MESSAGE,
   fileInputChangeHandler,
+  MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
 import { randomString } from "~/util/text";

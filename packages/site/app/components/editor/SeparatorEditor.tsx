@@ -5,7 +5,6 @@ import {
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
@@ -21,8 +20,7 @@ export const SeparatorEditor: React.FC<{
   open?: boolean;
 }> = ({ message, component, parent, index: i, data, setData, open }) => {
   const { t } = useTranslation();
-  const mid = getQdMessageId(message);
-  const [error, setError] = useError(t);
+  const [error] = useError(t);
 
   return (
     <TopLevelComponentEditorContainer

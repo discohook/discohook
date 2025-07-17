@@ -2,8 +2,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ContainerBuilder,
-  TextDisplayBuilder,
   messageLink,
+  TextDisplayBuilder,
 } from "@discordjs/builders";
 import {
   type APIComponentInContainer,
@@ -482,7 +482,7 @@ export const deleteComponentFlowPickCallback: SelectMenuCallback = async (
 const registerComponentDelete = async (
   ctx: InteractionContext<APIInteraction>,
   id: bigint,
-  type: ComponentType,
+  // type: ComponentType,
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
   path: number[],
@@ -602,7 +602,7 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
     await registerComponentDelete(
       ctx,
       component.id,
-      component.type,
+      // component.type,
       webhook,
       message,
       path,
@@ -615,7 +615,7 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
         `Component deleted successfully: ${messageLink(
           message.channel_id,
           message.id,
-          // biome-ignore lint/style/noNonNullAssertion:
+          // biome-ignore lint/style/noNonNullAssertion: we are in a guild
           (webhook.guild_id ?? ctx.interaction.guild_id)!,
         )}`,
       ),

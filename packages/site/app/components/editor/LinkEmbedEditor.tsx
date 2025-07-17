@@ -9,11 +9,11 @@ import {
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
-import { TextArea } from "../TextArea";
-import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import DatePicker from "../pickers/DatePicker";
+import { TextArea } from "../TextArea";
+import { TextInput } from "../TextInput";
 import { decimalToHex } from "./ColorPicker";
 import { EmbedEditorSection } from "./EmbedEditor";
 
@@ -333,7 +333,7 @@ export const LinkEmbedEditor: React.FC<{
             {(embed.images ?? [])
               .slice(0, embed.large_images ? undefined : 1)
               .map((img, i) => (
-                <div className="flex">
+                <div key={i} className="flex">
                   <div className="grow">
                     <TextInput
                       label={i === 0 ? t("url") : ""}

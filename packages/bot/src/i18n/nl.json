@@ -1,230 +1,230 @@
 {
-    "commands": {
-        "_options": {
-            "webhook": {
-                "description": "De webhook"
+  "commands": {
+    "_options": {
+      "webhook": {
+        "description": "De webhook"
+      },
+      "filter-channel": {
+        "name": "kanaal",
+        "description": "Het kanaal waar de webhook is, voor het automatisch aanvullen van resultaten"
+      }
+    },
+    "buttons": {
+      "name": "knoppen",
+      "description": "Onderdelen toevoegen, verwijderen, en beheren",
+      "options": {
+        "add": {
+          "name": "toevoegen",
+          "description": "Voeg een onderdeel toe",
+          "options": {
+            "message": {
+              "description": "Het bericht om de knop toe te voegen, een berichtenlink wordt hier geaccepteerd"
             },
-            "filter-channel": {
-                "name": "kanaal",
-                "description": "Het kanaal waar de webhook is, voor het automatisch aanvullen van resultaten"
+            "channel": {
+              "name": "kanaal",
+              "description": "Het kanaal waar het bericht is, voor het automatisch aanvullen van resultaten"
             }
+          }
         },
-        "buttons": {
-            "name": "knoppen",
-            "description": "Onderdelen toevoegen, verwijderen, en beheren",
-            "options": {
-                "add": {
-                    "name": "toevoegen",
-                    "description": "Voeg een onderdeel toe",
-                    "options": {
-                        "message": {
-                            "description": "Het bericht om de knop toe te voegen, een berichtenlink wordt hier geaccepteerd"
-                        },
-                        "channel": {
-                            "name": "kanaal",
-                            "description": "Het kanaal waar het bericht is, voor het automatisch aanvullen van resultaten"
-                        }
-                    }
-                },
-                "edit": {
-                    "description": "Bewerk onderdeel",
-                    "options": {
-                        "message": {
-                            "description": "Bewerk een onderdeel van dit bericht, een berichtenlink is hier ook toegestaan"
-                        },
-                        "channel": {
-                            "description": "The kanaal waar het bericht in staat, voor autosuggestie resultaat"
-                        }
-                    }
-                },
-                "delete": {
-                    "options": {
-                        "channel": {
-                            "description": "Het kanaal waar het bericht in staat, voor autosuggestie resultaten"
-                        },
-                        "message": {
-                            "description": "Verwijder een onderdeel van dit bericht. Een berichtenlink is hier ook toegestaan"
-                        }
-                    },
-                    "description": "Verwijder een onderdeel"
-                }
-            }
-        },
-        "format": {
-            "name": "opmaak",
-            "options": {
-                "mention": {
-                    "name": "melding",
-                    "description": "Geeft de opmaak voor een melding van een serverlid of rol",
-                    "options": {
-                        "target": {
-                            "name": "doel",
-                            "description": "Het serverlid of rol om te melden"
-                        }
-                    }
-                },
-                "channel": {
-                    "name": "kanaal",
-                    "description": "Geeft de opmaak voor het noemen van een kanaal",
-                    "options": {
-                        "target": {
-                            "name": "doel",
-                            "description": "Het kanaal om te noemen"
-                        }
-                    }
-                },
-                "emoji": {
-                    "description": "Geeft de opmaak om een server emoji te gebruiken",
-                    "options": {
-                        "target": {
-                            "name": "doel",
-                            "description": "De emoji"
-                        }
-                    }
-                }
-            }
-        },
-        "invite": {
-            "name": "toevoegen",
-            "description": "Link om mij toe te voegen aan een andere server"
-        },
-        "webhook": {
-            "description": "Webhooks beheren",
-            "options": {
-                "create": {
-                    "name": "creëer",
-                    "description": "Creëer een webhook",
-                    "options": {
-                        "name": {
-                            "name": "naam",
-                            "description": "De webhook's naam"
-                        },
-                        "avatar": {
-                            "description": "De webhook's avatar"
-                        },
-                        "channel": {
-                            "name": "kanaal",
-                            "description": "Het kanaal om de webhook in te maken"
-                        },
-                        "show-url": {
-                            "name": "toon-url",
-                            "description": "Gebruik dit alleen als je de URL nodig hebt voor een externe applicatie"
-                        }
-                    }
-                },
-                "delete": {
-                    "name": "verwijder",
-                    "description": "Verwijder een webhook"
-                },
-                "info": {
-                    "description": "Verkrijg informatie over een webhook",
-                    "options": {
-                        "show-url": {
-                            "name": "toon-url",
-                            "description": "Of je de \"Verkrijg URL\" stap over wilt slaan. Dit maakt het bericht verborgen"
-                        }
-                    }
-                }
-            }
-        },
-        "help": {
-            "description": "Krijg hulp met verschillende onderwerpen",
-            "options": {
-                "tag": {
-                    "name": "onderwerp",
-                    "description": "Het onderwerp waar je hulp bij kunt krijgen"
-                }
-            }
-        },
-        "reaction-role": {
-            "name": "reactie-rol",
-            "options": {
-                "create": {
-                    "name": "creëer",
-                    "description": "Creëer een nieuwe reactie rol",
-                    "options": {
-                        "message": {
-                            "name": "bericht",
-                            "description": "Het bericht om een reactie rol op te maken, een berichtenlink wordt hier geaccepteerd"
-                        },
-                        "emoji": {
-                            "description": "De emoji die de reactie moet laten zien. Voor externe emoji: reageer voor get gebruik van de bot"
-                        },
-                        "role": {
-                            "name": "rol",
-                            "description": "De rol die moet worden toegewezen of verwijderd wanneer de reactie gebruikt wordt"
-                        },
-                        "channel": {
-                            "name": "kanaal",
-                            "description": "Het kanaal waar het bericht is, voor het automatisch aanvullen van resultaten"
-                        }
-                    }
-                },
-                "delete": {
-                    "description": "Verwijder een reactie rol",
-                    "options": {
-                        "message": {
-                            "name": "bericht",
-                            "description": "Het bericht om een reactie rol van te verwijderen, een berichtenlink wordt hier geaccepteerd"
-                        },
-                        "emoji": {
-                            "description": "De emoji dat de reactie rol laat zien. Laat dit weg voor een verwijdermenu"
-                        },
-                        "channel": {
-                            "name": "kanaal",
-                            "description": "Het kanaal waar het bericht is, voor het automatisch aanvullen van resultaten"
-                        }
-                    }
-                }
-            }
-        },
-        "_ctx": {
-            "components": {
-                "name": "Knoppen & Componenten"
+        "edit": {
+          "description": "Bewerk onderdeel",
+          "options": {
+            "message": {
+              "description": "Bewerk een onderdeel van dit bericht, een berichtenlink is hier ook toegestaan"
             },
-            "edit": {
-                "name": "Snelle Bewerking"
-            },
-            "restore": {
-                "name": "Herstel"
-            },
-            "webhook": {
-                "name": "Webhook Info"
-            },
-            "debug": {
-                "name": "Debug"
+            "channel": {
+              "description": "The kanaal waar het bericht in staat, voor autosuggestie resultaat"
             }
+          }
         },
-        "triggers": {
-            "description": "Stel triggers in om te reageren op gebeurtenissen in je server",
-            "options": {
-                "add": {
-                    "description": "Voeg een nieuwe trigger toe",
-                    "options": {
-                        "name": {
-                            "description": "De naam van de trigger"
-                        },
-                        "event": {
-                            "description": "De gebeurtenis die de trigger zou activeren",
-                            "choices": {
-                                "0": "Iemand wordt lid van de server",
-                                "1": "Iemand verlaat de server"
-                            }
-                        }
-                    }
-                },
-                "view": {
-                    "description": "Bekijk en beheer een trigger",
-                    "options": {
-                        "name": {
-                            "description": "De naam van de trigger"
-                        }
-                    }
-                }
+        "delete": {
+          "options": {
+            "channel": {
+              "description": "Het kanaal waar het bericht in staat, voor autosuggestie resultaten"
+            },
+            "message": {
+              "description": "Verwijder een onderdeel van dit bericht. Een berichtenlink is hier ook toegestaan"
             }
-        },
-        "welcomer": {
-            "description": "Welkomstberichten zijn verhuisd naar /triggers!"
+          },
+          "description": "Verwijder een onderdeel"
         }
+      }
+    },
+    "format": {
+      "name": "opmaak",
+      "options": {
+        "mention": {
+          "name": "melding",
+          "description": "Geeft de opmaak voor een melding van een serverlid of rol",
+          "options": {
+            "target": {
+              "name": "doel",
+              "description": "Het serverlid of rol om te melden"
+            }
+          }
+        },
+        "channel": {
+          "name": "kanaal",
+          "description": "Geeft de opmaak voor het noemen van een kanaal",
+          "options": {
+            "target": {
+              "name": "doel",
+              "description": "Het kanaal om te noemen"
+            }
+          }
+        },
+        "emoji": {
+          "description": "Geeft de opmaak om een server emoji te gebruiken",
+          "options": {
+            "target": {
+              "name": "doel",
+              "description": "De emoji"
+            }
+          }
+        }
+      }
+    },
+    "invite": {
+      "name": "toevoegen",
+      "description": "Link om mij toe te voegen aan een andere server"
+    },
+    "webhook": {
+      "description": "Webhooks beheren",
+      "options": {
+        "create": {
+          "name": "creëer",
+          "description": "Creëer een webhook",
+          "options": {
+            "name": {
+              "name": "naam",
+              "description": "De webhook's naam"
+            },
+            "avatar": {
+              "description": "De webhook's avatar"
+            },
+            "channel": {
+              "name": "kanaal",
+              "description": "Het kanaal om de webhook in te maken"
+            },
+            "show-url": {
+              "name": "toon-url",
+              "description": "Gebruik dit alleen als je de URL nodig hebt voor een externe applicatie"
+            }
+          }
+        },
+        "delete": {
+          "name": "verwijder",
+          "description": "Verwijder een webhook"
+        },
+        "info": {
+          "description": "Verkrijg informatie over een webhook",
+          "options": {
+            "show-url": {
+              "name": "toon-url",
+              "description": "Of je de \"Verkrijg URL\" stap over wilt slaan. Dit maakt het bericht verborgen"
+            }
+          }
+        }
+      }
+    },
+    "help": {
+      "description": "Krijg hulp met verschillende onderwerpen",
+      "options": {
+        "tag": {
+          "name": "onderwerp",
+          "description": "Het onderwerp waar je hulp bij kunt krijgen"
+        }
+      }
+    },
+    "reaction-role": {
+      "name": "reactie-rol",
+      "options": {
+        "create": {
+          "name": "creëer",
+          "description": "Creëer een nieuwe reactie rol",
+          "options": {
+            "message": {
+              "name": "bericht",
+              "description": "Het bericht om een reactie rol op te maken, een berichtenlink wordt hier geaccepteerd"
+            },
+            "emoji": {
+              "description": "De emoji die de reactie moet laten zien. Voor externe emoji: reageer voor get gebruik van de bot"
+            },
+            "role": {
+              "name": "rol",
+              "description": "De rol die moet worden toegewezen of verwijderd wanneer de reactie gebruikt wordt"
+            },
+            "channel": {
+              "name": "kanaal",
+              "description": "Het kanaal waar het bericht is, voor het automatisch aanvullen van resultaten"
+            }
+          }
+        },
+        "delete": {
+          "description": "Verwijder een reactie rol",
+          "options": {
+            "message": {
+              "name": "bericht",
+              "description": "Het bericht om een reactie rol van te verwijderen, een berichtenlink wordt hier geaccepteerd"
+            },
+            "emoji": {
+              "description": "De emoji dat de reactie rol laat zien. Laat dit weg voor een verwijdermenu"
+            },
+            "channel": {
+              "name": "kanaal",
+              "description": "Het kanaal waar het bericht is, voor het automatisch aanvullen van resultaten"
+            }
+          }
+        }
+      }
+    },
+    "_ctx": {
+      "components": {
+        "name": "Knoppen & Componenten"
+      },
+      "edit": {
+        "name": "Snelle Bewerking"
+      },
+      "restore": {
+        "name": "Herstel"
+      },
+      "webhook": {
+        "name": "Webhook Info"
+      },
+      "debug": {
+        "name": "Debug"
+      }
+    },
+    "triggers": {
+      "description": "Stel triggers in om te reageren op gebeurtenissen in je server",
+      "options": {
+        "add": {
+          "description": "Voeg een nieuwe trigger toe",
+          "options": {
+            "name": {
+              "description": "De naam van de trigger"
+            },
+            "event": {
+              "description": "De gebeurtenis die de trigger zou activeren",
+              "choices": {
+                "0": "Iemand wordt lid van de server",
+                "1": "Iemand verlaat de server"
+              }
+            }
+          }
+        },
+        "view": {
+          "description": "Bekijk en beheer een trigger",
+          "options": {
+            "name": {
+              "description": "De naam van de trigger"
+            }
+          }
+        }
+      }
+    },
+    "welcomer": {
+      "description": "Welkomstberichten zijn verhuisd naar /triggers!"
     }
+  }
 }

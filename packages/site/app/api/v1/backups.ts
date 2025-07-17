@@ -5,11 +5,11 @@ import { ZodQueryData } from "~/types/QueryData";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { zxParseJson, zxParseQuery } from "~/util/zod";
 import {
-  type QueryData,
   backups,
   generateId,
   getDb,
   makeSnowflake,
+  type QueryData,
 } from "../../store.server";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -99,7 +99,7 @@ export const findMessagesPreviewImageUrl = (
   return previewImageUrl;
 };
 
-type MessageFile = File & { messageIndex: number };
+// type MessageFile = File & { messageIndex: number };
 
 export const action = async ({ request, context }: ActionArgs) => {
   const contentLength = Number(request.headers.get("Content-Length"));

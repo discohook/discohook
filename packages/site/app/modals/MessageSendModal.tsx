@@ -13,7 +13,7 @@ import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
@@ -484,12 +484,12 @@ export const MessageSendModal = (
 
   // We don't want to execute this hook every time selectedWebhooks updates
   // (which is also every time this hook runs)
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ^
   useEffect(() => {
     setSelectedWebhooks(
       Object.keys(targets).reduce(
         (o, targetId) => ({
-          // biome-ignore lint/performance/noAccumulatingSpread:
+          // biome-ignore lint/performance/noAccumulatingSpread: I think this is fine
           ...o,
           // Set new targets to be enabled by default,
           // but don't affect manually updated ones

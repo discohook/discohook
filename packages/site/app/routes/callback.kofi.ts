@@ -77,7 +77,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     return json({ message: `Discord name was invalid (${discordNameRaw})` });
   }
 
-  const username = match[1];
+  // const username = match[1];
 
   return null;
 };

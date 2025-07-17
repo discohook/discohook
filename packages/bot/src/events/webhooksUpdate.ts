@@ -19,8 +19,8 @@ export const webhooksUpdateCallback: GatewayEventCallback = async (
     channelWebhooks = (await rest.get(
       Routes.channelWebhooks(event.channel_id),
     )) as APIWebhook[];
-  } catch (e) {
-    // if (isDiscordError(e)) {
+  } catch (_e) {
+    // if (isDiscordError(_e)) {
     //   console.error(e.rawError);
     // }
     return;

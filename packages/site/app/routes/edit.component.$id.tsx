@@ -23,22 +23,22 @@ import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
-import { Header } from "~/components/Header";
-import { Prose } from "~/components/Prose";
 import { submitComponent } from "~/components/editor/ComponentEditor";
 import {
   getComponentText,
   getComponentWidth,
   getRowWidth,
 } from "~/components/editor/TopLevelComponentEditor";
+import { Header } from "~/components/Header";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { Prose } from "~/components/Prose";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
@@ -51,24 +51,24 @@ import {
   verifyToken,
 } from "~/session.server";
 import {
-  type DraftComponent,
-  type Flow,
-  type StorableComponent,
   autoRollbackTx,
+  type DraftComponent,
   discordMessageComponents,
   eq,
+  type Flow,
   getDb,
   launchComponentDurableObject,
   makeSnowflake,
   messageLogEntries,
+  type StorableComponent,
   tokens,
 } from "~/store.server";
+import { ZodAPITopLevelComponentRaw } from "~/types/components-raw";
 import type {
   APIButtonComponentWithCustomId,
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
-import { ZodAPITopLevelComponentRaw } from "~/types/components-raw";
 import {
   type ResolutionKey,
   type ResolvableAPIChannel,
@@ -802,7 +802,6 @@ const IndividualActionRowComponentChild = ({
     down: (() => void) | null;
   };
 }) => {
-  const id = getComponentId(child)?.toString();
   const previewText = getComponentText(child);
   const isLiveComponent = isSameComponent({
     child,
@@ -926,7 +925,10 @@ const moveDown =
 const AddRowPromptButton = ({
   t,
   splice,
-}: { t: TFunction; splice: () => void }) => {
+}: {
+  t: TFunction;
+  splice: () => void;
+}) => {
   return (
     <button
       type="button"

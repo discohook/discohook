@@ -3,11 +3,11 @@ import {
   ButtonBuilder,
   ContainerBuilder,
   ModalBuilder,
+  messageLink,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
   TextInputBuilder,
-  messageLink,
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
 import {
@@ -28,13 +28,13 @@ import {
 import { sql } from "drizzle-orm";
 import { t } from "i18next";
 import {
-  type StorableButtonWithUrl,
-  type StorableComponent,
   autoRollbackTx,
   discordMessageComponents,
   getDb,
   launchComponentDurableObject,
   makeSnowflake,
+  type StorableButtonWithUrl,
+  type StorableComponent,
   upsertDiscordUser,
   webhooks,
 } from "store";
@@ -1103,7 +1103,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
           if (!["http:", "https:", "discord:"].includes(url.protocol)) {
             throw Error("Protocol must be `http`, `https`, or `discord`.");
           }
-        } catch (e) {
+        } catch {
           return ctx.reply({
             components: [textDisplay("Invalid URL")],
             ephemeral: true,

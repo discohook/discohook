@@ -1,8 +1,8 @@
 import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Switch } from "@base-ui-components/react/switch";
 import {
-  type APIAllowedMentions,
   AllowedMentionsTypes,
+  type APIAllowedMentions,
 } from "discord-api-types/v10";
 import type { TFunction } from "i18next";
 import { useEffect, useMemo, useRef } from "react";
@@ -10,10 +10,10 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { BigCheckbox, Checkbox } from "~/components/Checkbox";
-import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { codeStyle } from "~/components/preview/Markdown";
 import { switchStyles } from "~/components/switch";
+import { TextInput } from "~/components/TextInput";
 import { getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";

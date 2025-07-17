@@ -36,10 +36,10 @@ import {
   FlowActionSetVariableType,
   type FlowActionToggleRole,
   FlowActionType,
-  type TriggerKVGuild,
   getDb,
   makeSnowflake,
   messageLogEntries,
+  type TriggerKVGuild,
   webhooks,
 } from "store";
 import z from "zod";
@@ -248,7 +248,12 @@ export const executeFlow = async (
     };
   }
 
-  if (recursion === 0 && deferred) {
+  if (
+    recursion === 0 &&
+    deferred &&
+    env.BOUNCER_ORIGIN &&
+    env.BOUNCER_JWT_KEY
+  ) {
     const processWait = (action: FlowAction): number => {
       switch (action.type) {
         case FlowActionType.Wait:

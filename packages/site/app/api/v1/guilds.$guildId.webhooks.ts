@@ -10,7 +10,7 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { type DBWithSchema, autoRollbackTx, getDb, webhooks } from "store";
+import { autoRollbackTx, type DBWithSchema, getDb, webhooks } from "store";
 import { zx } from "zodix";
 import { getBucket } from "~/durable/rate-limits";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
@@ -205,7 +205,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     channels = (await rest.get(
       Routes.guildChannels(String(guildId)),
     )) as APIChannel[];
-  } catch (e) {
+  } catch {
     channels = [];
   }
 

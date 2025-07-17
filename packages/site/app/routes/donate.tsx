@@ -152,7 +152,7 @@ const features: Record<string, SimpleTextModalProps> = {
 export default function DonatePage() {
   const { user, wallets } = useLoaderData<typeof loader>();
   const [cryptoOpen, setCryptoOpen] = useState(false);
-  const [cryptoInfo, setCryptoInfo] = useState<{
+  const [cryptoInfo, _setCryptoInfo] = useState<{
     type: string;
     donationKey: string;
   }>();

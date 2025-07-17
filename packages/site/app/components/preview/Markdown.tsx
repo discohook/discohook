@@ -21,7 +21,6 @@ import {
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
 import { CoolIcon } from "../icons/CoolIcon";
-import { Twemoji } from "../icons/Twemoji";
 import {
   BrowseChannelIcon,
   ForumChannelIcon,
@@ -32,6 +31,7 @@ import {
   ThreadChannelIcon,
   VoiceChannelIcon,
 } from "../icons/channel";
+import { Twemoji } from "../icons/Twemoji";
 
 type Renderable = string | JSX.Element;
 type ResolutionRequests = Record<string, keyof Resolutions>;
@@ -991,7 +991,7 @@ const memberMentionRule = defineRule({
       member: `member:@global-${capture.id}`,
     };
   },
-  render(capture, _, data, t) {
+  render(_capture, _render, data, t) {
     if (data.member === undefined) {
       <span className={actionableMentionStyle}>@member</span>;
     }
@@ -1028,7 +1028,7 @@ const roleMentionRule = defineRule({
       role: `role:${capture.id}`,
     };
   },
-  render(capture, _, data, t) {
+  render(_capture, _render, data, t) {
     if (data.role === undefined) {
       return <span className={mentionStyle}>@role</span>;
     } else if (!data.role) {

@@ -7,8 +7,8 @@ import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, TextButton } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
-import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { TextInput } from "~/components/TextInput";
 import { loadMessageComponents } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
@@ -64,7 +64,7 @@ export const MessageSetModal = (
     }
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only run when message changes
   useEffect(() => {
     if (message) {
       if (message.data.webhook_id) {

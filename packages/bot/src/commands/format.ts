@@ -88,13 +88,11 @@ export const parseEmojiOption = async (
   const safeQuery = query.replace(/[\W-+]*/g, "");
 
   const match = FormattingPatterns.Emoji.exec(query);
-  if (match) {
-    // biome-ignore lint/style/noNonNullAssertion:
-    const groups = match.groups!;
+  if (match?.groups) {
     return {
-      id: groups.id,
-      name: groups.name,
-      animated: Boolean(groups.animated),
+      id: match.groups.id,
+      name: match.groups.name,
+      animated: Boolean(match.groups.animated),
     } as APIPartialEmoji;
   }
 

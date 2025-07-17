@@ -2,9 +2,9 @@ import { Select } from "@base-ui-components/react/select";
 import type { TFunction } from "i18next";
 import { twJoin } from "tailwind-merge";
 import type { ResolvableAPIChannel } from "~/util/cache/CacheManager";
-import { SelectValueTrigger, selectStyles } from "./StringSelect";
 import { CoolIcon } from "./icons/CoolIcon";
 import { channelIcons } from "./preview/Markdown";
+import { SelectValueTrigger, selectStyles } from "./StringSelect";
 
 export const ChannelSelect = (props: {
   t: TFunction;

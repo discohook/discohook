@@ -77,9 +77,10 @@ class Scraper {
   //   await transformed.arrayBuffer();
   // }
 
-  async getText(opts?: { spaced?: boolean; last?: boolean }): Promise<
-    string | undefined
-  > {
+  async getText(opts?: {
+    spaced?: boolean;
+    last?: boolean;
+  }): Promise<string | undefined> {
     const { spaced, last } = opts ?? {};
 
     const matches: Record<string, (string | true)[]> = {};
@@ -93,7 +94,7 @@ class Scraper {
       let nextText = "";
 
       this.rewriter.on(selector, {
-        element(element) {
+        element(_element) {
           matches[selector].push(true);
           nextText = "";
         },

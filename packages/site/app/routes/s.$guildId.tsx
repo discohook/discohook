@@ -1,9 +1,9 @@
 import { REST } from "@discordjs/rest";
 import {
-  type MetaFunction,
-  type SerializeFrom,
   json,
+  type MetaFunction,
   redirect,
+  type SerializeFrom,
 } from "@remix-run/cloudflare";
 import {
   Link,
@@ -30,16 +30,16 @@ import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
-import { Header } from "~/components/Header";
-import { Prose } from "~/components/Prose";
 import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
+import { Header } from "~/components/Header";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
-import { Twemoji } from "~/components/icons/Twemoji";
 import { PostChannelIcon } from "~/components/icons/channel";
+import { Twemoji } from "~/components/icons/Twemoji";
+import { Prose } from "~/components/Prose";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
 import { Markdown } from "~/components/preview/Markdown";
 import { TabHeader, TabsWindow } from "~/components/tabs";
@@ -298,15 +298,16 @@ export default () => {
     componentsFetcher.state,
   ]);
 
-  // Whenever openTriggerId is set but there is no openTrigger (it was just created), refresh list
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // Whenever openTriggerId is set but there is no openTrigger (it was just
+  // created), refresh list
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ^
   useEffect(() => {
     if (openTriggerId && !openTrigger && triggersFetcher.state === "idle") {
       triggersFetcher.load(apiUrl(BRoutes.guildTriggers(guild.id)));
     }
   }, [openTriggerId]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: don't run excessively
   useEffect(() => {
     if (
       openWebhookId &&

@@ -1,11 +1,11 @@
-import { type SerializeFrom, json } from "@remix-run/cloudflare";
+import { json, type SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zx } from "zodix";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -17,12 +17,12 @@ import { BackupImportModal } from "~/modals/BackupImportModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import {
-  type QueryDataVersion,
   count,
   backups as dBackups,
   eq,
   getDb,
   inArray,
+  type QueryDataVersion,
   scheduled_posts,
 } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
@@ -155,7 +155,7 @@ export default () => {
   const submit = useSubmit();
 
   const [settings, updateSettings] = useLocalStorage();
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run once
   useEffect(() => {
     if (importedSettings) {
       updateSettings({

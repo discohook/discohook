@@ -19,7 +19,7 @@ export const PreviewSection: React.FC<{
         <div className="flex flex-col gap-y-1">
           {component.components.map((child, i) =>
             child.type === ComponentType.TextDisplay ? (
-              <PreviewTextDisplay component={child} cache={cache} />
+              <PreviewTextDisplay key={i} component={child} cache={cache} />
             ) : (
               <></>
             ),

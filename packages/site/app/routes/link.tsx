@@ -9,16 +9,16 @@ import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { SafeParseReturnType, z } from "zod";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { Header } from "~/components/Header";
 import { InfoBox } from "~/components/InfoBox";
-import { TextInput } from "~/components/TextInput";
-import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { TextInput } from "~/components/TextInput";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
@@ -205,7 +205,7 @@ export default () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to run this when `data` changes
   useEffect(() => setUpdateCount(updateCount + 1), [data]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only update when I want
   useEffect(() => {
     if (updateCount % 20 === 0) {
       const lastHistoryItem = localHistory.slice(-1)[0];

@@ -21,9 +21,9 @@ import { SectionEditor } from "./SectionEditor";
 import { SeparatorEditor } from "./SeparatorEditor";
 import { TextDisplayEditor } from "./TextDisplayEditor";
 import {
+  getComponentErrors,
   type TopLevelComponentEditorContainerProps,
   TopLevelComponentEditorContainerSummary,
-  getComponentErrors,
 } from "./TopLevelComponentEditor";
 
 export const AutoTopLevelComponentEditor = (
@@ -88,6 +88,7 @@ export const AutoTopLevelComponentEditor = (
         />
       );
     default:
+      // always return an Element for type consistency
       return <></>;
   }
 };

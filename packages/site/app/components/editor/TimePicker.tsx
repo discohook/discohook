@@ -4,10 +4,10 @@ import { Trans } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { getRelativeDateFormat } from "~/util/markdown/dates";
-import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import DatePicker from "../pickers/DatePicker";
 import { timestampFormats } from "../preview/Markdown";
+import { TextInput } from "../TextInput";
 
 // I'm sure this is exported by discord-api-types somewhere but I couldn't find it
 export type TimestampStyle = "t" | "T" | "d" | "D" | "f" | "F" | "R";
@@ -15,15 +15,12 @@ export type TimestampStyle = "t" | "T" | "d" | "D" | "f" | "F" | "R";
 export const TimePicker: React.FC<{
   id: string;
   onTimeClick: (
-    timestamp: {
-      date: Moment;
-      style: TimestampStyle | undefined;
-    },
+    timestamp: { date: Moment; style: TimestampStyle | undefined },
     // event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => void;
   className?: string;
   cache?: CacheManager;
-}> = ({ id, cache, className, onTimeClick }) => {
+}> = ({ className, onTimeClick }) => {
   const [date, setDate] = useState(moment());
   return (
     <div

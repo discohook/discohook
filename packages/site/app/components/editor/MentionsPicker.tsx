@@ -8,8 +8,8 @@ import type {
   ResolvableAPIRole,
 } from "~/util/cache/CacheManager";
 import { CoolIcon } from "../icons/CoolIcon";
-import { Svg } from "../icons/Svg";
 import { TextChannelIcon } from "../icons/channel";
+import { Svg } from "../icons/Svg";
 import { channelIcons } from "../preview/Markdown";
 
 export const CategoryIconButton: React.FC<{
@@ -171,6 +171,7 @@ export const MentionsPicker: React.FC<{
                     }
                     return (
                       <button
+                        key="0"
                         type="button"
                         onClick={(event) => {
                           if (!mentionId) return;

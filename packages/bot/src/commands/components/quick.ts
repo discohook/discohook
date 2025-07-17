@@ -23,20 +23,20 @@ import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { eq } from "drizzle-orm";
 import { t } from "i18next";
 import {
-  type FlowAction,
-  FlowActionCheckFunctionType,
-  FlowActionSetVariableType,
-  FlowActionType,
-  type StorableButtonWithCustomId,
   autoRollbackTx,
   backups,
   discordMessageComponents,
   discordMessageComponentsToFlows,
+  type FlowAction,
+  FlowActionCheckFunctionType,
+  FlowActionSetVariableType,
+  FlowActionType,
   flowActions,
   flows,
   generateId,
   getDb,
   makeSnowflake,
+  type StorableButtonWithCustomId,
 } from "store";
 import type { ModalCallback, SelectMenuCallback } from "../../components.js";
 import { getShareLink, getShareLinkExists } from "../../durable/share-links.js";
@@ -119,10 +119,7 @@ export const quickButtonConfigs: QuickButtonConfig[] = [
     id: "send-message",
     name: "Send Message",
     emoji: { name: "✉️" },
-    build(props: {
-      backupId: string;
-      flags: MessageFlagsBitField;
-    }) {
+    build(props: { backupId: string; flags: MessageFlagsBitField }) {
       return [
         {
           type: FlowActionType.SendMessage,
@@ -578,7 +575,7 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
       );
 
       const response = await addComponentSetStylePrompt(ctx);
-      // biome-ignore lint/style/noNonNullAssertion:
+      // biome-ignore lint/style/noNonNullAssertion: returns an updateMessage()
       await ctx.followup.editOriginalMessage(response.data!);
     },
   ];
@@ -741,7 +738,7 @@ export const addComponentQuickSendMessageVisibilityCallback: SelectMenuCallback 
         state.step += 1;
 
         const response = await addComponentSetStylePrompt(ctx);
-        // biome-ignore lint/style/noNonNullAssertion:
+        // biome-ignore lint/style/noNonNullAssertion: returns an updateMessage()
         await ctx.followup.editOriginalMessage(response.data!);
       },
     ];

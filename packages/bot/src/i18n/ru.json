@@ -1,9 +1,9 @@
 {
-    "commands": {
-        "_options": {
-            "webhook": {
-                "name": "вебхук"
-            }
-        }
+  "commands": {
+    "_options": {
+      "webhook": {
+        "name": "вебхук"
+      }
     }
+  }
 }

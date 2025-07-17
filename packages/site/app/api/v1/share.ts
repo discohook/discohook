@@ -4,8 +4,8 @@ import { getBucket } from "~/durable/rate-limits";
 import { getShareLinkExists, putShareLink } from "~/durable/share-links";
 import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
-import { ZodQueryData } from "~/types/QueryData";
 import type { Env } from "~/types/env";
+import { ZodQueryData } from "~/types/QueryData";
 import type { ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { zxParseJson } from "~/util/zod";
@@ -64,9 +64,8 @@ export const action = async ({ request, context }: ActionArgs) => {
   const userId = await getUserId(request, context);
   const expires = new Date(new Date().getTime() + ttl * 1000);
   const origin = origin_ ?? new URL(request.url).origin;
-  // biome-ignore lint/performance/noDelete: We don't want to store this property at all
-  delete data.backup_id;
 
+  delete data.backup_id;
   const shareId = await generateUniqueShortenKey(context.env, 8);
   await putShareLink(context.env, shareId, data, expires, origin_);
 

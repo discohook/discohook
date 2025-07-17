@@ -215,7 +215,7 @@ export class RedisKV<Key extends string = string> {
   }
 
   async list<Metadata = unknown>(
-    options?: KVNamespaceListOptions,
+    _options?: KVNamespaceListOptions,
   ): Promise<KVNamespaceListResult<Metadata, Key>> {
     // We don't use this anyway
     return { keys: [], cacheStatus: null, list_complete: true };

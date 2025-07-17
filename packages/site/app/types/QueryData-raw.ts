@@ -1,12 +1,12 @@
 import {
+  type APIAttachment as _APIAttachment,
+  type APIEmbed as _APIEmbed,
+  AllowedMentionsTypes,
   type APIAllowedMentions,
   type APIEmbedField,
   type APIMessageTopLevelComponent,
-  AllowedMentionsTypes,
   type MessageFlags,
   type UserFlags,
-  type APIAttachment as _APIAttachment,
-  type APIEmbed as _APIEmbed,
 } from "discord-api-types/v10";
 import { z } from "zod";
 import { ZodAPITopLevelComponentRaw } from "./components-raw";

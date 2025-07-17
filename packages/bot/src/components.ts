@@ -56,9 +56,9 @@ import {
 import { deleteReactionRoleButtonCallback } from "./commands/reactionRoles.js";
 import { selectRestoreOptionsCallback } from "./commands/restore.js";
 import {
-  triggerTestButtonCallback,
   triggersDeleteCancel,
   triggersDeleteConfirm,
+  triggerTestButtonCallback,
 } from "./commands/triggers.js";
 import {
   webhookDeleteCancel,

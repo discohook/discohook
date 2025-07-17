@@ -8,7 +8,7 @@ import type {
   APIUser,
 } from "discord-api-types/v10";
 import { useReducer } from "react";
-import { type ApiRoute, BRoutes, apiUrl } from "~/api/routing";
+import { type ApiRoute, apiUrl, BRoutes } from "~/api/routing";
 import type { loader as ApiGetGuildCacheable } from "~/api/v1/guilds.$guildId.cacheable";
 
 export type Resolutions = {
@@ -304,23 +304,26 @@ export class CacheManager {
     this.setState(Object.fromEntries(entries) as Resolutions);
   }
 
-  resolve(request: { scope: "channel"; key: string }):
-    | ResolvableAPIChannel
-    | null
-    | undefined;
-  resolve(request: { scope: "member"; key: string }):
-    | ResolvableAPIGuildMember
-    | null
-    | undefined;
-  resolve(request: { scope: "role"; key: string }):
-    | ResolvableAPIRole
-    | null
-    | undefined;
-  resolve(request: { scope: "emoji"; key: string }):
-    | ResolvableAPIEmoji
-    | null
-    | undefined;
-  resolve(request: { scope: ResolutionScope; key: string }):
+  resolve(request: {
+    scope: "channel";
+    key: string;
+  }): ResolvableAPIChannel | null | undefined;
+  resolve(request: {
+    scope: "member";
+    key: string;
+  }): ResolvableAPIGuildMember | null | undefined;
+  resolve(request: {
+    scope: "role";
+    key: string;
+  }): ResolvableAPIRole | null | undefined;
+  resolve(request: {
+    scope: "emoji";
+    key: string;
+  }): ResolvableAPIEmoji | null | undefined;
+  resolve(request: {
+    scope: ResolutionScope;
+    key: string;
+  }):
     | ResolvableAPIChannel
     | ResolvableAPIGuildMember
     | ResolvableAPIRole

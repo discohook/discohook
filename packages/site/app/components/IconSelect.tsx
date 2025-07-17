@@ -2,12 +2,12 @@
 
 import { type ReactNode, useState } from "react";
 import { twMerge } from "tailwind-merge";
+import { CoolIcon, type CoolIconsGlyph } from "./icons/CoolIcon";
 import {
   StringSelect,
   type StringSelectProps,
   selectClassNames,
 } from "./StringSelect";
-import { CoolIcon, type CoolIconsGlyph } from "./icons/CoolIcon";
 
 export const IconSelect: React.FC<
   React.PropsWithChildren<StringSelectProps & { icon: CoolIconsGlyph }>

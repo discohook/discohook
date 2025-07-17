@@ -6,7 +6,6 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
-import { getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
@@ -26,8 +25,7 @@ export const TextDisplayEditor: React.FC<{
   open?: boolean;
 }> = ({ message, component, parent, index: i, data, setData, cache, open }) => {
   const { t } = useTranslation();
-  const mid = getQdMessageId(message);
-  const [error, setError] = useError(t);
+  const [error] = useError(t);
 
   return (
     <TopLevelComponentEditorContainer

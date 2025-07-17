@@ -12,7 +12,7 @@ import {
   type ChannelType,
   Routes,
 } from "discord-api-types/v10";
-import { type Snowflake, getDate } from "discord-snowflake";
+import { getDate, type Snowflake } from "discord-snowflake";
 import type {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
@@ -57,7 +57,7 @@ export const resolveMessageLink = async (
     message = (await rest.get(
       Routes.channelMessage(match[2], match[3]),
     )) as APIMessage;
-  } catch (e) {
+  } catch {
     return "Unable to resolve that message. Make sure you are pasting a valid message link in a channel that I can access.";
   }
 
@@ -179,7 +179,7 @@ export const autocompleteMessageCallback = async (
     .map((message) => {
       return {
         name: message.label.slice(0, 100),
-        // biome-ignore lint/style/noNonNullAssertion:
+        // biome-ignore lint/style/noNonNullAssertion: we are in a guild
         value: messageLink(channelId, message.id, ctx.interaction.guild_id!),
       };
     });

@@ -3,25 +3,25 @@ import {
   type CronFields,
   type DayOfTheMonthRange,
   type DayOfTheWeekRange,
+  fieldsToExpression,
   type HourRange,
   type MonthRange,
-  type SixtyRange,
-  fieldsToExpression,
   parseExpression,
+  type SixtyRange,
 } from "cron-parser";
 import type { TFunction } from "i18next";
 import moment, { type Moment } from "moment";
 import { useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { BRoutes, apiUrl } from "~/api/routing";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
-import { StringSelect } from "~/components/StringSelect";
-import { TextInput } from "~/components/TextInput";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import DatePicker, { generateDateRange } from "~/components/pickers/DatePicker";
+import { StringSelect } from "~/components/StringSelect";
+import { TextInput } from "~/components/TextInput";
 import type { LoadedBackup } from "~/routes/me.backups";
 import { useSafeFetcher } from "~/util/loader";
 import {
@@ -43,7 +43,11 @@ const Inner = ({
   t,
   backup,
   onSave,
-}: { t: TFunction; backup: LoadedBackup; onSave?: () => void }) => {
+}: {
+  t: TFunction;
+  backup: LoadedBackup;
+  onSave?: () => void;
+}) => {
   const [error, setError] = useError(t);
   const fetcher = useSafeFetcher<typeof ApiBackupsIdAction>({
     onError: (e) => setError({ message: e.message }),

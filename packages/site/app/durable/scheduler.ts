@@ -4,12 +4,12 @@ import { RESTJSONErrorCodes } from "discord-api-types/v10";
 import { z } from "zod";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
-  type ScheduledRunData,
-  ScheduledRunStatus,
   backups,
   eq,
   getDb,
   makeSnowflake,
+  type ScheduledRunData,
+  ScheduledRunStatus,
 } from "~/store.server";
 import type { Env } from "~/types/env";
 import { WEBHOOK_URL_RE } from "~/util/constants";
@@ -62,7 +62,7 @@ export class DurableScheduler implements DurableObject {
     const rest = new REST().setToken(this.env.DISCORD_BOT_TOKEN);
     let status: ScheduledRunStatus | undefined;
     let statusMessage = "";
-    let messageIndex = -1;
+    // let messageIndex = -1;
 
     const targets = (backup.data.targets ?? [])
       .map(({ url }) => {
@@ -79,7 +79,7 @@ export class DurableScheduler implements DurableObject {
 
     // In the future I want to implement templating for (scheduled) backups
     for (const message of backup.data.messages) {
-      messageIndex += 1;
+      // messageIndex += 1;
       for (const target of targets) {
         try {
           const result = await submitMessage(

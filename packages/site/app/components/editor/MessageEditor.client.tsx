@@ -29,8 +29,8 @@ import type {
 import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
 import { isComponentsV2, onlyActionRows } from "~/util/discord";
 import {
-  MAX_FILES_PER_MESSAGE,
   fileInputChangeHandler,
+  MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
 import { getMessageText } from "~/util/message";
@@ -39,12 +39,12 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { InfoBox } from "../InfoBox";
-import { SelectValueTrigger, selectStyles } from "../StringSelect";
-import { TextArea } from "../TextArea";
-import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
+import { SelectValueTrigger, selectStyles } from "../StringSelect";
+import { TextArea } from "../TextArea";
+import { TextInput } from "../TextInput";
 import { ActionRowEditor } from "./ComponentEditor";
 import { AutoTopLevelComponentEditor } from "./ContainerEditor";
 import {
@@ -58,7 +58,10 @@ import { PasteFileButton } from "./PasteFileButton";
 const FilePreview = ({
   file,
   className,
-}: { file: DraftFile; className?: string }) => {
+}: {
+  file: DraftFile;
+  className?: string;
+}) => {
   const style = twJoin("rounded-xl", className);
   if (file.file.type.startsWith("image/") && file.url) {
     return <img src={file.url} className={style} alt="" />;
@@ -891,12 +894,12 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
 };
 
 // Blank message with cv2 flag: http://localhost:8788/?data=eyJ2ZXJzaW9uIjoiZDIiLCJtZXNzYWdlcyI6W3siX2lkIjoiOWZNd0QxYzVLZCIsImRhdGEiOnsiY29tcG9uZW50cyI6W10sImZsYWdzIjozMjc2OH19XX0
-/** Components V2-based editor. Ensure you have pr-1190 installed */
+/** Components V2-based editor */
 const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   index: i,
   data,
   files,
-  discordApplicationId,
+  // discordApplicationId,
   setData,
   setFiles,
   setSettingMessageIndex,
@@ -913,7 +916,6 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   setEditingFile,
 }) => {
   const message = data.messages[i];
-  const id = getQdMessageId(message);
   const components = message.data.components ?? [];
 
   const allComponentsCount =
@@ -928,13 +930,13 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   const previewText = getMessageText(message.data);
   const flags = new MessageFlagsBitField(message.data.flags ?? 0);
 
-  const authorTypes = webhooks
-    ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
-    : [];
-  const possiblyActionable = authorTypes.includes(AuthorType.ActionableWebhook);
-  const possiblyApplication = authorTypes.includes(
-    AuthorType.ApplicationWebhook,
-  );
+  // const authorTypes = webhooks
+  //   ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
+  //   : [];
+  // const possiblyActionable = authorTypes.includes(AuthorType.ActionableWebhook);
+  // const possiblyApplication = authorTypes.includes(
+  //   AuthorType.ApplicationWebhook,
+  // );
   const channels =
     webhooks && cache
       ? webhooks

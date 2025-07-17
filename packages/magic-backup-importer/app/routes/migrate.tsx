@@ -30,6 +30,7 @@ export interface Context {
 }
 
 // Just for debug, call this manually to store a backup
+// biome-ignore lint/correctness/noUnusedVariables: ^
 const saveBackup = async (manager: DatabaseManager) => {
   await manager.database.clear("backup");
   await manager.database

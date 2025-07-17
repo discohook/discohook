@@ -1,181 +1,181 @@
 {
-    "commands": {
-        "buttons": {
-            "description": "Aggiungi, rimuovi, e gestisci i componenti (bottoni/tendine)",
-            "options": {
-                "migrate": {
-                    "description": "Migra tutti i bottoni legacy",
-                    "options": {
-                        "message": {
-                            "name": "messaggio",
-                            "description": "Migra tutti i componenti di questo messaggio. Anche un link di un messaggio è accettabile qui"
-                        },
-                        "channel": {
-                            "name": "canale",
-                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
-                        }
-                    },
-                    "name": "migra"
-                },
-                "add": {
-                    "name": "aggiungi",
-                    "description": "Aggiungi un componente",
-                    "options": {
-                        "channel": {
-                            "name": "canale",
-                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
-                        },
-                        "message": {
-                            "description": "Aggiungi un componente a questo messaggio. Anche un link di un messaggio è accettabile qui",
-                            "name": "messaggio"
-                        }
-                    }
-                },
-                "edit": {
-                    "name": "modifica",
-                    "options": {
-                        "message": {
-                            "name": "messaggio",
-                            "description": "Modifica un componente di questo messaggio. Anche un link di un messaggio è accettabile qui"
-                        },
-                        "channel": {
-                            "name": "canale",
-                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
-                        }
-                    },
-                    "description": "Modifica un componente"
-                },
-                "delete": {
-                    "name": "elimina",
-                    "options": {
-                        "message": {
-                            "name": "messaggio",
-                            "description": "Elimina un componente in questo messaggio. Anche un link di un messaggio è accettabile qui"
-                        },
-                        "channel": {
-                            "name": "canale",
-                            "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
-                        }
-                    },
-                    "description": "Elimina un componente"
-                }
+  "commands": {
+    "buttons": {
+      "description": "Aggiungi, rimuovi, e gestisci i componenti (bottoni/tendine)",
+      "options": {
+        "migrate": {
+          "description": "Migra tutti i bottoni legacy",
+          "options": {
+            "message": {
+              "name": "messaggio",
+              "description": "Migra tutti i componenti di questo messaggio. Anche un link di un messaggio è accettabile qui"
             },
-            "name": "bottoni"
+            "channel": {
+              "name": "canale",
+              "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+            }
+          },
+          "name": "migra"
         },
-        "_options": {
+        "add": {
+          "name": "aggiungi",
+          "description": "Aggiungi un componente",
+          "options": {
+            "channel": {
+              "name": "canale",
+              "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+            },
+            "message": {
+              "description": "Aggiungi un componente a questo messaggio. Anche un link di un messaggio è accettabile qui",
+              "name": "messaggio"
+            }
+          }
+        },
+        "edit": {
+          "name": "modifica",
+          "options": {
+            "message": {
+              "name": "messaggio",
+              "description": "Modifica un componente di questo messaggio. Anche un link di un messaggio è accettabile qui"
+            },
+            "channel": {
+              "name": "canale",
+              "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+            }
+          },
+          "description": "Modifica un componente"
+        },
+        "delete": {
+          "name": "elimina",
+          "options": {
+            "message": {
+              "name": "messaggio",
+              "description": "Elimina un componente in questo messaggio. Anche un link di un messaggio è accettabile qui"
+            },
+            "channel": {
+              "name": "canale",
+              "description": "Il canale nel quale si trova il messaggio, per i risultati di autocompletamento"
+            }
+          },
+          "description": "Elimina un componente"
+        }
+      },
+      "name": "bottoni"
+    },
+    "_options": {
+      "webhook": {
+        "name": "webhook",
+        "description": "Il webhook bersaglio"
+      },
+      "filter-channel": {
+        "name": "filtra-canale",
+        "description": "Il canale in cui filtrare i risultati dell'autocompletamento"
+      }
+    },
+    "deluxe": {
+      "name": "deluxe",
+      "description": "Sincronizza la tua iscrizione a Deluxe",
+      "options": {
+        "info": {
+          "name": "informazioni",
+          "description": "Informazioni su Discohook Deluxe, la nostra opzione di iscrizione premium"
+        },
+        "sync": {
+          "name": "sincronizzazione",
+          "description": "Assicurati che il sito di Discohook sia aggiornato con la tua iscrizione Deluxe"
+        }
+      }
+    },
+    "triggers": {
+      "description": "Imposta dei trigger per rispondere ad avvenimenti nel tuo server",
+      "options": {
+        "add": {
+          "name": "aggiungi",
+          "description": "Aggiungi un nuovo trigger",
+          "options": {
+            "name": {
+              "name": "nome",
+              "description": "Il nome del trigger"
+            },
+            "event": {
+              "name": "evento",
+              "description": "L'avvenimento che farà scattare il trigger",
+              "choices": {
+                "0": "Unione di un Utente",
+                "1": "Rimozione di un Utente"
+              }
+            }
+          }
+        },
+        "view": {
+          "description": "Visualizza e gestisci un trigger",
+          "options": {
+            "name": {
+              "name": "nome",
+              "description": "Il nome del trigger"
+            }
+          },
+          "name": "visualizza"
+        }
+      }
+    },
+    "webhook": {
+      "name": "webhook",
+      "description": "Gestisci i webhook",
+      "options": {
+        "create": {
+          "name": "crea",
+          "description": "Crea un webhook",
+          "options": {
+            "name": {
+              "name": "nome",
+              "description": "Il nome del webhook"
+            },
+            "avatar": {
+              "description": "L'immagine di profilo del webhook"
+            },
+            "channel": {
+              "name": "canale",
+              "description": "Il canale in cui verrà creato il webhook"
+            },
+            "show-url": {
+              "name": "mostra-url",
+              "description": "Attiva questa opzione solo se ti serve l'URL del webhook per un'applicazione esterna"
+            }
+          }
+        },
+        "delete": {
+          "name": "cancella",
+          "description": "Cancella un webhook",
+          "options": {
             "webhook": {
-                "name": "webhook",
-                "description": "Il webhook bersaglio"
+              "name": "webhook",
+              "description": "Il webhook da eliminare"
             },
             "filter-channel": {
-                "name": "filtra-canale",
-                "description": "Il canale in cui filtrare i risultati dell'autocompletamento"
+              "name": "filtra-canale",
+              "description": "Il canale in cui filtrare i risultati di autocompletamento"
             }
+          }
         },
-        "deluxe": {
-            "name": "deluxe",
-            "description": "Sincronizza la tua iscrizione a Deluxe",
-            "options": {
-                "info": {
-                    "name": "informazioni",
-                    "description": "Informazioni su Discohook Deluxe, la nostra opzione di iscrizione premium"
-                },
-                "sync": {
-                    "name": "sincronizzazione",
-                    "description": "Assicurati che il sito di Discohook sia aggiornato con la tua iscrizione Deluxe"
-                }
+        "info": {
+          "name": "informazioni",
+          "description": "Ottieni informazioni su un webhook",
+          "options": {
+            "webhook": {
+              "name": "webhook",
+              "description": "Il webhook del quale vuoi ottenere informazioni"
+            },
+            "filter-channel": {
+              "name": "filtra-canale",
+              "description": "Il canale in cui filtrare i risultati di autocompletamento"
+            },
+            "show-url": {
+              "name": "mostra-url"
             }
-        },
-        "triggers": {
-            "description": "Imposta dei trigger per rispondere ad avvenimenti nel tuo server",
-            "options": {
-                "add": {
-                    "name": "aggiungi",
-                    "description": "Aggiungi un nuovo trigger",
-                    "options": {
-                        "name": {
-                            "name": "nome",
-                            "description": "Il nome del trigger"
-                        },
-                        "event": {
-                            "name": "evento",
-                            "description": "L'avvenimento che farà scattare il trigger",
-                            "choices": {
-                                "0": "Unione di un Utente",
-                                "1": "Rimozione di un Utente"
-                            }
-                        }
-                    }
-                },
-                "view": {
-                    "description": "Visualizza e gestisci un trigger",
-                    "options": {
-                        "name": {
-                            "name": "nome",
-                            "description": "Il nome del trigger"
-                        }
-                    },
-                    "name": "visualizza"
-                }
-            }
-        },
-        "webhook": {
-            "name": "webhook",
-            "description": "Gestisci i webhook",
-            "options": {
-                "create": {
-                    "name": "crea",
-                    "description": "Crea un webhook",
-                    "options": {
-                        "name": {
-                            "name": "nome",
-                            "description": "Il nome del webhook"
-                        },
-                        "avatar": {
-                            "description": "L'immagine di profilo del webhook"
-                        },
-                        "channel": {
-                            "name": "canale",
-                            "description": "Il canale in cui verrà creato il webhook"
-                        },
-                        "show-url": {
-                            "name": "mostra-url",
-                            "description": "Attiva questa opzione solo se ti serve l'URL del webhook per un'applicazione esterna"
-                        }
-                    }
-                },
-                "delete": {
-                    "name": "cancella",
-                    "description": "Cancella un webhook",
-                    "options": {
-                        "webhook": {
-                            "name": "webhook",
-                            "description": "Il webhook da eliminare"
-                        },
-                        "filter-channel": {
-                            "name": "filtra-canale",
-                            "description": "Il canale in cui filtrare i risultati di autocompletamento"
-                        }
-                    }
-                },
-                "info": {
-                    "name": "informazioni",
-                    "description": "Ottieni informazioni su un webhook",
-                    "options": {
-                        "webhook": {
-                            "name": "webhook",
-                            "description": "Il webhook del quale vuoi ottenere informazioni"
-                        },
-                        "filter-channel": {
-                            "name": "filtra-canale",
-                            "description": "Il canale in cui filtrare i risultati di autocompletamento"
-                        },
-                        "show-url": {
-                            "name": "mostra-url"
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
     }
+  }
 }

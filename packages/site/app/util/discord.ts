@@ -1,10 +1,10 @@
 import {
   type BaseImageURLOptions,
-  type ImageExtension,
-  type REST,
-  type RawFile,
-  RequestMethod,
   calculateUserDefaultAvatarIndex,
+  type ImageExtension,
+  type RawFile,
+  type REST,
+  RequestMethod,
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
@@ -35,16 +35,16 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { type Snowflake, getDate, isSnowflake } from "discord-snowflake";
+import { getDate, isSnowflake, type Snowflake } from "discord-snowflake";
 import { z } from "zod";
 import type { TimestampStyle } from "~/components/editor/TimePicker";
 import type { DraftFile } from "~/routes/_index";
+import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import type {
   APIButtonComponentWithURL,
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
-import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "./constants";
 import { transformFileName } from "./files";
 import { sleep } from "./time";
@@ -95,7 +95,7 @@ export const discordRequest = async <T>(
     return response as T;
   }
 
-  let body = undefined;
+  let body;
   if (options?.files && options?.files.length !== 0) {
     // Browser must set this header on its own along with `boundary`
     headers.delete("Content-Type");

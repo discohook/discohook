@@ -1,6 +1,6 @@
 import type { Serve } from "bun";
 import { AutoRouter, type IRequest, json } from "itty-router";
-import { SignJWT, jwtVerify } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
 
 const USER_AGENT =

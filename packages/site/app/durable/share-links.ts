@@ -1,8 +1,8 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod";
 import { getRedis } from "~/store.server";
-import { type QueryData, ZodQueryData } from "~/types/QueryData";
 import type { Env } from "~/types/env";
+import { type QueryData, ZodQueryData } from "~/types/QueryData";
 import { zxParseJson, zxParseQuery } from "~/util/zod";
 
 export interface KVShortenedData {

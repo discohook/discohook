@@ -1,9 +1,8 @@
+import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
 import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
 import type { AppLoadContext } from "@remix-run/cloudflare";
 import { createRequestHandler, logDevReady } from "@remix-run/cloudflare";
 import * as build from "@remix-run/dev/server-build";
-// eslint-disable-next-line import/no-unresolved
-import __STATIC_CONTENT_MANIFEST from "__STATIC_CONTENT_MANIFEST";
 
 const MANIFEST = JSON.parse(__STATIC_CONTENT_MANIFEST);
 const handleRemixRequest = createRequestHandler(build, process.env.NODE_ENV);
@@ -39,7 +38,7 @@ export default {
           },
         },
       );
-    } catch (error) {
+    } catch {
       // No-op
     }
 

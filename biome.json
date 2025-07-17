@@ -1,19 +1,22 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": [
-      "node_modules/",
-      "build/",
-      "./packages/site/functions/",
-      "./packages/site/public/",
-      "./packages/site/app/util/highlights.json",
-      "./persistence/",
-      ".wrangler/"
+    "includes": [
+      "**",
+      "!node_modules/**/*",
+      "!build/**/*",
+      "!packages/site/functions/**/*",
+      "!packages/site/public/**/*",
+      "packages/site/public/i18n/en.json",
+      "!packages/bot/src/i18n/**/*",
+      "!packages/site/app/util/highlights.json",
+      "!persistence/**/*",
+      "!.wrangler/**/*",
+      "!packages/**/.wrangler/**/*",
+      "!packages/**/build/**/*"
     ]
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
@@ -23,25 +26,43 @@
         "useImportType": {
           "fix": "safe",
           "level": "info"
-        }
+        },
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error"
       },
       "suspicious": {
         "noExplicitAny": "off",
         "noArrayIndexKey": "off"
       },
       "complexity": {
-        "noBannedTypes": "off"
+        "noBannedTypes": "off",
+        "useDateNow": "off",
+        "noUselessFragments": "off"
       },
       "correctness": {
-        "useHookAtTopLevel": "error"
+        "useHookAtTopLevel": "error",
+        "useExhaustiveDependencies": "warn"
+      },
+      "a11y": {
+        "noLabelWithoutControl": "off"
       }
     }
   },
   "formatter": {
-    "ignore": [
-      "./packages/site/public/help/",
-      "./packages/site/app/i18n/",
-      "./packages/bot/src/i18n/"
+    "includes": [
+      "**",
+      "!packages/site/public/**/*",
+      "!packages/bot/src/i18n/**/*",
+      "!.wrangler/**/*",
+      "!packages/**/.wrangler/**/*",
+      "!packages/**/build/**/*"
     ],
     "indentStyle": "space"
   },

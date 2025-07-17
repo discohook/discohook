@@ -32,7 +32,7 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { type StorableComponent, generateId } from "store";
+import { generateId, type StorableComponent } from "store";
 import type { MinimumKVComponentState } from "../components.js";
 import type { Env } from "../types/env.js";
 import { MAX_TOTAL_COMPONENTS } from "./constants.js";

@@ -1,8 +1,8 @@
 import {
+  json,
   type MetaDescriptor,
   type MetaFunction,
   type SerializeFrom,
-  json,
 } from "@remix-run/cloudflare";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import matter from "front-matter";
@@ -18,7 +18,7 @@ import { zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { "*": path } = zxParseParams(params, {
-    "*": z.string().regex(/^[\w\/-]+$/),
+    "*": z.string().regex(/^[\w/-]+$/),
   });
 
   const fileResponse = await context.env.ASSETS.fetch(

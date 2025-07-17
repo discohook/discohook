@@ -2,15 +2,15 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ContainerBuilder,
+  escapeMarkdown,
+  formatEmoji,
   type MessageActionRowComponentBuilder,
   ModalBuilder,
+  messageLink,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
   TextInputBuilder,
-  escapeMarkdown,
-  formatEmoji,
-  messageLink,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
@@ -28,15 +28,15 @@ import {
 import { t } from "i18next";
 import { SignJWT } from "jose";
 import {
-  type StorableComponent,
   autoRollbackTx,
   discordMessageComponents,
   flows,
   generateId,
-  getDb,
   getchGuild,
+  getDb,
   launchComponentDurableObject,
   makeSnowflake,
+  type StorableComponent,
   upsertDiscordUser,
   upsertGuild,
 } from "store";
@@ -212,7 +212,7 @@ const registerComponent = async (
   }
   const requiredWidth = getComponentWidth(built);
 
-  let message: APIMessage | undefined = undefined;
+  let message: APIMessage | undefined;
   try {
     message = (await ctx.rest.get(
       Routes.webhookMessage(
@@ -459,7 +459,7 @@ export const startComponentFlow = async (
       const guild = await getchGuild(
         ctx.rest,
         ctx.env,
-        // biome-ignore lint/style/noNonNullAssertion:
+        // biome-ignore lint/style/noNonNullAssertion: we are in a guild
         ctx.interaction.guild_id!,
       );
       await upsertGuild(db, guild);

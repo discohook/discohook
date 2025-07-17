@@ -12,8 +12,8 @@ import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
 import { FileOrUrlInput } from "../FileOrUrlInput";
-import { TextInput } from "../TextInput";
 import { CoolIcon } from "../icons/CoolIcon";
+import { TextInput } from "../TextInput";
 import { EmbedEditorSection } from "./EmbedEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
@@ -37,12 +37,11 @@ export const MediaGalleryEditor: React.FC<{
   setData,
   files,
   setFiles,
-  cache,
   open,
 }) => {
   const { t } = useTranslation();
   const mid = getQdMessageId(message);
-  const [error, setError] = useError(t);
+  const [error] = useError(t);
 
   return (
     <TopLevelComponentEditorContainer

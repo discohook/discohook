@@ -1,6 +1,3 @@
-import { json } from "itty-router";
-import type { Env } from "../types/env.js";
-
 export type FeedType =
   | "rss"
   | "atom"
@@ -18,31 +15,31 @@ export type FeedType =
 // | "bridge.youtube-community"
 // | "bridge.twitch-videos"
 
-const rssBridge = "https://rss-bridge.org/bridge01/";
+// const rssBridge = "https://rss-bridge.org/bridge01/";
 
 /**
  * This durable object polls for changes in various feeds, including:
  * - RSS/Atom feeds
  * - Misc. JSON-formatted automatic feeds (https://github.com/RSS-Bridge/rss-bridge)
  */
-export class FeedReader implements DurableObject {
-  constructor(
-    private state: DurableObjectState,
-    private env: Env,
-  ) {}
+// export class FeedReader implements DurableObject {
+//   constructor(
+//     private state: DurableObjectState,
+//     private env: Env,
+//   ) {}
 
-  async fetch(request: Request) {
-    switch (request.method) {
-      default:
-        return json({ message: "Method Not Allowed" }, { status: 405 });
-    }
-  }
+//   async fetch(request: Request) {
+//     switch (request.method) {
+//       default:
+//         return json({ message: "Method Not Allowed" }, { status: 405 });
+//     }
+//   }
 
-  async alarm() {}
-}
+//   async alarm() {}
+// }
 
-const getFeedReaderStub = (env: Env) => {
-  // const id = env.READER.idFromName(sessionId);
-  // const stub = env.READER.get(id);
-  // return stub;
-};
+// const getFeedReaderStub = (env: Env) => {
+//   // const id = env.READER.idFromName(sessionId);
+//   // const stub = env.READER.get(id);
+//   // return stub;
+// };

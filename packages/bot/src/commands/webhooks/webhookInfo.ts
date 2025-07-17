@@ -2,9 +2,9 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   EmbedBuilder,
-  TimestampStyles,
   inlineCode,
   spoiler,
+  TimestampStyles,
   time,
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
@@ -19,7 +19,7 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
-import { type Snowflake, getDate } from "discord-snowflake";
+import { getDate, type Snowflake } from "discord-snowflake";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
 import type { ChatInputAppCommandCallback } from "../../commands.js";

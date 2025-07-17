@@ -1,5 +1,4 @@
 import {
-  type APIAttachment,
   type APIEmbed,
   type APIEmbedField,
   type APIInteractionResponse,
@@ -50,7 +49,7 @@ const submitWebhookMessageEdit = async (
       let updated: APIMessage;
       try {
         updated = (await ctx.rest.patch(
-          // biome-ignore lint/style/noNonNullAssertion:
+          // biome-ignore lint/style/noNonNullAssertion: this should have been verified previously
           Routes.webhookMessage(webhook.id, webhook.token!, message.id),
           {
             body,
@@ -221,50 +220,50 @@ const trimEmptyEmbedParts = (embed: APIEmbed) => {
 
 // If an embed with an `attachment://` image is updated without re-including
 // the attachment URI, the attachment will appear duplicated above the embeds.
-const maintainAttachmentReferences = (
-  channelId: string,
-  embed: APIEmbed,
-  attachments: APIAttachment[],
-) => {
-  const replaceAttachmentUrl = (
-    value: string | undefined,
-    callback: (newValue: string) => void,
-  ) => {
-    if (!value) return;
-    let url: URL;
-    try {
-      url = new URL(value);
-    } catch {
-      return;
-    }
+// const maintainAttachmentReferences = (
+//   channelId: string,
+//   embed: APIEmbed,
+//   attachments: APIAttachment[],
+// ) => {
+//   const replaceAttachmentUrl = (
+//     value: string | undefined,
+//     callback: (newValue: string) => void,
+//   ) => {
+//     if (!value) return;
+//     let url: URL;
+//     try {
+//       url = new URL(value);
+//     } catch {
+//       return;
+//     }
 
-    if (
-      url.host === "cdn.discordapp.com" &&
-      url.pathname.startsWith(`/attachments/${channelId}/`)
-    ) {
-      const attachmentId = url.pathname.split("/")[3];
-      const attachment = attachments.find((a) => a.id === attachmentId);
-      if (attachment) {
-        callback(`attachment://${attachment.filename}`);
-      }
-    }
-  };
+//     if (
+//       url.host === "cdn.discordapp.com" &&
+//       url.pathname.startsWith(`/attachments/${channelId}/`)
+//     ) {
+//       const attachmentId = url.pathname.split("/")[3];
+//       const attachment = attachments.find((a) => a.id === attachmentId);
+//       if (attachment) {
+//         callback(`attachment://${attachment.filename}`);
+//       }
+//     }
+//   };
 
-  replaceAttachmentUrl(embed.author?.icon_url, (url) => {
-    if (embed.author) embed.author.icon_url = url;
-  });
-  replaceAttachmentUrl(embed.footer?.icon_url, (url) => {
-    if (embed.footer) embed.footer.icon_url = url;
-  });
-  replaceAttachmentUrl(embed.image?.url, (url) => {
-    embed.image = { url };
-  });
-  replaceAttachmentUrl(embed.thumbnail?.url, (url) => {
-    embed.thumbnail = { url };
-  });
+//   replaceAttachmentUrl(embed.author?.icon_url, (url) => {
+//     if (embed.author) embed.author.icon_url = url;
+//   });
+//   replaceAttachmentUrl(embed.footer?.icon_url, (url) => {
+//     if (embed.footer) embed.footer.icon_url = url;
+//   });
+//   replaceAttachmentUrl(embed.image?.url, (url) => {
+//     embed.image = { url };
+//   });
+//   replaceAttachmentUrl(embed.thumbnail?.url, (url) => {
+//     embed.thumbnail = { url };
+//   });
 
-  return embed;
-};
+//   return embed;
+// };
 
 export const quickEditSubmitContent: ModalCallback = async (ctx) => {
   const { channelId, messageId } = parseAutoComponentId(
@@ -369,7 +368,7 @@ export const quickEditSubmitEmbed: ModalCallback = async (ctx) => {
       //   let uriUpdated: APIMessage | undefined;
       //   try {
       //     uriUpdated = (await ctx.rest.patch(
-      //       // biome-ignore lint/style/noNonNullAssertion:
+      //       // biome-ignore lint/style/noNonNullAssertion: this should have been verified previously
       //       Routes.webhookMessage(webhook.id, webhook.token!, updated.id),
       //       {
       //         body: { embeds: updated.embeds },
