@@ -26,7 +26,7 @@ import type {
   CacheManager,
   ResolvableAPIChannel,
 } from "~/util/cache/CacheManager";
-import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
+import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isComponentsV2, onlyActionRows } from "~/util/discord";
 import {
   fileInputChangeHandler,
@@ -38,11 +38,11 @@ import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
-import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
-import { SelectValueTrigger, selectStyles } from "../StringSelect";
+import { selectStyles, SelectValueTrigger } from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { ActionRowEditor } from "./ComponentEditor";
@@ -779,7 +779,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   value: "row",
                   disabled:
                     !!message.data.components &&
-                    message.data.components.length >= 5,
+                    message.data.components.length >= MAX_V1_ROWS,
                 },
                 // {
                 //   label: t("addPoll"),

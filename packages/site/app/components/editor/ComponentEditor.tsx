@@ -23,6 +23,7 @@ import type {
   QueryData,
 } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
+import { MAX_ACTION_ROW_WIDTH } from "~/util/constants";
 import { getZodErrorMessage } from "~/util/loader";
 import { ButtonSelect } from "../ButtonSelect";
 import { type SetErrorFunction, useError } from "../Error";
@@ -280,12 +281,12 @@ export const ActionRowEditor: React.FC<{
           {
             label: t("component.2"),
             value: ComponentType.Button,
-            disabled: getRowWidth(row) >= 5,
+            disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
           },
           {
             label: t("linkButton"),
             value: "linkButton",
-            disabled: getRowWidth(row) >= 5,
+            disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
           },
           {
             label: t("component.3"),
@@ -313,7 +314,7 @@ export const ActionRowEditor: React.FC<{
             disabled: getRowWidth(row) > 0,
           },
         ]}
-        disabled={getRowWidth(row) >= 5}
+        disabled={getRowWidth(row) >= MAX_ACTION_ROW_WIDTH}
         onValueChange={async (type) => {
           let submitData:
             | z.infer<typeof ZodAPIMessageActionRowComponent>
@@ -496,7 +497,10 @@ export const IndividualComponentEditor: React.FC<{
           <button
             type="button"
             className={
-              getRowWidth(row) >= 4 || actionsBar?.copy === null ? "hidden" : ""
+              getRowWidth(row) >= MAX_ACTION_ROW_WIDTH ||
+              actionsBar?.copy === null
+                ? "hidden"
+                : ""
             }
             disabled={anySubmitting}
             onClick={
