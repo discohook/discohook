@@ -1,5 +1,3 @@
-import fs from "node:fs/promises";
-import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
@@ -24,6 +22,8 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
+import fs from "node:fs/promises";
+import process from "node:process";
 import { TriggerEvent } from "store";
 
 /**
@@ -305,6 +305,24 @@ const main = async () => {
             ),
         ),
     ),
+    // addLocalizations(
+    //   new SlashCommandBuilder()
+    //     .setName("account")
+    //     .setDescription("...")
+    //     .setContexts(
+    //       InteractionContextType.Guild,
+    //       InteractionContextType.BotDM,
+    //       InteractionContextType.PrivateChannel,
+    //     )
+    //     .addSubcommand((c) =>
+    //       c
+    //         .setName("link")
+    //         .setDescription("...")
+    //         .addStringOption((o) =>
+    //           o.setName("code").setDescription("...").setRequired(true),
+    //         ),
+    //     ),
+    // ),
     addLocalizations(
       new SlashCommandBuilder()
         .setName("deluxe")
