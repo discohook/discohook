@@ -17,6 +17,7 @@ This monorepo comes in a few main parts:
 - [site](/packages/site) - The Discohook website
 - [bot](/packages/bot) - Handles Discord interactions & proxied gateway events
 - [bot-ws](/packages/bot-ws) - Proxies gateway events to `bot`
+- [bouncer](/packages/bouncer) - Enables extended flow execution time for `bot`
 - [magic-backup-importer](/packages/magic-backup-importer) - Hosted on a domain where users may have local backups stored (`site` redirects here and vice versa)
 - [link](/packages/link) - Hosted on a subdomain or shorter domain, used for redirecting to `/link/...`
 
