@@ -30,9 +30,10 @@ import type {
 } from "../commands.js";
 import type { ButtonCallback } from "../components.js";
 import { emojiToString, getEmojis } from "../emojis.js";
-import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import { gatewayEventNameToCallback } from "../events.js";
+import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import type { FlowResult } from "../flows/flows.js";
+import { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import { spaceEnum } from "../util/regex.js";
@@ -296,7 +297,11 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
   }
 
   let payload: any = {};
-  const func = gatewayEventNameToCallback[eventName];
+  const func = gatewayEventNameToCallback[eventName] as (
+    env: Env,
+    payload: any,
+    deferred?: boolean,
+  ) => Promise<FlowResult[] | undefined> | undefined;
   switch (event) {
     case TriggerEvent.MemberAdd: {
       payload = {
@@ -346,7 +351,7 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
         (async (): Promise<EventExecutionResult[]> => {
           try {
             const flowResults = <FlowResult[] | undefined>(
-              await func(ctx.env, payload)
+              await func(ctx.env, payload, true)
             );
             if (flowResults) {
               return flowResults.map((result) => ({

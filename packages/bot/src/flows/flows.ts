@@ -214,33 +214,46 @@ export const resumeFlowFromBouncer = async (
     : undefined;
 
   // console.log("running from bounce", payload.flow);
-  return await executeFlow(
+  return await executeFlow({
     env,
-    payload.flow,
+    flow: payload.flow,
     rest,
     db,
-    payload.liveVars,
-    payload.setVars,
+    liveVars: payload.liveVars,
+    setVars: payload.setVars,
     ctx,
-    payload.recursion,
-    payload.lastReturnValue,
-    payload.sentMessages,
-  );
+    recursion: payload.recursion,
+    lastReturnValue: payload.lastReturnValue,
+    sentMessages: payload.sentMessages,
+  });
 };
 
-export const executeFlow = async (
-  env: Env,
-  flow: Pick<Flow, "actions">,
-  rest: REST,
-  db: DBWithSchema,
-  liveVars: LiveVariables,
-  setVars?: SetVariables,
-  ctx?: InteractionContext<APIMessageComponentInteraction>,
-  recursion = 0,
-  lastReturnValue_?: any,
-  sentMessages_?: SentMessages,
-  deferred = false,
-): Promise<FlowResult> => {
+export const executeFlow = async (options: {
+  env: Env;
+  flow: Pick<Flow, "actions">;
+  rest: REST;
+  db: DBWithSchema;
+  liveVars: LiveVariables;
+  setVars?: SetVariables;
+  ctx?: InteractionContext<APIMessageComponentInteraction>;
+  recursion?: number;
+  lastReturnValue?: any;
+  sentMessages?: SentMessages;
+  deferred?: boolean;
+}): Promise<FlowResult> => {
+  const {
+    env,
+    flow,
+    rest,
+    db,
+    liveVars,
+    setVars,
+    ctx,
+    recursion = 0,
+    lastReturnValue: lastReturnValue_,
+    sentMessages: sentMessages_,
+    deferred = false,
+  } = options;
   if (recursion > 50) {
     return {
       status: "failure",
@@ -255,6 +268,7 @@ export const executeFlow = async (
       env.BOUNCER_ORIGIN &&
       env.BOUNCER_JWT_KEY
     ) {
+      // console.log("Calculating if bounce is required");
       const processWait = (action: FlowAction): number => {
         switch (action.type) {
           case FlowActionType.Wait:
@@ -283,10 +297,11 @@ export const executeFlow = async (
 
       // May need to lower or raise this
       if (cumulativeWait >= 30) {
+        // console.log("Bouncing to", env.BOUNCER_ORIGIN);
         await bounceFlow(env, {
           liveVars,
           setVars,
-          recursion,
+          recursion: recursion + 1,
           interaction: ctx?.interaction,
           flow,
         });
@@ -417,9 +432,9 @@ export const executeFlow = async (
 
           const checkResult = recurseFunctions([action.function])[0];
           if (checkResult) {
-            const result = await executeFlow(
+            const result = await executeFlow({
               env,
-              {
+              flow: {
                 actions: (action.then ?? []).map((data) => ({
                   data,
                   type: data.type,
@@ -430,20 +445,20 @@ export const executeFlow = async (
               rest,
               db,
               liveVars,
-              vars,
+              setVars: vars,
               ctx,
-              recursion + 1,
+              recursion: recursion + 1,
               lastReturnValue,
               sentMessages,
-            );
+            });
             if (result.status === "success") {
               subActionsCompleted += action.then?.length ?? 0;
               if (result.stopped) throw new FlowStop();
             }
           } else {
-            const result = await executeFlow(
+            const result = await executeFlow({
               env,
-              {
+              flow: {
                 actions: (action.else ?? []).map((data) => ({
                   data,
                   type: data.type,
@@ -454,12 +469,12 @@ export const executeFlow = async (
               rest,
               db,
               liveVars,
-              vars,
+              setVars: vars,
               ctx,
-              recursion + 1,
+              recursion: recursion + 1,
               lastReturnValue,
               sentMessages,
-            );
+            });
             if (result.status === "success") {
               subActionsCompleted += action.else?.length ?? 0;
               if (result.stopped) throw new FlowStop();

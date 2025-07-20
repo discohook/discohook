@@ -32,6 +32,9 @@ const router = AutoRouter({
         console.log("403:", getIp(request));
         return json({ message: "Forbidden" }, { status: 403 });
       }
+      console.log(
+        `OK Auth: ${request.method} ${new URL(request.url).pathname} from ${getIp(request)}`,
+      );
     },
   ],
 });

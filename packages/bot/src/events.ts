@@ -15,7 +15,11 @@ import { webhooksUpdateCallback } from "./events/webhooksUpdate.js";
 import type { Env } from "./types/env.js";
 import { WebhookEvents } from "./types/webhook-events.js";
 
-export type GatewayEventCallback = (env: Env, payload: any) => Promise<any>;
+export type GatewayEventCallback = (
+  env: Env,
+  payload: any,
+  deferred?: boolean,
+) => Promise<any>;
 
 export const gatewayEventNameToCallback: Partial<
   Record<GatewayDispatchEvents, GatewayEventCallback>

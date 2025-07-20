@@ -517,13 +517,13 @@ const handleInteraction = async (
       eCtx.waitUntil(
         (async () => {
           for (const flow of flows) {
-            const result = await executeFlow(
+            const result = await executeFlow({
               env,
               flow,
               rest,
               db,
               liveVars,
-              {
+              setVars: {
                 guildId,
                 channelId: interaction.channel.id,
                 // Possible confusing conflict with Delete Message action
@@ -531,11 +531,9 @@ const handleInteraction = async (
                 userId: ctx.user.id,
               },
               ctx,
-              0,
-              undefined,
-              undefined,
-              true,
-            );
+              recursion: 0,
+              deferred: true,
+            });
             if (env.ENVIRONMENT === "dev") console.log(result);
           }
         })(),
@@ -633,23 +631,21 @@ const handleInteraction = async (
               member: interaction.member,
               user: interaction.member?.user,
             };
-            const result = await executeFlow(
+            const result = await executeFlow({
               env,
-              thisButtonData.componentsToFlows[0].flow,
+              flow: thisButtonData.componentsToFlows[0].flow,
               rest,
               db,
               liveVars,
-              {
+              setVars: {
                 channelId: interaction.channel.id,
                 messageId: interaction.message.id,
                 userId: ctx.user.id,
               },
               ctx,
-              0,
-              undefined,
-              undefined,
-              true,
-            );
+              recursion: 0,
+              deferred: true,
+            });
             if (env.ENVIRONMENT === "dev") console.log(result);
           }
         })(),
@@ -814,7 +810,7 @@ router.post("/ws", async (request, env: Env, eCtx: ExecutionContext) => {
     }
     return new Response(null, { status: 204 });
   } else if (callback) {
-    eCtx.waitUntil(callback(env, await request.json()));
+    eCtx.waitUntil(callback(env, await request.json(), true));
     return new Response(null, { status: 204 });
   }
   return respond({ error: "No event callback found.", status: 404 });
@@ -842,7 +838,9 @@ router.post("/ws/bulk", async (request, env: Env, eCtx: ExecutionContext) => {
   for (const payload of data) {
     const callback = gatewayEventNameToCallback[payload.t];
     if (callback) {
-      callbacks.push(async () => callback(env, payload.d).catch(console.error));
+      callbacks.push(async () =>
+        callback(env, payload.d, true).catch(console.error),
+      );
     }
   }
 
@@ -899,7 +897,7 @@ router.post("/events", async (request, env: Env, eCtx: ExecutionContext) => {
   console.log("[/events] Handling", body.event.type);
   const callback = webhookEventNameToCallback[body.event.type];
   if (callback) {
-    eCtx.waitUntil(callback(env, body.event.data));
+    eCtx.waitUntil(callback(env, body.event.data, true));
   } else {
     console.error("No event callback found for", body.event.type);
   }

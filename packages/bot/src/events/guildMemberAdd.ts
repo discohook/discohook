@@ -13,13 +13,13 @@ import {
   type FlowActionCheck,
   FlowActionCheckFunctionType,
   type FlowActionDeleteMessage,
+  flowActions,
   type FlowActionSendMessage,
   type FlowActionSendWebhookMessage,
   type FlowActionSetVariable,
   FlowActionSetVariableType,
   FlowActionType,
   type FlowActionWait,
-  flowActions,
   flows,
   getchTriggerGuild,
   getDb,
@@ -287,6 +287,7 @@ export type Trigger = Awaited<
 export const guildMemberAddCallback: GatewayEventCallback = async (
   env,
   payload: GatewayGuildMemberAddDispatchData,
+  deferred = false,
 ) => {
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
@@ -309,10 +310,13 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   const results: FlowResult[] = [];
   for (const trigger of applicable) {
     results.push(
-      await executeFlow(env, trigger.flow, rest, db, {
-        member: payload,
-        user: payload.user,
-        guild,
+      await executeFlow({
+        env,
+        flow: trigger.flow,
+        rest,
+        db,
+        liveVars: { member: payload, user: payload.user, guild },
+        deferred,
       }),
     );
   }

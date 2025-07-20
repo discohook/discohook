@@ -20,6 +20,7 @@ import { getWelcomerConfigurations, type Trigger } from "./guildMemberAdd.js";
 export const guildMemberRemoveCallback: GatewayEventCallback = async (
   env,
   payload: GatewayGuildMemberRemoveDispatchData,
+  deferred = false,
 ) => {
   if (payload.user.id === env.DISCORD_APPLICATION_ID) return [];
 
@@ -71,9 +72,13 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
   const results: FlowResult[] = [];
   for (const trigger of applicable) {
     results.push(
-      await executeFlow(env, trigger.flow, rest, db, {
-        user: payload.user,
-        guild,
+      await executeFlow({
+        env,
+        flow: trigger.flow,
+        rest,
+        db,
+        liveVars: { user: payload.user, guild },
+        deferred,
       }),
     );
   }
