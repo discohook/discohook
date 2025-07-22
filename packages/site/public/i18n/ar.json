@@ -795,5 +795,7 @@
     "deleteMessageIdOnComponent": {
         "true": "<0/> سيتم مسح رسالة ب اي دي <1>{{value}}</1> (يتم تحديدها بواسطة مٌتغير <1>messageId</1>).",
         "false": "<0/> سيتم مسح الرسالة المُتصلة بهذا العنصر. حدد <1>messageId</1> للتجاوز."
-    }
+    },
+    "threadWebhookApplyPrompt": "<open>اي دي المنشور</open> موجود في الرابط. <toggle>اضافة الى جميع الرسائل</toggle>",
+    "threadWebhookApplyConfirm": "تم اضافة المنشور لجميع الرسائل. <toggle>الغاء</toggle>"
 }
