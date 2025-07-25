@@ -25,26 +25,28 @@ import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
+import { canModifyComponent } from "~/api/v1/components.$id";
 import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
-import { useError } from "~/components/Error";
 import { submitComponent } from "~/components/editor/ComponentEditor";
 import {
   getComponentText,
   getComponentWidth,
   getRowWidth,
 } from "~/components/editor/TopLevelComponentEditor";
+import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
-import { Prose } from "~/components/Prose";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { Prose } from "~/components/Prose";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
+  authorizeRequest,
   getEditorTokenStorage,
   getGuild,
   getUser,
@@ -52,8 +54,8 @@ import {
 } from "~/session.server";
 import {
   autoRollbackTx,
-  type DraftComponent,
   discordMessageComponents,
+  type DraftComponent,
   eq,
   type Flow,
   getDb,
@@ -226,10 +228,29 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     user &&
     component.createdById !== BigInt(user.id)
   ) {
-    throw json(
-      { message: "You do not have edit access to this component." },
-      403,
-    );
+    let [token, respond]:
+      | Awaited<ReturnType<typeof authorizeRequest>>
+      | [undefined, undefined] = [undefined, undefined];
+    try {
+      [token, respond] = await authorizeRequest(request, context, {
+        requireToken: false,
+        errorLoggedOut: false,
+      });
+    } catch {
+      throw json(
+        { message: "You do not have edit access to this component." },
+        403,
+      );
+    }
+    const canModify = await canModifyComponent(context.env, component, token);
+    if (!canModify) {
+      throw respond(
+        json(
+          { message: "You do not have edit access to this component." },
+          403,
+        ),
+      );
+    }
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
@@ -409,7 +430,33 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         component.createdById &&
         BigInt(user.id) !== component.createdById
       ) {
-        throw json({ message: "You do not own this component" }, 403);
+        let [token, respond]:
+          | Awaited<ReturnType<typeof authorizeRequest>>
+          | [undefined, undefined] = [undefined, undefined];
+        try {
+          [token, respond] = await authorizeRequest(request, context, {
+            requireToken: false,
+            errorLoggedOut: false,
+          });
+        } catch {
+          throw json(
+            { message: "You do not have edit access to this component." },
+            403,
+          );
+        }
+        const canModify = await canModifyComponent(
+          context.env,
+          component,
+          token,
+        );
+        if (!canModify) {
+          throw respond(
+            json(
+              { message: "You do not have edit access to this component." },
+              403,
+            ),
+          );
+        }
       }
       if (!component.channelId || !component.messageId) {
         throw json(
