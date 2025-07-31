@@ -102,7 +102,7 @@ type SentMessages = Record<string, { route: RouteLike }>;
 const TriggerKVGuildScheme: z.ZodType<TriggerKVGuild> = z.object({
   id: z.string(),
   name: z.string(),
-  icon: z.string(),
+  icon: z.string().nullable(),
   owner_id: z.string(),
   members: z.number(),
   online_members: z.number(),
