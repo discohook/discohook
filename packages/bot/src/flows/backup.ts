@@ -9,7 +9,9 @@ import {
   type APIUser,
   ButtonStyle,
   ComponentType,
+  MessageFlags,
 } from "discord-api-types/v10";
+import { MessageFlagsBitField } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
 import type { QueryData, TriggerKVGuild } from "store";
 import { isSnowflakeSafe } from "../commands/reactionRoles.js";
@@ -241,6 +243,12 @@ export const processQueryData = async (
     // TODO: should be templatable?
     query.set("thread_id", message.thread_id);
   }
+  const flags = new MessageFlagsBitField(message.data.flags ?? 0);
+  // Required for non-app webhooks to use CV2
+  if (flags.has(MessageFlags.IsComponentsV2)) {
+    query.set("with_components", "true");
+  }
+
   const data = {
     content: message.data.content || undefined,
     embeds:
