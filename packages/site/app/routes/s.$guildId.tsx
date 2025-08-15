@@ -26,22 +26,22 @@ import {
   PermissionsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
-import { useError } from "~/components/Error";
 import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
+import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
-import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { PostChannelIcon } from "~/components/icons/channel";
+import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
-import { Prose } from "~/components/Prose";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
 import { Markdown } from "~/components/preview/Markdown";
+import { Prose } from "~/components/Prose";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
@@ -171,13 +171,11 @@ const tabValues = [
   "components",
 ] as const;
 
+type Tab = (typeof tabValues)[number];
+
 const flowEventsDetails: Record<number, { icon: CoolIconsGlyph }> = {
-  0: {
-    icon: "User_Add",
-  },
-  1: {
-    icon: "User_Remove",
-  },
+  0: { icon: "User_Add" },
+  1: { icon: "User_Remove" },
 };
 
 export default () => {
@@ -191,14 +189,22 @@ export default () => {
   const navigate = useNavigate();
 
   const cache = useCache(!user);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // cache should not actually change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ^
   useEffect(() => {
     cache.fetchGuildCacheable(guild.id);
   }, [guild]);
 
+  const [page, setPage] = useState(1);
+
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get("t") as (typeof tabValues)[number] | null;
-  const [tab, setTab] = useState<(typeof tabValues)[number]>(
+  const defaultTab = searchParams.get("t") as Tab | null;
+  const [tab, setTab] = useReducer(
+    (_: Tab, newTab: Tab) => {
+      // reset pagination when navigating to a new tab
+      setPage(1);
+      return newTab;
+    },
     defaultTab && tabValues.includes(defaultTab) ? defaultTab : tabValues[0],
   );
 
@@ -259,7 +265,9 @@ export default () => {
       }
       case "webhooks": {
         if (!webhooksFetcher.data && webhooksFetcher.state === "idle") {
-          webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
+          webhooksFetcher.load(
+            `${apiUrl(BRoutes.guildWebhooks(guild.id))}?withInaccessible=true`,
+          );
         }
         break;
       }
@@ -684,6 +692,57 @@ export default () => {
                           </div>
                         </div>
                       ))}
+              </div>
+              <div className="flex mt-2">
+                <Button
+                  discordstyle={ButtonStyle.Secondary}
+                  onClick={() => {
+                    const p = page - 1;
+                    webhooksFetcher.load(
+                      `${apiUrl(BRoutes.guildWebhooks(guild.id))}?withInaccessible=true&page=${p}`,
+                    );
+                    setPage(p);
+                  }}
+                  disabled={page === 1 || !webhooksFetcher.data}
+                >
+                  <Trans
+                    t={t}
+                    i18nKey="previousPage"
+                    components={[
+                      <CoolIcon
+                        key="0"
+                        icon="Chevron_Left"
+                        rtl="Chevron_Right"
+                      />,
+                    ]}
+                  />
+                </Button>
+                <Button
+                  className="ltr:ml-auto rtl:mr-auto"
+                  discordstyle={ButtonStyle.Secondary}
+                  onClick={() => {
+                    const p = page + 1;
+                    webhooksFetcher.load(
+                      `${apiUrl(BRoutes.guildWebhooks(guild.id))}?withInaccessible=true&page=${p}`,
+                    );
+                    setPage(p);
+                  }}
+                  disabled={
+                    !webhooksFetcher.data || webhooksFetcher.data.length < 50
+                  }
+                >
+                  <Trans
+                    t={t}
+                    i18nKey="nextPage"
+                    components={[
+                      <CoolIcon
+                        key="0"
+                        icon="Chevron_Right"
+                        rtl="Chevron_Left"
+                      />,
+                    ]}
+                  />
+                </Button>
               </div>
             </div>
           ) : tab === "auditLog" ? (

@@ -59,6 +59,7 @@ export const TargetAddModal = (
 
   const [error, setError] = useError(t);
   const [guildId, setGuildId] = useState<string>();
+  const [page, setPage] = useState(1);
   const guildWebhooksFetcher = useSafeFetcher<typeof ApiGetGuildWebhooks>({
     onError: setError,
   });
@@ -102,6 +103,7 @@ export const TargetAddModal = (
     if (!s) {
       guildWebhooksFetcher.reset();
       guildWebhookTokenFetcher.reset();
+      setPage(1);
       setGuildId(undefined);
       setWebhook(undefined);
       setError(undefined);
@@ -142,6 +144,7 @@ export const TargetAddModal = (
 
               if (guildId && String(guild.id) !== guildId) {
                 guildWebhooksFetcher.reset();
+                setPage(1);
               }
               setError(undefined);
               guildWebhooksFetcher.load(
@@ -256,10 +259,6 @@ export const TargetAddModal = (
                       <div className="ml-auto pl-2 my-auto">
                         <Button
                           disabled={
-                            // TODO:
-                            // - Make sure this prop is 100% accurate
-                            // - Add obvious note for why it's disabled (or hide the entry entirely)
-                            // !gWebhook.canAccessToken ||
                             guildWebhookTokenFetcher.state !== "idle" ||
                             guildWebhooksFetcher.state !== "idle"
                           }

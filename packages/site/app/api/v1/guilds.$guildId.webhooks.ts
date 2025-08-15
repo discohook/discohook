@@ -18,6 +18,9 @@ import { isDiscordError } from "~/util/discord";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
+const hasToken = () =>
+  sql<boolean>`${webhooks.token} IS NOT NULL`.as("has_token");
+
 const upsertGuildWebhooks = async (
   db: DBWithSchema,
   allWebhooks: APIWebhook[],
@@ -86,6 +89,7 @@ const upsertGuildWebhooks = async (
             avatar: webhooks.avatar,
             channelId: webhooks.channelId,
             applicationId: webhooks.applicationId,
+            hasToken: hasToken(),
           });
 
         // Delete stale records
@@ -106,13 +110,32 @@ const upsertGuildWebhooks = async (
   ).map((d) => ({ ...d, user: null }));
 };
 
+const webhookFilter = (
+  guildWebhook: { hasToken?: boolean; applicationId: string | null },
+  withInaccessible: boolean,
+  applicationId: string,
+) => {
+  if (withInaccessible) return true;
+  if (guildWebhook.hasToken) return true;
+  if (
+    guildWebhook.applicationId &&
+    guildWebhook.applicationId !== applicationId
+  ) {
+    return false;
+  }
+  return true;
+};
+
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });
-  const { page, limit, force } = zxParseQuery(request, {
+  const { page, limit, withInaccessible, force } = zxParseQuery(request, {
     limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
-    page: zx.IntAsString.refine((v) => v >= 0).default("0"),
+    page: zx.IntAsString.default("1")
+      .refine((i) => i > 0)
+      .transform((i) => i - 1),
+    withInaccessible: zx.BoolAsString.default("false"),
     force: zx.BoolAsString.default("false"),
   });
   const headers = await getBucket(
@@ -142,6 +165,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     avatar: string | null;
     applicationId: string | null;
     user: { name: string } | null;
+    hasToken?: boolean;
   }[] = [];
   try {
     const db = getDb(context.env.HYPERDRIVE);
@@ -149,13 +173,24 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       const freshWebhooks = (await rest.get(
         Routes.guildWebhooks(String(guildId)),
       )) as RESTGetAPIGuildWebhooksResult;
-      guildWebhooks = await upsertGuildWebhooks(db, freshWebhooks, guildId);
+      guildWebhooks = (
+        await upsertGuildWebhooks(db, freshWebhooks, guildId)
+      ).filter((gw) =>
+        webhookFilter(gw, withInaccessible, context.env.DISCORD_CLIENT_ID),
+      );
     } else {
       guildWebhooks = await db.query.webhooks.findMany({
-        where: (webhooks, { and, eq }) =>
+        where: (webhooks, { and, eq, or, isNull, isNotNull, sql }) =>
           and(
             eq(webhooks.discordGuildId, guildId),
             eq(webhooks.platform, "discord"),
+            withInaccessible
+              ? sql`true`
+              : or(
+                  isNotNull(webhooks.token),
+                  isNull(webhooks.applicationId),
+                  eq(webhooks.applicationId, context.env.DISCORD_CLIENT_ID),
+                ),
           ),
         columns: {
           id: true,
@@ -169,6 +204,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
             columns: { name: true },
           },
         },
+        extras: { hasToken: hasToken() },
         limit,
         offset: page * limit,
         orderBy: (webhooks, { desc }) => desc(webhooks.name),
@@ -178,7 +214,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         const freshWebhooks = (await rest.get(
           Routes.guildWebhooks(String(guildId)),
         )) as RESTGetAPIGuildWebhooksResult;
-        guildWebhooks = await upsertGuildWebhooks(db, freshWebhooks, guildId);
+        guildWebhooks = (
+          await upsertGuildWebhooks(db, freshWebhooks, guildId)
+        ).filter((gw) =>
+          webhookFilter(gw, withInaccessible, context.env.DISCORD_CLIENT_ID),
+        );
       }
     }
   } catch (e) {
@@ -215,9 +255,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         const channel = channels.find((c) => c.id === gw.channelId);
         return {
           ...gw,
-          canAccessToken:
-            gw.applicationId === context.env.DISCORD_CLIENT_ID ||
-            !gw.applicationId,
+          canAccessToken: gw.hasToken
+            ? true
+            : gw.applicationId === context.env.DISCORD_CLIENT_ID ||
+              !gw.applicationId,
           channel: channel
             ? {
                 name: channel.name,
