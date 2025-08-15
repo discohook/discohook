@@ -35,9 +35,11 @@ export const AutoTopLevelComponentEditor = (
     files: DraftFile[];
     setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
     cache: CacheManager | undefined;
+    cdn?: string;
   },
 ) => {
-  const { component, setEditingComponent, files, setFiles, ...rest } = props;
+  const { component, setEditingComponent, files, setFiles, cdn, ...rest } =
+    props;
   switch (component.type) {
     case ComponentType.ActionRow:
       return (
@@ -63,6 +65,7 @@ export const AutoTopLevelComponentEditor = (
           setEditingComponent={setEditingComponent}
           files={files}
           setFiles={setFiles}
+          cdn={cdn}
         />
       );
     case ComponentType.TextDisplay:
@@ -74,6 +77,7 @@ export const AutoTopLevelComponentEditor = (
           component={component}
           files={files}
           setFiles={setFiles}
+          cdn={cdn}
         />
       );
     case ComponentType.Separator:
@@ -101,6 +105,7 @@ export const ContainerEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   cache: CacheManager | undefined;
+  cdn?: string;
   open?: boolean;
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>

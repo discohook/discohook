@@ -22,6 +22,7 @@ import {
   getSetEditingComponentProps,
   IndividualComponentEditor,
 } from "./ComponentEditor";
+import { DetectGifUrlFooter } from "./EmbedEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const SectionEditor: React.FC<{
@@ -32,6 +33,7 @@ export const SectionEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   cache?: CacheManager;
+  cdn?: string;
   open?: boolean;
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
@@ -46,6 +48,7 @@ export const SectionEditor: React.FC<{
   data,
   setData,
   cache,
+  cdn,
   open,
   setEditingComponent,
   files,
@@ -234,6 +237,15 @@ export const SectionEditor: React.FC<{
                   required
                 />
               </div>
+              <DetectGifUrlFooter
+                t={t}
+                value={accessory.media.url}
+                onChange={(value) => {
+                  accessory.media = { url: value };
+                  setData({ ...data });
+                }}
+                cdn={cdn}
+              />
               {accessory.media.url ? (
                 <>
                   <TextInput

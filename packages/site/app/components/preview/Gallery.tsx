@@ -70,7 +70,10 @@ export const Gallery: React.FC<{
   cdn?: string;
 }> = ({ attachments, setImageModalData, cdn }) => {
   const sized = galleriesBySize[attachments.length];
-  if (!sized) return <p>Inappropriate size for gallery.</p>;
+  if (!sized) {
+    if (attachments.length === 0) return <div />;
+    return <p>Inappropriate size for gallery ({attachments.length}).</p>;
+  }
 
   return sized({ attachments, setImageModalData, cdn });
 };

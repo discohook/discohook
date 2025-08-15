@@ -14,7 +14,7 @@ import { useError } from "../Error";
 import { FileOrUrlInput } from "../FileOrUrlInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { TextInput } from "../TextInput";
-import { EmbedEditorSection } from "./EmbedEditor";
+import { DetectGifUrlFooter, EmbedEditorSection } from "./EmbedEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const MediaGalleryEditor: React.FC<{
@@ -28,6 +28,7 @@ export const MediaGalleryEditor: React.FC<{
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   cache?: CacheManager;
   open?: boolean;
+  cdn?: string;
 }> = ({
   message,
   component: gallery,
@@ -38,6 +39,7 @@ export const MediaGalleryEditor: React.FC<{
   files,
   setFiles,
   open,
+  cdn,
 }) => {
   const { t } = useTranslation();
   const mid = getQdMessageId(message);
@@ -115,6 +117,15 @@ export const MediaGalleryEditor: React.FC<{
                     // ]}
                   />
                 </div>
+                <DetectGifUrlFooter
+                  t={t}
+                  value={item.media.url}
+                  onChange={(value) => {
+                    item.media.url = value;
+                    setData({ ...data });
+                  }}
+                  cdn={cdn}
+                />
                 {item.media.url ? (
                   <>
                     <TextInput

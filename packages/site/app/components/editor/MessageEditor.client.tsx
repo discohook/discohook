@@ -1271,6 +1271,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
               data={data}
               setData={setData}
               cache={cache}
+              cdn={cdn}
               component={component}
               parent={undefined}
               files={files}
