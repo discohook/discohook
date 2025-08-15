@@ -279,6 +279,7 @@ export default () => {
                         }
                         components={[
                           <Twemoji
+                            key="0"
                             emoji="🕑"
                             className="grayscale ltr:mr-1 rtl:ml-1"
                           />,
@@ -375,7 +376,7 @@ export default () => {
           <Trans
             t={t}
             i18nKey="noBackups"
-            components={[<Link to="/" className={linkClassName} />]}
+            components={[<Link key="0" to="/" className={linkClassName} />]}
           />
         </p>
       )}
@@ -388,7 +389,9 @@ export default () => {
           <Trans
             t={t}
             i18nKey="previousPage"
-            components={[<CoolIcon icon="Chevron_Left" rtl="Chevron_Right" />]}
+            components={[
+              <CoolIcon key="0" icon="Chevron_Left" rtl="Chevron_Right" />,
+            ]}
           />
         </Button>
         <Button
@@ -400,7 +403,9 @@ export default () => {
           <Trans
             t={t}
             i18nKey="nextPage"
-            components={[<CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />]}
+            components={[
+              <CoolIcon key="0" icon="Chevron_Right" rtl="Chevron_Left" />,
+            ]}
           />
         </Button>
       </div>

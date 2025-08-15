@@ -240,8 +240,6 @@ export default function Index() {
   const { userId, cdn, discordApplicationId, debug } =
     useLoaderData<typeof loader>();
 
-  const V2_CREATE_PROMPT = debug.environment === "dev";
-
   const isPremium = user ? userIsPremium(user) : false;
   const [settings] = useLocalStorage();
   const cache = useCache(!userId);
@@ -984,106 +982,90 @@ export default function Index() {
             );
           })}
           <div className="px-4">
-            {V2_CREATE_PROMPT ? (
-              <Dialog.Root
-                open={showAddMessageMenu}
-                onOpenChange={setShowAddMessageMenu}
-              >
-                <Dialog.Trigger
-                  disabled={data.messages.length >= 10}
-                  onClick={(e) => {
-                    if (e.shiftKey) {
-                      // doesn't seem to do anything (for our use case)?
-                      e.preventBaseUIHandler();
-                      setShowAddMessageMenu(false);
-
-                      data.messages.push({
-                        data: getNewMessageData(settings),
-                      });
-                      setData({ ...data });
-                    }
-                  }}
-                  render={
-                    <Button
-                      className="mt-4 w-full"
-                      disabled={data.messages.length >= 10}
-                    >
-                      <div className="flex">
-                        <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
-                        <span className="my-auto">{t("addMessage")}</span>
-                      </div>
-                    </Button>
-                  }
-                />
-                <DialogPortal className="flex flex-col gap-y-2">
-                  <button
-                    className={twJoin(
-                      "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
-                      "border border-gray-300 dark:border-gray-700 hover:border-blurple",
-                      "shadow hover:shadow-md transition",
-                    )}
-                    type="button"
-                    onClick={() => {
-                      data.messages.push({ data: {} });
-                      setData({ ...data });
-                      setShowAddMessageMenu(false);
-                    }}
-                  >
-                    <CoolIcon icon="Text" className="my-auto text-4xl" />
-                    <div className="my-auto">
-                      <p className="font-semibold text-lg">
-                        {t("standardMessage")}
-                      </p>
-                      <p className="text-muted dark:text-muted-dark">
-                        {t("standardMessageDescription")}
-                      </p>
-                    </div>
-                  </button>
-                  <button
-                    className={twJoin(
-                      "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
-                      "border border-gray-300 dark:border-gray-700 hover:border-blurple",
-                      "shadow hover:shadow-md transition relative",
-                    )}
-                    type="button"
-                    onClick={() => {
-                      data.messages.push({
-                        data: { flags: MessageFlags.IsComponentsV2 },
-                      });
-                      setData({ ...data });
-                      setShowAddMessageMenu(false);
-                    }}
-                  >
-                    <CoolIcon icon="Rows" className="my-auto text-4xl" />
-                    <div className="my-auto">
-                      <p className="font-semibold text-lg">
-                        {t("componentsMessage")}
-                      </p>
-                      <p className="text-muted dark:text-muted-dark">
-                        {t("componentsMessageDescription")}
-                      </p>
-                    </div>
-                    <div className="absolute -top-1 -right-1 rounded-full bg-red-500 font-bold text-xs px-2 py-0.5 uppercase">
-                      {t("new")}
-                    </div>
-                  </button>
-                </DialogPortal>
-              </Dialog.Root>
-            ) : (
-              <Button
-                className="mt-4 w-full"
+            <Dialog.Root
+              open={showAddMessageMenu}
+              onOpenChange={setShowAddMessageMenu}
+            >
+              <Dialog.Trigger
                 disabled={data.messages.length >= 10}
-                onClick={() => {
-                  data.messages.push({ data: {} });
-                  setData({ ...data });
+                onClick={(e) => {
+                  if (e.shiftKey) {
+                    // doesn't seem to do anything (for our use case)?
+                    e.preventBaseUIHandler();
+                    setShowAddMessageMenu(false);
+
+                    data.messages.push({
+                      data: getNewMessageData(settings),
+                    });
+                    setData({ ...data });
+                  }
                 }}
-              >
-                <div className="flex">
-                  <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
-                  <span className="my-auto">{t("addMessage")}</span>
-                </div>
-              </Button>
-            )}
+                render={
+                  <Button
+                    className="mt-4 w-full"
+                    disabled={data.messages.length >= 10}
+                  >
+                    <div className="flex">
+                      <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
+                      <span className="my-auto">{t("addMessage")}</span>
+                    </div>
+                  </Button>
+                }
+              />
+              <DialogPortal className="flex flex-col gap-y-2">
+                <button
+                  className={twJoin(
+                    "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
+                    "border border-gray-300 dark:border-gray-700 hover:border-blurple",
+                    "shadow hover:shadow-md transition",
+                  )}
+                  type="button"
+                  onClick={() => {
+                    data.messages.push({ data: {} });
+                    setData({ ...data });
+                    setShowAddMessageMenu(false);
+                  }}
+                >
+                  <CoolIcon icon="Text" className="my-auto text-4xl" />
+                  <div className="my-auto">
+                    <p className="font-semibold text-lg">
+                      {t("standardMessage")}
+                    </p>
+                    <p className="text-muted dark:text-muted-dark">
+                      {t("standardMessageDescription")}
+                    </p>
+                  </div>
+                </button>
+                <button
+                  className={twJoin(
+                    "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
+                    "border border-gray-300 dark:border-gray-700 hover:border-blurple",
+                    "shadow hover:shadow-md transition relative",
+                  )}
+                  type="button"
+                  onClick={() => {
+                    data.messages.push({
+                      data: { flags: MessageFlags.IsComponentsV2 },
+                    });
+                    setData({ ...data });
+                    setShowAddMessageMenu(false);
+                  }}
+                >
+                  <CoolIcon icon="Rows" className="my-auto text-4xl" />
+                  <div className="my-auto">
+                    <p className="font-semibold text-lg">
+                      {t("componentsMessage")}
+                    </p>
+                    <p className="text-muted dark:text-muted-dark">
+                      {t("componentsMessageDescription")}
+                    </p>
+                  </div>
+                  <div className="absolute -top-1 -right-1 rounded-full bg-blurple text-white font-bold text-xs px-2 py-0.5 uppercase">
+                    {t("beta")}
+                  </div>
+                </button>
+              </DialogPortal>
+            </Dialog.Root>
             <hr className="border border-gray-400 dark:border-gray-600 my-6" />
             <div className="grayscale hover:grayscale-0 group flex text-sm opacity-60 hover:opacity-100 transition-opacity">
               <div className="mb-auto mt-1 ltr:ml-2 rtl:mr-2">
@@ -1179,10 +1161,10 @@ export default function Index() {
             </div>
             {data.messages.find((m) => isComponentsV2(m.data)) !== undefined ? (
               <InfoBox severity="blue" icon="Flag" collapsible open>
-                Hey! You're currently using an open beta for Discohook's
-                components V2 support. Some things are still incomplete,
-                including interactive components. Please give feedback in the
-                Components V2 thread.
+                Hey! You're currently using an open beta for components-based
+                messages. Some things are still incomplete, including
+                interactive components. Please give feedback in the Components
+                V2 thread, found in #feature-requests.
               </InfoBox>
             ) : null}
             {data.messages.map((message, i) => {

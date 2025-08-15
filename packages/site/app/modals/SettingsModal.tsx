@@ -207,11 +207,17 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             i18nKey="translatePrompt"
             components={[
               <Link
+                key="0"
                 to="https://translate.shay.cat/engage/discohook/"
                 target="_blank"
                 className={linkClassName}
               />,
-              <Link to="/discord" target="_blank" className={linkClassName} />,
+              <Link
+                key="1"
+                to="/discord"
+                target="_blank"
+                className={linkClassName}
+              />,
             ]}
           />
         </p>
@@ -245,7 +251,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
           />
         </div>
       </div>
-      {/* <div className="mt-8">
+      <div className="mt-8">
         <p className="text-sm font-bold uppercase dark:text-gray-400">
           {t("defaultMessageCreationChoice")}
         </p>
@@ -254,7 +260,8 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             name="defaultMessageFlag"
             label={t("standardMessage")}
             checked={
-              !settings.defaultMessageFlag || settings.defaultMessageFlag === "standard"
+              !settings.defaultMessageFlag ||
+              settings.defaultMessageFlag === "standard"
             }
             onChange={(e) => {
               if (e.currentTarget.checked) {
@@ -273,7 +280,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             }}
           />
         </div>
-      </div> */}
+      </div>
     </Modal>
   );
 };
