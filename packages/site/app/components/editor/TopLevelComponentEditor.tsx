@@ -134,7 +134,7 @@ export const getComponentErrors = (
       break;
     case ComponentType.File:
       if (files && component.file.url) {
-        const file = resolveAttachmentUri(component.file.url, files);
+        const file = resolveAttachmentUri(component.file.url, files, true);
         if (!file) {
           errors.push("fileMissing");
         }

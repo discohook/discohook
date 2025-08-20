@@ -42,7 +42,7 @@ export const FileEditor: React.FC<{
 }) => {
   const { t } = useTranslation();
   // const mid = getQdMessageId(message);
-  const file = resolveAttachmentUri(component.file.url, files);
+  const file = resolveAttachmentUri(component.file.url, files, true);
 
   const id = randomString(10);
   return (

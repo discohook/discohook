@@ -26,15 +26,19 @@ const getI18nTimestampFooterKey = (date: Moment) => {
 export const resolveAttachmentUri = (
   uri: string,
   files?: DraftFile[] | undefined,
+  allow?: boolean | readonly string[],
 ) => {
+  console.log({ uri, files, allow });
   if (uri.startsWith("attachment://")) {
     const filename = uri.replace(/^attachment:\/\//, "");
     return files?.find(
       (file) =>
         transformFileName(file.file.name) === filename &&
-        ATTACHMENT_URI_EXTENSIONS.find((ext) =>
-          file.file.name.toLowerCase().endsWith(ext),
-        ) !== undefined,
+        (allow === true
+          ? true
+          : (!allow ? ATTACHMENT_URI_EXTENSIONS : allow).find((ext) =>
+              file.file.name.toLowerCase().endsWith(ext),
+            ) !== undefined),
     );
   }
 };
@@ -43,7 +47,11 @@ export const getImageUri = (
   uri: string,
   files?: DraftFile[] | undefined,
 ): string => {
-  const file = resolveAttachmentUri(uri.trim(), files);
+  const file = resolveAttachmentUri(
+    uri.trim(),
+    files,
+    ATTACHMENT_URI_EXTENSIONS,
+  );
   if (file) {
     return file.url ?? "";
   } else if (!uri.startsWith("https://") && !uri.startsWith("http://")) {

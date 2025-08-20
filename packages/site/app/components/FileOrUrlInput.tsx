@@ -49,7 +49,11 @@ export const FileOrUrlInput: React.FC<{
 }) => {
   const id = randomString(10);
   const file = value?.startsWith("attachment://")
-    ? resolveAttachmentUri(value, files)
+    ? resolveAttachmentUri(
+        value,
+        files,
+        allowedExtensions === "*" ? true : allowedExtensions,
+      )
     : undefined;
 
   return file ? (

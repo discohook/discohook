@@ -7,7 +7,7 @@ export const PreviewFile: React.FC<{
   component: APIFileComponent;
   files?: DraftFile[];
 }> = ({ component, files }) => {
-  const file = resolveAttachmentUri(component.file.url, files);
+  const file = resolveAttachmentUri(component.file.url, files, true);
   return (
     <div className="">
       <FileAttachment
