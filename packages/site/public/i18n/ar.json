@@ -797,5 +797,6 @@
         "false": "<0/> سيتم مسح الرسالة المُتصلة بهذا العنصر. حدد <1>messageId</1> للتجاوز."
     },
     "threadWebhookApplyPrompt": "<open>اي دي المنشور</open> موجود في الرابط. <toggle>اضافة الى جميع الرسائل</toggle>",
-    "threadWebhookApplyConfirm": "تم اضافة المنشور لجميع الرسائل. <toggle>الغاء</toggle>"
+    "threadWebhookApplyConfirm": "تم اضافة المنشور لجميع الرسائل. <toggle>الغاء</toggle>",
+    "beta": "تجربة مبدئية"
 }
