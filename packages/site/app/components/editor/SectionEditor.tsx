@@ -22,7 +22,6 @@ import {
   getSetEditingComponentProps,
   IndividualComponentEditor,
 } from "./ComponentEditor";
-import { DetectGifUrlFooter } from "./EmbedEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const SectionEditor: React.FC<{
@@ -235,17 +234,10 @@ export const SectionEditor: React.FC<{
                   files={files}
                   setFiles={setFiles}
                   required
+                  cdn={cdn}
+                  gifPrompt
                 />
               </div>
-              <DetectGifUrlFooter
-                t={t}
-                value={accessory.media.url}
-                onChange={(value) => {
-                  accessory.media = { url: value };
-                  setData({ ...data });
-                }}
-                cdn={cdn}
-              />
               {accessory.media.url ? (
                 <>
                   <TextInput

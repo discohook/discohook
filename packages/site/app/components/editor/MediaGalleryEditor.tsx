@@ -14,7 +14,7 @@ import { useError } from "../Error";
 import { FileOrUrlInput } from "../FileOrUrlInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { TextInput } from "../TextInput";
-import { DetectGifUrlFooter, EmbedEditorSection } from "./EmbedEditor";
+import { EmbedEditorSection } from "./EmbedEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const MediaGalleryEditor: React.FC<{
@@ -110,22 +110,10 @@ export const MediaGalleryEditor: React.FC<{
                       setData({ ...data });
                     }}
                     allowedExtensions="*"
-                    // allowedExtensions={[
-                    //   ...ATTACHMENT_URI_EXTENSIONS,
-                    //   ".mp4",
-                    //   ".mov",
-                    // ]}
+                    cdn={cdn}
+                    gifPrompt
                   />
                 </div>
-                <DetectGifUrlFooter
-                  t={t}
-                  value={item.media.url}
-                  onChange={(value) => {
-                    item.media.url = value;
-                    setData({ ...data });
-                  }}
-                  cdn={cdn}
-                />
                 {item.media.url ? (
                   <>
                     <TextInput
