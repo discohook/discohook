@@ -244,6 +244,32 @@ export const MessageEditor: React.FC<MessageEditorProps> = (props) => {
   );
 };
 
+const getUsernameErrors = (
+  t: TFunction,
+  username: string | undefined,
+): React.ReactNode[] => {
+  if (!username) return [];
+
+  const errors: React.ReactNode[] = [];
+  const lower = username.toLowerCase();
+  for (const forbidden of ["discord", "clyde", "```", "system message"]) {
+    if (lower.includes(forbidden)) {
+      errors.push(
+        t("usernameForbiddenSubstring", { replace: { substring: forbidden } }),
+      );
+    }
+  }
+  for (const forbidden of ["everyone", "here"]) {
+    if (lower === forbidden) {
+      errors.push(
+        t("usernameForbiddenString", { replace: { substring: forbidden } }),
+      );
+    }
+  }
+
+  return errors;
+};
+
 type MessageEditorChildProps = MessageEditorProps & {
   t: TFunction;
   setEditingFile: React.Dispatch<React.SetStateAction<DraftFile | undefined>>;
@@ -551,6 +577,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
               className="w-full"
               disabled={!!message.reference}
               value={message.data.username ?? ""}
+              errors={getUsernameErrors(t, message.data.username)}
               onChange={(e) => {
                 message.data.username = e.currentTarget.value || undefined;
                 setData({ ...data });
@@ -1180,6 +1207,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
               className="w-full"
               disabled={!!message.reference}
               value={message.data.username ?? ""}
+              errors={getUsernameErrors(t, message.data.username)}
               onChange={(e) => {
                 message.data.username = e.currentTarget.value || undefined;
                 setData({ ...data });

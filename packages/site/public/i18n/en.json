@@ -608,6 +608,8 @@
   "embedEmpty": "Must contain text or an image",
   "embedsTooLarge": "Embeds must contain at most 6000 characters total (currently {{count}} too many)",
   "embedsHidden": "You have the \"Hide embeds\" flag enabled, so all embeds will be hidden.",
+  "usernameForbiddenSubstring": "Username cannot contain \"{{ substring }}\"",
+  "usernameForbiddenString": "Username cannot be \"{{ substring }}\"",
   "mentions": "Mentions",
   "emojis": "Emojis",
   "emojiPickerCustom": {
