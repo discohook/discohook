@@ -6,7 +6,6 @@ coverage
 yarn-error.log
 build/
 .cache/
-app/styles/app.css
 yarn-error.log
 .DS_Store
 persistence/

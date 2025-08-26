@@ -15,9 +15,9 @@ import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next/react";
 import { ClientOnly } from "remix-utils/client-only";
-import styles from "../styles/app.css";
 import { Message } from "./components/preview/Message.client";
 import getI18next from "./i18next.server";
+import styles from "./styles/app.css";
 import icons from "./styles/coolicons.css";
 import { getZodErrorMessage, type LoaderArgs } from "./util/loader";
 
