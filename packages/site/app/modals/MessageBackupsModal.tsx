@@ -1,3 +1,4 @@
+import { Avatar } from "@base-ui-components/react/avatar";
 import { Link } from "@remix-run/react";
 import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
 import type React from "react";
@@ -127,6 +128,7 @@ export const MessageBackupsModal = (
     }
   }, [meBackupsFetcher]);
 
+  const [searchTerm, setSearchTerm] = useState<string>();
   const [draftName, setDraftName] = useState<string>();
   const backupFetcher = useSafeFetcher<
     typeof ApiPostBackups | typeof ApiGetBackup
@@ -162,176 +164,51 @@ export const MessageBackupsModal = (
       {error}
       {user ? (
         <div>
-          <Link to="/me/backups" target="_blank" className={linkClassName}>
-            {t("manageBackups")}
-          </Link>
-          <div
-            className={twJoin(
-              "space-y-2 mt-2 overflow-y-auto max-h-72",
-              backups ? undefined : "animate-pulse",
-            )}
-          >
-            {backups
-              ? backups.map((b) => (
-                  <div
-                    key={`backup-${b.id}`}
-                    className={twJoin(
-                      "rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-800 p-2 flex transition",
-                      b.id.toString() === data.backup_id
-                        ? "opacity-60 pointer-events-none"
-                        : undefined,
-                    )}
-                  >
-                    {b.previewImageUrl ? (
-                      <div
-                        style={{ backgroundImage: `url(${b.previewImageUrl})` }}
-                        className="bg-cover bg-center w-7 my-auto rounded aspect-square ltr:mr-2 rtl:ml-2"
-                      />
-                    ) : (
-                      <div className="w-7 h-7 my-auto ltr:mr-2 rtl:ml-2 flex rounded bg-blurple">
-                        <CoolIcon
-                          icon="File_Document"
-                          className="m-auto text-lg text-gray-50"
-                        />
-                      </div>
-                    )}
-                    <p className="truncate my-auto">{b.name}</p>
-                    <div className="ltr:ml-auto rtl:mr-auto flex space-x-1.5 rtl:space-x-reverse text-xl my-auto">
-                      <button
-                        type="button"
-                        title={t("openBackupLoad")}
-                        onClick={async () => {
-                          if (backup) {
-                            await backupFetcher.submitAsync(
-                              { data: dataWithTargets },
-                              {
-                                action: apiUrl(BRoutes.backups(backup.id)),
-                                method: "PATCH",
-                              },
-                            );
-                          }
-                          const loadedBackup = await backupFetcher.loadAsync(
-                            `${apiUrl(BRoutes.backups(b.id))}?data=true`,
-                          );
-                          // Always true, this is just a type guard
-                          if ("data" in loadedBackup && loadedBackup.data) {
-                            document.title = `${b.name} - Discohook`;
-                            setData({
-                              ...loadedBackup.data,
-                              // Just in case
-                              backup_id: b.id.toString(),
-                            });
-                            setTargets(loadedBackup.data.targets);
-                            loadMessageComponents(loadedBackup.data, setData);
-                            setBackupId(b.id);
-                          }
-                        }}
-                      >
-                        <CoolIcon icon="File_Edit" />
-                      </button>
-                      <button
-                        type="button"
-                        title={t("openBackupClone")}
-                        onClick={async () => {
-                          if (backup) {
-                            await backupFetcher.submitAsync(
-                              { data: dataWithTargets },
-                              {
-                                action: apiUrl(BRoutes.backups(backup.id)),
-                                method: "PATCH",
-                              },
-                            );
-                          }
-                          const loadedBackup = await backupFetcher.loadAsync(
-                            `${apiUrl(BRoutes.backups(b.id))}?data=true`,
-                          );
-                          // Always true, this is just a type guard
-                          if ("data" in loadedBackup && loadedBackup.data) {
-                            const created = await backupFetcher.submitAsync(
-                              {
-                                name: `Copy of ${b.name}`.slice(0, 100),
-                                data: loadedBackup.data,
-                              },
-                              {
-                                action: apiUrl(BRoutes.backups()),
-                                method: "POST",
-                              },
-                            );
-                            document.title = `${created.name} - Discohook`;
-                            setData({
-                              ...loadedBackup.data,
-                              backup_id: created.id.toString(),
-                            });
-                            // This isn't totally necessary for a duplicated backup
-                            setTargets(loadedBackup.data.targets);
-                            loadMessageComponents(loadedBackup.data, setData);
-                            setBackupId(created.id);
-                          }
-                        }}
-                      >
-                        <CoolIcon icon="Copy" />
-                      </button>
-                      <Link
-                        to={`/?backup=${b.id}`}
-                        title={t("openBackupNewTab")}
-                        target="_blank"
-                      >
-                        <CoolIcon icon="External_Link" />
-                      </Link>
-                    </div>
-                  </div>
-                ))
-              : Array(10)
-                  .fill(undefined)
-                  .map((_, i) => (
-                    <div
-                      key={`backup-skeleton-${i}`}
-                      className="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-800 p-2 flex transition gap-2"
-                    >
-                      <div className="w-7 h-7 my-auto flex rounded bg-blurple">
-                        <CoolIcon
-                          icon="File_Document"
-                          className="m-auto text-lg text-gray-50"
-                        />
-                      </div>
-                      <div className="my-auto rounded-full h-4 w-36 bg-gray-300 dark:bg-gray-600" />
-                    </div>
-                  ))}
-          </div>
-          <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+          <p className="-mt-2 mb-2">
+            <Link to="/me/backups" target="_blank" className={linkClassName}>
+              {t("manageBackups")}
+            </Link>
+          </p>
           {backup || backupFetcher.state !== "idle" ? (
-            <div className="rounded-lg border border-gray-300 dark:border-gray-700 shadow bg-gray-200 dark:bg-gray-800 py-2 px-4 flex gap-x-4">
-              {backup?.previewImageUrl ? (
-                <div
-                  style={{ backgroundImage: `url(${backup.previewImageUrl})` }}
-                  className="bg-cover bg-center w-9 my-auto rounded aspect-square shrink-0"
-                />
-              ) : (
-                <div className="w-9 h-9 my-auto flex rounded bg-blurple shrink-0">
-                  <CoolIcon icon="File_Document" className="m-auto text-2xl" />
+            <div className="flex gap-1 items-center">
+              <div className="rounded-lg border border-border-normal dark:border-border-normal-dark shadow bg-gray-200 dark:bg-gray-800 py-3 px-4 flex gap-x-4 grow">
+                <Avatar.Root>
+                  {backup?.previewImageUrl ? (
+                    <Avatar.Image
+                      src={backup.previewImageUrl}
+                      className="object-cover w-9 my-auto rounded aspect-square shrink-0"
+                    />
+                  ) : null}
+                  <Avatar.Fallback className="w-9 h-9 my-auto flex rounded bg-blurple shrink-0">
+                    <CoolIcon
+                      icon="File_Document"
+                      className="m-auto text-2xl"
+                    />
+                  </Avatar.Fallback>
+                </Avatar.Root>
+                <div className="my-auto">
+                  {backup ? (
+                    <div className="flex max-w-full truncate">
+                      <p className="font-semibold truncate">{backup.name}</p>
+                      <button
+                        type="button"
+                        className="ms-2 my-auto"
+                        onClick={() => setEditingBackup(true)}
+                      >
+                        <CoolIcon icon="Edit_Pencil_01" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="h-5 rounded-full bg-gray-400 dark:bg-gray-600 w-1/5 mt-px" />
+                  )}
+                  <p className="text-sm text-muted dark:text-muted-dark leading-none">
+                    {t("savedAutomatically")}
+                  </p>
                 </div>
-              )}
-              <div className="my-auto grow">
-                {backup ? (
-                  <div className="flex max-w-full truncate">
-                    <p className="font-semibold truncate">{backup.name}</p>
-                    <button
-                      type="button"
-                      className="ltr:ml-2 rtl:mr-2 my-auto"
-                      onClick={() => setEditingBackup(true)}
-                    >
-                      <CoolIcon icon="Edit_Pencil_01" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="h-5 rounded-full bg-gray-400 dark:bg-gray-600 w-1/5 mt-px" />
-                )}
-                <p className="text-sm text-muted dark:text-muted-dark leading-none">
-                  {t("savedAutomatically")}
-                </p>
               </div>
-              <div className="my-auto ltr:ml-auto rtl:mr-auto flex flex-col sm:flex-row-reverse gap-1">
+              <div className="flex flex-col items-center gap-1">
                 <Button
+                  className="h-[1.8rem] w-full"
                   disabled={!backup || backupFetcher.state !== "idle"}
                   discordstyle={ButtonStyle.Success}
                   onClick={() => {
@@ -349,6 +226,7 @@ export const MessageBackupsModal = (
                   {t("save")}
                 </Button>
                 <Button
+                  className="h-[1.8rem] w-full"
                   disabled={!backup}
                   discordstyle={ButtonStyle.Secondary}
                   onClick={() => {
@@ -367,18 +245,22 @@ export const MessageBackupsModal = (
             <div className="flex">
               <div className="grow">
                 <TextInput
-                  label={t("name")}
+                  label={t("searchOrCreateBackup")}
                   className="w-full"
                   maxLength={100}
                   value={draftName ?? ""}
-                  onChange={(e) => setDraftName(e.currentTarget.value)}
-                  required
+                  onChange={(e) => {
+                    setDraftName(e.currentTarget.value);
+                    setSearchTerm(e.currentTarget.value);
+                  }}
                 />
               </div>
               <Button
-                className="mt-auto ltr:ml-2 rtl:mr-2 h-9"
+                className="mt-auto ms-2 h-9"
                 disabled={!draftName?.trim()}
                 onClick={async () => {
+                  setSearchTerm(undefined);
+
                   const created = await backupFetcher.submitAsync(
                     {
                       name:
@@ -405,6 +287,157 @@ export const MessageBackupsModal = (
               </Button>
             </div>
           )}
+          {backup ? (
+            <div className="grow mt-4">
+              <TextInput
+                label={t("search")}
+                className="w-full"
+                maxLength={100}
+                value={searchTerm ?? ""}
+                onChange={(e) => setSearchTerm(e.currentTarget.value)}
+              />
+            </div>
+          ) : null}
+          <div
+            className={twJoin(
+              "space-y-1.5 mt-2 overflow-y-auto max-h-96",
+              backups ? undefined : "animate-pulse",
+            )}
+          >
+            {backups
+              ? backups
+                  .filter((b) =>
+                    searchTerm
+                      ? b.name.toLowerCase().includes(searchTerm.toLowerCase())
+                      : true,
+                  )
+                  .map((b) => (
+                    <div
+                      key={`backup-${b.id}`}
+                      className={twJoin(
+                        "rounded-lg border border-border-normal dark:border-border-normal-dark bg-gray-200 dark:bg-gray-800 p-3 flex transition",
+                        b.id.toString() === data.backup_id
+                          ? "opacity-60 pointer-events-none"
+                          : undefined,
+                      )}
+                    >
+                      <Avatar.Root>
+                        {b.previewImageUrl ? (
+                          <Avatar.Image
+                            src={b.previewImageUrl}
+                            className="object-cover w-7 my-auto rounded aspect-square me-2"
+                          />
+                        ) : null}
+                        <Avatar.Fallback className="w-7 h-7 my-auto me-2 flex rounded bg-blurple">
+                          <CoolIcon
+                            icon="File_Document"
+                            className="m-auto text-lg text-gray-50"
+                          />
+                        </Avatar.Fallback>
+                      </Avatar.Root>
+                      <p className="truncate my-auto">{b.name}</p>
+                      <div className="ltr:ml-auto rtl:mr-auto flex space-x-1.5 rtl:space-x-reverse text-xl my-auto">
+                        <button
+                          type="button"
+                          title={t("openBackupLoad")}
+                          onClick={async () => {
+                            if (backup) {
+                              await backupFetcher.submitAsync(
+                                { data: dataWithTargets },
+                                {
+                                  action: apiUrl(BRoutes.backups(backup.id)),
+                                  method: "PATCH",
+                                },
+                              );
+                            }
+                            const loadedBackup = await backupFetcher.loadAsync(
+                              `${apiUrl(BRoutes.backups(b.id))}?data=true`,
+                            );
+                            // Always true, this is just a type guard
+                            if ("data" in loadedBackup && loadedBackup.data) {
+                              document.title = `${b.name} - Discohook`;
+                              setData({
+                                ...loadedBackup.data,
+                                // Just in case
+                                backup_id: b.id.toString(),
+                              });
+                              setTargets(loadedBackup.data.targets);
+                              loadMessageComponents(loadedBackup.data, setData);
+                              setBackupId(b.id);
+                            }
+                          }}
+                        >
+                          <CoolIcon icon="File_Edit" />
+                        </button>
+                        <button
+                          type="button"
+                          title={t("openBackupClone")}
+                          onClick={async () => {
+                            if (backup) {
+                              await backupFetcher.submitAsync(
+                                { data: dataWithTargets },
+                                {
+                                  action: apiUrl(BRoutes.backups(backup.id)),
+                                  method: "PATCH",
+                                },
+                              );
+                            }
+                            const loadedBackup = await backupFetcher.loadAsync(
+                              `${apiUrl(BRoutes.backups(b.id))}?data=true`,
+                            );
+                            // Always true, this is just a type guard
+                            if ("data" in loadedBackup && loadedBackup.data) {
+                              const created = await backupFetcher.submitAsync(
+                                {
+                                  name: `Copy of ${b.name}`.slice(0, 100),
+                                  data: loadedBackup.data,
+                                },
+                                {
+                                  action: apiUrl(BRoutes.backups()),
+                                  method: "POST",
+                                },
+                              );
+                              document.title = `${created.name} - Discohook`;
+                              setData({
+                                ...loadedBackup.data,
+                                backup_id: created.id.toString(),
+                              });
+                              // This isn't totally necessary for a duplicated backup
+                              setTargets(loadedBackup.data.targets);
+                              loadMessageComponents(loadedBackup.data, setData);
+                              setBackupId(created.id);
+                            }
+                          }}
+                        >
+                          <CoolIcon icon="Copy" />
+                        </button>
+                        <Link
+                          to={`/?backup=${b.id}`}
+                          title={t("openBackupNewTab")}
+                          target="_blank"
+                        >
+                          <CoolIcon icon="External_Link" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))
+              : Array(10)
+                  .fill(undefined)
+                  .map((_, i) => (
+                    <div
+                      key={`backup-skeleton-${i}`}
+                      className="rounded-lg border border-border-normal dark:border-border-normal-dark bg-gray-200 dark:bg-gray-800 p-2 flex transition gap-2"
+                    >
+                      <div className="w-7 h-7 my-auto flex rounded bg-blurple">
+                        <CoolIcon
+                          icon="File_Document"
+                          className="m-auto text-lg text-gray-50"
+                        />
+                      </div>
+                      <div className="my-auto rounded-full h-4 w-36 bg-gray-300 dark:bg-gray-600" />
+                    </div>
+                  ))}
+          </div>
         </div>
       ) : (
         <Link to="/auth/discord" target="_blank" className={linkClassName}>

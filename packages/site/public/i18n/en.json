@@ -33,6 +33,7 @@
   "includeWebhookUrls": "Include webhook URLs",
   "options": "Options",
   "manageBackups": "Visit your user page to import, export, and manage backups.",
+  "searchOrCreateBackup": "Search or create a backup",
   "logInToSaveBackups": "Log in to save permanent backups.",
   "savedAutomatically": "Saved automatically",
   "createBackup": "Create Backup",

@@ -44,7 +44,11 @@ import type { action as ApiPostBackupsImportDiscoscheduler } from "../api/v1/bac
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
-  const { page, settings: importedSettings } = zxParseQuery(request, {
+  const {
+    page,
+    settings: importedSettings,
+    query: searchQuery,
+  } = zxParseQuery(request, {
     settings: jsonAsString(
       z.object({
         theme: z.enum(["light", "dark"]).optional(),
@@ -57,11 +61,18 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     page: zx.IntAsString.default("1")
       .refine((i) => i > 0)
       .transform((i) => i - 1),
+    query: z.string().min(1).max(100).optional(),
   });
 
   const db = getDb(context.env.HYPERDRIVE);
   const backups = await db.query.backups.findMany({
-    where: (backups, { eq }) => eq(backups.ownerId, user.id),
+    where: (backups, { eq, and, ilike }) =>
+      searchQuery
+        ? and(
+            eq(backups.ownerId, user.id),
+            ilike(backups.name, `%${searchQuery}%`),
+          )
+        : eq(backups.ownerId, user.id),
     columns: {
       id: true,
       name: true,
