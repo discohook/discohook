@@ -145,7 +145,7 @@ export const BackupExportModal = (
                                   },
                                 },
                               ],
-                          targets: data ? data.data.targets : [],
+                          targets: data?.data?.targets ?? [],
                           schedule:
                             data?.scheduled && data?.cron
                               ? {

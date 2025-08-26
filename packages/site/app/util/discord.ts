@@ -3,8 +3,8 @@ import {
   calculateUserDefaultAvatarIndex,
   type ImageExtension,
   type RawFile,
-  type REST,
   RequestMethod,
+  type REST,
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
@@ -95,7 +95,7 @@ export const discordRequest = async <T>(
     return response as T;
   }
 
-  let body;
+  let body: BodyInit | null | undefined;
   if (options?.files && options?.files.length !== 0) {
     // Browser must set this header on its own along with `boundary`
     headers.delete("Content-Type");

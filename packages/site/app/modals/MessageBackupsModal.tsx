@@ -10,6 +10,7 @@ import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { TextInput } from "~/components/TextInput";
+import { loadMessageComponents } from "~/routes/_index";
 import type {
   LoadedBackup,
   loader as MeBackupsLoader,
@@ -221,6 +222,7 @@ export const MessageBackupsModal = (
                               backup_id: b.id.toString(),
                             });
                             setTargets(loadedBackup.data.targets);
+                            loadMessageComponents(loadedBackup.data, setData);
                             setBackupId(b.id);
                           }
                         }}
@@ -262,6 +264,7 @@ export const MessageBackupsModal = (
                             });
                             // This isn't totally necessary for a duplicated backup
                             setTargets(loadedBackup.data.targets);
+                            loadMessageComponents(loadedBackup.data, setData);
                             setBackupId(created.id);
                           }
                         }}

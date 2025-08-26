@@ -148,7 +148,7 @@ const Inner = ({
             t={t}
             i18nKey="editBackupMessages"
             components={[
-              <CoolIcon icon="External_Link" className="align-sub" />,
+              <CoolIcon key="0" icon="External_Link" className="align-sub" />,
             ]}
           />
         </p>
