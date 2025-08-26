@@ -104,7 +104,7 @@
   "new": "NEW",
   "beta": "BETA",
   "addMessage": "Add Message",
-  "defaultMessageCreationChoice": "Default New Message Type",
+  "defaultMessageCreationChoice": "Default Message Type",
   "standardMessage": "Standard Message",
   "standardMessageDescription": "Can display text, then attachments, then embeds. If you aren't sure, choose this. Hold shift when clicking Add Message to use this automatically (or change the default in your settings).",
   "componentsMessage": "Components-based Message",
