@@ -72,6 +72,7 @@ export const Message: React.FC<{
   date?: Date;
   setImageModalData?: SetImageModalData;
   forceSeparateAuthor?: boolean;
+  ignoreScreenSize?: boolean;
   isLinkEmbedEditor?: boolean;
   linkEmbedStrategies?: LinkEmbedStrategy[];
   cdn?: string;
@@ -88,6 +89,7 @@ export const Message: React.FC<{
   date,
   setImageModalData,
   forceSeparateAuthor,
+  ignoreScreenSize,
   isLinkEmbedEditor,
   linkEmbedStrategies,
   cdn: cdnOrigin,
@@ -228,7 +230,12 @@ export const Message: React.FC<{
         )}
       >
         {messageDisplay !== "compact" && (
-          <div className="hidden sm:block w-fit shrink-0">
+          <div
+            className={twJoin(
+              "w-fit shrink-0",
+              !ignoreScreenSize ? "hidden sm:block" : undefined,
+            )}
+          >
             {showProfile ? (
               <Avatar.Root className="block mr-3 cursor-pointer active:translate-y-px">
                 <Avatar.Image

@@ -84,6 +84,7 @@ export default () => {
               // setImageModalData={setImageModalData}
               messageDisplay={settings.messageDisplay}
               compactAvatars={settings.compactAvatars}
+              ignoreScreenSize={searchParams.get("avatar") === "true"}
             />
           );
         })}

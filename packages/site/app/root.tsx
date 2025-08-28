@@ -66,17 +66,23 @@ const TailwindThemeScript = () => (
     // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted HTML
     dangerouslySetInnerHTML={{
       __html: `
-    const settings = JSON.parse(localStorage.getItem("discohook_settings") ?? "{}");
+        const settings = JSON.parse(localStorage.getItem("discohook_settings") ?? "{}");
+        const override = new URLSearchParams(window.location.search).get("theme");
 
-    if (
-      settings.theme === "light" ||
-      (!settings.theme &&
-        window.matchMedia("(prefers-color-scheme: light)").matches)
-    ) {
-      document.documentElement.classList.remove("dark");
-    } else {
-      document.documentElement.classList.add("dark");
-    }
+        // query param gets priority. this is for the viewer route
+        if (override === "light") {
+          document.documentElement.classList.remove("dark");
+        } else if (override === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (
+          settings.theme === "light" ||
+          (!settings.theme &&
+            window.matchMedia("(prefers-color-scheme: light)").matches)
+        ) {
+          document.documentElement.classList.remove("dark");
+        } else {
+          document.documentElement.classList.add("dark");
+        }
   `,
     }}
   />
