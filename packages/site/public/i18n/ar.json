@@ -764,7 +764,7 @@
     "standardMessageDescription": "يمكنك شمل نص, ثم مُرفق, ثم رسائل مُضمنة. اذا لم تكن متأكد, اختر هذه. اضغط ضغطة مستمرة على زر Shift عند ضغط 'اضافة رسالة جديدة' لأستخدام هذه الوضعية تلقائيًا (او تغيير الوضعية الافتراضية في الاعدادات).",
     "componentsMessageDescription": "يمكنك شمل نص, وسائط, ملفات, و محتويات (تشبه الرسائل المُضمنة) في اي ترتيب! هذا النوع قابل للتخصيص اكثر من الرسائل العادية, لكن بعض المميزات مثل الحقول على نفس الصف غير متوفرة.",
     "new": "جديد",
-    "defaultMessageCreationChoice": "النوع الإفتراضي للرسائل الجديدة",
+    "defaultMessageCreationChoice": "النوع الإفتراضي للرسائل",
     "standardMessage": "رسالة عادية",
     "componentsMessage": "رسالة مبنية على العناصر",
     "unlink": "فك الربط",
@@ -798,5 +798,8 @@
     },
     "threadWebhookApplyPrompt": "<open>اي دي المنشور</open> موجود في الرابط. <toggle>اضافة الى جميع الرسائل</toggle>",
     "threadWebhookApplyConfirm": "تم اضافة المنشور لجميع الرسائل. <toggle>الغاء</toggle>",
-    "beta": "تجربة مبدئية"
+    "beta": "تجربة مبدئية",
+    "usernameForbiddenSubstring": "اسم المستخدم لا يمكن ان يحتوي على {{ substring }}",
+    "usernameForbiddenString": "اسم المستخدم لا يمكن ان يكون {{ substring }}",
+    "searchOrCreateBackup": "بحث عن او إنشاء نسخة احتياطية"
 }
