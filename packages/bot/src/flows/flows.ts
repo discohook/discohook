@@ -47,6 +47,7 @@ import { getWebhook } from "../commands/webhooks/webhookInfo.js";
 import { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";
 import { isDiscordError } from "../util/error.js";
+import { isThreadMessage } from "../util/messages.js";
 import { sleep } from "../util/sleep.js";
 import { getReplacements, processQueryData } from "./backup.js";
 
@@ -838,7 +839,7 @@ export const executeSendWebhookMessage = async (
       webhookId: webhook.id,
       channelId: webhook.channelId,
       messageId: message.id,
-      threadId: message.position !== undefined ? message.channel_id : undefined,
+      threadId: isThreadMessage(message) ? message.channel_id : undefined,
       discordGuildId: webhook.discordGuildId,
       hasContent: !!msg.content,
       embedCount: msg.embeds?.length,

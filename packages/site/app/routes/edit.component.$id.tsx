@@ -100,6 +100,7 @@ import {
   useSafeFetcher,
 } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
+import { isThreadMessage } from "~/util/message";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
@@ -274,7 +275,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       console.error(e);
       throw json({ message: "Failed to fetch message" }, 500);
     }
-    if (msg.position !== undefined) {
+    if (isThreadMessage(msg)) {
       threadId = msg.channel_id;
     }
     const { resolved, components, webhook_id, flags } = msg;
@@ -486,8 +487,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
         throw json({ message: "Failed to retrieve the message" }, 400);
       }
-      const threadId =
-        message.position !== undefined ? message.channel_id : undefined;
+      const threadId = isThreadMessage(message)
+        ? message.channel_id
+        : undefined;
 
       let isDraft = component.draft;
       for (const row of onlyActionRows(message.components ?? [], true)) {

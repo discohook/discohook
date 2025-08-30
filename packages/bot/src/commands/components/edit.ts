@@ -2,8 +2,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ContainerBuilder,
-  ModalBuilder,
   messageLink,
+  ModalBuilder,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
@@ -60,6 +60,7 @@ import {
   textDisplay,
 } from "../../util/components.js";
 import { MAX_SELECT_OPTIONS } from "../../util/constants.js";
+import { getWebhookThreadQuery } from "../../util/messages.js";
 import { color } from "../../util/meta.js";
 import { resolveEmoji } from "../reactionRoles.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
@@ -945,10 +946,7 @@ const registerComponentUpdate = async (
         Routes.webhookMessage(webhook.id, webhook.token, message.id),
         {
           body: { components: message.components },
-          query:
-            message.position !== undefined
-              ? new URLSearchParams({ thread_id: message.channel_id })
-              : undefined,
+          query: getWebhookThreadQuery(message),
         },
       )) as APIMessage;
     }),

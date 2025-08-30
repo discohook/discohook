@@ -9,6 +9,7 @@ import {
   type APIWebhook,
   ComponentType,
   PermissionFlagsBits,
+  RESTJSONErrorCodes,
   type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
   SeparatorSpacingSize,
@@ -25,6 +26,7 @@ import {
 } from "../../interactions.js";
 import { parseAutoComponentId, textDisplay } from "../../util/components.js";
 import { isDiscordError } from "../../util/error.js";
+import { getWebhookThreadQuery } from "../../util/messages.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import {
   getQuickEditContainerContainer,
@@ -46,34 +48,50 @@ const submitWebhookMessageEdit = async (
   return [
     ctx.defer(),
     async () => {
-      let updated: APIMessage;
+      const query = getWebhookThreadQuery(message);
+      let updated: APIMessage | undefined;
       try {
         updated = (await ctx.rest.patch(
           // biome-ignore lint/style/noNonNullAssertion: this should have been verified previously
           Routes.webhookMessage(webhook.id, webhook.token!, message.id),
-          {
-            body,
-            query:
-              message.position !== undefined
-                ? new URLSearchParams({ thread_id: message.channel_id })
-                : undefined,
-          },
+          { body, query },
         )) as APIMessage;
       } catch (e) {
-        if (isDiscordError(e)) {
-          await ctx.followup.send({
-            content: `Discord rejected the edit: **${
-              e.rawError.message
-            }**\`\`\`json\n${JSON.stringify(e.rawError)}\`\`\``,
-            ephemeral: true,
-          });
+        if (
+          isDiscordError(e) &&
+          e.code === RESTJSONErrorCodes.UnknownMessage &&
+          !query.has("thread_id")
+        ) {
+          // There is a bug where the second message in a forum thread is
+          // missing `position`, so it cannot be determined that it is a
+          // thread message. Therefore, in the event that we receive this
+          // specific error and did not already try passing a thread ID, we
+          // try again assuming that this is what's happening
+          // https://github.com/discord/discord-api-docs/issues/7788
+          try {
+            updated = (await ctx.rest.patch(
+              // biome-ignore lint/style/noNonNullAssertion: see above
+              Routes.webhookMessage(webhook.id, webhook.token!, message.id),
+              {
+                body,
+                query: new URLSearchParams({ thread_id: message.channel_id }),
+              },
+            )) as APIMessage;
+          } catch {
+            // well, that wasn't the problem
+          }
         }
-        throw e;
-      }
-
-      // https://github.com/discord/discord-api-docs/issues/7570
-      if (updated.position !== message.position) {
-        updated.position = message.position;
+        if (!updated) {
+          if (isDiscordError(e)) {
+            await ctx.followup.send({
+              content: `Discord rejected the edit: **${
+                e.rawError.message
+              }**\`\`\`json\n${JSON.stringify(e.rawError)}\`\`\``,
+              ephemeral: true,
+            });
+          }
+          throw e;
+        }
       }
 
       // Re-cache the message so subsequent edits use the newest version of
@@ -372,10 +390,7 @@ export const quickEditSubmitEmbed: ModalCallback = async (ctx) => {
       //       Routes.webhookMessage(webhook.id, webhook.token!, updated.id),
       //       {
       //         body: { embeds: updated.embeds },
-      //         query:
-      //           updated.position !== undefined
-      //             ? new URLSearchParams({ thread_id: updated.channel_id })
-      //             : undefined,
+      //         query: getWebhookThreadQuery(updated),
       //       },
       //     )) as APIMessage;
       //   } catch {}

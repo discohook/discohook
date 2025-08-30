@@ -5,8 +5,8 @@ import {
   escapeMarkdown,
   formatEmoji,
   type MessageActionRowComponentBuilder,
-  ModalBuilder,
   messageLink,
+  ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
@@ -61,6 +61,7 @@ import {
 } from "../../util/components.js";
 import { MAX_ACTION_ROW_WIDTH } from "../../util/constants.js";
 import { isDiscordError } from "../../util/error.js";
+import { isThreadMessage } from "../../util/messages.js";
 import { color } from "../../util/meta.js";
 import { BUTTON_URL_RE } from "../../util/regex.js";
 import { getUserPremiumDetails } from "../../util/user.js";
@@ -376,7 +377,7 @@ export const startComponentFlow = async (
     message: {
       id: message.id,
       channelId: message.channel_id,
-      isInThread: message.position !== undefined,
+      isInThread: isThreadMessage(message),
       // biome-ignore lint/style/noNonNullAssertion: Guild-only command
       guildId: ctx.interaction.guild_id!,
       webhookId: message.webhook_id,

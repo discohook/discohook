@@ -43,6 +43,7 @@ import {
   storeComponents,
   textDisplay,
 } from "../../util/components.js";
+import { getWebhookThreadQuery } from "../../util/messages.js";
 import { getComponentsAsV2Menu } from "./edit.js";
 import { getWebhookMessage, resolveMessageLink } from "./entry.js";
 
@@ -513,10 +514,7 @@ const registerComponentDelete = async (
         Routes.webhookMessage(webhook.id, webhook.token, message.id),
         {
           body: componentsOrEmptyBody(message),
-          query:
-            message.position !== undefined
-              ? new URLSearchParams({ thread_id: message.channel_id })
-              : undefined,
+          query: getWebhookThreadQuery(message),
         },
       )) as APIMessage;
     }),
@@ -592,10 +590,7 @@ export const deleteComponentConfirm: ButtonCallback = async (ctx) => {
       Routes.webhookMessage(webhook.id, webhook.token, message.id),
       {
         body: componentsOrEmptyBody(message),
-        query:
-          message.position !== undefined
-            ? new URLSearchParams({ thread_id: message.channel_id })
-            : undefined,
+        query: getWebhookThreadQuery(message),
       },
     );
   } else {

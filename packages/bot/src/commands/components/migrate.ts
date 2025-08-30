@@ -28,12 +28,12 @@ import {
   type FlowActionCheck,
   FlowActionCheckFunctionType,
   type FlowActionDud,
+  flowActions,
   type FlowActionSendMessage,
   FlowActionSetVariableType,
   type FlowActionStop,
   type FlowActionToggleRole,
   FlowActionType,
-  flowActions,
   flows,
   generateId,
   getchTriggerGuild,
@@ -56,6 +56,7 @@ import {
   isActionRow,
   parseAutoComponentId,
 } from "../../util/components.js";
+import { getWebhookThreadQuery } from "../../util/messages.js";
 import { getWebhook } from "../webhooks/webhookInfo.js";
 import { resolveMessageLink } from "./entry.js";
 
@@ -508,10 +509,7 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
         // biome-ignore lint/style/noNonNullAssertion: Stopped if null
         Routes.webhookMessage(webhook.id, webhook.token!, message.id),
         {
-          query:
-            message.position !== undefined
-              ? new URLSearchParams({ thread_id: message.channel_id })
-              : undefined,
+          query: getWebhookThreadQuery(message),
           body: {
             components: rows.map((r) => r.toJSON()),
           } satisfies RESTPatchAPIWebhookWithTokenMessageJSONBody,

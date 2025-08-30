@@ -1,19 +1,5 @@
 import type { APIMessage } from "discord-api-types/v10";
-import { getEmbedText } from "~/components/editor/EmbedEditor";
-import type { QueryData } from "~/types/QueryData";
 
-export const getMessageText = (
-  message: QueryData["messages"][number]["data"],
-): string | undefined =>
-  message.content ??
-  (message.embeds
-    ? message.embeds.map(getEmbedText).find((t) => !!t)
-    : undefined);
-
-// There is currently a bug where `position` is missing in forum thread
-// messages when its value would be 0, leading this function to return
-// false negatives.
-// https://github.com/discord/discord-api-docs/issues/7788
 export const isThreadMessage = (
   message: Pick<APIMessage, "id" | "channel_id" | "position">,
 ) =>
