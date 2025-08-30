@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "check": "biome check .",
+    "format": "biome format . --write",
+    "config:shards": "bun scripts/config.ts",
+    "config:shardless": "bun scripts/config.ts --shardless",
+    "deploy": "bun src/deploy.ts",
+    "dev": "ENVIRONMENT=development bun --watch src/bot.ts",
+    "start": "bun src/bot.ts"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^1.11.2",
+    "@discordjs/core": "^2.2.1",
+    "@discordjs/rest": "^2.5.1",
+    "@discordjs/ws": "^2.0.3",
+    "@sapphire/bitfield": "^1.2.4",
+    "argparse": "^2.0.1",
+    "discord-api-types": "^0.38.16",
+    "dotenv": "^16.3.1",
+    "drizzle-orm": "^0.33.0",
+    "json-bigint": "^1.0.0",
+    "keyv": "^5.0.1",
+    "postgres": "^3.4.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@sapphire/ts-config": "^5.0.0",
+    "@types/argparse": "^2.0.17",
+    "@types/bun": "^1.2.21",
+    "@types/json-bigint": "^1.0.4",
+    "@types/node": "^18.18.8",
+    "tsx": "^4.20.3",
+    "typescript": "^5.2.2",
+    "zod": "^3.22.4"
+  }
+}

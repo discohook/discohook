@@ -1,0 +1,440 @@
+{
+  "commands": {
+    "_options": {
+      "webhook": {
+        "name": "webhook",
+        "description": "The target webhook"
+      },
+      "filter-channel": {
+        "name": "filter-channel",
+        "description": "The channel to filter autocomplete results with"
+      }
+    },
+    "buttons": {
+      "name": "buttons",
+      "description": "Add, remove, and manage components (buttons/selects)",
+      "options": {
+        "add": {
+          "name": "add",
+          "description": "Add a component",
+          "options": {
+            "message": {
+              "name": "message",
+              "description": "Add a component to this message. A message link is also accepted here"
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        },
+        "edit": {
+          "name": "edit",
+          "description": "Edit a component",
+          "options": {
+            "message": {
+              "name": "message",
+              "description": "Edit a component on this message. A message link is also accepted here"
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        },
+        "delete": {
+          "name": "delete",
+          "description": "Delete a component",
+          "options": {
+            "message": {
+              "name": "message",
+              "description": "Delete a component on this message. A message link is also accepted here"
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        },
+        "migrate": {
+          "name": "migrate",
+          "description": "Migrate all legacy buttons",
+          "options": {
+            "message": {
+              "name": "message",
+              "description": "Migrate components on this message. A message link is also accepted here"
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        }
+      }
+    },
+    "deluxe": {
+      "name": "deluxe",
+      "description": "Synchronize your Deluxe subscription",
+      "options": {
+        "info": {
+          "name": "info",
+          "description": "Info about Discohook Deluxe, our premium subscription option"
+        },
+        "sync": {
+          "name": "sync",
+          "description": "Make sure the Discohook website is up to date with your Deluxe subscription"
+        }
+      }
+    },
+    "triggers": {
+      "description": "Set up triggers to respond to events in your server",
+      "options": {
+        "add": {
+          "name": "add",
+          "description": "Add a new trigger",
+          "options": {
+            "name": {
+              "name": "name",
+              "description": "The name of the trigger"
+            },
+            "event": {
+              "name": "event",
+              "description": "The event that will set off the trigger",
+              "choices": {
+                "0": "Member Join",
+                "1": "Member Remove"
+              }
+            }
+          }
+        },
+        "view": {
+          "name": "view",
+          "description": "View & manage a trigger",
+          "options": {
+            "name": {
+              "name": "name",
+              "description": "The name of the trigger"
+            }
+          }
+        }
+      }
+    },
+    "webhook": {
+      "name": "webhook",
+      "description": "Manage webhooks",
+      "options": {
+        "create": {
+          "name": "create",
+          "description": "Create a webhook",
+          "options": {
+            "name": {
+              "name": "name",
+              "description": "The webhook's name"
+            },
+            "avatar": {
+              "name": "avatar",
+              "description": "The webhook's avatar"
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel to create the webhook in"
+            },
+            "show-url": {
+              "name": "show-url",
+              "description": "Only enable this if you need the URL for an external application"
+            }
+          }
+        },
+        "delete": {
+          "name": "delete",
+          "description": "Delete a webhook",
+          "options": {
+            "webhook": {
+              "name": "webhook",
+              "description": "The webhook to delete"
+            },
+            "filter-channel": {
+              "name": "filter-channel",
+              "description": "The channel to filter autocomplete results with"
+            }
+          }
+        },
+        "info": {
+          "name": "info",
+          "description": "Get info on a webhook",
+          "options": {
+            "webhook": {
+              "name": "webhook",
+              "description": "The webhook to get info for"
+            },
+            "filter-channel": {
+              "name": "filter-channel",
+              "description": "The channel to filter autocomplete results with"
+            },
+            "show-url": {
+              "name": "show-url",
+              "description": "Whether to skip the \"Get URL\" step. This makes the message hidden"
+            }
+          }
+        }
+      }
+    },
+    "welcomer": {
+      "name": "welcomer",
+      "description": "Set up a simple welcomer (Also see /triggers)",
+      "options": {
+        "set": {
+          "name": "set",
+          "description": "Set up a new welcomer or overwrite an existing one",
+          "options": {
+            "event": {
+              "name": "event",
+              "description": "What event should cause this welcomer to trigger",
+              "choices": {
+                "0": "Member Join (hello)",
+                "1": "Member Remove (goodbye)"
+              }
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel to send the message in if a webhook is not provided"
+            },
+            "webhook": {
+              "name": "webhook",
+              "description": "The webhook to use to send the message"
+            },
+            "share-link": {
+              "name": "share-link",
+              "description": "The share link to use for the message"
+            },
+            "delete-after": {
+              "name": "delete-after",
+              "description": "How long to wait in seconds before deleting the message (0 for never)"
+            }
+          }
+        },
+        "view": {
+          "name": "view",
+          "description": "View a summary of your current welcomer configuration",
+          "options": {
+            "event": {
+              "name": "event",
+              "description": "The event of the welcomer"
+            }
+          }
+        },
+        "delete": {
+          "name": "delete",
+          "description": "Delete a welcomer configuration",
+          "options": {
+            "event": {
+              "name": "event",
+              "description": "The event of the welcomer"
+            }
+          }
+        }
+      }
+    },
+    "help": {
+      "description": "Get help with various topics",
+      "options": {
+        "tag": {
+          "name": "tag",
+          "description": "The tag to get help for"
+        },
+        "mention": {
+          "name": "mention",
+          "description": "If you are helping someone else, mention them in the bot reply"
+        }
+      }
+    },
+    "reaction-role": {
+      "name": "reaction-role",
+      "description": "Add, remove, and manage reaction roles",
+      "options": {
+        "create": {
+          "name": "create",
+          "description": "Create a new reaction role",
+          "options": {
+            "message": {
+              "name": "message",
+              "description": "The message to create the reaction on. A message link is also accepted here"
+            },
+            "emoji": {
+              "name": "emoji",
+              "description": "The emoji that the reaction should show. For external emojis, react before the bot"
+            },
+            "role": {
+              "name": "role",
+              "description": "The role that should be assigned/removed when the reaction is clicked"
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        },
+        "delete": {
+          "name": "delete",
+          "description": "Delete a reaction role from a message",
+          "options": {
+            "message": {
+              "name": "message",
+              "description": "The message to delete the reaction role from. A message link is also accepted here"
+            },
+            "emoji": {
+              "name": "emoji",
+              "description": "The emoji that the reaction shows. Omit this parameter to view a deletion menu"
+            },
+            "channel": {
+              "name": "channel",
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        },
+        "list": {
+          "name": "list",
+          "description": "List all reaction roles on a message",
+          "options": {
+            "message": {
+              "description": "The message to list reaction roles on. A message link is also accepted here"
+            },
+            "channel": {
+              "description": "The channel that the message is in, for autocomplete results"
+            }
+          }
+        }
+      }
+    },
+    "restore": {
+      "name": "restore",
+      "description": "Restore a message to the Discohook editor",
+      "options": {
+        "message": {
+          "name": "message",
+          "description": "The message to restore. A message link is also accepted here"
+        },
+        "mode": {
+          "name": "mode",
+          "description": "How to restore the message. Currently this only allows including edit options",
+          "choices": {
+            "edit": "With edit options",
+            "link": "To link embed editor"
+          }
+        }
+      }
+    },
+    "format": {
+      "name": "format",
+      "description": "Get markdown formatting for users, roles, channels, and emojis",
+      "options": {
+        "mention": {
+          "name": "mention",
+          "description": "Outputs the mention format for a user or role",
+          "options": {
+            "target": {
+              "name": "target",
+              "description": "The user or role to mention"
+            }
+          }
+        },
+        "channel": {
+          "name": "channel",
+          "description": "Outputs the mention format for a channel",
+          "options": {
+            "target": {
+              "name": "target",
+              "description": "The channel to mention"
+            }
+          }
+        },
+        "emoji": {
+          "name": "emoji",
+          "description": "Outputs the usage format for a server emoji",
+          "options": {
+            "target": {
+              "name": "target",
+              "description": "The emoji to use"
+            }
+          }
+        }
+      }
+    },
+    "invite": {
+      "name": "invite",
+      "description": "Invite URL for this bot"
+    },
+    "id": {
+      "name": "id",
+      "description": "Get the numeric ID of a Discord resource",
+      "options": {
+        "mention": {
+          "name": "mention",
+          "description": "Outputs the ID for a user or role",
+          "options": {
+            "target": {
+              "name": "target",
+              "description": "The user or role"
+            }
+          }
+        },
+        "channel": {
+          "name": "channel",
+          "description": "Outputs the ID for a channel or thread",
+          "options": {
+            "target": {
+              "name": "target",
+              "description": "The channel or thread"
+            }
+          }
+        },
+        "emoji": {
+          "name": "emoji",
+          "description": "Outputs the ID for a server emoji",
+          "options": {
+            "target": {
+              "name": "target",
+              "description": "The emoji"
+            }
+          }
+        }
+      }
+    },
+    "_ctx": {
+      "components": {
+        "name": "Buttons & Components"
+      },
+      "edit": {
+        "name": "Quick Edit"
+      },
+      "restore": {
+        "name": "Restore"
+      },
+      "webhook": {
+        "name": "Webhook Info"
+      },
+      "quickedit": {
+        "name": "Quick Edit"
+      },
+      "debug": {
+        "name": "Debug"
+      }
+    }
+  },
+  "noMigratableComponents": "This message has no registered, migratable components.",
+  "noContentAvailable": "No content available",
+  "noComponentFlow": "There was no flow registered for this component. Click the button to configure a new flow.",
+  "noComponentFlowMigratePrompt": "You may need to run </buttons migrate:908884724087410729> if this message has buttons from before September 5, 2024.",
+  "componentWillExpire": "Please finish editing & submit this component within 2 weeks or the draft will be deleted.",
+  "noTrigger": "This server has no trigger with that name.",
+  "unnamedTrigger": "Unnamed trigger",
+  "triggerDuplicate": "This server already has a trigger for that event.",
+  "triggerCreated": "Trigger **{{name}}** created successfully.",
+  "addActions": "Add Actions",
+  "noActions": "No actions",
+  "manageActions": "Manage Actions",
+  "idUnavailable": "ID unavailable.",
+  "customize": "Customize",
+  "gteNMessagesSent_one": "At least {{count}} message sent",
+  "gteNMessagesSent_other": "At least {{count}} messages sent"
+}

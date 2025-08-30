@@ -1,0 +1,83 @@
+{
+  "commands": {
+    "buttons": {
+      "options": {
+        "add": {
+          "description": "添加组件"
+        },
+        "delete": {
+          "description": "删除组件"
+        }
+      },
+      "description": "添加、删除和管理组件"
+    },
+    "_ctx": {
+      "edit": {
+        "name": "快速编辑"
+      },
+      "restore": {
+        "name": "恢复消息"
+      },
+      "webhook": {
+        "name": "Webhook 信息"
+      },
+      "components": {
+        "name": "按钮 & 组件"
+      }
+    },
+    "webhook": {
+      "description": "管理 Webhook",
+      "options": {
+        "create": {
+          "description": "创建一个 Webhook",
+          "options": {
+            "name": {
+              "description": "Webhook 名称"
+            },
+            "avatar": {
+              "description": "Webhook 的头像"
+            }
+          },
+          "name": "创建"
+        },
+        "info": {
+          "options": {
+            "webhook": {
+              "name": "webhook"
+            }
+          }
+        },
+        "delete": {
+          "options": {
+            "webhook": {
+              "name": "webhook"
+            }
+          },
+          "name": "删除",
+          "description": "删除 Webhook"
+        }
+      }
+    },
+    "triggers": {
+      "options": {
+        "add": {
+          "options": {
+            "event": {
+              "choices": {
+                "0": "成员加入",
+                "1": "成员移除"
+              }
+            }
+          }
+        }
+      }
+    },
+    "deluxe": {
+      "options": {
+        "sync": {
+          "name": "同步"
+        }
+      }
+    }
+  }
+}
