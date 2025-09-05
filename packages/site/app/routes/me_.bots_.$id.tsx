@@ -26,10 +26,10 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Prose } from "~/components/Prose";
 import { linkClassName } from "~/components/preview/Markdown";
-import { TextInput } from "~/components/TextInput";
+import { Prose } from "~/components/Prose";
 import { TabHeader, TabsWindow } from "~/components/tabs";
+import { TextInput } from "~/components/TextInput";
 import { BotDeleteConfirmModal } from "~/modals/BotDeleteConfirmModal";
 import { getUser } from "~/session.server";
 import {
@@ -495,6 +495,7 @@ export default function CustomBot() {
                           i18nKey="botTokenCheck"
                           components={[
                             <CoolIcon
+                              key="0"
                               icon="Check_Big"
                               className="text-green-300"
                             />,
@@ -530,6 +531,7 @@ export default function CustomBot() {
                             i18nKey="botTokenCheck"
                             components={[
                               <CoolIcon
+                                key="0"
                                 icon="Close_MD"
                                 className="text-red-400"
                               />,
@@ -564,6 +566,7 @@ export default function CustomBot() {
                           i18nKey="appSecretCheck"
                           components={[
                             <CoolIcon
+                              key="0"
                               icon="Check_Big"
                               className="text-green-300"
                             />,
@@ -598,6 +601,7 @@ export default function CustomBot() {
                             i18nKey="appSecretCheck"
                             components={[
                               <CoolIcon
+                                key="0"
                                 icon="Close_MD"
                                 className="text-red-400"
                               />,
@@ -705,6 +709,7 @@ export default function CustomBot() {
                     components={[
                       // biome-ignore lint/a11y/useAnchorContent: Filled by i18next
                       <a
+                        key="0"
                         className={linkClassName}
                         href={`https://discord.com/developers/applications/${bot.applicationId}/information`}
                         target="_blank"

@@ -222,7 +222,9 @@ export class RedisKV<Key extends string = string> {
   }
 }
 
-export const getRedis = (env: Env): RedisKV => {
+export const getRedis = (
+  env: Pick<Env, "REDIS_URL" | "ENVIRONMENT">,
+): RedisKV => {
   const { protocol, host, username, password, pathname } = new URL(
     env.REDIS_URL,
   );
