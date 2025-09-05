@@ -7,7 +7,7 @@ import type {
 
 type HelpTags = Record<string, APIEmbed | string>;
 
-const fetchTags = async () => {
+export const fetchTags = async () => {
   const response = await fetch(`${Bun.env.DISCOHOOK_ORIGIN}/help/en.json`, {
     method: "GET",
   });
