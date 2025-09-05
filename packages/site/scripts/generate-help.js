@@ -140,10 +140,29 @@ const data = {
         'To remove a schedule, simply uncheck the "Schedule this backup" box, then save.',
       ].join("\n"),
     },
+    welcomer: {
+      title: "How do I create a welcomer?",
+      description:
+        "Use </welcomer set:908884724544602212> to create or modify your welcomer configuration. A welcomer can be for members joining or leaving, as indicated by the **event** value. Use </welcomer delete:908884724544602212> to erase a welcomer.",
+      fields: [
+        {
+          name: "Channel & webhook",
+          value:
+            "You can choose to have your welcomer messages sent by either the bot (Discohook Utils) or a custom webhook. If you choose a webhook, make sure it's already in the channel that you want to send the messages in, because it will not be changed by Discohook.\nIf you want Discohook Utils to send the message, just provide a channel instead, and make sure the bot can send messages there.",
+        },
+        {
+          name: "Share Link",
+          value:
+            "This is the message data that the bot will send when the event is triggered. You can obtain a share link by going to [Discohook](https://discohook.app) and pressing **Share** after designing your message. The message can use any of the formatting options described on [this page](https://discohook.app/guide/getting-started/formatting), which the bot will fill in when someone joins or leaves your server.",
+        },
+      ],
+    },
   },
 };
 
-await writeFile(
-  new URL("../public/help/en.json", import.meta.url).pathname,
-  JSON.stringify(data.en),
-);
+for (const [lang, innerData] of Object.entries(data)) {
+  await writeFile(
+    new URL(`../public/help/${lang}.json`, import.meta.url).pathname,
+    JSON.stringify(innerData),
+  );
+}
