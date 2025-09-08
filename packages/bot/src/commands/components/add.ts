@@ -25,7 +25,6 @@ import {
   Routes,
   TextInputStyle,
 } from "discord-api-types/v10";
-import { t } from "i18next";
 import { SignJWT } from "jose";
 import {
   autoRollbackTx,
@@ -754,7 +753,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
 
       const container = getComponentFlowContainer(state);
       container.addTextDisplayComponents((c) =>
-        c.setContent(`-# ${t("componentWillExpire")}`),
+        c.setContent(`-# ${ctx.t("componentWillExpire")}`),
       );
       return ctx.updateMessage({
         components: [
@@ -762,7 +761,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
               .setStyle(ButtonStyle.Link)
-              .setLabel(t("customize"))
+              .setLabel(ctx.t("customize"))
               .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
           ),
         ],

@@ -21,7 +21,6 @@ import {
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { eq } from "drizzle-orm";
-import { t } from "i18next";
 import {
   autoRollbackTx,
   backups,
@@ -29,9 +28,9 @@ import {
   discordMessageComponentsToFlows,
   type FlowAction,
   FlowActionCheckFunctionType,
+  flowActions,
   FlowActionSetVariableType,
   FlowActionType,
-  flowActions,
   flows,
   generateId,
   getDb,
@@ -225,14 +224,14 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
 
       const container = getComponentFlowContainer(state);
       container.addTextDisplayComponents((c) =>
-        c.setContent(`-# ${t("componentWillExpire")}`),
+        c.setContent(`-# ${ctx.t("componentWillExpire")}`),
       );
       return ctx.updateMessage({
         components: [
           container,
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
-              .setLabel(t("customize"))
+              .setLabel(ctx.t("customize"))
               .setStyle(ButtonStyle.Link)
               .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
           ),

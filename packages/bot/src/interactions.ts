@@ -55,6 +55,7 @@ import {
   PermissionsBitField,
 } from "discord-bitflag";
 import { getDate, type Snowflake } from "discord-snowflake";
+import { t as nativeT, type TOptionsBase } from "i18next";
 import type { MinimumKVComponentState } from "./components.js";
 import type { APIPartialResolvedChannel } from "./types/api.js";
 import type { Env } from "./types/env.js";
@@ -248,6 +249,12 @@ export class InteractionContext<
   isExpired(): boolean {
     // assume 100ms margin of error
     return new Date().getTime() > this.expiresAt.getTime() - 100;
+  }
+
+  /** call `t` using the user locale or fallback to guild locale */
+  t(key: string, options?: TOptionsBase) {
+    const locale = this.user.locale ?? this.interaction.guild_locale ?? "en";
+    return nativeT(key, { lng: locale, ...options });
   }
 
   /**

@@ -26,7 +26,6 @@ import {
   TextInputStyle,
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
-import { t } from "i18next";
 import {
   autoRollbackTx,
   discordMessageComponents,
@@ -649,7 +648,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
                     }:${path.join(".")}` satisfies AutoComponentCustomId,
                   )
                   .setStyle(ButtonStyle.Secondary)
-                  .setLabel(t("customize")),
+                  .setLabel(ctx.t("customize")),
               ),
             ],
           });
@@ -849,7 +848,7 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
                   `a_edit-component-flow-modal-resend_${messageId}:${componentId}:${path_}` satisfies AutoComponentCustomId,
                 )
                 .setStyle(ButtonStyle.Secondary)
-                .setLabel(t("customize")),
+                .setLabel(ctx.t("customize")),
             ),
           ],
         });
@@ -877,7 +876,7 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
-          .setLabel(t("customize"))
+          .setLabel(ctx.t("customize"))
           .setURL(getEditorTokenComponentUrl(editorToken, ctx.env)),
       ),
     ],

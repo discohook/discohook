@@ -2,7 +2,6 @@ import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { type APIWebhook, ButtonStyle, Routes } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, count, eq } from "drizzle-orm";
-import { t } from "i18next";
 import { getDb, messageLogEntries, webhooks } from "store";
 import type { ChatInputAppCommandCallback } from "../../commands.js";
 import type {
@@ -12,9 +11,9 @@ import type {
 import { parseAutoComponentId } from "../../util/components.js";
 import { getWebhookInfoEmbed } from "./webhookInfo.js";
 
-export const webhookDeleteEntryCallback: ChatInputAppCommandCallback = async (
-  ctx,
-) => {
+export const webhookDeleteEntryCallback: ChatInputAppCommandCallback<
+  true
+> = async (ctx) => {
   const webhookId = ctx.getStringOption("webhook").value;
   const webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
   const embed = getWebhookInfoEmbed(webhook);
@@ -24,28 +23,41 @@ export const webhookDeleteEntryCallback: ChatInputAppCommandCallback = async (
   // response. This will definitely change in production, but I think it
   // should be fine to keep in the response.
   const db = getDb(ctx.env.HYPERDRIVE);
-  const { logs } = (
-    await db
-      .select({ logs: count() })
-      .from(messageLogEntries)
-      .where(
-        and(
-          eq(messageLogEntries.type, "send"),
-          eq(messageLogEntries.webhookId, webhookId),
-        ),
-      )
-  )[0];
+  const [{ logs }] = await db
+    .select({ logs: count() })
+    .from(messageLogEntries)
+    .where(
+      and(
+        eq(messageLogEntries.type, "send"),
+        eq(messageLogEntries.webhookId, webhookId),
+      ),
+    );
   if (logs !== 0) {
     embed.addFields({
       name: "Logs",
-      value: t("gteNMessagesSent", { count: logs }),
+      value: ctx.t("gteNMessagesSent", { count: logs }),
       inline: true,
     });
   }
 
+  // This currently doesn't work because no results are returned when querying
+  // `author_id` with a webhook ID, despite `author_type` being an acceptable
+  // way to search for webhook messages.
+  // const data = (await ctx.rest.get(
+  //   `/guilds/${ctx.interaction.guild_id}/messages/search`,
+  //   {
+  //     query: new URLSearchParams({
+  //       // I think "latest message sent" would be a useful diagnostic
+  //       sort_by: "timestamp",
+  //       author_id: webhookId,
+  //       author_type: "webhook",
+  //       limit: "1",
+  //     }),
+  //   },
+  // )) as { total_results: number };
+
   return ctx.reply({
-    content:
-      "Are you sure you want to delete this webhook? This will make it impossible to edit any messages it has sent.",
+    content: ctx.t("webhookDelete.confirm"),
     embeds: [embed],
     components: [
       new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -70,7 +82,7 @@ export const webhookDeleteEntryCallback: ChatInputAppCommandCallback = async (
 export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
   if (!ctx.userPermissons.has(PermissionFlags.ManageWebhooks)) {
     return ctx.updateMessage({
-      content: "You don't have permissions to manage webhooks.",
+      content: ctx.t("webhookDelete.forbidden"),
       embeds: [],
       components: [],
     });
@@ -82,7 +94,7 @@ export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
   const webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
   if (!webhook.guild_id || webhook.guild_id !== ctx.interaction.guild_id) {
     return ctx.updateMessage({
-      content: "Webhook does not exist or it is not in this server.",
+      content: ctx.t("webhookDelete.wrongServer"),
       embeds: [],
       components: [],
     });
@@ -96,7 +108,7 @@ export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
     .where(and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)));
 
   return ctx.updateMessage({
-    content: "Deleted the webhook successfully.",
+    content: ctx.t("webhookDelete.success"),
     embeds: [],
     components: [],
   });
@@ -104,7 +116,7 @@ export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
 
 export const webhookDeleteCancel: ButtonCallback = async (ctx) => {
   return ctx.updateMessage({
-    content: "The webhook is safe and sound.",
+    content: ctx.t("webhookDelete.cancel"),
     embeds: [],
     components: [],
   });

@@ -470,5 +470,12 @@
   "idUnavailable": "ID unavailable.",
   "customize": "Customize",
   "gteNMessagesSent_one": "At least {{count}} message sent",
-  "gteNMessagesSent_other": "At least {{count}} messages sent"
+  "gteNMessagesSent_other": "At least {{count}} messages sent",
+  "webhookDelete": {
+    "confirm": "Are you sure you want to delete this webhook? This will make it impossible to edit any messages it has sent.",
+    "forbidden": "You don't have permissions to manage webhooks.",
+    "wrongServer": "Webhook does not exist or it is not in this server.",
+    "success": "Deleted the webhook successfully.",
+    "cancel": "The webhook is safe and sound."
+  }
 }

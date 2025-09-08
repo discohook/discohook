@@ -21,7 +21,7 @@ import {
 import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
 import { isValidRequest, PlatformAlgorithm } from "discord-verify";
 import { eq } from "drizzle-orm";
-import i18next, { t } from "i18next";
+import i18next from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
@@ -106,8 +106,9 @@ const handleInteraction = async (
     return respond({ error: "Forbidden" });
   }
 
-  await i18next.init({
-    lng: interaction.locale,
+  i18next.init({
+    lng: "en",
+    fallbackLng: "en",
     resources,
     // These are all plaintext strings passed to Discord (or another service that sanitizes afterward)
     interpolation: { escapeValue: false },
@@ -493,8 +494,8 @@ const handleInteraction = async (
               PermissionFlags.ManageWebhooks,
             )
             ? ctx.reply({
-                content: `${t("noComponentFlow")} ${
-                  maybeMigrate ? t("noComponentFlowMigratePrompt") : ""
+                content: `${ctx.t("noComponentFlow")} ${
+                  maybeMigrate ? ctx.t("noComponentFlowMigratePrompt") : ""
                 }`,
                 components: [
                   new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -503,7 +504,7 @@ const handleInteraction = async (
                       .setURL(
                         `${env.DISCOHOOK_ORIGIN}/edit/component/${component.id}`,
                       )
-                      .setLabel(t("customize")),
+                      .setLabel(ctx.t("customize")),
                   ),
                 ],
                 ephemeral: true,
@@ -595,8 +596,7 @@ const handleInteraction = async (
           let oldIdMap: Record<string, string>;
           try {
             ({ inserted, rows, guild, oldIdMap } = await migrateLegacyButtons(
-              env,
-              rest,
+              ctx,
               db,
               guildId,
               interaction.message,

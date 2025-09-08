@@ -3,7 +3,6 @@ import {
   ButtonBuilder,
   messageLink,
 } from "@discordjs/builders";
-import type { REST } from "@discordjs/rest";
 import {
   type APIActionRowComponent,
   type APIComponentInMessageActionRow,
@@ -17,7 +16,6 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { and, count, eq, notInArray } from "drizzle-orm";
-import { t } from "i18next";
 import {
   autoRollbackTx,
   backups,
@@ -50,7 +48,7 @@ import type {
   AutoComponentCustomId,
   ButtonCallback,
 } from "../../components.js";
-import type { Env } from "../../types/env.js";
+import type { InteractionContext } from "../../interactions.js";
 import {
   hasCustomId,
   isActionRow,
@@ -61,15 +59,14 @@ import { getWebhook } from "../webhooks/webhookInfo.js";
 import { resolveMessageLink } from "./entry.js";
 
 export const migrateLegacyButtons = async (
-  env: Env,
-  rest: REST,
+  ctx: InteractionContext,
   db: DBWithSchema,
   guildId: string,
   message: APIMessage,
 ) => {
-  const guild = await getchTriggerGuild(rest, env, guildId);
+  const guild = await getchTriggerGuild(ctx.rest, ctx.env, guildId);
   // Not sure if it's better for RL reasons to use guildMember instead?
-  const owner = (await rest.get(Routes.user(guild.owner_id))) as APIUser;
+  const owner = (await ctx.rest.get(Routes.user(guild.owner_id))) as APIUser;
   const ownerUser = await upsertDiscordUser(db, owner);
 
   const oldMessageButtons = await db.query.buttons.findMany({
@@ -90,7 +87,7 @@ export const migrateLegacyButtons = async (
     },
   });
   if (oldMessageButtons.length === 0) {
-    throw Error(t("noMigratableComponents"));
+    throw Error(ctx.t("noMigratableComponents"));
   }
 
   const getOldCustomId = (button: {
@@ -321,7 +318,7 @@ export const migrateLegacyButtons = async (
     }),
   );
 
-  const emojis = (await rest.get(
+  const emojis = (await ctx.rest.get(
     Routes.guildEmojis(guildId),
   )) as RESTGetAPIGuildEmojisResult;
 
@@ -457,8 +454,7 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
     async () => {
       console.log("[migrating] Start followup");
       const { inserted, emojis } = await migrateLegacyButtons(
-        ctx.env,
-        ctx.rest,
+        ctx,
         db,
         guildId,
         message,

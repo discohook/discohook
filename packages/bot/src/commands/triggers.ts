@@ -13,7 +13,6 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
-import { t } from "i18next";
 import {
   FlowActionType,
   flows,
@@ -33,7 +32,8 @@ import { emojiToString, getEmojis } from "../emojis.js";
 import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import type { FlowResult } from "../flows/flows.js";
-import { Env } from "../types/env.js";
+import type { InteractionContext } from "../interactions.js";
+import type { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
 import { color } from "../util/meta.js";
 import { spaceEnum } from "../util/regex.js";
@@ -61,7 +61,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
         );
         if (configs.length !== 0) {
           await ctx.followup.editOriginalMessage({
-            content: t("triggerDuplicate"),
+            content: ctx.t("triggerDuplicate"),
           });
           return;
         }
@@ -86,12 +86,12 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
       )[0];
 
       await ctx.followup.editOriginalMessage({
-        content: t("triggerCreated", { replace: { name } }),
+        content: ctx.t("triggerCreated", { replace: { name } }),
         components: [
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
               .setStyle(ButtonStyle.Link)
-              .setLabel(t("addActions"))
+              .setLabel(ctx.t("addActions"))
               .setURL(
                 `${ctx.env.DISCOHOOK_ORIGIN}/s/${trigger.discordGuildId}?t=triggers`,
               ),
@@ -103,14 +103,15 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 };
 
 export const getFlowEmbed = (
+  ctx: InteractionContext,
   flow: Awaited<ReturnType<typeof getWelcomerConfigurations>>[number]["flow"],
 ): EmbedBuilder =>
   new EmbedBuilder()
-    .setTitle(flow.name ?? t("unnamedTrigger"))
+    .setTitle(flow.name ?? ctx.t("unnamedTrigger"))
     .setColor(color)
     .setDescription(
       flow.actions?.length === 0
-        ? t("noActions")
+        ? ctx.t("noActions")
         : flow.actions
             .map(
               ({ data: action }, i) =>
@@ -151,18 +152,18 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
   );
   if (!trigger) {
     return ctx.reply({
-      content: t("noTrigger"),
+      content: ctx.t("noTrigger"),
       ephemeral: true,
     });
   }
 
   return ctx.reply({
-    embeds: [getFlowEmbed(trigger.flow)],
+    embeds: [getFlowEmbed(ctx, trigger.flow)],
     components: [
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
-          .setLabel(t("manageActions"))
+          .setLabel(ctx.t("manageActions"))
           .setURL(
             `${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}?t=triggers`,
           ),
@@ -206,7 +207,7 @@ export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
       },
     });
     return triggers.map((trigger) => ({
-      name: trigger.flow?.name ?? t("unnamedTrigger"),
+      name: trigger.flow?.name ?? ctx.t("unnamedTrigger"),
       value: `_id:${trigger.id}`,
     }));
   };
