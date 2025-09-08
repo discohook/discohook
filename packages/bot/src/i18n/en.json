@@ -235,6 +235,40 @@
         }
       }
     },
+    "profile": {
+      "name": "profile",
+      "description": "Configure the server profile for Discohook Utils",
+      "options": {
+        "set": {
+          "name": "set",
+          "description": "Override the bot's nickname, avatar, or banner with custom values",
+          "options": {
+            "name": {
+              "name": "name",
+              "description": "The bot's nickname"
+            },
+            "avatar": {
+              "name": "avatar",
+              "description": "The bot's avatar"
+            },
+            "banner": {
+              "name": "banner",
+              "description": "The bot's banner"
+            }
+          }
+        },
+        "clear": {
+          "name": "clear",
+          "description": "Reset one or all profile values to their defaults",
+          "options": {
+            "value": {
+              "name": "value",
+              "description": "Which value to reset. If not provided, all values are cleared"
+            }
+          }
+        }
+      }
+    },
     "help": {
       "description": "Get help with various topics",
       "options": {

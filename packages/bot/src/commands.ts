@@ -39,6 +39,10 @@ import {
   idMentionCallback,
 } from "./commands/id.js";
 import { inviteCallback } from "./commands/invite.js";
+import {
+  profileClearCallback,
+  profileSetCallback,
+} from "./commands/profile.js";
 import { quickEditMessageEntry } from "./commands/quick-edit/entry.js";
 import {
   createReactionRoleHandler,
@@ -173,6 +177,12 @@ export const appCommands: Record<
       },
       autocompleteHandlers: {
         set: webhookAutocomplete,
+      },
+    },
+    profile: {
+      handlers: {
+        set: profileSetCallback,
+        clear: profileClearCallback,
       },
     },
     help: {
