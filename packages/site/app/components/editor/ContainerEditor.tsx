@@ -136,10 +136,10 @@ export const ContainerEditor: React.FC<{
     <details
       className={twJoin(
         "group/top-2 rounded-lg p-2 border border-gray-300 dark:border-gray-700 shadow transition-[border-color,border-width]",
-        container.accent_color ? "border-l-4" : undefined,
+        container.accent_color != null ? "border-l-4" : undefined,
       )}
       style={
-        container.accent_color
+        container.accent_color != null
           ? { borderLeftColor: decimalToHex(container.accent_color) }
           : undefined
       }
@@ -180,7 +180,7 @@ export const ContainerEditor: React.FC<{
           t={t}
           value={container.accent_color}
           onValueChange={(color) => {
-            container.accent_color = color || null;
+            container.accent_color = color ?? null;
             setData({ ...data });
           }}
         />

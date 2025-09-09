@@ -62,11 +62,11 @@ export const PreviewContainer: React.FC<{
         className={twJoin(
           "rounded-lg flex flex-col gap-2 overflow-hidden p-4",
           "dark:text-gray-100 bg-white dark:bg-background-secondary-dark border border-[#E2E2E4] dark:border-[#434349]",
-          container.accent_color ? "border-l-4" : undefined,
+          container.accent_color != null ? "border-l-4" : undefined,
           "group/parent",
         )}
         style={{
-          ...(typeof container.accent_color === "number"
+          ...(container.accent_color != null
             ? { borderLeftColor: decimalToHex(container.accent_color) }
             : undefined),
           maxWidth: 520,
