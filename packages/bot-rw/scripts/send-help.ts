@@ -15,6 +15,26 @@ import { fetchTags } from "../src/commands/help";
 import { isDiscordError } from "../src/util/error";
 import { color } from "../src/util/meta";
 
+const categories = {
+  "How-to basics": [
+    "send",
+    "edit",
+    "sidebar",
+    "mention",
+    "link",
+    "buttons",
+    "reaction role",
+    "schedule",
+    "welcomer",
+    "profile",
+  ],
+  Troubleshooting: ["blocked", "ise", "nothing", "image"],
+};
+const titleOverride: Record<string, string> = {
+  buttons: "Add buttons to messages/embeds",
+  blocked: "My request to Discord was blocked",
+};
+
 const argparser = new ArgumentParser();
 argparser.add_argument("--thread", {
   help: "help channel forum thread ID",
@@ -133,24 +153,6 @@ for (const [tag, embed] of Object.entries(tags)) {
 
 // update starter message
 const embed = new EmbedBuilder().setColor(color);
-
-const categories = {
-  "How-to basics": [
-    "send",
-    "edit",
-    "sidebar",
-    "mention",
-    "link",
-    "buttons",
-    "reaction role",
-    "schedule",
-  ],
-  Troubleshooting: ["blocked", "ise", "nothing", "image"],
-};
-const titleOverride: Record<string, string> = {
-  buttons: "Add buttons to messages/embeds",
-  blocked: "My request to Discord was blocked",
-};
 
 for (const [category, keys] of Object.entries(categories)) {
   embed.addFields({
