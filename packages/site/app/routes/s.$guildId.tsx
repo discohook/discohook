@@ -48,7 +48,7 @@ import { PostChannelIcon } from "~/components/icons/channel";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
-import { FeatureConfig, Markdown } from "~/components/preview/Markdown";
+import { type FeatureConfig, Markdown } from "~/components/preview/Markdown";
 import { UsernameBadge } from "~/components/preview/Message.client";
 import { Prose } from "~/components/Prose";
 import { TabHeader, TabsWindow } from "~/components/tabs";
@@ -64,7 +64,7 @@ import {
   getTokenGuildPermissions,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
-import { CacheManager, useCache } from "~/util/cache/CacheManager";
+import { type CacheManager, useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
   cdnImgAttributes,
@@ -422,12 +422,15 @@ const ProfilePreview = ({
                 features={bioMarkdownFeatures}
               />
             </div>
-          ) : member?.bio == null ? (
+          ) : (
             <p className="italic text-muted dark:text-muted-dark text-sm leading-5">
-              {t(member?.bio === undefined ? "bioWriteOnly" : "bioDefault")}
+              {t(
+                member?.bio === "" || member?.bio === null
+                  ? "bioDefault"
+                  : "bioWriteOnly",
+              )}
             </p>
-            // Remaining scenario is that member.bio is an empty string
-          ) : null}
+          )}
         </div>
       </div>
     </div>
@@ -578,6 +581,8 @@ export default () => {
     triggersFetcher.state,
     componentsFetcher.data,
     componentsFetcher.state,
+    profileFetcher.data,
+    profileFetcher.state,
   ]);
 
   // Whenever openTriggerId is set but there is no openTrigger (it was just
@@ -605,7 +610,10 @@ export default () => {
     if (profileFetcher.data) {
       setProfileForm({
         nick: profileFetcher.data.nick,
-        submitBio: false,
+        bio: profileFetcher.data.bio,
+        // empty string means it was fetched but is empty, undefined means it
+        // was not fetched
+        submitBio: profileFetcher.data.bio !== undefined,
         status: "discohook.app/guide",
       });
     }
@@ -1213,11 +1221,7 @@ export default () => {
                   e.preventDefault();
 
                   const data = new FormData(e.currentTarget);
-                  console.log(Object.fromEntries(data.entries()));
-
-                  const submitBio = data.get("submitBio") === "on";
-                  data.delete("submitBio");
-                  if (!submitBio) {
+                  if (!profileForm.submitBio) {
                     data.delete("bio");
                   }
 
@@ -1283,20 +1287,22 @@ export default () => {
                       markdown={bioMarkdownFeatures}
                       cache={cache}
                     />
-                    <div className="mt-2">
-                      <Checkbox
-                        label={t("changeBio")}
-                        description={
-                          <p className="text-sm text-muted dark:text-muted-dark">
-                            {t("bioWriteOnlyChange")}
-                          </p>
-                        }
-                        checked={profileForm.submitBio ?? false}
-                        onCheckedChange={(submitBio) => {
-                          setProfileForm({ ...profileForm, submitBio });
-                        }}
-                      />
-                    </div>
+                    {profileFetcher.data?.bio === undefined ? (
+                      <div className="mt-2">
+                        <Checkbox
+                          label={t("changeBio")}
+                          description={
+                            <p className="text-sm text-muted dark:text-muted-dark">
+                              {t("bioWriteOnlyChange")}
+                            </p>
+                          }
+                          checked={profileForm.submitBio ?? false}
+                          onCheckedChange={(submitBio) => {
+                            setProfileForm({ ...profileForm, submitBio });
+                          }}
+                        />
+                      </div>
+                    ) : null}
                   </Field.Root>
                   <Button
                     type="submit"

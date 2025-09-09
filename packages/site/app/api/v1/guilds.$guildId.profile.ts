@@ -1,6 +1,10 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
-import { type APIGuildMember, Routes } from "discord-api-types/v10";
+import {
+  type APIGuildMember,
+  RESTJSONErrorCodes,
+  Routes,
+} from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
@@ -38,15 +42,37 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   // commit
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
-  const member = (await rest.get(
-    Routes.guildMember(String(guildId), context.env.DISCORD_CLIENT_ID),
-  )) as APIGuildMember;
+  let member: APIGuildMember;
+  try {
+    // empty PATCH to get own bio
+    member = (await rest.patch(Routes.guildMember(String(guildId), "@me"), {
+      body: {},
+    })) as APIGuildMember;
+  } catch (e) {
+    if (
+      // perhaps rate limit or empty body was forbidden
+      isDiscordError(e) &&
+      e.code !== RESTJSONErrorCodes.UnknownMember &&
+      e.code !== RESTJSONErrorCodes.UnknownGuild
+    ) {
+      console.error(
+        "Failed to submit empty PATCH current member, falling back to GET",
+        e.rawError,
+      );
+      member = (await rest.get(
+        Routes.guildMember(String(guildId), context.env.DISCORD_CLIENT_ID),
+      )) as APIGuildMember;
+    } else {
+      throw e;
+    }
+  }
 
   return respond(
     json({
       nick: member.nick,
       avatar: member.avatar,
       banner: member.banner,
+      bio: "bio" in member ? (member.bio as string) : undefined,
       user: {
         id: member.user.id,
         username: member.user.username,
@@ -191,7 +217,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       nick: member.nick,
       avatar: member.avatar,
       banner: member.banner,
-      bio: body.bio,
+      bio: ("bio" in member ? (member.bio as string) : body.bio) ?? "",
       user: {
         id: member.user.id,
         username: member.user.username,
