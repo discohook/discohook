@@ -124,6 +124,7 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /guilds/:guildId/profile
    * - PATCH /guilds/:guildId/profile
    *
    * Accepts token auth.
