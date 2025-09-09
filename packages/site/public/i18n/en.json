@@ -737,5 +737,15 @@
     "recipes": "Recipes",
     "debug": "Debug",
     "changelogs": "Changelogs"
-  }
+  },
+  "serverProfileDescription": "Here you can customize the user profile for Discohook Utils in your server. You can set a custom avatar and banner by clicking on them in the preview.",
+  "bio": "Bio (about me)",
+  "changeBio": "Change bio",
+  "bioWriteOnly": "Bio cannot be shown here due to Discord limitations.",
+  "bioWriteOnlyChange": "Discohook can't read its current bio due to Discord limitations. If you would like to change it, enable this checkbox.",
+  "bioDefault": "Discohook's default bio will be used.",
+  "avatar": "Avatar",
+  "banner": "Banner",
+  "removeAvatar": "Remove Avatar",
+  "removeBanner": "Remove Banner"
 }

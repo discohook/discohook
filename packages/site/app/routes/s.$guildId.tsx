@@ -1,3 +1,5 @@
+import { Avatar } from "@base-ui-components/react/avatar";
+import { Field } from "@base-ui-components/react/field";
 import { REST } from "@discordjs/rest";
 import {
   json,
@@ -6,6 +8,7 @@ import {
   type SerializeFrom,
 } from "@remix-run/cloudflare";
 import {
+  Form,
   Link,
   useFetcher,
   useLoaderData,
@@ -14,18 +17,23 @@ import {
 } from "@remix-run/react";
 import {
   type APIGuild,
+  type APIGuildMember,
+  type APIUser,
   type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
+  UserFlags,
   WebhookType,
 } from "discord-api-types/v10";
 import {
   type BitFlagResolvable,
   PermissionFlags,
   PermissionsBitField,
+  UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
+import { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -40,9 +48,12 @@ import { PostChannelIcon } from "~/components/icons/channel";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
-import { Markdown } from "~/components/preview/Markdown";
+import { FeatureConfig, Markdown } from "~/components/preview/Markdown";
+import { UsernameBadge } from "~/components/preview/Message.client";
 import { Prose } from "~/components/Prose";
 import { TabHeader, TabsWindow } from "~/components/tabs";
+import { TextArea } from "~/components/TextArea";
+import { TextInput } from "~/components/TextInput";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
@@ -53,7 +64,7 @@ import {
   getTokenGuildPermissions,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
-import { useCache } from "~/util/cache/CacheManager";
+import { CacheManager, useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
   cdnImgAttributes,
@@ -68,6 +79,7 @@ import { zxParseParams } from "~/util/zod";
 import type { action as ApiDeleteComponent } from "../api/v1/components.$id";
 import type { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
 import type { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
+import type { loader as ApiGetGuildProfile } from "../api/v1/guilds.$guildId.profile";
 import type { loader as ApiGetGuildSessions } from "../api/v1/guilds.$guildId.sessions";
 import type { action as ApiPutGuildTriggerEvent } from "../api/v1/guilds.$guildId.trigger-events.$event";
 import type { loader as ApiGetGuildTriggers } from "../api/v1/guilds.$guildId.triggers";
@@ -169,6 +181,7 @@ const tabValues = [
   "sessions",
   "triggers",
   "components",
+  "profile",
 ] as const;
 
 type Tab = (typeof tabValues)[number];
@@ -177,6 +190,258 @@ const flowEventsDetails: Record<number, { icon: CoolIconsGlyph }> = {
   0: { icon: "User_Add" },
   1: { icon: "User_Remove" },
 };
+
+const bioMarkdownFeatures: FeatureConfig = {
+  paragraphs: true,
+  breaks: true,
+  text: true,
+  customEmojis: true,
+  unicodeEmojis: true,
+  autoLinks: true,
+  italic: true,
+  bold: true,
+  underline: true,
+  strikethrough: true,
+  channelMentions: true,
+  guildSectionMentions: true,
+  commandMentions: true, // sort of? they are parsed but not clickable
+  blockQuotes: true,
+  inlineCode: true, // block code is sort of supported but not properly
+  spoilers: true,
+  timestamps: true,
+};
+
+const ProfilePreview = ({
+  t,
+  user,
+  member,
+  avatarURL: overrideAvatarURL,
+  bannerURL: overrideBannerURL,
+  cache,
+  setAvatarObjectURL,
+  setBannerObjectURL,
+}: {
+  t: TFunction;
+  user: Pick<
+    APIUser,
+    | "id"
+    | "username"
+    | "global_name"
+    | "discriminator"
+    | "avatar"
+    | "banner"
+    | "bot"
+    | "public_flags"
+  >;
+  member?: Pick<APIGuildMember, "nick" | "avatar" | "banner"> & {
+    guild_id: string;
+    bio?: string | null;
+  };
+  avatarURL?: string;
+  bannerURL?: string;
+  cache?: CacheManager;
+  setAvatarObjectURL?: (url: string | null) => void;
+  setBannerObjectURL?: (url: string | null) => void;
+}) => {
+  const flags = new UserFlagsBitField(BigInt(user.public_flags ?? 0));
+
+  const bannerURL =
+    overrideBannerURL ??
+    (member?.banner
+      ? cdn.guildMemberBanner(member.guild_id, user.id, member.banner, {
+          size: 512,
+        })
+      : user.banner
+        ? cdn.banner(user.id, user.banner)
+        : undefined);
+
+  const avatarBorderClassName =
+    "box-border border-4 border-white dark:border-gray-800";
+  const avatarClassName = twJoin("rounded-full size-20", avatarBorderClassName);
+  return (
+    <div
+      dir="ltr" // discord doesn't support RTL
+      className={twJoin(
+        "rounded-lg w-64 shadow-lg bg-white dark:bg-gray-800",
+        "box-border gap-2 pb-2 flex flex-col overflow-hidden",
+        "border border-border-normal dark:border-border-normal-dark",
+      )}
+    >
+      <div
+        id="profile-banner"
+        className={twJoin(
+          "bg-gray-100 dark:bg-gray-900",
+          "bg-cover bg-center w-full rounded-t-lg relative",
+          bannerURL ? "h-[6.5rem]" : "h-14",
+        )}
+        style={{
+          backgroundImage: bannerURL ? `url(${bannerURL})` : "",
+        }}
+      >
+        {setBannerObjectURL ? (
+          <>
+            <input
+              name="banner"
+              hidden
+              readOnly
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              onChange={(e) => {
+                const files = e.currentTarget.files;
+                if (!files) return;
+
+                const file = files[0];
+                if (!file.type.startsWith("image/")) {
+                  e.currentTarget.value = "";
+                  return;
+                }
+
+                setBannerObjectURL(URL.createObjectURL(file));
+              }}
+            />
+            <button
+              type="button"
+              className="absolute inset-0 w-full h-full box-border rounded-t-lg bg-black/50 opacity-0 hover:opacity-100 transition-opacity"
+              onClick={() => {
+                const el = document.querySelector<HTMLInputElement>(
+                  "#profile-banner>input",
+                );
+                el?.click();
+              }}
+            />
+          </>
+        ) : null}
+      </div>
+      <div className="px-4">
+        <div className="flex flex-row">
+          {/* Negative top margin should be half of the avatar height */}
+          <Avatar.Root id="profile-avatar" className="-mt-10 relative">
+            {overrideAvatarURL ? (
+              <Avatar.Image
+                src={overrideAvatarURL}
+                className={twJoin(avatarClassName, "object-cover")}
+              />
+            ) : member?.avatar ? (
+              <Avatar.Image
+                {...cdnImgAttributes(128, (size) =>
+                  cdn.guildMemberAvatar(
+                    member.guild_id,
+                    user.id,
+                    // biome-ignore lint/style/noNonNullAssertion: above
+                    member.avatar!,
+                    { size },
+                  ),
+                )}
+                className={avatarClassName}
+              />
+            ) : user.avatar ? (
+              <Avatar.Image
+                {...cdnImgAttributes(128, (size) =>
+                  // biome-ignore lint/style/noNonNullAssertion: above
+                  cdn.avatar(user.id, user.avatar!, { size }),
+                )}
+                className={avatarClassName}
+              />
+            ) : null}
+            <Avatar.Fallback>
+              <img
+                // force default avatar; it's probably cached
+                src={getUserAvatar({
+                  discordUser: {
+                    id: BigInt(user.id),
+                    avatar: null,
+                    discriminator: user.discriminator,
+                  },
+                })}
+                alt=""
+                className={avatarClassName}
+              />
+            </Avatar.Fallback>
+            {setAvatarObjectURL ? (
+              <>
+                <input
+                  name="avatar"
+                  hidden
+                  readOnly
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif,image/webp"
+                  onChange={(e) => {
+                    const files = e.currentTarget.files;
+                    if (!files) return;
+
+                    const file = files[0];
+                    if (!file.type.startsWith("image/")) {
+                      e.currentTarget.value = "";
+                      return;
+                    }
+
+                    setAvatarObjectURL(URL.createObjectURL(file));
+                  }}
+                />
+                <button
+                  type="button"
+                  className={twJoin(
+                    "absolute inset-0 w-full h-full rounded-full bg-black/50 opacity-0 hover:opacity-100 transition-opacity",
+                    avatarBorderClassName,
+                  )}
+                  onClick={() => {
+                    const el = document.querySelector<HTMLInputElement>(
+                      "#profile-avatar>input",
+                    );
+                    el?.click();
+                  }}
+                />
+              </>
+            ) : null}
+          </Avatar.Root>
+        </div>
+        <div id="profile-name">
+          <div className="flex flex-row gap-1">
+            <p className="text-xl font-bold leading-[1.2] break-words overflow-y-hidden max-h-[4.5rem]">
+              {member?.nick || user.global_name || user.username}
+            </p>
+            {user.bot ? (
+              <UsernameBadge
+                label={t("badge.app")}
+                verified={flags.has(UserFlags.VerifiedBot)}
+                className="self-center"
+              />
+            ) : null}
+          </div>
+          <p className="whitespace-normal break-all text-sm font-normal leading-[1.125rem]">
+            {user.username}
+            {user.discriminator === "0" ? "" : `#${user.discriminator}`}
+          </p>
+        </div>
+        <div id="profile-bio" className="mt-2">
+          {member?.bio ? (
+            <div className="text-sm [--font-size:0.875rem] whitespace-pre-line">
+              <Markdown
+                content={member.bio}
+                cache={cache}
+                features={bioMarkdownFeatures}
+              />
+            </div>
+          ) : member?.bio == null ? (
+            <p className="italic text-muted dark:text-muted-dark text-sm leading-5">
+              {t(member?.bio === undefined ? "bioWriteOnly" : "bioDefault")}
+            </p>
+            // Remaining scenario is that member.bio is an empty string
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface ProfileFormData {
+  nick?: string | null;
+  bio?: string | null;
+  avatarObjectURL?: string | null;
+  bannerObjectURL?: string | null;
+  submitBio?: boolean;
+  status?: string;
+}
 
 export default () => {
   const { guild, user, member, discordApplicationId } =
@@ -221,6 +486,9 @@ export default () => {
     onError: setError,
   });
   const sessionsFetcher = useFetcher<typeof ApiGetGuildSessions>();
+  const profileFetcher = useSafeFetcher<typeof ApiGetGuildProfile>({
+    onError: setError,
+  });
   const componentsFetcher = useSafeFetcher<typeof ApiGetGuildComponents>({
     onError: setError,
   });
@@ -289,6 +557,12 @@ export default () => {
         }
         break;
       }
+      case "profile": {
+        if (!profileFetcher.data && profileFetcher.state === "idle") {
+          profileFetcher.load(apiUrl(BRoutes.guildProfile(guild.id)));
+        }
+        break;
+      }
       default:
         break;
     }
@@ -325,6 +599,17 @@ export default () => {
       webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
     }
   }, [guildWebhookFetcher.state, guildWebhookFetcher.data]);
+
+  const [profileForm, setProfileForm] = useState<ProfileFormData>({});
+  useEffect(() => {
+    if (profileFetcher.data) {
+      setProfileForm({
+        nick: profileFetcher.data.nick,
+        submitBio: false,
+        status: "discohook.app/guide",
+      });
+    }
+  }, [profileFetcher.data]);
 
   return (
     <div>
@@ -383,48 +668,27 @@ export default () => {
           tab={tab}
           setTab={setTab as (v: string) => void}
           data={[
-            {
-              label: t("home"),
-              value: "home",
-            },
+            { label: t("home"), value: "home" },
+            ...(has(PermissionFlags.ManageNicknames)
+              ? [{ label: t("profile"), value: "profile" }]
+              : []),
             ...(has(
               PermissionFlags.ManageMessages,
               PermissionFlags.ManageWebhooks,
             )
-              ? [
-                  {
-                    label: t("components"),
-                    value: "components",
-                  },
-                ]
+              ? [{ label: t("components"), value: "components" }]
               : []),
             ...(has(PermissionFlags.ManageWebhooks)
-              ? [
-                  {
-                    label: t("webhooks"),
-                    value: "webhooks",
-                  },
-                ]
+              ? [{ label: t("webhooks"), value: "webhooks" }]
               : []),
             ...(has(PermissionFlags.ViewAuditLog, PermissionFlags.ManageGuild)
               ? [
-                  {
-                    label: t("auditLog"),
-                    value: "auditLog",
-                  },
-                  // {
-                  //   label: t("sessions"),
-                  //   value: "sessions",
-                  // },
+                  { label: t("auditLog"), value: "auditLog" },
+                  // { label: t("sessions"), value: "sessions" },
                 ]
               : []),
             ...(has(PermissionFlags.ManageGuild)
-              ? [
-                  {
-                    label: t("triggers"),
-                    value: "triggers",
-                  },
-                ]
+              ? [{ label: t("triggers"), value: "triggers" }]
               : []),
           ]}
         >
@@ -511,6 +775,23 @@ export default () => {
                       <Cell>{t("justBeAMember")}</Cell>
                       <Cell>
                         <CoolIcon icon="Check" />
+                      </Cell>
+                    </div>
+                    <div className="table-row">
+                      <Cell className="rounded-bl-lg">{t("profile")}</Cell>
+                      <Cell className="rounded-br-lg">
+                        {new Intl.ListFormat().format(
+                          ["ManageNicknames"].map((p) => t(`permission.${p}`)),
+                        )}
+                      </Cell>
+                      <Cell>
+                        <CoolIcon
+                          icon={
+                            has(PermissionFlags.ManageNicknames)
+                              ? "Check"
+                              : "Close_MD"
+                          }
+                        />
                       </Cell>
                     </div>
                     <div className="table-row">
@@ -917,6 +1198,221 @@ export default () => {
                   <p>Loading...</p>
                 )}
               </div>
+            </div>
+          ) : tab === "profile" ? (
+            <div>
+              <TabHeader subtitle={<p>{t("serverProfileDescription")}</p>}>
+                {t("profile")}
+              </TabHeader>
+              <Form
+                // form is all the way up here so it can capture the avatar and banner inputs on the right
+                className="flex flex-col-reverse md:flex-row gap-8"
+                // method="PATCH"
+                // action={apiUrl(BRoutes.guildProfile(guild.id))}
+                onSubmit={(e) => {
+                  e.preventDefault();
+
+                  const data = new FormData(e.currentTarget);
+                  console.log(Object.fromEntries(data.entries()));
+
+                  const submitBio = data.get("submitBio") === "on";
+                  data.delete("submitBio");
+                  if (!submitBio) {
+                    data.delete("bio");
+                  }
+
+                  const avatar = data.get("avatar");
+                  if (avatar instanceof File && avatar.size === 0) {
+                    data.delete("avatar");
+                  } else if (avatar === "null") {
+                    data.set("avatar", "");
+                  }
+                  const banner = data.get("banner");
+                  if (banner instanceof File && banner.size === 0) {
+                    data.delete("banner");
+                  } else if (banner === "null") {
+                    data.set("banner", "");
+                  }
+
+                  profileFetcher.submit(data, {
+                    method: "PATCH",
+                    action: apiUrl(BRoutes.guildProfile(guild.id)),
+                  });
+                }}
+              >
+                <div className="space-y-4 grow">
+                  <Field.Root>
+                    <TextInput
+                      label={t("name")}
+                      name="nick"
+                      className="w-full"
+                      value={profileForm.nick ?? ""}
+                      disabled={profileFetcher.state !== "idle"}
+                      maxLength={32}
+                      placeholder={
+                        profileFetcher.data?.user.global_name ||
+                        profileFetcher.data?.user.username ||
+                        "Discohook Utils"
+                      }
+                      onChange={(e) => {
+                        setProfileForm({
+                          ...profileForm,
+                          nick: e.currentTarget.value ?? null,
+                        });
+                      }}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <TextArea
+                      label={t("bio")}
+                      name="bio"
+                      className="w-full"
+                      value={profileForm.bio ?? ""}
+                      disabled={
+                        profileFetcher.state !== "idle" ||
+                        !profileForm.submitBio
+                      }
+                      maxLength={190}
+                      onChange={(e) => {
+                        setProfileForm({
+                          ...profileForm,
+                          bio: e.currentTarget.value ?? null,
+                        });
+                      }}
+                      placeholder="Discohook!"
+                      markdown={bioMarkdownFeatures}
+                      cache={cache}
+                    />
+                    <div className="mt-2">
+                      <Checkbox
+                        label={t("changeBio")}
+                        description={
+                          <p className="text-sm text-muted dark:text-muted-dark">
+                            {t("bioWriteOnlyChange")}
+                          </p>
+                        }
+                        checked={profileForm.submitBio ?? false}
+                        onCheckedChange={(submitBio) => {
+                          setProfileForm({ ...profileForm, submitBio });
+                        }}
+                      />
+                    </div>
+                  </Field.Root>
+                  <Button
+                    type="submit"
+                    discordstyle={ButtonStyle.Success}
+                    disabled={profileFetcher.state !== "idle"}
+                  >
+                    {t("save")}
+                  </Button>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-0.5 cursor-default">
+                    {t("preview")}
+                  </p>
+                  {profileFetcher.data ? (
+                    <ProfilePreview
+                      t={t}
+                      user={{ bot: true, ...profileFetcher.data.user }}
+                      member={{
+                        guild_id: guild.id,
+                        nick: profileForm.nick,
+                        bio: profileForm.submitBio
+                          ? profileForm.bio
+                          : undefined,
+                        avatar:
+                          profileForm.avatarObjectURL === null
+                            ? null
+                            : profileFetcher.data.avatar,
+                        banner:
+                          profileForm.bannerObjectURL === null
+                            ? null
+                            : profileFetcher.data.banner,
+                      }}
+                      avatarURL={profileForm.avatarObjectURL ?? undefined}
+                      setAvatarObjectURL={(avatarObjectURL) => {
+                        setProfileForm({ ...profileForm, avatarObjectURL });
+                      }}
+                      bannerURL={profileForm.bannerObjectURL ?? undefined}
+                      setBannerObjectURL={(bannerObjectURL) => {
+                        setProfileForm({ ...profileForm, bannerObjectURL });
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className={twJoin(
+                        "rounded-lg w-64 h-52 shadow-lg bg-white dark:bg-gray-800",
+                        "box-border gap-2 animate-pulse",
+                        "border border-border-normal dark:border-border-normal-dark",
+                      )}
+                    />
+                  )}
+                  <div className="mt-2 w-64 flex flex-col gap-1.5">
+                    {profileForm.avatarObjectURL ||
+                    profileFetcher.data?.avatar ? (
+                      <Button
+                        discordstyle={ButtonStyle.Secondary}
+                        className="w-full"
+                        onClick={() => {
+                          const el = document.querySelector<HTMLInputElement>(
+                            "#profile-avatar>input",
+                          );
+                          if (el) el.value = "";
+
+                          if (profileForm.avatarObjectURL) {
+                            URL.revokeObjectURL(profileForm.avatarObjectURL);
+                            // only clear yet-unsubmitted data
+                            setProfileForm({
+                              ...profileForm,
+                              avatarObjectURL: undefined,
+                            });
+                          } else {
+                            // clear the data already on the server
+                            if (el) el.value = "null";
+                            setProfileForm({
+                              ...profileForm,
+                              avatarObjectURL: null,
+                            });
+                          }
+                        }}
+                      >
+                        {t("removeAvatar")}
+                      </Button>
+                    ) : null}
+                    {profileForm.bannerObjectURL ||
+                    profileFetcher.data?.banner ? (
+                      <Button
+                        discordstyle={ButtonStyle.Secondary}
+                        className="w-full"
+                        onClick={() => {
+                          const el = document.querySelector<HTMLInputElement>(
+                            "#profile-banner>input",
+                          );
+                          if (el) el.value = "";
+
+                          if (profileForm.bannerObjectURL) {
+                            URL.revokeObjectURL(profileForm.bannerObjectURL);
+                            // only clear yet-unsubmitted data
+                            setProfileForm({
+                              ...profileForm,
+                              bannerObjectURL: undefined,
+                            });
+                          } else {
+                            // clear the data already on the server
+                            if (el) el.value = "null";
+                            setProfileForm({
+                              ...profileForm,
+                              bannerObjectURL: null,
+                            });
+                          }
+                        }}
+                      >
+                        {t("removeBanner")}
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              </Form>
             </div>
           ) : tab === "triggers" ? (
             openTrigger ? (

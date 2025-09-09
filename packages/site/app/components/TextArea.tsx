@@ -176,7 +176,7 @@ export const TextArea = (
           )}
           rows={short ? 1 : 4}
         />
-        {markdown && (
+        {markdown && !newProps.disabled ? (
           <PopoutRichPicker
             t={t}
             setState={setPopoutState}
@@ -207,7 +207,7 @@ export const TextArea = (
               )}
             />
           </PopoutRichPicker>
-        )}
+        ) : null}
       </div>
       {props.errors
         ?.filter((e) => e !== undefined)

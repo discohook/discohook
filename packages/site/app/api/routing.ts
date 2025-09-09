@@ -124,6 +124,16 @@ export const BRoutes = {
   },
 
   /**
+   * - PATCH /guilds/:guildId/profile
+   *
+   * Accepts token auth.
+   */
+  guildProfile(guildId: string) {
+    // future: `userId` parameter for custom bots
+    return `/guilds/${guildId}/profile` as const;
+  },
+
+  /**
    * - GET /guilds/:guildId/roles/:roleId
    *
    * Accepts token auth.

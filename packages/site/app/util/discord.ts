@@ -452,6 +452,32 @@ class CDN {
     return `${this.BASE}/embed/avatars/${index}.png`;
   }
 
+  banner(
+    id: string,
+    bannerHash: string,
+    options?: BaseImageURLOptions,
+  ): string {
+    return `${this.BASE}/banners/${id}/${bannerHash}${this._withOpts(options)}`;
+  }
+
+  guildMemberAvatar(
+    guildId: string,
+    id: string,
+    avatarHash: string,
+    options?: BaseImageURLOptions,
+  ): string {
+    return `${this.BASE}/guilds/${guildId}/users/${id}/avatars/${avatarHash}${this._withOpts(options)}`;
+  }
+
+  guildMemberBanner(
+    guildId: string,
+    id: string,
+    avatarHash: string,
+    options?: BaseImageURLOptions,
+  ): string {
+    return `${this.BASE}/guilds/${guildId}/users/${id}/banners/${avatarHash}${this._withOpts(options)}`;
+  }
+
   emoji(id: string, extension?: ImageExtension): string {
     return `${this.BASE}/emojis/${id}${extension ? `.${extension}` : ""}`;
   }

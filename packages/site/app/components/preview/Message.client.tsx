@@ -7,7 +7,7 @@ import {
   UserFlagsBitField,
 } from "discord-bitflag";
 import { useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
 import type { DraftFile } from "~/routes/_index";
 import type { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
@@ -58,6 +58,39 @@ export const getAuthorType = (
   // Assume we are going to send the message with a webhook
   return AuthorType.Webhook;
 };
+
+export const UsernameBadge = ({
+  label,
+  verified,
+  className,
+}: {
+  label: string;
+  verified?: boolean;
+  className?: string;
+}) => (
+  <span
+    className={twMerge(
+      "font-semibold align-top ml-1 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]",
+      className,
+    )}
+  >
+    {verified ? (
+      <Svg
+        width={16}
+        height={16}
+        className="w-[0.9375rem] h-[0.9375rem] -ml-1 inline-block"
+      >
+        <path
+          fill="currentColor"
+          fillRule="evenodd"
+          d="M18.7 7.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4l3.3 3.29 7.3-7.3a1 1 0 0 1 1.4 0Z"
+          clipRule="evenodd"
+        />
+      </Svg>
+    ) : null}
+    {label}
+  </span>
+);
 
 export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
@@ -262,25 +295,9 @@ export const Message: React.FC<{
               <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5] text-base">
                 {username}
               </span>
-              {badge && (
-                <span className="font-semibold align-top ml-1 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]">
-                  {isVerified && (
-                    <Svg
-                      width={16}
-                      height={16}
-                      className="w-[0.9375rem] h-[0.9375rem] -ml-1 inline-block"
-                    >
-                      <path
-                        fill="currentColor"
-                        fillRule="evenodd"
-                        d="M18.7 7.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4l3.3 3.29 7.3-7.3a1 1 0 0 1 1.4 0Z"
-                        clipRule="evenodd"
-                      />
-                    </Svg>
-                  )}
-                  {badge}
-                </span>
-              )}
+              {badge ? (
+                <UsernameBadge label={badge} verified={isVerified} />
+              ) : null}
               <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
                 {t("todayAt", { replace: { date: date ?? new Date() } })}
               </span>

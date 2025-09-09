@@ -157,6 +157,11 @@ const data = {
         },
       ],
     },
+    profile: {
+      title: "How do I customize the bot?",
+      description:
+        'In most cases, it\'s easiest to just set a custom name and avatar while creating your webhook, which will show by default for all messages that webhook sends. You can also customize the name and avatar on a per-message basis in the "Profile" section or edit the webhook after it has already been created. Discord limitations prevent you from changing the profile information for a message that has already been sent, though.\n\nDiscohook also allows you to customize the Discohook bot itself. Use the **/profile set** command or go to your server page at https://discohook.app/me/servers.',
+    },
   },
 };
 

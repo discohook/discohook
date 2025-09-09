@@ -29,6 +29,10 @@ const apiBuckets: Partial<
     POST: { capacity: 20, seconds: 5 },
     PATCH: { capacity: 20, seconds: 5 },
   },
+  guildProfile: {
+    GET: { capacity: 10, seconds: 10 },
+    PATCH: { capacity: 1, seconds: 10 },
+  },
   guildWebhooks: {
     GET: { capacity: 10, seconds: 10 },
   },
