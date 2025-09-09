@@ -139,19 +139,25 @@ export const useSafeFetcher = <TData = any>({
     }) as (href: string) => Promise<SerializeFrom<TData>>,
     submit: ((target, options) => {
       setState("submitting");
-      const contentType =
-        target instanceof FormData || target instanceof URLSearchParams
-          ? "application/x-www-form-urlencoded"
-          : "application/json";
+      const headers = new Headers();
+      if (target instanceof FormData) {
+        // no-op; fetch autofills the content type
+        // with appropriate boundary string
+      } else if (target instanceof URLSearchParams) {
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+      } else {
+        headers.set("Content-Type", "application/json");
+      }
+
       // TODO determine appropriate route for `_data` query param
       // This data is passed to the client by Remix somewhere
       fetch(options?.action ?? window.location.href, {
         method: options?.method ?? "POST",
         body:
-          contentType === "application/json" ? JSON.stringify(target) : target,
-        headers: {
-          "Content-Type": contentType,
-        },
+          headers.get("Content-Type") === "application/json"
+            ? JSON.stringify(target)
+            : target,
+        headers,
       })
         .then((response) => {
           if (response.status === 204) {
@@ -195,20 +201,24 @@ export const useSafeFetcher = <TData = any>({
     ) => void,
     submitAsync: (async (target, options) => {
       setState("submitting");
-      const contentType =
-        target instanceof FormData || target instanceof URLSearchParams
-          ? "application/x-www-form-urlencoded"
-          : "application/json";
+      const headers = new Headers();
+      if (target instanceof FormData) {
+        // no-op; fetch autofills the content type
+        // with appropriate boundary string
+      } else if (target instanceof URLSearchParams) {
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+      } else {
+        headers.set("Content-Type", "application/json");
+      }
+
       try {
         const response = await fetch(options?.action ?? window.location.href, {
           method: options?.method ?? "POST",
           body:
-            contentType === "application/json"
+            headers.get("Content-Type") === "application/json"
               ? JSON.stringify(target)
               : target,
-          headers: {
-            "Content-Type": contentType,
-          },
+          headers,
         });
 
         if (!response.ok) {
@@ -235,7 +245,7 @@ export const useSafeFetcher = <TData = any>({
           setState("idle");
           return responseData;
         }
-        throw Error(`Unhandled content type: ${contentType}`);
+        throw Error(`Unhandled content type: ${headers.get("Content-Type")}`);
       } catch (e) {
         setState("idle");
         throw e;
