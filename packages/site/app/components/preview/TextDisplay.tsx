@@ -10,7 +10,8 @@ export const PreviewTextDisplay: React.FC<{
   return (
     <div
       className={twJoin(
-        "contents font-medium text-primary-600 dark:text-primary-230 dark:font-normal leading-[1.375] whitespace-pre-line",
+        "contents font-medium text-primary-600 dark:text-primary-230 dark:font-normal leading-[1.375]",
+        "[word-break:break-word] whitespace-pre-line",
         // smaller base size when parent is a container
         "[--font-size:1rem] group-data-[type='17']/parent:text-sm group-data-[type='17']/parent:[--font-size:0.875rem]",
       )}
