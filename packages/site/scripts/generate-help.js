@@ -119,7 +119,7 @@ const data = {
     "reaction role": {
       title: "How do I make reaction roles?",
       description:
-        "To create a reaction role, [invite the Discohook Utils bot](https://discohook.app/bot) use the **/reaction-role create** command.\n\nIt expects you put in a message link to the message you want the reaction role on, the emoji you want to use, and the role you want it to give.\n\nOnce the command is run, the reaction role should be functioning, though you may have issues with permissions. To make sure reaction roles work in your server you can verify the setup using **/reaction-role verify**.",
+        "To create a reaction role, [invite the Discohook Utils bot](https://discohook.app/bot) and use the **/reaction-role create** command.\n\nIt expects you put in a message link for the message you want the reaction role on, the emoji you want to use, and the role you want it to give.\n\nOnce the command is run, the reaction role should be functioning, though you may have issues with permissions. Make sure the highest role for Discohook Utils is above the role you gave in the command, and that the bot has the Manage Roles permission.",
       fields: [
         {
           name: "If you are currently using Discobot for this",
