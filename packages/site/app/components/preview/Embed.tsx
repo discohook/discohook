@@ -28,7 +28,6 @@ export const resolveAttachmentUri = (
   files?: DraftFile[] | undefined,
   allow?: boolean | readonly string[],
 ) => {
-  console.log({ uri, files, allow });
   if (uri.startsWith("attachment://")) {
     const filename = uri.replace(/^attachment:\/\//, "");
     return files?.find(

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { PreviewButton } from "~/components/preview/ActionRow";
-import { Embed } from "~/components/preview/Embed";
+import { Message } from "~/components/preview/Message.client";
 import { TextInput } from "~/components/TextInput";
 import type { GuideFileMeta } from "~/routes/guide.$";
 import { ExampleModal } from "./ExampleModal";
@@ -41,6 +41,55 @@ export const HelpModal = (props: ModalProps) => {
     }
   }, [indexData, props.open]);
 
+  const tagEmbeds = Object.entries(tags)
+    .filter(
+      ([key, value]) =>
+        key === query ||
+        (typeof value !== "string" &&
+          value.title?.toLowerCase()?.includes(query.toLowerCase())),
+    )
+    .map(([key, value]) => {
+      if (typeof value === "string" && key !== query) return undefined;
+      const data =
+        typeof value === "string" ? (tags[value] as APIEmbed) : value;
+      data.color = data.color ?? 0x58b9ff;
+
+      return data;
+    })
+    .filter((v) => !!v);
+
+  const guideEmbeds = indexData
+    ? Object.entries(indexData)
+        .flatMap((entries) =>
+          entries[1].map((e) => {
+            e.path = entries[0];
+            return e;
+          }),
+        )
+        .filter(
+          (entry) =>
+            (entry.file === query ||
+              entry.title.toLowerCase().includes(query.toLowerCase())) &&
+            // clutter
+            entry.path !== "changelogs",
+        )
+        .map((entry) => {
+          const data: APIEmbed = {
+            provider: {
+              name: "Discohook Guides",
+              url: "/guide",
+            },
+            title: entry.title,
+            description: entry.description,
+            thumbnail: entry.thumbnail ? { url: entry.thumbnail } : undefined,
+            url: `/guide/${entry.path ? `${entry.path}/` : ""}${entry.file}`,
+            color: entry.color || 0x58b9ff,
+          };
+
+          return data;
+        })
+    : [];
+
   return (
     <Modal {...props}>
       <PlainModalHeader>{t("help")}</PlainModalHeader>
@@ -53,64 +102,19 @@ export const HelpModal = (props: ModalProps) => {
         placeholder={t("helpSearchPlaceholder")}
       />
       <div className="overflow-y-auto max-h-[32rem] flex flex-col">
-        <div className="mx-auto space-y-4">
-          {Object.entries(tags)
-            .filter(
-              ([key, value]) =>
-                key === query ||
-                (typeof value !== "string" &&
-                  value.title?.toLowerCase()?.includes(query.toLowerCase())),
-            )
-            .map(([key, value]) => {
-              if (typeof value === "string" && key !== query) return <></>;
-              const data =
-                typeof value === "string" ? (tags[value] as APIEmbed) : value;
-              data.color = data.color ?? 0x58b9ff;
-
-              return <Embed key={`help-tag-${key}`} embed={data} />;
-            })}
-          {indexData
-            ? Object.entries(indexData)
-                .flatMap((entries) =>
-                  entries[1].map((e) => {
-                    e.path = entries[0];
-                    return e;
-                  }),
-                )
-                .filter(
-                  (entry) =>
-                    (entry.file === query ||
-                      entry.title
-                        .toLowerCase()
-                        .includes(query.toLowerCase())) &&
-                    // clutter
-                    entry.path !== "changelogs",
-                )
-                .map((entry) => {
-                  const data: APIEmbed = {
-                    provider: {
-                      name: "Discohook Guides",
-                      url: "/guide",
-                    },
-                    title: entry.title,
-                    description: entry.description,
-                    thumbnail: entry.thumbnail
-                      ? { url: entry.thumbnail }
-                      : undefined,
-                    url: `/guide/${entry.path ? `${entry.path}/` : ""}${
-                      entry.file
-                    }`,
-                    color: entry.color || 0x58b9ff,
-                  };
-
-                  return (
-                    <Embed
-                      key={`help-guide-${entry.path}/${entry.file}`}
-                      embed={data}
-                    />
-                  );
-                })
-            : null}
+        <div className="me-auto space-y-4" dir="ltr">
+          {tagEmbeds.length !== 0 ? (
+            <Message
+              index={0}
+              message={{ username: "FAQs", embeds: tagEmbeds }}
+            />
+          ) : null}
+          {guideEmbeds.length !== 0 ? (
+            <Message
+              index={0}
+              message={{ username: "Guides", embeds: guideEmbeds }}
+            />
+          ) : null}
         </div>
       </div>
       <ModalFooter className="flex gap-2 flex-wrap">
