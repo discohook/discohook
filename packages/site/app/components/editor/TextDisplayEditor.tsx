@@ -6,12 +6,13 @@ import {
   ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
-import type { QueryData } from "~/types/QueryData";
+import type { APIButtonComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
 import { ButtonSelect } from "../ButtonSelect";
 import { useError } from "../Error";
 import { TextArea } from "../TextArea";
+import { submitComponent } from "./ComponentEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const TextDisplayEditor: React.FC<{
@@ -25,7 +26,7 @@ export const TextDisplayEditor: React.FC<{
   open?: boolean;
 }> = ({ message, component, parent, index: i, data, setData, cache, open }) => {
   const { t } = useTranslation();
-  const [error] = useError(t);
+  const [error, setError] = useError(t);
 
   return (
     <TopLevelComponentEditorContainer
@@ -71,7 +72,7 @@ export const TextDisplayEditor: React.FC<{
                 value: "thumbnail",
               },
             ]}
-            onValueChange={(value) => {
+            onValueChange={async (value) => {
               const parentChildren =
                 parent?.components ?? message.data.components;
               if (!parentChildren) {
@@ -105,13 +106,34 @@ export const TextDisplayEditor: React.FC<{
                 default:
                   break;
               }
-              if (accessory) {
+
+              const setAccessory = (
+                accessory: APISectionAccessoryComponent & { _state?: string },
+              ) => {
                 parentChildren.splice(i, 1, {
                   type: ComponentType.Section,
                   components: [component],
                   accessory,
                 });
                 setData({ ...data });
+              };
+
+              if (accessory) {
+                if (accessory.type === ComponentType.Button) {
+                  // loading indicator
+                  setAccessory({ ...accessory, _state: "submitting" });
+
+                  const accessoryComponent = (await submitComponent(
+                    accessory,
+                    setError,
+                  )) as APIButtonComponent | undefined;
+                  if (accessoryComponent) {
+                    // setError callback should reasonably handle else state
+                    setAccessory(accessoryComponent);
+                  }
+                } else {
+                  setAccessory(accessory);
+                }
               }
             }}
           >
