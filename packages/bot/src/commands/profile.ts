@@ -2,11 +2,13 @@ import { ContainerBuilder } from "@discordjs/builders";
 import {
   type APIGuildMember,
   PermissionFlagsBits,
+  RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
 import type { ChatInputAppCommandCallback } from "../commands.js";
 import { cdn, readAttachment, userAvatarUrl } from "../util/cdn.js";
 import { textDisplay } from "../util/components.js";
+import { isDiscordError } from "../util/error.js";
 import { color } from "../util/meta.js";
 import { getUserTag } from "../util/user.js";
 
@@ -21,34 +23,48 @@ const getMemberProfileContainer = (
   member: APIGuildMember,
   guildId: string,
   // discord doesn't return user bios in the member object, even for yourself
-  bio?: string | null,
+  newBio?: string | null,
 ): ContainerBuilder => {
-  const container = new ContainerBuilder()
-    .setAccentColor(color)
-    .addSectionComponents((s) =>
-      s
-        .addTextDisplayComponents([
-          textDisplay(
-            `### ${member.nick ?? member.user.global_name ?? member.user.username}`,
-          ),
-          // textDisplay(
-          //   bio === null
-          //     ? "No custom bio."
-          //     : bio
-          //       ? bio
-          //       : "Custom bio, if present, cannot be shown here due to Discord limitations.",
-          // ),
-        ])
-        .setThumbnailAccessory((t) =>
-          t.setURL(
-            member.avatar
-              ? cdn.guildMemberAvatar(guildId, member.user.id, member.avatar, {
-                  size: 2048,
-                })
-              : userAvatarUrl(member.user, { size: 2048 }),
-          ),
+  // but they *do* return the bio in a PATCH response
+  const bio = "bio" in member ? (member.bio as string) : newBio;
+
+  const container = new ContainerBuilder().setAccentColor(color);
+  if (member.banner) {
+    container.addMediaGalleryComponents((g) =>
+      g.addItems((i) =>
+        i.setURL(
+          // biome-ignore lint/style/noNonNullAssertion: above
+          cdn.guildMemberBanner(guildId, member.user.id, member.banner!, {
+            size: 2048,
+          }),
         ),
+      ),
     );
+  }
+  container.addSectionComponents((s) =>
+    s
+      .addTextDisplayComponents([
+        textDisplay(
+          `### ${member.nick ?? member.user.global_name ?? member.user.username}\n${getUserTag(member.user)}`,
+        ),
+        textDisplay(
+          bio === null
+            ? "-# *Discohook's default bio will be used.*"
+            : bio
+              ? bio // max 190 chars; should be fine
+              : "-# *Bio cannot be shown due to Discord limitations.*",
+        ),
+      ])
+      .setThumbnailAccessory((t) =>
+        t.setURL(
+          member.avatar
+            ? cdn.guildMemberAvatar(guildId, member.user.id, member.avatar, {
+                size: 2048,
+              })
+            : userAvatarUrl(member.user, { size: 2048 }),
+        ),
+      ),
+  );
 
   return container;
 };
@@ -80,12 +96,37 @@ export const profileSetCallback: ChatInputAppCommandCallback<true> = async (
   }
 
   if (!nickField && !bannerField && !avatarField) {
-    const member = (await ctx.rest.get(
-      Routes.guildMember(
-        ctx.interaction.guild_id,
-        ctx.interaction.application_id,
-      ),
-    )) as APIGuildMember;
+    let member: APIGuildMember;
+    try {
+      // empty PATCH to get own bio
+      member = (await ctx.rest.patch(
+        Routes.guildMember(ctx.interaction.guild_id, "@me"),
+        // This won't show up in audit log since it's blank so
+        // the reason shouldn't matter
+        { body: {} },
+      )) as APIGuildMember;
+    } catch (e) {
+      if (
+        // perhaps rate limit or empty body was forbidden
+        isDiscordError(e) &&
+        e.code !== RESTJSONErrorCodes.UnknownMember &&
+        e.code !== RESTJSONErrorCodes.UnknownGuild
+      ) {
+        console.error(
+          "Failed to submit empty PATCH current member, falling back to GET",
+          e.rawError,
+        );
+        member = (await ctx.rest.get(
+          Routes.guildMember(
+            ctx.interaction.guild_id,
+            ctx.interaction.application_id,
+          ),
+        )) as APIGuildMember;
+      } else {
+        throw e;
+      }
+    }
+
     return ctx.reply({
       components: [getMemberProfileContainer(member, ctx.interaction.guild_id)],
       componentsV2: true,
@@ -107,20 +148,20 @@ export const profileSetCallback: ChatInputAppCommandCallback<true> = async (
         body.banner = banner;
       }
 
-      await ctx.rest.patch(
+      const member = (await ctx.rest.patch(
         Routes.guildMember(ctx.interaction.guild_id, "@me"),
         {
           body,
           reason: `${getUserTag(ctx.user)} (${ctx.user.id}) via /profile set`,
         },
-      );
+      )) as APIGuildMember;
       await ctx.followup.editOriginalMessage({
-        content: "Profile updated.",
+        // content: "Profile updated.",
         // I don't really like how plain this is
-        // components: [
-        //   getMemberProfileContainer(member, ctx.interaction.guild_id, body.bio),
-        // ],
-        // componentsV2: true,
+        components: [
+          getMemberProfileContainer(member, ctx.interaction.guild_id, body.bio),
+        ],
+        componentsV2: true,
       });
     },
   ];

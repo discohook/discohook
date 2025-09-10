@@ -46,6 +46,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   try {
     // empty PATCH to get own bio
     member = (await rest.patch(Routes.guildMember(String(guildId), "@me"), {
+      // This won't show up in audit log since it's blank so
+      // the reason shouldn't matter
       body: {},
     })) as APIGuildMember;
   } catch (e) {
@@ -203,7 +205,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   try {
     member = (await rest.patch(Routes.guildMember(String(guildId), "@me"), {
       body,
-      reason: `${token.user.name} (${token.user.discordId}) via the dashboard`,
+      reason: `${token.user.discordUser?.name ?? token.user.name} (${token.user.discordId}) via the dashboard`,
     })) as APIGuildMember;
   } catch (e) {
     if (isDiscordError(e)) {

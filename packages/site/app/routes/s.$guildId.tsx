@@ -1228,13 +1228,15 @@ export default () => {
                   const avatar = data.get("avatar");
                   if (avatar instanceof File && avatar.size === 0) {
                     data.delete("avatar");
-                  } else if (avatar === "null") {
+                  }
+                  if (profileForm.avatarObjectURL === null) {
                     data.set("avatar", "");
                   }
                   const banner = data.get("banner");
                   if (banner instanceof File && banner.size === 0) {
                     data.delete("banner");
-                  } else if (banner === "null") {
+                  }
+                  if (profileForm.bannerObjectURL === null) {
                     data.set("banner", "");
                   }
 
@@ -1354,10 +1356,13 @@ export default () => {
                     />
                   )}
                   <div className="mt-2 w-64 flex flex-col gap-1.5">
-                    {profileForm.avatarObjectURL ||
-                    profileFetcher.data?.avatar ? (
+                    {(profileForm.avatarObjectURL ||
+                      profileFetcher.data?.avatar) &&
+                    // null indicates there will be no avatar
+                    profileForm.avatarObjectURL !== null ? (
                       <Button
                         discordstyle={ButtonStyle.Secondary}
+                        type="button"
                         className="w-full"
                         onClick={() => {
                           const el = document.querySelector<HTMLInputElement>(
@@ -1365,6 +1370,7 @@ export default () => {
                           );
                           if (el) el.value = "";
 
+                          console.log(profileForm, profileFetcher.data);
                           if (profileForm.avatarObjectURL) {
                             URL.revokeObjectURL(profileForm.avatarObjectURL);
                             // only clear yet-unsubmitted data
@@ -1374,7 +1380,6 @@ export default () => {
                             });
                           } else {
                             // clear the data already on the server
-                            if (el) el.value = "null";
                             setProfileForm({
                               ...profileForm,
                               avatarObjectURL: null,
@@ -1385,10 +1390,13 @@ export default () => {
                         {t("removeAvatar")}
                       </Button>
                     ) : null}
-                    {profileForm.bannerObjectURL ||
-                    profileFetcher.data?.banner ? (
+                    {(profileForm.bannerObjectURL ||
+                      profileFetcher.data?.banner) &&
+                    // null indicates there will be no banner
+                    profileForm.bannerObjectURL !== null ? (
                       <Button
                         discordstyle={ButtonStyle.Secondary}
+                        type="button"
                         className="w-full"
                         onClick={() => {
                           const el = document.querySelector<HTMLInputElement>(
@@ -1405,7 +1413,6 @@ export default () => {
                             });
                           } else {
                             // clear the data already on the server
-                            if (el) el.value = "null";
                             setProfileForm({
                               ...profileForm,
                               bannerObjectURL: null,
