@@ -42,6 +42,7 @@ import { boolEmoji, color } from "../util/meta.js";
 import { base64UrlEncode, randomString } from "../util/text.js";
 import { getUserTag } from "../util/user.js";
 import { resolveMessageLink } from "./components/entry.js";
+import { getWebhook } from "./webhooks/webhookInfo.js";
 
 // essentially flattens all content components
 const getAllComponentContent = (
@@ -397,7 +398,7 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
   let webhookErrorMsg: string | undefined;
   if (webhookId) {
     try {
-      webhook = (await ctx.rest.get(Routes.webhook(webhookId))) as APIWebhook;
+      webhook = await getWebhook(webhookId, ctx.env);
     } catch (e) {
       if (isDiscordError(e)) webhookErrorMsg = e.rawError.message;
       webhook = null;
@@ -599,9 +600,11 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
         });
       }
 
-      const webhook = (await ctx.rest.get(
-        Routes.webhook(message.webhook_id),
-      )) as APIWebhook;
+      const webhook = await getWebhook(
+        message.webhook_id,
+        ctx.env,
+        message.application_id,
+      );
       if (!webhook.token) {
         return ctx.reply({
           content: dedent`
