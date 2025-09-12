@@ -9,13 +9,13 @@ import {
 } from "discord-api-types/v10";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { useError } from "~/components/Error";
-import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { InfoBox } from "~/components/InfoBox";
 import { linkClassName, Markdown } from "~/components/preview/Markdown";
 import { TextInput } from "~/components/TextInput";
 import type { User } from "~/session.server";

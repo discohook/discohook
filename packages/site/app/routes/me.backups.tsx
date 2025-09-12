@@ -3,7 +3,7 @@ import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { zx } from "zodix";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";

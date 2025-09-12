@@ -12,7 +12,7 @@ import {
 } from "discord-api-types/v10";
 import { notInArray } from "drizzle-orm";
 import { Snowflake } from "tif-snowflake";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getBucket } from "~/durable/rate-limits";
 import { getUserId } from "~/session.server";
 import type { APIComponentInMessageActionRow } from "~/types/QueryData";

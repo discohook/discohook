@@ -6,7 +6,7 @@ import {
 } from "@remix-run/cloudflare";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import matter from "front-matter";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
 import { Markdown } from "~/components/preview/Markdown";

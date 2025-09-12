@@ -1,5 +1,5 @@
 import { ChannelType, ThreadAutoArchiveDuration } from "discord-api-types/v10";
-import { z } from "zod";
+import { z } from "zod/v3";
 import type {
   AnonymousVariable,
   DBFlowAction,
@@ -148,6 +148,7 @@ export const ZodFlowActionCheckFunction: z.ZodType<FlowActionCheckFunction> =
 export const ZodFlowActionCheck = z.object({
   type: z.literal(FlowActionType.Check),
   function: ZodFlowActionCheckFunction,
+  // biome-ignore lint/suspicious/noThenProperty: it's what it's called
   then: futureSchema(() => ZodFlowAction).array(),
   else: futureSchema(() => ZodFlowAction).array(),
 }) satisfies z.ZodType<FlowActionCheck>;

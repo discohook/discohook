@@ -8,7 +8,7 @@ import {
   type MessageFlags,
   type UserFlags,
 } from "discord-api-types/v10";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { ZodAPITopLevelComponentRaw } from "./components-raw";
 import { ZodMessageFlags } from "./discord";
 

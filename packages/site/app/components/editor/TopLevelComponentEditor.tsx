@@ -1,3 +1,4 @@
+import { Collapsible } from "@base-ui-components/react/collapsible";
 import {
   type APIActionRowComponent,
   type APIComponentInContainer,
@@ -17,8 +18,9 @@ import type {
 } from "~/types/QueryData";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isActionRow, isComponentsV2 } from "~/util/discord";
-import { InfoBox } from "../InfoBox";
+import { collapsibleStyles } from "../collapsible";
 import { CoolIcon } from "../icons/CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { resolveAttachmentUri } from "../preview/Embed";
 
 /** Also strips query and fragment */
@@ -173,9 +175,9 @@ export const TopLevelComponentEditorContainer = ({
   const errors = getComponentErrors(component, files);
 
   return (
-    <details
+    <Collapsible.Root
       className="group/top-1 rounded-lg p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow"
-      open={open}
+      defaultOpen={open}
     >
       <TopLevelComponentEditorContainerSummary
         t={t}
@@ -188,15 +190,15 @@ export const TopLevelComponentEditorContainer = ({
         errors={errors}
         groupNestLevel={1}
       />
-      {errors.length > 0 && (
-        <div className="-mt-1 mb-1">
+      <Collapsible.Panel className={collapsibleStyles.editorPanel}>
+        {errors.length > 0 && (
           <InfoBox severity="red" icon="Circle_Warning">
             {errors.map((k) => t(k)).join("\n")}
           </InfoBox>
-        </div>
-      )}
-      {children}
-    </details>
+        )}
+        {children}
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 };
 
@@ -209,6 +211,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   data,
   setData,
   className,
+  triggerClassName,
   errors,
   groupNestLevel = 1,
 }: {
@@ -220,6 +223,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   setData: React.Dispatch<QueryData>;
   data: QueryData;
   className?: string;
+  triggerClassName?: string;
   errors?: string[];
   // This exists because:
   // - Nested groups must be named to work like we want
@@ -242,36 +246,41 @@ export const TopLevelComponentEditorContainerSummary = ({
     siblings.filter((c) => c.type === component.type).indexOf(component) + 1;
 
   return (
-    <summary
+    <div
       className={twMerge(
-        groupNestLevel === 1
-          ? "group-open/top-1:mb-2"
-          : "group-open/top-2:mb-2",
-        "transition-[margin] marker:content-none marker-none flex text-lg text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none",
+        "flex items-center text-gray-600 dark:text-gray-400",
         className,
       )}
     >
-      <CoolIcon
-        icon="Chevron_Right"
+      <Collapsible.Trigger
         className={twJoin(
-          groupNestLevel === 1
-            ? "group-open/top-1:rotate-90"
-            : "group-open/top-2:rotate-90",
-          "ltr:mr-2 rtl:ml-2 my-auto transition-transform",
+          "truncate flex items-center text-lg grow font-semibold cursor-normal select-none",
+          groupNestLevel === 1 ? "group/trigger-1" : "group/trigger-2",
+          triggerClassName,
         )}
-      />
-      {errors && errors.length > 0 ? (
+      >
         <CoolIcon
-          icon="Circle_Warning"
-          className="my-auto text-rose-600 dark:text-rose-400 ltr:mr-1.5 rtl:ml-1.5"
+          icon="Chevron_Right"
+          className={twJoin(
+            groupNestLevel === 1
+              ? "group-data-[panel-open]/trigger-1:rotate-90"
+              : "group-data-[panel-open]/trigger-2:rotate-90",
+            "me-2 transition-transform",
+          )}
         />
-      ) : null}
-      <p className="truncate">
-        {t(`componentN.${component.type}${previewText ? "_text" : ""}`, {
-          replace: { n: num, text: previewText },
-        })}
-      </p>
-      <div className="ltr:ml-auto rtl:mr-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
+        {errors && errors.length > 0 ? (
+          <CoolIcon
+            icon="Circle_Warning"
+            className="text-rose-600 dark:text-rose-400 me-1.5"
+          />
+        ) : null}
+        <p className="truncate">
+          {t(`componentN.${component.type}${previewText ? "_text" : ""}`, {
+            replace: { n: num, text: previewText },
+          })}
+        </p>
+      </Collapsible.Trigger>
+      <div className="ms-auto text-xl space-x-2.5 rtl:space-x-reverse shrink-0">
         <button
           type="button"
           className={i === 0 ? "hidden" : ""}
@@ -328,6 +337,6 @@ export const TopLevelComponentEditorContainerSummary = ({
           <CoolIcon icon="Trash_Full" />
         </button>
       </div>
-    </summary>
+    </div>
   );
 };

@@ -4,7 +4,7 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
@@ -164,6 +164,7 @@ export default () => {
             i18nKey="botsPremiumNote"
             components={[
               <Link
+                key="0"
                 to="/donate"
                 className={twJoin(linkClassName, "dark:brightness-90")}
               />,

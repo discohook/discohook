@@ -8,7 +8,7 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { getDb, webhooks } from "store";
-import { z } from "zod";
+import { z } from "zod/v3";
 import {
   authorizeRequest,
   getGuild,

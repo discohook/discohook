@@ -1,6 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { getDb } from "store";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { backups, makeSnowflake } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import type { Env } from "~/types/env";

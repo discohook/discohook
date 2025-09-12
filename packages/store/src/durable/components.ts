@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zx } from "zodix";
+import { zx } from "zodix/v4";
 import { getDb } from "../db.js";
 import { makeSnowflake } from "../schema/schema.js";
 import type { Flow, StorableComponent } from "../types/index.js";
@@ -49,8 +49,7 @@ export class DurableComponentState implements DurableObject {
       case "PUT": {
         const { id, expireAt } = zx.parseQuery(request, {
           id: z.string(),
-          expireAt: z
-            .string()
+          expireAt: z.iso
             .datetime()
             .transform((v) => new Date(v))
             .optional(),

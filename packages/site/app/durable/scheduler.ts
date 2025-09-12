@@ -1,7 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { parseExpression } from "cron-parser";
 import { RESTJSONErrorCodes } from "discord-api-types/v10";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
   backups,

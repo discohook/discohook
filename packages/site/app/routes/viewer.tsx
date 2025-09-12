@@ -1,7 +1,7 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import type { SafeParseError, SafeParseReturnType, ZodError } from "zod";
+import type { SafeParseError, SafeParseReturnType, ZodError } from "zod/v3";
 import { Header } from "~/components/Header";
 import { Message } from "~/components/preview/Message.client";
 import { FullscreenThrobber } from "~/root";

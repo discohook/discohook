@@ -1,5 +1,5 @@
 import { json } from "@remix-run/cloudflare";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { ZodCryptoAlert } from "~/types/crypto";
 import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";

@@ -17,7 +17,7 @@ import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isNotNull, type SQL } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { z } from "zod";
+import { z } from "zod/v3";
 import {
   AsyncGuildSelect,
   type OptionGuild,

@@ -5,7 +5,7 @@ import {
   type RESTGetAPIUserResult,
   Routes,
 } from "discord-api-types/v10";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import type { ResolvableAPIGuildMember } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";

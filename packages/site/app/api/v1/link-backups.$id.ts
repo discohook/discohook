@@ -1,6 +1,6 @@
 import { json } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getUser, getUserId } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";

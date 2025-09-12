@@ -7,7 +7,7 @@ import {
 } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { ZodOEmbedData } from "~/api/v1/oembed";
 import { Button } from "~/components/Button";

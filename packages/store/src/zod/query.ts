@@ -1,38 +1,41 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import type { APIEmbed, QueryData } from "../types/backups.js";
 import { randomString } from "../util/text.js";
 
 export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
-  title: z.ostring(),
-  description: z.ostring(),
-  url: z.ostring(),
-  timestamp: z.ostring(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  url: z.string().optional(),
+  timestamp: z.string().optional(),
   color: z
-    .onumber()
+    .number()
+    .optional()
     .nullable()
     .transform((v) => (v === null ? undefined : v)),
-  footer: z.object({ text: z.string(), icon_url: z.ostring() }).optional(),
+  footer: z
+    .object({ text: z.string(), icon_url: z.string().optional() })
+    .optional(),
   image: z.object({ url: z.string() }).optional(),
   thumbnail: z.object({ url: z.string() }).optional(),
   video: z.object({ url: z.string() }).optional(),
   provider: z
     .object({
-      name: z.ostring(),
-      url: z.ostring(),
+      name: z.string().optional(),
+      url: z.string().optional(),
     })
     .optional(),
   author: z
     .object({
       name: z.string(),
-      url: z.ostring(),
-      icon_url: z.ostring(),
+      url: z.string().optional(),
+      icon_url: z.string().optional(),
     })
     .optional(),
   fields: z
     .object({
       name: z.string(),
       value: z.string(),
-      inline: z.oboolean(),
+      inline: z.boolean().optional(),
     })
     .array()
     .optional(),
@@ -41,42 +44,42 @@ export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),
   data: z.object({
-    username: z.ostring(),
-    avatar_url: z.ostring(),
+    username: z.string().optional(),
+    avatar_url: z.string().optional(),
     author: z
       .object({
         /** @deprecated use `data.username` */
-        name: z.ostring(),
+        name: z.string().optional(),
         /** @deprecated use `data.avatar_url` */
-        badge: z.ostring().nullable(),
+        badge: z.string().optional().nullable(),
       })
       .optional(),
-    content: z.ostring().nullable(),
+    content: z.string().optional().nullable(),
     embeds: ZodAPIEmbed.array().nullable().optional(),
     attachments: z
       .object({
         id: z.string(),
         filename: z.string(),
-        description: z.ostring(),
-        content_type: z.ostring(),
+        description: z.string().optional(),
+        content_type: z.string().optional(),
         size: z.number(),
         url: z.string(),
         proxy_url: z.string(),
-        height: z.onumber().nullable(),
-        weight: z.onumber().nullable(),
+        height: z.number().optional().nullable(),
+        weight: z.number().optional().nullable(),
       })
       .array()
       .optional(),
-    webhook_id: z.ostring(),
+    webhook_id: z.string().optional(),
     components: z.array(
-      z.object({ id: z.onumber(), type: z.number() }).passthrough(),
+      z.object({ id: z.number().optional(), type: z.number() }).passthrough(),
     ),
     // components: ZodAPITopLevelComponent.array().optional(),
-    flags: z.onumber(),
-    thread_name: z.ostring(),
+    flags: z.number().optional(),
+    thread_name: z.string().optional(),
   }),
-  reference: z.ostring(),
-  thread_id: z.ostring(),
+  reference: z.string().optional(),
+  thread_id: z.string().optional(),
 }) satisfies z.ZodType<QueryData["messages"][number]>;
 
 export const ZodLinkQueryDataVersion = z.literal(1);
@@ -90,21 +93,21 @@ export const ZodLinkEmbedStrategy = z.nativeEnum(LinkEmbedStrategy);
 
 export const ZodLinkEmbed = z.object({
   strategy: ZodLinkEmbedStrategy.optional(),
-  title: z.ostring(),
-  description: z.ostring(),
-  timestamp: z.ostring(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  timestamp: z.string().optional(),
   provider: z
     .object({
-      name: z.ostring(),
-      icon_url: z.ostring(),
-      url: z.ostring(),
+      name: z.string().optional(),
+      icon_url: z.string().optional(),
+      url: z.string().optional(),
     })
     .optional(),
   author: z
     .object({
       name: z.string(),
-      icon_url: z.ostring(),
-      url: z.ostring(),
+      icon_url: z.string().optional(),
+      url: z.string().optional(),
     })
     .optional(),
   images: z
@@ -113,20 +116,20 @@ export const ZodLinkEmbed = z.object({
     })
     .array()
     .optional(),
-  large_images: z.oboolean(),
+  large_images: z.boolean().optional(),
   video: z
     .object({
       /** Direct video file or YouTube video */
       url: z.string(),
-      height: z.onumber(),
-      width: z.onumber(),
+      height: z.number().optional(),
+      width: z.number().optional(),
     })
     .optional(),
-  color: z.onumber(),
+  color: z.number().optional(),
 }) satisfies z.ZodType<APIEmbed>;
 
 export const ZodLinkQueryData = z.object({
   version: ZodLinkQueryDataVersion.optional(),
-  backup_id: z.ostring(),
-  embed: z.object({ data: ZodLinkEmbed, redirect_url: z.ostring() }),
+  backup_id: z.string().optional(),
+  embed: z.object({ data: ZodLinkEmbed, redirect_url: z.string().optional() }),
 });

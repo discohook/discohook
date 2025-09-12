@@ -8,7 +8,7 @@ import {
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import type { z } from "zod";
+import type { z } from "zod/v3";
 import { type ApiRoute, apiUrl, BRoutes } from "~/api/routing";
 import type { action as ApiPostComponents } from "~/api/v1/components";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
@@ -236,7 +236,7 @@ export const ActionRowEditor: React.FC<{
       open={open}
     >
       {error}
-      <div className="space-y-1 mb-1">
+      <div className="space-y-1">
         {row.components.map((component, ci) => {
           const id = getComponentId(component)?.toString();
           return (

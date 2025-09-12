@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getUserId } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";

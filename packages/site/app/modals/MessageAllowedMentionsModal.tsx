@@ -5,11 +5,12 @@ import {
   type APIAllowedMentions,
 } from "discord-api-types/v10";
 import type { TFunction } from "i18next";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { BigCheckbox, Checkbox } from "~/components/Checkbox";
+import { collapsibleStyles } from "~/components/collapsible";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { codeStyle } from "~/components/preview/Markdown";
 import { switchStyles } from "~/components/switch";
@@ -26,44 +27,6 @@ interface MessageAllowedMentionsModalProps {
   messageIndex?: number;
 }
 
-// https://github.com/mui/base-ui/blob/master/packages/react/src/utils/usePanelResize.ts
-const setAutoSize = (panel: HTMLElement) => {
-  const originalHeight = panel.style.height;
-  const originalWidth = panel.style.width;
-  panel.style.height = "auto";
-  panel.style.width = "auto";
-  return () => {
-    panel.style.height = originalHeight;
-    panel.style.width = originalWidth;
-  };
-};
-
-const recalculatePanelSize = (ref: React.RefObject<HTMLDivElement | null>) => {
-  const panel = ref.current;
-  // it's pretty safe to assume the panel is open because the user wouldn't be
-  // able to call this function otherwise, but let's check just in case
-  if (!panel || panel.dataset.open === undefined) return;
-
-  const cleanup = setAutoSize(panel);
-  const scrollHeight = panel.scrollHeight;
-  const scrollWidth = panel.scrollWidth;
-  cleanup();
-
-  panel.style.setProperty("--collapsible-panel-height", `${scrollHeight}px`);
-  panel.style.setProperty("--collapsible-panel-width", `${scrollWidth}px`);
-};
-
-const collapsibleStyles = {
-  root: "rounded-lg py-2 px-3 bg-gray-200 dark:bg-gray-800",
-  trigger: "group/trigger flex items-center gap-2 w-full",
-  panel: twJoin(
-    "flex flex-col justify-end",
-    "overflow-hidden transition-all",
-    "h-[--collapsible-panel-height] data-[starting-style]:h-0 data-[ending-style]:h-0",
-    "space-y-2",
-  ),
-};
-
 const Inner: React.FC<
   Omit<MessageAllowedMentionsModalProps, "messageIndex"> & {
     t: TFunction;
@@ -72,9 +35,6 @@ const Inner: React.FC<
 > = ({ t, data, setData, message, cache }) => {
   const mid = getQdMessageId(message);
   const keyPrefix = `allowed-mentions-${mid}`;
-
-  const userPanelRef = useRef<HTMLDivElement>(null);
-  const rolePanelRef = useRef<HTMLDivElement>(null);
 
   const update = (newAm: APIAllowedMentions) => {
     message.data.allowed_mentions = newAm;
@@ -90,14 +50,6 @@ const Inner: React.FC<
     () => message.data.allowed_mentions ?? {},
     [message.data.allowed_mentions],
   );
-
-  // resize panels to fit content in case an allowed_mentions update changed
-  // their vertical height
-  // biome-ignore lint/correctness/useExhaustiveDependencies: ^
-  useEffect(() => {
-    recalculatePanelSize(userPanelRef);
-    recalculatePanelSize(rolePanelRef);
-  }, [message.data.allowed_mentions]);
 
   return (
     <>
@@ -169,10 +121,7 @@ const Inner: React.FC<
             />
             <span className="text-base font-medium">{t("members")}</span>
           </Collapsible.Trigger>
-          <Collapsible.Panel
-            ref={userPanelRef}
-            className={collapsibleStyles.panel}
-          >
+          <Collapsible.Panel className={collapsibleStyles.panel}>
             <div className="space-y-1">
               <div className="flex items-center">
                 <label
@@ -337,10 +286,7 @@ const Inner: React.FC<
             />
             <span className="text-base font-medium">{t("roles")}</span>
           </Collapsible.Trigger>
-          <Collapsible.Panel
-            ref={rolePanelRef}
-            className={collapsibleStyles.panel}
-          >
+          <Collapsible.Panel className={collapsibleStyles.panel}>
             <div className="space-y-1">
               <div className="flex items-center">
                 <label

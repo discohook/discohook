@@ -9,7 +9,7 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { getDb } from "store";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { TriggerEvent } from "~/store.server";

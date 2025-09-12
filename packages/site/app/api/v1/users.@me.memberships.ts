@@ -1,6 +1,6 @@
 import type { SerializeFrom } from "@remix-run/cloudflare";
 import { PermissionsBitField } from "discord-bitflag";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { zx } from "zodix";
 import { getUserId } from "~/session.server";
 import {

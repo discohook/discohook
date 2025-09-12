@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // For when we can't use the schema directly because it's used to construct the type we're parsing with
 export const futureSchema = <T extends z.ZodType<any>>(schema: () => T) =>

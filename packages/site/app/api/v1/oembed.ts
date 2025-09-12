@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import type { LoaderArgs } from "~/util/loader";
 import { jsonAsString, zxParseQuery } from "~/util/zod";
 

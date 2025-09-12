@@ -1,5 +1,5 @@
 import { json } from "@remix-run/cloudflare";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getBucket } from "~/durable/rate-limits";
 import { getShareLink } from "~/durable/share-links";
 import type { QueryData } from "~/types/QueryData";

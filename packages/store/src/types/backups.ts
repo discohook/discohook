@@ -5,7 +5,7 @@ import type {
   MessageFlags,
   UserFlags,
 } from "discord-api-types/v10";
-import type { z } from "zod";
+import type { z } from "zod/v3";
 import type { ZodLinkEmbed, ZodLinkQueryData } from "../zod/query.js";
 
 /**

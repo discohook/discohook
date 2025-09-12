@@ -5,7 +5,7 @@ import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { type APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getDiscordUserOAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
 import { linkClassName } from "~/components/preview/Markdown";

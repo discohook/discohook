@@ -6,7 +6,7 @@ import {
   EmbedType,
 } from "discord-api-types/v10";
 import he from "he";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
 import type { LoaderArgs } from "~/util/loader";
 import Scraper from "~/util/scraper";

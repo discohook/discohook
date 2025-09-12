@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getDiscordAuth } from "~/auth-discord.server";
 import { getSessionStorage } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";

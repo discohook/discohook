@@ -57,7 +57,7 @@ router.post("/flow/pause", async (request) => {
         .min(received + 60_000)
         .max(received + 7_200_000)
         .optional(),
-      payload: z.object({}).passthrough(),
+      payload: z.object({}).loose(),
     })
     .parseAsync(await request.json());
 

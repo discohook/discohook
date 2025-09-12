@@ -3,7 +3,7 @@ import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { Button } from "~/components/Button";
 import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -105,6 +105,7 @@ export default () => {
             i18nKey="linkEmbedsPremiumNote"
             components={[
               <Link
+                key="0"
                 to="/link"
                 className={twJoin(linkClassName, "dark:brightness-90")}
               />,
@@ -221,7 +222,9 @@ export default () => {
             <Trans
               t={t}
               i18nKey="noLinkBackups"
-              components={[<Link to="/link" className={linkClassName} />]}
+              components={[
+                <Link key="0" to="/link" className={linkClassName} />,
+              ]}
             />
           }
         </p>

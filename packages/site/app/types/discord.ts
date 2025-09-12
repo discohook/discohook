@@ -4,7 +4,7 @@ import type {
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export enum ApplicationIntegrationType {
   GuildInstall = 0,

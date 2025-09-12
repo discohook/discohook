@@ -4,8 +4,8 @@ import { Trans, useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { FileInput } from "~/components/FileInput";
-import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
 import type {
   DiscohookBackup,
@@ -100,6 +100,7 @@ export const BackupImportModal = (
           i18nKey="importOrgPrompt"
           components={[
             <Link
+              key="0"
               className={twMerge(linkClassName, "dark:text-blurple")}
               to="/me/import-org-backups"
             />,
@@ -172,7 +173,7 @@ export const BackupImportModal = (
                                 t={t}
                                 i18nKey="backupNameDuplicate"
                                 components={[
-                                  <CoolIcon icon="Circle_Warning" />,
+                                  <CoolIcon key="0" icon="Circle_Warning" />,
                                 ]}
                               />
                             </p>

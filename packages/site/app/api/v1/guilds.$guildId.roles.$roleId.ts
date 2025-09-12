@@ -6,7 +6,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { authorizeRequest } from "~/session.server";
 import { discordRoles, getDb, makeSnowflake } from "~/store.server";
 import type { ResolvableAPIRole } from "~/util/cache/CacheManager";

@@ -16,6 +16,6 @@
   "dependencies": {
     "itty-router": "^5.0.18",
     "jose": "^6.0.11",
-    "zod": "^3.25.64"
+    "zod": "^4.1.5"
   }
 }

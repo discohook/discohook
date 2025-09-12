@@ -1,3 +1,4 @@
+import { Collapsible } from "@base-ui-components/react/collapsible";
 import {
   type APIContainerComponent,
   ComponentType,
@@ -11,6 +12,7 @@ import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
+import { collapsibleStyles } from "../collapsible";
 import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import { decimalToHex } from "./ColorPicker";
@@ -133,7 +135,7 @@ export const ContainerEditor: React.FC<{
       .reduce((a, b) => a + b, 0) ?? 0;
 
   return (
-    <details
+    <Collapsible.Root
       className={twJoin(
         "group/top-2 rounded-lg p-2 border border-gray-300 dark:border-gray-700 shadow transition-[border-color,border-width]",
         container.accent_color != null ? "border-l-4" : undefined,
@@ -143,7 +145,7 @@ export const ContainerEditor: React.FC<{
           ? { borderLeftColor: decimalToHex(container.accent_color) }
           : undefined
       }
-      open={open}
+      defaultOpen={open}
     >
       <TopLevelComponentEditorContainerSummary
         t={t}
@@ -153,131 +155,135 @@ export const ContainerEditor: React.FC<{
         index={i}
         data={data}
         setData={setData}
-        className={
-          "rounded-lg group-open/top-2:rounded-b-none -m-2 group-open/top-2:mb-2 p-2 pl-4 bg-gray-100 dark:bg-gray-800 group-open/top-2:border-b border-gray-300 dark:border-gray-700 transition-all"
-        }
+        className={twJoin(
+          "rounded-lg bg-gray-100 dark:bg-gray-800 transition-all pe-2",
+          "-m-2 group-data-[open]/top-2:mb-0",
+          "group-data-[open]/top-2:rounded-b-none",
+          "group-data-[open]/top-2:border-b border-gray-300 dark:border-gray-700",
+        )}
+        triggerClassName="p-2 ps-4"
         groupNestLevel={2}
       />
-      {errors.length > 0 && (
-        <div className="-mt-1 mb-1">
+      <Collapsible.Panel className={collapsibleStyles.editorPanel}>
+        {errors.length > 0 && (
           <InfoBox severity="red" icon="Circle_Warning">
             {errors.map((k) => t(k)).join("\n")}
           </InfoBox>
-        </div>
-      )}
-      <div className="grid gap-2 mt-2 pl-2">
-        <div>
-          <Checkbox
-            label={t("markSpoiler")}
-            checked={container.spoiler ?? false}
-            onCheckedChange={(checked) => {
-              container.spoiler = checked;
+        )}
+        <div className="grid gap-2 mt-2 pl-2">
+          <div>
+            <Checkbox
+              label={t("markSpoiler")}
+              checked={container.spoiler ?? false}
+              onCheckedChange={(checked) => {
+                container.spoiler = checked;
+                setData({ ...data });
+              }}
+            />
+          </div>
+          <ColorPickerPopoverWithTrigger
+            t={t}
+            value={container.accent_color}
+            onValueChange={(color) => {
+              container.accent_color = color ?? null;
               setData({ ...data });
             }}
           />
         </div>
-        <ColorPickerPopoverWithTrigger
-          t={t}
-          value={container.accent_color}
-          onValueChange={(color) => {
-            container.accent_color = color ?? null;
-            setData({ ...data });
-          }}
-        />
-      </div>
-      <div className="mt-2 space-y-2">
-        {container.components.map((child, ci) => (
-          <AutoTopLevelComponentEditor
-            key={`message-${mid}-container-${i}-child-${ci}`}
-            {...props}
-            parent={container}
-            index={ci}
-            component={child}
-          />
-        ))}
-        <div className="flex ltr:ml-2 rtl:mr-2">
-          <div>
-            <ButtonSelect
-              disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
-              options={[
-                {
-                  label: t("content"),
-                  icon: "Text",
-                  value: ComponentType.TextDisplay,
-                },
-                {
-                  label: t("component.12"),
-                  icon: "Image_01",
-                  value: ComponentType.MediaGallery,
-                },
-                {
-                  // Any single file
-                  label: t("file"),
-                  icon: "File_Blank",
-                  value: ComponentType.File,
-                },
-                {
-                  label: t("component.14"),
-                  icon: "Line_L",
-                  value: ComponentType.Separator,
-                },
-                {
-                  label: t("component.1"),
-                  icon: "Rows",
-                  value: ComponentType.ActionRow,
-                },
-              ]}
-              onValueChange={(value) => {
-                switch (value) {
-                  case ComponentType.TextDisplay: {
-                    container.components.push({
-                      type: ComponentType.TextDisplay,
-                      content: "",
-                    });
-                    setData({ ...data });
-                    break;
+        <div className="mt-2 space-y-2">
+          {container.components.map((child, ci) => (
+            <AutoTopLevelComponentEditor
+              key={`message-${mid}-container-${i}-child-${ci}`}
+              {...props}
+              parent={container}
+              index={ci}
+              component={child}
+            />
+          ))}
+          <div className="flex ltr:ml-2 rtl:mr-2">
+            <div>
+              <ButtonSelect
+                disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
+                options={[
+                  {
+                    label: t("content"),
+                    icon: "Text",
+                    value: ComponentType.TextDisplay,
+                  },
+                  {
+                    label: t("component.12"),
+                    icon: "Image_01",
+                    value: ComponentType.MediaGallery,
+                  },
+                  {
+                    // Any single file
+                    label: t("file"),
+                    icon: "File_Blank",
+                    value: ComponentType.File,
+                  },
+                  {
+                    label: t("component.14"),
+                    icon: "Line_L",
+                    value: ComponentType.Separator,
+                  },
+                  {
+                    label: t("component.1"),
+                    icon: "Rows",
+                    value: ComponentType.ActionRow,
+                  },
+                ]}
+                onValueChange={(value) => {
+                  switch (value) {
+                    case ComponentType.TextDisplay: {
+                      container.components.push({
+                        type: ComponentType.TextDisplay,
+                        content: "",
+                      });
+                      setData({ ...data });
+                      break;
+                    }
+                    case ComponentType.File: {
+                      container.components.push({
+                        type: ComponentType.File,
+                        file: { url: "" },
+                      });
+                      setData({ ...data });
+                      break;
+                    }
+                    case ComponentType.MediaGallery: {
+                      container.components.push({
+                        type: ComponentType.MediaGallery,
+                        items: [],
+                      });
+                      setData({ ...data });
+                      break;
+                    }
+                    case ComponentType.Separator: {
+                      container.components.push({
+                        type: ComponentType.Separator,
+                      });
+                      setData({ ...data });
+                      break;
+                    }
+                    case ComponentType.ActionRow: {
+                      container.components.push({
+                        type: ComponentType.ActionRow,
+                        components: [],
+                      });
+                      setData({ ...data });
+                      break;
+                    }
+                    default:
+                      break;
                   }
-                  case ComponentType.File: {
-                    container.components.push({
-                      type: ComponentType.File,
-                      file: { url: "" },
-                    });
-                    setData({ ...data });
-                    break;
-                  }
-                  case ComponentType.MediaGallery: {
-                    container.components.push({
-                      type: ComponentType.MediaGallery,
-                      items: [],
-                    });
-                    setData({ ...data });
-                    break;
-                  }
-                  case ComponentType.Separator: {
-                    container.components.push({
-                      type: ComponentType.Separator,
-                    });
-                    setData({ ...data });
-                    break;
-                  }
-                  case ComponentType.ActionRow: {
-                    container.components.push({
-                      type: ComponentType.ActionRow,
-                      components: [],
-                    });
-                    setData({ ...data });
-                    break;
-                  }
-                  default:
-                    break;
-                }
-              }}
-            >
-              {t("add")}
-            </ButtonSelect>
+                }}
+              >
+                {t("add")}
+              </ButtonSelect>
+            </div>
           </div>
         </div>
-      </div>
-    </details>
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 };

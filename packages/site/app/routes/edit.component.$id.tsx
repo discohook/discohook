@@ -22,7 +22,7 @@ import type { JWTPayload } from "jose";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { canModifyComponent } from "~/api/v1/components.$id";

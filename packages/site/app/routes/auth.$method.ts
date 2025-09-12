@@ -1,8 +1,8 @@
 import { redirect } from "@remix-run/cloudflare";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { zx } from "zodix";
-import { getDiscordAuth } from "~/auth-discord.server";
 import { getDiscordWebhookAuth } from "~/auth-discord-webhook.server";
+import { getDiscordAuth } from "~/auth-discord.server";
 import { getSessionStorage, getUser, getUserId } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";
 import { zxParseParams, zxParseQuery } from "~/util/zod";
@@ -23,7 +23,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
   if (method === "discord-webhook") {
     const { guildId } = zxParseQuery(request, {
-      guildId: z.ostring(),
+      guildId: z.string().optional(),
     });
 
     const discordWebhookAuth = getDiscordWebhookAuth(context);

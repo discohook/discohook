@@ -1,5 +1,5 @@
 import { json } from "@remix-run/cloudflare";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getGeneric, getSessionManagerStub } from "~/store.server";
 import type { Env } from "~/types/env";
 import { zxParseJson } from "~/util/zod";

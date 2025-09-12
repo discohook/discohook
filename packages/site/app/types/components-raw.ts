@@ -25,7 +25,7 @@ import {
   SelectMenuDefaultValueType,
   SeparatorSpacingSize,
 } from "discord-api-types/v10";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export const ZodPartialEmoji: z.ZodType<APIMessageComponentEmoji> = z.object({
   id: z.ostring(),

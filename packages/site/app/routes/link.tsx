@@ -8,13 +8,13 @@ import {
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
-import type { SafeParseReturnType, z } from "zod";
+import type { SafeParseReturnType, z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { Header } from "~/components/Header";
-import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { InfoBox } from "~/components/InfoBox";
 import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
@@ -287,6 +287,7 @@ export default () => {
                 i18nKey="linkEmbedsPremiumReadOnly"
                 components={[
                   <Link
+                    key="0"
                     to="/donate"
                     className={twJoin(linkClassName, "dark:brightness-90")}
                   />,
@@ -325,6 +326,7 @@ export default () => {
                             i18nKey="resetEditorFootnote"
                             components={[
                               <button
+                                key="0"
                                 type="button"
                                 className={twJoin(linkClassName, "contents")}
                                 onClick={() => {
@@ -420,6 +422,7 @@ export default () => {
                 i18nKey="linkEmbedCacheNote"
                 components={[
                   <button
+                    key="0"
                     type="button"
                     className={twMerge(
                       linkClassName,

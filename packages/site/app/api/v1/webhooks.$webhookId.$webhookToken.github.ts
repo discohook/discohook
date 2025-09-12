@@ -7,7 +7,7 @@ import {
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getDb, githubPosts } from "~/store.server";
 import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import type { ActionArgs } from "~/util/loader";

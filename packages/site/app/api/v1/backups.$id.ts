@@ -1,7 +1,7 @@
 import { json, type SerializeFrom } from "@remix-run/cloudflare";
 import { parseExpression } from "cron-parser";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { zx } from "zodix";
 import { doubleDecode, getUserId } from "~/session.server";
 import { backups, getDb } from "~/store.server";

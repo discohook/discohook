@@ -13,7 +13,7 @@ import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
-import type { SafeParseError, SafeParseReturnType, ZodError } from "zod";
+import type { SafeParseError, SafeParseReturnType, ZodError } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import type { ApiGetCurrentUser } from "~/api/v1/users.@me";

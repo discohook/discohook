@@ -46,7 +46,7 @@ export type KofiDonationPayload = z.infer<typeof ZodKofiDonationPayload>;
 export const ZodKofiSupporter = z.object({
   Avatar: z.string(),
   Name: z.string(),
-  Email: z.ostring(),
+  Email: z.string().optional(),
   PageId: z.string(),
   UserId: z.string(),
 });

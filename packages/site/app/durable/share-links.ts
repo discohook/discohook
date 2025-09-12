@@ -1,5 +1,5 @@
 import { json } from "@remix-run/cloudflare";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getRedis } from "~/store.server";
 import type { Env } from "~/types/env";
 import { type QueryData, ZodQueryData } from "~/types/QueryData";

@@ -1,5 +1,5 @@
 import { json } from "@remix-run/cloudflare";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getUser } from "~/session.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
 import type { ActionArgs } from "~/util/loader";
