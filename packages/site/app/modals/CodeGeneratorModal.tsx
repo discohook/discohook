@@ -1,4 +1,6 @@
-import { ButtonStyle } from "discord-api-types/v10";
+import {
+  ButtonStyle
+} from "discord-api-types/v10";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
@@ -13,7 +15,7 @@ import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export type CodeGeneratorData = Pick<
   QueryData["messages"][number]["data"],
-  "embeds" // | "poll"
+  "embeds" | "components" // | "poll"
 >;
 
 export interface CodeGeneratorPreferences {
@@ -29,6 +31,9 @@ const quoteString = (
   return q + text.replaceAll(q, `\\${q}`).replaceAll("\n", "\\n") + q;
 };
 
+const indentList = (arr: string[], spaces: number) =>
+  arr.map((line) => `${" ".repeat(spaces)}${line}`);
+
 type DiscordLibrary = "djs14" | "dpy2";
 
 // I don't know if there's a proper way to "do code gen" but this seemed
@@ -43,8 +48,83 @@ const codegen: Record<
 > = {
   djs14(data, preferences) {
     const imports: string[] = [];
-    const packages: string[] = [];
+    const packages = new Set<string>();
     const lines: string[] = [];
+
+    // const getButtonBuilder = (button: APIButtonComponent) => {
+    //   packages.add("ButtonBuilder");
+    //   packages.add("ButtonStyle");
+
+    //   const lines = [
+    //     "new ButtonBuilder()",
+    //     `    .setStyle(ButtonStyle.${ButtonStyle[button.style]})`,
+    //   ];
+    //   if (button.id) {
+    //     lines.push(`    .setId(${button.id})`);
+    //   }
+    //   if (button.disabled) {
+    //     lines.push("    .setDisabled(true)");
+    //   }
+    //   if (button.style === ButtonStyle.Premium) {
+    //     lines.push(`    .setSKUId(${quoteString(button.sku_id, preferences)})`);
+    //   } else {
+    //     if (button.style === ButtonStyle.Link) {
+    //       lines.push(`    .setURL(${quoteString(button.url, preferences)})`);
+    //     } else {
+    //       lines.push(
+    //         `    .setCustomId(${quoteString(button.custom_id, preferences)})`,
+    //       );
+    //     }
+    //     if (button.label) {
+    //       lines.push(
+    //         `    .setLabel(${quoteString(button.label, preferences)})`,
+    //       );
+    //     }
+    //     if (button.emoji) {
+    //       lines.push(`    .setEmoji(${JSON.stringify(button.emoji)})`);
+    //     }
+    //   }
+
+    //   return lines;
+    // };
+
+    // if (data.components && data.components.length !== 0) {
+    //   const builders: string[][] = [];
+    //   for (const topLevel of data.components) {
+    //     switch (topLevel.type) {
+    //       case ComponentType.ActionRow: {
+    //         packages.add("ActionRowBuilder");
+    //         const l = ["new ActionRowBuilder()"];
+    //         for (const child of topLevel.components) {
+    //           switch (child.type) {
+    //             case ComponentType.Button: {
+    //               l.push(
+    //                 ...indentList(
+    //                   [
+    //                     ".addComponents(",
+    //                     ...indentList(getButtonBuilder(child), 4),
+    //                     ")",
+    //                   ],
+    //                   4,
+    //                 ),
+    //               );
+    //               break;
+    //             }
+    //             default:
+    //               break;
+    //           }
+    //         }
+    //         builders.push(l);
+    //         break;
+    //       }
+    //       default:
+    //         break;
+    //     }
+    //   }
+    //   lines.push("const components = [");
+    //   lines.push(...builders.flatMap((ls) => indentList(ls, 4)));
+    //   lines.push("];");
+    // }
 
     const singleEmbedDeclaration = (embed: APIEmbed) => {
       const lines = ["new EmbedBuilder()"];
@@ -133,7 +213,7 @@ const codegen: Record<
     };
 
     if (data.embeds) {
-      packages.push("EmbedBuilder");
+      packages.add("EmbedBuilder");
       if (data.embeds.length === 1) {
         const embedLines = singleEmbedDeclaration(data.embeds[0]);
         embedLines[0] = `const embed = ${embedLines[0]}`;
@@ -152,8 +232,10 @@ const codegen: Record<
       }
     }
 
-    if (packages.length !== 0) {
-      imports.push(`import { ${packages.join(", ")} } from "discord.js";`);
+    if (packages.size !== 0) {
+      imports.push(
+        `import { ${Array.from(packages).sort().join(", ")} } from "discord.js";`,
+      );
     }
 
     return {
