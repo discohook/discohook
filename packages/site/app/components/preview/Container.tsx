@@ -60,15 +60,24 @@ export const PreviewContainer: React.FC<{
       <div
         data-type={container.type}
         className={twJoin(
-          "rounded-lg flex flex-col gap-2 overflow-hidden p-4",
-          "dark:text-gray-100 bg-white dark:bg-background-secondary-dark border border-[#E2E2E4] dark:border-[#434349]",
-          container.accent_color != null ? "border-l-4" : undefined,
-          "group/parent",
+          "rounded-lg flex flex-col grow gap-2 overflow-hidden p-4",
+          "dark:text-gray-100 bg-white dark:bg-background-secondary-dark",
+          "rounded-lg border border-[#E2E2E4] dark:border-[#434349]",
+          "group/parent relative",
+          // accent color
+          container.accent_color != null
+            ? [
+                "before:content-[''] before:bg-[--accent-color] before:h-full",
+                "before:absolute before:left-0 before:top-0 before:w-1",
+              ]
+            : undefined,
         )}
         style={{
-          ...(container.accent_color != null
-            ? { borderLeftColor: decimalToHex(container.accent_color) }
-            : undefined),
+          // @ts-expect-error
+          "--accent-color":
+            container.accent_color != null
+              ? decimalToHex(container.accent_color)
+              : "",
           maxWidth: 520,
         }}
       >
