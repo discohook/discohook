@@ -1,4 +1,3 @@
-import { REST } from "@discordjs/rest";
 import {
   type APIEntitlement,
   type APIUser,
@@ -7,6 +6,7 @@ import {
 import { eq } from "drizzle-orm";
 import { discordUsers, getDb, makeSnowflake, users } from "store";
 import type { GatewayEventCallback } from "../events.js";
+import { createREST } from "../util/rest.js";
 
 export const entitlementCreateCallback: GatewayEventCallback = async (
   env,
@@ -16,7 +16,7 @@ export const entitlementCreateCallback: GatewayEventCallback = async (
   if (entitlement.application_id !== env.DISCORD_APPLICATION_ID) return;
   if (!entitlement.user_id) return;
 
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
   const user = (await rest.get(Routes.user(entitlement.user_id))) as APIUser;
 
   if (env.GUILD_ID) {
@@ -111,7 +111,7 @@ export const entitlementUpdateCallback: GatewayEventCallback = async (
   if (!entitlement.ends_at) return;
 
   const endsAt = new Date(entitlement.ends_at);
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
 
   if (env.GUILD_ID) {
     try {

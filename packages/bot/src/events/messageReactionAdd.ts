@@ -1,4 +1,3 @@
-import { REST } from "@discordjs/rest";
 import {
   type GatewayMessageReactionAddDispatchData,
   Routes,
@@ -6,6 +5,7 @@ import {
 import { and, eq } from "drizzle-orm";
 import { discordReactionRoles, getDb, makeSnowflake } from "store";
 import type { GatewayEventCallback } from "../events.js";
+import { createREST } from "../util/rest.js";
 
 export interface DiscordReactionRoleData {
   roleId: string | null;
@@ -40,7 +40,7 @@ export const messageReactionAddCallback: GatewayEventCallback = async (
   }
   if (!data.roleId) return;
 
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
   try {
     await rest.put(
       Routes.guildMemberRole(event.guild_id, event.user_id, data.roleId),

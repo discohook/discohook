@@ -1,5 +1,5 @@
 import { formatEmoji } from "@discordjs/formatters";
-import { REST } from "@discordjs/rest";
+import type { REST } from "@discordjs/rest";
 import {
   type APIEmoji,
   type APIMessageComponentEmoji,
@@ -9,6 +9,7 @@ import {
 } from "discord-api-types/v10";
 import { json } from "itty-router";
 import type { Env } from "./types/env.js";
+import { createREST } from "./util/rest.js";
 
 export class EmojiManager implements DurableObject {
   rest: REST;
@@ -18,7 +19,7 @@ export class EmojiManager implements DurableObject {
     private state: DurableObjectState,
     private env: Env,
   ) {
-    this.rest = new REST().setToken(env.DISCORD_TOKEN);
+    this.rest = createREST(env);
     this.emojis = null;
   }
 

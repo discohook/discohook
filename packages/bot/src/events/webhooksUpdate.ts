@@ -1,4 +1,3 @@
-import { REST } from "@discordjs/rest";
 import {
   type APIWebhook,
   type GatewayWebhooksUpdateDispatchData,
@@ -8,12 +7,13 @@ import {
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { autoRollbackTx, getDb, makeSnowflake, webhooks } from "store";
 import type { GatewayEventCallback } from "../events.js";
+import { createREST } from "../util/rest.js";
 
 export const webhooksUpdateCallback: GatewayEventCallback = async (
   env,
   event: GatewayWebhooksUpdateDispatchData,
 ) => {
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
   let channelWebhooks: APIWebhook[];
   try {
     channelWebhooks = (await rest.get(

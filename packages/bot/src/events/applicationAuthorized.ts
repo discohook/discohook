@@ -1,4 +1,3 @@
-import { REST } from "@discordjs/rest";
 import { ApplicationIntegrationType, Routes } from "discord-api-types/v10";
 import { eq, sql } from "drizzle-orm";
 import { discordGuilds, discordRoles, getDb, makeSnowflake } from "store";
@@ -7,6 +6,7 @@ import type {
   APIWebhookEventBodyApplicationAuthorizedBase,
   APIWebhookEventBodyApplicationAuthorizedGuild,
 } from "../types/webhook-events.js";
+import { createREST } from "../util/rest.js";
 
 export const applicationAuthorizedCallback: GatewayEventCallback = async (
   env,
@@ -28,7 +28,7 @@ export const applicationAuthorizedCallback: GatewayEventCallback = async (
     "json",
   );
   if (moderated?.state === "banned") {
-    const rest = new REST().setToken(env.DISCORD_TOKEN);
+    const rest = createREST(env);
     await rest.delete(Routes.userGuild(guild.id));
     return;
   }

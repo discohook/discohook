@@ -4,8 +4,8 @@ import {
   EmbedBuilder,
   inlineCode,
   spoiler,
-  TimestampStyles,
   time,
+  TimestampStyles,
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
@@ -29,6 +29,7 @@ import type { Env } from "../../types/env.js";
 import { webhookAvatarUrl } from "../../util/cdn.js";
 import { parseAutoComponentId } from "../../util/components.js";
 import { color } from "../../util/meta.js";
+import { createREST } from "../../util/rest.js";
 import { createLongDiscohookUrl } from "../restore.js";
 
 export const getWebhookInfoEmbed = (webhook: APIWebhook) => {
@@ -195,7 +196,8 @@ export const getWebhook = async (
     return cached;
   }
 
-  const rest = new REST().setToken(token);
+  const rest =
+    token === env.DISCORD_TOKEN ? createREST(env) : new REST().setToken(token);
   const webhook = (await rest.get(Routes.webhook(webhookId))) as APIWebhook;
   if (webhook.token || webhook.type !== WebhookType.Incoming) {
     // Non-incoming webhooks don't have tokens

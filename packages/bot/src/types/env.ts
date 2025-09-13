@@ -8,6 +8,7 @@ export interface Env {
   DISCORD_APPLICATION_ID: string;
   DISCORD_PUBLIC_KEY: string;
   DISCORD_TOKEN: string;
+  DISCORD_PROXY_API?: string;
   DISCOHOOK_ORIGIN: string;
   BOUNCER_ORIGIN?: string;
   BOUNCER_JWT_KEY?: string;

@@ -1,4 +1,4 @@
-import { REST } from "@discordjs/rest";
+import type { REST } from "@discordjs/rest";
 import {
   type APIUser,
   type APIWebhook,
@@ -35,6 +35,7 @@ import {
 } from "store";
 import type { GatewayEventCallback } from "../events.js";
 import { executeFlow, type FlowResult } from "../flows/flows.js";
+import { createREST } from "../util/rest.js";
 
 export const getWelcomerConfigurations = async (
   db: DBWithSchema,
@@ -289,7 +290,7 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
   payload: GatewayGuildMemberAddDispatchData,
   deferred = false,
 ) => {
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
 
   // Don't like this. We really should store all triggers per guild id,
   // but I did this to fit with the way getWelcomerConfiguration works

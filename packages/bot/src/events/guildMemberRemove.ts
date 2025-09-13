@@ -1,4 +1,3 @@
-import { REST } from "@discordjs/rest";
 import {
   type GatewayGuildMemberRemoveDispatchData,
   RESTJSONErrorCodes,
@@ -15,6 +14,7 @@ import {
 import type { GatewayEventCallback } from "../events.js";
 import { executeFlow, type FlowResult } from "../flows/flows.js";
 import { isDiscordError } from "../util/error.js";
+import { createREST } from "../util/rest.js";
 import { getWelcomerConfigurations, type Trigger } from "./guildMemberAdd.js";
 
 export const guildMemberRemoveCallback: GatewayEventCallback = async (
@@ -24,7 +24,7 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
 ) => {
   if (payload.user.id === env.DISCORD_APPLICATION_ID) return [];
 
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
 
   const key = `cache:triggers-${TriggerEvent.MemberRemove}-${payload.guild_id}`;
   let triggers = await env.KV.get<Trigger[]>(key, "json");

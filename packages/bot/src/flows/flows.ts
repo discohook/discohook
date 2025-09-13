@@ -1,4 +1,4 @@
-import { REST, type RouteLike } from "@discordjs/rest";
+import type { REST, RouteLike } from "@discordjs/rest";
 import {
   type APIGuildMember,
   type APIMessage,
@@ -48,6 +48,7 @@ import { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";
 import { isDiscordError } from "../util/error.js";
 import { isThreadMessage } from "../util/messages.js";
+import { createREST } from "../util/rest.js";
 import { sleep } from "../util/sleep.js";
 import { getReplacements, processQueryData } from "./backup.js";
 
@@ -209,7 +210,7 @@ export const resumeFlowFromBouncer = async (
   const { payload } = parsed.data;
 
   const db = getDb(env.HYPERDRIVE);
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
   const ctx = payload.interaction
     ? new InteractionContext(rest, payload.interaction, env)
     : undefined;

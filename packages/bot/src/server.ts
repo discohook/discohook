@@ -1,5 +1,4 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
-import { REST } from "@discordjs/rest";
 import {
   type APIActionRowComponent,
   type APIApplicationCommandInteractionDataOption,
@@ -63,6 +62,8 @@ import {
 } from "./types/webhook-events.js";
 import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
+import { createREST } from "./util/rest.js";
+import { sleep } from "./util/sleep.js";
 
 // durable objects
 export { DurableComponentState } from "store";
@@ -96,7 +97,7 @@ const handleInteraction = async (
     return new Response("Bad request signature.", { status: 401 });
   }
 
-  const rest = new REST().setToken(env.DISCORD_TOKEN);
+  const rest = createREST(env);
 
   if (interaction.type === InteractionType.Ping) {
     return respond({ type: InteractionResponseType.Pong });
@@ -871,6 +872,13 @@ router.post("/ws/bulk", async (request, env: Env, eCtx: ExecutionContext) => {
     })),
   });
   eCtx.waitUntil(Promise.all(callbacks.map((c) => c())));
+
+  // force the connection to stay alive a bit longer. this should give us 32
+  // seconds to finish handling all events + the time that has already elapsed.
+  // It also should let errors encountered in the first 2s get logged with the
+  // event.
+  await sleep(2000);
+
   return new Response(null, { status: 204 });
 });
 

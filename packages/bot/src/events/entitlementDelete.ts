@@ -1,8 +1,8 @@
-import { REST } from "@discordjs/rest";
 import { type APIEntitlement, Routes } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { getDb, makeSnowflake, users } from "store";
 import type { GatewayEventCallback } from "../events.js";
+import { createREST } from "../util/rest.js";
 
 // Discord removed the entitlement. I think in any case this means the user is
 // no longer subscribed (through discord, at least), so it's safe to carefully
@@ -15,7 +15,7 @@ export const entitlementDeleteCallback: GatewayEventCallback = async (
   if (!entitlement.user_id) return;
 
   if (env.GUILD_ID && env.SUBSCRIBER_ROLE_ID) {
-    const rest = new REST().setToken(env.DISCORD_TOKEN);
+    const rest = createREST(env);
     try {
       await rest.delete(
         Routes.guildMemberRole(
