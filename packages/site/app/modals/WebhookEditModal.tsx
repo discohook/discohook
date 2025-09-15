@@ -300,13 +300,12 @@ export const WebhookEditModal = (
               {t("deleteWebhook")}
             </TextButton>
           )*/}
-          <Button type="submit" className="ltr:ml-auto rtl:mr-auto">
+          <Button type="submit" className="ms-auto">
             {t("save")}
           </Button>
           {!!webhookUrl && (
             <Button
-              type="submit"
-              className="ltr:ml-2 rtl:mr-2"
+              className="ms-2"
               discordstyle={ButtonStyle.Secondary}
               onClick={(e) =>
                 cycleCopyText(webhookUrl, t, e.currentTarget, "copyWebhookUrl")
