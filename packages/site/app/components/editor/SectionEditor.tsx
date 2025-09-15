@@ -11,6 +11,7 @@ import type { DraftFile } from "~/routes/_index";
 import type { APIButtonComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
+import type { DragManager } from "~/util/drag";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
@@ -39,6 +40,7 @@ export const SectionEditor: React.FC<{
   >;
   files: DraftFile[];
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  drag?: DragManager;
 }> = ({
   message,
   component: section,
@@ -52,6 +54,7 @@ export const SectionEditor: React.FC<{
   setEditingComponent,
   files,
   setFiles,
+  drag,
 }) => {
   const { t } = useTranslation();
   const [error] = useError(t);
@@ -80,6 +83,7 @@ export const SectionEditor: React.FC<{
       index={i}
       data={data}
       setData={setData}
+      drag={drag}
       open={open}
     >
       {error}

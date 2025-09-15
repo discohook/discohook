@@ -24,6 +24,7 @@ import type {
 } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_ACTION_ROW_WIDTH } from "~/util/constants";
+import type { DragManager } from "~/util/drag";
 import { getZodErrorMessage } from "~/util/loader";
 import { ButtonSelect } from "../ButtonSelect";
 import { type SetErrorFunction, useError } from "../Error";
@@ -207,6 +208,7 @@ export const ActionRowEditor: React.FC<{
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
   >;
+  drag?: DragManager;
   cache?: CacheManager;
   open?: boolean;
 }> = ({
@@ -217,6 +219,7 @@ export const ActionRowEditor: React.FC<{
   data,
   setData,
   setEditingComponent,
+  drag,
   // cache,
   open,
 }) => {
@@ -233,6 +236,7 @@ export const ActionRowEditor: React.FC<{
       index={i}
       data={data}
       setData={setData}
+      drag={drag}
       open={open}
     >
       {error}

@@ -1,12 +1,12 @@
 import { Collapsible } from "@base-ui-components/react/collapsible";
 import {
+  ButtonStyle,
+  ComponentType,
   type APIActionRowComponent,
   type APIComponentInContainer,
   type APIComponentInModalActionRow,
   type APIContainerComponent,
   type APIMessageComponent,
-  ButtonStyle,
-  ComponentType,
 } from "discord-api-types/v10";
 import type { TFunction } from "i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -18,6 +18,7 @@ import type {
 } from "~/types/QueryData";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isActionRow, isComponentsV2 } from "~/util/discord";
+import type { DragManager } from "~/util/drag";
 import { collapsibleStyles } from "../collapsible";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
@@ -158,6 +159,7 @@ export interface TopLevelComponentEditorContainerProps {
   setData: React.Dispatch<QueryData>;
   open?: boolean;
   files?: DraftFile[];
+  drag?: DragManager;
 }
 
 export const TopLevelComponentEditorContainer = ({
@@ -171,12 +173,14 @@ export const TopLevelComponentEditorContainer = ({
   open,
   children,
   files,
+  drag,
 }: React.PropsWithChildren<TopLevelComponentEditorContainerProps>) => {
   const errors = getComponentErrors(component, files);
-
   return (
     <Collapsible.Root
-      className="group/top-1 rounded-lg p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow"
+      className={twJoin(
+        "group/top-1 rounded-lg p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow",
+      )}
       defaultOpen={open}
     >
       <TopLevelComponentEditorContainerSummary
@@ -188,6 +192,7 @@ export const TopLevelComponentEditorContainer = ({
         data={data}
         setData={setData}
         errors={errors}
+        drag={drag}
         groupNestLevel={1}
       />
       <Collapsible.Panel className={collapsibleStyles.editorPanel}>
@@ -213,6 +218,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   className,
   triggerClassName,
   errors,
+  drag,
   groupNestLevel = 1,
 }: {
   t: TFunction<"translation", undefined>;
@@ -225,6 +231,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   className?: string;
   triggerClassName?: string;
   errors?: string[];
+  drag?: DragManager;
   // This exists because:
   // - Nested groups must be named to work like we want
   // - Tailwind utility names cannot be "dynamically" generated
@@ -232,6 +239,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   // rendering this component.
   groupNestLevel?: 1 | 2;
 }) => {
+  // const mid = getQdMessageId(message);
   const previewText = getComponentText(component);
 
   const allComponentsCount =
@@ -254,10 +262,63 @@ export const TopLevelComponentEditorContainerSummary = ({
     >
       <Collapsible.Trigger
         className={twJoin(
-          "truncate flex items-center text-lg grow font-semibold cursor-normal select-none",
+          "truncate flex items-center text-lg grow font-semibold cursor-default select-none",
           groupNestLevel === 1 ? "group/trigger-1" : "group/trigger-2",
           triggerClassName,
+          // "cursor-grab",
         )}
+        // Not ready yet
+        // draggable={!!drag}
+        // onDragStart={(e) => {
+        //   e.dataTransfer.effectAllowed = "move";
+        //   drag?.start(DragType.TopLevelComponent, {
+        //     data: {
+        //       type: component.type,
+        //       index: i,
+        //       parentType: parent?.type,
+        //     },
+        //     onDrop(messageId, args) {
+        //       const msg = data.messages.find((m) => m._id === messageId);
+        //       if (!msg) {
+        //         console.error(
+        //           "Drop callback referenced unknown message ID",
+        //           messageId,
+        //         );
+        //         return;
+        //       }
+
+        //       const components = msg.data.components ?? [];
+        //       msg.data.components = components;
+
+        //       const opts = args as { path: number[] };
+        //       if (opts.path.length === 1) {
+        //         siblings.splice(i, 1);
+        //         components.splice(opts.path[0], 0, component);
+        //       } else {
+        //         const container = components[opts.path[0]];
+        //         if (!container) {
+        //           // biome-ignore format: long
+        //           console.error("Invalid path", opts.path, "which referenced a parentable element where there was none");
+        //           return;
+        //         }
+        //         if (container.type !== ComponentType.Container) {
+        //           // biome-ignore format: long
+        //           console.error("Path referenced a container (17) at", opts.path[0], "but the component found there was type", container.type);
+        //           return;
+        //         }
+
+        //         siblings.splice(i, 1);
+        //         container.components.splice(
+        //           opts.path[1],
+        //           0,
+        //           component as APIComponentInContainer,
+        //         );
+        //       }
+        //       setData({ ...data });
+        //     },
+        //   });
+        // }}
+        // onDragEnd={() => drag?.end()}
       >
         <CoolIcon
           icon="Chevron_Right"

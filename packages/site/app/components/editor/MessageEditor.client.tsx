@@ -28,6 +28,7 @@ import type {
 } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isComponentsV2, onlyActionRows } from "~/util/discord";
+import { DragManager } from "~/util/drag";
 import {
   fileInputChangeHandler,
   MAX_FILES_PER_MESSAGE,
@@ -47,6 +48,7 @@ import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { ActionRowEditor } from "./ComponentEditor";
 import { AutoTopLevelComponentEditor } from "./ContainerEditor";
+import { DragArea } from "./DragArea";
 import {
   DetectGifUrlFooter,
   EmbedEditor,
@@ -209,6 +211,7 @@ interface MessageEditorProps {
   setCodeGenerator: React.Dispatch<
     React.SetStateAction<CodeGeneratorProps | undefined>
   >;
+  drag?: DragManager;
   webhooks?: APIWebhook[];
   cache?: CacheManager;
   cdn?: string;
@@ -938,11 +941,13 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   webhooks,
   cache,
   cdn,
+  drag,
   // Parent
   t,
   setEditingFile,
 }) => {
   const message = data.messages[i];
+  const mid = getQdMessageId(message);
   const components = message.data.components ?? [];
 
   const allComponentsCount =
@@ -1291,23 +1296,48 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           </EmbedEditorSection>
         </div>
         <div className="space-y-1">
-          {components.map((component, i) => (
-            <AutoTopLevelComponentEditor
-              key={`top-level-component-${i}`}
-              message={message}
-              index={i}
-              data={data}
-              setData={setData}
-              cache={cache}
-              cdn={cdn}
-              component={component}
-              parent={undefined}
-              files={files}
-              setFiles={setFiles}
-              setEditingComponent={setEditingComponent}
-              open
-            />
-          ))}
+          {components.map((component, i) => {
+            const key = `${mid}-top-${i}`;
+            return (
+              // biome-ignore lint/a11y/noStaticElementInteractions: we can't nest all this in a button
+              <div
+                key={`top-level-component-${i}`}
+                className="relative"
+                onDragOver={() => drag?.setFocusKey(key)}
+                onDragExit={() => drag?.setFocusKey(undefined)}
+              >
+                <AutoTopLevelComponentEditor
+                  message={message}
+                  index={i}
+                  data={data}
+                  setData={setData}
+                  cache={cache}
+                  cdn={cdn}
+                  component={component}
+                  parent={undefined}
+                  files={files}
+                  setFiles={setFiles}
+                  setEditingComponent={setEditingComponent}
+                  drag={drag}
+                  open
+                />
+                <DragArea
+                  visible={drag?.isFocused(key) ?? false}
+                  position={
+                    !drag?.data || drag.data.parentType
+                      ? "bottom"
+                      : i < drag.data.index
+                        ? "top"
+                        : "bottom"
+                  }
+                  onDrop={() => {
+                    drag?.end();
+                    drag?.onDrop?.(mid, { path: [i] });
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
         <div className="flex space-x-2 rtl:space-x-reverse">
           <div>

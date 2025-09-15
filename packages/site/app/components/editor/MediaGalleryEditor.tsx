@@ -8,6 +8,7 @@ import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_GALLERY_ITEMS } from "~/util/constants";
+import type { DragManager } from "~/util/drag";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
@@ -26,6 +27,7 @@ export const MediaGalleryEditor: React.FC<{
   setData: React.Dispatch<QueryData>;
   files: DraftFile[];
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  drag?: DragManager;
   cache?: CacheManager;
   open?: boolean;
   cdn?: string;
@@ -38,6 +40,7 @@ export const MediaGalleryEditor: React.FC<{
   setData,
   files,
   setFiles,
+  drag,
   open,
   cdn,
 }) => {
@@ -54,6 +57,7 @@ export const MediaGalleryEditor: React.FC<{
       index={i}
       data={data}
       setData={setData}
+      drag={drag}
       open={open}
     >
       {error}

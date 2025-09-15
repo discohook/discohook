@@ -82,6 +82,7 @@ import {
   isComponentsV2,
   webhookAvatarUrl,
 } from "~/util/discord";
+import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { type LoaderArgs, useApiLoader } from "~/util/loader";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
@@ -301,6 +302,7 @@ export default function Index() {
   );
   const [editingComponent, setEditingComponent] =
     useState<EditingComponentData>();
+  const drag = useDragManager();
 
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
@@ -976,6 +978,7 @@ export default function Index() {
                 setCodeGenerator={setCodeGenerator}
                 webhooks={Object.values(targets)}
                 setEditingComponent={setEditingComponent}
+                drag={drag}
                 cache={cache}
                 cdn={cdn}
               />

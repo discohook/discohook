@@ -10,6 +10,7 @@ import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { APIMessageTopLevelComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
+import type { DragManager } from "~/util/drag";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
@@ -17,6 +18,7 @@ import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import { decimalToHex } from "./ColorPicker";
 import { ActionRowEditor } from "./ComponentEditor";
+import { DragArea } from "./DragArea";
 import { FileEditor } from "./FileEditor";
 import { MediaGalleryEditor } from "./MediaGalleryEditor";
 import { SectionEditor } from "./SectionEditor";
@@ -37,6 +39,7 @@ export const AutoTopLevelComponentEditor = (
     files: DraftFile[];
     setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
     cache: CacheManager | undefined;
+    drag?: DragManager;
     cdn?: string;
   },
 ) => {
@@ -114,6 +117,7 @@ export const ContainerEditor: React.FC<{
   >;
   files: DraftFile[];
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  drag?: DragManager;
 }> = (props) => {
   const {
     message,
@@ -122,6 +126,7 @@ export const ContainerEditor: React.FC<{
     index: i,
     data,
     setData,
+    drag,
     open,
   } = props;
 
@@ -162,6 +167,7 @@ export const ContainerEditor: React.FC<{
           "group-data-[open]/top-2:border-b border-gray-300 dark:border-gray-700",
         )}
         triggerClassName="p-2 ps-4"
+        drag={drag}
         groupNestLevel={2}
       />
       <Collapsible.Panel className={collapsibleStyles.editorPanel}>
@@ -191,15 +197,39 @@ export const ContainerEditor: React.FC<{
           />
         </div>
         <div className="mt-2 space-y-2">
-          {container.components.map((child, ci) => (
-            <AutoTopLevelComponentEditor
-              key={`message-${mid}-container-${i}-child-${ci}`}
-              {...props}
-              parent={container}
-              index={ci}
-              component={child}
-            />
-          ))}
+          {container.components.map((child, ci) => {
+            const key = `message-${mid}-container-${i}-child-${ci}`;
+            return (
+              // biome-ignore lint/a11y/noStaticElementInteractions: we can't nest all this in a button
+              <div
+                key={key}
+                className="relative"
+                onDragOver={() => drag?.setFocusKey(key)}
+                onDragExit={() => drag?.setFocusKey(undefined)}
+              >
+                <AutoTopLevelComponentEditor
+                  {...props}
+                  parent={container}
+                  index={ci}
+                  component={child}
+                />
+                <DragArea
+                  visible={drag?.isFocused(key) ?? false}
+                  position={
+                    !drag?.data || !drag.data.parentType
+                      ? "bottom"
+                      : i < drag.data.index
+                        ? "top"
+                        : "bottom"
+                  }
+                  onDrop={() => {
+                    drag?.end();
+                    drag?.onDrop?.(mid, { path: [i, ci] });
+                  }}
+                />
+              </div>
+            );
+          })}
           <div className="flex ltr:ml-2 rtl:mr-2">
             <div>
               <ButtonSelect

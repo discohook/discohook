@@ -6,6 +6,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { QueryData } from "~/types/QueryData";
+import type { DragManager } from "~/util/drag";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
@@ -17,8 +18,9 @@ export const SeparatorEditor: React.FC<{
   index: number;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
+  drag?: DragManager;
   open?: boolean;
-}> = ({ message, component, parent, index: i, data, setData, open }) => {
+}> = ({ message, component, parent, index: i, data, setData, drag, open }) => {
   const { t } = useTranslation();
   const [error] = useError(t);
 
@@ -31,6 +33,7 @@ export const SeparatorEditor: React.FC<{
       index={i}
       data={data}
       setData={setData}
+      drag={drag}
       open={open}
     >
       {error}

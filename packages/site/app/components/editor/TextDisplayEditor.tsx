@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import type { APIButtonComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
+import type { DragManager } from "~/util/drag";
 import { ButtonSelect } from "../ButtonSelect";
 import { useError } from "../Error";
 import { TextArea } from "../TextArea";
@@ -23,8 +24,19 @@ export const TextDisplayEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   cache?: CacheManager;
+  drag?: DragManager;
   open?: boolean;
-}> = ({ message, component, parent, index: i, data, setData, cache, open }) => {
+}> = ({
+  message,
+  component,
+  parent,
+  index: i,
+  data,
+  setData,
+  cache,
+  drag,
+  open,
+}) => {
   const { t } = useTranslation();
   const [error, setError] = useError(t);
 
@@ -37,6 +49,7 @@ export const TextDisplayEditor: React.FC<{
       index={i}
       data={data}
       setData={setData}
+      drag={drag}
       open={open}
     >
       {error}
