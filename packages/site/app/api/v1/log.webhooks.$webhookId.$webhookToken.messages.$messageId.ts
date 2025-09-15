@@ -142,7 +142,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       rest,
     );
     if (isErrorData(message)) {
-      throw json(message, 404);
+      throw json(message, { status: 404, headers });
     }
     if (isComponentsV2(message)) {
       // We currently do not support logging these messages out of an abundance of caution
