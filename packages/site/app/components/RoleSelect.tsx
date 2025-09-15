@@ -30,6 +30,10 @@ export const RoleSelect = (props: {
 
   return (
     <Select.Root
+      items={props.roles.map((role) => ({
+        value: role.id,
+        label: `@${role.name}`,
+      }))}
       name={props.name}
       value={props.value?.id}
       onValueChange={(value) => {
@@ -41,7 +45,7 @@ export const RoleSelect = (props: {
       required={props.required}
       disabled={props.disabled}
     >
-      <SelectValueTrigger t={props.t} />
+      <SelectValueTrigger />
       <Select.Portal>
         <Select.Positioner
           className={selectStyles.positioner}

@@ -80,12 +80,26 @@ export const selectStyles = {
   itemIndicator: "ltr:ml-auto rtl:mr-auto my-auto text-lg",
 };
 
-export const SelectValueTrigger = ({ t }: { t: TFunction }) => (
+export function withDefaultItem<T = string | null>(
+  t: TFunction,
+  items:
+    | Record<string, React.ReactNode>
+    | {
+        label: React.ReactNode;
+        value: T;
+      }[],
+  placeholderKey?: string,
+) {
+  const label = t(placeholderKey ?? "defaultPlaceholder");
+  if (Array.isArray(items)) {
+    return [{ value: null, label }, ...items];
+  }
+  return { null: label, ...items };
+}
+
+export const SelectValueTrigger = () => (
   <MuiSelect.Trigger className={selectStyles.trigger}>
-    <MuiSelect.Value
-      placeholder={t("defaultPlaceholder")}
-      className={selectStyles.value}
-    />
+    <MuiSelect.Value className={selectStyles.value} />
     <MuiSelect.Icon className={selectStyles.icon}>
       <CoolIcon icon="Chevron_Down" />
     </MuiSelect.Icon>
@@ -97,14 +111,31 @@ export function SimpleStringSelect<T>(
     t: TFunction;
     value: T;
     onChange: (value: T) => void;
-    options: { label: string | React.ReactNode; value: T }[];
+    options: {
+      label: string | React.ReactNode;
+      value: T;
+      stringLabel?: string;
+    }[];
     disabled?: boolean;
+    clearable?: boolean;
   },
 ) {
   return (
     <MuiSelect.Root
+      items={
+        props.clearable
+          ? withDefaultItem<T>(
+              props.t,
+              props.options.map((o) => ({
+                ...o,
+                label: o.stringLabel ?? String(o.value),
+              })),
+            )
+          : props.options
+      }
       name={props.name}
       value={props.value}
+      // @ts-expect-error wants T|null but it depends on `clearable`
       onValueChange={props.onChange}
       required={props.required}
       disabled={props.disabled}
@@ -114,7 +145,7 @@ export function SimpleStringSelect<T>(
           {props.label}
         </MuiSelect.Trigger>
       ) : null}
-      <SelectValueTrigger t={props.t} />
+      <SelectValueTrigger />
       <MuiSelect.Portal>
         <MuiSelect.Positioner
           className={selectStyles.positioner}

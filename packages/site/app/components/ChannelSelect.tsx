@@ -19,6 +19,10 @@ export const ChannelSelect = (props: {
 }) => {
   return (
     <Select.Root
+      items={props.channels.map((channel) => ({
+        value: channel.id,
+        label: `#${channel.name}`,
+      }))}
       name={props.name}
       value={props.value?.id}
       onValueChange={(value) => {
@@ -30,7 +34,7 @@ export const ChannelSelect = (props: {
       required={props.required}
       disabled={props.disabled}
     >
-      <SelectValueTrigger t={props.t} />
+      <SelectValueTrigger />
       <Select.Portal>
         <Select.Positioner
           className={selectStyles.positioner}

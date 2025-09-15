@@ -27,6 +27,7 @@ export function ButtonSelect<T>(
 ) {
   return (
     <Select.Root
+      items={props.options}
       value={props.value}
       onValueChange={props.onValueChange}
       name={props.name}

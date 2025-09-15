@@ -43,7 +43,11 @@ import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
-import { selectStyles, SelectValueTrigger } from "../StringSelect";
+import {
+  selectStyles,
+  SelectValueTrigger,
+  withDefaultItem,
+} from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { ActionRowEditor } from "./ComponentEditor";
@@ -498,6 +502,13 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   className="grow max-w-[calc(100%_-_1.75rem)]"
                 >
                   <Select.Root
+                    items={withDefaultItem(
+                      t,
+                      imageFiles.map((file) => ({
+                        label: transformFileName(file.file.name),
+                        value: file.id,
+                      })),
+                    )}
                     value={thumbnailFileId}
                     onValueChange={(id) => {
                       for (const file of files) {
@@ -510,10 +521,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                       {t("postThumbnail")}
                     </Select.Trigger>
                     <Select.Trigger className={selectStyles.trigger}>
-                      <Select.Value
-                        placeholder={t("defaultPlaceholder")}
-                        className={selectStyles.value}
-                      />
+                      <Select.Value className={selectStyles.value} />
                       <Select.Icon className={selectStyles.icon}>
                         <CoolIcon icon="Chevron_Down" />
                       </Select.Icon>
@@ -1138,6 +1146,13 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   className="grow max-w-[calc(100%_-_1.75rem)]"
                 >
                   <Select.Root
+                    items={withDefaultItem(
+                      t,
+                      imageFiles.map((file) => ({
+                        label: transformFileName(file.file.name),
+                        value: file.id,
+                      })),
+                    )}
                     value={thumbnailFileId}
                     onValueChange={(id) => {
                       for (const file of files) {
@@ -1149,7 +1164,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     <Select.Trigger className={selectStyles.label}>
                       {t("postThumbnail")}
                     </Select.Trigger>
-                    <SelectValueTrigger t={t} />
+                    <SelectValueTrigger />
                     <Select.Portal>
                       <Select.Positioner
                         className={selectStyles.positioner}
