@@ -1,4 +1,3 @@
-import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
@@ -25,6 +24,7 @@ import {
   isErrorData,
 } from "~/util/discord";
 import type { ActionArgs } from "~/util/loader";
+import { createREST } from "~/util/rest";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
   and,
@@ -115,9 +115,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     );
   }
 
-  const rest = new REST({ api: context.env.DISCORD_PROXY_API }).setToken(
-    context.env.DISCORD_BOT_TOKEN,
-  );
+  const rest = createREST(context.env);
   const userId = await getUserId(request, context);
 
   let message: APIMessage | undefined;
