@@ -653,7 +653,8 @@
     "deletedRole": "deleted-role",
     "guide": "Server Guide",
     "browse": "Browse Channels",
-    "customize": "Channels & Roles"
+    "customize": "Channels & Roles",
+    "linked-roles": "Linked Roles"
   },
   "timestamp": {
     "time": "{{ date, h:mm A }}",

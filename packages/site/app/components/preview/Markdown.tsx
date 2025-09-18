@@ -20,17 +20,18 @@ import {
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
-import { CoolIcon } from "../icons/CoolIcon";
 import {
   BrowseChannelIcon,
   ForumChannelIcon,
   GuideChannelIcon,
+  LinkedRolesIcon,
   MediaChannelIcon,
   PostChannelIcon,
   TextChannelIcon,
   ThreadChannelIcon,
   VoiceChannelIcon,
 } from "../icons/channel";
+import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 
 type Renderable = string | JSX.Element;
@@ -872,7 +873,7 @@ const timestampRule = defineRule({
 const channelIconStyle =
   "mb-[calc(var(--font-size)*0.2)] inline size-[--font-size] align-text-bottom mr-1";
 export const channelIcons: Record<
-  ResolvableAPIChannelType | "guide" | "browse",
+  ResolvableAPIChannelType | "guide" | "browse" | "linked-roles",
   (props?: { className?: string }) => JSX.Element
 > = {
   guide: (props?: { className?: string }) => (
@@ -882,6 +883,9 @@ export const channelIcons: Record<
     <BrowseChannelIcon
       className={twMerge(channelIconStyle, props?.className)}
     />
+  ),
+  "linked-roles": (props?: { className?: string }) => (
+    <LinkedRolesIcon className={twMerge(channelIconStyle, props?.className)} />
   ),
   text: (props?: { className?: string }) => (
     <TextChannelIcon className={twMerge(channelIconStyle, props?.className)} />
@@ -921,18 +925,15 @@ const globalMentionRule = defineRule({
 
 const guildSectionMentionRule = defineRule({
   capture(source) {
-    const match = /^<id:(guide|browse|customize)>/.exec(source);
+    const match = /^<id:(guide|browse|customize|linked-roles)>/.exec(source);
     if (!match) return;
     return {
       size: match[0].length,
-      id: match[1],
+      id: match[1] as "guide" | "browse" | "customize" | "linked-roles",
     };
   },
   render(capture, _, __, t) {
-    const type =
-      capture.id === "customize"
-        ? "browse"
-        : (capture.id as "guide" | "browse");
+    const type = capture.id === "customize" ? "browse" : capture.id;
 
     return (
       <span className={actionableMentionStyle}>
