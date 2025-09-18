@@ -521,6 +521,9 @@
     "8": "Create thread named \"{{ action.name }}\"",
     "9": "Set variable \"{{ action.name }}\""
   },
+  "checkFunctionMaskType": {
+    "100": "Member has role"
+  },
   "role": "Role",
   "user": "User",
   "noMentionsActionNote": "No data is available for this list. While logged in, add a webhook or manually insert mentions in the message to populate it.",
@@ -747,5 +750,7 @@
   "avatar": "Avatar",
   "banner": "Banner",
   "removeAvatar": "Remove Avatar",
-  "removeBanner": "Remove Banner"
+  "removeBanner": "Remove Banner",
+  "checkSelectedMember": "Check selected member",
+  "checkSelectedMemberDescription": "If enabled, the check looks at the member chosen in the select menu, not the user who caused the interaction."
 }

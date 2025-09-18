@@ -1,10 +1,11 @@
 import { NumberField } from "@base-ui-components/react/number-field";
+import { Switch } from "@base-ui-components/react/switch";
 import { Link } from "@remix-run/react";
 import {
   type APIWebhook,
   ButtonStyle,
   ChannelType,
-  type ComponentType,
+  ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
@@ -18,40 +19,48 @@ import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
+import { switchStyles } from "~/components/switch";
 import { TextArea } from "~/components/TextArea";
 import type {
   AnonymousVariable,
   DraftFlow,
   FlowAction,
   FlowActionCheckFunction,
-  FlowActionCheckFunctionType,
   FlowActionCreateThread,
   FlowActionSetVariable,
-  FlowActionSetVariableType,
   TriggerEvent,
 } from "~/store.server";
-import { FlowActionType, ZodDraftFlow } from "~/types/flows";
-import type { CacheManager } from "~/util/cache/CacheManager";
+import {
+  FlowActionCheckFunctionType,
+  FlowActionSetVariableType,
+  FlowActionType,
+  ZodDraftFlow,
+} from "~/types/flows";
+import type {
+  CacheManager,
+  ResolvableAPIRole,
+} from "~/util/cache/CacheManager";
 import { cdnImgAttributes, webhookAvatarUrl } from "~/util/discord";
 import {
   getZodErrorMessage,
   type SafeFetcher,
   useSafeFetcher,
 } from "~/util/loader";
+import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type {
   loader as ApiGetUserBackups,
   PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
-import { InfoBox } from "../components/InfoBox";
 import { CoolIcon } from "../components/icons/CoolIcon";
+import { InfoBox } from "../components/InfoBox";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { RoleSelect } from "../components/RoleSelect";
 import {
+  selectClassNames,
   SimpleStringSelect,
   StringSelect,
-  selectClassNames,
 } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
@@ -437,11 +446,11 @@ const FlowActionEditor: React.FC<{
         "bg-blurple/10 hover:bg-blurple/15 border-blurple/30",
       )}
     >
-      <div className="flex text-sm font-semibold select-none">
+      <div className="flex text-sm font-semibold select-none items-center">
         {errors.length > 0 && (
           <CoolIcon
             icon="Circle_Warning"
-            className="my-auto text-rose-600 dark:text-rose-400 ltr:mr-1.5 rtl:ml-1.5"
+            className="text-rose-600 dark:text-rose-400 me-1.5"
           />
         )}
         <span
@@ -457,7 +466,7 @@ const FlowActionEditor: React.FC<{
             },
           })}
         </span>
-        <div className="ltr:ml-auto rtl:mr-auto text-base space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
+        <div className="ms-auto text-base space-x-2.5 rtl:space-x-reverse shrink-0">
           <button
             type="button"
             className={i === 0 ? "hidden" : ""}
@@ -546,6 +555,9 @@ const FlowActionEditor: React.FC<{
                 }}
                 update={update}
                 level={0}
+                guildId={guildId}
+                roles={roles}
+                parentContext={parentContext}
               />
               <hr className="my-4 border-blurple/30" />
               <p className="text-sm">{t("checkFunctionThen")}</p>
@@ -626,13 +638,10 @@ const FlowActionEditor: React.FC<{
                 {t("addAction")}
               </ButtonSelect>
             </div>
-          ) : action.type === 3 || action.type === 4 || action.type === 5 ? (
+          ) : action.type === FlowActionType.AddRole ||
+            action.type === FlowActionType.RemoveRole ||
+            action.type === FlowActionType.ToggleRole ? (
             <>
-              {roles.length === 0 && (
-                <InfoBox severity="yellow" icon="Info">
-                  {t("noMentionsActionNote")}
-                </InfoBox>
-              )}
               <p className="text-sm font-medium select-none">{t("role")}</p>
               <RoleSelect
                 t={t}
@@ -648,9 +657,14 @@ const FlowActionEditor: React.FC<{
                 unassignable="omit"
                 guildId={guildId}
               />
+              {roles.length === 0 ? (
+                <p className="text-blurple dark:text-blurple-300 text-sm leading-tight">
+                  {t("noMentionsActionNote")}
+                </p>
+              ) : null}
               {/* <TextArea label="Reason" maxLength={512} className="w-full" /> */}
             </>
-          ) : action.type === 6 ? (
+          ) : action.type === FlowActionType.SendMessage ? (
             (() => {
               const selected = backupsFetcher.data?.find(
                 (b) => b.id === action.backupId,
@@ -774,7 +788,7 @@ const FlowActionEditor: React.FC<{
                 </>
               );
             })()
-          ) : action.type === 7 ? (
+          ) : action.type === FlowActionType.SendWebhookMessage ? (
             (() => {
               const selected = backupsFetcher.data?.find(
                 (b) => b.id === action.backupId,
@@ -963,18 +977,13 @@ const FlowActionEditor: React.FC<{
                 </>
               );
             })()
-          ) : action.type === 8 ? (
+          ) : action.type === FlowActionType.CreateThread ? (
             (() => {
               const channel = channels.find(
                 (c) => c.id === action.channel?.value,
               );
               return (
                 <>
-                  {channels.length === 0 && (
-                    <InfoBox severity="yellow" icon="Info">
-                      {t("noMentionsActionNote")}
-                    </InfoBox>
-                  )}
                   <div>
                     <p className="text-sm select-none">{t("channel")}</p>
                     <ChannelSelect
@@ -994,6 +1003,11 @@ const FlowActionEditor: React.FC<{
                         }
                       }}
                     />
+                    {channels.length === 0 ? (
+                      <p className="text-blurple dark:text-blurple-300 text-sm leading-tight">
+                        {t("noMentionsActionNote")}
+                      </p>
+                    ) : null}
                   </div>
                   <TextInput
                     name="name"
@@ -1047,13 +1061,13 @@ const FlowActionEditor: React.FC<{
                 </>
               );
             })()
-          ) : action.type === 9 ? (
+          ) : action.type === FlowActionType.SetVariable ? (
             <FlowActionSetVariableEditor
               t={t}
               action={action}
               update={update}
             />
-          ) : action.type === 10 ? (
+          ) : action.type === FlowActionType.DeleteMessage ? (
             (() => {
               const varAction = allActions.find(
                 (a, subI): a is FlowActionSetVariable => {
@@ -1097,7 +1111,7 @@ const FlowActionEditor: React.FC<{
                 </p>
               );
             })()
-          ) : action.type === 11 ? (
+          ) : action.type === FlowActionType.Stop ? (
             <>
               <p className="text-sm">
                 <Trans
@@ -1185,7 +1199,20 @@ const FlowActionSetVariableEditor: React.FC<{
   update: () => void;
   anonymous?: boolean;
   flex?: boolean;
-}> = ({ t, action, update, anonymous, flex }) => {
+  // deemphasize?: boolean;
+  staticInputElement?: React.ReactElement;
+}> = ({
+  t,
+  action,
+  update,
+  anonymous,
+  flex,
+  // deemphasize,
+  staticInputElement,
+}) => {
+  // const deemphStyle = deemphasize
+  //   ? "text-muted dark:text-muted-dark focus:text-current"
+  //   : undefined;
   return (
     <div className={twJoin("flex gap-1", flex ? "flex-row" : "flex-col")}>
       <div className={twJoin(flex ? "w-1/3" : "contents")}>
@@ -1220,56 +1247,78 @@ const FlowActionSetVariableEditor: React.FC<{
       <div
         className={twJoin(flex ? (anonymous ? "w-2/3" : "w-1/3") : "contents")}
       >
-        <TextInput
-          name="value"
-          label={t(
-            action.varType === 1
-              ? "valueFromReturn"
-              : action.varType === 2
-                ? "valueMirrorVariable"
-                : "value",
-          )}
-          className={twJoin(
-            "w-full",
-            action.varType !== 0 ? "font-code" : undefined,
-          )}
-          maxLength={
-            action.varType === 1 ? 30 : action.varType === 2 ? 100 : 500
-          }
-          value={String(action.value ?? "")}
-          onChange={({ currentTarget }) => {
-            const v = currentTarget.value;
-            if (["true", "false"].includes(v) && action.varType !== 1) {
-              action.value = v === "true";
-            } else {
-              action.value = currentTarget.value;
+        {(action.varType === FlowActionSetVariableType.Static ||
+          action.varType === undefined) &&
+        staticInputElement ? (
+          staticInputElement
+        ) : (
+          <TextInput
+            name="value"
+            label={t(
+              action.varType === 1
+                ? "valueFromReturn"
+                : action.varType === 2
+                  ? "valueMirrorVariable"
+                  : "value",
+            )}
+            className={twJoin(
+              "w-full",
+              action.varType !== 0 ? "font-code" : undefined,
+            )}
+            maxLength={
+              action.varType === 1 ? 30 : action.varType === 2 ? 100 : 500
             }
-            update();
-          }}
-        />
+            value={String(action.value ?? "")}
+            onChange={({ currentTarget }) => {
+              const v = currentTarget.value;
+              if (["true", "false"].includes(v) && action.varType !== 1) {
+                action.value = v === "true";
+              } else {
+                action.value = currentTarget.value;
+              }
+              update();
+            }}
+          />
+        )}
       </div>
     </div>
   );
 };
 
+/** extra "mask" types for easier seeding/UX */
+enum FlowActionCheckFunctionMaskType {
+  MemberHasRole = 100,
+}
+
 const checkFunctionSeed = (
-  type: FlowActionCheckFunctionType,
+  type: FlowActionCheckFunctionType | FlowActionCheckFunctionMaskType,
 ): FlowActionCheckFunction =>
-  type === 0 || type === 1 || type === 3
-    ? { type, conditions: [] }
-    : type === 4
-      ? {
-          type,
-          array: { value: "" },
-          element: { value: "" },
-        }
-      : type === 5
+  type === FlowActionCheckFunctionMaskType.MemberHasRole
+    ? {
+        type: FlowActionCheckFunctionType.In,
+        element: { value: "" },
+        array: {
+          value: "member.role_ids",
+          varType: FlowActionSetVariableType.Get,
+        },
+      }
+    : type === FlowActionCheckFunctionType.And ||
+        type === FlowActionCheckFunctionType.Or ||
+        type === FlowActionCheckFunctionType.Not
+      ? { type, conditions: [] }
+      : type === FlowActionCheckFunctionType.In
         ? {
             type,
-            a: { value: "" },
-            b: { value: "" },
+            array: { value: "" },
+            element: { value: "" },
           }
-        : ({ type } as unknown as FlowActionCheckFunction);
+        : type === FlowActionCheckFunctionType.Equals
+          ? {
+              type,
+              a: { value: "" },
+              b: { value: "" },
+            }
+          : ({ type } as unknown as FlowActionCheckFunction);
 
 const CheckFunctionEditor: React.FC<{
   t: TFunction;
@@ -1278,7 +1327,28 @@ const CheckFunctionEditor: React.FC<{
   remove?: () => void;
   update: () => void;
   level: number;
-}> = ({ t, function: func, setFunction, remove, update, level }) => {
+  guildId?: string;
+  roles?: ResolvableAPIRole[];
+  parentContext?: FlowParentContext;
+}> = ({
+  t,
+  function: func,
+  setFunction,
+  remove,
+  update,
+  level,
+  guildId,
+  roles,
+  parentContext,
+}) => {
+  const id = randomString(5);
+  const isMemberRoleCheck =
+    !!func &&
+    func.type === FlowActionCheckFunctionType.In &&
+    func.array.varType === FlowActionSetVariableType.Get &&
+    (func.array.value === "selected_member.role_ids" ||
+      func.array.value === "member.role_ids");
+
   return (
     <>
       {level > 0 && (
@@ -1296,23 +1366,113 @@ const CheckFunctionEditor: React.FC<{
           </div>
         </div>
       )}
-      <SimpleStringSelect
+      <SimpleStringSelect<
+        FlowActionCheckFunctionType | FlowActionCheckFunctionMaskType
+      >
         t={t}
         name="functionType"
         label={t("checkFunctionTypeText")}
-        value={func?.type}
-        options={checkFunctionTypes
-          // Max recursion. Could definitely be increased in the future
-          .filter(level >= 5 ? (t) => ![0, 1, 3].includes(t) : () => true)
-          .map((value) => ({ value, label: t(`checkFunctionType.${value}`) }))}
+        value={
+          isMemberRoleCheck
+            ? FlowActionCheckFunctionMaskType.MemberHasRole
+            : func?.type
+        }
+        options={[
+          {
+            label: t("checkFunctionMaskType.100"),
+            value: FlowActionCheckFunctionMaskType.MemberHasRole,
+          },
+          ...checkFunctionTypes
+            // Max recursion. Could definitely be increased in the future
+            .filter(level >= 5 ? (val) => ![0, 1, 3].includes(val) : () => true)
+            .map((value) => ({
+              value,
+              label: t(`checkFunctionType.${value}`),
+            })),
+        ]}
         onChange={(value) => {
           setFunction(checkFunctionSeed(value));
           update();
         }}
         required
       />
-      {!!func &&
-        (func.type === 0 || func.type === 1 || func.type === 3 ? (
+      {func ? (
+        isMemberRoleCheck && roles ? (
+          <div className="mt-2">
+            <FlowActionSetVariableEditor
+              t={t}
+              action={func.element}
+              update={update}
+              anonymous
+              flex
+              staticInputElement={
+                <div>
+                  <p className="text-sm font-medium cursor-default">
+                    {t("role")}
+                  </p>
+                  <RoleSelect
+                    t={t}
+                    name="value"
+                    roles={roles}
+                    value={roles.find(
+                      (r) => r.id === String(func.element.value),
+                    )}
+                    onChange={(role) => {
+                      if (role) {
+                        func.element.value = role.id;
+                        update();
+                      }
+                    }}
+                    unassignable="omit"
+                    guildId={guildId}
+                  />
+                  {roles.length === 0 ? (
+                    <p className="text-blurple dark:text-blurple-300 text-sm leading-tight">
+                      {t("noMentionsActionNote")}
+                    </p>
+                  ) : null}
+                </div>
+              }
+            />
+            {/*
+             * Allow choosing between the member (target user) and selected
+             * member (value of user/mentionable select)
+             */}
+            {parentContext === `component.${ComponentType.UserSelect}` ||
+            parentContext === `component.${ComponentType.MentionableSelect}` ? (
+              <div className="space-y-0.5 mt-2">
+                <div className="flex items-center">
+                  <label
+                    htmlFor={`${id}-switch`}
+                    className="cursor-pointer select-none grow"
+                  >
+                    {t("checkSelectedMember")}
+                  </label>
+                  <Switch.Root
+                    id={`${id}-switch`}
+                    className={switchStyles.root}
+                    checked={func.array.value === "selected_member.role_ids"}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        func.array.value = "selected_member.role_ids";
+                      } else {
+                        func.array.value = "member.role_ids";
+                      }
+                      update();
+                    }}
+                  >
+                    <Switch.Thumb className={switchStyles.thumb} />
+                  </Switch.Root>
+                </div>
+                <p className="text-muted dark:text-muted-dark text-sm">
+                  {t("checkSelectedMemberDescription")}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : func.type === FlowActionCheckFunctionType.And ||
+          func.type === FlowActionCheckFunctionType.Or ||
+          func.type === FlowActionCheckFunctionType.Not ? (
           <div>
             {func.conditions.map((condition, i) => (
               <div
@@ -1326,6 +1486,9 @@ const CheckFunctionEditor: React.FC<{
                   remove={() => func.conditions.splice(i, 1)}
                   update={update}
                   level={level + 1}
+                  guildId={guildId}
+                  roles={roles}
+                  parentContext={parentContext}
                 />
               </div>
             ))}
@@ -1346,7 +1509,7 @@ const CheckFunctionEditor: React.FC<{
               {t("addCondition")}
             </ButtonSelect>
           </div>
-        ) : func.type === 4 ? (
+        ) : func.type === FlowActionCheckFunctionType.In ? (
           <div className="mt-2">
             <p className="text-sm">{t("checkInElement")}</p>
             <FlowActionSetVariableEditor
@@ -1365,7 +1528,7 @@ const CheckFunctionEditor: React.FC<{
               flex
             />
           </div>
-        ) : func.type === 5 ? (
+        ) : func.type === FlowActionCheckFunctionType.Equals ? (
           <div className="mt-2">
             <p className="text-sm">{t("checkEqualA")}</p>
             <FlowActionSetVariableEditor
@@ -1384,9 +1547,8 @@ const CheckFunctionEditor: React.FC<{
               flex
             />
           </div>
-        ) : (
-          <></>
-        ))}
+        ) : null
+      ) : null}
     </>
   );
 };

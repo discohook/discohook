@@ -12,8 +12,8 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
-import { type SetErrorFunction, useError } from "~/components/Error";
 import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
+import { type SetErrorFunction, useError } from "~/components/Error";
 import { InfoBox } from "~/components/InfoBox";
 import type {
   APIButtonComponent,
@@ -220,6 +220,7 @@ export const ComponentEditForm = ({
                   i18nKey="flowLink"
                   components={[
                     <Link
+                      key="0"
                       to="/guide/getting-started/flows"
                       target="_blank"
                       className={twJoin(linkClassName, "cursor-pointer")}
