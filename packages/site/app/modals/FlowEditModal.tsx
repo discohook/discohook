@@ -1423,7 +1423,6 @@ const CheckFunctionEditor: React.FC<{
                         update();
                       }
                     }}
-                    unassignable="omit"
                     guildId={guildId}
                   />
                   {roles.length === 0 ? (
