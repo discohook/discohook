@@ -50,7 +50,11 @@ import { isDiscordError } from "../util/error.js";
 import { isThreadMessage } from "../util/messages.js";
 import { createREST } from "../util/rest.js";
 import { sleep } from "../util/sleep.js";
-import { getReplacements, processQueryData } from "./backup.js";
+import {
+  getReplacements,
+  insertReplacements,
+  processQueryData,
+} from "./backup.js";
 
 export interface LiveVariables {
   member?: APIGuildMember;
@@ -600,9 +604,12 @@ export const executeFlow = async (options: {
           {
             const channelId =
               resolveSetVariable(action.channel)?.toString() ?? vars.channelId;
-            lastReturnValue = await executeCreateThread(rest, action, {
-              channelId,
-            });
+            lastReturnValue = await executeCreateThread(
+              rest,
+              action,
+              { channelId },
+              liveVars,
+            );
           }
           break;
         case FlowActionType.Stop:
@@ -936,6 +943,7 @@ export const executeCreateThread = async (
   rest: REST,
   action: FlowActionCreateThread,
   setVars: { channelId: string },
+  liveVars: LiveVariables,
   ctx?: InteractionContext,
 ) => {
   const channelId = setVars.channelId;
@@ -971,19 +979,26 @@ export const executeCreateThread = async (
     }
   }
 
+  const replacements = getReplacements(liveVars, setVars);
+  const name = insertReplacements({ _: action.name }, { replacements })._.slice(
+    0,
+    100,
+  );
   try {
     const thread = (await rest.post(Routes.threads(channelId, messageId), {
       body:
         channelType === ChannelType.GuildForum
           ? ({
-              name: action.name,
-              message: action.message ?? { content: "No message" },
+              name,
+              message: action.message
+                ? insertReplacements(action.message, { replacements })
+                : { content: "No message" },
               applied_tags: action.appliedTags,
               auto_archive_duration: action.autoArchiveDuration,
               rate_limit_per_user: action.rateLimitPerUser,
             } satisfies RESTPostAPIGuildForumThreadsJSONBody)
           : ({
-              name: action.name,
+              name,
               auto_archive_duration: action.autoArchiveDuration,
               rate_limit_per_user: action.rateLimitPerUser,
               type: action.threadType,

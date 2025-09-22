@@ -222,9 +222,44 @@ export const getReplacements = (
   return values;
 };
 
+type Replacements = ReturnType<typeof getReplacements>;
+
+export const insertReplacements = <T extends {}>(
+  target: T,
+  fromData:
+    | { replacements: Replacements }
+    | {
+        liveVars: LiveVariables;
+        setVars: Record<string, string | boolean>;
+      },
+) => {
+  let stringified = JSON.stringify(target);
+  const replacements =
+    "replacements" in fromData
+      ? fromData.replacements
+      : getReplacements(fromData.liveVars, fromData.setVars);
+
+  for (const [key, value] of Object.entries(replacements)) {
+    if (
+      value == null ||
+      key.includes(" ") ||
+      Object.keys(target).includes(key)
+    ) {
+      continue;
+    }
+    // Remains to be seen if this is a good solution. I think it's reasonably
+    // "sandboxed," but I haven't yet explored purposely trying to break out
+    // of it. If you can do that or know how, please contact me privately!
+    // https://discohook.app/discord
+    stringified = stringified.replaceAll(`{${key}}`, String(value));
+  }
+  const parsed = JSON.parse(stringified) as T;
+  return parsed;
+};
+
 export const processQueryData = async (
   queryData: QueryData,
-  vars: LiveVariables,
+  liveVars: LiveVariables,
   setVars: Record<string, string | boolean>,
   messageIndex?: number | null,
 ) => {
@@ -240,7 +275,8 @@ export const processQueryData = async (
 
   const query = new URLSearchParams();
   if (message.thread_id) {
-    // TODO: should be templatable?
+    // This is "templatable" in that it will be replaced by the `threadId`
+    // variable if one exists
     query.set("thread_id", message.thread_id);
   }
   const flags = new MessageFlagsBitField(message.data.flags ?? 0);
@@ -299,18 +335,6 @@ export const processQueryData = async (
     thread_name: message.data.thread_name,
     flags: message.data.flags,
   };
-  let stringified = JSON.stringify(data);
-  const replacements = getReplacements(vars, setVars);
-  for (const [key, value] of Object.entries(replacements)) {
-    if (value == null || key.includes(" ") || Object.keys(data).includes(key)) {
-      continue;
-    }
-    // Remains to be seen if this is a good solution. I think it's reasonably
-    // "sandboxed," but I haven't yet explored purposely trying to break out
-    // of it. If you can do that or know how, please report to me privately!
-    // https://discohook.app/discord
-    stringified = stringified.replaceAll(`{${key}}`, String(value));
-  }
-  const parsed = JSON.parse(stringified) as typeof data;
+  const parsed = insertReplacements(data, { liveVars, setVars });
   return { body: parsed, query };
 };
