@@ -360,16 +360,23 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             <CoolIcon
               icon="Bell_Off"
               title={t("messageFlag.4096")}
-              className="ltr:mr-1 rtl:ml-1"
+              className="me-1"
             />
           )}
           {flags.has(MessageFlags.SuppressEmbeds) && (
             <CoolIcon
               icon="Window_Close"
               title={t("messageFlag.4")}
-              className="ltr:mr-1 rtl:ml-1"
+              className="me-1"
             />
           )}
+          {message.data.allowed_mentions ? (
+            <CoolIcon
+              icon="Bell_Remove"
+              title={t("allowedMentionsEnabled")}
+              className="me-1"
+            />
+          ) : null}
           {t(previewText ? "messageNText" : "messageN", {
             replace: { n: i + 1, text: previewText },
           })}
@@ -1019,16 +1026,27 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
             <CoolIcon
               icon="Bell_Off"
               title={t("messageFlag.4096")}
-              className="ltr:mr-1 rtl:ml-1"
+              className="me-1"
             />
           )}
+          {/*
+            Might seem silly to include this for the CV2 editor but I imagine
+            eventually links will unfurl and so this will be relevant.
+          */}
           {flags.has(MessageFlags.SuppressEmbeds) && (
             <CoolIcon
               icon="Window_Close"
               title={t("messageFlag.4")}
-              className="ltr:mr-1 rtl:ml-1"
+              className="me-1"
             />
           )}
+          {message.data.allowed_mentions ? (
+            <CoolIcon
+              icon="Bell_Remove"
+              title={t("allowedMentionsEnabled")}
+              className="me-1"
+            />
+          ) : null}
           {t(previewText ? "messageNText" : "messageN", {
             replace: { n: i + 1, text: previewText },
           })}

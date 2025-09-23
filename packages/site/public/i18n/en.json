@@ -591,6 +591,7 @@
     "32768": "Components V2"
   },
   "allowedMentions": "Allowed Mentions",
+  "allowedMentionsEnabled": "Allowed Mentions is enabled",
   "allowedMentionsNote": "If this is enabled, Discord will only send notifications & highlight the message for users and roles that are specified below. Mentions in embeds are never delivered.",
   "enableAllowedMentions": "Control mentions in this message",
   "allowedMentionsProps": {
