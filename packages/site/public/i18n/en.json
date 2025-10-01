@@ -229,6 +229,23 @@
   "refreshed": "Refreshed",
   "auditLog": "Audit Log",
   "auditLogSubtitle": "Below is a list of actions that have been taken through Discohook for <0>{{guild.name}}</0>. Some expected entries may not be present--for example if a webhook URL was leaked, it's not likely that the attacker would use Discohook.<br /><br />If you don't recognize a user, you may want to delete the webhook.",
+  "anonymous": "Anonymous",
+  "auditLogMessage": {
+    "webhooklessAction": {
+      "send": "<0>{{username}}</0> sent a message",
+      "edit": "<0>{{username}}</0> edited a message",
+      "delete": "<0>{{username}}</0> deleted a message"
+    },
+    "webhookAction": {
+      "send": "<0>{{username}}</0> sent a message with {{webhook.name}}",
+      "edit": "<0>{{username}}</0> edited a message with {{webhook.name}}",
+      "delete": "<0>{{username}}</0> deleted a message with {{webhook.name}}"
+    }
+  },
+  "allWebhooks": "All Webhooks",
+  "allChannels": "All Channels",
+  "allUsers": "All Users",
+  "allActions": "All Actions",
   "tab": "Tab",
   "permissions": "Permissions",
   "permission": {

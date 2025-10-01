@@ -11,7 +11,7 @@ export const ChannelSelect = (props: {
   channels: ResolvableAPIChannel[];
   name?: string;
   value?: ResolvableAPIChannel | null;
-  // isClearable?: boolean;
+  clearable?: boolean;
   // isMulti?: boolean;
   required?: boolean;
   disabled?: boolean;
@@ -19,10 +19,15 @@ export const ChannelSelect = (props: {
 }) => {
   return (
     <Select.Root
-      items={props.channels.map((channel) => ({
-        value: channel.id,
-        label: `#${channel.name}`,
-      }))}
+      items={[
+        ...(props.clearable
+          ? [{ value: null, label: props.t("allChannels") }]
+          : []),
+        ...props.channels.map((channel) => ({
+          value: channel.id,
+          label: `#${channel.name}`,
+        })),
+      ]}
       name={props.name}
       value={props.value?.id}
       onValueChange={(value) => {
@@ -44,6 +49,18 @@ export const ChannelSelect = (props: {
           <Select.ScrollUpArrow />
           <Select.Popup>
             <Select.Arrow />
+            {props.clearable ? (
+              <Select.Item value={null} className={selectStyles.item}>
+                <Select.ItemText
+                  className={twJoin(selectStyles.itemText, "flex items-center")}
+                >
+                  {props.t("allChannels")}
+                </Select.ItemText>
+                <Select.ItemIndicator className={selectStyles.itemIndicator}>
+                  <CoolIcon icon="Check" />
+                </Select.ItemIndicator>
+              </Select.Item>
+            ) : null}
             {props.channels?.map((channel) => (
               <Select.Item
                 key={`channel-select-option-${channel.id}}`}

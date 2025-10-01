@@ -33,7 +33,7 @@ import {
   UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -445,6 +445,17 @@ interface ProfileFormData {
   submitBio?: boolean;
   status?: string;
 }
+
+const cloneQuery = (
+  current: Record<string, string | number | null | undefined>,
+) => {
+  const newQuery = new URLSearchParams();
+  for (const [key, value] of Object.entries(current)) {
+    if (value == null) continue;
+    newQuery.set(key, String(value));
+  }
+  return newQuery;
+};
 
 export default () => {
   const { guild, user, member, discordApplicationId } =
@@ -1050,6 +1061,121 @@ export default () => {
               >
                 {t("auditLog")}
               </TabHeader>
+              {/* <div className="grid grid-cols-4 gap-2 mb-2">
+                <div>
+                  <SimpleStringSelect
+                    t={t}
+                    label="Filter by Action"
+                    value={
+                      auditLogFetcher.data
+                        ? (auditLogFetcher.data.query.action ?? null)
+                        : null
+                    }
+                    options={[
+                      {
+                        label: t("allActions"),
+                        value: null,
+                      },
+                      {
+                        label: "Send",
+                        value: "send",
+                      },
+                      {
+                        label: "Edit",
+                        value: "edit",
+                      },
+                      {
+                        label: "Delete",
+                        value: "delete",
+                      },
+                    ]}
+                    onChange={(val) => {
+                      const query = cloneQuery({
+                        ...(auditLogFetcher.data?.query ?? {}),
+                        action: val,
+                        page: 1,
+                      });
+                      auditLogFetcher.load(
+                        `${apiUrl(BRoutes.guildLog(guild.id))}?${query}`,
+                      );
+                    }}
+                  />
+                </div>
+                <div>
+                  <SimpleStringSelect
+                    t={t}
+                    label="Filter by Webhook"
+                    value={
+                      auditLogFetcher.data
+                        ? (auditLogFetcher.data.query.webhookId ?? null)
+                        : null
+                    }
+                    options={[
+                      {
+                        label: "All Webhooks",
+                        value: null,
+                      },
+                      ...(auditLogFetcher.data
+                        ? auditLogFetcher.data.webhooks.map((webhook) => ({
+                            label: webhook.name, // TODO: include avatar
+                            value: webhook.id,
+                            stringLabel: webhook.name,
+                          }))
+                        : []),
+                    ]}
+                    onChange={(val) => {
+                      const query = cloneQuery({
+                        ...(auditLogFetcher.data?.query ?? {}),
+                        webhookId: val,
+                        page: 1,
+                      });
+                      auditLogFetcher.load(
+                        `${apiUrl(BRoutes.guildLog(guild.id))}?${query}`,
+                      );
+                    }}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-medium cursor-default">
+                    Filter by Channel
+                  </p>
+                  <ChannelSelect
+                    t={t}
+                    clearable
+                    channels={
+                      auditLogFetcher.data
+                        ? auditLogFetcher.data.entries
+                            .map((entry) => {
+                              const channel = cache.channel.get(
+                                entry.channelId,
+                              );
+                              return (
+                                channel ?? {
+                                  type: "text",
+                                  id: entry.channelId,
+                                  name: `unknown (${entry.channelId})`,
+                                }
+                              );
+                            })
+                            .filter(
+                              (chan, i, a): chan is ResolvableAPIChannel =>
+                                a.findIndex((c) => c.id === chan.id) === i,
+                            )
+                        : []
+                    }
+                    onChange={(val) => {
+                      const query = cloneQuery({
+                        ...(auditLogFetcher.data?.query ?? {}),
+                        channelId: val ? val.id : null,
+                        page: 1,
+                      });
+                      auditLogFetcher.load(
+                        `${apiUrl(BRoutes.guildLog(guild.id))}?${query}`,
+                      );
+                    }}
+                  />
+                </div>
+              </div> */}
               <div className="space-y-2">
                 {auditLogFetcher.data ? (
                   auditLogFetcher.data.entries.map((entry) => {
@@ -1059,31 +1185,11 @@ export default () => {
                     const webhook = auditLogFetcher.data?.webhooks.find(
                       (w) => w.id === entry.webhookId,
                     );
-                    const verbed =
-                      entry.type === "send"
-                        ? "sent"
-                        : entry.type === "edit"
-                          ? "edited"
-                          : entry.type === "delete"
-                            ? "deleted"
-                            : "?";
                     return (
                       <div
                         key={`message-entry-${entry.id}`}
                         className="rounded-lg py-3 px-4 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
                       >
-                        {/* {entry.type && (
-                          <CoolIcon
-                            className="text-lg my-auto mr-2"
-                            icon={
-                              entry.type === "send"
-                                ? "Add_Row"
-                                : entry.type === "edit"
-                                  ? "Edit_Pencil_01"
-                                  : "Delete_Row"
-                            }
-                          />
-                        )} */}
                         <img
                           {...cdnImgAttributes(64, (size) =>
                             webhook
@@ -1091,20 +1197,29 @@ export default () => {
                               : cdn.defaultAvatar(5),
                           )}
                           className="rounded-full my-auto w-10 h-10 mr-2 hidden sm:block"
-                          alt="Instigator"
+                          alt="Target webhook"
                         />
                         <div className="truncate my-auto">
                           <div className="flex max-w-full">
                             <p className="font-medium truncate dark:text-[#f9f9f9] text-base">
-                              {entry.user?.name ? (
-                                <span className="dark:text-primary-230">
-                                  {entry.user.name}
-                                </span>
-                              ) : (
-                                "Anonymous"
-                              )}{" "}
-                              {verbed} a message
-                              {webhook ? ` with ${webhook.name}` : ""}
+                              <Trans
+                                t={t}
+                                i18nKey={`auditLogMessage.${webhook ? "webhookAction" : "webhooklessAction"}.${entry.type}`}
+                                values={{
+                                  username: entry.user?.name ?? t("anonymous"),
+                                  webhook,
+                                }}
+                                components={[
+                                  entry.user?.name ? (
+                                    <span
+                                      key="0"
+                                      className="dark:text-primary-230"
+                                    />
+                                  ) : (
+                                    <span key="0" />
+                                  ),
+                                ]}
+                              />
                             </p>
                           </div>
                           <p className="text-muted dark:text-muted-dark text-xs">
