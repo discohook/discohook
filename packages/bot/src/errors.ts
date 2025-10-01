@@ -115,8 +115,13 @@ export const getErrorMessage = (
   }
 };
 
-export const getErrorEmbed = (error: RESTError) => {
+export const getErrorEmbed = (error: RESTError, isDeveloper?: boolean) => {
   const embed = new EmbedBuilder().setColor(0xff587b).setTitle("Discord Error");
+  if (isDeveloper) {
+    embed.setDescription(JSON.stringify(error).slice(0, 4096));
+    return embed;
+  }
+
   if (
     error.errors &&
     [RESTJSONErrorCodes.InvalidFormBodyOrContentType].includes(error.code)

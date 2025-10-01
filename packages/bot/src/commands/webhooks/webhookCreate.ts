@@ -159,7 +159,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
           await ctx.followup.editOriginalMessage({
             content:
               "Failed to create the webhook. It is likely that some information was invalid or I am missing permissions. A description of the error is below:",
-            embeds: [getErrorEmbed(e.rawError)],
+            embeds: [getErrorEmbed(e.rawError, ctx.isDeveloper)],
           });
           return;
         }

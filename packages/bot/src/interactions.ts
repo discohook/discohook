@@ -150,6 +150,13 @@ export class InteractionContext<
     }
   }
 
+  get isDeveloper(): boolean {
+    return (
+      this.env.DEV_OWNER_ID !== undefined &&
+      this.user.id === this.env.DEV_OWNER_ID
+    );
+  }
+
   get createdAt(): Date {
     return getDate(this.interaction.id as Snowflake);
   }
