@@ -817,5 +817,23 @@
     "changeBio": "تغيير السيرة",
     "checkFunctionMaskType": {
         "100": "العضو لديه رول"
-    }
+    },
+    "anonymous": "مجهول",
+    "auditLogMessage": {
+        "webhooklessAction": {
+            "send": "<0>{{username}}</0> قام بإرسل رسالة",
+            "edit": "<0>{{username}}</0> قام بتعديل رسالة",
+            "delete": "<0>{{username}}</0> قام بمسح رسالة"
+        },
+        "webhookAction": {
+            "send": "<0>{{username}}</0> قام بإرسال رسالة عبر {{webhook.name}}",
+            "edit": "<0>{{username}}</0> قام بتعديل رسالة عبر {{webhook.name}}",
+            "delete": "<0>{{username}}</0> قام بمسح رسالة عبر {{webhook.name}}"
+        }
+    },
+    "allWebhooks": "جميع الويبهوك",
+    "allChannels": "جميع التشانل",
+    "allUsers": "جميع المستخدمين",
+    "allActions": "جميع الافعال",
+    "allowedMentionsEnabled": "التنويهات المسموحة مفعلة"
 }
