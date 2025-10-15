@@ -7,7 +7,7 @@ description: "How to use the \"Check\" action type"
 
 A check action will allow you to define "paths" in your flow that depend on certain state. This page will cover common use cases for this action type. For details on the types of check functions that you can use, see [flows](discohook://guide/getting-started/flows).
 
-## Checking if the user has a role (using the `IN` function)
+## Checking if the user has a role
 
 Add a new check action and choose the `Member has role` function. By default, you will be able to select a role from the dropdown. If you see a message that says there is no data, you will need to add a webhook for the message so that Discohook knows which server's roles to let you select from. [Discohook Utils](discohook://bot) needs to be in the server for you to do this.
 
