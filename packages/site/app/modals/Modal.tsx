@@ -92,21 +92,6 @@ export const PlainModalHeader: React.FC<
   </div>
 );
 
-export const ModalCloseButton: React.FC<Pick<ModalProps, "setOpen">> = ({
-  setOpen,
-}) => (
-  <button
-    type="button"
-    className="ltr:ml-auto rtl:mr-auto mb-auto"
-    onClick={() => setOpen(false)}
-  >
-    <CoolIcon
-      icon="Close_MD"
-      className="text-2xl text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-gray-300 transition"
-    />
-  </button>
-);
-
 export const ModalFooter: React.FC<
   React.PropsWithChildren & { className?: string }
 > = ({ children, className }) => (
