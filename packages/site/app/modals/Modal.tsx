@@ -25,7 +25,7 @@ export const DialogPortal: React.FC<
     <Dialog.Popup
       className={twJoin(
         // position & size
-        "box-border fixed z-[31] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+        "box-border fixed z-[calc(31_-_var(--nested-dialogs))] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
         "w-screen sm:w-[32rem] md:w-3/4 max-w-[100vw] sm:max-w-[calc(100vw_-_3rem)] rounded-xl",
         "max-h-[calc(100vh_-_8rem)] overflow-y-auto h-fit",
         // colors

@@ -94,3 +94,12 @@ label[for^="rc-editable-input-"] {
 .sketch-picker > .flexbox-fix:last-child {
   @apply pt-3 mt-3 !border-t-gray-400 dark:!border-t-gray-600;
 }
+
+/* Modals */
+div[data-base-ui-portal] > div[role="presentation"]:not(.z-40) {
+  /*
+    Fix unclickable backdrops in nested modals due to the z-index of parent
+    backdrops which is high to compensate for the z-index of the header bar
+  */
+  @apply z-[30];
+}
