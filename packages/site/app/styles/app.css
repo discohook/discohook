@@ -96,7 +96,13 @@ label[for^="rc-editable-input-"] {
 }
 
 /* Modals */
-div[data-base-ui-portal] > div[role="presentation"]:not(.z-40) {
+/*
+  Select a portal "presentation" element (not exposed for styling in the
+  dialog API) which has a "dialog" future sibling (the dialog content).
+  This should avoid styling presentations for other types of popover
+  components from base-ui.
+*/
+div[data-base-ui-portal] > div[role="presentation"]:has(~ div[role="dialog"]) {
   /*
     Fix unclickable backdrops in nested modals due to the z-index of parent
     backdrops which is high to compensate for the z-index of the header bar
