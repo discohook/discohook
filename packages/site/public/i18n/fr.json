@@ -115,5 +115,9 @@
     "home": "Accueil",
     "version": "Version : {{version}}",
     "preview": "Aperçu",
-    "copyLink": "copier le lien"
+    "copyLink": "copier le lien",
+    "shareExpired": "Lien de partage invalide",
+    "supportServerLanguageNote": "Ceci est un serveur support <bold>uniquement en anglais</bold>. Bien que Discohook prenne en charge plusieurs langues pour faciliter son utilisation, nos équipes de support et de modération sont généralement en mesure d'aider uniquement en anglais. Vous pouvez utiliser <anchor>des outils comme DeepL</anchor> si vous n'êtes pas à l'aise avec la langue. Cochez la case à gauche pour rejoindre le serveur.",
+    "temporaryShareUrlExpires": "Partager l'URL (expire <0>$t(timestamp.relative.days_future)</0>)",
+    "clickToCopy": "Cliquer pour Copier"
 }
