@@ -20,7 +20,7 @@
     "hourTime": "Hora ({{timezone}})",
     "minute": "Minuto",
     "search": "Busqueda",
-    "helpSearchPlaceholder": "Como hago…",
+    "helpSearchPlaceholder": "Cómo hago…",
     "editBackupTitle": "Editar Detalles de la copia de seguridad",
     "ok": "OK",
     "delete": "Borrar",
@@ -72,7 +72,7 @@
     "copy": "Copia",
     "copyLink": "Copia el enlace",
     "includeWebhookUrls": "Incluye URLs de webhook",
-    "regenerate": "Re-Genera",
+    "regenerate": "Regenerar",
     "createBackup": "Crear copia de seguridad",
     "clickToCopy": "Presiona para copiar",
     "clickGenerate": "Presiona \"Generar\" para generar un enlace compartido",
@@ -453,5 +453,12 @@
     "nEmbed_one": "{{count}} embed",
     "nEmbed_many": "{{count}} embeds",
     "nEmbed_other": "",
-    "noCacheNote": "No hay datos aquí. Agrega un webhook o inserta menciones manualmente para llenar este menú."
+    "noCacheNote": "No hay datos aquí. Agrega un webhook o inserta menciones manualmente para llenar este menú.",
+    "fileMissing": "Este componente hace referencia a un archivo que no se encontró en la sección de archivos. Para solucionar este problema, vuelva a subir el archivo o elimine el componente. Esto es normal al abrir enlaces, ya que los archivos son demasiado grandes para compartirlos de forma fiable.",
+    "close": "Cerrar",
+    "large": "Grande",
+    "small": "Pequeño",
+    "attachment": "Adjuntar",
+    "separatorLine": "Línea divisora",
+    "separatorSize": "Tamaño"
 }
