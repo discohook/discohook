@@ -284,7 +284,10 @@
     "mention": {
         "unknownUser": "usuario-desconocido",
         "deletedRole": "rol-eliminado",
-        "unknown": "desconocido"
+        "unknown": "desconocido",
+        "browse": "Explorar canales",
+        "customize": "Canales y roles",
+        "guide": "Guía del servidor"
     },
     "noHistory": "Esta sesión del editor no tiene historial registrado.",
     "graceRemaining_one": "{{count}} día restante",
@@ -464,5 +467,71 @@
     "threadWebhookApplyConfirm": "El hilo se aplicará a todos los mensajes. <toggle>Deshacer</toggle>",
     "threadWebhookApplyPrompt": "<open>ID del hilo</open> especificado en la URL. <toggle>Aplicar a los mensajes</toggle>",
     "unlink": "Desvincular",
-    "searchOrCreateBackup": "Buscar o crear una copia de seguridad"
+    "searchOrCreateBackup": "Buscar o crear una copia de seguridad",
+    "formatServerDescription": "Este es el servidor en el que se envía el mensaje formateado. En este placeholder, es el servidor de soporte de Discohook.",
+    "timestamp": {
+        "relative": {
+            "minutes_past_one": "hace un minuto",
+            "minutes_past_many": "Hace {{count}} minutos",
+            "minutes_past_other": "",
+            "days_future_one": "en un día",
+            "days_future_many": "en {{count}} días",
+            "days_future_other": "",
+            "seconds_future": "en {{count}} segundos",
+            "seconds_past": "Hace {{count}} segundos",
+            "minutes_future_one": "en un minuto",
+            "minutes_future_many": "en {{count}} minutos",
+            "minutes_future_other": "",
+            "years_past_one": "hace un año",
+            "years_past_many": "Hace {{count}} años",
+            "years_past_other": "",
+            "months_future_one": "en un mes",
+            "months_future_many": "en {{count}} meses",
+            "months_future_other": "",
+            "years_future_one": "en un año",
+            "years_future_many": "en {{count}} años",
+            "years_future_other": "",
+            "months_past_one": "hace un mes",
+            "months_past_many": "Hace {{count}} meses",
+            "months_past_other": "",
+            "hours_future_one": "en una hora",
+            "hours_future_many": "en {{count}} horas",
+            "hours_future_other": "",
+            "hours_past_one": "Hace una hora",
+            "hours_past_many": "Hace {{count}} horas",
+            "hours_past_other": "",
+            "days_past_one": "hace un día",
+            "days_past_many": "Hace {{count}} días",
+            "days_past_other": ""
+        },
+        "footer": {
+            "today": "Hoy a las {{ date, h:mm A }}",
+            "yesterday": "Ayer a las {{ date, h:mm A }}",
+            "other": "{{ date, M/D/YYYY h:mm A }}",
+            "tomorrow": "Mañana a las {{ date, h:mm A }}"
+        },
+        "full_verbose": "{{ date, dddd, MMMM D, YYYY h:mm:ss A }}",
+        "date": "{{ date, M/D/YYYY }}",
+        "time": "{{ date, h:mm A }}",
+        "full": "{{ date, MMMM D, YYYY h:mm A }}",
+        "date_verbose": "{{ date, MMMM D, YYYY }}",
+        "time_verbose": "{{ date, h:mm:ss A }}"
+    },
+    "formatMemberDescription": "El miembro utilizado aquí depende del contexto del mensaje. En una respuesta de componente, es el miembro que interactuó con el componente. Para una respuesta de activación de unión/eliminación de un miembro, es el miembro que se unió o fue eliminado del servidor.",
+    "formatOptionDescription": {
+        "member": {
+            "name": "El nombre de usuario del miembro",
+            "mention": "La mención del miembro",
+            "discriminator": "El discriminador del miembro (antiguo sistema de nombre de usuario)"
+        },
+        "server": {
+            "id": "ID del servidor"
+        }
+    },
+    "howToFormat": "Cómo formatear sus mensajes",
+    "formatMemberYou": "En este placeholder, eres tú.",
+    "miscellaneous": "Varios",
+    "formatDescription": "Algunos mensajes pueden planificarse dinámicamente con una selección de opciones de formato que se muestran a continuación. Todas las opciones deben incluir las llaves: <0>{}</0>",
+    "formatOptionsNone": "Pasa el cursor sobre una opción de arriba para ver un ejemplo.",
+    "option": "Opción"
 }
