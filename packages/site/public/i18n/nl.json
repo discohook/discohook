@@ -384,7 +384,8 @@
             "created_relative": "Wanneer het account is aangemaakt, relatief",
             "id": "De gebruikers ID",
             "avatar_url": "De displayavatar-URL van de gebruiker",
-            "default_avatar_url": "De standaardavatar-URL van de gebruiker"
+            "default_avatar_url": "De standaardavatar-URL van de gebruiker",
+            "created": "Wanneer het account is aangemaakt"
         },
         "server": {
             "id": "De server ID",
