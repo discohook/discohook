@@ -164,5 +164,15 @@
     "createWebhook": "Criar Webhook",
     "invalidWebhookUrl": "URL de Webhook inválida. Elas começam com https://discord.com/api/webhooks/...",
     "backToServerSelection": "Voltar para a seleção de servidor",
-    "searchOrCreateBackup": "Procurar ou criar um backup"
+    "searchOrCreateBackup": "Procurar ou criar um backup",
+    "botClearToken": "Limpar Token",
+    "donate": "Doar",
+    "permission": {
+        "ReadMessageHistory": "Ler histórico de mensagens"
+    },
+    "resetEditor": "Limpar tudo",
+    "appClearSecret": "Limpar Segredo",
+    "appSecretHiddenNote": "Por motivos de segurança, o segredo nunca será exbido novamente após salvá-lo aqui. Se você redefiniu seu segredo, pressione \"Limpar Segredo\" e salve-o novamente.",
+    "botTokenHiddenNote": "Por motivos de segurança, seu token nunca será exibido novamente após salvá-lo aqui. Se você redefiniu seu token, pressione \"Limpar Token\" e salve-o novamente.",
+    "history": "Histórico"
 }
