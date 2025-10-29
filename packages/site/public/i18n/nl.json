@@ -448,5 +448,23 @@
         "4096": "Stil"
     },
     "option": "Optie",
-    "avatar": "Avatar"
+    "avatar": "Avatar",
+    "clear": "Maak leeg",
+    "copied": "Gekopieërd",
+    "orgRedirectTitle": "Je bent zojuist omgeleid van discohook.org",
+    "orgRedirectBody": "Discohook is nu verkrijgbaar bij <bold>discohook.app</bold>. Om jou backups te emigreren, <importLink>klik hier</importLink>. Om meer te lezen over deze update, <infoLink>klik hier</infoLink>.",
+    "messages": "Berichten",
+    "sendMessageN_one": "Stuur bericht",
+    "sendMessageN_other": "Stuur berichten",
+    "expiresIn": "verloopt {{0}}",
+    "submit": "Indienen",
+    "submitAll": "Alles indienen",
+    "submitToAll": "Indienen bij iedereen",
+    "editing": "Veranderen",
+    "submitting": "Indienen",
+    "createBackup": "Maak een Backup",
+    "clickToCopy": "Klik om te kopiëren",
+    "sendNoWebhooks": "Je hebt geen webhooks om naar te sturen.",
+    "sending": "Versturen",
+    "unlink": "Ontkoppel"
 }
