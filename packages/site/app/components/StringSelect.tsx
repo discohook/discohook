@@ -1,13 +1,16 @@
+import { Combobox } from "@base-ui-components/react/combobox";
 import { Select as MuiSelect } from "@base-ui-components/react/select";
 import type { TFunction } from "i18next";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Select, {
   type ClassNamesConfig,
   type GroupBase,
   type Props,
 } from "react-select";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
+import { textInputStyles } from "./TextInput";
 
 export type StringSelectProps = Props & { label?: string };
 
@@ -60,8 +63,8 @@ export const selectStyles = {
     "disabled:text-gray-600 disabled:cursor-not-allowed",
     "bg-white dark:bg-[#333338]",
   ),
-  value: "my-auto truncate ltr:mr-2 rtl:ml-2",
-  icon: "ltr:ml-auto rtl:mr-auto my-auto text-lg",
+  value: "my-auto truncate me-2",
+  icon: "ms-auto my-auto text-lg",
   positioner: twJoin(
     // avoid scrolling issues on mobile by using a sheet-type design. kind of
     // weird for selects with not very many items, but at least it's consistent.
@@ -76,8 +79,8 @@ export const selectStyles = {
     "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
     "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
   ),
-  itemText: "my-auto ltr:mr-2 rtl:ml-2",
-  itemIndicator: "ltr:ml-auto rtl:mr-auto my-auto text-lg",
+  itemText: "my-auto me-2",
+  itemIndicator: "ms-auto my-auto text-lg",
 };
 
 export function withDefaultItem<T = string | null>(
@@ -97,8 +100,8 @@ export function withDefaultItem<T = string | null>(
   return { null: label, ...items };
 }
 
-export const SelectValueTrigger = () => (
-  <MuiSelect.Trigger className={selectStyles.trigger}>
+export const SelectValueTrigger = ({ className }: { className?: string }) => (
+  <MuiSelect.Trigger className={twMerge(selectStyles.trigger, className)}>
     <MuiSelect.Value className={selectStyles.value} />
     <MuiSelect.Icon className={selectStyles.icon}>
       <CoolIcon icon="Chevron_Down" />
@@ -106,18 +109,22 @@ export const SelectValueTrigger = () => (
   </MuiSelect.Trigger>
 );
 
+interface SimpleSelectOption<T> {
+  /** The full label which will appear with the rest of the options. */
+  label: React.ReactNode;
+  value: T;
+  stringLabel?: string;
+}
+
 export function SimpleStringSelect<T>(
   props: Pick<StringSelectProps, "label" | "name" | "required"> & {
     t: TFunction;
     value: T;
     onChange: (value: T) => void;
-    options: {
-      label: string | React.ReactNode;
-      value: T;
-      stringLabel?: string;
-    }[];
+    options: SimpleSelectOption<T>[];
     disabled?: boolean;
     clearable?: boolean;
+    className?: string;
   },
 ) {
   return (
@@ -131,7 +138,10 @@ export function SimpleStringSelect<T>(
                 label: o.stringLabel ?? String(o.value),
               })),
             )
-          : props.options
+          : props.options.map((o) => ({
+              ...o,
+              label: o.stringLabel ?? o.label,
+            }))
       }
       name={props.name}
       value={props.value}
@@ -145,7 +155,7 @@ export function SimpleStringSelect<T>(
           {props.label}
         </MuiSelect.Trigger>
       ) : null}
-      <SelectValueTrigger />
+      <SelectValueTrigger className={props.className} />
       <MuiSelect.Portal>
         <MuiSelect.Positioner
           className={selectStyles.positioner}
@@ -174,5 +184,165 @@ export function SimpleStringSelect<T>(
         </MuiSelect.Positioner>
       </MuiSelect.Portal>
     </MuiSelect.Root>
+  );
+}
+
+export const comboboxStyles = {
+  label: selectStyles.label,
+  trigger: twJoin(selectStyles.trigger, "items-center grow"),
+  positioner: "z-[35]",
+  popup: twJoin(
+    "[--input-container-height:3rem] origin-[var(--transform-origin)] max-w-[var(--available-width)] max-h-[24rem] rounded-lg bg-[#f1f1f1] dark:bg-[#121314] shadow-lg shadow-gray-200 outline-1 outline-gray-200 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300",
+  ),
+  item: twJoin(
+    "grid min-w-[var(--anchor-width)] cursor-pointer grid-cols-[1fr_0.75rem] items-center gap-2 py-2 pe-8 ps-4 text-base leading-4 outline-none select-none data-[highlighted]:relative data-[highlighted]:z-0 data-[highlighted]:before:absolute data-[highlighted]:before:inset-x-2 data-[highlighted]:before:inset-y-0 data-[highlighted]:before:z-[-1] data-[highlighted]:before:rounded-lg data-[highlighted]:before:bg-blurple/40 dark:data-[highlighted]:before:bg-blurple group/item",
+  ),
+};
+
+type ComboBoxFilter<T> = (
+  itemValue: T,
+  query: string,
+  itemToStringLabel?: (itemValue: T) => string,
+) => boolean;
+
+export function SimpleCombobox<T>(
+  props: Pick<StringSelectProps, "label" | "name" | "required"> & {
+    t: TFunction;
+    value: T;
+    onChange: (value: T) => void;
+    options: SimpleSelectOption<T>[];
+    disabled?: boolean;
+    clearable?: boolean;
+    className?: string;
+    filter?: ComboBoxFilter<T>;
+  },
+) {
+  const item = props.options.find((o) => o.value === props.value) ?? null;
+
+  return (
+    <Combobox.Root
+      items={props.options}
+      value={item}
+      disabled={props.disabled}
+      filter={props.filter}
+      onValueChange={(selected) => {
+        if (selected) props.onChange(selected.value);
+      }}
+    >
+      <Combobox.Trigger
+        className={twJoin(
+          comboboxStyles.trigger,
+          "truncate text-start group/value-parent",
+        )}
+        data-base-ui-trigger=""
+      >
+        <Combobox.Value />
+        {!props.value ? (
+          <p className="text-muted dark:text-muted-dark">
+            {props.t("defaultPlaceholder")}
+          </p>
+        ) : null}
+        <Combobox.Icon className="flex ms-auto">
+          <CoolIcon icon="Chevron_Down" />
+        </Combobox.Icon>
+      </Combobox.Trigger>
+      <Combobox.Portal>
+        <Combobox.Positioner
+          className={comboboxStyles.positioner}
+          align="start"
+          sideOffset={4}
+        >
+          <Combobox.Popup
+            className={comboboxStyles.popup}
+            aria-label={props.t("defaultPlaceholder")}
+          >
+            <div className="w-auto h-[var(--input-container-height)] text-center p-2">
+              <Combobox.Input
+                placeholder={props.t("search")}
+                className={twMerge(textInputStyles.input, "w-full")}
+              />
+            </div>
+            <Combobox.Empty className="p-4 text-[0.925rem] leading-4 text-gray-600 empty:m-0 empty:p-0">
+              {props.t("comboboxEmpty")}
+            </Combobox.Empty>
+            <Combobox.List className="overflow-y-auto scroll-py-2 py-2 overscroll-contain max-h-[min(calc(24rem-var(--input-container-height)),calc(var(--available-height)-var(--input-container-height)))] empty:p-0">
+              {(option: SimpleSelectOption<T>) => (
+                <Combobox.Item
+                  key={option.value as string}
+                  value={option}
+                  className={comboboxStyles.item}
+                >
+                  <div className="col-start-1">{option.label}</div>
+                  <Combobox.ItemIndicator className="col-start-2">
+                    <CoolIcon icon="Check" className="text-lg" />
+                  </Combobox.ItemIndicator>
+                </Combobox.Item>
+              )}
+            </Combobox.List>
+          </Combobox.Popup>
+        </Combobox.Positioner>
+      </Combobox.Portal>
+    </Combobox.Root>
+  );
+}
+
+// Not currently used (2025/10/28). Intended for use cases that actually need
+// to load new data when the input changes, e.g. very large filterable lists
+export function AsyncCombobox<T>(
+  props: Pick<StringSelectProps, "label" | "name" | "required"> & {
+    t: TFunction;
+    value?: T;
+    onChange: (value: T) => void;
+    defaultOptions?: SimpleSelectOption<T>[];
+    disabled?: boolean;
+    clearable?: boolean;
+    searchable?: boolean;
+    loadOptions: (query: string) => Promise<SimpleSelectOption<T>[]>;
+    className?: string;
+    // filter?: ComboBoxFilter<T>;
+  },
+) {
+  const [loading, setLoading] = useState(false);
+  const [options, setOptions] = useState<SimpleSelectOption<T>[]>([]);
+
+  // useEffect(() => {
+  //   setLoading(true);
+  //   props.loadOptions("").then((opts) => {
+  //     setOptions(opts);
+  //     setLoading(false);
+  //   });
+  // }, [props.loadOptions]);
+
+  // if defaultOptions changes (e.g. new data from outside the menu)
+  useEffect(() => {
+    if (props.defaultOptions) {
+      setOptions(props.defaultOptions);
+      setLoading(false);
+    }
+  }, [props.defaultOptions]);
+
+  const filter: ComboBoxFilter<T> = (_value, query) => {
+    props.loadOptions(query).then(setOptions);
+    // let loadOptions provide the filter
+    // I don't think this works currently, perhaps because of how
+    // `options` updates work
+    return true;
+  };
+
+  return (
+    <SimpleCombobox<T | null>
+      t={props.t}
+      options={options}
+      value={props.value ?? null}
+      disabled={props.disabled || loading}
+      clearable={props.clearable}
+      className={props.className}
+      // @ts-expect-error wants T|null
+      filter={filter}
+      onChange={(value) => {
+        if (value === null) return;
+        props.onChange(value);
+      }}
+    />
   );
 }

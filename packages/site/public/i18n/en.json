@@ -656,6 +656,7 @@
   "historyRestore": "Restore to this point",
   "historyRemove": "Remove from history",
   "defaultPlaceholder": "Make a selection",
+  "comboboxEmpty": "No options",
   "todayAt": "{{ date, h:mm A }}",
   "badge": {
     "app": "APP",

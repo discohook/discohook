@@ -3,6 +3,12 @@ import { type ReactNode, useRef, useState } from "react";
 import { twJoin, twMerge } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 
+export const textInputStyles = {
+  label: "text-sm font-medium",
+  input:
+    "rounded-lg border min-h-[36px] max-h-9 py-0 px-[14px] bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
+};
+
 export const TextInput = (
   props: React.DetailedHTMLProps<
     React.InputHTMLAttributes<HTMLInputElement>,
@@ -29,13 +35,13 @@ export const TextInput = (
   return (
     <label className="block">
       {(label || newProps.required || props.maxLength) && (
-        <p className="text-sm font-medium">
+        <p className={textInputStyles.label}>
           {label}
           {newProps.required && (
             <span
               className={twJoin(
                 "align-baseline",
-                t ? "ltr:ml-2 rtl:mr-2 text-xs italic" : "text-rose-400",
+                t ? "ms-2 text-xs italic" : "text-rose-400",
               )}
             >
               {t ? t("required") : "*"}
@@ -85,10 +91,7 @@ export const TextInput = (
             return onInput(event);
           }
         }}
-        className={twMerge(
-          "rounded-lg border min-h-[36px] max-h-9 py-0 px-[14px] bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
-          props.className,
-        )}
+        className={twMerge(textInputStyles.input, props.className)}
       />
       {props.errors
         ?.filter((e) => e !== undefined)

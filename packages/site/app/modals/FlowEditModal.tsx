@@ -59,6 +59,7 @@ import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { RoleSelect } from "../components/RoleSelect";
 import {
   selectClassNames,
+  SimpleCombobox,
   SimpleStringSelect,
   StringSelect,
 } from "../components/StringSelect";
@@ -336,21 +337,42 @@ const BackupSelect = ({
 };
 
 const getWebhookSelectOption = (
-  webhook: Pick<APIWebhook, "id" | "name" | "avatar">,
-) => ({
-  label: (
-    <div className="flex">
-      <img
-        {...cdnImgAttributes(32, (size) => webhookAvatarUrl(webhook, { size }))}
-        className="rounded-lg h-6 w-6 ltr:mr-1.5 rtl:ml-1.5 my-auto"
-        alt=""
-      />
-      <p className="my-auto">{webhook.name}</p>
-    </div>
-  ),
-  value: webhook.id,
-  webhook,
-});
+  webhook: Pick<APIWebhook, "id" | "name" | "avatar"> & {
+    channel?: { name: string | null };
+    channelId?: string;
+  },
+) => {
+  return {
+    label: (
+      <div className="flex items-center gap-2 truncate">
+        <img
+          {...cdnImgAttributes(64, (size) =>
+            webhookAvatarUrl(webhook, { size }),
+          )}
+          className="rounded-full size-7 group-data-[base-ui-trigger]/value-parent:size-6"
+          alt=""
+        />
+        <div className="-mt-0.5 group-data-[base-ui-trigger]/value-parent:mt-0 truncate">
+          <p className="leading-none font-medium truncate">{webhook.name}</p>
+          {webhook.channel?.name ? (
+            <p
+              className={twJoin(
+                "text-sm leading-none text-muted dark:text-muted-dark dark:group-data-[highlighted]/item:text-gray-300",
+                "group-data-[base-ui-trigger]/value-parent:hidden",
+                "truncate",
+              )}
+            >
+              #{webhook.channel.name}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    ),
+    stringLabel: webhook.name ?? "",
+    value: webhook.id,
+    webhook,
+  };
+};
 
 // const defaultSetVars = ["guildId", "channelId", "messageId", "userId"];
 
@@ -843,54 +865,75 @@ const FlowActionEditor: React.FC<{
                           );
                         }
                         return (
-                          <AsyncSelect
-                            isClearable={false}
-                            isDisabled={
+                          <SimpleCombobox
+                            t={t}
+                            clearable={false}
+                            label={t("webhook")}
+                            disabled={
                               !guildId || webhooksFetcher.state !== "idle"
                             }
                             name="webhookId"
                             required
-                            value={
-                              selectedWebhook
-                                ? getWebhookSelectOption(selectedWebhook)
-                                : ""
-                            }
-                            defaultOptions={
+                            value={selectedWebhook?.id || null}
+                            options={
                               webhooksFetcher.data
                                 ? webhooksFetcher.data.map(
                                     getWebhookSelectOption,
                                   )
                                 : []
                             }
-                            loadOptions={(inputValue) =>
-                              (async () => {
-                                if (!guildId) return [];
+                            filter={(value, query) => {
+                              if (!value) return false;
+                              const { webhook } =
+                                value as unknown as ReturnType<
+                                  typeof getWebhookSelectOption
+                                >;
 
-                                return webhooksFetcher.data
-                                  ? webhooksFetcher.data
-                                      .filter((webhook) =>
-                                        webhook.name
-                                          .toLowerCase()
-                                          .includes(inputValue.toLowerCase()),
-                                      )
-                                      .map(getWebhookSelectOption)
-                                  : [];
-                              })()
-                            }
-                            className="w-full"
-                            classNames={selectClassNames}
-                            onChange={(raw) => {
-                              const opt = raw as ReturnType<
-                                typeof getWebhookSelectOption
-                              >;
-                              action.webhookId = opt.webhook.id;
-                              update();
+                              const q = query.toLowerCase();
+                              const nameContains = (webhook.name ?? "")
+                                .toLowerCase()
+                                .includes(q);
+
+                              // stricter from-start channel name match + fuzzy
+                              // webhook name match (a webhook name could start
+                              // with #)
+                              if (query.startsWith("#")) {
+                                return (
+                                  nameContains ||
+                                  (webhook.channel?.name ?? "")
+                                    .toLowerCase()
+                                    .startsWith(q.replace(/^#/, ""))
+                                );
+                                // I think a user search might be feasible so I
+                                // didn't want to take up the @ prefix for a
+                                // webhook name
+                              } else if (query.startsWith("^")) {
+                                return (webhook.name ?? "")
+                                  .toLowerCase()
+                                  .startsWith(q.replace(/^\^/, ""));
+                              }
+
+                              return (
+                                webhook.id === query ||
+                                webhook.channelId === query ||
+                                nameContains ||
+                                (webhook.channel?.name ?? "")
+                                  .toLowerCase()
+                                  .includes(q)
+                              );
+                            }}
+                            className="grow"
+                            onChange={(webhookId) => {
+                              if (webhookId) {
+                                action.webhookId = webhookId;
+                                update();
+                              }
                             }}
                           />
                         );
                       })()}
                       <Button
-                        className="ltr:ml-2 rtl:mr-2 my-auto h-9"
+                        className="ms-2 my-auto h-9"
                         onClick={() => {
                           if (!guildId) return;
                           webhooksFetcher.load(
