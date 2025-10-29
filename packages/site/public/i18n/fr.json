@@ -141,5 +141,6 @@
     "successResultTroubleshoot": "Si vous ne voyez pas le message, assurez-vous qu'il n'a pas été supprimé par un autre bot. Certains bots de modération considèrent par défaut tous les messages de webhook comme du spam.",
     "sendToAll": "Envoyer à Tous",
     "orgRedirectBody": "Discohook est désormais disponible sur <bold>discohook.app</bold>. Pour migrer vos sauvegardes, <importLink>cliquez ici</importLink>. Pour en savoir plus sur cette mise à jour, <infoLink>cliquez ici</infoLink>.",
-    "compactAvatars": "Afficher les avatars en mode Compact"
+    "compactAvatars": "Afficher les avatars en mode Compact",
+    "options": "options"
 }
