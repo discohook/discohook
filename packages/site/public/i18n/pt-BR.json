@@ -163,5 +163,6 @@
     "addWebhook": "Adicionar Webhook",
     "createWebhook": "Criar Webhook",
     "invalidWebhookUrl": "URL de Webhook inválida. Elas começam com https://discord.com/api/webhooks/...",
-    "backToServerSelection": "Voltar para a seleção de servidor"
+    "backToServerSelection": "Voltar para a seleção de servidor",
+    "searchOrCreateBackup": "Procurar ou criar um backup"
 }
