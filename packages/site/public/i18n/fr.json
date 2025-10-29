@@ -114,5 +114,6 @@
     "use": "Utiliser",
     "home": "Accueil",
     "version": "Version : {{version}}",
-    "preview": "Aperçu"
+    "preview": "Aperçu",
+    "copyLink": "copier le lien"
 }
