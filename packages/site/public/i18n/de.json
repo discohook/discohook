@@ -283,7 +283,8 @@
         "64": "Versteckt (ephemeral)",
         "4096": "Stumm",
         "8192": "Ist eine Sprachnachricht",
-        "32": "Hat thread"
+        "32": "Hat thread",
+        "32768": "Komponenten V2"
     },
     "body": "Körper",
     "positionLink": "Position (<0>wie funktioniert das?</0>)",
@@ -297,7 +298,17 @@
     "componentN": {
         "1": "Zeile {{n}}",
         "2": "Knopf {{n}}",
-        "2_text": "Knopf {{n}} - {{text}}"
+        "2_text": "Knopf {{n}} - {{text}}",
+        "9": "Abschnitt {{n}}",
+        "10_text": "Text {{n}} - {{text}}",
+        "12": "Gallerie {{n}}",
+        "12_text": "Gallerie {{n}} - {{text}}",
+        "13": "Datei {{n}}",
+        "13_text": "Datei {{n}} - {{text}}",
+        "17": "Behälter {{n}}",
+        "17_text": "Behälter {{n}} - {{text}}",
+        "10": "Text {{n}}",
+        "9_text": "Abschnitt {{n}} - {{text}}"
     },
     "reset": "Zurücksetzen",
     "editingComponentFromUser": "Bearbeiten eines $t(component.{{type}}, lowercase) von",
@@ -489,7 +500,8 @@
         "8": "Auswahl",
         "2": "Knopf",
         "3": "Auswahl",
-        "1": "Zeile"
+        "1": "Zeile",
+        "11": "Thumbnail"
     },
     "history": "Verlauf",
     "noHistory": "Diese Editor-Sitzung hat keinen Verlauf aufgezeichnet.",
@@ -553,7 +565,11 @@
         "5": "Benutzerauswahlmenü",
         "6": "Rollenauswahlmenü",
         "7": "Benutzer- und Rollenauswahlmenü",
-        "8": "Kanalauswahlmenü"
+        "8": "Kanalauswahlmenü",
+        "9": "Abschnitt",
+        "10": "Text",
+        "17": "Behälter",
+        "11": "Thumbnail"
     },
     "applicationId": "Anwendungs-ID",
     "addOption": "Option hinzufügen",
@@ -647,5 +663,28 @@
     "addDefaultValue": "Standardwert hinzufügen",
     "addComponent": "Komponente hinzufügen",
     "componentsNoUsableWebhook": "Keiner deiner Webhooks ist mit nicht-verlinkten Knöpfen kompatibel, daher wird keiner sichtbar sein. Füge einen Webhook hinzu, der Discohook gehört.",
-    "expiresIn": "Lauft Ab {{0}}"
+    "expiresIn": "Lauft Ab {{0}}",
+    "usernameForbiddenString": "Benutzername kann nicht \"{{ substring }}\" sein",
+    "usernameForbiddenSubstring": "Benutzername kann nicht \"{{ substring }}\" enthalten",
+    "allowedMentionsProps": {
+        "automatic": "Automatisch",
+        "manual": "Manuell",
+        "mentionEveryone": "@everyone und @here"
+    },
+    "new": "NEU",
+    "standardMessage": "Standard Nachricht",
+    "replaceFile": "Ersetze Datei",
+    "separatorSize": "Größe",
+    "addText": "Text Hinzufügen",
+    "close": "Schließen",
+    "linkEmbedTypeStandard": "Standard (kein markdown, flexibler)",
+    "attachment": "Anhang",
+    "filename": "Dateiname",
+    "fileDescription": "Beschreibung (alt text)",
+    "small": "Klein",
+    "large": "Groß",
+    "emojis": "Emojis",
+    "beta": "BETA",
+    "separatorLine": "Trennlinie",
+    "deleteRow": "Lösche Reihe"
 }
