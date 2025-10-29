@@ -176,5 +176,21 @@
     "botTokenHiddenNote": "Por motivos de segurança, seu token nunca será exibido novamente após salvá-lo aqui. Se você redefiniu seu token, pressione \"Limpar Token\" e salve-o novamente.",
     "history": "Histórico",
     "deleteTriggerConfirm": "Tem certeza de que deseja excluir $t(triggerEvent.{{0}}) e seu fluxo?",
-    "information": "Informação"
+    "information": "Informação",
+    "exportBackupsNote": "Esse menu é para exportar arquivos de backup para o seu computador. Isso não é realmente necessário, mas é um bom meio de copiar suas mensagens offline ou para usar isso com outros bots. Sua configuração de agendamento, se houver, somente será exportada por agendamentos repetidos.",
+    "failedBackupParse": "Falha ao validar o arquivo. Tenha certeza que ele é um backup válido e não modificado.",
+    "noLinks": "Você não criou nenhum link compatilhado.",
+    "export": "Exportar",
+    "backupsFile": "Arquivos de Backup",
+    "badJsonFile": "Isso não é um arquivo JSON codificado apropriadamente.",
+    "version": "Versão: {{version}}",
+    "deleteShareLink": "Deletar Link Compartilhado",
+    "backupNameDuplicate": "<0/> Você já tem um backup com esse nome",
+    "viewBackupName": "Visualizar {{name}}",
+    "importCount": "Importar {{count}}",
+    "selectFile": "Selecionar um arquivo",
+    "exportBackups": "Exportar Backups",
+    "importedFromOrgAt": "Importado de discohook.org em $t(timestamp.date_verbose)",
+    "shareLinks": "Compartilhar Links",
+    "deleteShareLinkConfirm": "Você tem certeza que deseja deletar esse link compartilhado? Isso não pode ser desfeito."
 }
