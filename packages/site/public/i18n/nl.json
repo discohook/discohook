@@ -373,5 +373,7 @@
     "cancel": "Annuleren",
     "required": "Vereist",
     "supportServerLanguageNote": "Dit is een <bold>alleen-Engelstalige</bold> ondersteuningsserver. Hoewel Discohook meerdere talen ondersteunt voor gebruiksgemak, kunnen onze support- en moderatieteams doorgaans alleen hulp bieden in het Engels. U kunt <anchor>tools zoals DeepL</anchor> gebruiken als u de taal niet goed beheerst. Vink het vakje aan de linkerkant aan om u bij de server aan te sluiten.",
-    "join": "Deelnemen"
+    "join": "Deelnemen",
+    "temporaryShareUrlExpires": "Deel URL (verloopt<0>$t(timestamp.relative.days_future)</0>)",
+    "close": "Sluiten"
 }
