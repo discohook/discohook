@@ -85,7 +85,7 @@
     "editingBackupNote": "Você está editando um backup, então seu trabalho será salvo periodicamente enquanto editar. Para compartilhar a sua mensagem com outros, use o botão \"$t(share)\".",
     "importDiscoscheduler": "Importar Posts do Discoscheduler ({{ count }})",
     "cannotChangeChannel": "Selecione o canal do webhook no Discord ou o <0>menu de webhooks do servidor</0>.",
-    "importOrgPrompt": "Se você quer importar seus backups salvos em Discohook.ord, <0>clique aqui</0>. Ou você pode usar esse menu para importar arquivos de backup que você exportou anteriormente.",
+    "importOrgPrompt": "Se você quer importar seus backups salvos em Discohook.org, <0>clique aqui</0>. Ou você pode usar esse menu para importar arquivos de backup que você exportou anteriormente.",
     "deleteBackup": "Deletar Backup",
     "new": "NOVO",
     "defaultMessageCreationChoice": "Tipo Padrão de Nova Mensagem",
