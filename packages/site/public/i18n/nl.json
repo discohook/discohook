@@ -375,5 +375,78 @@
     "supportServerLanguageNote": "Dit is een <bold>alleen-Engelstalige</bold> ondersteuningsserver. Hoewel Discohook meerdere talen ondersteunt voor gebruiksgemak, kunnen onze support- en moderatieteams doorgaans alleen hulp bieden in het Engels. U kunt <anchor>tools zoals DeepL</anchor> gebruiken als u de taal niet goed beheerst. Vink het vakje aan de linkerkant aan om u bij de server aan te sluiten.",
     "join": "Deelnemen",
     "temporaryShareUrlExpires": "Deel URL (verloopt<0>$t(timestamp.relative.days_future)</0>)",
-    "close": "Sluiten"
+    "close": "Sluiten",
+    "usernameForbiddenSubstring": "Gebruikersnaam kan niet \"{{ substring }}\" bevatten",
+    "usernameForbiddenString": "Gebruikersnaam kan niet \"{{ substring }}\" zijn",
+    "formatOptionDescription": {
+        "member": {
+            "bot": "Of de gebruiker een bot is",
+            "created_relative": "Wanneer het account is aangemaakt, relatief",
+            "id": "De gebruikers ID",
+            "avatar_url": "De displayavatar-URL van de gebruiker",
+            "default_avatar_url": "De standaardavatar-URL van de gebruiker"
+        },
+        "server": {
+            "id": "De server ID",
+            "name": "De server naam",
+            "icon_url": "De server icoon URL",
+            "members": "Het aantal gebruikers in de server",
+            "roles": "Het aantal rollen in de server",
+            "boosts": "Het aantal boosts die de server heeft",
+            "emoji_limit": "Het maximum aantal emoji's die de server kan hebben",
+            "created": "Wanneer de server is aangemaakt",
+            "created_relative": "Wanneer de server aangemaakt is, relatief",
+            "sticker_limit": "Het maximum aantal stickers dat de server kan hebben"
+        },
+        "now_relative": "De huidige tijd, relatief"
+    },
+    "guidePath": {
+        "deprecated": "Verouderd",
+        "changelogs": "Logboek",
+        "debug": "Foutopsporing"
+    },
+    "editComponent": "Onderdeel aanpassen",
+    "allowedMentionsProps": {
+        "automatic": "Automatisch",
+        "manual": "Handmatig"
+    },
+    "file": "Bestand",
+    "roleId": "Rol ID",
+    "memberId": "Gebruiker ID",
+    "resetEditorConfirm_one": "Dit zal alle content in {{count}} bericht verwijderen, weet je zeker dat je dat wil doen?",
+    "resetEditorConfirm_other": "Dit zal alle content in {{count}} berichten verwijderen, weet je zeker dat je dat wil doen?",
+    "formatOptionsNone": "Zweef over een optie om een voorbeeld te zien.",
+    "profileImmutable": "Profiel info kan niet worden aangepast voor bestaande berichten.",
+    "filesCount": "Bestanden ({{ count }}/10)",
+    "filesComponentsOnly": "Er is hier niks. Bestanden kunnen worden toegevoegd door de upload knop in te drukken of de paste knop te gebruiken in een media gallerij item, thumbnail, of bestandsonderdeel.",
+    "addFile": "Bestand toevoegen",
+    "replaceFile": "Bestand vervangen",
+    "markSpoiler": "Als spoiler markeren",
+    "miscellaneous": "Overige",
+    "pasteFile": "Bestand plakken",
+    "pasteCmd": "Druk op ⌘V",
+    "pasteCtrl": "Druk op Ctrl+V",
+    "filename": "Bestandsnaam",
+    "fileDescriptionPlaceholder": "Beschrijving toevoegen",
+    "banner": "Banner",
+    "removeAvatar": "Avatar weghalen",
+    "removeBanner": "Banner weghalen",
+    "checkSelectedMember": "Geselecteerde gebruiker checken",
+    "emojis": "Emoji's",
+    "bio": "Bio (over mij)",
+    "changeBio": "Bio veranderen",
+    "bioWriteOnly": "Kan de bio hier niet laten zien door Discord limitaties.",
+    "bioDefault": "Discohook's standaard bio zal worden gebruikt.",
+    "serverProfileDescription": "Hier kan je het gebruikersprofiel van Discohook Utils in jouw server. Je kan een eigen banner of avatar instellen door op ze te klikken in de preview.",
+    "emojiPickerCustom": {
+        "stepPaste": "Plak hierboven.",
+        "find": "Hoe dit te vinden is"
+    },
+    "fileDescription": "Beschrijving (alternatieve text)",
+    "messageFlag": {
+        "64": "Verstopt (alleen voor jouw zichtbaar)",
+        "4096": "Stil"
+    },
+    "option": "Optie",
+    "avatar": "Avatar"
 }
