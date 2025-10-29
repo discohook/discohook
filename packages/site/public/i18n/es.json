@@ -522,7 +522,9 @@
         "member": {
             "name": "El nombre de usuario del miembro",
             "mention": "La mención del miembro",
-            "discriminator": "El discriminador del miembro (antiguo sistema de nombre de usuario)"
+            "discriminator": "El discriminador del miembro (antiguo sistema de nombre de usuario)",
+            "id": "ID del Miembro",
+            "created": "Cuando se creó la cuenta"
         },
         "server": {
             "id": "ID del servidor"
