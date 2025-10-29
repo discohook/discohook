@@ -66,13 +66,15 @@ export const selectStyles = {
   value: "my-auto truncate me-2",
   icon: "ms-auto my-auto text-lg",
   positioner: twJoin(
-    // avoid scrolling issues on mobile by using a sheet-type design. kind of
+    // avoid scrolling issues on phones by using a sheet-type design. kind of
     // weird for selects with not very many items, but at least it's consistent.
     "max-sm:bottom-0 max-sm:!top-auto max-sm:w-full max-sm:w-full max-sm:max-h-72 max-sm:overflow-y-auto max-sm:!transform-none",
+    // fix scrolling on some larger multitouch devices (#70)
+    // "sm:max-h-[var(--available-height)]",
     // colors, fonts, spacing
     "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
     "p-0.5 border border-black/[0.08] z-[35]",
-    // for background dimming: app.css
+    // for sheet background dimming: app.css
     "base-ui-select-positioner",
   ),
   item: twJoin(
