@@ -395,5 +395,8 @@
     "jsonDownload": {
         "backup": "作为备份",
         "plain": "纯 JSON"
-    }
+    },
+    "searchOrCreateBackup": "搜索或者创建备份",
+    "unlink": "断链",
+    "close": "关闭"
 }
