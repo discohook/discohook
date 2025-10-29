@@ -127,6 +127,16 @@
                     },
                     "description": "Создать вебхук",
                     "name": "создать"
+                },
+                "delete": {
+                    "name": "удалить"
+                },
+                "info": {
+                    "options": {
+                        "show-url": {
+                            "name": "показать-ссылку"
+                        }
+                    }
                 }
             },
             "name": "вебхук",
@@ -145,6 +155,125 @@
             },
             "name": "делюкс",
             "description": "Синхронизируйте вашу подписку Deluxe"
+        },
+        "welcomer": {
+            "options": {
+                "set": {
+                    "options": {
+                        "channel": {
+                            "description": "Канал для отправки сообщение если webhook не указан",
+                            "name": "канал"
+                        },
+                        "event": {
+                            "name": "событие"
+                        },
+                        "share-link": {
+                            "name": "поделиться-ссылкой"
+                        },
+                        "delete-after": {
+                            "name": "удалить-после",
+                            "description": "Время в секундах перед тем как удалить сообщение (0 если никогда)"
+                        }
+                    },
+                    "name": "установить"
+                },
+                "view": {
+                    "name": "просмотр",
+                    "options": {
+                        "event": {
+                            "name": "событие"
+                        }
+                    }
+                },
+                "delete": {
+                    "name": "удалить"
+                }
+            }
+        },
+        "profile": {
+            "description": "Настройте профиль сервера для Discohook Utils",
+            "options": {
+                "set": {
+                    "options": {
+                        "banner": {
+                            "description": "Баннер бота",
+                            "name": "баннер"
+                        },
+                        "name": {
+                            "name": "имя",
+                            "description": "Никнейм бота"
+                        },
+                        "avatar": {
+                            "name": "аватар",
+                            "description": "Аватар бота"
+                        }
+                    },
+                    "name": "установить"
+                },
+                "clear": {
+                    "options": {
+                        "value": {
+                            "name": "значение"
+                        }
+                    },
+                    "name": "очистить"
+                }
+            },
+            "name": "профиль"
+        },
+        "reaction-role": {
+            "options": {
+                "create": {
+                    "description": "Создать новую роль за реакцию",
+                    "name": "добавить",
+                    "options": {
+                        "message": {
+                            "name": "сообщение"
+                        },
+                        "emoji": {
+                            "name": "эмодзи"
+                        },
+                        "role": {
+                            "name": "роль",
+                            "description": "Роль, которая будет добавлена/убрана, когда реакция нажата"
+                        },
+                        "channel": {
+                            "name": "канал"
+                        }
+                    }
+                },
+                "delete": {
+                    "name": "удалить",
+                    "description": "Удалить роль за реакцию у сообщению",
+                    "options": {
+                        "message": {
+                            "name": "сообщение"
+                        },
+                        "emoji": {
+                            "name": "эмодзи"
+                        },
+                        "channel": {
+                            "name": "канал"
+                        }
+                    }
+                },
+                "list": {
+                    "name": "список",
+                    "description": "Список всех ролей за реакцию на сообщении"
+                }
+            },
+            "name": "роль-реакции",
+            "description": "Добавить, удалить и управлять ролями за реакции"
+        },
+        "help": {
+            "options": {
+                "tag": {
+                    "name": "тег"
+                },
+                "mention": {
+                    "name": "упоминание"
+                }
+            }
         }
     }
 }
