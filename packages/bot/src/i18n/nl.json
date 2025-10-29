@@ -2,7 +2,8 @@
     "commands": {
         "_options": {
             "webhook": {
-                "description": "De webhook"
+                "description": "De webhook",
+                "name": "webhook"
             },
             "filter-channel": {
                 "name": "kanaal",
