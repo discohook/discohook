@@ -94,6 +94,14 @@
                         }
                     },
                     "name": "supprimé"
+                },
+                "migrate": {
+                    "description": "Migrer tous les boutons hérités",
+                    "options": {
+                        "message": {
+                            "description": "Migrer les composants de ce message. Un lien de message est également accepté ici"
+                        }
+                    }
                 }
             },
             "name": "Boutons"
