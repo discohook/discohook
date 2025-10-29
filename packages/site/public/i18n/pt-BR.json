@@ -35,7 +35,7 @@
     "sendMessageN_other": "",
     "messages": "Mensagens",
     "send": "Enviar",
-    "submit": "",
+    "submit": "Enviar",
     "shareExpired": "Link de Compartilhamento Invalido",
     "savedAutomatically": "Salvo automaticamente",
     "clickGenerate": "Pressione \"Gerar\" para gerar um link de compartilhamento",
@@ -150,5 +150,18 @@
     "copyCode": "Copiar Código",
     "removeResource": "Remover {{0}}",
     "use": "Usar",
-    "embedExample": "Exemplo"
+    "embedExample": "Exemplo",
+    "editorPanes": "Painéis do Editor",
+    "webhookInput": "Entrada de Webhook",
+    "translatePrompt": "Quer ajudar a traduzir o Discohook para o seu idioma? Confira <0>o portal de tradução</0> e entre no <1>servidor de suporte</1> para se coordenar conosco.",
+    "classic": "Clássico",
+    "chooseServer": "Escolher um servidor",
+    "createdAtBy": "Criado em {{ createdAt, MMM D, YYYY }} por {{username}}",
+    "someone": "alguém",
+    "modern": "Moderno",
+    "webhookUrl": "URL do Webhook",
+    "addWebhook": "Adicionar Webhook",
+    "createWebhook": "Criar Webhook",
+    "invalidWebhookUrl": "URL de Webhook inválida. Elas começam com https://discord.com/api/webhooks/...",
+    "backToServerSelection": "Voltar para a seleção de servidor"
 }
