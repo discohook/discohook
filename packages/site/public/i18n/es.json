@@ -463,5 +463,6 @@
     "separatorSize": "Tamaño",
     "threadWebhookApplyConfirm": "El hilo se aplicará a todos los mensajes. <toggle>Deshacer</toggle>",
     "threadWebhookApplyPrompt": "<open>ID del hilo</open> especificado en la URL. <toggle>Aplicar a los mensajes</toggle>",
-    "unlink": "Desvincular"
+    "unlink": "Desvincular",
+    "searchOrCreateBackup": "Buscar o crear una copia de seguridad"
 }
