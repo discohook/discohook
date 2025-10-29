@@ -269,5 +269,10 @@
         "0": "Příchod člena"
     },
     "formatDescription": "Nějkaé zprávy mohou být dynamicky přednastavované s výběrem formátových možností ukázány dole. Všechny možnosti musí mít kulaté závorky: <0>{}</0>",
-    "role": "Role"
+    "role": "Role",
+    "messageFlag": {
+        "64": "Skrytý (prchavý)",
+        "4096": "Tichý"
+    },
+    "close": "Zavřít"
 }
