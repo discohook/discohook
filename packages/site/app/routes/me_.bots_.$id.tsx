@@ -626,8 +626,9 @@ export default function CustomBot() {
                   <div className="flex">
                     <div className="grow">
                       <AsyncGuildSelect
+                        t={t}
                         name="guildId"
-                        isClearable
+                        clearable
                         guilds={(async () =>
                           (await memberships)
                             .filter(

@@ -1,7 +1,7 @@
 import { Combobox } from "@base-ui-components/react/combobox";
 import { Select as MuiSelect } from "@base-ui-components/react/select";
 import type { TFunction } from "i18next";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Select, {
   type ClassNamesConfig,
@@ -68,11 +68,12 @@ export const selectStyles = {
   positioner: twJoin(
     // avoid scrolling issues on mobile by using a sheet-type design. kind of
     // weird for selects with not very many items, but at least it's consistent.
-    // TODO: would like to also dim the rest of the app.
     "max-sm:bottom-0 max-sm:!top-auto max-sm:w-full max-sm:w-full max-sm:max-h-72 max-sm:overflow-y-auto max-sm:!transform-none",
     // colors, fonts, spacing
     "rounded-lg bg-[#f1f1f1] dark:bg-[#121314] dark:text-[#ddd] font-medium",
     "p-0.5 border border-black/[0.08] z-[35]",
+    // for background dimming: app.css
+    "base-ui-select-positioner",
   ),
   item: twJoin(
     "px-[14px] py-0 h-9 flex rounded-lg cursor-pointer",
@@ -200,7 +201,7 @@ export const comboboxStyles = {
 };
 
 type ComboBoxFilter<T> = (
-  itemValue: T,
+  itemValue: SimpleSelectOption<T>,
   query: string,
   itemToStringLabel?: (itemValue: T) => string,
 ) => boolean;
@@ -217,27 +218,37 @@ export function SimpleCombobox<T>(
     filter?: ComboBoxFilter<T>;
   },
 ) {
-  const item = props.options.find((o) => o.value === props.value) ?? null;
+  // Work with uncontrolled usage too
+  const ref = useRef<HTMLInputElement>(null);
+  const item =
+    props.options.find(
+      (o) => o.value === (props.value ?? ref.current?.value),
+    ) ?? null;
 
   return (
     <Combobox.Root
       items={props.options}
+      inputRef={ref}
       value={item}
       disabled={props.disabled}
       filter={props.filter}
       onValueChange={(selected) => {
         if (selected) props.onChange(selected.value);
+        if (ref.current && (!selected || typeof selected?.value === "string")) {
+          ref.current.value = selected ? (selected.value as string) : "";
+        }
       }}
     >
       <Combobox.Trigger
         className={twJoin(
           comboboxStyles.trigger,
           "truncate text-start group/value-parent",
+          props.className,
         )}
         data-base-ui-trigger=""
       >
         <Combobox.Value />
-        {!props.value ? (
+        {!item && !props.value ? (
           <p className="text-muted dark:text-muted-dark">
             {props.t("defaultPlaceholder")}
           </p>

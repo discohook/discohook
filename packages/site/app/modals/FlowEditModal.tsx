@@ -12,7 +12,6 @@ import { MessageFlagsBitField } from "discord-bitflag";
 import type { TFunction } from "i18next";
 import type React from "react";
 import { Trans, useTranslation } from "react-i18next";
-import AsyncSelect from "react-select/async";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { ButtonSelect } from "~/components/ButtonSelect";
@@ -58,7 +57,6 @@ import { InfoBox } from "../components/InfoBox";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { RoleSelect } from "../components/RoleSelect";
 import {
-  selectClassNames,
   SimpleCombobox,
   SimpleStringSelect,
   StringSelect,
@@ -280,7 +278,7 @@ const getBackupSelectOption = (backup: PartialBackupsWithMessages[number]) => ({
     <div className="flex">
       {backup.previewImageUrl && (
         <div
-          className="rounded-lg h-6 w-6 ltr:mr-1.5 rtl:ml-1.5 block bg-contain bg-center my-auto"
+          className="rounded-lg h-6 w-6 me-1.5 block bg-contain bg-center my-auto"
           style={{
             backgroundImage: `url(${backup.previewImageUrl})`,
           }}
@@ -294,10 +292,12 @@ const getBackupSelectOption = (backup: PartialBackupsWithMessages[number]) => ({
 });
 
 const BackupSelect = ({
+  t,
   fetcher,
   value,
   onChange,
 }: {
+  t: TFunction;
   fetcher: SafeFetcher<typeof ApiGetUserBackups>;
   value?: PartialBackupsWithMessages[number];
   onChange: (backup: PartialBackupsWithMessages[number]) => void;
@@ -305,32 +305,31 @@ const BackupSelect = ({
   if (!fetcher.data && fetcher.state === "idle") {
     fetcher.load(apiUrl(BRoutes.currentUserBackups()));
   }
+
   return (
-    <AsyncSelect
-      isClearable={false}
+    <SimpleCombobox<string | null>
+      t={t}
+      label={t("backup")}
+      disabled={fetcher.state !== "idle"}
       name="backupId"
-      isDisabled={fetcher.state !== "idle"}
       required
-      value={value ? getBackupSelectOption(value) : ""}
-      defaultOptions={
-        fetcher.data ? fetcher.data.map(getBackupSelectOption) : []
-      }
-      loadOptions={(inputValue) =>
-        (async () => {
-          return fetcher.data
-            ? fetcher.data
-                .filter((backup) =>
-                  backup.name.toLowerCase().includes(inputValue.toLowerCase()),
-                )
-                .map(getBackupSelectOption)
-            : [];
-        })()
-      }
-      className="w-full"
-      classNames={selectClassNames}
-      onChange={(raw) => {
-        const opt = raw as ReturnType<typeof getBackupSelectOption>;
-        onChange(opt.backup);
+      value={value?.id ?? null}
+      options={fetcher.data ? fetcher.data.map(getBackupSelectOption) : []}
+      filter={(option, query) => {
+        if (!option) return false;
+        const { backup } = option as ReturnType<typeof getBackupSelectOption>;
+
+        const q = query.toLowerCase();
+        const nameContains = (backup.name ?? "").toLowerCase().includes(q);
+
+        return backup.id === query || nameContains;
+      }}
+      className="grow"
+      onChange={(value) => {
+        if (value) {
+          const backup = fetcher.data?.find((b) => b.id === value);
+          if (backup) onChange(backup);
+        }
       }}
     />
   );
@@ -743,6 +742,7 @@ const FlowActionEditor: React.FC<{
                     </p>
                     <div className="flex">
                       <BackupSelect
+                        t={t}
                         fetcher={backupsFetcher}
                         value={selected}
                         onChange={(backup) => {
@@ -882,10 +882,10 @@ const FlowActionEditor: React.FC<{
                                   )
                                 : []
                             }
-                            filter={(value, query) => {
-                              if (!value) return false;
+                            filter={(option, query) => {
+                              if (!option) return false;
                               const { webhook } =
-                                value as unknown as ReturnType<
+                                option as unknown as ReturnType<
                                   typeof getWebhookSelectOption
                                 >;
 
@@ -967,6 +967,7 @@ const FlowActionEditor: React.FC<{
                     </p>
                     <div className="flex">
                       <BackupSelect
+                        t={t}
                         fetcher={backupsFetcher}
                         value={backupsFetcher.data?.find(
                           (b) => b.id === action.backupId,

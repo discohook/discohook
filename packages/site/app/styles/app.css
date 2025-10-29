@@ -95,7 +95,7 @@ label[for^="rc-editable-input-"] {
   @apply pt-3 mt-3 !border-t-gray-400 dark:!border-t-gray-600;
 }
 
-/* Modals */
+/* Base UI */
 /*
   Select a portal "presentation" element (not exposed for styling in the
   dialog API) which has a "dialog" future sibling (the dialog content).
@@ -109,3 +109,12 @@ div[data-base-ui-portal] > div[role="presentation"]:has(~ div[role="dialog"]) {
   */
   @apply z-[30];
 }
+
+/*
+  Darken the background when a select sheet is active. Not sure if I can make
+  this transition since the element is not mounted until it's needed, so it's
+  disabled for now.
+*/
+/* div[data-base-ui-portal] > div[role="presentation"]:has(~ div.base-ui-select-positioner) {
+  @apply max-sm:bg-black/20 transition max-sm:z-[34];
+} */

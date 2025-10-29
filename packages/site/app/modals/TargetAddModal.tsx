@@ -131,14 +131,15 @@ export const TargetAddModal = (
           {error}
           <p className="text-sm">{t("chooseServer")}</p>
           <AsyncGuildSelect
-            guilds={(async () =>
-              (memberships ?? []).map(({ guild, favorite }) => ({
-                ...guild,
-                botJoinedAt: guild.botJoinedAt
-                  ? new Date(guild.botJoinedAt)
-                  : null,
-                favorite,
-              })))()}
+            t={t}
+            guilds={(memberships ?? []).map(({ guild, favorite }) => ({
+              ...guild,
+              botJoinedAt: guild.botJoinedAt
+                ? new Date(guild.botJoinedAt)
+                : null,
+              favorite,
+            }))}
+            className="w-full"
             onChange={(guild) => {
               if (!guild) return;
 
@@ -153,7 +154,7 @@ export const TargetAddModal = (
               setGuildId(String(guild.id));
             }}
           />
-          <p className="text-sm">
+          <p className="text-sm mt-1">
             <Trans
               t={t}
               i18nKey="selectWebhookGuildMissing"
