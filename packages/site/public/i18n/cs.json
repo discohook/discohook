@@ -226,5 +226,48 @@
         "UseSoundboard": "Používat zvukový panel",
         "UseExternalSounds": "Používat externí zvuky",
         "SendVoiceMessages": "Posílat hlasové zprávy"
-    }
+    },
+    "timestamp": {
+        "relative": {
+            "days_past_one": "den zpět",
+            "days_past_few": "",
+            "days_past_other": "{{count}} dnů zpět",
+            "months_past_one": "měsíc zpět",
+            "months_past_few": "",
+            "months_past_other": "{{count}} měsíců zpět",
+            "hours_past_one": "hodinu zpět",
+            "hours_past_few": "",
+            "hours_past_other": "{{count}} hodin zpět",
+            "days_future_one": "za den",
+            "days_future_few": "",
+            "days_future_other": "za {{count}} dnů",
+            "years_past_one": "rok zpět",
+            "years_past_few": "{{count}} roky zpět",
+            "years_past_other": "{{count}} roků zpět",
+            "months_future_one": "za měsíc",
+            "months_future_few": "",
+            "months_future_other": "za {{count}} měsíců",
+            "years_future_one": "za rok",
+            "years_future_few": "za {{count}} roky",
+            "years_future_other": "za {{count}} roků",
+            "minutes_past_one": "minutu zpět",
+            "minutes_past_few": "minut zpět",
+            "minutes_past_other": "{{count}} minut zpět",
+            "hours_future_one": "za hodinu",
+            "hours_future_few": "",
+            "hours_future_other": "za {{count}} hodin"
+        },
+        "footer": {
+            "yesterday": "Včera v {{ date, h:mm A }}",
+            "today": "Dnes v {{ date, h:mm A }}",
+            "tomorrow": "Zítra v {{ date, h:mm A }}",
+            "other": "{{ date, M/D/YYYY h:mm A }}"
+        }
+    },
+    "howToFormat": "Jak naformátovat tvoje zprávy",
+    "triggerEvent": {
+        "0": "Příchod člena"
+    },
+    "formatDescription": "Nějkaé zprávy mohou být dynamicky přednastavované s výběrem formátových možností ukázány dole. Všechny možnosti musí mít kulaté závorky: <0>{}</0>",
+    "role": "Role"
 }
