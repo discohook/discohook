@@ -283,7 +283,7 @@
     "embedsHidden": "Tienes activada la opción «Ocultar embeds», por lo que todos los embeds estarán ocultos.",
     "mention": {
         "unknownUser": "usuario-desconocido",
-        "deletedRole": "rol-eliminado",
+        "deletedRole": "rol desconocido",
         "unknown": "desconocido",
         "browse": "Explorar canales",
         "customize": "Canales y roles",
