@@ -116,7 +116,8 @@
                 "name": "webhook"
             },
             "filter-channel": {
-                "description": "Filtre les résultats de l'autocomplétion en fonction de ce salon"
+                "description": "Filtre les résultats de l'autocomplétion en fonction de ce salon",
+                "name": "filtre-chaine"
             }
         },
         "help": {
