@@ -65,7 +65,8 @@
                 "add": {
                     "options": {
                         "channel": {
-                            "description": "Le salon dans lequel le message est posté, pour l'autocomplétion"
+                            "description": "Le salon dans lequel le message est posté, pour l'autocomplétion",
+                            "name": "salon"
                         },
                         "message": {
                             "description": "Ajouter un composant à ce message (un lien de message marche aussi)",
@@ -78,19 +79,24 @@
                     "description": "Modifier un composant",
                     "options": {
                         "message": {
-                            "description": "Modifie un des composants de ce message (un lien de message est aussi accepté)"
+                            "description": "Modifie un des composants de ce message (un lien de message est aussi accepté)",
+                            "name": "message"
                         },
                         "channel": {
                             "description": "Le salon dans lequel ce message a été posté",
                             "name": "salon"
                         }
-                    }
+                    },
+                    "name": "modifier"
                 },
                 "delete": {
                     "description": "Supprime un composant",
                     "options": {
                         "message": {
                             "description": "Supprime un des composants de ce message (un lien de message est également accepté)"
+                        },
+                        "channel": {
+                            "name": "salon"
                         }
                     },
                     "name": "supprimé"
@@ -99,9 +105,14 @@
                     "description": "Migrer tous les boutons hérités",
                     "options": {
                         "message": {
-                            "description": "Migrer les composants de ce message. Un lien de message est également accepté ici"
+                            "description": "Migrer les composants de ce message. Un lien de message est également accepté ici",
+                            "name": "message"
+                        },
+                        "channel": {
+                            "name": "salon"
                         }
-                    }
+                    },
+                    "name": "migration"
                 }
             },
             "name": "Boutons"
@@ -116,7 +127,8 @@
                     "name": "synchroniser",
                     "description": "Vérifie que le site Discohook a pris en compte votre abonnement Deluxe"
                 }
-            }
+            },
+            "description": "Synchronizer ton abonnement Deluxe"
         },
         "_options": {
             "webhook": {
