@@ -73,7 +73,7 @@
     "webhookCreateSubtitle": "Você será retornado ao editor em breve.",
     "safariAvatarTooLarge": "Atenção: no Safari e navegadores iOS, você talvez pode enfrentar alguns problemas enviando avateres pesados. Se você não pode salvar, tente enviar através do aplicativo no Discord ou comprimindo a imagem.",
     "forceDualPane": "Sempre usar editor de dois painéis",
-    "language": "Idioma",
+    "language": "Linguagem",
     "selectWebhookGuildNoWebhooks": "O servidor que você selecionou não tem nenhum webhook que Discohook Utils pode acessar. Tente criar um novo webhook com o botão abaixo.",
     "selectWebhookGuildManual": "Você pode <0>inserir um URL de webhook manualmente</0> (avançado)",
     "deleteLinkBackupConfirm": "Você tem certeza que deseja deletar essa embed de link? Isso não pode ser desfeito.",
@@ -174,5 +174,7 @@
     "appClearSecret": "Limpar Segredo",
     "appSecretHiddenNote": "Por motivos de segurança, o segredo nunca será exbido novamente após salvá-lo aqui. Se você redefiniu seu segredo, pressione \"Limpar Segredo\" e salve-o novamente.",
     "botTokenHiddenNote": "Por motivos de segurança, seu token nunca será exibido novamente após salvá-lo aqui. Se você redefiniu seu token, pressione \"Limpar Token\" e salve-o novamente.",
-    "history": "Histórico"
+    "history": "Histórico",
+    "deleteTriggerConfirm": "Tem certeza de que deseja excluir $t(triggerEvent.{{0}}) e seu fluxo?",
+    "information": "Informação"
 }
