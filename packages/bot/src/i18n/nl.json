@@ -38,7 +38,8 @@
                             "description": "The kanaal waar het bericht in staat, voor autosuggestie resultaat",
                             "name": "kanaal"
                         }
-                    }
+                    },
+                    "name": "bewerk"
                 },
                 "delete": {
                     "options": {
