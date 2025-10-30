@@ -156,6 +156,7 @@ export const Message: React.FC<{
   const isVerified =
     message.author?.flags &&
     new UserFlagsBitField(message.author.flags).has(UserFlags.VerifiedBot);
+  const flags = new MessageFlagsBitField(BigInt(message.flags ?? 0));
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;
@@ -367,6 +368,7 @@ export const Message: React.FC<{
                   <FileAttachment
                     key={`attachment-${attachment.id}`}
                     attachment={attachment}
+                    isVoiceMessage={flags.has(MessageFlags.IsVoiceMessage)}
                   />
                 ))}
                 {mediaAttachments.length > 0 && (
@@ -377,27 +379,22 @@ export const Message: React.FC<{
                 )}
               </div>
             )}
-            {embeds.length > 0 &&
-              (message.flags
-                ? !new MessageFlagsBitField(BigInt(message.flags)).has(
-                    MessageFlags.SuppressEmbeds,
-                  )
-                : true) && (
-                <div className="space-y-1 mt-1">
-                  {embeds.map((embedData, i) => (
-                    <Embed
-                      key={`message-preview-embed-${i}`}
-                      {...embedData}
-                      files={files}
-                      setImageModalData={setImageModalData}
-                      cache={cache}
-                      isLinkEmbed={isLinkEmbedEditor}
-                      linkEmbedStrategy={linkEmbedStrategies?.[i]}
-                      cdn={cdnOrigin}
-                    />
-                  ))}
-                </div>
-              )}
+            {embeds.length > 0 && !flags.has(MessageFlags.SuppressEmbeds) && (
+              <div className="space-y-1 mt-1">
+                {embeds.map((embedData, i) => (
+                  <Embed
+                    key={`message-preview-embed-${i}`}
+                    {...embedData}
+                    files={files}
+                    setImageModalData={setImageModalData}
+                    cache={cache}
+                    isLinkEmbed={isLinkEmbedEditor}
+                    linkEmbedStrategy={linkEmbedStrategies?.[i]}
+                    cdn={cdnOrigin}
+                  />
+                ))}
+              </div>
+            )}
             {message.components && message.components.length > 0 && (
               <div
                 // id={`message-accessories-${mid}`}

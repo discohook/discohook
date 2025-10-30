@@ -63,19 +63,26 @@ export const MessageFlagsEditModal = (
                       />
                     ) : null
                   }
-                  {/* <BigCheckbox
-                    label={t(`messageFlag.${MessageFlags.IsComponentsV2}`)}
-                    description={t("messageFlagsNoteIsComponentsV2")}
-                    checked={flags.has(MessageFlags.IsComponentsV2)}
-                    onChange={(e) => {
-                      flags.set(
-                        MessageFlags.IsComponentsV2,
-                        e.currentTarget.checked,
-                      );
-                      message.data.flags = Number(flags.value);
-                      setData({ ...data });
-                    }}
-                  /> */}
+                  {
+                    // If components V2, only show this checkbox if it is
+                    // already enabled, so that it can be disabled
+                    !flags.has(MessageFlags.IsComponentsV2) ||
+                    flags.has(MessageFlags.IsVoiceMessage) ? (
+                      <BigCheckbox
+                        label={t(`messageFlag.${MessageFlags.IsVoiceMessage}`)}
+                        description={t("messageFlagsNoteIsVoiceMessage")}
+                        checked={flags.has(MessageFlags.IsVoiceMessage)}
+                        onChange={(e) => {
+                          flags.set(
+                            MessageFlags.IsVoiceMessage,
+                            e.currentTarget.checked,
+                          );
+                          message.data.flags = Number(flags.value);
+                          setData({ ...data });
+                        }}
+                      />
+                    ) : null
+                  }
                 </>
               );
             })()

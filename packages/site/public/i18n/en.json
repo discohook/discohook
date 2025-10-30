@@ -598,13 +598,13 @@
   "messageFlagsNote": "Flags are optional message features that can be enabled or disabled.",
   "messageFlagsNoteSuppressNotifications": "Mentions in the message will not deliver notifications. Use the Allowed Mentions menu for more control.",
   "messageFlagsNoteSuppressEmbeds": "All embeds, including link embeds, will not be shown.",
-  "messageFlagsNoteIsComponentsV2": "Use a new component-based message layout",
+  "messageFlagsNoteIsVoiceMessage": "Audio attachments will be shown as voice recordings.",
   "messageFlag": {
     "4": "Hide embeds",
     "32": "Has thread",
     "64": "Hidden (ephemeral)",
     "4096": "Silent",
-    "8192": "Is voice message",
+    "8192": "Voice message",
     "32768": "Components V2"
   },
   "allowedMentions": "Allowed Mentions",

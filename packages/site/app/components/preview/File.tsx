@@ -9,7 +9,7 @@ export const PreviewFile: React.FC<{
 }> = ({ component, files }) => {
   const file = resolveAttachmentUri(component.file.url, files, true);
   return (
-    <div className="">
+    <div>
       <FileAttachment
         attachment={{
           id: "0",

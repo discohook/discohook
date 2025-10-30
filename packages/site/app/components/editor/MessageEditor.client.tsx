@@ -638,11 +638,18 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                 >
                   <CoolIcon
                     icon={
-                      embed ? "Window" : is_thumbnail ? "Chat" : "File_Blank"
+                      embed
+                        ? "Window"
+                        : is_thumbnail
+                          ? "Chat"
+                          : flags.has(MessageFlags.IsVoiceMessage) &&
+                              file.type.startsWith("audio/")
+                            ? "Phone"
+                            : "File_Blank"
                     }
-                    className="text-xl my-auto ltr:mr-2 rtl:ml-2"
+                    className="text-xl my-auto me-2"
                   />
-                  <div className="my-auto truncate ltr:mr-2 rtl:ml-2">
+                  <div className="my-auto truncate me-2">
                     <p className="font-medium truncate">
                       {transformFileName(file.name)}
                     </p>
@@ -650,14 +657,14 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   </div>
                   <button
                     type="button"
-                    className="ltr:ml-auto rtl:mr-auto my-auto hover:text-blurple text-xl"
+                    className="ms-auto my-auto hover:text-blurple text-xl"
                     onClick={() => setEditingFile(draftFile)}
                   >
                     <CoolIcon icon="Edit_Pencil_01" />
                   </button>
                   <button
                     type="button"
-                    className="ltr:ml-1 rtl:mr-1 my-auto hover:text-red-400 text-xl"
+                    className="ms-1 my-auto hover:text-red-400 text-xl"
                     onClick={() => {
                       const newFiles = files.filter((f) => f.id !== id);
                       setFiles(newFiles);
@@ -1192,26 +1199,24 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                         <Select.ScrollUpArrow />
                         <Select.Popup>
                           <Select.Arrow />
-                          {imageFiles.map((file) => {
-                            return (
-                              <Select.Item
-                                key={`thumbnail-select-${file.id}`}
-                                value={file.id}
-                                className={selectStyles.item}
+                          {imageFiles.map((file) => (
+                            <Select.Item
+                              key={`thumbnail-select-${file.id}`}
+                              value={file.id}
+                              className={selectStyles.item}
+                            >
+                              <Select.ItemText
+                                className={selectStyles.itemText}
                               >
-                                <Select.ItemText
-                                  className={selectStyles.itemText}
-                                >
-                                  {transformFileName(file.file.name)}
-                                </Select.ItemText>
-                                <Select.ItemIndicator
-                                  className={selectStyles.itemIndicator}
-                                >
-                                  <CoolIcon icon="Check" />
-                                </Select.ItemIndicator>
-                              </Select.Item>
-                            );
-                          })}
+                                {transformFileName(file.file.name)}
+                              </Select.ItemText>
+                              <Select.ItemIndicator
+                                className={selectStyles.itemIndicator}
+                              >
+                                <CoolIcon icon="Check" />
+                              </Select.ItemIndicator>
+                            </Select.Item>
+                          ))}
                         </Select.Popup>
                         <Select.ScrollDownArrow />
                       </Select.Positioner>
@@ -1220,7 +1225,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                 </div>
                 <button
                   type="button"
-                  className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
+                  className="ms-2 mt-auto mb-1 text-xl"
                   onClick={() => {
                     for (const file of files) {
                       file.is_thumbnail = false;
