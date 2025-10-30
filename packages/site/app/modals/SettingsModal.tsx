@@ -87,7 +87,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
         <p className="text-sm font-bold uppercase dark:text-gray-400">
           {t("theme")}
         </p>
-        <div className="flex mt-2 overflow-x-auto">
+        <div className="flex gap-3 mt-2 pt-1 overflow-x-auto">
           <ThemeRadio
             bg="bg-white"
             checked={settings.theme === "light"}
@@ -292,7 +292,7 @@ const ThemeRadio: React.FC<
     onChange?: React.ChangeEventHandler<HTMLInputElement>;
   }>
 > = ({ bg, checked, onChange, children }) => (
-  <label>
+  <label className="relative">
     <input
       name="theme"
       type="radio"
@@ -303,11 +303,16 @@ const ThemeRadio: React.FC<
     />
     <div
       className={twJoin(
-        "rounded-full flex h-[60px] w-[60px] cursor-pointer peer-checked:cursor-default border border-black/50 dark:border-gray-50/50 peer-checked:border-2 peer-checked:border-blurple ltr:mr-6 rtl:ml-6",
+        "rounded-xl flex size-[60px] cursor-pointer peer-checked:cursor-default",
+        "border border-black/50 dark:border-gray-50/50",
+        "peer-checked:border-4 peer-checked:border-blurple box-border",
         bg,
       )}
     >
       {children}
+    </div>
+    <div className="hidden peer-checked:flex absolute -top-1 -end-1 bg-blurple rounded-full size-5">
+      <CoolIcon icon="Check" className="m-auto text-sm text-white" />
     </div>
   </label>
 );
