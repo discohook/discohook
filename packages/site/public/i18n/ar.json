@@ -835,5 +835,6 @@
     "allUsers": "جميع المستخدمين",
     "allActions": "جميع الافعال",
     "allowedMentionsEnabled": "التنويهات المسموحة مفعلة",
-    "messageFlagsNoteIsVoiceMessage": "سيتم إظهار ملفات المرفقات الصوتية كتسجيلات صوتية."
+    "messageFlagsNoteIsVoiceMessage": "سيتم إظهار ملفات المرفقات الصوتية كتسجيلات صوتية.",
+    "comboboxEmpty": "لا يوجد اختيارات"
 }
