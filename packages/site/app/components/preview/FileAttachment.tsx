@@ -3,6 +3,10 @@ import { fileSize } from "~/util/text";
 import { CoolIcon } from "../icons/CoolIcon";
 import { VoiceMemo } from "./VoiceMemo";
 
+export const isAudioType = (type: string | undefined): boolean =>
+  type !== undefined &&
+  (type.startsWith("audio/") || ["application/ogg"].includes(type));
+
 const GenericFileAttachment = ({
   attachment,
 }: {
@@ -41,7 +45,7 @@ export const FileAttachment: React.FC<{
   attachment: APIAttachment;
   isVoiceMessage?: boolean;
 }> = ({ attachment, isVoiceMessage }) => {
-  if (attachment.content_type?.startsWith("audio/") && isVoiceMessage) {
+  if (isAudioType(attachment.content_type) && isVoiceMessage) {
     return <VoiceMemo attachment={attachment} />;
   }
   return <GenericFileAttachment attachment={attachment} />;

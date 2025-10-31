@@ -41,6 +41,7 @@ import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
+import { isAudioType } from "../preview/FileAttachment";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import {
@@ -643,7 +644,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                         : is_thumbnail
                           ? "Chat"
                           : flags.has(MessageFlags.IsVoiceMessage) &&
-                              file.type.startsWith("audio/")
+                              isAudioType(file.type)
                             ? "Phone"
                             : "File_Blank"
                     }

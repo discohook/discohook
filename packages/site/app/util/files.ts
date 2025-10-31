@@ -1,3 +1,4 @@
+import { isAudioType } from "~/components/preview/FileAttachment";
 import type { DraftFile } from "~/routes/_index";
 import { randomString } from "./text";
 
@@ -19,6 +20,22 @@ export const ATTACHMENT_URI_EXTENSIONS = [
 
 export const transformFileName = (filename: string) =>
   filename.replace(/ /g, "_");
+
+const getAudioDuration = async (src: string): Promise<number | null> => {
+  const promise = new Promise<number>((resolve) => {
+    const audio = new Audio();
+    audio.onloadedmetadata = () => {
+      resolve(audio.duration);
+    };
+    audio.src = src;
+  });
+  // Don't take more than 30s trying to load the file
+  const result = await Promise.race([
+    promise,
+    new Promise<null>((r) => setTimeout(() => r(null), 30000)),
+  ]);
+  return result;
+};
 
 /**
  * Returns an onChange handler that will add one or multiple files to the
@@ -53,6 +70,26 @@ export const fileInputChangeHandler = (
     }
     setFiles(newFiles);
     event.currentTarget.value = "";
+    (async () => {
+      // Read all audio files at the same time and push only one additional
+      // state update. We shouldn't really need to process all files every
+      // time, but the difference should be negligible since browsers cache
+      // the `Audio`.
+      const withDurations = await Promise.all(
+        newFiles.map((file) =>
+          (async () => {
+            if (!isAudioType(file.file.type) || !file.url) return file;
+            const duration = await getAudioDuration(file.url);
+            if (duration !== null) {
+              file.duration_secs = duration;
+            }
+            return file;
+          })(),
+        ),
+      );
+      console.log(withDurations.map((w) => [w.file.name, w.duration_secs]));
+      setFiles([...withDurations]);
+    })();
 
     return added;
   }) satisfies React.ChangeEventHandler<HTMLInputElement>;

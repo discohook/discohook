@@ -131,6 +131,7 @@ export interface DraftFile {
   embed?: boolean;
   is_thumbnail?: boolean;
   spoiler?: boolean;
+  duration_secs?: number;
 }
 
 export interface HistoryItem {

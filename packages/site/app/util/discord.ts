@@ -201,6 +201,10 @@ const cascadeFileNameChange = (
   return newEmbeds;
 };
 
+// const createFakeWaveform = (duration: number): string => {
+
+// };
+
 export const executeWebhook = async (
   webhookId: string,
   webhookToken: string,
@@ -249,6 +253,14 @@ export const executeWebhook = async (
       // blocked for example - users can simply not mark files as thumbnails
       // instead of requiring an immediate patch.
       is_thumbnail: file.is_thumbnail && payload.thread_name ? true : undefined,
+      // It's not officially supported for webhooks to send voice messages.
+      // Hopefully this does not cause issues down the line with regular audio
+      // files - I expect discord will just ignore it if N/A.
+      duration_secs: file.duration_secs,
+      // waveform:
+      //   file.duration_secs !== undefined
+      //     ? createFakeWaveform(file.duration_secs)
+      //     : undefined,
     }));
   }
 
@@ -329,6 +341,8 @@ export const updateWebhookMessage = async (
       // See comment under `executeWebhook`
       is_thumbnail:
         file.is_thumbnail && threadId !== undefined ? true : undefined,
+      // See comment under `executeWebhook`
+      duration_secs: file.duration_secs,
     }));
   }
 

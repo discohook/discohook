@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 import type { APIAttachment } from "~/types/QueryData-raw";
 import { PlayIcon, VolumeMaxIcon } from "../icons/media";
 
@@ -13,28 +13,42 @@ const secondsToTimecode = (seconds: number): string => {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   const s = Math.floor((sec % 3600) % 60);
-  return (
+  let result = (
     `0${h}`.slice(-2) +
     ":" +
     `0${m}`.slice(-2) +
     ":" +
     `0${s}`.slice(-2)
   ).replace(/^[0:]+/, "");
+  // sub-one-minute
+  if (result.split(":").length === 1) {
+    result = `0:${result.padStart(2, "0")}`;
+  }
+
+  return result;
 };
 
 export const VoiceMemo: React.FC<{ attachment: APIAttachment }> = ({
   attachment,
 }) => {
-  // TODO: do something with attachment.waveform for discord-loaded attachments
-  const ref = useRef<HTMLAudioElement>(null);
-  const duration = attachment.duration_secs ?? ref.current?.duration;
+  // I want to do something with attachment.waveform for discord-loaded
+  // attachments but I'm not sure how they work
+
+  const [duration, setDuration] = useState(attachment.duration_secs);
+  useEffect(() => {
+    if (attachment.duration_secs !== undefined) {
+      setDuration(attachment.duration_secs);
+    } else {
+      const audio = new Audio();
+      audio.onloadedmetadata = () => {
+        setDuration(audio.duration);
+      };
+      audio.src = attachment.url;
+    }
+  }, [attachment]);
 
   return (
     <div className="rounded-full w-fit px-2 h-12 flex items-center gap-3 bg-background-secondary dark:bg-background-secondary-dark border border-border-normal dark:border-border-normal-dark">
-      {/* Don't load the resource if the attachment already includes duration_secs */}
-      {attachment.url && attachment.duration_secs === undefined ? (
-        <audio ref={ref} src={attachment.url} autoPlay={false} muted hidden />
-      ) : null}
       <div className="rounded-full flex size-8 bg-blurple hover:bg-blurple-400 cursor-pointer">
         <PlayIcon className="text-white m-auto size-[18px]" />
       </div>
@@ -48,7 +62,7 @@ export const VoiceMemo: React.FC<{ attachment: APIAttachment }> = ({
         <Dot />
       </div>
       <div className="px-1">
-        <p className="text-sm font-code text-muted dark:text-muted-dark">
+        <p className="text-sm font-normal text-muted dark:text-muted-dark">
           {duration !== undefined ? secondsToTimecode(duration) : "--:--"}
         </p>
       </div>

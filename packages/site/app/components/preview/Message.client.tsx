@@ -197,7 +197,7 @@ export const Message: React.FC<{
         ...(files
           ?.filter((f) => f.embed !== true && f.is_thumbnail !== true)
           ?.map(
-            ({ id, file, url }) =>
+            ({ id, file, url, duration_secs }) =>
               ({
                 id,
                 filename: file.name,
@@ -205,6 +205,7 @@ export const Message: React.FC<{
                 content_type: file.type,
                 url: url ?? "#",
                 proxy_url: "#",
+                duration_secs,
               }) satisfies APIAttachment,
           ) ?? []),
       ];
