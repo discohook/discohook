@@ -542,7 +542,8 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
               freeLength
               required={isAllForum && !message.thread_id}
               disabled={
-                !!message.reference || isNoneForum || !!message.thread_id
+                (!!message.reference || isNoneForum || !!message.thread_id) &&
+                !message.data.thread_name?.trim()
               }
               onInput={(e) => {
                 message.data.thread_name = e.currentTarget.value || undefined;
@@ -1205,7 +1206,8 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
               freeLength
               required={isAllForum && !message.thread_id}
               disabled={
-                !!message.reference || isNoneForum || !!message.thread_id
+                (!!message.reference || isNoneForum || !!message.thread_id) &&
+                !message.data.thread_name
               }
               onInput={(e) => {
                 message.data.thread_name = e.currentTarget.value || undefined;
