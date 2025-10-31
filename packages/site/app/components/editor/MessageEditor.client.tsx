@@ -213,7 +213,7 @@ const MessageNameModal = (
           onChange={({ currentTarget }) => {
             setDraft(currentTarget.value);
           }}
-          maxLength={100}
+          maxLength={50}
           className="w-full"
         />
         <ModalFooter className="flex gap-2 flex-wrap mt-0">
