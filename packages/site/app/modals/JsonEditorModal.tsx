@@ -2,7 +2,7 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
-import type { ZodSchema } from "zod";
+import type { ZodSchema } from "zod/v3";
 import { Button } from "~/components/Button";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { Checkbox } from "~/components/Checkbox";
