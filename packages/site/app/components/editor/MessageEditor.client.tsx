@@ -1,3 +1,4 @@
+import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Select } from "@base-ui-components/react/select";
 import { Link } from "@remix-run/react";
 import {
@@ -10,7 +11,7 @@ import { MessageFlagsBitField } from "discord-bitflag";
 import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { JsonEditorProps } from "~/modals/JsonEditorModal";
@@ -39,6 +40,7 @@ import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
+import { collapsibleStyles } from "../collapsible";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { isAudioType } from "../preview/FileAttachment";
@@ -214,7 +216,7 @@ const MessageNameModal = (
           maxLength={100}
           className="w-full"
         />
-        <ModalFooter className="flex gap-2 flex-wrap">
+        <ModalFooter className="flex gap-2 flex-wrap mt-0">
           <button
             className={twJoin("ms-auto", linkClassName)}
             type="button"
@@ -349,6 +351,112 @@ type MessageEditorChildProps = MessageEditorProps & {
   setEditingName: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+const MessageEditorCollapsibleTrigger = ({
+  t,
+  index: i,
+  message,
+  data,
+  setData,
+  setEditingName,
+}: {
+  t: TFunction<"translation", undefined>;
+  message: MessageEditorChildProps["data"]["messages"][number];
+} & Pick<
+  MessageEditorChildProps,
+  "data" | "setData" | "setEditingName" | "index"
+>) => {
+  const flags = new MessageFlagsBitField(message.data.flags ?? 0);
+  return (
+    <div className="font-semibold text-base cursor-default select-none mx-4 flex items-center">
+      <Collapsible.Trigger
+        className={twMerge(
+          collapsibleStyles.trigger,
+          "gap-inherit cursor-default",
+        )}
+      >
+        <CoolIcon
+          icon="Chevron_Right"
+          className="group-data-[panel-open]/trigger:rotate-90 me-2 my-auto transition-transform"
+        />
+        <span className="truncate">
+          {flags.has(MessageFlags.SuppressNotifications) && (
+            <CoolIcon
+              icon="Bell_Off"
+              title={t("messageFlag.4096")}
+              className="me-1"
+            />
+          )}
+          {flags.has(MessageFlags.SuppressEmbeds) && (
+            <CoolIcon
+              icon="Window_Close"
+              title={t("messageFlag.4")}
+              className="me-1"
+            />
+          )}
+          {message.data.allowed_mentions ? (
+            <CoolIcon
+              icon="Bell_Remove"
+              title={t("allowedMentionsEnabled")}
+              className="me-1"
+            />
+          ) : null}
+          {getMessageDisplayName(t, i, message)}
+        </span>
+      </Collapsible.Trigger>
+      <div className="ms-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
+        <button
+          type="button"
+          className={i === 0 ? "hidden" : ""}
+          onClick={() => {
+            data.messages.splice(i, 1);
+            data.messages.splice(i - 1, 0, message);
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Chevron_Up" />
+        </button>
+        <button
+          type="button"
+          className={i === data.messages.length - 1 ? "hidden" : ""}
+          onClick={() => {
+            data.messages.splice(i, 1);
+            data.messages.splice(i + 1, 0, message);
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Chevron_Down" />
+        </button>
+        <button type="button" onClick={() => setEditingName(true)}>
+          <CoolIcon icon="Edit_Pencil_01" />
+        </button>
+        <button
+          type="button"
+          className={data.messages.length >= 10 ? "hidden" : ""}
+          onClick={() => {
+            data.messages.splice(i + 1, 0, structuredClone(message));
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Copy" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (data.messages.length <= 1) {
+              data.messages.splice(i, 1, { data: {} });
+            } else {
+              data.messages.splice(i, 1);
+            }
+            setData({ ...data });
+          }}
+        >
+          <CoolIcon icon="Trash_Full" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   index: i,
   data,
@@ -413,93 +521,21 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   const thumbnailFileId = imageFiles.find((f) => f.is_thumbnail)?.id ?? null;
 
   return (
-    <details
+    <Collapsible.Root
       className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
-      open
+      defaultOpen
     >
-      <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none mx-4">
-        <CoolIcon
-          icon="Chevron_Right"
-          className="group-open/message:rotate-90 mr-2 my-auto transition-transform"
-        />
-        <span className="truncate">
-          {flags.has(MessageFlags.SuppressNotifications) && (
-            <CoolIcon
-              icon="Bell_Off"
-              title={t("messageFlag.4096")}
-              className="me-1"
-            />
-          )}
-          {flags.has(MessageFlags.SuppressEmbeds) && (
-            <CoolIcon
-              icon="Window_Close"
-              title={t("messageFlag.4")}
-              className="me-1"
-            />
-          )}
-          {message.data.allowed_mentions ? (
-            <CoolIcon
-              icon="Bell_Remove"
-              title={t("allowedMentionsEnabled")}
-              className="me-1"
-            />
-          ) : null}
-          {getMessageDisplayName(t, i, message)}
-        </span>
-        <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
-          <button
-            type="button"
-            className={i === 0 ? "hidden" : ""}
-            onClick={() => {
-              data.messages.splice(i, 1);
-              data.messages.splice(i - 1, 0, message);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={i === data.messages.length - 1 ? "hidden" : ""}
-            onClick={() => {
-              data.messages.splice(i, 1);
-              data.messages.splice(i + 1, 0, message);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button type="button" onClick={() => setEditingName(true)}>
-            <CoolIcon icon="Edit_Pencil_01" />
-          </button>
-          <button
-            type="button"
-            className={data.messages.length >= 10 ? "hidden" : ""}
-            onClick={() => {
-              const cloned = structuredClone(message);
-              cloned._id = randomString(10);
-              data.messages.splice(i + 1, 0, cloned);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (data.messages.length <= 1) {
-                data.messages.splice(i, 1, { data: {} });
-              } else {
-                data.messages.splice(i, 1);
-              }
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
-      </summary>
-      <div className="py-2 px-4 mt-1 space-y-2">
+      <MessageEditorCollapsibleTrigger
+        t={t}
+        index={i}
+        message={message}
+        data={data}
+        setData={setData}
+        setEditingName={setEditingName}
+      />
+      <Collapsible.Panel
+        className={twMerge(collapsibleStyles.editorPanel, "px-4 space-y-2")}
+      >
         <TextArea
           label={t("content")}
           className="w-full h-40"
@@ -1009,8 +1045,8 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             </ButtonSelect>
           </div>
         </div>
-      </div>
-    </details>
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 };
 
@@ -1051,8 +1087,6 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           .reduce((a, b) => a + b, 0)
       : 0;
 
-  const flags = new MessageFlagsBitField(message.data.flags ?? 0);
-
   // const authorTypes = webhooks
   //   ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
   //   : [];
@@ -1088,95 +1122,21 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   const thumbnailFileId = imageFiles.find((f) => f.is_thumbnail)?.id ?? null;
 
   return (
-    <details
+    <Collapsible.Root
       className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
-      open
+      defaultOpen
     >
-      <summary className="group-open/message:mb-2 transition-[margin] marker:content-none marker-none flex font-semibold text-base cursor-default select-none mx-4">
-        <CoolIcon
-          icon="Chevron_Right"
-          className="group-open/message:rotate-90 mr-2 my-auto transition-transform"
-        />
-        <span className="truncate">
-          {flags.has(MessageFlags.SuppressNotifications) && (
-            <CoolIcon
-              icon="Bell_Off"
-              title={t("messageFlag.4096")}
-              className="me-1"
-            />
-          )}
-          {/*
-            Might seem silly to include this for the CV2 editor but I imagine
-            eventually links will unfurl and so this will be relevant.
-          */}
-          {flags.has(MessageFlags.SuppressEmbeds) && (
-            <CoolIcon
-              icon="Window_Close"
-              title={t("messageFlag.4")}
-              className="me-1"
-            />
-          )}
-          {message.data.allowed_mentions ? (
-            <CoolIcon
-              icon="Bell_Remove"
-              title={t("allowedMentionsEnabled")}
-              className="me-1"
-            />
-          ) : null}
-          {getMessageDisplayName(t, i, message)}
-        </span>
-        <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
-          <button
-            type="button"
-            className={i === 0 ? "hidden" : ""}
-            onClick={() => {
-              data.messages.splice(i, 1);
-              data.messages.splice(i - 1, 0, message);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={i === data.messages.length - 1 ? "hidden" : ""}
-            onClick={() => {
-              data.messages.splice(i, 1);
-              data.messages.splice(i + 1, 0, message);
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button type="button" onClick={() => setEditingName(true)}>
-            <CoolIcon icon="Edit_Pencil_01" />
-          </button>
-          <button
-            type="button"
-            className={data.messages.length >= 10 ? "hidden" : ""}
-            onClick={() => {
-              data.messages.splice(i + 1, 0, structuredClone(message));
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (data.messages.length <= 1) {
-                data.messages.splice(i, 1, { data: {} });
-              } else {
-                data.messages.splice(i, 1);
-              }
-              setData({ ...data });
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
-      </summary>
-      <div className="px-4 space-y-2">
+      <MessageEditorCollapsibleTrigger
+        t={t}
+        index={i}
+        message={message}
+        data={data}
+        setData={setData}
+        setEditingName={setEditingName}
+      />
+      <Collapsible.Panel
+        className={twMerge(collapsibleStyles.editorPanel, "px-4 space-y-2")}
+      >
         <div className="-space-y-2 -mx-2">
           <EmbedEditorSection name={t("thread")}>
             {(!!message.reference || isNoneForum) && (
@@ -1619,7 +1579,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
             </ButtonSelect>
           </div>
         </div>
-      </div>
-    </details>
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 };
