@@ -4,10 +4,10 @@ import {
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
 import { type ReactNode, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Button, TextButton } from "~/components/Button";
-import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { loadMessageComponents } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
@@ -83,19 +83,7 @@ export const MessageSetModal = (
     <Modal {...props} setOpen={setOpen}>
       <PlainModalHeader>{t("setMessageLink")}</PlainModalHeader>
       <InfoBox severity="blue" icon="Info" collapsible open={false}>
-        <span>What is this?</span>
-        <p>
-          You can use this menu if you're editing a message that has already
-          been sent. To get started, right click/long press the message you want
-          to edit, select "Copy Message Link", then paste the link in the box
-          below.
-          <br />
-          <br />
-          If you want to overwrite what is currently written in Discohook: Add
-          the webhook that sent the message, then press "Overwrite Editor".
-          Otherwise, just select "Set Message Link". The submit button at the
-          top of the page will now allow you to edit the message.
-        </p>
+        <Trans t={t} i18nKey="setMessageLinkNote" components={{ br: <br /> }} />
       </InfoBox>
       <div>
         <TextInput

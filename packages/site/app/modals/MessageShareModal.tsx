@@ -71,6 +71,7 @@ export const MessageShareModal = (
                 }
                 components={[
                   <span
+                    key="0"
                     className="text-blurple dark:text-blurple-300"
                     title={
                       shareFetcher.data
@@ -98,6 +99,7 @@ export const MessageShareModal = (
             value={shareFetcher.data ? shareFetcher.data.url : ""}
             placeholder={t("clickGenerate")}
             readOnly
+            tabIndex={-1}
           />
         </div>
         <Button
@@ -107,7 +109,7 @@ export const MessageShareModal = (
               cycleCopyText(shareFetcher.data.url, t, e.currentTarget);
             }
           }}
-          className="mt-auto ltr:ml-2 rtl:mr-2"
+          className="mt-auto ms-2 h-9"
         >
           {t("copy")}
         </Button>
@@ -129,13 +131,14 @@ export const MessageShareModal = (
           disabled={shareFetcher.state !== "idle"}
           onClick={() => generateShareData()}
           className="ltr:ml-auto"
+          tabIndex={0}
         >
           {t(shareFetcher.data ? "regenerate" : "generate")}
         </Button>
         <Button
           disabled={shareFetcher.state !== "idle" || !shareFetcher.data}
           onClick={shareFetcher.reset}
-          className="ltr:ml-2 rtl:mr-2"
+          className="ms-2"
           discordstyle={ButtonStyle.Secondary}
         >
           {t("clear")}

@@ -723,8 +723,7 @@ export default function Index() {
             {error}
             {urlTooLong && (
               <InfoBox icon="Triangle_Warning" severity="yellow">
-                Your message data is too large to be shown in the page URL. If
-                you need to share this page, use the "Share Message" button.
+                {t("messageTooLarge")}
               </InfoBox>
             )}
             {backupId !== undefined && (
