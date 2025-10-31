@@ -828,7 +828,7 @@ export default function Index() {
                   {...cdnImgAttributes(64, (size) =>
                     webhookAvatarUrl(webhook, { size }),
                   )}
-                  className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
+                  className="rounded-full my-auto size-8 me-3"
                   alt=""
                 />
                 <div className="truncate my-auto">
@@ -837,7 +837,7 @@ export default function Index() {
                       <span className="align-baseline">{webhook.name}</span>
                       {webhook.application_id === discordApplicationId && (
                         <span
-                          className="ml-1 inline-block"
+                          className="ms-1 inline-block"
                           title={t("createdByDiscohook")}
                         >
                           <CoolIcon
@@ -849,7 +849,7 @@ export default function Index() {
                     </p>
                   </div>
                 </div>
-                <div className="ltr:ml-auto rtl:mr-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
+                <div className="ms-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
                   <button
                     type="button"
                     title={t("editResource", { replace: [webhook.name] })}

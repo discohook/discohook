@@ -65,7 +65,10 @@ export const MessageSendResultModal = (
             </Collapsible.Root>
           ) : (
             <div className="mt-2">
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-gray-200 dark:bg-gray-800 p-2 font-code text-sm">
+              <pre
+                className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-gray-200 dark:bg-gray-800 p-2 font-code text-sm"
+                dir="ltr"
+              >
                 {JSON.stringify(result.data, null, 2)}
               </pre>
             </div>

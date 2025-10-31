@@ -50,7 +50,7 @@ export const ListWebhook = ({
     <div className="rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex">
       <img
         {...cdnImgAttributes(64, (size) => webhookAvatarUrl(webhook, { size }))}
-        className="rounded-full my-auto w-8 h-8 mr-3"
+        className="rounded-full my-auto size-8 me-3"
         alt={webhook.name}
       />
       <div className="truncate my-auto">
@@ -61,7 +61,7 @@ export const ListWebhook = ({
           {!!discordApplicationId &&
             webhook.applicationId === discordApplicationId && (
               <span
-                className="ml-1 inline-block"
+                className="ms-1 inline-block"
                 title={t("createdByDiscohook")}
               >
                 <CoolIcon
