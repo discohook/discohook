@@ -27,14 +27,12 @@ import type {
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
-  cdnImgAttributes,
   executeWebhook,
   hasCustomId,
   isActionRow,
   isComponentsV2,
   onlyActionRows,
   updateWebhookMessage,
-  webhookAvatarUrl,
 } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageText } from "~/util/message";
@@ -47,6 +45,7 @@ import {
   type ModalProps,
   PlainModalHeader,
 } from "./Modal";
+import { ListWebhook } from "./TargetAddModal";
 
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
@@ -463,6 +462,7 @@ export const MessageSendModal = (
     updateMessages: SubmissionManager["updateMessages"];
     setShowingResult: SubmissionManager["setShowingResult"];
     submitMessages: SubmissionManager["submitMessages"];
+    resultModal?: JSX.Element;
   },
 ) => {
   const { t } = useTranslation();
@@ -474,6 +474,7 @@ export const MessageSendModal = (
     updateMessages,
     setShowingResult,
     submitMessages,
+    resultModal,
     data,
     cache,
   } = props;
@@ -534,6 +535,7 @@ export const MessageSendModal = (
       <PlainModalHeader>
         {t("sendMessageN", { count: data.messages.length })}
       </PlainModalHeader>
+      {resultModal ?? null}
       <p className="text-sm font-medium">{t("messages")}</p>
       <div className="space-y-1">
         {data.messages.length > 0 ? (
@@ -546,10 +548,10 @@ export const MessageSendModal = (
                   <button
                     type="button"
                     className={twJoin(
-                      "flex ltr:mr-1 rtl:ml-1 px-3 rounded transition",
+                      "flex me-1 px-3 rounded-lg transition border border-transparent",
                       messages[id].result.status === "error"
-                        ? "bg-rose-400/20 hover:bg-rose-400/30 text-rose-500 dark:text-rose-400 hover:dark:text-rose-100"
-                        : "bg-blurple/20 hover:bg-blurple/30 text-blurple dark:text-blurple-400 hover:dark:text-blurple-100",
+                        ? "bg-rose-400/20 hover:bg-rose-400/30 text-rose-500 dark:text-rose-400 hover:dark:text-rose-100 dark:border-[#362D30]"
+                        : "bg-blurple/20 hover:bg-blurple/30 text-blurple dark:text-blurple-400 hover:dark:text-blurple-100 dark:border-[#222]",
                     )}
                     onClick={() => setShowingResult(messages[id].result)}
                   >
@@ -563,8 +565,13 @@ export const MessageSendModal = (
                     />
                   </button>
                 )}
-                <label className="flex grow rounded bg-gray-200 dark:bg-gray-800 py-2 px-4 w-full cursor-pointer overflow-hidden">
-                  <div className="my-auto grow text-left ltr:mr-2 rtl:ml-2 truncate">
+                <label
+                  className={twJoin(
+                    "rounded-lg py-2 px-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex",
+                    "grow w-full cursor-pointer overflow-hidden",
+                  )}
+                >
+                  <div className="my-auto grow text-left me-2 truncate">
                     <p className="font-semibold text-base truncate">
                       {t(previewText ? "messageNText" : "messageN", {
                         replace: { n: i + 1, text: previewText },
@@ -599,7 +606,7 @@ export const MessageSendModal = (
                     }
                     hidden
                   />
-                  <div className="ltr:ml-auto rtl:mr-auto my-auto space-x-2 rtl:space-x-reverse text-2xl text-blurple dark:text-blurple-400">
+                  <div className="ms-auto my-auto space-x-2 rtl:space-x-reverse text-2xl text-blurple dark:text-blurple-400">
                     {message.reference && (
                       <CoolIcon
                         title={t("willBeEdited")}
@@ -627,31 +634,7 @@ export const MessageSendModal = (
       <div className="space-y-1">
         {Object.keys(targets).length > 0 ? (
           Object.entries(targets).map(([targetId, target]) => (
-            <label
-              key={`target-${targetId}`}
-              className="flex rounded bg-gray-200 dark:bg-gray-800 py-2 px-4 w-full cursor-pointer"
-            >
-              <img
-                {...cdnImgAttributes(64, (size) =>
-                  webhookAvatarUrl(target, { size }),
-                )}
-                alt={target.name ?? "Webhook"}
-                className="rounded-full h-12 w-12 mr-2 my-auto shrink-0"
-              />
-              <div className="my-auto grow text-left truncate mr-2">
-                <p className="font-semibold text-base truncate">
-                  {target.name ?? "Webhook"}
-                </p>
-                {cache && (
-                  <p className="text-sm leading-none text-muted dark:text-muted-dark">
-                    #
-                    {cache.resolve({
-                      scope: "channel",
-                      key: target.channel_id,
-                    })?.name ?? t("mention.unknown")}
-                  </p>
-                )}
-              </div>
+            <label key={`target-${targetId}`} className="cursor-pointer">
               <input
                 type="checkbox"
                 name="webhook"
@@ -664,13 +647,30 @@ export const MessageSendModal = (
                 }
                 hidden
               />
-              <CoolIcon
-                icon={
-                  selectedWebhooks[target.id]
-                    ? "Checkbox_Check"
-                    : "Checkbox_Unchecked"
+              <ListWebhook
+                t={t}
+                webhook={{
+                  id: target.id,
+                  applicationId: target.application_id,
+                  avatar: target.avatar,
+                  name: target.name ?? "",
+                  user: target.user ? { name: target.user.username } : null,
+                  channel: cache?.channel.get(target.channel_id),
+                }}
+                // Not sure I even want a checkmark here since it might make
+                // users think that the webhook is selected. Only one checkmark
+                // per box.
+                // discordApplicationId={props.discordApplicationId}
+                endComponent={
+                  <CoolIcon
+                    icon={
+                      selectedWebhooks[target.id]
+                        ? "Checkbox_Check"
+                        : "Checkbox_Unchecked"
+                    }
+                    className="text-2xl text-blurple dark:text-blurple-400"
+                  />
                 }
-                className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
               />
             </label>
           ))

@@ -5,6 +5,7 @@ import {
   PermissionFlagsBits,
 } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
+import type { TFunction } from "i18next";
 import { type ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -25,6 +26,67 @@ import { randomString } from "~/util/text";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+
+export const ListWebhook = ({
+  t,
+  webhook,
+  discordApplicationId,
+  endComponent,
+}: {
+  t: TFunction;
+  webhook: {
+    id: string;
+    name: string;
+    avatar: string | null;
+    applicationId: string | null;
+    user: { name: string } | null;
+    channel?: { name: string | null };
+  };
+  discordApplicationId?: string;
+  endComponent?: JSX.Element;
+}) => {
+  const createdAt = getDate(webhook.id as `${bigint}`);
+  return (
+    <div className="rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex">
+      <img
+        {...cdnImgAttributes(64, (size) => webhookAvatarUrl(webhook, { size }))}
+        className="rounded-full my-auto w-8 h-8 mr-3"
+        alt={webhook.name}
+      />
+      <div className="truncate my-auto">
+        <div className="flex max-w-full">
+          <p className="font-semibold truncate dark:text-primary-230 text-base">
+            {webhook.name}
+          </p>
+          {!!discordApplicationId &&
+            webhook.applicationId === discordApplicationId && (
+              <span
+                className="ml-1 inline-block"
+                title={t("createdByDiscohook")}
+              >
+                <CoolIcon
+                  icon="Circle_Check"
+                  className="text-blurple-500 dark:text-blurple-400"
+                />
+              </span>
+            )}
+        </div>
+        <p className="text-gray-600 dark:text-gray-500 text-xs">
+          #{webhook.channel?.name ?? "unknown"} •{" "}
+          {t(webhook.user ? "createdAtBy" : "createdAt", {
+            replace: {
+              createdAt: new Date(createdAt),
+              username: webhook.user?.name,
+            },
+          })}
+        </p>
+      </div>
+      {endComponent ? (
+        <div className="ms-auto ps-2 my-auto">{endComponent}</div>
+      ) : null}
+    </div>
+  );
+};
 
 export const TargetAddModal = (
   props: ModalProps & {
@@ -215,69 +277,32 @@ export const TargetAddModal = (
               </p>
             ) : (
               <div className="space-y-2">
-                {guildWebhooksFetcher.data.map((gWebhook) => {
-                  const createdAt = getDate(gWebhook.id as `${bigint}`);
-                  return (
-                    <div
-                      key={`webhook-${gWebhook.id}`}
-                      className="rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
-                    >
-                      <img
-                        {...cdnImgAttributes(64, (size) =>
-                          webhookAvatarUrl(gWebhook, { size }),
-                        )}
-                        className="rounded-full my-auto w-8 h-8 mr-3"
-                        alt={gWebhook.name}
-                      />
-                      <div className="truncate my-auto">
-                        <div className="flex max-w-full">
-                          <p className="font-semibold truncate dark:text-primary-230 text-base">
-                            {gWebhook.name}
-                          </p>
-                          {gWebhook.applicationId ===
-                            props.discordApplicationId && (
-                            <span
-                              className="ml-1 inline-block"
-                              title={t("createdByDiscohook")}
-                            >
-                              <CoolIcon
-                                icon="Circle_Check"
-                                className="text-blurple-500 dark:text-blurple-400"
-                              />
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-500 text-xs">
-                          #{gWebhook.channel?.name ?? "unknown"} •{" "}
-                          {t(gWebhook.user ? "createdAtBy" : "createdAt", {
-                            replace: {
-                              createdAt: new Date(createdAt),
-                              username: gWebhook.user?.name,
-                            },
-                          })}
-                        </p>
-                      </div>
-                      <div className="ml-auto pl-2 my-auto">
-                        <Button
-                          disabled={
-                            guildWebhookTokenFetcher.state !== "idle" ||
-                            guildWebhooksFetcher.state !== "idle"
-                          }
-                          onClick={() => {
-                            if (!guildId) return;
-                            guildWebhookTokenFetcher.load(
-                              apiUrl(
-                                BRoutes.guildWebhookToken(guildId, gWebhook.id),
-                              ),
-                            );
-                          }}
-                        >
-                          {t("use")}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
+                {guildWebhooksFetcher.data.map((gWebhook) => (
+                  <ListWebhook
+                    key={`webhook-${gWebhook.id}`}
+                    t={t}
+                    webhook={gWebhook}
+                    discordApplicationId={props.discordApplicationId}
+                    endComponent={
+                      <Button
+                        disabled={
+                          guildWebhookTokenFetcher.state !== "idle" ||
+                          guildWebhooksFetcher.state !== "idle"
+                        }
+                        onClick={() => {
+                          if (!guildId) return;
+                          guildWebhookTokenFetcher.load(
+                            apiUrl(
+                              BRoutes.guildWebhookToken(guildId, gWebhook.id),
+                            ),
+                          );
+                        }}
+                      >
+                        {t("use")}
+                      </Button>
+                    }
+                  />
+                ))}
               </div>
             )}
           </div>

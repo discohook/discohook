@@ -577,8 +577,12 @@ export default function Index() {
         updateMessages={restSubmission.updateMessages}
         setShowingResult={setShowingResult}
         submitMessages={submitMessages}
+        // Dynamic modal nesting
+        resultModal={
+          settings.webhookInput === "classic" ? undefined : resultModal
+        }
       />
-      {resultModal}
+      {settings.webhookInput === "classic" ? resultModal : undefined}
       <WebhookEditModal
         open={editingWebhook !== undefined}
         setOpen={() => setEditingWebhook(undefined)}

@@ -1,4 +1,7 @@
+import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Trans, useTranslation } from "react-i18next";
+import { twJoin } from "tailwind-merge";
+import { collapsibleStyles } from "~/components/collapsible";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { getSnowflakeDate } from "~/util/discord";
 import type { SubmitMessageResult } from "./MessageSendModal";
@@ -12,24 +15,33 @@ export const MessageSendResultModal = (
   const success = result?.status === "success";
 
   return (
-    <Modal title={t("submitResultTitle")} {...props}>
+    <Modal {...props}>
       {result && (
         <div>
-          <p className="text-xl font-medium flex">
+          <div className="text-xl font-medium flex items-center">
             <CoolIcon
               icon={success ? "Check" : "Close_MD"}
-              className={`mr-1 text-2xl ${
+              className={`me-1 text-2xl ${
                 success ? "text-green-600" : "text-rose-400"
               }`}
             />
-            <span className="my-auto">{t(result.status)}</span>
-          </p>
+            <p>{t(result.status)}</p>
+          </div>
           {success && <p>{t("successResultTroubleshoot")}</p>}
-          <hr className="border border-gray-400 dark:border-gray-600 my-4" />
           {success ? (
-            <div>
-              <details className="p-2 bg-gray-200 dark:bg-gray-800 rounded">
-                <summary className="font-medium">{t("messageDetails")}</summary>
+            <Collapsible.Root
+              className={twJoin(collapsibleStyles.root, "mt-2")}
+            >
+              <Collapsible.Trigger className={collapsibleStyles.trigger}>
+                <CoolIcon
+                  icon="Chevron_Right"
+                  className="block group-data-[panel-open]/trigger:rotate-90 transition text-lg"
+                />
+                <span className="text-base font-medium">
+                  {t("messageDetails")}
+                </span>
+              </Collapsible.Trigger>
+              <Collapsible.Panel className={collapsibleStyles.panel}>
                 <p>
                   <Trans
                     t={t}
@@ -49,12 +61,11 @@ export const MessageSendResultModal = (
                     },
                   })}
                 </p>
-              </details>
-            </div>
+              </Collapsible.Panel>
+            </Collapsible.Root>
           ) : (
-            <div>
-              <p>{t("fullError")}</p>
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-gray-200 dark:bg-gray-800 p-2">
+            <div className="mt-2">
+              <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-gray-200 dark:bg-gray-800 p-2 font-code text-sm">
                 {JSON.stringify(result.data, null, 2)}
               </pre>
             </div>
