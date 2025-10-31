@@ -733,7 +733,7 @@ export default function Index() {
               </InfoBox>
             )}
             <div className="flex">
-              <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 ltr:mr-2 rtl:ml-2">
+              <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 me-2">
                 <Button
                   onClick={() => setSharing(true)}
                   discordstyle={ButtonStyle.Secondary}
@@ -777,7 +777,7 @@ export default function Index() {
                           </p>
                           <ModalFooter className="flex gap-2">
                             <Button
-                              className="ltr:ml-auto rtl:mr-auto"
+                              className="ms-auto"
                               onClick={() => {
                                 setData({
                                   messages: [
@@ -809,7 +809,7 @@ export default function Index() {
               </div>
               <Button
                 className={twJoin(
-                  "ltr:ml-auto rtl:mr-auto",
+                  "ms-auto",
                   settings.forceDualPane ? "hidden" : "md:hidden",
                 )}
                 onClick={() => setTab("preview")}
@@ -874,7 +874,7 @@ export default function Index() {
               <div className="flex mb-2">
                 {/* <CoolIcon
                 icon="Add_Plus_Circle"
-                className="my-auto text-2xl ltr:mr-2 rtl:ml-2 text-muted dark:text-muted-dark"
+                className="my-auto text-2xl me-2 text-muted dark:text-muted-dark"
               /> */}
                 <div className="grow">
                   <TextInput
@@ -1014,7 +1014,7 @@ export default function Index() {
                     disabled={data.messages.length >= 10}
                   >
                     <div className="flex">
-                      <PostChannelIcon className="h-5 w-5 my-auto ltr:mr-1 rtl:ml-1" />
+                      <PostChannelIcon className="size-5 my-auto me-1" />
                       <span className="my-auto">{t("addMessage")}</span>
                     </div>
                   </Button>
@@ -1076,10 +1076,10 @@ export default function Index() {
             </Dialog.Root>
             <hr className="border border-gray-400 dark:border-gray-600 my-6" />
             <div className="grayscale hover:grayscale-0 group flex text-sm opacity-60 hover:opacity-100 transition-opacity">
-              <div className="mb-auto mt-1 ltr:ml-2 rtl:mr-2">
+              <div className="mb-auto mt-1 ms-2">
                 <Logo pink={isPremium} />
               </div>
-              <div className="ltr:ml-6 rtl:mr-6">
+              <div className="ms-6">
                 <p>
                   Discohook is brought to you free of charge by me (shay) and a
                   history of contributors.{" "}
@@ -1146,12 +1146,11 @@ export default function Index() {
         <div
           className={twMerge(
             "h-full flex-col",
-            "ltr:border-l-gray-400 ltr:dark:border-l-[#1E1F22]",
-            "rtl:border-r-gray-400 rtl:dark:border-r-[#1E1F22]",
+            "border-s-gray-400 dark:border-s-[#1E1F22]",
             settings.forceDualPane
-              ? "flex w-1/2 ltr:border-l-2 rtl:border-r-2"
+              ? "flex w-1/2 border-s-2"
               : twJoin(
-                  "md:w-1/2 ltr:md:border-l-2 rtl:md:border-r-2",
+                  "md:w-1/2 md:border-s-2",
                   tab === "preview" ? "flex" : "hidden md:flex",
                 ),
           )}
