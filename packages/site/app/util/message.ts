@@ -1,5 +1,7 @@
 import type { APIMessage } from "discord-api-types/v10";
+import type { TFunction } from "i18next";
 import { getEmbedText } from "~/components/editor/EmbedEditor";
+import { getComponentText } from "~/components/editor/TopLevelComponentEditor";
 import type { QueryData } from "~/types/QueryData";
 
 export const getMessageText = (
@@ -8,7 +10,24 @@ export const getMessageText = (
   message.content ??
   (message.embeds
     ? message.embeds.map(getEmbedText).find((t) => !!t)
+    : undefined) ??
+  (message.components
+    ? message.components.map(getComponentText).find((t) => !!t)
     : undefined);
+
+export const getMessageDisplayName = (
+  t: TFunction,
+  index: number,
+  message: Pick<QueryData["messages"][number], "name" | "data">,
+): string => {
+  const previewText = getMessageText(message.data);
+  return (
+    message.name ??
+    t(previewText ? "messageNText" : "messageN", {
+      replace: { n: index + 1, text: previewText },
+    })
+  );
+};
 
 // There is currently a bug where `position` is missing in forum thread
 // messages when its value would be 0, leading this function to return

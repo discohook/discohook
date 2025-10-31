@@ -39,6 +39,7 @@ export interface QueryData {
   backup_id?: string;
   messages: {
     _id?: string;
+    name?: string;
     data: {
       username?: string;
       avatar_url?: string;

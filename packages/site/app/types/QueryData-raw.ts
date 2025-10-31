@@ -96,6 +96,7 @@ export interface QueryDataRaw {
   backup_id?: string;
   messages: {
     _id?: string;
+    name?: string;
     data: QueryDataMessageDataRaw;
     reference?: string;
     thread_id?: string;

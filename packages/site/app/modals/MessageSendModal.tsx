@@ -35,7 +35,7 @@ import {
   updateWebhookMessage,
 } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
-import { getMessageText } from "~/util/message";
+import { getMessageDisplayName } from "~/util/message";
 import type { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import {
@@ -541,7 +541,6 @@ export const MessageSendModal = (
         {data.messages.length > 0 ? (
           data.messages.map((message, i) => {
             const id = getQdMessageId(message);
-            const previewText = getMessageText(message.data);
             return (
               <div key={`message-send-${id}`} className="flex">
                 {messages[id]?.result && (
@@ -573,9 +572,7 @@ export const MessageSendModal = (
                 >
                   <div className="my-auto grow text-left me-2 truncate">
                     <p className="font-semibold text-base truncate">
-                      {t(previewText ? "messageNText" : "messageN", {
-                        replace: { n: i + 1, text: previewText },
-                      })}
+                      {getMessageDisplayName(t, i, message)}
                     </p>
                     {messages[id]?.result?.status === "error" && (
                       <p className="text-rose-400 text-sm leading-none">

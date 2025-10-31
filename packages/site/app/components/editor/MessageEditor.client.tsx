@@ -28,13 +28,13 @@ import type {
 } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isComponentsV2, onlyActionRows } from "~/util/discord";
-import { DragManager } from "~/util/drag";
+import type { DragManager } from "~/util/drag";
 import {
   fileInputChangeHandler,
   MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
-import { getMessageText } from "~/util/message";
+import { getMessageDisplayName } from "~/util/message";
 import { copyText, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
@@ -191,6 +191,56 @@ const FileEditModal = (
   );
 };
 
+const MessageNameModal = (
+  props: ModalProps & { name?: string; onSave: (name: string) => void },
+) => {
+  const { t } = useTranslation();
+  const { name, onSave, ...restProps } = props;
+
+  const [draft, setDraft] = useState(name);
+  useEffect(() => {
+    setDraft(name);
+  }, [name]);
+
+  return (
+    <Modal {...restProps}>
+      <form className="contents" onSubmit={(e) => e.preventDefault()}>
+        <TextInput
+          value={draft ?? ""}
+          label={t("messageName")}
+          onChange={({ currentTarget }) => {
+            setDraft(currentTarget.value);
+          }}
+          maxLength={100}
+          className="w-full"
+        />
+        <ModalFooter className="flex gap-2 flex-wrap">
+          <button
+            className={twJoin("ms-auto", linkClassName)}
+            type="button"
+            onClick={() => {
+              props.setOpen(false);
+            }}
+          >
+            {t("cancel")}
+          </button>
+          <Button
+            type="submit"
+            onClick={() => {
+              props.setOpen(false);
+              if (draft !== undefined) {
+                onSave(draft);
+              }
+            }}
+          >
+            {t("save")}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
+  );
+};
+
 interface MessageEditorProps {
   data: QueryData;
   files: DraftFile[];
@@ -229,8 +279,14 @@ export const MessageEditor: React.FC<MessageEditorProps> = (props) => {
 
   // Hooks
   const [editingFile, setEditingFile] = useState<DraftFile>();
+  const [editingName, setEditingName] = useState(false);
 
-  const childProps: MessageEditorChildProps = { ...props, t, setEditingFile };
+  const childProps: MessageEditorChildProps = {
+    ...props,
+    t,
+    setEditingFile,
+    setEditingName,
+  };
 
   return (
     <div className="contents">
@@ -242,6 +298,15 @@ export const MessageEditor: React.FC<MessageEditorProps> = (props) => {
           props.setFiles(props.files.map((f) => (f.id === file.id ? file : f)));
           props.setData({ ...props.data });
         }}
+      />
+      <MessageNameModal
+        name={message.name}
+        onSave={(newName) => {
+          message.name = newName.trim() || undefined;
+          props.setData({ ...props.data });
+        }}
+        open={editingName}
+        setOpen={setEditingName}
       />
       {isComponentsV2(message.data) ? (
         <ComponentMessageEditor {...childProps} />
@@ -281,6 +346,7 @@ const getUsernameErrors = (
 type MessageEditorChildProps = MessageEditorProps & {
   t: TFunction;
   setEditingFile: React.Dispatch<React.SetStateAction<DraftFile | undefined>>;
+  setEditingName: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
@@ -302,6 +368,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   // Parent
   t,
   setEditingFile,
+  setEditingName,
 }) => {
   const message = data.messages[i];
   const id = getQdMessageId(message);
@@ -309,7 +376,6 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
     message.data.embeds && message.data.embeds.length > 0
       ? message.data.embeds.map(getEmbedLength).reduce((a, b) => a + b)
       : 0;
-  const previewText = getMessageText(message.data);
   const flags = new MessageFlagsBitField(message.data.flags ?? 0);
 
   const authorTypes = webhooks
@@ -378,9 +444,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
               className="me-1"
             />
           ) : null}
-          {t(previewText ? "messageNText" : "messageN", {
-            replace: { n: i + 1, text: previewText },
-          })}
+          {getMessageDisplayName(t, i, message)}
         </span>
         <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
           <button
@@ -404,6 +468,9 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             }}
           >
             <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button type="button" onClick={() => setEditingName(true)}>
+            <CoolIcon icon="Edit_Pencil_01" />
           </button>
           <button
             type="button"
@@ -968,6 +1035,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   // Parent
   t,
   setEditingFile,
+  setEditingName,
 }) => {
   const message = data.messages[i];
   const mid = getQdMessageId(message);
@@ -982,7 +1050,6 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           .reduce((a, b) => a + b, 0)
       : 0;
 
-  const previewText = getMessageText(message.data);
   const flags = new MessageFlagsBitField(message.data.flags ?? 0);
 
   // const authorTypes = webhooks
@@ -1055,9 +1122,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
               className="me-1"
             />
           ) : null}
-          {t(previewText ? "messageNText" : "messageN", {
-            replace: { n: i + 1, text: previewText },
-          })}
+          {getMessageDisplayName(t, i, message)}
         </span>
         <div className="ml-auto space-x-2 rtl:space-x-reverse my-auto shrink-0">
           <button
@@ -1081,6 +1146,9 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
             }}
           >
             <CoolIcon icon="Chevron_Down" />
+          </button>
+          <button type="button" onClick={() => setEditingName(true)}>
+            <CoolIcon icon="Edit_Pencil_01" />
           </button>
           <button
             type="button"

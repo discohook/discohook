@@ -116,6 +116,7 @@ export interface QueryData {
   backup_id?: string;
   messages: {
     _id?: string;
+    name?: string;
     data: Omit<QueryDataMessageDataRaw, "components"> & {
       components?: APIMessageTopLevelComponent[];
     };
@@ -127,6 +128,7 @@ export interface QueryData {
 
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),
+  name: z.string().max(50).optional(),
   data: ZodQueryDataMessageDataBase.omit({ components: true })
     .merge(z.object({ components: ZodAPITopLevelComponent.array().optional() }))
     .transform(queryDataMessageDataTransform),

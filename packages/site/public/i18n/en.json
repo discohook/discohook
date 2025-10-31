@@ -436,6 +436,7 @@
   "message": "Message",
   "messageN": "Message {{n}}",
   "messageNText": "Message {{n}} - {{text}}",
+  "messageName": "Message Name",
   "componentN": {
     "1": "Row {{n}}",
     "2": "Button {{n}}",
