@@ -6,22 +6,54 @@
                     "description": "添加组件",
                     "options": {
                         "message": {
-                            "description": "向此消息添加一个组件。这里也接受消息链接"
+                            "description": "向此消息添加一个组件。这里也接受消息链接",
+                            "name": "消息"
+                        },
+                        "channel": {
+                            "name": "频道"
+                        }
+                    },
+                    "name": "添加"
+                },
+                "delete": {
+                    "description": "删除组件",
+                    "name": "删除",
+                    "options": {
+                        "message": {
+                            "name": "消息"
+                        },
+                        "channel": {
+                            "name": "频道"
                         }
                     }
                 },
-                "delete": {
-                    "description": "删除组件"
-                },
                 "migrate": {
                     "description": "迁移所有旧版按钮",
-                    "name": "迁移"
+                    "name": "迁移",
+                    "options": {
+                        "message": {
+                            "name": "消息"
+                        },
+                        "channel": {
+                            "name": "频道"
+                        }
+                    }
                 },
                 "edit": {
-                    "description": "编辑一个组件"
+                    "description": "编辑一个组件",
+                    "name": "编辑",
+                    "options": {
+                        "message": {
+                            "name": "消息"
+                        },
+                        "channel": {
+                            "name": "频道"
+                        }
+                    }
                 }
             },
-            "description": "添加、删除和管理组件（按钮/选择界面）"
+            "description": "添加、删除和管理组件（按钮/选择界面）",
+            "name": "按钮"
         },
         "_ctx": {
             "edit": {
