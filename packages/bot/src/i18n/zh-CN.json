@@ -1,83 +1,103 @@
 {
-  "commands": {
-    "buttons": {
-      "options": {
-        "add": {
-          "description": "添加组件"
-        },
-        "delete": {
-          "description": "删除组件"
-        }
-      },
-      "description": "添加、删除和管理组件"
-    },
-    "_ctx": {
-      "edit": {
-        "name": "快速编辑"
-      },
-      "restore": {
-        "name": "恢复消息"
-      },
-      "webhook": {
-        "name": "Webhook 信息"
-      },
-      "components": {
-        "name": "按钮 & 组件"
-      }
-    },
-    "webhook": {
-      "description": "管理 Webhook",
-      "options": {
-        "create": {
-          "description": "创建一个 Webhook",
-          "options": {
-            "name": {
-              "description": "Webhook 名称"
+    "commands": {
+        "buttons": {
+            "options": {
+                "add": {
+                    "description": "添加组件",
+                    "options": {
+                        "message": {
+                            "description": "向此消息添加一个组件。这里也接受消息链接"
+                        }
+                    }
+                },
+                "delete": {
+                    "description": "删除组件"
+                },
+                "migrate": {
+                    "description": "迁移所有旧版按钮",
+                    "name": "迁移"
+                },
+                "edit": {
+                    "description": "编辑一个组件"
+                }
             },
-            "avatar": {
-              "description": "Webhook 的头像"
-            }
-          },
-          "name": "创建"
+            "description": "添加、删除和管理组件（按钮/选择界面）"
         },
-        "info": {
-          "options": {
+        "_ctx": {
+            "edit": {
+                "name": "快速编辑"
+            },
+            "restore": {
+                "name": "恢复消息"
+            },
             "webhook": {
-              "name": "webhook"
+                "name": "Webhook 信息"
+            },
+            "components": {
+                "name": "按钮 & 组件"
             }
-          }
         },
-        "delete": {
-          "options": {
+        "webhook": {
+            "description": "管理 Webhook",
+            "options": {
+                "create": {
+                    "description": "创建一个 Webhook",
+                    "options": {
+                        "name": {
+                            "description": "Webhook 名称"
+                        },
+                        "avatar": {
+                            "description": "Webhook 的头像"
+                        }
+                    },
+                    "name": "创建"
+                },
+                "info": {
+                    "options": {
+                        "webhook": {
+                            "name": "webhook"
+                        }
+                    }
+                },
+                "delete": {
+                    "options": {
+                        "webhook": {
+                            "name": "webhook"
+                        }
+                    },
+                    "name": "删除",
+                    "description": "删除 Webhook"
+                }
+            }
+        },
+        "triggers": {
+            "options": {
+                "add": {
+                    "options": {
+                        "event": {
+                            "choices": {
+                                "0": "成员加入",
+                                "1": "成员移除"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "deluxe": {
+            "options": {
+                "sync": {
+                    "name": "同步"
+                }
+            },
+            "name": "豪华",
+            "description": "同步您的 Deluce 订阅。"
+        },
+        "_options": {
             "webhook": {
-              "name": "webhook"
+                "description": "目标 webhook",
+                "name": "webhook"
             }
-          },
-          "name": "删除",
-          "description": "删除 Webhook"
         }
-      }
-    },
-    "triggers": {
-      "options": {
-        "add": {
-          "options": {
-            "event": {
-              "choices": {
-                "0": "成员加入",
-                "1": "成员移除"
-              }
-            }
-          }
-        }
-      }
-    },
-    "deluxe": {
-      "options": {
-        "sync": {
-          "name": "同步"
-        }
-      }
     }
-  }
 }
