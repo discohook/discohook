@@ -76,10 +76,14 @@
                     "description": "创建一个 Webhook",
                     "options": {
                         "name": {
-                            "description": "Webhook 名称"
+                            "description": "Webhook 名称",
+                            "name": "名称"
                         },
                         "avatar": {
                             "description": "Webhook 的头像"
+                        },
+                        "channel": {
+                            "name": "频道"
                         }
                     },
                     "name": "创建"
@@ -112,6 +116,18 @@
                                 "1": "成员移除"
                             },
                             "name": "事件"
+                        },
+                        "name": {
+                            "name": "名称"
+                        }
+                    },
+                    "name": "添加"
+                },
+                "view": {
+                    "name": "查看",
+                    "options": {
+                        "name": {
+                            "name": "名称"
                         }
                     }
                 }
@@ -129,13 +145,151 @@
                 }
             },
             "name": "豪华",
-            "description": "同步您的 Deluce 订阅。"
+            "description": "同步您的 Deluxe 订阅。"
         },
         "_options": {
             "webhook": {
                 "description": "目标 webhook",
                 "name": "webhook"
             }
+        },
+        "welcomer": {
+            "options": {
+                "set": {
+                    "name": "设置",
+                    "options": {
+                        "channel": {
+                            "name": "频道"
+                        }
+                    }
+                },
+                "view": {
+                    "name": "查看"
+                }
+            }
+        },
+        "reaction-role": {
+            "name": "身份组",
+            "options": {
+                "create": {
+                    "description": "创建新的身份组",
+                    "options": {
+                        "message": {
+                            "name": "消息"
+                        },
+                        "channel": {
+                            "name": "频道"
+                        },
+                        "emoji": {
+                            "name": "表情符号"
+                        }
+                    },
+                    "name": "创建"
+                },
+                "delete": {
+                    "name": "删除",
+                    "options": {
+                        "channel": {
+                            "name": "频道"
+                        },
+                        "message": {
+                            "name": "消息"
+                        },
+                        "emoji": {
+                            "name": "表情符号"
+                        }
+                    }
+                },
+                "list": {
+                    "name": "列表"
+                }
+            },
+            "description": "添加、移除和管理身份组"
+        },
+        "help": {
+            "options": {
+                "tag": {
+                    "name": "标签"
+                },
+                "mention": {
+                    "name": "提及"
+                }
+            }
+        },
+        "restore": {
+            "name": "恢复",
+            "options": {
+                "mode": {
+                    "name": "模式"
+                },
+                "message": {
+                    "name": "消息"
+                }
+            }
+        },
+        "format": {
+            "name": "格式",
+            "options": {
+                "mention": {
+                    "name": "提及",
+                    "options": {
+                        "target": {
+                            "name": "目标"
+                        }
+                    }
+                },
+                "channel": {
+                    "name": "频道",
+                    "options": {
+                        "target": {
+                            "name": "目标"
+                        }
+                    }
+                },
+                "emoji": {
+                    "name": "表情符号",
+                    "options": {
+                        "target": {
+                            "name": "目标"
+                        }
+                    }
+                }
+            }
+        },
+        "id": {
+            "options": {
+                "channel": {
+                    "options": {
+                        "target": {
+                            "name": "目标"
+                        }
+                    },
+                    "name": "频道"
+                },
+                "emoji": {
+                    "name": "表情符号",
+                    "options": {
+                        "target": {
+                            "name": "目标"
+                        }
+                    }
+                },
+                "mention": {
+                    "name": "提及",
+                    "options": {
+                        "target": {
+                            "name": "目标"
+                        }
+                    }
+                }
+            }
+        },
+        "invite": {
+            "name": "邀请"
         }
-    }
+    },
+    "addActions": "添加动作",
+    "noActions": "没有动作",
+    "manageActions": "管理动作",
+    "customize": "自定义"
 }
