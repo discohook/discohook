@@ -110,7 +110,8 @@
                             "choices": {
                                 "0": "成员加入",
                                 "1": "成员移除"
-                            }
+                            },
+                            "name": "事件"
                         }
                     }
                 }
@@ -119,7 +120,12 @@
         "deluxe": {
             "options": {
                 "sync": {
-                    "name": "同步"
+                    "name": "同步",
+                    "description": "确保 Discohook 网站已更新您的 Deluxe 订阅"
+                },
+                "info": {
+                    "name": "信息",
+                    "description": "有关 Discohook Deluxe（我们的高级订阅选项）的信息"
                 }
             },
             "name": "豪华",
