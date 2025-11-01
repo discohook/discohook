@@ -201,9 +201,17 @@ const cascadeFileNameChange = (
   return newEmbeds;
 };
 
-// const createFakeWaveform = (duration: number): string => {
-
-// };
+const createFakeWaveform = (): string => {
+  // basically empty waveform with no audio
+  // spikes. this resolves to `AA==`
+  const array = new Uint8Array(1).fill(0);
+  try {
+    // baseline 2025
+    return array.toBase64({ alphabet: "base64" });
+  } catch {
+    return btoa(new TextDecoder("utf8").decode(array));
+  }
+};
 
 export const executeWebhook = async (
   webhookId: string,
@@ -257,10 +265,8 @@ export const executeWebhook = async (
       // Hopefully this does not cause issues down the line with regular audio
       // files - I expect discord will just ignore it if N/A.
       duration_secs: file.duration_secs,
-      // waveform:
-      //   file.duration_secs !== undefined
-      //     ? createFakeWaveform(file.duration_secs)
-      //     : undefined,
+      waveform:
+        file.duration_secs !== undefined ? createFakeWaveform() : undefined,
     }));
   }
 
@@ -343,6 +349,8 @@ export const updateWebhookMessage = async (
         file.is_thumbnail && threadId !== undefined ? true : undefined,
       // See comment under `executeWebhook`
       duration_secs: file.duration_secs,
+      waveform:
+        file.duration_secs !== undefined ? createFakeWaveform() : undefined,
     }));
   }
 
