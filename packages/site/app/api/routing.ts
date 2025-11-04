@@ -153,7 +153,17 @@ export const BRoutes = {
   },
 
   /**
+   * - DELETE /guilds/:id/sessions/:tokenId
+   *
+   * Accepts token auth.
+   */
+  guildSession(id: string, tokenId: string) {
+    return `/guilds/${id}/sessions/${tokenId}` as const;
+  },
+
+  /**
    * - GET /guilds/:id/sessions
+   * - DELETE /guilds/:id/sessions
    *
    * Accepts token auth.
    */

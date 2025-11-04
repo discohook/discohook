@@ -1,22 +1,22 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { getDb } from "store";
 import { zx } from "zodix";
-import {
-  authorizeRequest,
-  getTokenGuildPermissions,
-  type KVTokenPermissions,
-} from "~/session.server";
-import type { LoaderArgs } from "~/util/loader";
+import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
+import { getId } from "~/util/id";
+import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
+
+const GUILD_TOKEN_TTL = 21_600_000; // ms
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });
-  const { limit } = zxParseQuery(request, {
-    limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
-    // page: zx.IntAsString.refine((v) => v >= 0).default("0"),
+  const perPage = 50;
+  const { cursor } = zxParseQuery(request, {
+    cursor: zx.IntAsString.refine((v) => v > 0)
+      .default("1")
+      .transform((v) => v - 1),
   });
 
   const [token, respond] = await authorizeRequest(request, context);
@@ -25,63 +25,141 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     guildId,
     context.env,
   );
-  if (
-    !owner &&
-    !permissions.has(PermissionFlags.ViewAuditLog, PermissionFlags.ManageGuild)
-  ) {
+  if (!owner && !permissions.has(PermissionFlags.Administrator)) {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const db = getDb(context.env.HYPERDRIVE);
-  const guildWithTokens = await db.query.discordGuilds.findFirst({
-    where: (discordGuilds, { eq }) => eq(discordGuilds.id, guildId),
-    columns: {},
-    with: {
-      tokens: {
-        columns: {
-          id: true,
-          country: true,
-          lastUsedAt: true,
-        },
-        with: {
-          user: {
-            columns: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-        limit,
-        orderBy: (tokens, { desc }) => desc(tokens.lastUsedAt),
-      },
-    },
-  });
+  const now = Date.now();
+  /*
+   * I really don't like this but I think it's the best we can do right now.
+   * I would use SSCAN but this of course requires the keys to be in a set
+   * whose members cannot be made to expire automatically.
+   * Perhaps: https://github.com/Rush/redis_expiremember_module
+   */
+  const keys = new Set<string>();
+  const deleteKeys = new Set<string>();
+  let found = 0;
+  let currentCursor = cursor;
+  while (found < perPage) {
+    const result = (await context.env.KV.send(
+      "SCAN",
+      String(currentCursor),
+      "MATCH",
+      `token-*-guild-${guildId}`,
+      "COUNT",
+      "1000",
+    )) as [string, string[]];
+    // No results
+    if (!result[1] || result[1].length === 0) {
+      break;
+    }
 
-  if (!guildWithTokens) {
-    return respond(json([]));
-  }
+    currentCursor = Number(result[0]);
+    for (const key of result[1]) {
+      const tokenId = key.split("-")[1];
+      if (!tokenId) continue; // shouldn't happen
 
-  const tokenPermissions: Record<string, KVTokenPermissions> = {};
-  for (const token of guildWithTokens.tokens) {
-    const key = `token-${token.id}-guild-${guildId}`;
-    const cached = await context.env.KV.get<KVTokenPermissions>(key, "json");
-    if (cached) {
-      tokenPermissions[token.id.toString()] = cached;
+      const { timestamp } = getId({ id: tokenId });
+      if (now - timestamp > GUILD_TOKEN_TTL) {
+        deleteKeys.add(key);
+      } else {
+        keys.add(key);
+      }
+    }
+    found += result[1].length;
+
+    // End of iteration
+    if (result[0] === "0" || result[0] === String(currentCursor)) {
+      currentCursor = 0;
+      break;
     }
   }
 
-  return respond(
-    json(
-      guildWithTokens.tokens.map((guildToken) => ({
-        ...guildToken,
-        id: guildToken.id.toString() as `${bigint}`,
-        // We'll see later if this is necessary for other users
-        country:
-          guildToken.user?.id === token.user.id ? guildToken.country : null,
-        auth: tokenPermissions[guildToken.id.toString()] as
-          | KVTokenPermissions
-          | undefined,
-      })),
-    ),
+  const keysArray = Array.from(keys.values());
+  const rawValues = (await context.env.KV.send("MGET", ...keys)) as (
+    | string
+    | null
+  )[];
+  // @ts-expect-error error condition
+  if (rawValues[0] === false) {
+    console.error(rawValues[1]);
+    throw json({ message: "Failed to resolve values" }, 500);
+  }
+
+  const values: {
+    tokenId: string;
+    createdAt: number;
+    expiresAt: number;
+    permissions: string;
+    owner?: boolean;
+    me?: boolean;
+  }[] = [];
+
+  let i = -1;
+  for (const val of rawValues) {
+    i += 1;
+    if (val === null) continue;
+    const key = keysArray[i];
+    const tokenId = key.split("-")[1];
+    if (!tokenId) continue; // shouldn't happen
+
+    const { timestamp } = getId({ id: tokenId });
+    try {
+      const value = JSON.parse(JSON.parse(val).value) as {
+        permissions: string;
+        owner?: boolean;
+      };
+      values.push({
+        tokenId,
+        createdAt: timestamp,
+        expiresAt: timestamp + GUILD_TOKEN_TTL,
+        // Should never be falsy, but just in case
+        permissions: value.permissions ?? "0",
+        owner: value.owner || undefined,
+        me: tokenId === String(token.id) || undefined,
+      });
+    } catch {}
+  }
+
+  // This might mess up the cursor, hopefully it's not a big issue. If it is,
+  // I think the solution would be to delete right after encountering the keys,
+  // then re-run the query with the same cursor.
+  if (deleteKeys.size !== 0) {
+    await context.env.KV.delete(...deleteKeys);
+  }
+
+  return {
+    cursor: currentCursor,
+    results: values,
+  };
+};
+
+export const action = async ({ request, context, params }: ActionArgs) => {
+  const { guildId } = zxParseParams(params, {
+    guildId: snowflakeAsString(),
+  });
+  const { id: tokenIds } = zxParseQuery(request, {
+    id: snowflakeAsString().array().max(200),
+  });
+
+  const [token, respond] = await authorizeRequest(request, context);
+  const { owner, permissions } = await getTokenGuildPermissions(
+    token,
+    guildId,
+    context.env,
   );
+  if (!owner && !permissions.has(PermissionFlags.Administrator)) {
+    throw respond(json({ message: "Missing permissions" }, 403));
+  }
+
+  switch (request.method) {
+    case "DELETE": {
+      await context.env.KV.delete(
+        ...tokenIds.map((id) => `token-${id}-guild-${guildId}`),
+      );
+      return new Response(null, { status: 204 });
+    }
+    default:
+      throw new Response(null, { status: 405 });
+  }
 };

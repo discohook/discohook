@@ -1,4 +1,5 @@
 import { Avatar } from "@base-ui-components/react/avatar";
+import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Field } from "@base-ui-components/react/field";
 import { REST } from "@discordjs/rest";
 import {
@@ -36,17 +37,18 @@ import { getDate } from "discord-snowflake";
 import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
+import { collapsibleStyles } from "~/components/collapsible";
 import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { PostChannelIcon } from "~/components/icons/channel";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
-import { Twemoji } from "~/components/icons/Twemoji";
+import { CrownIcon, PeopleIcon, RoleShield } from "~/components/icons/role";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
 import { type FeatureConfig, Markdown } from "~/components/preview/Markdown";
 import { UsernameBadge } from "~/components/preview/Message.client";
@@ -446,16 +448,16 @@ interface ProfileFormData {
   status?: string;
 }
 
-const cloneQuery = (
-  current: Record<string, string | number | null | undefined>,
-) => {
-  const newQuery = new URLSearchParams();
-  for (const [key, value] of Object.entries(current)) {
-    if (value == null) continue;
-    newQuery.set(key, String(value));
-  }
-  return newQuery;
-};
+// const cloneQuery = (
+//   current: Record<string, string | number | null | undefined>,
+// ) => {
+//   const newQuery = new URLSearchParams();
+//   for (const [key, value] of Object.entries(current)) {
+//     if (value == null) continue;
+//     newQuery.set(key, String(value));
+//   }
+//   return newQuery;
+// };
 
 export default () => {
   const { guild, user, member, discordApplicationId } =
@@ -500,6 +502,7 @@ export default () => {
     onError: setError,
   });
   const sessionsFetcher = useFetcher<typeof ApiGetGuildSessions>();
+  const sessionFetcher = useSafeFetcher({ onError: setError });
   const profileFetcher = useSafeFetcher<typeof ApiGetGuildProfile>({
     onError: setError,
   });
@@ -630,6 +633,26 @@ export default () => {
     }
   }, [profileFetcher.data]);
 
+  // Bulk revoke sessions
+  const [selectedSessionIds, setSelectedSessionIds] = useReducer(
+    (
+      prev: string[],
+      state: {
+        action: "add" | "remove" | "overwrite";
+        value: string | string[];
+      },
+    ) => {
+      const val = Array.isArray(state.value) ? state.value : [state.value];
+      if (state.action === "add") {
+        return [...prev, ...val];
+      } else if (state.action === "overwrite") {
+        return val;
+      }
+      return prev.filter((v) => !val.includes(v));
+    },
+    [],
+  );
+
   return (
     <div>
       <WebhookEditModal
@@ -691,6 +714,9 @@ export default () => {
             ...(has(PermissionFlags.ManageNicknames)
               ? [{ label: t("profile"), value: "profile" }]
               : []),
+            ...(has(PermissionFlags.Administrator)
+              ? [{ label: t("sessions"), value: "sessions" }]
+              : []),
             ...(has(
               PermissionFlags.ManageMessages,
               PermissionFlags.ManageWebhooks,
@@ -723,7 +749,7 @@ export default () => {
                           ? cdn.icon(guild.id, guild.icon, { size })
                           : cdn.defaultAvatar(0),
                       )}
-                      className="rounded-lg h-12 w-12 ltr:mr-4 rtl:ml-4"
+                      className="rounded-lg size-12 me-4"
                       alt={guild.name}
                     />
                     <div className="-mt-2">
@@ -746,10 +772,10 @@ export default () => {
                         {...cdnImgAttributes(64, (size) =>
                           getUserAvatar(user, { size }),
                         )}
-                        className="rounded-full h-10 w-10 ltr:mr-3 rtl:ml-3 my-auto"
+                        className="rounded-full h-10 w-10 me-3 my-auto"
                         alt={user.name}
                       />
-                      <p className="font-medium my-auto ltr:mr-2 rtl:ml-2">
+                      <p className="font-medium my-auto me-2">
                         {t(
                           `homePermission.${
                             member.owner
@@ -763,7 +789,7 @@ export default () => {
                       <CoolIcon
                         icon="Chevron_Right"
                         rtl="Chevron_Left"
-                        className="ltr:ml-auto rtl:mr-auto my-auto text-lg ltr:group-open:rotate-90 rtl:group-open:-rotate-90 transition"
+                        className="ms-auto my-auto text-lg ltr:group-open:rotate-90 rtl:group-open:-rotate-90 transition"
                       />
                     </summary>
                     <div className="p-4 pt-2 space-y-1.5">
@@ -801,6 +827,23 @@ export default () => {
                       <Cell className="rounded-br-lg">
                         {new Intl.ListFormat().format(
                           ["ManageNicknames"].map((p) => t(`permission.${p}`)),
+                        )}
+                      </Cell>
+                      <Cell>
+                        <CoolIcon
+                          icon={
+                            has(PermissionFlags.ManageNicknames)
+                              ? "Check"
+                              : "Close_MD"
+                          }
+                        />
+                      </Cell>
+                    </div>
+                    <div className="table-row">
+                      <Cell className="rounded-bl-lg">{t("sessions")}</Cell>
+                      <Cell className="rounded-br-lg">
+                        {new Intl.ListFormat().format(
+                          ["Administrator"].map((p) => t(`permission.${p}`)),
                         )}
                       </Cell>
                       <Cell>
@@ -1251,70 +1294,266 @@ export default () => {
             <div>
               <TabHeader
                 subtitle={
-                  <p>
-                    Below is a list of permission-laden sessions that have
-                    recently been authorized for{" "}
-                    <span className="font-semibold">{guild.name}</span>.
-                    <br />
-                    <br />
-                    If you don't recognize a user, you may want to verify your
-                    permission setup.
-                  </p>
+                  <Trans
+                    t={t}
+                    i18nKey="sessionsSubtitle"
+                    values={{ guild }}
+                    components={[<span key="0" className="font-semibold" />]}
+                  />
                 }
               >
-                Sessions
+                {t("sessions")}
               </TabHeader>
               <div className="space-y-2">
+                <div className="flex flex-wrap gap-x-2 gap-y-1">
+                  <Button
+                    discordstyle={ButtonStyle.Secondary}
+                    disabled={!sessionsFetcher.data?.results?.length}
+                    onClick={() => {
+                      if (selectedSessionIds.length === 0) {
+                        setSelectedSessionIds({
+                          action: "overwrite",
+                          value:
+                            sessionsFetcher.data?.results
+                              .filter((s) => !s.me)
+                              .map((s) => s.tokenId) ?? [],
+                        });
+                      } else {
+                        setSelectedSessionIds({
+                          action: "overwrite",
+                          value: [],
+                        });
+                      }
+                    }}
+                  >
+                    {t(
+                      selectedSessionIds.length === 0
+                        ? "selectAll"
+                        : "selectNone",
+                    )}
+                  </Button>
+                  <Button
+                    discordstyle={ButtonStyle.Danger}
+                    disabled={selectedSessionIds.length === 0}
+                    onClick={() =>
+                      setConfirm({
+                        title: t("revokeSessions", {
+                          count: selectedSessionIds.length,
+                        }),
+                        children: (
+                          <>
+                            <p>{t("revokeSessionsConfirm")}</p>
+                            <Button
+                              onClick={async () => {
+                                const params = new URLSearchParams();
+                                for (const id of selectedSessionIds) {
+                                  params.append("id", id);
+                                }
+                                await sessionFetcher.submitAsync(undefined, {
+                                  action: `${apiUrl(
+                                    BRoutes.guildSessions(guild.id),
+                                  )}?${params}`,
+                                  method: "DELETE",
+                                });
+                                setConfirm(undefined);
+                                sessionsFetcher.load(
+                                  apiUrl(BRoutes.guildSessions(guild.id)),
+                                );
+                                setSelectedSessionIds({
+                                  action: "overwrite",
+                                  value: [],
+                                });
+                              }}
+                              className="mt-2"
+                              discordstyle={ButtonStyle.Danger}
+                            >
+                              {t("revoke")}
+                            </Button>
+                          </>
+                        ),
+                      })
+                    }
+                  >
+                    {t("revokeCount", { count: selectedSessionIds.length })}
+                  </Button>
+                </div>
                 {sessionsFetcher.data ? (
-                  sessionsFetcher.data.map((session) => {
-                    const createdAt = getDate(session.id);
+                  sessionsFetcher.data.results.map((session) => {
+                    const permissions = new PermissionsBitField(
+                      BigInt(session.permissions),
+                    );
+                    const permissionsList = Object.entries(PermissionFlags)
+                      .map(([flag, value]) => ({
+                        flag,
+                        value,
+                        has: session.owner ? true : permissions.has(value),
+                      }))
+                      .filter((p) => p.has);
+
+                    // "High priority" permissions
+                    const mainFlags: string[] = [];
+                    if (
+                      !session.owner &&
+                      !permissions.has(PermissionFlags.Administrator)
+                    ) {
+                      for (const flag of [
+                        "ManageWebhooks",
+                        "ManageGuild",
+                        "ManageMessages",
+                        "ManageRoles",
+                      ] as const) {
+                        if (permissions.has(PermissionFlags[flag])) {
+                          mainFlags.push(flag);
+                        }
+                      }
+                    }
+
+                    const expiresMs = session.expiresAt - Date.now();
                     return (
-                      <div
-                        key={`session-${session.id}`}
-                        className="rounded-lg py-3 px-4 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
+                      <Collapsible.Root
+                        key={`session-${session.tokenId}`}
+                        className="rounded-lg py-3 px-4 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22]"
                       >
-                        {/* <img
-                          className="rounded-full my-auto w-10 h-10 mr-2 hidden sm:block"
-                          src={
-                            webhook
-                              ? webhookAvatarUrl(webhook, { size: 64 })
-                              : cdn.defaultAvatar(5)
-                          }
-                          alt=""
-                        /> */}
-                        <div className="truncate my-auto">
-                          <div className="flex max-w-full">
-                            <p className="font-medium truncate dark:text-[#f9f9f9] text-base">
-                              {session.user?.name ? (
-                                <span className="dark:text-primary-230">
-                                  {session.user.name}
+                        <div className="flex items-center me-3">
+                          <Checkbox
+                            label={<></>}
+                            checked={selectedSessionIds.includes(
+                              session.tokenId,
+                            )}
+                            onCheckedChange={(checked) =>
+                              setSelectedSessionIds({
+                                action: checked ? "add" : "remove",
+                                value: session.tokenId,
+                              })
+                            }
+                          />
+                          <div className="text-muted dark:text-muted-dark me-1.5">
+                            {session.owner ? (
+                              <CrownIcon className="size-7 text-[#8D5D1F] dark:text-[#D3AE7C]" />
+                            ) : permissions.has(
+                                PermissionFlags.Administrator,
+                              ) ? (
+                              <RoleShield className="size-7" />
+                            ) : (
+                              <PeopleIcon className="size-7" />
+                            )}
+                          </div>
+                          <div className="truncate">
+                            <div className="flex max-w-full items-center overflow-x-hidden">
+                              <p className="font-medium truncate text-base">
+                                {session.owner
+                                  ? t("owner")
+                                  : permissions.has(
+                                        PermissionFlags.Administrator,
+                                      )
+                                    ? t("permission.Administrator")
+                                    : t("permissionsCount", {
+                                        count: permissionsList.length,
+                                      })}
+                              </p>
+                              {session.me ? (
+                                <span className="text-[10px] font-semibold rounded px-1.5 py-px ms-1.5 text-muted dark:text-muted-dark bg-gray-200 dark:bg-gray-700 uppercase shrink-0">
+                                  {t("thisDevice")}
                                 </span>
-                              ) : (
-                                "Unknown"
+                              ) : null}
+                              {mainFlags.slice(0, 3).map((flag) => (
+                                <span
+                                  key={`session-${session.tokenId}-flag-tag-${flag}`}
+                                  className="text-[10px] font-semibold rounded px-1.5 py-px ms-0.5 first-of-type:ms-1.5 text-muted dark:text-muted-dark bg-gray-200 dark:bg-gray-700 uppercase shrink-0"
+                                >
+                                  {t(`permission.${flag}`)}
+                                </span>
+                              ))}
+                            </div>
+                            <p className="text-muted dark:text-muted-dark text-xs">
+                              {new Date(session.createdAt).toLocaleString(
+                                undefined,
+                                { hour: "numeric", minute: "2-digit" },
                               )}{" "}
-                              {session.auth?.owner && (
-                                <Twemoji emoji="👑" title="Server Owner" />
+                              -{" "}
+                              {new Date(session.expiresAt).toLocaleString(
+                                undefined,
+                                { hour: "numeric", minute: "2-digit" },
                               )}
                             </p>
                           </div>
-                          <p className="text-gray-600 dark:text-gray-500 text-xs">
-                            {new Date(createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="ml-auto pl-2 my-auto flex gap-2">
-                          {/* <a
-                            href={`https://discord.com/channels/${guild.id}/${
-                              entry.threadId ?? entry.channelId
-                            }/${entry.messageId}`}
-                            target="_blank"
-                            rel="noreferrer"
+                          <button
+                            type="button"
+                            className="ms-auto flex gap-2 group/trigger rounded-lg px-2 aspect-square hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-red-400 transition-colors"
+                            title={t("revokeSession")}
+                            onClick={async () => {
+                              await sessionFetcher.submitAsync(undefined, {
+                                action: apiUrl(
+                                  BRoutes.guildSession(
+                                    guild.id,
+                                    session.tokenId,
+                                  ),
+                                ),
+                                method: "DELETE",
+                              });
+                              sessionsFetcher.load(
+                                apiUrl(BRoutes.guildSessions(guild.id)),
+                              );
+                            }}
                           >
-                            <Button discordstyle={ButtonStyle.Secondary}>
-                              <CoolIcon icon="External_Link" />
-                            </Button>
-                          </a> */}
+                            <CoolIcon
+                              icon="Trash_Full"
+                              className="text-lg m-auto"
+                            />
+                          </button>
+                          <Collapsible.Trigger className="ms-2 flex gap-2 group/trigger">
+                            <CoolIcon
+                              icon="Chevron_Right"
+                              rtl="Chevron_Left"
+                              className="text-lg ltr:group-data-[panel-open]/trigger:rotate-90 rtl:group-data-[panel-open]/trigger:-rotate-90 transition-transform"
+                            />
+                          </Collapsible.Trigger>
                         </div>
-                      </div>
+                        <Collapsible.Panel
+                          className={twMerge(collapsibleStyles.panel, "pt-2")}
+                        >
+                          <div className="text-sm">
+                            <p>{t("sessionPanelDescription")}</p>
+                            <p className="italic text-muted dark:text-muted-dark mt-1">
+                              {t("expiresIn", {
+                                replace: [
+                                  expiresMs < 3_600_000
+                                    ? t("timestamp.relative.minutes_future", {
+                                        count: Math.round(expiresMs / 60_000),
+                                      })
+                                    : t("timestamp.relative.hours_future", {
+                                        count: Math.round(
+                                          expiresMs / 3_600_000,
+                                        ),
+                                      }),
+                                ],
+                              })}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            {(
+                              [
+                                "Administrator",
+                                "ManageGuild",
+                                "ManageWebhooks",
+                                "ManageRoles",
+                                "ManageMessages",
+                                "ManageNicknames",
+                              ] as const
+                            ).map((flag) => (
+                              <Checkbox
+                                key={`session-${session.tokenId}-permission-${flag}`}
+                                checked={
+                                  session.owner ||
+                                  permissions.has(PermissionFlags[flag])
+                                }
+                                readOnly
+                                label={t(`permission.${flag}`)}
+                              />
+                            ))}
+                          </div>
+                        </Collapsible.Panel>
+                      </Collapsible.Root>
                     );
                   })
                 ) : (
