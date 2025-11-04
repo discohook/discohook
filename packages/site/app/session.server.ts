@@ -652,7 +652,7 @@ export const getTokenGuildPermissions = async (
         permissions: permissions.toString(),
         owner: guild.owner_id === member.user?.id,
       } satisfies KVTokenPermissions),
-      { expirationTtl: permExpireAt },
+      { expiration: permExpireAt },
     );
 
     data = {
