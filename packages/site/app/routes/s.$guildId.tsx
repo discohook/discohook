@@ -1468,12 +1468,22 @@ export default () => {
                             <p className="text-muted dark:text-muted-dark text-xs">
                               {new Date(session.createdAt).toLocaleString(
                                 undefined,
-                                { hour: "numeric", minute: "2-digit" },
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                },
                               )}{" "}
                               -{" "}
                               {new Date(session.expiresAt).toLocaleString(
                                 undefined,
-                                { hour: "numeric", minute: "2-digit" },
+                                {
+                                  // month: "short",
+                                  // day: "numeric",
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                },
                               )}
                             </p>
                           </div>

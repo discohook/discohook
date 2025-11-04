@@ -1,7 +1,11 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
 import { zx } from "zodix";
-import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
+import {
+  authorizeRequest,
+  getTokenGuildPermissions,
+  type KVTokenPermissions,
+} from "~/session.server";
 import { getId } from "~/util/id";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
@@ -29,7 +33,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
 
-  const now = Date.now();
   /*
    * I really don't like this but I think it's the best we can do right now.
    * I would use SSCAN but this of course requires the keys to be in a set
@@ -37,7 +40,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
    * Perhaps: https://github.com/Rush/redis_expiremember_module
    */
   const keys = new Set<string>();
-  const deleteKeys = new Set<string>();
   let found = 0;
   let currentCursor = cursor;
   while (found < perPage) {
@@ -59,12 +61,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       const tokenId = key.split("-")[1];
       if (!tokenId) continue; // shouldn't happen
 
-      const { timestamp } = getId({ id: tokenId });
-      if (now - timestamp > GUILD_TOKEN_TTL) {
-        deleteKeys.add(key);
-      } else {
-        keys.add(key);
-      }
+      keys.add(key);
     }
     found += result[1].length;
 
@@ -95,6 +92,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     me?: boolean;
   }[] = [];
 
+  const now = Date.now();
+  const deleteKeys = new Set<string>();
   let i = -1;
   for (const val of rawValues) {
     i += 1;
@@ -105,19 +104,23 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
     const { timestamp } = getId({ id: tokenId });
     try {
-      const value = JSON.parse(JSON.parse(val).value) as {
-        permissions: string;
-        owner?: boolean;
-      };
-      values.push({
-        tokenId,
-        createdAt: timestamp,
-        expiresAt: timestamp + GUILD_TOKEN_TTL,
-        // Should never be falsy, but just in case
-        permissions: value.permissions ?? "0",
-        owner: value.owner || undefined,
-        me: tokenId === String(token.id) || undefined,
-      });
+      const value = JSON.parse(JSON.parse(val).value) as KVTokenPermissions;
+      // Declutter
+      if (value.permissions === "0" || !value.permissions) continue;
+
+      // Past due
+      if (now > (value.expiresAt ?? timestamp + GUILD_TOKEN_TTL)) {
+        deleteKeys.add(key);
+      } else {
+        values.push({
+          tokenId,
+          createdAt: timestamp,
+          expiresAt: value.expiresAt ?? timestamp + GUILD_TOKEN_TTL,
+          permissions: value.permissions,
+          owner: value.owner || undefined,
+          me: tokenId === String(token.id) || undefined,
+        });
+      }
     } catch {}
   }
 
@@ -139,7 +142,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     guildId: snowflakeAsString(),
   });
   const { id: tokenIds } = zxParseQuery(request, {
-    id: snowflakeAsString().array().max(200),
+    id: snowflakeAsString()
+      .array()
+      .max(200)
+      .or(snowflakeAsString().transform((v) => [v])),
   });
 
   const [token, respond] = await authorizeRequest(request, context);

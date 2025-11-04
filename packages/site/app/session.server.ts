@@ -276,11 +276,7 @@ const createToken = async (env: Env, origin: string, userId: bigint) => {
 export interface KVTokenPermissions {
   permissions: string;
   owner?: boolean;
-}
-
-export interface KVTokenGuildChannelPermissions {
-  permissions: string;
-  owner?: boolean;
+  expiresAt?: number;
 }
 
 const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
@@ -306,7 +302,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
     },
   });
 
-  const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
+  const permExpireAt = new Date().getTime() + 21_600_000;
   if (memberships.length !== 0) {
     // Generate a Lua script to mass-SET up to 200 keys and their expiration
     // dates. Webdis doesn't support MULTI or pipelining, so this is sort of
@@ -321,9 +317,10 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
           JSON.stringify({
             permissions: membership.permissions,
             owner: membership.owner,
+            expiresAt: permExpireAt,
           } satisfies KVTokenPermissions),
           "EXAT",
-          String(Math.floor(permExpireAt)),
+          String(Math.floor(permExpireAt / 1000)),
         ]
           .map((x) => `'${x.replace(/'/g, "\\'")}'`)
           .join(",")})`,
@@ -645,14 +642,15 @@ export const getTokenGuildPermissions = async (
         .reduce((prev, cur) => BigInt(cur) | prev, 0n),
     );
 
-    const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
+    const permExpireAt = new Date().getTime() + 21_600_000;
     await env.KV.put(
       key,
       JSON.stringify({
         permissions: permissions.toString(),
         owner: guild.owner_id === member.user?.id,
+        expiresAt: permExpireAt,
       } satisfies KVTokenPermissions),
-      { expiration: permExpireAt },
+      { expiration: permExpireAt / 1000 },
     );
 
     data = {
@@ -688,7 +686,7 @@ export const getTokenGuildChannelPermissions = async (
   env: Env,
 ): Promise<TokenGuildChannelPermissions> => {
   const key = `token-${token.id}-channel-${channelId}`;
-  const cached = await env.KV.get<KVTokenGuildChannelPermissions>(key, "json");
+  const cached = await env.KV.get<KVTokenPermissions>(key, "json");
   let data: TokenGuildChannelPermissions;
   if (cached) {
     data = {
@@ -798,22 +796,24 @@ export const getTokenGuildChannelPermissions = async (
       }
     }
 
-    const permExpireAt = (new Date().getTime() + 21_600_000) / 1000;
+    const permExpireAt = new Date().getTime() + 21_600_000;
     await env.KV.put(
       `token-${token.id}-guild-${guild.id}`,
       JSON.stringify({
         permissions: guildPermissions.toString(),
         owner: guild.owner_id === member.user?.id,
+        expiresAt: permExpireAt,
       } satisfies KVTokenPermissions),
-      { expiration: permExpireAt },
+      { expiration: permExpireAt / 1000 },
     );
     await env.KV.put(
       key,
       JSON.stringify({
         permissions: permissions.toString(),
         owner: guild.owner_id === member.user?.id,
-      } satisfies KVTokenGuildChannelPermissions),
-      { expiration: permExpireAt },
+        expiresAt: permExpireAt,
+      } satisfies KVTokenPermissions),
+      { expiration: permExpireAt / 1000 },
     );
 
     data = {
