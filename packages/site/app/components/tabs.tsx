@@ -20,7 +20,7 @@ export const TabsWindow: React.FC<
 > = ({ children, data, tab, setTab }) => {
   return (
     <div className="sm:flex mt-4">
-      <div className="flex mb-2 sm:mb-0 h-fit overflow-x-auto sm:overflow-hidden sm:block sticky top-14 sm:w-1/5 shrink-0 sm:ltr:mr-4 sm:rtl:ml-4 p-0.5 space-x-0.5 sm:space-x-0 sm:space-y-0.5 rtl:space-x-reverse bg-slate-100 dark:bg-[#1E1F22] rounded z-10 shadow-md">
+      <div className="flex mb-2 sm:mb-0 h-fit overflow-x-auto sm:overflow-hidden sm:block sticky top-14 sm:w-1/5 shrink-0 sm:me-4 p-0.5 space-x-0.5 sm:space-x-0 sm:space-y-0.5 rtl:space-x-reverse bg-slate-100 dark:bg-[#1E1F22] rounded-lg z-10 shadow-md">
         {data.map((t) => (
           <Tab
             key={`tab-${t.value}`}
@@ -48,7 +48,7 @@ export const Tab: React.FC<{
       currentValue === value
         ? "bg-slate-200 hover:bg-slate-300 dark:bg-gray-800 dark:hover:bg-gray-700 cursor-default"
         : "hover:bg-slate-200 dark:hover:bg-gray-800"
-    } rounded transition px-4 py-1.5 font-medium w-fit sm:w-full ltr:text-left rtl:text-right shrink-0 sm:shrink`}
+    } rounded-lg transition px-4 py-1.5 font-medium w-fit sm:w-full text-start shrink-0 sm:shrink`}
     onClick={(e) => {
       if (onClick) {
         onClick(e, setTab);

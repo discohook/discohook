@@ -1348,7 +1348,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     </button>
                     <button
                       type="button"
-                      className="ltr:ml-1 rtl:mr-1 my-auto hover:text-red-400 text-xl"
+                      className="ms-1 my-auto hover:text-red-400 text-xl"
                       onClick={() => {
                         const newFiles = files.filter((f) => f.id !== id);
                         setFiles(newFiles);
