@@ -8,7 +8,7 @@ export const Checkbox = (
       React.InputHTMLAttributes<HTMLInputElement>,
       HTMLInputElement
     >,
-    "checked" | "disabled" | "readOnly"
+    "name" | "checked" | "disabled" | "readOnly"
   > & {
     label: React.ReactNode;
     description?: React.ReactNode;
@@ -31,6 +31,7 @@ export const Checkbox = (
               : undefined,
           )
         }
+        name={props.name}
         checked={props.checked}
         disabled={props.disabled}
         readOnly={props.readOnly}
