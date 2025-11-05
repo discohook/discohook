@@ -229,6 +229,7 @@
   "sessions": "Sessions",
   "sessionsSubtitle": "Below is a list of active sessions with permissions for <0>{{guild.name}}</0>",
   "revokeSession": "Revoke Session",
+  "sessionsAllChannels": "All Channels (server permissions only)",
   "thisDevice": "This Device",
   "owner": "Owner",
   "permissionsCount_one": "{{count}} permission",

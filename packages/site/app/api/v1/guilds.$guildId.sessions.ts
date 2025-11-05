@@ -1,26 +1,81 @@
+import type { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
+import {
+  type RESTGetAPIGuildChannelsResult,
+  RESTJSONErrorCodes,
+  Routes,
+} from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { zx } from "zodix";
 import {
   authorizeRequest,
   getTokenGuildPermissions,
   type KVTokenPermissions,
+  type RespondFunction,
 } from "~/session.server";
+import { isDiscordError } from "~/util/discord";
 import { getId } from "~/util/id";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { createREST } from "~/util/rest";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
 
 const GUILD_TOKEN_TTL = 21_600_000; // ms
+
+export const channelIsInGuild = async (
+  rest: REST,
+  guildId: string | bigint,
+  channelId: string | bigint,
+  respond: RespondFunction = (r) => r,
+): Promise<void> => {
+  if (channelId !== undefined) {
+    try {
+      const channels = (await rest.get(
+        Routes.guildChannels(String(guildId)),
+      )) as RESTGetAPIGuildChannelsResult;
+      const channel = channels.find((c) => c.id === channelId);
+      if (!channel) {
+        throw respond(
+          json(
+            {
+              message:
+                "Unknown channel or Discohook is missing access to the server",
+            },
+            404,
+          ),
+        );
+      }
+    } catch (e) {
+      if (e instanceof Response) throw e;
+      if (
+        isDiscordError(e) &&
+        (e.code === RESTJSONErrorCodes.UnknownGuild ||
+          e.code === RESTJSONErrorCodes.MissingAccess)
+      ) {
+        throw respond(
+          json(
+            {
+              message:
+                "Unknown channel or Discohook is missing access to the server",
+            },
+            404,
+          ),
+        );
+      }
+      throw e;
+    }
+  }
+};
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });
   const perPage = 50;
-  const { cursor } = zxParseQuery(request, {
+  const { cursor, channelId } = zxParseQuery(request, {
     cursor: zx.IntAsString.refine((v) => v > 0)
       .default("1")
       .transform((v) => v - 1),
+    channelId: snowflakeAsString().transform(String).optional(),
   });
 
   const [token, respond] = await authorizeRequest(request, context);
@@ -32,9 +87,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   if (!owner && !permissions.has(PermissionFlags.Administrator)) {
     throw respond(json({ message: "Missing permissions" }, 403));
   }
+  // Verify that the channel is part of this guild
+  if (channelId !== undefined) {
+    const rest = createREST(context.env);
+    await channelIsInGuild(rest, guildId, channelId, respond);
+  }
 
   /*
-   * I really don't like this but I think it's the best we can do right now.
+   * I don't love this but I think it's the best we can do right now.
    * I would use SSCAN but this of course requires the keys to be in a set
    * whose members cannot be made to expire automatically.
    * Perhaps: https://github.com/Rush/redis_expiremember_module
@@ -47,7 +107,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       "SCAN",
       String(currentCursor),
       "MATCH",
-      `token-*-guild-${guildId}`,
+      channelId !== undefined
+        ? `token-*-channel-${channelId}`
+        : `token-*-guild-${guildId}`,
       "COUNT",
       "1000",
     )) as [string, string[]];
@@ -72,6 +134,16 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     }
   }
 
+  if (keys.size === 0) {
+    return respond(
+      json({
+        cursor: currentCursor,
+        channelId: channelId ?? null,
+        results: [],
+      }),
+    );
+  }
+
   const keysArray = Array.from(keys.values());
   const rawValues = (await context.env.KV.send("MGET", ...keys)) as (
     | string
@@ -80,7 +152,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   // @ts-expect-error error condition
   if (rawValues[0] === false) {
     console.error(rawValues[1]);
-    throw json({ message: "Failed to resolve values" }, 500);
+    throw respond(json({ message: "Failed to resolve values" }, 500));
   }
 
   const values: {
@@ -131,21 +203,25 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     await context.env.KV.delete(...deleteKeys);
   }
 
-  return {
-    cursor: currentCursor,
-    results: values,
-  };
+  return respond(
+    json({
+      cursor: currentCursor,
+      channelId: channelId ?? null,
+      results: values,
+    }),
+  );
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
   });
-  const { id: tokenIds } = zxParseQuery(request, {
+  const { id: tokenIds, channelId } = zxParseQuery(request, {
     id: snowflakeAsString()
       .array()
       .max(200)
       .or(snowflakeAsString().transform((v) => [v])),
+    channelId: snowflakeAsString().transform(String).optional(),
   });
 
   const [token, respond] = await authorizeRequest(request, context);
@@ -156,6 +232,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   );
   if (!owner && !permissions.has(PermissionFlags.Administrator)) {
     throw respond(json({ message: "Missing permissions" }, 403));
+  }
+  if (channelId !== undefined) {
+    const rest = createREST(context.env);
+    await channelIsInGuild(rest, guildId, channelId, respond);
   }
 
   switch (request.method) {

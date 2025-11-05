@@ -536,6 +536,8 @@ export async function authorizeRequest(
   }
 }
 
+export type RespondFunction = Awaited<ReturnType<typeof authorizeRequest>>[1];
+
 export interface TokenGuildPermissions {
   permissions: PermissionsBitField;
   owner?: boolean;

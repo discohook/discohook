@@ -12,6 +12,7 @@ export const ChannelSelect = (props: {
   name?: string;
   value?: ResolvableAPIChannel | null;
   clearable?: boolean;
+  clearableLabelKey?: string;
   // isMulti?: boolean;
   required?: boolean;
   disabled?: boolean;
@@ -21,7 +22,12 @@ export const ChannelSelect = (props: {
     <Select.Root
       items={[
         ...(props.clearable
-          ? [{ value: null, label: props.t("allChannels") }]
+          ? [
+              {
+                value: null,
+                label: props.t(props.clearableLabelKey ?? "allChannels"),
+              },
+            ]
           : []),
         ...props.channels.map((channel) => ({
           value: channel.id,
@@ -29,11 +35,16 @@ export const ChannelSelect = (props: {
         })),
       ]}
       name={props.name}
-      value={props.value?.id}
+      value={props.value === null ? null : props.value?.id}
       onValueChange={(value) => {
-        const channel = props.channels.find((c) => c.id === value);
-        if (props.onChange && channel) {
-          props.onChange(channel);
+        if (!props.onChange) return;
+        if (value === null && props.clearable) {
+          props.onChange(null);
+        } else {
+          const channel = props.channels.find((c) => c.id === value);
+          if (channel) {
+            props.onChange(channel);
+          }
         }
       }}
       required={props.required}
@@ -54,7 +65,7 @@ export const ChannelSelect = (props: {
                 <Select.ItemText
                   className={twJoin(selectStyles.itemText, "flex items-center")}
                 >
-                  {props.t("allChannels")}
+                  {props.t(props.clearableLabelKey ?? "allChannels")}
                 </Select.ItemText>
                 <Select.ItemIndicator className={selectStyles.itemIndicator}>
                   <CoolIcon icon="Check" />
@@ -70,9 +81,7 @@ export const ChannelSelect = (props: {
                 <Select.ItemText
                   className={twJoin(selectStyles.itemText, "flex items-center")}
                 >
-                  {channelIcons[channel.type]({
-                    className: "h-5 ltr:mr-1.5 rtl:ml-1.5",
-                  })}
+                  {channelIcons[channel.type]({ className: "h-5 me-1.5" })}
                   {channel.name}
                 </Select.ItemText>
                 <Select.ItemIndicator className={selectStyles.itemIndicator}>

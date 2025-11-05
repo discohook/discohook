@@ -41,6 +41,7 @@ import { twJoin, twMerge } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { collapsibleStyles } from "~/components/collapsible";
 import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
@@ -501,7 +502,9 @@ export default () => {
   const guildWebhookFetcher = useSafeFetcher<typeof ApiPatchGuildWebhook>({
     onError: setError,
   });
-  const sessionsFetcher = useFetcher<typeof ApiGetGuildSessions>();
+  const sessionsFetcher = useSafeFetcher<typeof ApiGetGuildSessions>({
+    onError: setError,
+  });
   const sessionFetcher = useSafeFetcher({ onError: setError });
   const profileFetcher = useSafeFetcher<typeof ApiGetGuildProfile>({
     onError: setError,
@@ -1356,8 +1359,16 @@ export default () => {
                                   method: "DELETE",
                                 });
                                 setConfirm(undefined);
+
+                                const sessionsParams = new URLSearchParams();
+                                if (sessionsFetcher.data?.channelId) {
+                                  sessionsParams.set(
+                                    "channelId",
+                                    sessionsFetcher.data.channelId,
+                                  );
+                                }
                                 sessionsFetcher.load(
-                                  apiUrl(BRoutes.guildSessions(guild.id)),
+                                  `${apiUrl(BRoutes.guildSessions(guild.id))}?${sessionsParams}`,
                                 );
                                 setSelectedSessionIds({
                                   action: "overwrite",
@@ -1377,7 +1388,58 @@ export default () => {
                     {t("revokeCount", { count: selectedSessionIds.length })}
                   </Button>
                 </div>
-                {sessionsFetcher.data ? (
+                <div>
+                  <p className="text-sm font-medium select-none">
+                    {t("channel")}
+                  </p>
+                  <ChannelSelect
+                    t={t}
+                    channels={cache.channel.getAll()}
+                    disabled={!sessionsFetcher.data}
+                    clearable
+                    clearableLabelKey="sessionsAllChannels"
+                    value={
+                      sessionsFetcher.data?.channelId
+                        ? (cache.channel.get(sessionsFetcher.data.channelId) ??
+                          null)
+                        : null
+                    }
+                    onChange={(channel) => {
+                      const params = new URLSearchParams();
+                      if (channel) {
+                        params.set("channelId", channel.id);
+                      }
+                      sessionsFetcher.load(
+                        `${apiUrl(BRoutes.guildSessions(guild.id))}?${params}`,
+                      );
+                      setSelectedSessionIds({
+                        action: "overwrite",
+                        value: [],
+                      });
+                    }}
+                  />
+                </div>
+                {sessionsFetcher.state !== "idle" ? (
+                  <div className="space-y-2 animate-pulse">
+                    {Array(5)
+                      .fill(undefined)
+                      .map((_, i) => (
+                        <div
+                          key={`session-skeleton-${i}`}
+                          className="rounded-lg py-3 px-4 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22]"
+                        >
+                          <div className="flex items-center me-3">
+                            <Checkbox label={<></>} checked={false} />
+                            <div className="size-7 aspect-square rounded-lg bg-muted-dark dark:bg-muted me-1.5" />
+                            <div>
+                              <div className="rounded-full bg-muted-dark dark:bg-muted h-3 w-32" />
+                              <div className="rounded-full bg-muted-dark dark:bg-muted h-3 w-16 mt-0.5" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : sessionsFetcher.data ? (
                   sessionsFetcher.data.results.map((session) => {
                     const permissions = new PermissionsBitField(
                       BigInt(session.permissions),
@@ -1479,8 +1541,8 @@ export default () => {
                               {new Date(session.expiresAt).toLocaleString(
                                 undefined,
                                 {
-                                  // month: "short",
-                                  // day: "numeric",
+                                  month: "short",
+                                  day: "numeric",
                                   hour: "numeric",
                                   minute: "2-digit",
                                 },
@@ -1492,18 +1554,29 @@ export default () => {
                             className="ms-auto flex gap-2 group/trigger rounded-lg px-2 aspect-square hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-red-400 transition-colors"
                             title={t("revokeSession")}
                             onClick={async () => {
+                              const params = new URLSearchParams();
+                              if (sessionsFetcher.data?.channelId) {
+                                params.set(
+                                  "channelId",
+                                  sessionsFetcher.data.channelId,
+                                );
+                              }
                               await sessionFetcher.submitAsync(undefined, {
-                                action: apiUrl(
+                                action: `${apiUrl(
                                   BRoutes.guildSession(
                                     guild.id,
                                     session.tokenId,
                                   ),
-                                ),
+                                )}?${params}`,
                                 method: "DELETE",
                               });
                               sessionsFetcher.load(
                                 apiUrl(BRoutes.guildSessions(guild.id)),
                               );
+                              setSelectedSessionIds({
+                                action: "overwrite",
+                                value: [],
+                              });
                             }}
                           >
                             <CoolIcon
@@ -1567,7 +1640,7 @@ export default () => {
                     );
                   })
                 ) : (
-                  <p>Loading...</p>
+                  <></>
                 )}
               </div>
             </div>
