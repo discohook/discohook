@@ -528,7 +528,7 @@
             "months_future_other": "in {{count}} Monaten",
             "months_past_one": "vor einem Monat",
             "months_past_other": "in {{count}} Monaten",
-            "days_past_one": "in{{count}} einem Tag",
+            "days_past_one": "in {{count}} einem Tag",
             "days_past_other": "in {{count}} Tagen",
             "seconds_past": "vor {{count}} Sekunden",
             "seconds_future": "in {{count}} Sekunden",
