@@ -1,3 +1,4 @@
+import { DefaultUserAgent, DefaultUserAgentAppendix } from "@discordjs/rest";
 import {
   type APIApplicationCommandAutocompleteInteraction,
   type APIApplicationCommandAutocompleteResponse,
@@ -267,7 +268,8 @@ class JsonResponse extends Response {
     const jsonBody = JSON.stringify(body);
     const responseInit = init || {
       headers: {
-        "content-type": "application/json;charset=UTF-8",
+        "Content-Type": "application/json;charset=UTF-8",
+        "User-Agent": `${DefaultUserAgent} ${DefaultUserAgentAppendix}`.trim(),
       },
     };
     super(jsonBody, responseInit);
