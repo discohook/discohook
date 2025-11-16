@@ -5,7 +5,6 @@ import {
   RoleSelectMenuBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  TextInputBuilder,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
@@ -271,16 +270,20 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
       state.step = 3;
       const modal = new ModalBuilder()
         .setTitle("Button message")
-        .addComponents(
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("share-link")
-              .setLabel("Share Link")
-              .setStyle(TextInputStyle.Short)
-              .setPlaceholder("https://discohook.app/?share=...")
-              .setMaxLength(40)
-              .setMinLength(30),
-          ),
+        .addLabelComponents((l) =>
+          l
+            .setLabel("Share Link")
+            .setDescription(
+              'You can generate a share link at https://discohook.app. Compose or open the message data you would like to use in the Discohook editor, then press "Share" at the top left.',
+            )
+            .setTextInputComponent((b) =>
+              b
+                .setCustomId("share-link")
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder("https://discohook.app/?share=...")
+                .setMaxLength(40)
+                .setMinLength(30),
+            ),
         );
       await storeComponents(ctx.env.KV, [
         modal,
@@ -331,36 +334,47 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
 const getCustomButtonValuesModal = () =>
   new ModalBuilder()
     .setTitle("Custom button values")
-    .addComponents(
-      new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-          .setCustomId("label")
-          .setLabel("Label")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(false)
-          .setMaxLength(80)
-          .setPlaceholder("The text displayed on this button."),
-      ),
-      new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-          .setCustomId("emoji")
-          .setLabel("Emoji")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(false)
-          .setPlaceholder("Like :smile: or a custom emoji in the server."),
-      ),
-      new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-          .setCustomId("disabled")
-          .setLabel("Disabled?")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(false)
-          .setMinLength(4)
-          .setMaxLength(5)
-          .setPlaceholder(
-            'Type "true" or "false" for whether the button should be unclickable.',
-          ),
-      ),
+    .addLabelComponents((l) =>
+      l
+        .setLabel("Label")
+        .setDescription("The text displayed on this button.")
+        .setTextInputComponent((b) =>
+          b
+            .setCustomId("label")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+            .setMaxLength(80),
+        ),
+    )
+    .addLabelComponents((l) =>
+      l
+        .setLabel("Emoji")
+        .setDescription("Like :smile: or a custom emoji in the server.")
+        .setTextInputComponent((b) =>
+          b
+            .setCustomId("emoji")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false),
+        ),
+    )
+    .addLabelComponents((l) =>
+      l
+        .setLabel("Disabled?")
+        .setStringSelectMenuComponent((s) =>
+          s
+            .setCustomId("disabled")
+            .addOptions(
+              new StringSelectMenuOptionBuilder()
+                .setLabel("True")
+                .setValue("true")
+                .setDescription("The button will not be clickable."),
+              new StringSelectMenuOptionBuilder()
+                .setLabel("False")
+                .setValue("false")
+                .setDescription("The button will be clickable (default)")
+                .setDefault(true),
+            ),
+        ),
     );
 
 export const addComponentSetStylePrompt = async (ctx: InteractionContext) => {

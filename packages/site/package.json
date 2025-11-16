@@ -30,7 +30,7 @@
     "@ungap/structured-clone": "^1.2.1",
     "chrono-node": "^2.7.5",
     "cron-parser": "discohook/cron-parser",
-    "discord-api-types": "^0.38.1",
+    "discord-api-types": "^0.38.32",
     "discord-bitflag": "^1.0.2",
     "discord-snowflake": "^2.0.0",
     "emoji-mart": "^5.5.2",

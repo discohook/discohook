@@ -6,6 +6,7 @@ import {
   type APIMessageComponentButtonInteraction,
   type APIMessageComponentSelectMenuInteraction,
   type APIModalSubmitInteraction,
+  type APIModalSubmitStringSelectComponent,
   type APIWebhook,
   ComponentType,
   PermissionFlagsBits,
@@ -344,13 +345,20 @@ export const quickEditSubmitEmbed: ModalCallback = async (ctx) => {
   }
 
   for (const row of ctx.interaction.data.components) {
-    if (row.type !== ComponentType.ActionRow) continue;
-    for (const input of row.components.filter(
-      (c) => c.type === ComponentType.TextInput,
-    )) {
-      // These should all be valid references for existing or new parts
-      modifyEmbedByPath(embed, input.custom_id, input.value);
-    }
+    const input =
+      row.type === ComponentType.ActionRow
+        ? row.components[0]
+        : row.type === ComponentType.Label
+          ? row.component
+          : undefined;
+    if (!input) continue;
+
+    // These should all be valid references for existing or new parts
+    modifyEmbedByPath(
+      embed,
+      input.custom_id,
+      input.type === ComponentType.TextInput ? input.value : input.values[0],
+    );
   }
 
   trimEmptyEmbedParts(embed);
@@ -494,7 +502,9 @@ export const quickEditSubmitGalleryItem: ModalCallback = async (ctx) => {
   item.media = { url };
   item.description =
     ctx.getModalComponent("description")?.value.trim() || undefined;
-  item.spoiler = ctx.getModalComponent("spoiler")?.value === "true";
+  item.spoiler =
+    ctx.getModalComponent<APIModalSubmitStringSelectComponent>("spoiler")
+      ?.values[0] === "true";
 
   return submitWebhookMessageEdit(
     ctx,
@@ -657,42 +667,65 @@ export const quickEditSubmitSection: ModalCallback = async (ctx) => {
   }
 
   for (const row of ctx.interaction.data.components) {
-    const [input] = row.components;
-    switch (input.custom_id) {
-      // ew
-      case "components.0.content":
-      case "components.1.content":
-      case "components.2.content": {
-        const index = Number(input.custom_id.split(".")[1]);
-        const text = component.components[index];
-        if (!text) {
-          return ctx.reply({ content: missingElement, ephemeral: true });
-        }
-        text.content = input.value.trim();
-        break;
-      }
-      case "accessory.media.url":
-      case "accessory.description":
-      case "accessory.spoiler": {
-        const thumbnail = component.accessory;
-        if (thumbnail.type !== ComponentType.Thumbnail) {
-          return ctx.reply({ content: missingElement, ephemeral: true });
-        }
+    const input =
+      row.type === ComponentType.ActionRow
+        ? row.components[0]
+        : row.type === ComponentType.Label
+          ? row.component
+          : undefined;
+    if (!input) continue;
+
+    switch (input.type) {
+      case ComponentType.TextInput:
         switch (input.custom_id) {
+          // ew
+          case "components.0.content":
+          case "components.1.content":
+          case "components.2.content": {
+            const index = Number(input.custom_id.split(".")[1]);
+            const text = component.components[index];
+            if (!text) {
+              return ctx.reply({ content: missingElement, ephemeral: true });
+            }
+            text.content = input.value.trim();
+            break;
+          }
           case "accessory.media.url":
-            thumbnail.media.url = input.value;
+          case "accessory.description": {
+            const thumbnail = component.accessory;
+            if (thumbnail.type !== ComponentType.Thumbnail) {
+              return ctx.reply({ content: missingElement, ephemeral: true });
+            }
+            switch (input.custom_id) {
+              case "accessory.media.url":
+                thumbnail.media.url = input.value;
+                break;
+              case "accessory.description":
+                thumbnail.description = input.value.trim() || undefined;
+                break;
+              default:
+                break;
+            }
             break;
-          case "accessory.description":
-            thumbnail.description = input.value.trim() || undefined;
-            break;
-          case "accessory.spoiler":
-            thumbnail.spoiler = input.value === "true";
-            break;
+          }
           default:
             break;
         }
         break;
-      }
+      case ComponentType.StringSelect:
+        switch (input.custom_id) {
+          case "accessory.spoiler": {
+            const thumbnail = component.accessory;
+            if (thumbnail.type !== ComponentType.Thumbnail) {
+              return ctx.reply({ content: missingElement, ephemeral: true });
+            }
+            thumbnail.spoiler = input.values[0] === "true";
+            break;
+          }
+          default:
+            break;
+        }
+        break;
       default:
         break;
     }

@@ -81,18 +81,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@discordjs/builders@npm:^1.11.1":
-  version: 1.11.1
-  resolution: "@discordjs/builders@npm:1.11.1"
+"@discordjs/builders@npm:^1.13.0":
+  version: 1.13.0
+  resolution: "@discordjs/builders@npm:1.13.0"
   dependencies:
     "@discordjs/formatters": "npm:^0.6.1"
     "@discordjs/util": "npm:^1.1.1"
     "@sapphire/shapeshift": "npm:^4.0.0"
-    discord-api-types: "npm:^0.38.1"
+    discord-api-types: "npm:^0.38.31"
     fast-deep-equal: "npm:^3.1.3"
     ts-mixer: "npm:^6.0.4"
     tslib: "npm:^2.6.3"
-  checksum: 10c0/ddfbc60350c6217fc5b1a43cdd1cfc74cab82d44d18ebca1af385c6d3b60861b5cce6782f8bb28ac8ed25dea5850f86e05b43c57931fbd7e9882e0d3ab146c35
+  checksum: 10c0/e035e2f38db2021eec4338daa352b085e24210049a2149be77ae588b31fd8d324a8719c04dedd26af0f435effa82c24945d0d70cf8476ae90e024a5b4d80c8f7
   languageName: node
   linkType: hard
 
@@ -112,20 +112,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@discordjs/rest@npm:^2.5.0":
-  version: 2.5.0
-  resolution: "@discordjs/rest@npm:2.5.0"
+"@discordjs/rest@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "@discordjs/rest@npm:2.6.0"
   dependencies:
     "@discordjs/collection": "npm:^2.1.1"
     "@discordjs/util": "npm:^1.1.1"
     "@sapphire/async-queue": "npm:^1.5.3"
     "@sapphire/snowflake": "npm:^3.5.3"
     "@vladfrangu/async_event_emitter": "npm:^2.4.6"
-    discord-api-types: "npm:^0.38.1"
+    discord-api-types: "npm:^0.38.16"
     magic-bytes.js: "npm:^1.10.0"
     tslib: "npm:^2.6.3"
-    undici: "npm:6.21.1"
-  checksum: 10c0/9bfafd34c684240395d3ce1ae7a930de426f379940ae526466714e8066bf06c6a6a4f45e76a39f32d85fee7eb74bcb6ff7b72669cec722f9c3e1828a96ec3ad6
+    undici: "npm:6.21.3"
+  checksum: 10c0/67e12f54b8aa11208441d07dd2a30d3b125142a5bc76f34f5b7de3e676334f36b6cce63a0afd78d380eea25d8c56ade8ae3fd8770c88ec31c318a20d412ff31f
   languageName: node
   linkType: hard
 
@@ -1229,14 +1229,14 @@ __metadata:
   resolution: "discohook-bot@workspace:."
   dependencies:
     "@cloudflare/workers-types": "npm:^4.20240405.0"
-    "@discordjs/builders": "npm:^1.11.1"
+    "@discordjs/builders": "npm:^1.13.0"
     "@discordjs/formatters": "npm:^0.6.1"
-    "@discordjs/rest": "npm:^2.5.0"
+    "@discordjs/rest": "npm:^2.6.0"
     "@tsconfig/node18": "npm:^18.2.2"
     c8: "npm:^8.0.0"
     chai: "npm:^4.3.7"
     dedent-js: "npm:^1.0.1"
-    discord-api-types: "npm:^0.38.1"
+    discord-api-types: "npm:^0.38.32"
     discord-bitflag: "npm:^1.0.2"
     discord-verify: "npm:^1.2.0"
     dotenv: "npm:^16.0.3"
@@ -1257,6 +1257,13 @@ __metadata:
   version: 0.38.1
   resolution: "discord-api-types@npm:0.38.1"
   checksum: 10c0/8616eb025ccc998d1c5eca08fb50ba2faefbd53ed786ea84ded9b9f881037104bac22c6f53db357c1d12660ea32375a507c3cce8cf36873382ace42ddc73ca4b
+  languageName: node
+  linkType: hard
+
+"discord-api-types@npm:^0.38.16, discord-api-types@npm:^0.38.31, discord-api-types@npm:^0.38.32":
+  version: 0.38.33
+  resolution: "discord-api-types@npm:0.38.33"
+  checksum: 10c0/3a844d1d07ad88c1cb477d9aeb6719627f564f3ee0996ea8c6d2c21b8d2a53b2f9ee6e99884df4b2ec8483fa7a4d6edc2d7d4b0a104e8960f249a5954327158e
   languageName: node
   linkType: hard
 
@@ -2895,9 +2902,9 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=8cfbb3&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=44af35&locator=discohook-bot%40workspace%3A."
   dependencies:
-    discord-api-types: "npm:^0.38.1"
+    discord-api-types: "npm:^0.38.32"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.32.1"
     json-bigint: "npm:^1.0.0"
@@ -2905,7 +2912,7 @@ __metadata:
     tif-snowflake: discohook/snowflake
     zod: "npm:^4.1.5"
     zodix: "npm:@coji/zodix@^0.5.0"
-  checksum: 10c0/e6a3d70f7e0a85a7bb282aa9ac123507a2526754f8c070e425edf991bb68982ef22105e9431452d7ede2c752502ef0d0cabb7ce7cfff4f52967dff0f76df96eb
+  checksum: 10c0/9fe5ff5dcecb6ecf05693f8b8b3a536c20c09f7799ada6b8eb79bb6c5b52d5bab5b968048756229091adc4202736650513dd6306fc1fb829fdb57f95abbbeb15
   languageName: node
   linkType: hard
 
@@ -3086,10 +3093,10 @@ tif-snowflake@discohook/snowflake:
   languageName: node
   linkType: hard
 
-"undici@npm:6.21.1":
-  version: 6.21.1
-  resolution: "undici@npm:6.21.1"
-  checksum: 10c0/d604080e4f8db89b35a63b483b5f96a5f8b19ec9f716e934639345449405809d2997e1dd7212d67048f210e54534143384d712bd9075e4394f0788895ef9ca8e
+"undici@npm:6.21.3":
+  version: 6.21.3
+  resolution: "undici@npm:6.21.3"
+  checksum: 10c0/294da109853fad7a6ef5a172ad0ca3fb3f1f60cf34703d062a5ec967daf69ad8c03b52e6d536c5cba3bb65615769bf08e5b30798915cbccdddaca01045173dda
   languageName: node
   linkType: hard
 

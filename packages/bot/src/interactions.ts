@@ -32,12 +32,14 @@ import {
   type APIModalInteractionResponse,
   type APIModalInteractionResponseCallbackData,
   type APIModalSubmitInteraction,
+  APIModalSubmitTextInputComponent,
   type APIPartialChannel,
   type APIRole,
   type APIUser,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ChannelType,
+  ComponentType,
   EntitlementType,
   InteractionResponseType,
   InteractionType,
@@ -536,19 +538,30 @@ export class InteractionContext<
     return user;
   }
 
-  getModalComponent(
-    customId: string,
-  ): T extends APIModalSubmitInteraction ? ModalSubmitComponent : undefined;
-  getModalComponent(customId: string): ModalSubmitComponent | undefined {
+  getModalComponent<
+    C extends ModalSubmitComponent = APIModalSubmitTextInputComponent,
+  >(customId: string): T extends APIModalSubmitInteraction ? C : undefined;
+  getModalComponent<
+    C extends ModalSubmitComponent = APIModalSubmitTextInputComponent,
+  >(customId: string): C | undefined {
     if (this.interaction.type !== InteractionType.ModalSubmit) return undefined;
 
     const allComponents = [];
     for (const row of this.interaction.data.components) {
-      allComponents.push(...row.components);
+      switch (row.type) {
+        case ComponentType.ActionRow:
+          allComponents.push(...row.components);
+          break;
+        case ComponentType.Label:
+          allComponents.push(row.component);
+          break;
+        default:
+          break;
+      }
     }
 
     const component = allComponents.find((c) => c.custom_id === customId);
-    return component;
+    return component as C;
   }
 
   defer(options?: {

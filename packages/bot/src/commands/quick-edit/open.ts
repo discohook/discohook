@@ -1,7 +1,6 @@
 import {
-  ActionRowBuilder,
   ModalBuilder,
-  TextInputBuilder,
+  StringSelectMenuOptionBuilder,
 } from "@discordjs/builders";
 import {
   type APIComponentInContainer,
@@ -91,13 +90,6 @@ export const quickEditComponentModalReopen: ButtonCallback = async (ctx) => {
   });
 };
 
-export const buildTextInputRow = (
-  construct: (builder: TextInputBuilder) => TextInputBuilder,
-) =>
-  new ActionRowBuilder<TextInputBuilder>().addComponents(
-    construct(new TextInputBuilder()),
-  );
-
 export const quickEditEmbedPartOpen: ButtonCallback & SelectMenuCallback =
   async (ctx) => {
     const { channelId, messageId, embedIndex, embedPart } =
@@ -136,117 +128,129 @@ export const quickEditEmbedPartOpen: ButtonCallback & SelectMenuCallback =
     switch (part) {
       case "author": {
         modal.setTitle("Set Author");
-        modal.addComponents(
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("author.name")
+        modal.addLabelComponents(
+          (l) =>
+            l
               .setLabel("Name")
-              .setMaxLength(128)
-              .setStyle(TextInputStyle.Paragraph)
-              .setValue(embed.author?.name ?? "")
-              .setPlaceholder(
+              .setDescription(
                 "This must be provided to display the author section.",
               )
-              .setRequired(false),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("author.url")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("author.name")
+                  .setMaxLength(128)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setValue(embed.author?.name ?? "")
+                  .setRequired(false),
+              ),
+          (l) =>
+            l
               .setLabel("URL")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.author?.url ?? "")
-              .setPlaceholder(
+              .setDescription(
                 "Directs desktop users to this URL when they click the author name.",
               )
-              .setRequired(false),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("author.icon_url")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("author.url")
+                  .setStyle(TextInputStyle.Short)
+                  .setValue(embed.author?.url ?? "")
+                  .setRequired(false),
+              ),
+          (l) =>
+            l
               .setLabel("Icon URL")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.author?.icon_url ?? "")
-              .setPlaceholder("An image shown to the left of the author name.")
-              .setRequired(false),
-          ),
+              .setDescription("An image shown to the left of the author name.")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("author.icon_url")
+                  .setStyle(TextInputStyle.Short)
+                  .setValue(embed.author?.icon_url ?? "")
+                  .setRequired(false),
+              ),
         );
         break;
       }
       case "title":
       case "description": {
         modal.setTitle("Set Body");
-        modal.addComponents(
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("title")
+        modal.addLabelComponents(
+          (l) =>
+            l
               .setLabel("Title")
-              .setMaxLength(256)
-              .setStyle(TextInputStyle.Paragraph)
-              .setValue(embed.title ?? "")
-              .setPlaceholder(
+              .setDescription(
                 "Large text below the author and above the description.",
               )
-              .setRequired(false),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("url")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("title")
+                  .setMaxLength(256)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setValue(embed.title ?? "")
+                  .setRequired(false),
+              ),
+          (l) =>
+            l
               .setLabel("Title URL")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.url ?? "")
-              .setPlaceholder("Open this URL when users click the title.")
-              .setRequired(false),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("description")
+              .setDescription("Open this URL when users click the title.")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("url")
+                  .setStyle(TextInputStyle.Short)
+                  .setValue(embed.url ?? "")
+                  .setRequired(false),
+              ),
+          (l) =>
+            l
               .setLabel("Description")
-              .setMaxLength(4000) // actual limit is 4096, but TextInput is capped lower
-              .setStyle(TextInputStyle.Paragraph)
-              .setValue(embed.description?.slice(0, 4000) ?? "")
-              .setPlaceholder(
+              .setDescription(
                 `Markdown-safe text below the title. ${
                   embed.description && embed.description?.length > 4000
                     ? "This value was truncated because Discord's limit for text inputs is 4000."
                     : ""
                 }`,
               )
-              .setRequired(false),
-          ),
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("description")
+                  .setMaxLength(4000) // actual limit is 4096, but TextInput is capped lower
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setValue(embed.description?.slice(0, 4000) ?? "")
+                  .setRequired(false),
+              ),
         );
         break;
       }
       case "url": {
         modal.setTitle("Set URL");
-        modal.addComponents(
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("url")
-              .setLabel("URL")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.url ?? "")
-              .setPlaceholder(
-                "If there is no title, this can still be used alone for image galleries.",
-              )
-              .setRequired(false),
-          ),
+        modal.addLabelComponents((l) =>
+          l
+            .setLabel("URL")
+            .setDescription(
+              "If there is no title, this can still be used alone for creating image galleries.",
+            )
+            .setTextInputComponent((b) =>
+              b
+                .setCustomId("url")
+                .setStyle(TextInputStyle.Short)
+                .setValue(embed.url ?? "")
+                .setRequired(false),
+            ),
         );
         break;
       }
       case "thumbnail": {
         modal.setTitle("Set Thumbnail");
-        modal.addComponents(
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("thumbnail.url")
-              .setLabel("Thumbnail URL")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.thumbnail?.url ?? "")
-              .setPlaceholder(
-                "Displayed to the right of all text in the embed.",
-              )
-              .setRequired(false),
-          ),
+        modal.addLabelComponents((l) =>
+          l
+            .setLabel("Thumbnail URL")
+            .setDescription("Displayed to the right of all text in the embed.")
+            .setTextInputComponent((b) =>
+              b
+                .setCustomId("thumbnail.url")
+                .setStyle(TextInputStyle.Short)
+                .setValue(embed.thumbnail?.url ?? "")
+                .setRequired(false),
+            ),
         );
         break;
       }
@@ -258,97 +262,118 @@ export const quickEditEmbedPartOpen: ButtonCallback & SelectMenuCallback =
         const field = isNewField ? undefined : embed.fields?.[Number(inner)];
 
         modal.setTitle(isNewField ? "New Field" : "Set Field");
-        modal.addComponents(
-          buildTextInputRow((input) =>
-            input
-              .setCustomId(`${prefix}.name`)
+        modal.addLabelComponents(
+          (l) =>
+            l
               .setLabel("Name")
-              .setMaxLength(256)
-              .setStyle(TextInputStyle.Paragraph)
-              .setValue(field?.name ?? "")
-              .setPlaceholder(
+              .setDescription(
                 "Short, semibold text that supports a markdown subset.",
               )
-              .setRequired(isNewField),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId(`${prefix}.value`)
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId(`${prefix}.name`)
+                  .setMaxLength(256)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setValue(field?.name ?? "")
+                  .setRequired(isNewField),
+              ),
+          (l) =>
+            l
               .setLabel("Value")
-              .setStyle(TextInputStyle.Paragraph)
-              .setMaxLength(1024)
-              .setValue(field?.value ?? "")
-              .setPlaceholder("Markdown-safe text below the field name.")
-              .setRequired(isNewField),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId(`${prefix}.inline`)
+              .setDescription("Markdown-safe text below the field name.")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId(`${prefix}.value`)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setMaxLength(1024)
+                  .setValue(field?.value ?? "")
+                  .setRequired(isNewField),
+              ),
+          (l) =>
+            l
               .setLabel("Inline?")
-              .setStyle(TextInputStyle.Short)
-              .setMinLength(4)
-              .setMaxLength(5)
-              .setValue(String(field?.inline ?? false))
-              .setPlaceholder(
-                'Type "true" or "false" for whether this field should display inline with other fields.',
-              )
-              .setRequired(false),
-          ),
+              .setStringSelectMenuComponent((s) =>
+                s
+                  .setCustomId(`${prefix}.inline`)
+                  .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                      .setLabel("True")
+                      .setValue("true")
+                      .setDescription(
+                        "The field will display inline with other fields (up to 3 per line).",
+                      )
+                      .setDefault(!!field?.inline),
+                    new StringSelectMenuOptionBuilder()
+                      .setLabel("False")
+                      .setValue("false")
+                      .setDescription(
+                        "The field will take the width of the entire line (default)",
+                      )
+                      .setDefault(!field?.inline),
+                  ),
+              ),
         );
         break;
       }
       case "image": {
         modal.setTitle("Set Image");
-        modal.addComponents(
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("image.url")
-              .setLabel("Image URL")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.image?.url ?? "")
-              .setPlaceholder(
-                "Displayed as a large image below all sections except the footer.",
-              )
-              .setRequired(false),
-          ),
+        modal.addLabelComponents((l) =>
+          l
+            .setLabel("Image URL")
+            .setDescription(
+              "Displayed as a large image below all sections except the footer.",
+            )
+            .setTextInputComponent((b) =>
+              b
+                .setCustomId("image.url")
+                .setStyle(TextInputStyle.Short)
+                .setValue(embed.image?.url ?? "")
+                .setRequired(false),
+            ),
         );
         break;
       }
       case "footer": {
         modal.setTitle("Set Footer");
-        modal.addComponents(
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("footer.text")
+        modal.addLabelComponents(
+          (l) =>
+            l
               .setLabel("Text")
-              .setMaxLength(2048)
-              .setStyle(TextInputStyle.Paragraph)
-              .setValue(embed.footer?.text ?? "")
-              .setPlaceholder(
+              .setDescription(
                 "This must be provided to display the footer icon, but is optional for the timestamp.",
               )
-              .setRequired(false),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("footer.icon_url")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("footer.text")
+                  .setMaxLength(2048)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setValue(embed.footer?.text ?? "")
+                  .setRequired(false),
+              ),
+          (l) =>
+            l
               .setLabel("Icon URL")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.footer?.icon_url ?? "")
-              .setPlaceholder("An image shown to the left of the footer text.")
-              .setRequired(false),
-          ),
-          buildTextInputRow((input) =>
-            input
-              .setCustomId("timestamp")
+              .setDescription("An image shown to the left of the footer text.")
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("footer.icon_url")
+                  .setStyle(TextInputStyle.Short)
+                  .setValue(embed.footer?.icon_url ?? "")
+                  .setRequired(false),
+              ),
+          (l) =>
+            l
               .setLabel("Timestamp")
-              .setStyle(TextInputStyle.Short)
-              .setValue(embed.timestamp ?? "")
-              .setPlaceholder(
+              .setDescription(
                 'A timestamp like "2025-01-01 14:00:00" or "Jan 1 2025 14:00", parsed in UTC',
               )
-              .setRequired(false),
-          ),
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId("timestamp")
+                  .setStyle(TextInputStyle.Short)
+                  .setValue(embed.timestamp ?? "")
+                  .setRequired(false),
+              ),
         );
         break;
       }

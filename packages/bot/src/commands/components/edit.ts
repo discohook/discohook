@@ -2,11 +2,13 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ContainerBuilder,
+  LabelBuilder,
   messageLink,
   ModalBuilder,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   TextInputBuilder,
 } from "@discordjs/builders";
 import { isLinkButton } from "discord-api-types/utils";
@@ -17,6 +19,7 @@ import {
   type APIMessage,
   type APIMessageComponentEmoji,
   type APIMessageTopLevelComponent,
+  APIModalSubmitStringSelectComponent,
   type APIPartialEmoji,
   type APISectionComponent,
   type APISelectMenuOption,
@@ -688,71 +691,81 @@ const getComponentEditModal = (
   switch (component.data.type) {
     case ComponentType.Button:
       if (component.data.style === ButtonStyle.Premium) {
-        modal.addComponents(
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("sku_id")
-              .setLabel("SKU ID")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(true)
-              .setValue(component.data.sku_id)
-              .setPlaceholder("Identifier for a purchasable SKU"),
-          ),
+        modal.addLabelComponents(
+          // we don't use function chaining here because it breaks the type guard
+          new LabelBuilder()
+            .setLabel("SKU ID")
+            .setDescription("Identifier for a purchasable SKU")
+            .setTextInputComponent(
+              new TextInputBuilder()
+                .setCustomId("sku_id")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setValue(component.data.sku_id),
+            ),
         );
       } else {
-        modal.addComponents(
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("label")
-              .setLabel("Label")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(false)
-              .setMaxLength(80)
-              .setValue(component.data.label ?? "")
-              .setPlaceholder("The text displayed on this button."),
-          ),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("emoji")
-              .setLabel("Emoji")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(false)
-              .setValue(
-                component.data.emoji?.id ?? component.data.emoji?.name ?? "",
-              )
-              .setPlaceholder("Like :smile: or a custom emoji in the server."),
-          ),
-        );
-        if (component.data.style === ButtonStyle.Link) {
-          modal.addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(
+        modal.addLabelComponents(
+          new LabelBuilder()
+            .setLabel("Label")
+            .setDescription("The text displayed on this button.")
+            .setTextInputComponent(
               new TextInputBuilder()
-                .setCustomId("url")
-                .setLabel("Button URL")
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-                .setValue(component.data.url)
-                .setPlaceholder(
-                  "The full URL this button will lead to when it is clicked.",
+                .setCustomId("label")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setMaxLength(80)
+                .setValue(component.data.label ?? ""),
+            ),
+          new LabelBuilder()
+            .setLabel("Emoji")
+            .setDescription("Like :smile: or a custom emoji in the server.")
+            .setTextInputComponent(
+              new TextInputBuilder()
+                .setCustomId("emoji")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setValue(
+                  component.data.emoji?.id ?? component.data.emoji?.name ?? "",
                 ),
             ),
+        );
+        if (component.data.style === ButtonStyle.Link) {
+          modal.addLabelComponents(
+            new LabelBuilder()
+              .setLabel("Button URL")
+              .setDescription(
+                "The full URL this button will lead to when it is clicked.",
+              )
+              .setTextInputComponent(
+                new TextInputBuilder()
+                  .setCustomId("url")
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setRequired(true)
+                  .setValue(component.data.url),
+              ),
           );
         }
       }
-      modal.addComponents(
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setCustomId("disabled")
-            .setLabel("Disabled?")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-            .setMinLength(4)
-            .setMaxLength(5)
-            .setValue(String(component.data.disabled ?? false))
-            .setPlaceholder(
-              'Type "true" or "false" for whether the button should be unclickable.',
-            ),
-        ),
+      modal.addLabelComponents((l) =>
+        l
+          .setLabel("Disabled?")
+          .setStringSelectMenuComponent((s) =>
+            s
+              .setCustomId("disabled")
+              .addOptions([
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("True")
+                  .setValue("true")
+                  .setDescription("The button will not be clickable.")
+                  .setDefault(!!component.data.disabled),
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("False")
+                  .setValue("false")
+                  .setDescription("The button will be clickable")
+                  .setDefault(!component.data.disabled),
+              ]),
+          ),
       );
       break;
     case ComponentType.StringSelect:
@@ -760,32 +773,38 @@ const getComponentEditModal = (
     case ComponentType.MentionableSelect:
     case ComponentType.RoleSelect:
     case ComponentType.UserSelect:
-      modal.addComponents(
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setCustomId("placeholder")
-            .setLabel("Placeholder")
-            .setStyle(TextInputStyle.Paragraph)
-            .setMaxLength(150)
-            .setRequired(false)
-            .setValue(component.data.placeholder ?? "")
-            .setPlaceholder(
-              "The text to show in the select menu when it is collapsed.",
-            ),
-        ),
-        new ActionRowBuilder<TextInputBuilder>().addComponents(
-          new TextInputBuilder()
-            .setCustomId("disabled")
-            .setLabel("Disabled?")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-            .setMinLength(4)
-            .setMaxLength(5)
-            .setValue(String(component.data.disabled ?? false))
-            .setPlaceholder(
-              'Type "true" or "false" for whether the select should be unclickable.',
-            ),
-        ),
+      modal.addLabelComponents(
+        new LabelBuilder()
+          .setLabel("Placeholder")
+          .setDescription(
+            "The text to show in the select menu when it is collapsed.",
+          )
+          .setTextInputComponent(
+            new TextInputBuilder()
+              .setCustomId("placeholder")
+              .setStyle(TextInputStyle.Paragraph)
+              .setMaxLength(150)
+              .setRequired(false)
+              .setValue(component.data.placeholder ?? ""),
+          ),
+        new LabelBuilder()
+          .setLabel("Disabled?")
+          .setStringSelectMenuComponent((s) =>
+            s
+              .setCustomId("disabled")
+              .addOptions([
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("True")
+                  .setValue("true")
+                  .setDescription("The select will not be usable.")
+                  .setDefault(!!component.data.disabled),
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("False")
+                  .setValue("false")
+                  .setDescription("The select will be usable")
+                  .setDefault(!component.data.disabled),
+              ]),
+          ),
       );
       break;
     default:
@@ -1116,18 +1135,11 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
     default:
       break;
   }
-  const disabledRaw = ctx.getModalComponent("disabled")?.value;
+  const disabledRaw =
+    ctx.getModalComponent<APIModalSubmitStringSelectComponent>("disabled")
+      ?.values[0];
   if (disabledRaw) {
-    if (!["true", "false"].includes(disabledRaw.toLowerCase())) {
-      return ctx.reply({
-        components: [
-          textDisplay("Disabled field must be either `true` or `false`."),
-        ],
-        ephemeral: true,
-        componentsV2: true,
-      });
-    }
-    data.disabled = disabledRaw.toLowerCase() === "true";
+    data.disabled = disabledRaw === "true";
   }
 
   const edited = await registerComponentUpdate(

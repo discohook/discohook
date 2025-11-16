@@ -10,7 +10,6 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
-  TextInputBuilder,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
@@ -18,6 +17,7 @@ import {
   type APIInteraction,
   type APIMessage,
   type APIModalInteractionResponseCallbackData,
+  type APIModalSubmitStringSelectComponent,
   type APISelectMenuComponent,
   type APIStringSelectComponent,
   ButtonStyle,
@@ -600,46 +600,60 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
 
       const modal = new ModalBuilder()
         .setTitle("Custom button values")
-        .addComponents(
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("label")
-              .setLabel("Label")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(false)
-              .setMaxLength(80)
-              .setPlaceholder("The text displayed on this button."),
-          ),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("emoji")
-              .setLabel("Emoji")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(false)
-              .setPlaceholder("Like :smile: or a custom emoji in the server."),
-          ),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("url")
-              .setLabel("Button URL")
-              .setStyle(TextInputStyle.Paragraph)
-              .setRequired(true)
-              .setPlaceholder(
-                "The full URL this button will lead to when it is clicked.",
-              ),
-          ),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("disabled")
-              .setLabel("Disabled?")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(false)
-              .setMinLength(4)
-              .setMaxLength(5)
-              .setPlaceholder(
-                'Type "true" or "false" for whether the button should be unclickable.',
-              ),
-          ),
+        .addLabelComponents((s) =>
+          s
+            .setLabel("Label")
+            .setDescription("The text displayed on this button.")
+            .setTextInputComponent((b) =>
+              b
+                .setCustomId("label")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setMaxLength(80),
+            ),
+        )
+        .addLabelComponents((s) =>
+          s
+            .setLabel("Emoji")
+            .setDescription("Like :smile: or a custom emoji in the server.")
+            .setTextInputComponent((b) =>
+              b
+                .setCustomId("emoji")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false),
+            ),
+        )
+        .addLabelComponents((s) =>
+          s
+            .setLabel("Button URL")
+            .setDescription(
+              "The full URL this button will lead to when it is clicked.",
+            )
+            .setTextInputComponent((b) =>
+              b
+                .setCustomId("url")
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true),
+            ),
+        )
+        .addLabelComponents((l) =>
+          l
+            .setLabel("Disabled?")
+            .setStringSelectMenuComponent((s) =>
+              s
+                .setCustomId("disabled")
+                .addOptions(
+                  new StringSelectMenuOptionBuilder()
+                    .setLabel("True")
+                    .setValue("true")
+                    .setDescription("The button will not be clickable."),
+                  new StringSelectMenuOptionBuilder()
+                    .setLabel("False")
+                    .setValue("false")
+                    .setDescription("The button will be clickable (default)")
+                    .setDefault(true),
+                ),
+            ),
         );
 
       await storeComponents(ctx.env.KV, [
@@ -839,15 +853,11 @@ export const submitCustomizeModal: ModalCallback = async (ctx) => {
       });
     }
 
-    const disabledRaw = ctx.getModalComponent("disabled")?.value;
+    const disabledRaw =
+      ctx.getModalComponent<APIModalSubmitStringSelectComponent>("disabled")
+        ?.values[0];
     if (disabledRaw) {
-      if (!["true", "false"].includes(disabledRaw.toLowerCase())) {
-        return ctx.updateMessage({
-          content: "Disabled field must be either `true` or `false`.",
-          components: [],
-        });
-      }
-      state.component.disabled = disabledRaw.toLowerCase() === "true";
+      state.component.disabled = disabledRaw === "true";
     }
 
     if (state.component.style === ButtonStyle.Link) {

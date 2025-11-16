@@ -50,7 +50,7 @@ import {
 import { boolEmoji } from "../../util/meta.js";
 import { resolveMessageLink } from "../components/entry.js";
 import { isMessageWebhookEditable } from "../restore.js";
-import { buildTextInputRow, getQuickEditComponentByPath } from "./open.js";
+import { getQuickEditComponentByPath } from "./open.js";
 
 const getCV2TopLevelOptions = (
   components: (APIMessageTopLevelComponent | APIComponentInContainer)[],
@@ -333,12 +333,11 @@ const getQuickEditContentModal = (message: APIMessageReducedWithId) => {
       `a_qe-submit-content_${message.channel_id}:${message.id}` satisfies AutoModalCustomId,
     )
     .setTitle("Set Content")
-    .addComponents(
-      buildTextInputRow((input) =>
-        input
+    .addLabelComponents((l) =>
+      l.setLabel("Content").setTextInputComponent((b) =>
+        b
           .setCustomId("content")
           .setStyle(TextInputStyle.Paragraph)
-          .setLabel("Content")
           .setValue((message.content ?? "").slice(0, 2000))
           .setMaxLength(2000)
           .setRequired(false),
@@ -545,44 +544,50 @@ export const getQuickEditMediaGalleryItemModal = (
       )}` satisfies AutoModalCustomId,
     )
     .setTitle("Edit Media")
-    .addComponents(
-      buildTextInputRow((input) =>
-        input
-          .setCustomId("url")
-          .setStyle(TextInputStyle.Short)
-          .setLabel("URL")
-          .setPlaceholder("A full, direct URL to the media")
-          .setValue(item.media.url)
-          .setRequired(),
-      ),
+    .addLabelComponents((l) =>
+      l
+        .setLabel("URL")
+        .setDescription("A full, direct URL to the media")
+        .setTextInputComponent((b) =>
+          b
+            .setCustomId("url")
+            .setStyle(TextInputStyle.Short)
+            .setValue(item.media.url)
+            .setRequired(),
+        ),
     );
 
   if (item.media.content_type?.startsWith("image/")) {
     modal
-      .addComponents(
-        buildTextInputRow((input) =>
-          input
-            .setCustomId("description")
+      .addLabelComponents((l) =>
+        l.setLabel("Description (alt text)").setTextInputComponent((b) =>
+          b
             .setStyle(TextInputStyle.Short)
-            .setLabel("Description (alt text)")
+            .setCustomId("description")
             .setValue(item.description ?? "")
             .setMaxLength(1024)
             .setRequired(false),
         ),
       )
-      .addComponents(
-        buildTextInputRow((input) =>
-          input
-            .setCustomId("spoiler")
-            .setLabel("Spoiler?")
-            .setPlaceholder(
-              'Type "true" or "false" for whether the image should be blurred.',
-            )
-            .setStyle(TextInputStyle.Short)
-            .setValue(String(item.spoiler))
-            .setMinLength(4)
-            .setMaxLength(5),
-        ),
+      .addLabelComponents((l) =>
+        l
+          .setLabel("Spoiler?")
+          .setStringSelectMenuComponent((s) =>
+            s
+              .setCustomId("spoiler")
+              .addOptions(
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("True")
+                  .setValue("true")
+                  .setDescription("The image will be blurred.")
+                  .setDefault(!!item.spoiler),
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("False")
+                  .setValue("false")
+                  .setDescription("The image will not be blurred (default)")
+                  .setDefault(!item.spoiler),
+              ),
+          ),
       );
   }
 
@@ -792,12 +797,11 @@ const getQuickEditTextDisplayModal = (
       )}` satisfies AutoModalCustomId,
     )
     .setTitle("Set Text Display Content")
-    .addComponents(
-      buildTextInputRow((input) =>
-        input
+    .addLabelComponents((l) =>
+      l.setLabel("Content").setTextInputComponent((b) =>
+        b
           .setCustomId("content")
           .setStyle(TextInputStyle.Paragraph)
-          .setLabel("Content")
           .setValue((component.content ?? "").slice(0, 2000))
           .setMaxLength(2000)
           .setRequired(),
@@ -818,20 +822,22 @@ export const getQuickEditSectionModal = (
       )}` satisfies AutoModalCustomId,
     )
     .setTitle("Set Section Text Content")
-    .addComponents(
+    .addLabelComponents(
       component.components
         .filter((c) => c.type === ComponentType.TextDisplay)
-        .map((text, i, a) =>
-          buildTextInputRow((input) =>
-            input
-              .setCustomId(`components.${i}.content`)
-              .setStyle(TextInputStyle.Paragraph)
+        .map(
+          (text, i, a) => (l) =>
+            l
               .setLabel(`Content ${a.length === 1 ? "" : i + 1}`)
-              .setValue((text.content ?? "").slice(0, 2000))
-              .setMaxLength(2000)
-              // bot will requires at least one of these on submit
-              .setRequired(false),
-          ),
+              .setTextInputComponent((b) =>
+                b
+                  .setCustomId(`components.${i}.content`)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setValue((text.content ?? "").slice(0, 2000))
+                  .setMaxLength(2000)
+                  // bot will require at least one of these on submit
+                  .setRequired(a.length === 1),
+              ),
         ),
     );
   // we don't plan on supporting a button thumbnail here, except maybe link
@@ -839,23 +845,23 @@ export const getQuickEditSectionModal = (
   if (component.accessory.type === ComponentType.Thumbnail) {
     const thumbnail = component.accessory;
     modal
-      .addComponents(
-        buildTextInputRow((input) =>
-          input
-            .setCustomId("accessory.media.url")
-            .setStyle(TextInputStyle.Short)
-            .setLabel("Thumbnail URL")
-            .setPlaceholder("A full, direct URL to the media")
-            .setValue(thumbnail.media.url)
-            .setRequired(),
-        ),
+      .addLabelComponents((l) =>
+        l
+          .setLabel("Thumbnail URL")
+          .setDescription("A full, direct URL to the media")
+          .setTextInputComponent((b) =>
+            b
+              .setCustomId("accessory.media.url")
+              .setStyle(TextInputStyle.Short)
+              .setValue(thumbnail.media.url)
+              .setRequired(),
+          ),
       )
-      .addComponents(
-        buildTextInputRow((input) =>
-          input
+      .addLabelComponents((l) =>
+        l.setLabel("Description (alt text)").setTextInputComponent((b) =>
+          b
             .setCustomId("accessory.description")
             .setStyle(TextInputStyle.Short)
-            .setLabel("Description (alt text)")
             .setValue(thumbnail.description ?? "")
             .setMaxLength(1024)
             .setRequired(false),
@@ -863,19 +869,25 @@ export const getQuickEditSectionModal = (
       );
     // sacrifice spoiler if we are over the row limit due to text inputs
     if (modal.components.length < 5) {
-      modal.addComponents(
-        buildTextInputRow((input) =>
-          input
-            .setCustomId("accessory.spoiler")
-            .setLabel("Spoiler?")
-            .setPlaceholder(
-              'Type "true" or "false" for whether the image should be blurred.',
-            )
-            .setStyle(TextInputStyle.Short)
-            .setValue(String(thumbnail.spoiler))
-            .setMinLength(4)
-            .setMaxLength(5),
-        ),
+      modal.addLabelComponents((l) =>
+        l
+          .setLabel("Spoiler?")
+          .setStringSelectMenuComponent((s) =>
+            s
+              .setCustomId("accessory.spoiler")
+              .addOptions(
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("True")
+                  .setValue("true")
+                  .setDescription("The image will be blurred.")
+                  .setDefault(!!thumbnail.spoiler),
+                new StringSelectMenuOptionBuilder()
+                  .setLabel("False")
+                  .setValue("false")
+                  .setDescription("The image will not be blurred (default)")
+                  .setDefault(!thumbnail.spoiler),
+              ),
+          ),
       );
     }
   }

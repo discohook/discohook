@@ -14,9 +14,9 @@
     "prod": "npm run build && npm run start"
   },
   "dependencies": {
-    "@discordjs/rest": "^2.2.0",
-    "@discordjs/ws": "^1.0.2",
-    "discord-api-types": "^0.37.81",
+    "@discordjs/rest": "^2.6.0",
+    "@discordjs/ws": "^1.0.3",
+    "discord-api-types": "^0.38.32",
     "dotenv": "^16.3.1",
     "yargs": "^17.7.2"
   },
