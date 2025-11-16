@@ -371,7 +371,7 @@ const MessageEditorCollapsibleTrigger = ({
       <Collapsible.Trigger
         className={twMerge(
           collapsibleStyles.trigger,
-          "gap-inherit cursor-default",
+          "gap-inherit cursor-default truncate",
         )}
       >
         <CoolIcon
