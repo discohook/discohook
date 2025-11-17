@@ -113,7 +113,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         ? `token-*-channel-${channelId}`
         : `token-*-guild-${guildId}`,
       "COUNT",
-      "10000",
+      // Currently, our entire database contains less than 2m keys, but still
+      // this does not return every match in the first query, so I really have
+      // no idea how this is supposed to work. Nonetheless, using an absurdly
+      // high COUNT is faster and requires fewer requests than paginating at a
+      // smaller value, so that's what we're doing.
+      "10000000",
     )) as [string, string[]];
     totalSubrequests += 1;
 
@@ -121,7 +126,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     if ((!result[1] || result[1].length === 0) && newCursor !== 0) {
       // No results on this page but redis is indicating that we are not done
       // with the scan. We will try just a few times before giving up
-      if (blankTries >= 20) break;
+      if (blankTries >= 5) break;
       blankTries += 1;
       currentCursor = newCursor;
       continue;
