@@ -457,9 +457,17 @@ class CDN {
     options: BaseImageURLOptions | undefined,
     defaultSize?: BaseImageURLOptions["size"],
   ): string {
-    return `.${options?.extension ?? "webp"}?size=${
-      options?.size ?? defaultSize ?? 1024
-    }`;
+    const params = new URLSearchParams({
+      size: String(options?.size ?? defaultSize ?? 1024),
+    });
+    // It seems like this is a fine assumption to make. Emojis with .gif don't
+    // work anymore - avatars & icons do, but their animated webp counterparts
+    // work fine and load faster.
+    if (options?.extension === "gif") {
+      options.extension = "webp";
+      params.set("animated", "true");
+    }
+    return `.${options?.extension ?? "webp"}?${params}`;
   }
 
   avatar(
@@ -501,7 +509,7 @@ class CDN {
   }
 
   emoji(id: string, extension?: ImageExtension): string {
-    return `${this.BASE}/emojis/${id}${extension ? `.${extension}` : ""}`;
+    return `${this.BASE}/emojis/${id}${extension ? this._withOpts({ extension, size: 240 }) : ""}`;
   }
 
   icon(id: string, iconHash: string, options?: BaseImageURLOptions): string {
