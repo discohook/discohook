@@ -13,12 +13,9 @@ import { loadMessageComponents } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
-import {
-  cdnImgAttributes,
-  getWebhookMessage,
-  webhookAvatarUrl,
-} from "~/util/discord";
+import { getWebhookMessage } from "~/util/discord";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { ListWebhook } from "./TargetAddModal";
 
 export const MessageSetModal = (
   props: ModalProps & {
@@ -109,58 +106,45 @@ export const MessageSetModal = (
       <p className="text-sm font-medium">{t("webhook")}</p>
       <div className="space-y-1">
         {Object.keys(possibleWebhooks).length > 0 ? (
-          Object.entries(possibleWebhooks).map(([targetId, target]) => {
-            return (
-              <label
-                key={`target-${targetId}`}
-                className="flex rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 hover:dark:bg-gray-600 transition py-2 px-4 w-full cursor-pointer"
-              >
-                <img
-                  {...cdnImgAttributes(64, (size) =>
-                    webhookAvatarUrl(target, { size }),
-                  )}
-                  alt={target.name ?? t("webhook")}
-                  className="rounded-full h-12 w-12 mr-2 my-auto"
-                />
-                <div className="my-auto grow text-left">
-                  <p className="font-semibold text-base">
-                    {target.name ?? t("webhook")}
-                  </p>
-                  {cache && (
-                    <p className="text-sm leading-none">
-                      #
-                      {cache.resolve({
-                        scope: "channel",
-                        key: target.channel_id,
-                      })?.name ?? t("mention.unknown")}
-                    </p>
-                  )}
-                </div>
-                <input
-                  type="radio"
-                  name="webhook"
-                  checked={!!webhook && target.id === webhook.id}
-                  onChange={(e) => {
-                    if (e.currentTarget.checked) setWebhook(target);
-                  }}
-                  onClick={() => {
-                    if (webhook && target.id === webhook.id) {
-                      setWebhook(undefined);
-                    }
-                  }}
-                  hidden
-                />
-                <CoolIcon
-                  icon={
-                    !!webhook && webhook.id === target.id
-                      ? "Radio_Fill"
-                      : "Radio_Unchecked"
+          Object.entries(possibleWebhooks).map(([targetId, target]) => (
+            <label key={`target-${targetId}`} className="cursor-pointer">
+              <input
+                type="radio"
+                name="webhook"
+                checked={!!webhook && target.id === webhook.id}
+                onChange={(e) => {
+                  if (e.currentTarget.checked) setWebhook(target);
+                }}
+                onClick={() => {
+                  if (webhook && target.id === webhook.id) {
+                    setWebhook(undefined);
                   }
-                  className="ml-auto my-auto text-2xl text-blurple dark:text-blurple-400"
-                />
-              </label>
-            );
-          })
+                }}
+                hidden
+              />
+              <ListWebhook
+                t={t}
+                webhook={{
+                  id: target.id,
+                  applicationId: target.application_id,
+                  avatar: target.avatar,
+                  name: target.name ?? "",
+                  user: target.user ? { name: target.user.username } : null,
+                  channel: cache?.channel.get(target.channel_id),
+                }}
+                endComponent={
+                  <CoolIcon
+                    icon={
+                      !!webhook && webhook.id === target.id
+                        ? "Radio_Fill"
+                        : "Radio_Unchecked"
+                    }
+                    className="text-2xl text-blurple dark:text-blurple-400"
+                  />
+                }
+              />
+            </label>
+          ))
         ) : (
           <div>
             {Object.keys(targets).length > 0 &&
