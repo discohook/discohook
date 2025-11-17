@@ -156,13 +156,22 @@ const findCustomEmojiSubstring = (
   }
 
   const urlMatch =
-    /^https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/emojis\/(\d+)(?:\.(\w+))?/.exec(
+    /^https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/emojis\/(\d+)(?:\.(\w+))?(\?[^\s]+)?/.exec(
       text,
     );
   if (urlMatch) {
+    let params: URLSearchParams | undefined;
+    if (urlMatch[3]) {
+      try {
+        params = new URLSearchParams(urlMatch[3]);
+      } catch {}
+    }
     return {
       id: urlMatch[1],
-      animated: urlMatch[2] === "gif",
+      animated: params?.get("animated") === "true" || urlMatch[2] === "gif",
+      // I think I have seen people post links with a name parameter,
+      // perhaps for client plugins
+      name: params?.get("name") || undefined,
     };
   }
 };
@@ -239,10 +248,38 @@ const EmojiPicker_: React.FC<PickerProps> = ({
               <TextInput
                 label={t("emojiPickerCustom.id")}
                 className="w-full"
-                onChange={({ currentTarget }) => {
-                  setInputtingCustomDetails(
-                    findCustomEmojiSubstring(currentTarget.value),
-                  );
+                onChange={async ({ currentTarget }) => {
+                  const found = findCustomEmojiSubstring(currentTarget.value);
+                  setInputtingCustomDetails(found);
+
+                  if (found && found.animated === undefined) {
+                    const staticRes = await fetch(cdn.emoji(found.id, "webp"));
+                    // actually just uses webp and adds `animated=true`
+                    const animatedRes = await fetch(cdn.emoji(found.id, "gif"));
+                    if (!staticRes.ok || !animatedRes.ok) return;
+
+                    // The animated version is pretty necessarily bigger than
+                    // the static version, so we can use the content length to
+                    // determine whether the emoji is animated from only its
+                    // ID (and two network requests, but I believe they get
+                    // cached and would be made anyway)
+                    const staticCL = Number(
+                      staticRes.headers.get("Content-Length"),
+                    );
+                    const animatedCL = Number(
+                      animatedRes.headers.get("Content-Length"),
+                    );
+                    if (
+                      !Number.isNaN(staticCL) &&
+                      !Number.isNaN(animatedCL) &&
+                      animatedCL > staticCL
+                    ) {
+                      setInputtingCustomDetails({
+                        ...found,
+                        animated: true,
+                      });
+                    }
+                  }
                 }}
               />
             </div>
@@ -256,11 +293,11 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                     inputtingCustomDetails.id,
                     inputtingCustomDetails.animated ? "gif" : undefined,
                   )}
-                  className="w-14 h-14"
+                  className="size-14"
                   alt={inputtingCustomDetails.name}
                 />
               ) : (
-                <div className="w-14 h-14 bg-black/10 rounded-lg" />
+                <div className="size-14 bg-black/10 rounded-lg" />
               )}
             </div>
             <div className="mt-2">
