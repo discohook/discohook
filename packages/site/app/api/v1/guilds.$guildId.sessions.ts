@@ -102,7 +102,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const keys = new Set<string>();
   let found = 0;
   let currentCursor = cursor;
-  while (found < perPage) {
+  let blankTries = 0;
+  let totalSubrequests = 0;
+  while (found < perPage && totalSubrequests < 950) {
     const result = (await context.env.KV.send(
       "SCAN",
       String(currentCursor),
@@ -111,27 +113,39 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         ? `token-*-channel-${channelId}`
         : `token-*-guild-${guildId}`,
       "COUNT",
-      "1000",
+      "10000",
     )) as [string, string[]];
-    // No results
-    if (!result[1] || result[1].length === 0) {
-      break;
-    }
+    totalSubrequests += 1;
 
-    currentCursor = Number(result[0]);
+    const newCursor = Number(result[0]);
+    if ((!result[1] || result[1].length === 0) && newCursor !== 0) {
+      // No results on this page but redis is indicating that we are not done
+      // with the scan. We will try just a few times before giving up
+      if (blankTries >= 20) break;
+      blankTries += 1;
+      currentCursor = newCursor;
+      continue;
+    }
+    blankTries = 0;
+
     for (const key of result[1]) {
       const tokenId = key.split("-")[1];
-      if (!tokenId) continue; // shouldn't happen
+      // shouldn't happen
+      if (!tokenId) {
+        currentCursor = newCursor;
+        continue;
+      }
 
       keys.add(key);
     }
     found += result[1].length;
 
     // End of iteration
-    if (result[0] === "0" || result[0] === String(currentCursor)) {
+    if (newCursor === 0 || newCursor === currentCursor) {
       currentCursor = 0;
       break;
     }
+    currentCursor = newCursor;
   }
 
   if (keys.size === 0) {
