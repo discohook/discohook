@@ -274,7 +274,9 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
           l
             .setLabel("Share Link")
             .setDescription(
-              'You can generate a share link at https://discohook.app. Compose or open the message data you would like to use in the Discohook editor, then press "Share" at the top left.',
+              // Wish this could be more detailed but max length is 100
+              // 'You can generate a share link at https://discohook.app. Compose or open the message data you would like to use in the Discohook editor, then press "Share" at the top left.',
+              'Generate share links at discohook.app. Open the message you would like to use, then press "Share"',
             )
             .setTextInputComponent((b) =>
               b
