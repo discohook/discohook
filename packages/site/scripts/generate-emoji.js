@@ -3,16 +3,11 @@
 
 import { writeFile } from "node:fs/promises";
 
-/* eslint-disable jsdoc/require-property-description */
-
 /**
  * @typedef Emoji
  * @property {string[]} names
  * @property {string} surrogates
- * @property {boolean} hasDiversity
- * @property {EmojiDiversity[] | undefined} diversityChildren
- * @property {boolean} hasMultiDiversity
- * @property {EmojiDiversity[] | undefined} multiDiversityChildren
+ * @property {boolean | undefined} hasDiversity
  */
 
 /**
@@ -23,45 +18,28 @@ import { writeFile } from "node:fs/promises";
  */
 
 /**
- * @type {() => Promise<Record<string, Emoji[]>>}
+ * @type {() => Promise<Emoji[]>}
  */
 async function getEmojiBlob() {
-  /** @type {string} */
-  const html = await (await fetch("https://discord.com/app")).text();
-
-  /** @type {Record<string, Emoji[]> | undefined} */
-  let blob;
-  for (const script of html.matchAll(/<script src="([^"]+)"/g)) {
-    const src = script[1];
-    /** @type {string} */
-    const js = await (
-      await fetch(new URL(src, "https://discord.com/app"))
-    ).text();
-    const match =
-      /{"use strict";.\.exports=({(?:\w+:\[(?:{[^{}]+(?:{[^{}]+},?)*[^{}]+},?)+],?)+})}/.exec(
-        js,
-      );
-    if (match) {
-      // biome-ignore lint/security/noGlobalEval: trusted source (?)
-      blob = eval(`(()=>(${match[1]}))()`);
-      break;
+  const js = await (
+    await fetch(
+      "https://github.com/Discord-Datamining/Discord-Datamining/raw/refs/heads/master/current.js",
+    )
+  ).text();
+  const match = /JSON\.parse\('{"emojis":.+'\)/.exec(js);
+  if (match) {
+    try {
+      // biome-ignore lint/security/noGlobalEval: trusted source
+      const parsed = eval(`(()=>(${match[0]}))()`).emojis;
+      return parsed;
+    } catch (e) {
+      console.error(e);
+      throw Error("Emoji JSON failed to parse");
     }
   }
 
-  if (!blob) {
-    throw new Error("Emoji JSON blob could not be found");
-  }
-
-  return blob;
+  throw Error("Emoji JSON could not be found");
 }
-
-const variantDiversities = {
-  "1f3fb": { numbered: "_tone1", named: "_light_skin_tone" },
-  "1f3fc": { numbered: "_tone2", named: "_medium_light_skin_tone" },
-  "1f3fd": { numbered: "_tone3", named: "_medium_skin_tone" },
-  "1f3fe": { numbered: "_tone4", named: "_medium_dark_skin_tone" },
-  "1f3ff": { numbered: "_tone5", named: "_dark_skin_tone" },
-};
 
 const bitflag = {
   classic: 1 << 0,
@@ -72,117 +50,14 @@ const bitflag = {
   diverseOnly: 1 << 5,
 };
 
-const diversityReplacementCharacter = "?".codePointAt(0) ?? 0;
-const zeroWidthJoinerReplacementCharacter = "!".codePointAt(0) ?? 0;
-
 const data = [];
-for (const emoji of Object.values(await getEmojiBlob()).flat()) {
+for (const emoji of await getEmojiBlob()) {
   const templates = [emoji.surrogates];
   /** @type {(string | [string, number])[]} */
-  const names = [];
-
-  for (const name of emoji.names) {
-    let nameTemplate;
-    let flags = emoji.hasDiversity ? bitflag.classic : 0;
-
-    /** @type {(name: string, variantName: string, tone: string) => boolean} */
-    const checkVariantMatch = (name, variantName, tone) => {
-      if (variantName.replace(tone, "") !== name) {
-        return false;
-      }
-      if (!variantName.endsWith(tone)) {
-        nameTemplate = variantName.replace(tone, "@");
-      }
-      return true;
-    };
-
-    for (const variant of emoji.diversityChildren ?? []) {
-      templates[variant.diversity.length] = [...variant.surrogates]
-        .map((it) => (it.codePointAt(0) ?? 0).toString(16))
-        .join("-")
-        .replaceAll(
-          /\b1f3f[b-f]\b/gi,
-          diversityReplacementCharacter.toString(16),
-        )
-        .replaceAll(
-          /\b200d\b/gi,
-          zeroWidthJoinerReplacementCharacter.toString(16),
-        )
-        .split("-")
-        .map((it) => String.fromCodePoint(Number.parseInt(it, 16)))
-        .join("");
-
-      const numbered = variant.diversity
-        .map((it) => variantDiversities[it].numbered)
-        .join("");
-      const named = variant.diversity
-        .map((it) => variantDiversities[it].named)
-        .join("");
-
-      for (const variantName of variant.names) {
-        if (checkVariantMatch(name, variantName, numbered)) {
-          flags |=
-            variant.diversity.length === 1
-              ? bitflag.numbered
-              : bitflag.multiNumbered;
-        }
-        if (checkVariantMatch(name, variantName, named)) {
-          flags |=
-            variant.diversity.length === 1 ? bitflag.named : bitflag.multiNamed;
-        }
-      }
-    }
-
-    nameTemplate ??= name;
-    names.push(flags === 0 ? nameTemplate : [nameTemplate, flags]);
-  }
-
-  /** @type {Map<string, number>} */
-  const diverseOnlyNames = new Map();
-  for (const variant of emoji.diversityChildren ?? []) {
-    const numbered = variant.diversity
-      .map((it) => variantDiversities[it].numbered)
-      .join("");
-    const named = variant.diversity
-      .map((it) => variantDiversities[it].named)
-      .join("");
-
-    for (const variantName of variant.names) {
-      if (
-        names
-          .map((it) => (Array.isArray(it) ? it[0] : it))
-          .some((it) => it.replace(/@|$/, numbered) === variantName)
-      ) {
-        continue;
-      }
-      if (
-        names
-          .map((it) => (Array.isArray(it) ? it[0] : it))
-          .some((it) => it.replace(/@|$/, named) === variantName)
-      ) {
-        continue;
-      }
-
-      if (variantName.includes(numbered)) {
-        const short = variantName.replace(numbered, "@").replace(/@$/, "");
-        let flags = diverseOnlyNames.get(short) ?? bitflag.diverseOnly;
-        flags |=
-          variant.diversity.length === 1
-            ? bitflag.numbered
-            : bitflag.multiNumbered;
-
-        diverseOnlyNames.set(short, flags);
-      }
-      if (variantName.includes(named)) {
-        const short = variantName.replace(named, "@").replace(/@$/, "");
-        let flags = diverseOnlyNames.get(short) ?? bitflag.diverseOnly;
-        flags |=
-          variant.diversity.length === 1 ? bitflag.named : bitflag.multiNamed;
-        diverseOnlyNames.set(short, flags);
-      }
-    }
-  }
-  names.push(...diverseOnlyNames.entries());
+  const names = emoji.names.map((name) => {
+    const flags = emoji.hasDiversity ? bitflag.classic : 0;
+    return flags === 0 ? name : [name, flags];
+  });
 
   data.push([templates.length === 1 ? templates[0] : templates, ...names]);
 }
