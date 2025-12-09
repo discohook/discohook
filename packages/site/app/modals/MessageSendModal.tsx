@@ -166,6 +166,7 @@ export const submitMessage = async (
             return e as APIEmbed;
           }) ?? [],
         components,
+        flags: message.data.flags,
         allowed_mentions: message.data.allowed_mentions,
       },
       files,
