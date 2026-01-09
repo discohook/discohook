@@ -6,6 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { CoolIcon } from "./icons/CoolIcon";
 import { Twemoji } from "./icons/Twemoji";
+import { LoadingDots } from "./LoadingDots";
 
 export const Button = (
   props: React.DetailedHTMLProps<
@@ -14,6 +15,7 @@ export const Button = (
   > & {
     discordstyle?: ButtonStyle;
     emoji?: APIMessageComponentEmoji;
+    loading?: boolean;
   },
 ) => {
   return (
@@ -21,7 +23,8 @@ export const Button = (
       type="button"
       {...props}
       className={twMerge(
-        "border border-[#ffffff14] rounded-lg font-medium text-base h-8 py-0 px-4 min-w-[60px] text-white transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex shrink-0",
+        "relative border border-[#ffffff14] rounded-lg font-medium text-base h-8 py-0 px-4 min-w-[60px] text-white transition shrink-0",
+        props.loading ? "" : "disabled:opacity-50 disabled:cursor-not-allowed",
         !props.discordstyle || props.discordstyle === ButtonStyle.Primary
           ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
           : [ButtonStyle.Link, ButtonStyle.Secondary].includes(
@@ -37,39 +40,46 @@ export const Button = (
         props.className ?? "",
       )}
     >
-      {props.emoji &&
-        (props.emoji.id ? (
-          <div
-            className={`aspect-square h-[22px] my-auto ${
-              props.children ? "ltr:mr-1 rtl:ml-1" : "mx-auto"
-            }`}
-          >
-            <img
-              src={cdn.emoji(
-                props.emoji.id,
-                props.emoji.animated ? "gif" : "webp",
-              )}
-              alt={props.emoji.name}
-              className="max-h-full max-w-full"
-            />
-          </div>
-        ) : (
-          <div className="ltr:mr-1 rtl:ml-1 aspect-square my-auto h-7 flex">
-            <div className="m-auto">
-              <Twemoji
-                // biome-ignore lint/style/noNonNullAssertion: Must have name if not an ID
-                emoji={props.emoji.name!}
-                className="h-[22px] !align-bottom"
+      <div className={`inline-flex${props.loading ? " invisible" : ""}`}>
+        {props.emoji &&
+          (props.emoji.id ? (
+            <div
+              className={`aspect-square h-[22px] my-auto ${
+                props.children ? "ltr:mr-1 rtl:ml-1" : "mx-auto"
+              }`}
+            >
+              <img
+                src={cdn.emoji(
+                  props.emoji.id,
+                  props.emoji.animated ? "gif" : "webp",
+                )}
+                alt={props.emoji.name}
+                className="max-h-full max-w-full"
               />
             </div>
-          </div>
-        ))}
-      <div className={props.emoji ? "my-auto" : "m-auto"}>{props.children}</div>
-      {props.discordstyle === ButtonStyle.Link && (
-        <CoolIcon
-          icon="External_Link"
-          className="ltr:ml-1.5 rtl:mr-1.5 my-auto"
-        />
+          ) : (
+            <div className="ltr:mr-1 rtl:ml-1 aspect-square my-auto h-7 flex">
+              <div className="m-auto">
+                <Twemoji
+                  // biome-ignore lint/style/noNonNullAssertion: Must have name if not an ID
+                  emoji={props.emoji.name!}
+                  className="h-[22px] !align-bottom"
+                />
+              </div>
+            </div>
+          ))}
+        <div className={props.emoji ? "my-auto" : "m-auto"}>{props.children}</div>
+        {props.discordstyle === ButtonStyle.Link && (
+          <CoolIcon
+            icon="External_Link"
+            className="ltr:ml-1.5 rtl:mr-1.5 my-auto"
+          />
+        )}
+      </div>
+      {props.loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <LoadingDots />
+        </div>
       )}
     </button>
   );
