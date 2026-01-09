@@ -2,14 +2,16 @@ import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
   type RESTGetAPIWebhookWithTokenResult,
+  RESTJSONErrorCodes,
   type RESTPostAPIWebhookWithTokenJSONBody,
   type RESTPostAPIWebhookWithTokenWaitResult,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
 import { z } from "zod/v3";
-import { getDb, githubPosts } from "~/store.server";
+import { and, count, eq, getDb, githubPosts } from "~/store.server";
 import { WEBHOOK_TOKEN_RE } from "~/util/constants";
+import { getWebhook, isDiscordError } from "~/util/discord";
 import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
@@ -30,6 +32,49 @@ const GitHubRepository = z.object({
 });
 
 export const action = async ({ request, context, params }: ActionArgs) => {
+  // Self data removal for authorized webhook requests
+  if (request.method === "DELETE") {
+    const { webhookId, webhookToken } = zxParseParams(params, {
+      webhookId: snowflakeAsString().transform(String),
+      webhookToken: z.string().regex(WEBHOOK_TOKEN_RE),
+    });
+
+    let channelId: string | undefined;
+    try {
+      const webhook = await getWebhook(webhookId, webhookToken, new REST());
+      channelId = webhook.channel_id;
+    } catch (e) {
+      if (isDiscordError(e)) {
+        if (e.code === RESTJSONErrorCodes.UnknownWebhook) {
+          throw json({ message: "Unknown Webhook" }, 404);
+        }
+      }
+      throw e;
+    }
+
+    const db = getDb(context.env.HYPERDRIVE);
+    const deleteWhere = and(
+      eq(githubPosts.platform, "discord"),
+      eq(githubPosts.channelId, channelId),
+    );
+    const [{ count: records }] = await db
+      .select({ count: count() })
+      .from(githubPosts)
+      .where(deleteWhere);
+    if (records === 0) {
+      throw json(
+        {
+          message:
+            "No records to delete. Records are keyed by channel ID, so if you have moved this webhook, its channel ID may no longer be the same one that is stored. If the channel was deleted and you want to remove its records, contact support.",
+        },
+        400,
+      );
+    }
+
+    await db.delete(githubPosts).where(deleteWhere);
+    return json({ deleted: records });
+  }
+
   if (request.method !== "POST") {
     throw json({ message: "Method not allowed" }, 405);
   }
