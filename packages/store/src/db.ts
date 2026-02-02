@@ -1,10 +1,10 @@
 import type { APIUser } from "discord-api-types/v10";
-import { sql, type TablesRelationalConfig } from "drizzle-orm";
-import { drizzle, type PostgresJsTransaction } from "drizzle-orm/postgres-js";
+import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
 import JSONbig_ from "json-bigint";
 import postgres from "postgres";
-import * as schema from "./schema/schema.js";
 import * as schemaV1 from "./schema/schema-v1.js";
+import * as schema from "./schema/schema.js";
 import type { PartialKVGuild } from "./types/guild.js";
 
 const JSONbig = JSONbig_({ useNativeBigInt: true, alwaysParseAsBig: true });
@@ -33,18 +33,18 @@ export const getDb = ({ connectionString }: Hyperdrive) => {
 
 export type DBWithSchema = ReturnType<typeof getDbWithClient>;
 
+export type DBTransaction = Parameters<
+  Parameters<DBWithSchema["transaction"]>[0]
+>[0];
+
 // Apparently, the postgres-js driver does not automatically rollback on
 // exception, which may be causing unwanted elevated session persistence!
 // db.transaction: https://github.com/drizzle-team/drizzle-orm/blob/main/drizzle-orm/src/postgres-js/session.ts
 // Thanks AJR: https://discord.com/channels/595317990191398933/1368650532075339936/1368954068298498168
-export const autoRollbackTx = <
-  T,
-  TFullSchema extends Record<string, unknown>,
-  TSchema extends TablesRelationalConfig,
->(
-  transaction: (tx: PostgresJsTransaction<TFullSchema, TSchema>) => Promise<T>,
-): ((tx: PostgresJsTransaction<TFullSchema, TSchema>) => Promise<T>) => {
-  return async (tx: PostgresJsTransaction<TFullSchema, TSchema>) => {
+export const autoRollbackTx = <T>(
+  transaction: (tx: DBTransaction) => Promise<T>,
+): ((tx: DBTransaction) => Promise<T>) => {
+  return async (tx: DBTransaction) => {
     try {
       // We're not quite as deep as the session class so we don't need to
       // manually commit
