@@ -193,12 +193,18 @@ const generateSectionCode = (
   }
   
   // Handle accessory (button or thumbnail)
-  if (component.accessory) {
+      if (component.accessory) {
     if (component.accessory.type === ComponentType.Button) {
       const button = component.accessory as APIButtonComponent;
       lines.push("    .setButtonAccessory((button) =>");
-      const customId = "custom_id" in button ? button.custom_id : "sku_id" in button ? button.sku_id : "btn";
-      lines.push(`        button.setCustomId(${quoteString(customId, preferences)})`);
+      if ("url" in button && button.url) {
+        lines.push(
+          `        button.setURL(${quoteString(button.url, preferences)})`
+        );
+      } else {
+        const customId = "custom_id" in button ? button.custom_id : "sku_id" in button ? button.sku_id : "btn";
+        lines.push(`        button.setCustomId(${quoteString(customId, preferences)})`);
+      }
       if ("label" in button && button.label) {
         lines.push(`            .setLabel(${quoteString(button.label, preferences)})`);
       }
@@ -288,8 +294,14 @@ const generateContainerCode = (
           if (section.accessory && section.accessory.type === ComponentType.Button) {
             const button = section.accessory as APIButtonComponent;
             lines.push("            .setButtonAccessory((button) =>");
-            const customId = "custom_id" in button ? button.custom_id : "sku_id" in button ? button.sku_id : "btn";
-            lines.push(`                button.setCustomId(${quoteString(customId, preferences)})`);
+            if ("url" in button && button.url) {
+              lines.push(
+                `                button.setURL(${quoteString(button.url, preferences)})`
+              );
+            } else {
+              const customId = "custom_id" in button ? button.custom_id : "sku_id" in button ? button.sku_id : "btn";
+              lines.push(`                button.setCustomId(${quoteString(customId, preferences)})`);
+            }
             if ("label" in button && button.label) {
               lines.push(
                 `                    .setLabel(${quoteString(button.label, preferences)})`
@@ -466,12 +478,27 @@ const codegen: Record<
             lines.push(...componentLines);
           } else {
             lines.push("const components = [");
+            // Group componentLines into builder blocks (each block ends with a trailing ';')
+            let currentBlock: string[] = [];
             for (let i = 0; i < componentLines.length; i++) {
               const line = componentLines[i];
-              const isLastLine = i === componentLines.length - 1;
-              lines.push(
-                `    ${line}${isLastLine && !line.includes(",") ? "," : ""}`
-              );
+              currentBlock.push(line);
+              if (line.trimEnd().endsWith(";")) {
+                // Replace the ending semicolon of the builder with a comma so
+                // each builder is trailed with a comma inside the array.
+                const lastIdx = currentBlock.length - 1;
+                currentBlock[lastIdx] = currentBlock[lastIdx].replace(/;$/, ",");
+                for (const blkLine of currentBlock) {
+                  lines.push(`    ${blkLine}`);
+                }
+                currentBlock = [];
+              }
+            }
+            // If any leftover lines (shouldn't happen), emit them as-is.
+            if (currentBlock.length > 0) {
+              for (const blkLine of currentBlock) {
+                lines.push(`    ${blkLine}`);
+              }
             }
             lines.push("];");
           }
