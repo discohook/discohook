@@ -18,60 +18,23 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { sendErrorMessage } from "../errors.js";
-// import {
-//   grantDeluxeCommandHandler,
-//   leaveCommandHandler,
-//   revokeDeluxeCommandHandler,
-// } from "./commands/admin.js";
-// import { deleteComponentChatEntry } from "./commands/components/delete.js";
-// import { editComponentChatEntry } from "./commands/components/edit.js";
-// import {
-//   addComponentChatEntry,
-//   addComponentMessageAutocomplete,
-//   addComponentMessageEntry,
-//   autocompleteMessageCallback,
-// } from "./commands/components/entry.js";
-// import { migrateComponentsChatEntry } from "./commands/components/migrate.js";
-// import { debugMessageCallback } from "./commands/debug.js";
-// import { deluxeInfoCallback, deluxeSyncCallback } from "./commands/deluxe.js";
-// import {
-//   formatChannelCallback,
-//   formatEmojiCallback,
-//   formatMentionCallback,
-// } from "./commands/format.js";
-// import {
-//   idChannelCallback,
-//   idEmojiCallback,
-//   idMentionCallback,
-// } from "./commands/id.js";
-// import { inviteCallback } from "./commands/invite.js";
-// import { quickEditMessageEntry } from "./commands/quick-edit/entry.js";
-// import {
-//   createReactionRoleHandler,
-//   deleteReactionRoleHandler,
-//   listReactionRolesHandler,
-//   messageAndEmojiAutocomplete,
-// } from "./commands/reactionRoles.js";
-// import {
-//   restoreMessageChatInputCallback,
-//   restoreMessageEntry,
-// } from "./commands/restore.js";
-// import {
-//   addTriggerCallback,
-//   triggerAutocompleteCallback,
-//   viewTriggerCallback,
-// } from "./commands/triggers.js";
-// import { webhookAutocomplete } from "./commands/webhooks/autocomplete.js";
-// import { webhookCreateEntry } from "./commands/webhooks/webhookCreate.js";
-// import { webhookDeleteEntryCallback } from "./commands/webhooks/webhookDelete.js";
-// import { webhookInfoCallback } from "./commands/webhooks/webhookInfo.js";
-// import { webhookInfoMsgCallback } from "./commands/webhooks/webhookInfoMsg.js";
-// import { welcomerDeleteEntry } from "./commands/welcomer/delete.js";
-// import { welcomerSetupEntry } from "./commands/welcomer/set.js";
-// import { welcomerViewEntry } from "./commands/welcomer/view.js";
 import { InteractionContext } from "../interactions.js";
 import { isDiscordError } from "../util/error.js";
+import {
+  grantDeluxeCommandHandler,
+  leaveCommandHandler,
+  revokeDeluxeCommandHandler,
+} from "./admin.js";
+import { deluxeInfoCallback, deluxeSyncCallback } from "./deluxe.js";
+import {
+  formatChannelCallback,
+  formatEmojiCallback,
+  formatMentionCallback,
+} from "./format.js";
 import { helpAutocomplete, helpEntry } from "./help.js";
+import { idChannelCallback, idEmojiCallback, idMentionCallback } from "./id.js";
+import { inviteCallback } from "./invite.js";
+import { profileClearCallback, profileSetCallback } from "./profile.js";
 
 export type AppCommandCallbackT<T extends APIInteraction> = (
   ctx: InteractionContext<T>,
@@ -130,25 +93,21 @@ export const appCommands: Record<
     //     migrate: addComponentMessageAutocomplete,
     //   },
     // },
-    // format: {
-    //   handlers: {
-    //     mention: formatMentionCallback,
-    //     channel: formatChannelCallback,
-    //     emoji: formatEmojiCallback,
-    //   },
-    // },
-    // id: {
-    //   handlers: {
-    //     mention: idMentionCallback,
-    //     channel: idChannelCallback,
-    //     emoji: idEmojiCallback,
-    //   },
-    // },
-    // invite: {
-    //   handlers: {
-    //     BASE: inviteCallback,
-    //   },
-    // },
+    format: {
+      handlers: {
+        mention: formatMentionCallback,
+        channel: formatChannelCallback,
+        emoji: formatEmojiCallback,
+      },
+    },
+    id: {
+      handlers: {
+        mention: idMentionCallback,
+        channel: idChannelCallback,
+        emoji: idEmojiCallback,
+      },
+    },
+    invite: { handlers: { BASE: inviteCallback } },
     // triggers: {
     //   handlers: {
     //     add: addTriggerCallback,
@@ -206,22 +165,26 @@ export const appCommands: Record<
     //     BASE: autocompleteMessageCallback,
     //   },
     // },
-    // deluxe: {
-    //   handlers: {
-    //     info: deluxeInfoCallback,
-    //     sync: deluxeSyncCallback,
-    //   },
-    // },
+    deluxe: {
+      handlers: {
+        info: deluxeInfoCallback,
+        sync: deluxeSyncCallback,
+      },
+    },
     // // dev server
-    // leave: {
-    //   handlers: { BASE: leaveCommandHandler },
-    // },
-    // "grant-deluxe": {
-    //   handlers: { BASE: grantDeluxeCommandHandler },
-    // },
-    // "revoke-deluxe": {
-    //   handlers: { BASE: revokeDeluxeCommandHandler },
-    // },
+    leave: { handlers: { BASE: leaveCommandHandler } },
+    "grant-deluxe": {
+      handlers: { BASE: grantDeluxeCommandHandler },
+    },
+    "revoke-deluxe": {
+      handlers: { BASE: revokeDeluxeCommandHandler },
+    },
+    profile: {
+      handlers: {
+        set: profileSetCallback,
+        clear: profileClearCallback,
+      },
+    },
   },
   [ApplicationCommandType.Message]: {
     // "Buttons & Components": {
@@ -255,7 +218,7 @@ export const appCommands: Record<
 const bannedUserIds = ["1201838301674479672"];
 
 export const interactionCreateHandler = async ({
-  api,
+  client,
   data: interaction,
 }: ToEventProps<APIInteraction>) => {
   if (
@@ -266,20 +229,13 @@ export const interactionCreateHandler = async ({
       "Forbidden usage",
       interaction.member?.user?.id ?? interaction.user?.id,
     );
-    await api.interactions.reply(interaction.id, interaction.token, {
+    await client.api.interactions.reply(interaction.id, interaction.token, {
       content:
         "Sorry, you are forbidden from using this bot. If this seems like a mistake, contact support.",
       flags: MessageFlags.Ephemeral,
     });
     return;
   }
-
-  // i18next.init({
-  //   lng: interaction.locale,
-  //   resources,
-  //   // These are all plaintext strings passed to Discord (or another service that sanitizes afterward)
-  //   interpolation: { escapeValue: false },
-  // });
 
   if (
     interaction.type === InteractionType.ApplicationCommand ||
@@ -307,6 +263,7 @@ export const interactionCreateHandler = async ({
     const commandData =
       appCommands[interaction.data.type][interaction.data.name];
     if (!commandData) {
+      console.warn("Received unknown command", interaction.data.name);
       return; // Unknown command;
     }
 
@@ -316,7 +273,7 @@ export const interactionCreateHandler = async ({
         return; // Cannot handle this command
       }
 
-      const ctx = new InteractionContext(api, interaction);
+      const ctx = new InteractionContext(client, interaction);
       try {
         await (handler as AppCommandCallbackT<APIInteraction>)(ctx);
         return;
@@ -329,7 +286,7 @@ export const interactionCreateHandler = async ({
         return; // 500
       }
     } else {
-      const ctx = new InteractionContext(api, interaction);
+      const ctx = new InteractionContext(client, interaction);
       if (!commandData.autocompleteHandlers) {
         await ctx.createAutocompleteResponse([]);
         return;

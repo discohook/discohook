@@ -567,6 +567,63 @@ const main = async () => {
     ),
     addLocalizations(
       new SlashCommandBuilder()
+        .setName("profile")
+        .setContexts(InteractionContextType.Guild)
+        .setDefaultMemberPermissions(PermissionFlags.ManageNicknames)
+        .setDescription("...")
+        .addSubcommand(
+          (o) =>
+            o
+              .setName("set")
+              .setDescription("...")
+              .addStringOption((o) =>
+                o.setName("name").setDescription("...").setMaxLength(32),
+              )
+              .addAttachmentOption((o) =>
+                o.setName("avatar").setDescription("..."),
+              )
+              .addAttachmentOption((o) =>
+                o.setName("banner").setDescription("..."),
+              ),
+          // Not sure about an interface for this yet
+          // .addStringOption((o) => o.setName("bio").setDescription("...")),
+        )
+        .addSubcommand((o) =>
+          o
+            .setName("clear")
+            .setDescription("...")
+            .addStringOption((o) =>
+              o
+                .setName("value")
+                .setDescription("...")
+                .addChoices([
+                  {
+                    name: getEnglish("profile.options.set.options.name.name"),
+                    name_localizations: localize(
+                      "profile.options.set.options.name.name",
+                    ),
+                    value: "name",
+                  },
+                  {
+                    name: getEnglish("profile.options.set.options.avatar.name"),
+                    name_localizations: localize(
+                      "profile.options.set.options.avatar.name",
+                    ),
+                    value: "avatar",
+                  },
+                  {
+                    name: getEnglish("profile.options.set.options.banner.name"),
+                    name_localizations: localize(
+                      "profile.options.set.options.banner.name",
+                    ),
+                    value: "banner",
+                  },
+                ]),
+            ),
+        ),
+    ),
+    addLocalizations(
+      new SlashCommandBuilder()
         .setName("help")
         .setContexts(
           InteractionContextType.Guild,

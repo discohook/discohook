@@ -1,7 +1,12 @@
-import { GatewayDispatchEvents, GatewayIntentBits } from "@discordjs/core";
+import {
+  GatewayDispatchEvents,
+  GatewayIntentBits,
+  PresenceUpdateStatus
+} from "@discordjs/core";
 import { REST } from "@discordjs/rest";
 import { WebSocketManager, WebSocketShardEvents } from "@discordjs/ws";
 import { ArgumentParser } from "argparse";
+import i18next from "i18next";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { Client } from "./client";
@@ -32,23 +37,39 @@ const cluster = Number(argparser.parse_args().cluster ?? 0);
 
 // const guildIds = new Set<string>();
 
-const rest = new REST().setToken(Bun.env.DISCORD_TOKEN);
+const rest = new REST({
+  api: Bun.env.DISCORD_PROXY_API ?? "https://discord.com/api",
+  retries: 2,
+}).setToken(Bun.env.DISCORD_TOKEN);
 const gateway = new WebSocketManager({
   token: Bun.env.DISCORD_TOKEN,
-  intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMessageReactions,
+  intents:
+    // none required: entitlement_*, interaction_create
+
+    // guild_create, guild_delete, guild_emoji_update, channel_delete
+    GatewayIntentBits.Guilds |
+    // message_reaction_*
+    GatewayIntentBits.GuildMessageReactions |
+    // guild_member_*
+    GatewayIntentBits.GuildMembers |
+    // webhooks_update
+    GatewayIntentBits.GuildWebhooks,
   rest,
-  // initialPresence: {
-  //   status: PresenceUpdateStatus.Online,
-  //   activities: [
-  //     {
-  //       name: "Custom",
-  //       state: "discohook.app/guide",
-  //       type: ActivityType.Custom,
-  //     },
-  //   ],
-  //   afk: false,
-  //   since: null,
-  // },
+  initialPresence: {
+    status: PresenceUpdateStatus.Online,
+    // I decided to remove the activity, perhaps temporarily, to not interfere
+    // with custom profiles
+    activities: [],
+    // activities: [
+    //   {
+    //     name: "Custom",
+    //     state: "discohook.app",
+    //     type: ActivityType.Custom,
+    //   },
+    // ],
+    afk: false,
+    since: null,
+  },
   ...(DEV
     ? { shardCount: null }
     : {
@@ -78,16 +99,30 @@ client.once(GatewayDispatchEvents.Ready, ({ data: event, shardId }) => {
   );
 });
 
+const status: {
+  // when the file was last saved
+  // updated: number;
+  // true = hello or resumed is most recent event
+  // false = closed is most recent event
+  shards: Record<number, boolean>;
+} = {
+  // updated: 0,
+  shards: {},
+};
+
 gateway.on(WebSocketShardEvents.Hello, (shardId) => {
   console.log(`[hello] Cluster ${cluster}, Shard ${shardId}`);
+  status.shards[shardId] = true;
 });
 
 gateway.on(WebSocketShardEvents.Resumed, (shardId) => {
   console.log(`[resumed] Cluster ${cluster}, Shard ${shardId}`);
+  status.shards[shardId] = true;
 });
 
 gateway.on(WebSocketShardEvents.Closed, (_, shardId) => {
   console.log(`[closed] Cluster ${cluster}, Shard ${shardId}`);
+  status.shards[shardId] = false;
 });
 
 gateway.on(WebSocketShardEvents.Error, (error, shardId) => {
@@ -106,7 +141,38 @@ const addEvents = async () => {
   }
 };
 
+const resources = {
+  en: { translation: require("./i18n/en.json") },
+  "en-GB": { translation: require("./i18n/en-GB.json") },
+  fr: { translation: require("./i18n/fr.json") },
+  nl: { translation: require("./i18n/nl.json") },
+  it: { translation: require("./i18n/it.json") },
+  "zh-CN": { translation: require("./i18n/zh-CN.json") },
+};
+
+const statusFileInterval = setInterval(() => {
+  // const now = Date.now();
+  if (Object.keys(status.shards).length === 0) return;
+
+  Bun.file(`./status/${cluster}.json`)
+    .write(JSON.stringify(status))
+    .catch((e) => console.error("Failed to write status file", e));
+  // status.updated = now;
+
+  // 5 minutes
+}, 300_000);
+statusFileInterval.unref();
+
 (async () => {
+  await i18next.init({
+    lng: "en",
+    fallbackLng: "en",
+    resources,
+    // These are all plaintext strings passed to Discord (or another service
+    // that sanitizes afterward)
+    interpolation: { escapeValue: false },
+  });
+
   await addEvents();
   await gateway.connect();
 })();
