@@ -25,7 +25,7 @@
     "@remix-run/cloudflare": "^2.4.0",
     "@remix-run/css-bundle": "^2.4.0",
     "@remix-run/react": "^2.4.0",
-    "@twemoji/api": "^15.0.3",
+    "@twemoji/api": "^17.0.2",
     "@types/showdown": "^2.0.6",
     "@ungap/structured-clone": "^1.2.1",
     "chrono-node": "^2.7.5",
