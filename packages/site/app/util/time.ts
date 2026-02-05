@@ -6,7 +6,7 @@ import type {
   MonthRange,
   SixtyRange,
 } from "cron-parser";
-import type { TFunction } from "i18next";
+import type { TFunction } from "~/types/i18next";
 import { getRelativeDateFormat } from "./markdown/dates";
 
 type IntervalUnit =

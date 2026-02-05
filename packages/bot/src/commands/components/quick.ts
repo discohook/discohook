@@ -24,17 +24,14 @@ import {
   autoRollbackTx,
   backups,
   discordMessageComponents,
-  discordMessageComponentsToFlows,
   type FlowAction,
   FlowActionCheckFunctionType,
-  flowActions,
   FlowActionSetVariableType,
   FlowActionType,
-  flows,
   generateId,
   getDb,
   makeSnowflake,
-  type StorableButtonWithCustomId,
+  StorableButtonWithCustomIdResolved
 } from "store";
 import type { ModalCallback, SelectMenuCallback } from "../../components.js";
 import { getShareLink, getShareLinkExists } from "../../durable/share-links.js";
@@ -158,40 +155,29 @@ export const addComponentQuickEntry: SelectMenuCallback = async (ctx) => {
   }
 
   const db = getDb(ctx.env.HYPERDRIVE);
-  const flowId = BigInt(generateId());
-  await db.insert(flows).values({ id: flowId }).returning({ id: flows.id });
 
   state.component = state.component ?? {
     type: ComponentType.Button,
     style: ButtonStyle.Primary,
-    flowId: String(flowId),
+    flow: { actions: [] },
     label: "Button",
   };
 
-  const component = (
-    await db
-      .insert(discordMessageComponents)
-      .values({
-        guildId: makeSnowflake(state.message.guildId),
-        channelId: makeSnowflake(state.message.channelId),
-        messageId: makeSnowflake(state.message.id),
-        type: state.component.type,
-        data: state.component,
-        createdById: makeSnowflake(state.user.id),
-        updatedById: makeSnowflake(state.user.id),
-        draft: true,
-      })
-      .returning({
-        id: discordMessageComponents.id,
-      })
-  )[0];
-  await db
-    .insert(discordMessageComponentsToFlows)
+  const [component] = await db
+    .insert(discordMessageComponents)
     .values({
-      discordMessageComponentId: component.id,
-      flowId,
+      guildId: makeSnowflake(state.message.guildId),
+      channelId: makeSnowflake(state.message.channelId),
+      messageId: makeSnowflake(state.message.id),
+      type: state.component.type,
+      data: state.component,
+      createdById: makeSnowflake(state.user.id),
+      updatedById: makeSnowflake(state.user.id),
+      draft: true,
     })
-    .onConflictDoNothing();
+    .returning({
+      id: discordMessageComponents.id,
+    });
   state.componentId = String(component.id);
 
   const doId = ctx.env.DRAFT_CLEANER.idFromName(String(component.id));
@@ -566,28 +552,34 @@ export const addComponentQuickToggleRoleCallback: SelectMenuCallback = async (
   state.steps = state.steps ?? [];
   state.steps.push({ label: `Select role (<@&${role.id}>)` });
 
-  // Assume button
-  const { flowId } = state.component as StorableButtonWithCustomId;
-  const actions = config.build({ roleId: role.id });
+  const component = state.component;
+  const componentId = state.componentId;
+  if (componentId === undefined || !component) {
+    return ctx.reply({
+      content:
+        "Sorry, we're missing some required state and cannot continue. Try restarting this action.",
+      ephemeral: true,
+    });
+  }
 
   return [
     ctx.defer(),
     async () => {
-      const db = getDb(ctx.env.HYPERDRIVE);
-      await db.transaction(
-        autoRollbackTx(async (tx) => {
-          await tx
-            .delete(flowActions)
-            .where(eq(flowActions.flowId, BigInt(flowId)));
-          await tx.insert(flowActions).values(
-            actions.map((action) => ({
-              flowId: BigInt(flowId),
-              type: action.type,
-              data: action,
-            })),
-          );
-        }),
-      );
+      const actions = config.build({ roleId: role.id });
+      if (
+        // Shouldn't actually be necessary
+        component.type === ComponentType.Button &&
+        component.style !== ButtonStyle.Link &&
+        component.style !== ButtonStyle.Premium
+      ) {
+        component.flow.actions = actions;
+
+        const db = getDb(ctx.env.HYPERDRIVE);
+        await db
+          .update(discordMessageComponents)
+          .set({ data: component })
+          .where(eq(discordMessageComponents.id, BigInt(componentId)));
+      }
 
       const response = await addComponentSetStylePrompt(ctx);
       // biome-ignore lint/style/noNonNullAssertion: returns an updateMessage()
@@ -696,13 +688,20 @@ export const addComponentQuickSendMessageVisibilityCallback: SelectMenuCallback 
       shareId: string;
     };
 
+    const componentId = state.componentId;
+    const component = state.component as StorableButtonWithCustomIdResolved;
+    if (componentId === undefined || !component) {
+      return ctx.reply({
+        content:
+          "Sorry, we're missing some required state and cannot continue. Try restarting this action.",
+        ephemeral: true,
+      });
+    }
+
     return [
       ctx.defer(),
       async () => {
         const { data } = await getShareLink(ctx.env, shareId);
-
-        // Assume button
-        const { flowId } = state.component as StorableButtonWithCustomId;
 
         // biome-ignore lint/style/noNonNullAssertion: Options generated from this array
         const config = quickButtonConfigs.find((c) => c.id === "send-message")!;
@@ -710,7 +709,9 @@ export const addComponentQuickSendMessageVisibilityCallback: SelectMenuCallback 
         const backupName = `Button in #${
           ctx.interaction.channel.name ?? "unknown"
         } (share ${shareId})`.slice(0, 100);
+
         const actions = config.build({ flags, backupId });
+        component.flow.actions = actions;
 
         const db = getDb(ctx.env.HYPERDRIVE);
         await db.transaction(
@@ -723,15 +724,9 @@ export const addComponentQuickSendMessageVisibilityCallback: SelectMenuCallback 
               data,
             });
             await tx
-              .delete(flowActions)
-              .where(eq(flowActions.flowId, BigInt(flowId)));
-            await tx.insert(flowActions).values(
-              actions.map((action) => ({
-                flowId: BigInt(flowId),
-                type: action.type,
-                data: action,
-              })),
-            );
+              .update(discordMessageComponents)
+              .set({ data: component })
+              .where(eq(discordMessageComponents.id, BigInt(componentId)));
           }),
         );
 

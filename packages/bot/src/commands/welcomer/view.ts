@@ -1,7 +1,7 @@
 import {
   ActionRowBuilder,
-  ButtonBuilder,
   bold,
+  ButtonBuilder,
   EmbedBuilder,
 } from "@discordjs/builders";
 import dedent from "dedent-js";
@@ -215,10 +215,7 @@ export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
     });
   }
 
-  const config = getWelcomerConfigFromActions(
-    triggers[0].flow.actions.map((a) => a.data),
-  );
-
+  const config = getWelcomerConfigFromActions(triggers[0].flow.actions);
   let webhook: APIWebhook | undefined;
   if (config.webhookId) {
     try {

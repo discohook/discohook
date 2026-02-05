@@ -23,7 +23,7 @@ import { SignJWT } from "jose";
 import {
   type AnonymousVariable,
   type DBWithSchema,
-  type Flow,
+  type DraftFlow,
   type FlowAction,
   type FlowActionAddRole,
   type FlowActionCheckFunction,
@@ -160,14 +160,13 @@ const BouncerPayloadScheme = z.object({
       >
     ).loose() as unknown as z.ZodType<APIMessageComponentInteraction>
   ).optional(),
-  flow: z
-    .object({
-      actions: z
-        .object({ data: z.object({ type: z.enum(FlowActionType) }).loose() })
-        .loose()
-        .array(),
-    })
-    .loose() as unknown as z.ZodType<Pick<Flow, "actions">>,
+  flow: z.looseObject({
+    actions: z
+      .looseObject({
+        type: z.enum(FlowActionType),
+      })
+      .array(),
+  }) as z.ZodType<Pick<DraftFlow, "actions">>,
 });
 
 export const bounceFlow = async (
@@ -236,7 +235,7 @@ export const resumeFlowFromBouncer = async (
 
 export const executeFlow = async (options: {
   env: Env;
-  flow: Pick<Flow, "actions">;
+  flow: Pick<DraftFlow, "actions">;
   rest: REST;
   db: DBWithSchema;
   liveVars: LiveVariables;
@@ -296,7 +295,7 @@ export const executeFlow = async (options: {
       };
 
       let cumulativeWait = 0;
-      for (const { data: action } of flow.actions) {
+      for (const action of flow.actions) {
         cumulativeWait += processWait(action);
       }
       // console.log({ message: "Calculated possible wait", cumulativeWait });
@@ -358,7 +357,7 @@ export const executeFlow = async (options: {
 
   let subActionsCompleted = 0;
   try {
-    for (const { data: action } of flow.actions) {
+    for (const action of flow.actions) {
       switch (action.type) {
         case FlowActionType.Dud:
           break;
@@ -440,14 +439,7 @@ export const executeFlow = async (options: {
           if (checkResult) {
             const result = await executeFlow({
               env,
-              flow: {
-                actions: (action.then ?? []).map((data) => ({
-                  data,
-                  type: data.type,
-                  flowId: 0n,
-                  id: 0n,
-                })),
-              },
+              flow: { actions: action.then ?? [] },
               rest,
               db,
               liveVars,
@@ -464,14 +456,7 @@ export const executeFlow = async (options: {
           } else {
             const result = await executeFlow({
               env,
-              flow: {
-                actions: (action.else ?? []).map((data) => ({
-                  data,
-                  type: data.type,
-                  flowId: 0n,
-                  id: 0n,
-                })),
-              },
+              flow: { actions: action.else ?? [] },
               rest,
               db,
               liveVars,

@@ -1,7 +1,7 @@
-import type { TFunction } from "i18next";
 import insertTextAtCursor from "insert-text-at-cursor";
 import { type ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import {
   PopoutRichPicker,

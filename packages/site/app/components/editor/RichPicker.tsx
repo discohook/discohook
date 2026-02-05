@@ -1,7 +1,7 @@
 import { Popover } from "@base-ui-components/react/popover";
-import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { twJoin } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { popoverStyles } from "../pickers/Popover";

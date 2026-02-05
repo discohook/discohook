@@ -3,12 +3,9 @@ import { parseQuery } from "zodix";
 import { getUserId } from "~/session.server";
 import {
   type DraftComponent,
-  type DraftFlow,
   discordMessageComponents,
-  flows,
   getDb,
   inArray,
-  type StorableComponent,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -38,89 +35,15 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       draft: true,
       createdById: true,
     },
-    with: {
-      componentsToFlows: {
-        with: {
-          flow: {
-            with: {
-              actions: {
-                columns: {
-                  data: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
   });
 
   return components
     .filter((c) => !c.createdById || c.createdById === userId)
-    .map((c) => {
-      const { createdById: _, id, componentsToFlows, data: d, ...extra } = c;
-      const data = d as DraftComponent & StorableComponent;
-      switch (data.type) {
-        case ComponentType.Button: {
-          if (
-            data.style !== ButtonStyle.Link &&
-            data.style !== ButtonStyle.Premium
-          ) {
-            const flow = componentsToFlows[0]?.flow ?? {
-              name: null,
-              actions: [],
-            };
-            if (flow) {
-              data.flow = {
-                name: flow.name,
-                actions: flow.actions.map((a) => a.data),
-              };
-            }
-          }
-          break;
-        }
-        case ComponentType.StringSelect: {
-          data.flows = Object.fromEntries(
-            Object.entries(data.flowIds).map(([optionValue, flowId]) => {
-              const ctf = componentsToFlows.find(
-                (ctf) => String(ctf.flowId) === flowId,
-              );
-              return [
-                optionValue,
-                ctf
-                  ? {
-                      name: ctf.flow.name,
-                      actions: ctf.flow.actions.map((a) => a.data),
-                    }
-                  : { actions: [] },
-              ];
-            }),
-          );
-          break;
-        }
-        case ComponentType.UserSelect:
-        case ComponentType.RoleSelect:
-        case ComponentType.MentionableSelect:
-        case ComponentType.ChannelSelect: {
-          const flow = componentsToFlows[0]?.flow ?? {
-            name: null,
-            actions: [],
-          };
-          data.flow = {
-            name: flow.name,
-            actions: flow.actions.map((a) => a.data),
-          } satisfies DraftFlow;
-          break;
-        }
-        default:
-          break;
-      }
-      return {
-        id: String(id),
-        data: data as DraftComponent,
-        ...extra,
-      };
-    });
+    .map((c) => ({
+      id: String(c.id),
+      data: c.data,
+      draft: c.draft,
+    }));
 };
 
 export const action = async ({ request, context }: ActionArgs) => {
@@ -129,22 +52,22 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   const db = getDb(context.env.HYPERDRIVE);
 
-  const createdFlow = (
-    await db.insert(flows).values({}).returning({ id: flows.id })
-  )[0];
   const inserted = (
     await db
       .insert(discordMessageComponents)
       .values({
         type: component.type,
-        data: (() => {
+        data: ((): DraftComponent => {
           const { custom_id: _, ...c } = component;
           switch (c.type) {
             case ComponentType.Button: {
-              if (c.style === ButtonStyle.Link) {
+              if (
+                c.style === ButtonStyle.Link ||
+                c.style === ButtonStyle.Premium
+              ) {
                 return c;
               }
-              return { ...c, flowId: String(createdFlow.id) };
+              return { ...c, flow: c.flow ?? { actions: [] } };
             }
             case ComponentType.StringSelect: {
               return {
@@ -155,7 +78,7 @@ export const action = async ({ request, context }: ActionArgs) => {
                 // a way to tell which values have been selected - `{values[n]}`?
                 minValues: 1,
                 maxValues: 1,
-                flowIds: {},
+                flows: c.flows ?? {},
               };
             }
             case ComponentType.UserSelect:
@@ -173,7 +96,7 @@ export const action = async ({ request, context }: ActionArgs) => {
                 // See above
                 minValues: 1,
                 maxValues: 1,
-                flowId: String(createdFlow.id),
+                flow: c.flow ?? { actions: [] },
                 defaultValues,
               };
             }
@@ -182,7 +105,7 @@ export const action = async ({ request, context }: ActionArgs) => {
           }
           // Shouldn't happen
           throw Error("Unsupported component type");
-        })() satisfies StorableComponent,
+        })(),
         draft: true,
         createdById: userId,
       })

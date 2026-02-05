@@ -16,7 +16,7 @@ export default createHandler(
       .delete(discordGuilds)
       .where(eq(discordGuilds.id, makeSnowflake(data.id)));
 
-    // No reason to keep this in memory for up to 12h even if it's not much data
+    // No reason to keep these in memory
     await client.KV.delete(`cache-triggerGuild-${data.id}`);
     await client.KV.delete(`cache-guild-${data.id}`);
   },

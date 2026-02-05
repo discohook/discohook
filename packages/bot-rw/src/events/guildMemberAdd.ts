@@ -39,17 +39,7 @@ export const getWelcomerConfigurations = async (
     columns: {
       id: true,
       disabled: true,
-    },
-    with: {
-      flow: {
-        columns: {
-          id: true,
-          name: true,
-        },
-        with: {
-          actions: true,
-        },
-      },
+      flow: true,
     },
     where: and(
       eq(triggers.platform, "discord"),

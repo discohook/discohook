@@ -7,9 +7,9 @@ import {
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import type {
   CacheManager,
   ResolvableAPIChannel,

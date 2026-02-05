@@ -9,16 +9,16 @@ import {
   ComponentType,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
-import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
+import type { SetErrorFunction } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import type { TFunction } from "~/types/i18next";
 import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,

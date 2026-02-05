@@ -97,8 +97,7 @@ import { snowflakeAsString } from "~/util/zod";
 import type { ApiGetBackupWithData } from "../api/v1/backups.$id";
 import type { loader as ApiGetComponents } from "../api/v1/components";
 import {
-  buildStorableComponent,
-  unresolveStorableComponent,
+  buildStorableComponent
 } from "./edit.component.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -212,15 +211,7 @@ export const loadMessageComponents = async (
     for (const stored of raw) {
       const local = allComponentsById[stored.id];
       if (local) {
-        const unresolved = unresolveStorableComponent(stored.data);
-        Object.assign(
-          local,
-          buildStorableComponent(
-            unresolved.component,
-            stored.id,
-            unresolved.flows,
-          ),
-        );
+        Object.assign(local, buildStorableComponent(stored.data, stored.id));
       }
     }
 

@@ -23,13 +23,13 @@ export default createHandler(
       });
       if (!stored) {
         await client.KV.put(key, JSON.stringify({ roleId: null }), {
-          expirationTtl: 604800,
+          expirationTtl: 86400 / 2,
         });
         return;
       }
       rrData = { roleId: String(stored.roleId) };
       await client.KV.put(key, JSON.stringify(rrData), {
-        expirationTtl: 604800,
+        expirationTtl: 86400,
       });
     }
     if (!rrData.roleId) return;

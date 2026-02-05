@@ -32,7 +32,7 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { generateId, type StorableComponent } from "store";
+import { type DraftComponent, generateId } from "store";
 import type { MinimumKVComponentState } from "../components.js";
 import type { Env } from "../types/env.js";
 import { MAX_TOTAL_COMPONENTS } from "./constants.js";
@@ -171,7 +171,7 @@ export const getComponentId = (
     | Pick<APIButtonComponentWithURL, "type" | "style" | "label" | "url">
     | Pick<APIButtonComponentWithSKUId, "type" | "style" | "sku_id">
     | Pick<APISelectMenuComponent, "type" | "custom_id">,
-  components?: { id: bigint; data: StorableComponent }[],
+  components?: { id: bigint; data: DraftComponent }[],
 ) => {
   if (
     component.type === ComponentType.Button &&

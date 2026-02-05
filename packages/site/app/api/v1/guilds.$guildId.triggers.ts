@@ -1,10 +1,10 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { flows as dFlows, triggers as dTriggers, getDb } from "store";
+import { triggers as dTriggers, getDb } from "store";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { flowActions, TriggerEvent } from "~/store.server";
+import { TriggerEvent } from "~/store.server";
 import { refineZodDraftFlowMax } from "~/types/flows";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
@@ -45,15 +45,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       id: true,
       event: true,
       updatedAt: true,
+      flow: true,
     },
     with: {
-      flow: {
-        columns: {
-          id: true,
-          name: true,
-        },
-        with: { actions: true },
-      },
       updatedBy: {
         columns: {
           name: true,
@@ -121,25 +115,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     );
   }
 
-  const dbFlow = (
-    await db
-      .insert(dFlows)
-      .values({
-        // TODO: add space to default TriggerEvent name
-        name: flow?.name ?? TriggerEvent[event],
-      })
-      .returning({ id: dFlows.id })
-  )[0];
-  if (flow && flow.actions.length !== 0) {
-    await db.insert(flowActions).values(
-      flow.actions.map((action) => ({
-        flowId: dbFlow.id,
-        type: action.type,
-        data: action,
-      })),
-    );
-  }
-
   const created = (
     await db
       .insert(dTriggers)
@@ -148,11 +123,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         discordGuildId: guildId,
         event,
         updatedById: token.user.id,
-        flowId: dbFlow.id,
+        flow: flow ?? { actions: [] },
       })
-      .returning({
-        id: dTriggers.id,
-      })
+      .returning({ id: dTriggers.id })
   )[0];
 
   return respond(json(created, 201));

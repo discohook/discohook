@@ -34,7 +34,6 @@ import {
   UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
-import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -67,6 +66,7 @@ import {
   getTokenGuildPermissions,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
+import type { TFunction } from "~/types/i18next";
 import { type CacheManager, useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
@@ -74,7 +74,6 @@ import {
   isDiscordError,
   webhookAvatarUrl,
 } from "~/util/discord";
-import { flowToDraftFlow } from "~/util/flow";
 import { getId } from "~/util/id";
 import { type LoaderArgs, useSafeFetcher } from "~/util/loader";
 import { getUserAvatar, userIsPremium } from "~/util/users";
@@ -535,7 +534,7 @@ export default () => {
   const [draftFlow, setDraftFlow] = useState<DraftFlow>();
   useEffect(() => {
     if (openTrigger) {
-      setDraftFlow(flowToDraftFlow(openTrigger.flow));
+      setDraftFlow(openTrigger.flow ?? { actions: [] });
     } else {
       setDraftFlow(undefined);
       setEditOpenTriggerFlow(false);

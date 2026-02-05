@@ -5,8 +5,8 @@ import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,
   type APIChannel,
+  type APIComponentInActionRow,
   type APIComponentInContainer,
-  type APIComponentInModalActionRow,
   type APIMessage,
   type APISectionComponent,
   type APIWebhook,
@@ -17,7 +17,6 @@ import {
   type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import type { JWTPayload } from "jose";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -57,15 +56,14 @@ import {
   discordMessageComponents,
   type DraftComponent,
   eq,
-  type Flow,
   getDb,
-  launchComponentDurableObject,
+  launchComponentKV,
   makeSnowflake,
   messageLogEntries,
-  type StorableComponent,
   tokens,
 } from "~/store.server";
 import { ZodAPITopLevelComponentRaw } from "~/types/components-raw";
+import type { TFunction } from "~/types/i18next";
 import type {
   APIButtonComponentWithCustomId,
   APIComponentInMessageActionRow,
@@ -93,7 +91,6 @@ import {
   isStorableComponent,
   onlyActionRows,
 } from "~/util/discord";
-import { draftFlowToFlow, flowToDraftFlow } from "~/util/flow";
 import {
   type ActionArgs,
   type LoaderArgs,
@@ -206,16 +203,6 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       guildId: true,
       channelId: true,
       messageId: true,
-    },
-    with: {
-      componentsToFlows: {
-        columns: {},
-        with: {
-          flow: {
-            with: { actions: true },
-          },
-        },
-      },
     },
   });
   if (!component) {
@@ -661,10 +648,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       )[0];
 
       if (built.custom_id) {
-        await launchComponentDurableObject(context.env, {
-          messageId: message.id,
-          customId: built.custom_id,
+        await launchComponentKV(context.env, {
           componentId: component.id,
+          data: component.data,
         });
       }
 
@@ -675,21 +661,20 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 };
 
 export const buildStorableComponent = (
-  component: StorableComponent,
+  component: DraftComponent,
   id: string,
-  flows: Flow[] = [],
 ): APIComponentInMessageActionRow => {
   switch (component.type) {
     case ComponentType.Button: {
-      if (component.style === ButtonStyle.Link) {
+      if (
+        component.style === ButtonStyle.Link ||
+        component.style === ButtonStyle.Premium
+      ) {
         return component;
       }
-      // if (isSkuButton(component)) {
-      // }
       return {
         ...component,
         custom_id: `p_${id}`,
-        flow: flows[0] ? flowToDraftFlow(flows[0]) : { actions: [] },
       } as APIButtonComponentWithCustomId;
     }
     case ComponentType.StringSelect: {
@@ -704,15 +689,6 @@ export const buildStorableComponent = (
         custom_id: `p_${id}`,
         min_values,
         max_values,
-        flows: Object.fromEntries(
-          Object.entries(rest.flowIds).map(([optionValue, flowId]) => {
-            const flow = flows.find((flow) => String(flow.id) === flowId);
-            return [
-              optionValue,
-              flow ? flowToDraftFlow(flow) : { actions: [] },
-            ];
-          }),
-        ),
       };
     }
     case ComponentType.UserSelect:
@@ -733,72 +709,12 @@ export const buildStorableComponent = (
         max_values,
         // @ts-expect-error
         default_values,
-        flow: flows[0] ? flowToDraftFlow(flows[0]) : { actions: [] },
       };
     }
     default:
       break;
   }
   throw Error("Unsupported storable component type.");
-};
-
-export const unresolveStorableComponent = (
-  component: DraftComponent,
-): { component: StorableComponent; flows: Flow[] } => {
-  switch (component.type) {
-    case ComponentType.Button: {
-      if (
-        component.style === ButtonStyle.Link ||
-        component.style === ButtonStyle.Premium
-      ) {
-        return { component, flows: [] };
-      }
-      const { flow, ...rest } = component;
-      return {
-        component: {
-          ...rest,
-          flowId: "0",
-        },
-        flows: [draftFlowToFlow(flow)],
-      };
-    }
-    case ComponentType.StringSelect: {
-      const { flows, ...rest } = component;
-      const flowIds: Record<string, string> = {};
-      const undraftedFlows: Flow[] = [];
-      Object.entries(flows).forEach(([optionValue, flow], i) => {
-        const undrafted = draftFlowToFlow(flow);
-        undrafted.id = BigInt(i);
-        for (const a of undrafted.actions) {
-          a.flowId = BigInt(i);
-        }
-        flowIds[optionValue] = String(i);
-        undraftedFlows.push(undrafted);
-      });
-      return {
-        component: {
-          ...rest,
-          flowIds,
-        },
-        flows: undraftedFlows,
-      };
-    }
-    case ComponentType.RoleSelect:
-    case ComponentType.UserSelect:
-    case ComponentType.ChannelSelect:
-    case ComponentType.MentionableSelect: {
-      const { flow, ...rest } = component;
-      return {
-        component: {
-          ...rest,
-          flowId: "0",
-        },
-        flows: [draftFlowToFlow(flow)],
-      };
-    }
-    default:
-      throw new Error("Unhandled component type");
-  }
 };
 
 const isSameComponent = ({
@@ -828,9 +744,7 @@ const isSameComponent = ({
       : false;
 };
 
-const rowHasSpace = <
-  T extends APIComponentInMessageActionRow | APIComponentInModalActionRow,
->(
+const rowHasSpace = <T extends APIComponentInActionRow>(
   row: APIActionRowComponent<T>,
   component: T,
 ) => MAX_ACTION_ROW_WIDTH - getRowWidth(row) >= getComponentWidth(component);
@@ -1349,11 +1263,7 @@ export default () => {
   const [settings] = useLocalStorage();
 
   const [component, setComponent] = useState(
-    buildStorableComponent(
-      component_.data,
-      String(component_.id),
-      component_.componentsToFlows.map((ctf) => ctf.flow),
-    ),
+    buildStorableComponent(component_.data, String(component_.id)),
   );
 
   // TODO: use this to reduce "flicker" when opening/closing modal

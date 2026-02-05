@@ -271,7 +271,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   await ctx.client.KV.put(
     `discord-reaction-role-${message.id}-${reaction}`,
     JSON.stringify({ roleId: role.id }),
-    { expirationTtl: 604800 },
+    { expirationTtl: 86400 }, // prev 7x as much
   );
   const db = ctx.client.getDb();
   await upsertGuild(db, guild);

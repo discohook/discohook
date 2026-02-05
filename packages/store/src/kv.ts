@@ -7,7 +7,9 @@ import {
   GuildPremiumTier,
   Routes,
 } from "discord-api-types/v10";
+import type { DBWithSchema } from "./db.js";
 import type { RedisKV } from "./redis.js";
+import type { DraftComponent } from "./types/components.js";
 import type { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
 
 export type Env = {
@@ -77,11 +79,7 @@ export const getchGuild = async (
       name: guild.name,
       icon: guild.icon,
     };
-    await env.KV.put(
-      key,
-      JSON.stringify(reduced),
-      { expirationTtl: 43_200 }, // 12 hours
-    );
+    await env.KV.put(key, JSON.stringify(reduced), { expirationTtl: 3600 });
     return reduced;
   }
   return cached;
@@ -127,11 +125,7 @@ export const getchTriggerGuild = async (
               ? 15
               : 5,
     };
-    await env.KV.put(
-      key,
-      JSON.stringify(reduced),
-      { expirationTtl: 43_200 }, // 12 hours
-    );
+    await env.KV.put(key, JSON.stringify(reduced), { expirationTtl: 3600 });
     return reduced;
   }
   return cached;
@@ -249,4 +243,54 @@ export const getchMessage = async (
     Routes.channelMessage(channelId, messageId),
   )) as APIMessage;
   return await cacheMessage(env, message, options?.guildId, options?.ttl);
+};
+
+export interface KVStoredComponent {
+  id: string;
+  data: DraftComponent;
+}
+
+export const launchComponentKV = async (
+  env: Env | Env["KV"],
+  // In the future we will probably need a guild ID here so that we
+  // can store on shard/cluster-specific machines
+  options: {
+    // messageId: string;
+    componentId: string | bigint;
+    data?: DraftComponent;
+    db?: DBWithSchema;
+  },
+) => {
+  const key = `custom-component-${options.componentId}`;
+  const data = {
+    id: String(options.componentId),
+    data: options.data,
+  };
+  if (!data.data) {
+    if (!options.db) throw Error("Must provide db if not data");
+
+    const component = await options.db.query.discordMessageComponents.findFirst(
+      {
+        where: (table, { eq }) => eq(table.id, BigInt(options.componentId)),
+        columns: { id: true, data: true },
+      },
+    );
+    if (!component) throw Error("Unknown Component");
+    data.data = component.data;
+  }
+
+  const kv = "KV" in env ? env.KV : env;
+  // 1 hour
+  await kv.put(key, JSON.stringify(data), { expirationTtl: 3600 });
+  return data;
+};
+
+export const destroyComponentKV = async (
+  env: Env | Env["KV"],
+  // In the future we will probably need a guild ID here so that we
+  // can store on shard/cluster-specific machines
+  componentId: string | bigint,
+) => {
+  const kv = "KV" in env ? env.KV : env;
+  await kv.delete(`custom-component-${componentId}`);
 };

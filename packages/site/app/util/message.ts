@@ -1,7 +1,7 @@
 import type { APIMessage } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import { getEmbedText } from "~/components/editor/EmbedEditor";
 import { getComponentText } from "~/components/editor/TopLevelComponentEditor";
+import type { TFunction } from "~/types/i18next";
 import type { QueryData } from "~/types/QueryData";
 
 export const getMessageText = (

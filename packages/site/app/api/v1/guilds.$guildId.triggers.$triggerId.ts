@@ -1,15 +1,13 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { autoRollbackTx, getDb } from "store";
+import { getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
   type DBWithSchema,
   eq,
-  flowActions,
-  flows,
   putGeneric,
   type TriggerEvent,
-  triggers,
+  triggers
 } from "~/store.server";
 import type { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
@@ -41,11 +39,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       event: true,
       discordGuildId: true,
       disabled: true,
-    },
-    with: {
-      flow: {
-        with: { actions: true },
-      },
+      flow: true,
     },
   });
   if (!trigger || trigger.discordGuildId !== guildId) {
@@ -70,12 +64,7 @@ const updateKvTriggers = async (
     columns: {
       id: true,
       disabled: true,
-    },
-    with: {
-      flow: {
-        columns: { name: true },
-        with: { actions: true },
-      },
+      flow: true,
     },
   });
   await putGeneric(env, `cache:triggers-${event}-${guildId}`, triggers, {
@@ -130,39 +119,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   const db = getDb(context.env.HYPERDRIVE);
   const trigger = await db.query.triggers.findFirst({
     where: (triggers, { eq }) => eq(triggers.id, triggerId),
-    columns: {
-      discordGuildId: true,
-      event: true,
-      flowId: true,
-    },
+    columns: { discordGuildId: true, event: true },
   });
   if (!trigger || trigger.discordGuildId !== guildId) {
     throw json({ message: "Unknown Trigger" }, 404);
   }
 
-  await db.transaction(
-    autoRollbackTx(async (tx) => {
-      // if (flow) {
-      await tx
-        .delete(flowActions)
-        .where(eq(flowActions.flowId, trigger.flowId));
-      if (flow.actions.length !== 0) {
-        await tx.insert(flowActions).values(
-          flow.actions.map((action) => ({
-            flowId: trigger.flowId,
-            type: action.type,
-            data: action,
-          })),
-        );
-      }
-      await tx
-        .update(flows)
-        .set({ name: flow.name })
-        .where(eq(flows.id, trigger.flowId));
-      // }
-    }),
-  );
-
+  await db.update(triggers).set({ flow }).where(eq(triggers.id, triggerId));
   await updateKvTriggers(
     db,
     context.env,

@@ -41,13 +41,6 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   };
 };
 
-// export const meta: MetaFunction = ({ data }) => {
-//   if (data) {
-//     const { code } = data as SerializeFrom<typeof loader>;
-//   }
-//   return [];
-// };
-
 export default function DiscordPage() {
   const { user, code } = useLoaderData<typeof loader>();
   const { t } = useTranslation();

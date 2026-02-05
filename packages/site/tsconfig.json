@@ -1,6 +1,8 @@
 {
   "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"],
   "compilerOptions": {
+    // using 5.x right now so we don't want complaints about baseUrl
+    "ignoreDeprecations": "6.0",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "isolatedModules": true,
     "esModuleInterop": true,

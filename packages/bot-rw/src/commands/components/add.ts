@@ -28,7 +28,7 @@ import { SignJWT } from "jose";
 import {
   autoRollbackTx,
   discordMessageComponents,
-  flows,
+  type DraftComponent,
   generateId,
   makeSnowflake,
   type StorableComponent,
@@ -685,47 +685,42 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     case "mentionable-select":
     case "channel-select": {
       const db = ctx.client.getDb();
-      const { id: flowId } =
-        (state.component ?? value === "string-select")
-          ? { id: 0 }
-          : (await db.insert(flows).values({}).returning({ id: flows.id }))[0];
+      let componentData: DraftComponent;
+      if (value === "string-select") {
+        componentData = {
+          type: ComponentType.StringSelect,
+          options: [],
+          flows: {},
+        };
+      } else {
+        componentData = {
+          type:
+            value === "user-select"
+              ? ComponentType.UserSelect
+              : value === "role-select"
+                ? ComponentType.RoleSelect
+                : value === "mentionable-select"
+                  ? ComponentType.MentionableSelect
+                  : ComponentType.ChannelSelect,
+          flow: { actions: [] },
+        };
+      }
 
-      state.component =
-        (state.component ?? value === "string-select")
-          ? {
-              type: ComponentType.StringSelect,
-              options: [],
-              flowIds: {},
-            }
-          : {
-              type:
-                value === "user-select"
-                  ? ComponentType.UserSelect
-                  : value === "role-select"
-                    ? ComponentType.RoleSelect
-                    : value === "mentionable-select"
-                      ? ComponentType.MentionableSelect
-                      : ComponentType.ChannelSelect,
-              flowId: String(flowId),
-            };
-
-      const component = (
-        await db
-          .insert(discordMessageComponents)
-          .values({
-            guildId: makeSnowflake(state.message.guildId),
-            channelId: makeSnowflake(state.message.channelId),
-            messageId: makeSnowflake(state.message.id),
-            type: state.component.type,
-            data: state.component,
-            createdById: makeSnowflake(state.user.id),
-            updatedById: makeSnowflake(state.user.id),
-            draft: true,
-          })
-          .returning({
-            id: discordMessageComponents.id,
-          })
-      )[0];
+      const [component] = await db
+        .insert(discordMessageComponents)
+        .values({
+          guildId: makeSnowflake(state.message.guildId),
+          channelId: makeSnowflake(state.message.channelId),
+          messageId: makeSnowflake(state.message.id),
+          type: componentData.type,
+          data: componentData,
+          createdById: makeSnowflake(state.user.id),
+          updatedById: makeSnowflake(state.user.id),
+          draft: true,
+        })
+        .returning({
+          id: discordMessageComponents.id,
+        });
       const doId = ctx.env.DRAFT_CLEANER.idFromName(String(component.id));
       const stub = ctx.env.DRAFT_CLEANER.get(doId);
       await stub.fetch(`http://do/?id=${component.id}`);

@@ -694,7 +694,7 @@ export const onlyActionRows = (
 
 export const extractInteractiveComponents = (
   components: APIMessageTopLevelComponent[],
-) => {
+): APIComponentInMessageActionRow[] => {
   const children: APIComponentInMessageActionRow[] = [];
   for (const component of components) {
     if (component.type === ComponentType.Container) {

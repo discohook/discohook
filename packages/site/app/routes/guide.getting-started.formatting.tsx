@@ -1,16 +1,16 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import type { TFunction } from "i18next";
 import type React from "react";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Prose } from "~/components/Prose";
 import { codeStyle } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { Prose } from "~/components/Prose";
 import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
+import type { TFunction } from "~/types/i18next";
 import { useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
@@ -79,7 +79,6 @@ const FormatCategoryBody: React.FC<{
     </thead>
     <tbody>
       {paths.map((path) => (
-        // biome-ignore lint/a11y/useKeyWithClickEvents: we just want this to work on mobile devices too
         <tr
           key={`format-path-${path}`}
           className="rounded hover:bg-blurple/20 p-px transition"
@@ -214,7 +213,7 @@ export default function FormattingPage() {
             <Trans
               t={t}
               i18nKey="formatDescription"
-              components={[<span className={codeStyle} />]}
+              components={[<span key="0" className={codeStyle} />]}
             />
           </p>
           <details className="group mt-4">

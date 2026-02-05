@@ -15,7 +15,7 @@ import {
 import { MessageFlagsBitField } from "discord-bitflag";
 import {
   type AnonymousVariable,
-  type Flow,
+  type DraftFlow,
   type FlowActionAddRole,
   type FlowActionCheckFunction,
   FlowActionCheckFunctionType,
@@ -30,7 +30,7 @@ import {
   makeSnowflake,
   messageLogEntries,
   type TriggerKVGuild,
-  webhooks,
+  webhooks
 } from "store";
 import type { Client } from "../client.js";
 import { getWebhook } from "../commands/webhooks/webhookInfo.js";
@@ -94,7 +94,7 @@ type SentMessages = Record<string, { route: RouteLike }>;
 
 export const executeFlow = async (options: {
   client: Client;
-  flow: Pick<Flow, "actions">;
+  flow: Pick<DraftFlow, "actions">;
   liveVars: LiveVariables;
   setVars?: SetVariables;
   ctx?: InteractionContext<APIMessageComponentInteraction>;
@@ -213,7 +213,7 @@ export const executeFlow = async (options: {
 
   let subActionsCompleted = 0;
   try {
-    for (const { data: action } of flow.actions) {
+    for (const action of flow.actions) {
       switch (action.type) {
         case FlowActionType.Dud:
           break;
@@ -295,14 +295,7 @@ export const executeFlow = async (options: {
           if (checkResult) {
             const result = await executeFlow({
               client,
-              flow: {
-                actions: (action.then ?? []).map((data) => ({
-                  data,
-                  type: data.type,
-                  flowId: 0n,
-                  id: 0n,
-                })),
-              },
+              flow: { actions: action.then ?? [] },
               liveVars,
               setVars: vars,
               ctx,
@@ -317,14 +310,7 @@ export const executeFlow = async (options: {
           } else {
             const result = await executeFlow({
               client,
-              flow: {
-                actions: (action.else ?? []).map((data) => ({
-                  data,
-                  type: data.type,
-                  flowId: 0n,
-                  id: 0n,
-                })),
-              },
+              flow: { actions: action.else ?? [] },
               liveVars,
               setVars: vars,
               ctx,

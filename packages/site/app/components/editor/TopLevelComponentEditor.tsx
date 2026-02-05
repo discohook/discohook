@@ -8,9 +8,9 @@ import {
   type APIContainerComponent,
   type APIMessageComponent,
 } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
+import type { TFunction } from "~/types/i18next";
 import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,

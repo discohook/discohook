@@ -68,6 +68,10 @@ export type StorableStringSelectResolved = Omit<
   StorableStringSelect,
   "flowIds"
 > & {
+  /**
+   * I'm thinking when we allow minValues > 1 for string selects, we enforce
+   * just one flow per select, perhaps keyed "base" or with an empty string.
+   */
   flows: Record<string, DraftFlow>;
 };
 
@@ -92,6 +96,7 @@ export type StorableAutopopulatedSelectResolved = Omit<
   flow: DraftFlow;
 };
 
+/** @deprecated draft components (with rich flow data) are now stored directly in the database - 1/2026 */
 export type StorableComponent =
   | StorableButtonWithCustomId
   | StorableButtonWithUrl

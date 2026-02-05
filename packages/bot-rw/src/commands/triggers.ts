@@ -4,9 +4,9 @@ import {
   EmbedBuilder,
 } from "@discordjs/builders";
 import {
-  type APIInteractionGuildMember,
   ButtonStyle,
   GatewayDispatchEvents,
+  type APIInteractionGuildMember,
   type GatewayGuildMemberAddDispatchData,
   type GatewayGuildMemberRemoveDispatchData,
   type GuildMemberFlags,
@@ -15,15 +15,15 @@ import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
 import {
   FlowActionType,
-  flows,
   makeSnowflake,
   TriggerEvent,
   triggers,
   upsertDiscordUser,
+  type DraftFlow,
 } from "store";
 import type { Client } from "../client.js";
 import type { ButtonCallback } from "../components.js";
-import { emojiToString, getEmojis } from "../emojis.js";
+import { emojiToString } from "../emojis.js";
 import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import type { FlowResult } from "../flows/flows.js";
@@ -61,24 +61,16 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   const db = ctx.client.getDb();
   const user = await upsertDiscordUser(db, ctx.user);
-  const [{ id: flowId }] = await db
-    .insert(flows)
-    .values({})
-    .returning({ id: flows.id });
-  const trigger = (
-    await db
-      .insert(triggers)
-      .values({
-        platform: "discord",
-        event,
-        discordGuildId: makeSnowflake(guild.id),
-        disabled: true,
-        flowId,
-        updatedAt: new Date(),
-        updatedById: user.id,
-      })
-      .returning()
-  )[0];
+  await db.insert(triggers).values({
+    platform: "discord",
+    event,
+    discordGuildId: makeSnowflake(guild.id),
+    disabled: true,
+    flow: { actions: [] },
+    flowId: null,
+    updatedAt: new Date(),
+    updatedById: user.id,
+  });
 
   await ctx.followup.editOriginalMessage({
     content: ctx.t("triggerCreated", { replace: { name } }),
@@ -87,9 +79,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
           .setLabel(ctx.t("addActions"))
-          .setURL(
-            `${Bun.env.DISCOHOOK_ORIGIN}/s/${trigger.discordGuildId}?t=triggers`,
-          ),
+          .setURL(`${Bun.env.DISCOHOOK_ORIGIN}/s/${guild.id}?t=triggers`),
       ),
     ],
   });
@@ -97,17 +87,17 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 
 export const getFlowEmbed = (
   ctx: InteractionContext,
-  flow: Awaited<ReturnType<typeof getWelcomerConfigurations>>[number]["flow"],
+  flow: DraftFlow | null,
 ): EmbedBuilder =>
   new EmbedBuilder()
-    .setTitle(flow.name ?? ctx.t("unnamedTrigger"))
+    .setTitle(flow?.name ?? ctx.t("unnamedTrigger"))
     .setColor(color)
     .setDescription(
-      flow.actions?.length === 0
+      !flow?.actions?.length
         ? ctx.t("noActions")
         : flow.actions
             .map(
-              ({ data: action }, i) =>
+              (action, i) =>
                 `${i + 1}. ${spaceEnum(FlowActionType[action.type])}${
                   action.type === FlowActionType.Wait
                     ? ` ${action.seconds}s`
@@ -135,7 +125,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   const trigger = welcomerTriggers.find((t) =>
     name.startsWith("_id:")
-      ? t.id === BigInt(name.split(":")[1])
+      ? t.id === BigInt(name.replace(/^_id:/, ""))
       : t.flow?.name === name,
   );
   if (!trigger) {
@@ -176,7 +166,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
   async (ctx) => {
     const db = ctx.client.getDb();
-    // This doesn't reflect pre-migration triggers
+    // This doesn't reflect pre-migration triggers (from v1 utils)
     const triggers = await db.query.triggers.findMany({
       where: (triggers, { eq }) =>
         eq(
@@ -184,19 +174,16 @@ export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
           // biome-ignore lint/style/noNonNullAssertion: Guild only command
           makeSnowflake(ctx.interaction.guild_id!),
         ),
-      columns: {
-        id: true,
-      },
-      with: {
-        flow: {
-          columns: {
-            name: true,
-          },
-        },
-      },
+      columns: { id: true, event: true, flow: true },
     });
     return triggers.map((trigger) => ({
-      name: trigger.flow?.name ?? ctx.t("unnamedTrigger"),
+      name:
+        trigger.flow?.name ??
+        (trigger.event === TriggerEvent.MemberAdd
+          ? "Member Join"
+          : trigger.event === TriggerEvent.MemberRemove
+            ? "Member Remove"
+            : ctx.t("unnamedTrigger")),
       value: `_id:${trigger.id}`,
     }));
   };
@@ -334,6 +321,7 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
     return;
   }
 
+  // TODO: application emojis
   const emojis = await getEmojis(ctx.env);
   const trueEmoji = emojiToString(emojis.get("true", true));
   const falseEmoji = emojiToString(emojis.get("false", true));

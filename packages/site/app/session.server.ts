@@ -27,6 +27,7 @@ import {
   generateId,
   getDb,
   makeSnowflake,
+  type PartialKVGuild,
   type tokens,
   type upsertDiscordUser,
 } from "./store.server";
@@ -859,8 +860,8 @@ export const getGuild = async (
       id: guild.id,
       name: guild.name,
       icon: guild.icon,
-    }),
-    { expirationTtl: 10800 }, // 3 hours
+    } satisfies PartialKVGuild),
+    { expirationTtl: 3600 },
   );
   return guild;
 };

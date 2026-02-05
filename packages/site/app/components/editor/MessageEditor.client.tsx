@@ -8,7 +8,6 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -22,6 +21,7 @@ import {
   PlainModalHeader,
 } from "~/modals/Modal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import type { TFunction } from "~/types/i18next";
 import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import type {
   CacheManager,

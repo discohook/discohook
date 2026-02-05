@@ -4,7 +4,7 @@ import {
   discordMessageComponents,
   getDb,
   inArray,
-  launchComponentDurableObject,
+  launchComponentKV,
 } from "~/store.server";
 import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson } from "~/util/zod";
@@ -38,6 +38,7 @@ export const action = async ({ request, context }: ActionArgs) => {
       and(inArray(table.id, ids), eq(table.createdById, BigInt(token.user.id))),
     columns: {
       id: true,
+      data: true,
       draft: true,
     },
   });
@@ -87,10 +88,9 @@ export const action = async ({ request, context }: ActionArgs) => {
   if (update.draft === false && update.messageId) {
     for (const component of current) {
       if (component.draft) {
-        await launchComponentDurableObject(context.env, {
-          messageId: update.messageId.toString(),
+        await launchComponentKV(context.env, {
           componentId: component.id,
-          customId: `p_${component.id}`,
+          data: component.data,
         });
       }
     }
