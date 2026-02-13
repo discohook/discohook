@@ -26,7 +26,7 @@
     "argparse": "^2.0.1",
     "discord-api-types": "^0.38.32",
     "dotenv": "^16.3.1",
-    "drizzle-orm": "^0.44.5",
+    "drizzle-orm": "^0.45.1",
     "json-bigint": "^1.0.0",
     "keyv": "^5.0.1",
     "postgres": "^3.4.4",
