@@ -1,17 +1,15 @@
 import { REST } from "@discordjs/rest";
-import { defer, json, redirect } from "@remix-run/cloudflare";
+import { json, redirect } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useLocation } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,
-  type APIChannel,
   type APIComponentInActionRow,
   type APIComponentInContainer,
   type APIMessage,
   type APISectionComponent,
   type APIWebhook,
   ButtonStyle,
-  ChannelType,
   ComponentType,
   RESTJSONErrorCodes,
   type RESTPatchAPIWebhookWithTokenMessageJSONBody,
@@ -23,7 +21,6 @@ import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
-import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { canModifyComponent } from "~/api/v1/components.$id";
 import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
@@ -47,7 +44,6 @@ import { submitMessage } from "~/modals/MessageSendModal";
 import {
   authorizeRequest,
   getEditorTokenStorage,
-  getGuild,
   getUser,
   verifyToken,
 } from "~/session.server";
@@ -69,13 +65,7 @@ import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
-import {
-  type ResolutionKey,
-  type ResolvableAPIChannel,
-  type ResolvableAPIEmoji,
-  type ResolvableAPIRole,
-  useCache,
-} from "~/util/cache/CacheManager";
+import { useCache } from "~/util/cache/CacheManager";
 import {
   MAX_ACTION_ROW_WIDTH,
   MAX_TOTAL_COMPONENTS,
@@ -277,84 +267,13 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     });
   }
 
-  let emojis: ResolvableAPIEmoji[] = [];
-  let roles: ResolvableAPIRole[] = [];
-  if (component.guildId) {
-    try {
-      const guild = await getGuild(component.guildId, rest, context.env);
-      emojis = guild.emojis.map(
-        (emoji) =>
-          ({
-            id: emoji.id ?? undefined,
-            name: emoji.name ?? "",
-            animated: emoji.animated,
-            available: emoji.available === false ? false : undefined,
-          }) as ResolvableAPIEmoji,
-      );
-      roles = guild.roles.map(
-        (role) =>
-          ({
-            id: role.id,
-            name: role.name,
-            color: role.color,
-            managed: role.managed,
-            mentionable: role.mentionable,
-            position: role.position,
-            unicode_emoji: role.unicode_emoji,
-            icon: role.icon,
-          }) as ResolvableAPIRole,
-      );
-    } catch {}
-  }
-
-  const channels = (async () => {
-    if (component.guildId) {
-      try {
-        return (
-          (await rest.get(
-            Routes.guildChannels(String(component.guildId)),
-          )) as APIChannel[]
-        )
-          .filter((c) =>
-            [
-              ChannelType.GuildText,
-              ChannelType.GuildAnnouncement,
-              ChannelType.GuildForum,
-              ChannelType.GuildMedia,
-              ChannelType.PublicThread,
-              ChannelType.PrivateThread,
-              ChannelType.AnnouncementThread,
-              ChannelType.GuildVoice,
-              ChannelType.GuildStageVoice,
-            ].includes(c.type),
-          )
-          .map(
-            (channel) =>
-              ({
-                id: channel.id,
-                name: channel.name,
-                type: getChannelIconType(channel),
-                tags:
-                  "available_tags" in channel
-                    ? channel.available_tags
-                    : undefined,
-              }) as ResolvableAPIChannel,
-          );
-      } catch {}
-    }
-    return [];
-  })();
-
-  return defer(
+  return json(
     {
       user,
       component,
       token: editorToken,
       editingMeta,
       message,
-      emojis,
-      roles,
-      channels,
       threadId,
     },
     { headers },
@@ -1205,9 +1124,6 @@ export default () => {
     token,
     editingMeta,
     message,
-    emojis,
-    channels,
-    roles,
     threadId,
   } = useLoaderData<typeof loader>();
 
@@ -1226,27 +1142,13 @@ export default () => {
     [fetcher.state],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever one of these changes, which would be never right now
+  // biome-ignore lint/correctness/useExhaustiveDependencies: No inf loop for `cache` dependency
   useEffect(() => {
-    if (component_.guildId) {
-      cache.fill(
-        ...emojis.map(
-          (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
-        ),
-        ...roles.map(
-          (r) => [`role:${r.id}`, r] as [ResolutionKey, ResolvableAPIRole],
-        ),
-      );
-      channels.then((resolved) =>
-        cache.fill(
-          ...resolved.map(
-            (r) =>
-              [`channel:${r.id}`, r] as [ResolutionKey, ResolvableAPIChannel],
-          ),
-        ),
-      );
-    }
-  }, [emojis, roles, channels]);
+    if (component_.guildId === null) return;
+    cache
+      .fetchGuildCacheable(String(component_.guildId))
+      .then(() => console.log(`Cached cacheables for ${component_.guildId}`));
+  }, [component_.guildId]);
 
   // Don't allow the token to persist in the page address
   const location = useLocation();
