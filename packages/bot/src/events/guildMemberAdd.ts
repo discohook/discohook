@@ -9,7 +9,8 @@ import { and, eq } from "drizzle-orm";
 import {
   backups,
   type DBWithSchema,
-  DraftFlow,
+  type DraftFlow,
+  ensureTriggerFlow,
   FlowActionCheckFunctionType,
   FlowActionSetVariableType,
   FlowActionType,
@@ -40,6 +41,7 @@ export const getWelcomerConfigurations = async (
       id: true,
       disabled: true,
       flow: true,
+      flowId: true,
     },
     where: and(
       eq(triggers.platform, "discord"),
@@ -222,12 +224,19 @@ export const getWelcomerConfigurations = async (
           id: triggers.id,
           disabled: triggers.disabled,
         });
-      configs = [{ ...protoConfigs[0], flow }];
+      configs = [{ ...protoConfigs[0], flow, flowId: null }];
       await db.delete(oldTable).where(eq(oldTable.id, oldConfiguration[0].id));
     }
+  } else {
+    for (const trigger of configs) {
+      await ensureTriggerFlow(trigger, db);
+    }
   }
-  // Type guard because of the flow migration, shouldn't actually be necessary
-  return configs.map((c) => ({ ...c, flow: c.flow ?? { actions: [] } }));
+
+  return configs.map(({ flowId: _, ...c }) => ({
+    ...c,
+    flow: c.flow ?? { actions: [] },
+  }));
 };
 
 export type Trigger = Awaited<

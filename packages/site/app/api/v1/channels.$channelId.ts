@@ -1,7 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
-  type APIChannel,
   ChannelType,
   type RESTGetAPIChannelResult,
   Routes,
@@ -15,7 +14,7 @@ import { isDiscordError } from "~/util/discord";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
-export const getChannelIconType = (channel: APIChannel) => {
+export const getChannelIconType = (channel: { type: ChannelType }) => {
   switch (channel.type) {
     case ChannelType.GuildText:
     case ChannelType.GuildAnnouncement:

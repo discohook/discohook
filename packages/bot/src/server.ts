@@ -27,9 +27,11 @@ import {
   discordMessageComponents,
   type DraftComponent,
   type DraftFlow,
+  ensureComponentFlows,
   getchTriggerGuild,
   getDb,
   getRedis,
+  launchComponentKV,
   type TriggerKVGuild,
 } from "store";
 import { Snowflake } from "tif-snowflake";
@@ -275,8 +277,8 @@ const handleInteraction = async (
       //   DOs and I expect it wouldn't benefit much from using them
       //
       // However, I'm anticipating some downsides:
-      // - More stress on the database
-      // - Potentially more latency (DO KV probably faster than DB via hyperdrive?)
+      // - More stress on the DB server
+      // - Potentially more latency (DO KV probably faster than DB via hyperdrive/webdis?)
       //
       // Therefore, a timed cache system (i.e. with Redis) would probably be
       // advantageous vs. always requesting DB.
@@ -288,14 +290,21 @@ const handleInteraction = async (
         createdById?: string;
       }>(kvKey, "json");
       if (!hotComponent) {
-        const coldComponent = await db.query.discordMessageComponents.findFirst(
-          {
+        const coldComponentPre =
+          await db.query.discordMessageComponents.findFirst({
             where: (table, { eq }) => eq(table.id, componentId),
-            columns: { guildId: true, channelId: true, data: true },
-            with: { createdBy: { columns: { discordId: true } } },
-          },
-        );
-        if (!coldComponent) {
+            columns: { id: true, guildId: true, channelId: true, data: true },
+            with: {
+              createdBy: { columns: { discordId: true } },
+              componentsToFlows: {
+                columns: {},
+                with: {
+                  flow: { with: { actions: { columns: { data: true } } } },
+                },
+              },
+            },
+          });
+        if (!coldComponentPre) {
           return respond(
             ctx.reply({
               content:
@@ -304,6 +313,8 @@ const handleInteraction = async (
             }),
           );
         }
+        const coldComponent = await ensureComponentFlows(coldComponentPre, db);
+
         const newHotComponent = {
           data: coldComponent.data,
           channelId: coldComponent.channelId?.toString(),
@@ -362,10 +373,7 @@ const handleInteraction = async (
         }
 
         hotComponent = newHotComponent;
-        await env.KV.put(kvKey, JSON.stringify(newHotComponent), {
-          // 5 minutes
-          expirationTtl: 300,
-        });
+        await launchComponentKV(env, { componentId, ...newHotComponent });
       }
       const component = hotComponent;
 

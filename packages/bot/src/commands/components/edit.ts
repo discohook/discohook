@@ -659,9 +659,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
       ];
     }
     default:
-      // As far as we know, this component doesn't exist in the database or
-      // it's a type that we can't handle. What do you do here?
-      // Answer for a prize: https://github.com/discohook/discohook/issues
+      // As far as we know, this component doesn't actually exist anymore
       return ctx.reply({
         components: [
           textDisplay("Cannot resolve that component from the database."),

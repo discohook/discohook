@@ -2,6 +2,7 @@ import { GatewayDispatchEvents } from "discord-api-types/v10";
 import { and, eq } from "drizzle-orm";
 import {
   backups,
+  ensureTriggerFlow,
   type FlowAction,
   type FlowActionCheck,
   FlowActionCheckFunctionType,
@@ -40,6 +41,7 @@ export const getWelcomerConfigurations = async (
       id: true,
       disabled: true,
       flow: true,
+      flowId: true,
     },
     where: and(
       eq(triggers.platform, "discord"),
@@ -257,6 +259,10 @@ export const getWelcomerConfigurations = async (
       ];
       await db.delete(oldTable).where(eq(oldTable.id, oldConfiguration[0].id));
     }
+  } else {
+    for (const trigger of configs) {
+      await ensureTriggerFlow(trigger, db);
+    }
   }
   return configs;
 };
@@ -280,7 +286,9 @@ export default createHandler(
     const db = client.getDb();
     if (!triggers) {
       triggers = await getWelcomerConfigurations(client, "add", guild);
-      await client.KV.put(key, JSON.stringify(triggers), { expirationTtl: 1200 });
+      await client.KV.put(key, JSON.stringify(triggers), {
+        expirationTtl: 1200,
+      });
     }
 
     const applicable = triggers.filter((t) => !!t.flow && !t.disabled);

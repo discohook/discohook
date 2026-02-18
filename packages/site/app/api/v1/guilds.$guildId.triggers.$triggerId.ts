@@ -1,13 +1,13 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { getDb } from "store";
+import { autoRollbackTx, getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
   type DBWithSchema,
+  ensureTriggerFlow,
   eq,
-  putGeneric,
   type TriggerEvent,
-  triggers
+  triggers,
 } from "~/store.server";
 import type { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
@@ -40,12 +40,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       discordGuildId: true,
       disabled: true,
       flow: true,
+      flowId: true,
     },
   });
   if (!trigger || trigger.discordGuildId !== guildId) {
     throw json({ message: "Unknown Trigger" }, 404);
   }
 
+  await ensureTriggerFlow(trigger, db);
   return respond(json(trigger));
 };
 
@@ -55,21 +57,38 @@ const updateKvTriggers = async (
   event: TriggerEvent,
   guildId: string | bigint,
 ) => {
-  const triggers = await db.query.triggers.findMany({
-    where: (triggers, { and, eq }) =>
-      and(
-        eq(triggers.discordGuildId, BigInt(guildId)),
-        eq(triggers.event, event),
-      ),
-    columns: {
-      id: true,
-      disabled: true,
-      flow: true,
-    },
-  });
-  await putGeneric(env, `cache:triggers-${event}-${guildId}`, triggers, {
-    expirationTtl: 1200,
-  });
+  const triggers = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      const triggers = await tx.query.triggers.findMany({
+        where: (triggers, { and, eq }) =>
+          and(
+            eq(triggers.discordGuildId, BigInt(guildId)),
+            eq(triggers.event, event),
+          ),
+        columns: {
+          id: true,
+          disabled: true,
+          flow: true,
+          flowId: true,
+        },
+      });
+      for (const trigger of triggers) {
+        await ensureTriggerFlow(trigger, tx);
+      }
+      return triggers;
+    }),
+  );
+  // Remove flowId residue and ensure flow is not null (although it shouldn't be after ensureTriggerFlow)
+  const mapped = triggers.map(({ flowId: _, ...t }) => ({
+    ...t,
+    flow: t.flow ?? { actions: [] },
+  }));
+
+  await env.KV.put(
+    `cache:triggers-${event}-${guildId}`,
+    JSON.stringify(mapped),
+    { expirationTtl: 1200 },
+  );
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {

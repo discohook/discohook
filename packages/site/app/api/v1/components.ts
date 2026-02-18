@@ -2,10 +2,12 @@ import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { parseQuery } from "zodix";
 import { getUserId } from "~/session.server";
 import {
-  type DraftComponent,
+  autoRollbackTx,
   discordMessageComponents,
+  ensureComponentFlows,
   getDb,
   inArray,
+  type DraftComponent,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -27,15 +29,29 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const userId = await getUserId(request, context);
 
   const db = getDb(context.env.HYPERDRIVE);
-  const components = await db.query.discordMessageComponents.findMany({
-    where: inArray(discordMessageComponents.id, ids),
-    columns: {
-      id: true,
-      data: true,
-      draft: true,
-      createdById: true,
-    },
-  });
+  const components = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      const components = await tx.query.discordMessageComponents.findMany({
+        where: inArray(discordMessageComponents.id, ids),
+        columns: {
+          id: true,
+          data: true,
+          draft: true,
+          createdById: true,
+        },
+        with: {
+          componentsToFlows: {
+            columns: {},
+            with: { flow: { with: { actions: { columns: { data: true } } } } },
+          },
+        },
+      });
+      for (const component of components) {
+        await ensureComponentFlows(component, db);
+      }
+      return components;
+    }),
+  );
 
   return components
     .filter((c) => !c.createdById || c.createdById === userId)

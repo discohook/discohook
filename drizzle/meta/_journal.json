@@ -43,6 +43,13 @@
       "when": 1768247907412,
       "tag": "0005_flow-flattening",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771435813968,
+      "tag": "0006_json-columns",
+      "breakpoints": true
     }
   ]
 }

@@ -252,19 +252,23 @@ export interface KVStoredComponent {
 
 export const launchComponentKV = async (
   env: Env | Env["KV"],
-  // In the future we will probably need a guild ID here so that we
-  // can store on shard/cluster-specific machines
   options: {
     // messageId: string;
     componentId: string | bigint;
-    data?: DraftComponent;
     db?: DBWithSchema;
+    data?: DraftComponent;
+    channelId?: string;
+    guildId?: string;
+    createdById?: string;
   },
-) => {
+): Promise<DraftComponent> => {
   const key = `custom-component-${options.componentId}`;
   const data = {
     id: String(options.componentId),
     data: options.data,
+    channelId: options.channelId,
+    guildId: options.guildId,
+    createdById: options.createdById,
   };
   if (!data.data) {
     if (!options.db) throw Error("Must provide db if not data");
@@ -272,17 +276,26 @@ export const launchComponentKV = async (
     const component = await options.db.query.discordMessageComponents.findFirst(
       {
         where: (table, { eq }) => eq(table.id, BigInt(options.componentId)),
-        columns: { id: true, data: true },
+        columns: {
+          id: true,
+          data: true,
+          channelId: true,
+          guildId: true,
+          createdById: true,
+        },
       },
     );
     if (!component) throw Error("Unknown Component");
     data.data = component.data;
+    data.channelId = component.channelId?.toString();
+    data.guildId = component.guildId?.toString();
+    data.createdById = component.createdById?.toString();
   }
 
   const kv = "KV" in env ? env.KV : env;
-  // 1 hour
-  await kv.put(key, JSON.stringify(data), { expirationTtl: 3600 });
-  return data;
+  // 5 minutes
+  await kv.put(key, JSON.stringify(data), { expirationTtl: 300 });
+  return data.data;
 };
 
 export const destroyComponentKV = async (

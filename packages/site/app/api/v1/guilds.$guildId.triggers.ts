@@ -1,6 +1,11 @@
 import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
-import { triggers as dTriggers, getDb } from "store";
+import {
+  autoRollbackTx,
+  triggers as dTriggers,
+  ensureTriggerFlow,
+  getDb,
+} from "store";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
@@ -35,37 +40,40 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   }
 
   const db = getDb(context.env.HYPERDRIVE);
-  const triggers = await db.query.triggers.findMany({
-    where: (triggers, { and, eq }) =>
-      and(
-        eq(triggers.platform, "discord"),
-        eq(triggers.discordGuildId, guildId),
-      ),
-    columns: {
-      id: true,
-      event: true,
-      updatedAt: true,
-      flow: true,
-    },
-    with: {
-      updatedBy: {
+  const triggers = await db.transaction(
+    autoRollbackTx(async (tx) => {
+      const triggers = await tx.query.triggers.findMany({
+        where: (triggers, { and, eq }) =>
+          and(
+            eq(triggers.platform, "discord"),
+            eq(triggers.discordGuildId, guildId),
+          ),
         columns: {
-          name: true,
+          id: true,
+          event: true,
+          updatedAt: true,
+          flow: true,
+          flowId: true,
         },
         with: {
-          discordUser: {
-            columns: {
-              id: true,
-              discriminator: true,
-              avatar: true,
+          updatedBy: {
+            columns: { name: true },
+            with: {
+              discordUser: {
+                columns: { id: true, discriminator: true, avatar: true },
+              },
             },
           },
         },
-      },
-    },
-    limit,
-    offset: page,
-  });
+        limit,
+        offset: page,
+      });
+      for (const trigger of triggers) {
+        await ensureTriggerFlow(trigger, tx);
+      }
+      return triggers;
+    }),
+  );
 
   return respond(json(triggers));
 };

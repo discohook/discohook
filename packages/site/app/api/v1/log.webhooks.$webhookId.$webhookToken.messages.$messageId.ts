@@ -29,6 +29,7 @@ import {
   autoRollbackTx,
   discordGuilds,
   discordMessageComponents,
+  ensureComponentFlows,
   eq,
   getDb,
   inArray,
@@ -252,9 +253,20 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             ? await tx.query.discordMessageComponents.findMany({
                 where: inArray(discordMessageComponents.id, componentIds),
                 columns: { id: true, data: true, createdById: true },
+                with: {
+                  componentsToFlows: {
+                    columns: {},
+                    with: {
+                      flow: { with: { actions: { columns: { data: true } } } },
+                    },
+                  },
+                },
               })
             : [];
 
+        // Delete all components stored for this message that weren't found in
+        // the new message data. If there are no components, delete all stored
+        // components for the message.
         await tx.delete(discordMessageComponents).where(
           and(
             eq(discordMessageComponents.messageId, BigInt(message.id)),
@@ -264,6 +276,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
               : notInArray(discordMessageComponents.id, componentIds),
           ),
         );
+        for (const component of stored) {
+          await ensureComponentFlows(component, tx);
+        }
 
         const now = new Date();
         const values: (typeof discordMessageComponents.$inferInsert)[] =
@@ -391,6 +406,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           (created.data.style !== ButtonStyle.Link &&
             created.data.style !== ButtonStyle.Premium))
       ) {
+        // TODO: Now that we're using redis we probably could do a bulk upsert
+        // using a script like we do for member sessions
         await launchComponentKV(context.env, {
           componentId: created.id,
           data: created.data,

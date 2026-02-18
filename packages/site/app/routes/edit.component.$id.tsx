@@ -51,6 +51,7 @@ import {
   autoRollbackTx,
   discordMessageComponents,
   type DraftComponent,
+  ensureComponentFlows,
   eq,
   getDb,
   launchComponentKV,
@@ -194,6 +195,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       channelId: true,
       messageId: true,
     },
+    with: {
+      componentsToFlows: {
+        columns: {},
+        with: { flow: { with: { actions: { columns: { data: true } } } } },
+      },
+    },
   });
   if (!component) {
     throw json({ message: "Unknown Component" }, 404);
@@ -267,6 +274,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     });
   }
 
+  await ensureComponentFlows(component, db);
   return json(
     {
       user,
@@ -327,6 +335,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           // guildId: true,
           channelId: true,
           messageId: true,
+        },
+        with: {
+          componentsToFlows: {
+            columns: {},
+            with: { flow: { with: { actions: { columns: { data: true } } } } },
+          },
         },
       });
       if (!component) {
@@ -411,6 +425,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
       }
 
+      // This is probably not necessary because it's already done in the loader
+      await ensureComponentFlows(component, db);
       const built = buildStorableComponent(
         component.data,
         String(component.id),
