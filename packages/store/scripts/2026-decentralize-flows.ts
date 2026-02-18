@@ -1,3 +1,4 @@
+import * as Bun from "bun";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { autoRollbackTx, type DBTransaction, getDb } from "../src/db";
@@ -26,7 +27,16 @@ if (!connectionString) {
 }
 const db = getDb({ connectionString });
 
+const DRY_RUN_ONLY = true;
 const perPage = 1000;
+
+const logFile = Bun.file(`./df-${Date.now()}.log`);
+const logger = logFile.writer();
+
+const log = (...message: string[]) => {
+  console.log(...message);
+  logger.write(`${message.join(" ")}\n`);
+};
 
 const stripId = <T extends { id: bigint }>(d: T): Omit<T, "id"> => {
   const { id: _, ...rest } = d;
@@ -42,7 +52,7 @@ const migrateComponents = async (
 
   const purgeComponents = async () => {
     if (toDeleteComponents.size === 0) return;
-    console.log(
+    log(
       `Purging ${toDeleteComponents.size} deletable (no flow, no guild) components`,
     );
     await tx
@@ -55,6 +65,7 @@ const migrateComponents = async (
 
   let page = 0;
   while (true) {
+    log("Starting loop");
     const entries = await tx.query.discordMessageComponents.findMany({
       columns: { id: true, data: true, guildId: true },
       with: {
@@ -68,14 +79,20 @@ const migrateComponents = async (
           },
         },
       },
+      where: (table, { sql, like, or }) =>
+        or(
+          // At least one flow ID in legacy StorableComponent data value
+          like(sql`${table.data}::text`, `%flowId\\\\":\\\\"%`),
+          like(sql`${table.data}::text`, `%flowIds\\\\":{\\\\"%`),
+        ),
       offset: perPage * page,
       limit: perPage,
     });
     if (entries.length === 0) {
-      console.log("Reached end of pagination for components");
+      log("Reached end of pagination for components");
       break;
     }
-    console.log(
+    log(
       "---\n",
       `Page: ${page * perPage + 1}-${page * perPage + perPage} (next ${entries.length})`,
       "\n---",
@@ -84,7 +101,7 @@ const migrateComponents = async (
 
     for (const component of entries) {
       if (migratedComponentIds.has(component.id)) {
-        // console.log(`Duplicate: ${component.id}`);
+        // log(`Duplicate: ${component.id}`);
         continue;
       }
 
@@ -116,7 +133,7 @@ const migrateComponents = async (
           // }
           continue;
         }
-        console.log(
+        log(
           `Skipping component ${component.id}: no flows, perhaps already migrated`,
         );
         continue;
@@ -130,14 +147,15 @@ const migrateComponents = async (
             data.style === ButtonStyle.Premium
           ) {
             // Shouldn't happen
-            console.log(`Component ${component.id} is N/A`);
+            log(`Component ${component.id} is N/A`);
             continue;
           }
           if ("flow" in data) {
             // Shouldn't happen
-            console.log(`Component ${component.id} is already migrated`);
+            log(`Component ${component.id} is already migrated`);
             continue;
           }
+          // Remove residue flowId from spread to ensure this component doesn't get picked up again
           const { flowId: _, ...rest } = data;
           newData = {
             ...rest,
@@ -148,7 +166,7 @@ const migrateComponents = async (
         case ComponentType.StringSelect: {
           if ("flows" in data || "flow" in data) {
             // Shouldn't happen
-            console.log(`Component ${component.id} is already migrated`);
+            log(`Component ${component.id} is already migrated`);
             continue;
           }
 
@@ -168,11 +186,12 @@ const migrateComponents = async (
           const newKeys = Object.keys(flowMap).length;
           const oldKeys = Object.keys(data.flowIds).length;
           if (newKeys !== oldKeys) {
-            console.log(
+            log(
               `WARNING: Component ${component.id}'s flow map has ${newKeys} keys, but the previous number of flows was ${oldKeys}.`,
             );
           }
 
+          // Remove residue flowIds from spread to ensure this component doesn't get picked up again
           const { flowIds: _, ...rest } = data;
           newData = { ...rest, flows: flowMap };
           break;
@@ -183,7 +202,7 @@ const migrateComponents = async (
         case ComponentType.UserSelect: {
           if ("flow" in data) {
             // Shouldn't happen
-            console.log(`Component ${component.id} is already migrated`);
+            log(`Component ${component.id} is already migrated`);
             continue;
           }
           const { flowId: _, ...rest } = data;
@@ -197,7 +216,7 @@ const migrateComponents = async (
           break;
       }
       if (!newData) {
-        console.log(
+        log(
           `Failed to get data for component ${component.id} (${component.data.type})`,
         );
         continue;
@@ -207,19 +226,21 @@ const migrateComponents = async (
         .update(discordMessageComponents)
         .set({ data: newData })
         .where(eq(discordMessageComponents.id, component.id));
-      console.log(`Migrated flows for component ${component.id}`);
+      log(`Migrated flows for component ${component.id}`);
       migratedComponentIds.add(component.id);
-      for (const flow of flows) {
-        toDeleteFlowIds.add(flow.id);
-      }
 
-      if (toDeleteFlowIds.size >= 1000) {
-        await tx
-          .delete(dbFlows)
-          .where(inArray(dbFlows.id, Array.from(toDeleteFlowIds)));
-        console.log("Deleted", toDeleteFlowIds.size, "flow entries");
-        toDeleteFlowIds.clear();
-      }
+      // Not deleting flows for smoother migration
+      // for (const flow of flows) {
+      //   toDeleteFlowIds.add(flow.id);
+      // }
+
+      // if (toDeleteFlowIds.size >= 1000) {
+      //   await tx
+      //     .delete(dbFlows)
+      //     .where(inArray(dbFlows.id, Array.from(toDeleteFlowIds)));
+      //   log("Deleted", toDeleteFlowIds.size, "flow entries");
+      //   toDeleteFlowIds.clear();
+      // }
     }
   }
   await purgeComponents();
@@ -244,10 +265,10 @@ const migrateTriggers = async (
       limit: perPage,
     });
     if (entries.length === 0) {
-      console.log("Reached end of pagination for triggers");
+      log("Reached end of pagination for triggers");
       break;
     }
-    console.log(
+    log(
       "---\n",
       `Page: ${page * perPage + 1}-${page * perPage + perPage} (next ${entries.length})`,
       "\n---",
@@ -256,7 +277,7 @@ const migrateTriggers = async (
 
     for (const trigger of entries) {
       if (!trigger.flow) {
-        console.log(
+        log(
           `Skipping trigger ${trigger.id}: no linked flow, perhaps already migrated`,
         );
         continue;
@@ -270,17 +291,17 @@ const migrateTriggers = async (
         .update(triggers)
         .set({ flow, flowId: null })
         .where(eq(triggers.id, trigger.id));
-      console.log(`Migrated flow for trigger ${trigger.id}`);
+      log(`Migrated flow for trigger ${trigger.id}`);
       // migratedTriggerIds.add(trigger.id);
-      toDeleteFlowIds.add(trigger.flow.id);
+      // toDeleteFlowIds.add(trigger.flow.id);
 
-      if (toDeleteFlowIds.size >= 1000) {
-        await tx
-          .delete(dbFlows)
-          .where(inArray(dbFlows.id, Array.from(toDeleteFlowIds)));
-        console.log("Deleted", toDeleteFlowIds.size, "flow entries");
-        toDeleteFlowIds.clear();
-      }
+      // if (toDeleteFlowIds.size >= 1000) {
+      //   await tx
+      //     .delete(dbFlows)
+      //     .where(inArray(dbFlows.id, Array.from(toDeleteFlowIds)));
+      //   log("Deleted", toDeleteFlowIds.size, "flow entries");
+      //   toDeleteFlowIds.clear();
+      // }
     }
   }
 };
@@ -289,27 +310,27 @@ await db.transaction(
   autoRollbackTx(async (tx) => {
     const toDeleteFlowIds = new Set<bigint>();
 
-    console.log("---\nMigrating components\n---");
+    log("---\nMigrating components\n---");
     await migrateComponents(tx, toDeleteFlowIds);
 
-    console.log("---\nMigrating triggers\n---");
+    log("---\nMigrating triggers\n---");
     await migrateTriggers(tx, toDeleteFlowIds);
 
-    if (toDeleteFlowIds.size !== 0) {
-      await tx
-        .delete(dbFlows)
-        .where(inArray(dbFlows.id, Array.from(toDeleteFlowIds)));
-      await tx
-        .delete(discordMessageComponentsToFlows)
-        .where(
-          inArray(
-            discordMessageComponentsToFlows.flowId,
-            Array.from(toDeleteFlowIds),
-          ),
-        );
-      console.log("Deleted", toDeleteFlowIds.size, "flow entries");
-      toDeleteFlowIds.clear();
-    }
+    // if (toDeleteFlowIds.size !== 0) {
+    //   await tx
+    //     .delete(dbFlows)
+    //     .where(inArray(dbFlows.id, Array.from(toDeleteFlowIds)));
+    //   await tx
+    //     .delete(discordMessageComponentsToFlows)
+    //     .where(
+    //       inArray(
+    //         discordMessageComponentsToFlows.flowId,
+    //         Array.from(toDeleteFlowIds),
+    //       ),
+    //     );
+    //   log(`Deleted ${toDeleteFlowIds.size} flow entries`);
+    //   toDeleteFlowIds.clear();
+    // }
 
     // while (true) {
     //   const deletableFlows = await tx
@@ -326,12 +347,12 @@ await db.transaction(
     //   const hasCtf = deletableFlows.filter((f) => f.ctfCount !== 0);
     //   if (hasCtf.length === 0) break;
 
-    //   console.log("---\nComponents re-pass\n---");
+    //   log("---\nComponents re-pass\n---");
     //   await migrateComponents(tx, toDeleteFlowIds);
     // }
 
     // Remove flows with no associations
-    console.log("---\nCleaning up flows with no components or triggers\n---");
+    log("---\nCleaning up flows with no components or triggers\n---");
 
     // Debug (making sure count is accurate)
     // const x = (
@@ -351,16 +372,16 @@ await db.transaction(
     //     },
     //   })
     // );
-    // console.log(x[0].discordMessageComponent.data)
+    // log(x[0].discordMessageComponent.data)
     // const remainingComponents = await tx
     //   .select({
     //     id: discordMessageComponentsToFlows.discordMessageComponentId,
     //     flowId: discordMessageComponentsToFlows.flowId,
     //   })
     //   .from(discordMessageComponentsToFlows);
-    // console.log(remainingComponents);
+    // log(remainingComponents);
 
-    // console.log("All left:", await tx.select({ c: count() }).from(dbFlows));
+    // log("All left:", await tx.select({ c: count() }).from(dbFlows));
 
     const deleted = await tx
       .delete(dbFlows)
@@ -377,11 +398,13 @@ await db.transaction(
         ),
       )
       .returning({ id: dbFlows.id });
-    console.log("Deleted", deleted.length, "remaining flows");
+    log(`Deleted ${deleted.length} orphan flows`);
 
-    // console.log("All left:", await tx.select({ c: count() }).from(dbFlows));
+    // log("All left:", await tx.select({ c: count() }).from(dbFlows));
 
-    console.log("indev: rolling back");
-    tx.rollback();
+    if (DRY_RUN_ONLY) {
+      log("indev: rolling back");
+      tx.rollback();
+    }
   }),
 );
