@@ -1931,7 +1931,7 @@ export default () => {
                 </div>
                 <div className="w-full flex my-0.5">
                   <CoolIcon
-                    icon="Edit_Pencil_01"
+                    icon="Save"
                     className="m-auto text-base text-muted dark:text-muted-dark opacity-50"
                   />
                 </div>
