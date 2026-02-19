@@ -359,7 +359,7 @@ const MessageEditorCollapsibleTrigger = ({
   setData,
   setEditingName,
 }: {
-  t: TFunction<"translation", undefined>;
+  t: TFunction;
   message: MessageEditorChildProps["data"]["messages"][number];
 } & Pick<
   MessageEditorChildProps,
@@ -433,7 +433,9 @@ const MessageEditorCollapsibleTrigger = ({
           type="button"
           className={data.messages.length >= 10 ? "hidden" : ""}
           onClick={() => {
-            data.messages.splice(i + 1, 0, structuredClone(message));
+            const cloned = structuredClone(message);
+            cloned._id = randomString(10);
+            data.messages.splice(i + 1, 0, cloned);
             setData({ ...data });
           }}
         >
