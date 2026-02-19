@@ -579,13 +579,16 @@ export const MessageSendModal = (
                       <p className="text-rose-400 text-sm leading-none">
                         {(() => {
                           const { result } = messages[id];
-                          return result.data.code ===
-                            RESTJSONErrorCodes.UnknownMessage
-                            ? "Message link does not match webhook. Did you forget to provide a thread ID?"
-                            : result.data.code ===
-                                RESTJSONErrorCodes.UnknownChannel
-                              ? "Unknown thread ID. The webhook should be in the thread's parent channel."
-                              : result.data.message;
+                          switch (result.data.code) {
+                            case RESTJSONErrorCodes.UnknownMessage:
+                              return "Message link does not match webhook. Did you forget to provide a thread ID?";
+                            case RESTJSONErrorCodes.UnknownChannel:
+                              return "Unknown thread ID. The webhook should be in the thread's parent channel.";
+                            case RESTJSONErrorCodes.InvalidFormBodyOrContentType:
+                              return "Invalid data. Click the error icon for more info.";
+                            default:
+                              return result.data.message;
+                          }
                         })()}
                       </p>
                     )}
