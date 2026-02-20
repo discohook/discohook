@@ -14,8 +14,8 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
-import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
+import type { SetErrorFunction } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
@@ -692,6 +692,7 @@ export const MessageSendModal = (
             enabledMessagesCount === 0 ||
             sending
           }
+          loading={sending}
           onClick={() =>
             submitMessages(
               Object.entries(targets)
@@ -701,25 +702,19 @@ export const MessageSendModal = (
           }
         >
           {t(
-            sending
+            countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
               ? withReferenceCount === 0
-                ? "sending"
-                : withReferenceCount === enabledMessagesCount
-                  ? "editing"
-                  : "submitting"
-              : countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
+                ? "sendAll"
+                : "submitAll"
+              : countSelected(selectedWebhooks) > 1
                 ? withReferenceCount === 0
-                  ? "sendAll"
-                  : "submitAll"
-                : countSelected(selectedWebhooks) > 1
-                  ? withReferenceCount === 0
-                    ? "sendToAll"
-                    : "submitToAll"
-                  : withReferenceCount === 0
-                    ? "send"
-                    : withReferenceCount === enabledMessagesCount
-                      ? "edit"
-                      : "submit",
+                  ? "sendToAll"
+                  : "submitToAll"
+                : withReferenceCount === 0
+                  ? "send"
+                  : withReferenceCount === enabledMessagesCount
+                    ? "edit"
+                    : "submit",
           )}
         </Button>
         <Dialog.Root>
