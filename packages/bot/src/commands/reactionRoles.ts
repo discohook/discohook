@@ -141,7 +141,7 @@ export const messageAndEmojiAutocomplete: AppCommandAutocompleteCallback =
       );
 
       await ctx.env.KV.put(kvKey, JSON.stringify(emojis), {
-        expirationTtl: 3600,
+        expirationTtl: 1800,
       });
     }
 
@@ -279,7 +279,7 @@ export const createReactionRoleHandler: ChatInputAppCommandCallback = async (
   await ctx.env.KV.put(
     `discord-reaction-role-${message.id}-${reaction}`,
     JSON.stringify({ roleId: role.id }),
-    { expirationTtl: 604800 },
+    { expirationTtl: 86400 }, // prev. 7x as much
   );
   const db = getDb(ctx.env.HYPERDRIVE);
   await upsertGuild(db, guild);

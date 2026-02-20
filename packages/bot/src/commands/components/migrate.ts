@@ -21,26 +21,17 @@ import {
   backups,
   buttons,
   type DBWithSchema,
+  type DraftComponent,
+  type DraftFlow,
   discordMessageComponents,
-  discordMessageComponentsToFlows,
-  type FlowActionCheck,
   FlowActionCheckFunctionType,
-  type FlowActionDud,
-  flowActions,
-  type FlowActionSendMessage,
   FlowActionSetVariableType,
-  type FlowActionStop,
-  type FlowActionToggleRole,
   FlowActionType,
-  flows,
   generateId,
   getchTriggerGuild,
   getDb,
-  launchComponentDurableObject,
   makeSnowflake,
   type QueryData,
-  type StorableButtonWithCustomId,
-  type StorableButtonWithUrl,
   upsertDiscordUser,
 } from "store";
 import type { ChatInputAppCommandCallback } from "../../commands.js";
@@ -147,12 +138,11 @@ export const migrateLegacyButtons = async (
       for (const button of oldMessageButtons) {
         const old = getOldCustomId(button);
         const newId = generateId();
-        const newCustomId = `p_${newId}`;
         if (old) {
           oldIdMap[old] = newId;
         }
 
-        let flowId: string | undefined;
+        const flow: DraftFlow = { actions: [] };
         if (!button.url) {
           const backupId = insertedBackups.find(
             old && oldIdToBackupName[old]
@@ -160,124 +150,109 @@ export const migrateLegacyButtons = async (
               : () => false,
           )?.id;
 
-          flowId = generateId();
-          await tx.insert(flows).values({ id: BigInt(flowId) });
-
-          const actions = [
-            ...(button.roleId
-              ? [
+          if (button.roleId) {
+            flow.actions.push(
+              {
+                type: FlowActionType.Check,
+                function: {
+                  type: FlowActionCheckFunctionType.In,
+                  array: {
+                    varType: FlowActionSetVariableType.Get,
+                    value: "member.role_ids",
+                  },
+                  element: {
+                    varType: FlowActionSetVariableType.Static,
+                    value: String(button.roleId),
+                  },
+                },
+                // biome-ignore lint/suspicious/noThenProperty: see note in quick.ts
+                then: [
                   {
-                    type: FlowActionType.Check,
-                    function: {
-                      type: FlowActionCheckFunctionType.In,
-                      array: {
-                        varType: FlowActionSetVariableType.Get,
-                        value: "member.role_ids",
-                      },
-                      element: {
-                        varType: FlowActionSetVariableType.Static,
-                        value: String(button.roleId),
-                      },
-                    },
-                    // biome-ignore lint/suspicious/noThenProperty: see note in quick.ts
-                    then: [
-                      {
-                        type: FlowActionType.SetVariable,
-                        name: "response",
-                        value: `Removed the <@&${button.roleId}> role from you.`,
-                      },
-                    ],
-                    else: [
-                      {
-                        type: FlowActionType.SetVariable,
-                        name: "response",
-                        value: `Gave you the <@&${button.roleId}> role.`,
-                      },
-                    ],
-                  } satisfies FlowActionCheck,
+                    type: FlowActionType.SetVariable,
+                    name: "response",
+                    value: `Removed the <@&${button.roleId}> role from you.`,
+                  },
+                ],
+                else: [
                   {
-                    type: FlowActionType.ToggleRole,
-                    roleId: String(button.roleId),
-                  } satisfies FlowActionToggleRole,
-                  {
-                    type: FlowActionType.Stop,
-                    message: {
-                      content: "{response}",
-                      flags: MessageFlags.Ephemeral,
-                    },
-                  } satisfies FlowActionStop,
-                ]
-              : backupId
-                ? [
-                    {
-                      type: FlowActionType.SendMessage,
-                      backupId: backupId.toString(),
-                      backupMessageIndex: 0,
-                      response: true,
-                      flags:
-                        button.customEphemeralMessageData ||
-                        button.customDmMessageData
-                          ? MessageFlags.Ephemeral
-                          : undefined,
-                    } satisfies FlowActionSendMessage,
-                  ]
-                : button.type === "do_nothings"
-                  ? [{ type: FlowActionType.Dud } satisfies FlowActionDud]
-                  : []),
-          ];
-          if (actions.length !== 0) {
-            await tx.insert(flowActions).values(
-              actions.map((action) => ({
-                // biome-ignore lint/style/noNonNullAssertion: non-null by this point
-                flowId: BigInt(flowId!),
-                type: action.type,
-                data: action,
-              })),
+                    type: FlowActionType.SetVariable,
+                    name: "response",
+                    value: `Gave you the <@&${button.roleId}> role.`,
+                  },
+                ],
+              },
+              {
+                type: FlowActionType.ToggleRole,
+                roleId: String(button.roleId),
+              },
+              {
+                type: FlowActionType.Stop,
+                message: {
+                  content: "{response}",
+                  flags: MessageFlags.Ephemeral,
+                },
+              },
             );
+          } else if (backupId) {
+            flow.actions.push({
+              type: FlowActionType.SendMessage,
+              backupId: backupId.toString(),
+              backupMessageIndex: 0,
+              response: true,
+              flags:
+                button.customEphemeralMessageData || button.customDmMessageData
+                  ? MessageFlags.Ephemeral
+                  : undefined,
+            });
+          } else if (button.type === "do_nothings") {
+            flow.actions.push({ type: FlowActionType.Dud });
           }
         }
 
-        const data = {
-          type: ComponentType.Button,
-          label: button.customLabel ?? undefined,
-          emoji: button.emoji
-            ? button.emoji.startsWith("<")
-              ? {
-                  id: button.emoji.split(":")[2].replace(/>$/, ""),
-                  name: button.emoji.split(":")[1],
-                  animated: button.emoji.split(":")[0] === "<a",
-                }
-              : {
-                  name: button.emoji,
-                }
-            : undefined,
-          ...(button.url
+        const buttonEmoji = button.emoji
+          ? button.emoji.startsWith("<")
             ? {
-                url: button.url,
-                style: ButtonStyle.Link,
+                id: button.emoji.split(":")[2].replace(/>$/, ""),
+                name: button.emoji.split(":")[1],
+                animated: button.emoji.split(":")[0] === "<a",
               }
             : {
-                customId: newCustomId,
-                // biome-ignore lint/style/noNonNullAssertion: non-null by this point
-                flowId: flowId!,
-                style:
-                  (
-                    {
-                      // ??? what was I on?
-                      primary: ButtonStyle.Primary,
-                      blurple: ButtonStyle.Primary,
-                      secondary: ButtonStyle.Secondary,
-                      gray: ButtonStyle.Secondary,
-                      link: ButtonStyle.Secondary,
-                      success: ButtonStyle.Success,
-                      green: ButtonStyle.Success,
-                      danger: ButtonStyle.Danger,
-                      red: ButtonStyle.Danger,
-                    } as const
-                  )[button.style ?? "primary"] ?? ButtonStyle.Primary,
-              }),
-        } satisfies StorableButtonWithCustomId | StorableButtonWithUrl;
+                name: button.emoji,
+              }
+          : undefined;
 
+        let data: DraftComponent;
+        if (button.url) {
+          data = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Link,
+            label: button.customLabel ?? undefined,
+            emoji: buttonEmoji,
+            url: button.url,
+          };
+        } else {
+          data = {
+            type: ComponentType.Button,
+            style:
+              (
+                {
+                  // ??? what was I on?
+                  primary: ButtonStyle.Primary,
+                  blurple: ButtonStyle.Primary,
+                  secondary: ButtonStyle.Secondary,
+                  gray: ButtonStyle.Secondary,
+                  link: ButtonStyle.Secondary,
+                  success: ButtonStyle.Success,
+                  green: ButtonStyle.Success,
+                  danger: ButtonStyle.Danger,
+                  red: ButtonStyle.Danger,
+                } as const
+              )[button.style ?? "primary"] ?? ButtonStyle.Primary,
+            label: button.customLabel ?? undefined,
+            emoji: buttonEmoji,
+            flow,
+          };
+        }
         values.push({
           id: BigInt(newId),
           channelId: makeSnowflake(message.channel_id),
@@ -298,22 +273,6 @@ export const migrateLegacyButtons = async (
           id: discordMessageComponents.id,
           data: discordMessageComponents.data,
         });
-      const withFlowId = inserted.filter(
-        (i): i is { id: bigint; data: StorableButtonWithCustomId } =>
-          "flowId" in i.data && !!i.data.flowId,
-      );
-      if (withFlowId.length !== 0) {
-        await tx
-          .insert(discordMessageComponentsToFlows)
-          .values(
-            withFlowId.map((component) => ({
-              discordMessageComponentId: component.id,
-              flowId: BigInt(component.data.flowId),
-            })),
-          )
-          .onConflictDoNothing();
-      }
-
       return inserted;
     }),
   );
@@ -491,11 +450,11 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
           ) {
             const customId = `p_${component.id}`;
             button.setCustomId(customId);
-            await launchComponentDurableObject(ctx.env, {
-              messageId: message.id,
-              componentId: component.id,
-              customId,
-            });
+            // await launchComponentDurableObject(ctx.env, {
+            //   messageId: message.id,
+            //   componentId: component.id,
+            //   customId,
+            // });
           }
           row.addComponents(button);
         }

@@ -3,8 +3,8 @@ import {
   ButtonBuilder,
   ContainerBuilder,
   LabelBuilder,
-  messageLink,
   ModalBuilder,
+  messageLink,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
@@ -19,7 +19,7 @@ import {
   type APIMessage,
   type APIMessageComponentEmoji,
   type APIMessageTopLevelComponent,
-  APIModalSubmitStringSelectComponent,
+  type APIModalSubmitStringSelectComponent,
   type APIPartialEmoji,
   type APISectionComponent,
   type APISelectMenuOption,
@@ -31,12 +31,12 @@ import {
 import { sql } from "drizzle-orm";
 import {
   autoRollbackTx,
+  type DraftComponent,
   discordMessageComponents,
   getDb,
-  launchComponentDurableObject,
+  launchComponentKV,
   makeSnowflake,
   type StorableButtonWithUrl,
-  type StorableComponent,
   upsertDiscordUser,
   webhooks,
 } from "store";
@@ -201,7 +201,7 @@ function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
 const getComponentsAsOptions = (
   components: APIMessageTopLevelComponent[],
   emojis: APIEmoji[],
-  dbComponents?: { id: bigint; data: StorableComponent }[],
+  dbComponents?: { id: bigint; data: DraftComponent }[],
   /**
    * If we're processing data individually (not as part of the whole message),
    * we can elect to modify the paths with otherwise unknown parent data.
@@ -344,7 +344,7 @@ export const getComponentsAsV2Menu = (
   components: APIMessageTopLevelComponent[],
   emojis: APIEmoji[],
   options?: {
-    dbComponents?: { id: bigint; data: StorableComponent }[];
+    dbComponents?: { id: bigint; data: DraftComponent }[];
     getSelectCustomId?: (index: number) => string;
   },
 ): APIMessageTopLevelComponent[] => {
@@ -659,9 +659,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
       ];
     }
     default:
-      // As far as we know, this component doesn't exist in the database or
-      // it's a type that we can't handle. What do you do here?
-      // Answer for a prize: https://github.com/discohook/discohook/issues
+      // As far as we know, this component doesn't actually exist anymore
       return ctx.reply({
         components: [
           textDisplay("Cannot resolve that component from the database."),
@@ -675,7 +673,7 @@ export const editComponentFlowPickCallback: SelectMenuCallback = async (
 const getComponentEditModal = (
   component: {
     id: bigint;
-    data: StorableComponent;
+    data: DraftComponent;
   },
   messageId: string,
   path: number[],
@@ -905,7 +903,7 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
 const registerComponentUpdate = async (
   ctx: InteractionContext<APIInteraction>,
   id: bigint,
-  data: StorableComponent,
+  data: DraftComponent,
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
   path: number[],
@@ -971,11 +969,7 @@ const registerComponentUpdate = async (
   );
 
   if (customId !== undefined) {
-    await launchComponentDurableObject(ctx.env, {
-      messageId: editedMsg.id,
-      componentId: id,
-      customId,
-    });
+    await launchComponentKV(ctx.env, { componentId: id, data });
   }
   return editedMsg;
 };
@@ -1070,7 +1064,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
     });
   }
 
-  const data: StorableComponent = component.data;
+  const { data } = component;
   switch (data.type) {
     case ComponentType.Button:
       if (data.style === ButtonStyle.Premium) {

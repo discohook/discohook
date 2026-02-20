@@ -1,10 +1,10 @@
-import type { TFunction } from "i18next";
 import {
   type Color,
   CustomPicker,
   type InjectedColorProps,
   SketchPicker,
 } from "react-color";
+import type { TFunction } from "~/types/i18next";
 import { Button } from "../Button";
 
 const ColorPickerFunction: React.FC<

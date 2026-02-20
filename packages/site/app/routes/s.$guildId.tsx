@@ -34,7 +34,6 @@ import {
   UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
-import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -44,19 +43,19 @@ import { Button } from "~/components/Button";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { collapsibleStyles } from "~/components/collapsible";
-import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
 import { useError } from "~/components/Error";
+import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
 import { Header } from "~/components/Header";
-import { PostChannelIcon } from "~/components/icons/channel";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { PostChannelIcon } from "~/components/icons/channel";
 import { CrownIcon, PeopleIcon, RoleShield } from "~/components/icons/role";
+import { Prose } from "~/components/Prose";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
 import { type FeatureConfig, Markdown } from "~/components/preview/Markdown";
 import { UsernameBadge } from "~/components/preview/Message.client";
-import { Prose } from "~/components/Prose";
-import { TabHeader, TabsWindow } from "~/components/tabs";
 import { TextArea } from "~/components/TextArea";
 import { TextInput } from "~/components/TextInput";
+import { TabHeader, TabsWindow } from "~/components/tabs";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
@@ -67,6 +66,7 @@ import {
   getTokenGuildPermissions,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
+import type { TFunction } from "~/types/i18next";
 import { type CacheManager, useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
@@ -74,9 +74,9 @@ import {
   isDiscordError,
   webhookAvatarUrl,
 } from "~/util/discord";
-import { flowToDraftFlow } from "~/util/flow";
 import { getId } from "~/util/id";
 import { type LoaderArgs, useSafeFetcher } from "~/util/loader";
+import { copyText } from "~/util/text";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
 import type { action as ApiDeleteComponent } from "../api/v1/components.$id";
@@ -535,7 +535,7 @@ export default () => {
   const [draftFlow, setDraftFlow] = useState<DraftFlow>();
   useEffect(() => {
     if (openTrigger) {
-      setDraftFlow(flowToDraftFlow(openTrigger.flow));
+      setDraftFlow(openTrigger.flow ?? { actions: [] });
     } else {
       setDraftFlow(undefined);
       setEditOpenTriggerFlow(false);
@@ -1248,18 +1248,45 @@ export default () => {
                         <div className="truncate my-auto">
                           <div className="flex max-w-full">
                             <p className="font-medium truncate dark:text-[#f9f9f9] text-base">
+                              {entry.user?.discordUser ? (
+                                <img
+                                  {...cdnImgAttributes(64, (size) =>
+                                    getUserAvatar(
+                                      {
+                                        discordUser: {
+                                          // biome-ignore lint/style/noNonNullAssertion: Ternary above
+                                          ...entry.user?.discordUser!,
+                                          discriminator: null,
+                                        },
+                                      },
+                                      { size },
+                                    ),
+                                  )}
+                                  alt=""
+                                  className="rounded-full h-4 inline-block self-center me-1 -mt-[0.375rem]"
+                                />
+                              ) : null}
                               <Trans
                                 t={t}
                                 i18nKey={`auditLogMessage.${webhook ? "webhookAction" : "webhooklessAction"}.${entry.type}`}
                                 values={{
-                                  username: entry.user?.name ?? t("anonymous"),
+                                  username:
+                                    entry.user?.discordUser?.name ??
+                                    t("anonymous"),
                                   webhook,
                                 }}
                                 components={[
-                                  entry.user?.name ? (
-                                    <span
+                                  entry.user?.discordUser ? (
+                                    <button
                                       key="0"
-                                      className="dark:text-primary-230"
+                                      type="button"
+                                      className="dark:text-primary-300 cursor-pointer"
+                                      onClick={() => {
+                                        if (!entry.user?.discordUser) return;
+                                        copyText(
+                                          String(entry.user.discordUser.id),
+                                        );
+                                      }}
                                     />
                                   ) : (
                                     <span key="0" />
@@ -1932,7 +1959,7 @@ export default () => {
                 </div>
                 <div className="w-full flex my-0.5">
                   <CoolIcon
-                    icon="Edit_Pencil_01"
+                    icon="Save"
                     className="m-auto text-base text-muted dark:text-muted-dark opacity-50"
                   />
                 </div>

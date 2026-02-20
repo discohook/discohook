@@ -2,6 +2,7 @@ declare module "bun" {
   interface Env {
     DISCORD_APPLICATION_ID: string;
     DISCORD_TOKEN: string;
+    DISCORD_PROXY_API?: string;
     DISCOHOOK_ORIGIN: string;
     TOKEN_SECRET: string;
     DATABASE_URL: string;

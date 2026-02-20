@@ -18,8 +18,25 @@ export const ATTACHMENT_URI_EXTENSIONS = [
   ".gif",
 ] as const;
 
+/**
+ * Make a filename safe for an attachment:// URI. Discord converts spaces to
+ * underscores, then strips unfitting characters:
+ * > The filename for these URLs must be ASCII alphanumeric with underscores,
+ * > dashes, or dots.
+ * >
+ * > https://discord.com/developers/docs/reference#uploading-files
+ *
+ * I think filenames might have changed sometime in 2025, but I can't find a
+ * reference, and the docs still list the above (1/2026).
+ *
+ * @param filename input filename
+ * @returns URL-safe output filename
+ */
 export const transformFileName = (filename: string) =>
-  filename.replace(/ /g, "_");
+  filename
+    .replace(/ /g, "_")
+    .replace(/[^a-zA-Z0-9._-]/g, "")
+    .trim() || "unknown";
 
 const getAudioDuration = async (src: string): Promise<number | null> => {
   const promise = new Promise<number>((resolve) => {

@@ -31,12 +31,12 @@ export const messageReactionAddCallback: GatewayEventCallback = async (
     });
     if (!stored) {
       await env.KV.put(key, JSON.stringify({ roleId: null }), {
-        expirationTtl: 604800,
+        expirationTtl: 86400 / 2,
       });
       return;
     }
     data = { roleId: String(stored.roleId) };
-    await env.KV.put(key, JSON.stringify(data), { expirationTtl: 604800 });
+    await env.KV.put(key, JSON.stringify(data), { expirationTtl: 86400 });
   }
   if (!data.roleId) return;
 
@@ -44,9 +44,7 @@ export const messageReactionAddCallback: GatewayEventCallback = async (
   try {
     await rest.put(
       Routes.guildMemberRole(event.guild_id, event.user_id, data.roleId),
-      {
-        reason: `Reaction role in channel ID ${event.channel_id}`,
-      },
+      { reason: `Reaction role in channel ID ${event.channel_id}` },
     );
   } catch (e) {
     console.error(e);

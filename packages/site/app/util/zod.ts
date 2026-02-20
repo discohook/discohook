@@ -4,11 +4,11 @@ import { isSnowflake } from "discord-snowflake";
 import {
   type output,
   type SafeParseReturnType,
-  z,
   ZodError,
   type ZodObject,
   type ZodRawShape,
   type ZodTypeAny,
+  z,
 } from "zod/v3";
 import { zx } from "zodix";
 

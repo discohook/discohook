@@ -1,3 +1,4 @@
 .env
 config.json
 node_modules/
+status/

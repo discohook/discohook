@@ -20,9 +20,10 @@ import type {
   ScheduledRunData,
 } from "../types/backups.js";
 import type {
+  DraftComponent,
+  DraftFlow,
   FlowAction,
   FlowActionType,
-  StorableComponent,
 } from "../types/components.js";
 import type { TriggerEvent } from "../types/triggers.js";
 
@@ -110,6 +111,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
 }));
 
+// Deprecated
 export const tokens = pgTable("Token", {
   id: snowflakePk(),
   platform: text("platform").$type<"discord" | "guilded">().notNull(),
@@ -123,6 +125,7 @@ export const tokens = pgTable("Token", {
   country: text("lastUsedCountry"),
 });
 
+// Deprecated
 export const tokensRelations = relations(tokens, ({ one, many }) => ({
   user: one(users, {
     fields: [tokens.userId],
@@ -551,7 +554,7 @@ export const discordMessageComponents = pgTable("DiscordMessageComponent", {
   updatedById: snowflake("updatedById"),
   updatedAt: date("updatedAt"),
   type: integer("type").notNull().$type<ComponentType>(),
-  data: json("data").notNull().$type<StorableComponent>(),
+  data: json("data").notNull().$type<DraftComponent>(),
   draft: boolean("draft").notNull().default(false),
 });
 
@@ -573,6 +576,7 @@ export const discordMessageComponentsRelations = relations(
       references: [users.id],
       relationName: "User_DiscordMessageComponent-updated",
     }),
+    // Deprecated
     componentsToFlows: many(discordMessageComponentsToFlows),
     // placements: many(discordMessageComponentPlacements),
   }),
@@ -604,6 +608,7 @@ export const discordMessageComponentsRelations = relations(
 //   }),
 // );
 
+// Deprecated
 export const discordMessageComponentsToFlows = pgTable(
   "DMC_to_Flow",
   {
@@ -621,6 +626,7 @@ export const discordMessageComponentsToFlows = pgTable(
   }),
 );
 
+// Deprecated
 export const discordMessageComponentsToFlowsRelations = relations(
   discordMessageComponentsToFlows,
   ({ one }) => ({
@@ -635,11 +641,13 @@ export const discordMessageComponentsToFlowsRelations = relations(
   }),
 );
 
+// Deprecated
 export const flows = pgTable("Flow", {
   id: snowflakePk(),
   name: text("name"),
 });
 
+// Deprecated
 export const flowsRelations = relations(flows, ({ many }) => ({
   componentsToFlows: many(discordMessageComponentsToFlows),
   trigger: many(triggers, {
@@ -648,6 +656,7 @@ export const flowsRelations = relations(flows, ({ many }) => ({
   actions: many(flowActions, { relationName: "Flow_Action" }),
 }));
 
+// Deprecated
 export const flowActions = pgTable("Action", {
   id: snowflakePk(),
   type: integer("type").notNull().$type<FlowActionType>(),
@@ -658,6 +667,7 @@ export const flowActions = pgTable("Action", {
   // lastExecutionContext: json(),
 });
 
+// Deprecated
 export const flowActionsRelations = relations(flowActions, ({ one }) => ({
   flow: one(flows, {
     fields: [flowActions.flowId],
@@ -668,12 +678,17 @@ export const flowActionsRelations = relations(flowActions, ({ one }) => ({
 
 export const triggers = pgTable("Trigger", {
   id: snowflakePk(),
-  platform: text("platform").$type<"discord" | "guilded">().notNull(),
+  platform: text("platform")
+    .$type<"discord" | "guilded">()
+    .default("discord")
+    .notNull(),
   event: integer("event").$type<TriggerEvent>().notNull(),
   discordGuildId: snowflake("discordGuildId"),
   guildedServerId: text("guildedServerId"),
+  flow: json("flow").$type<DraftFlow>(),
+  // Deprecated
   flowId: snowflake("flowId")
-    .notNull()
+    // .notNull()
     .references(() => flows.id, { onDelete: "cascade" }),
   updatedById: snowflake("updatedById"),
   updatedAt: date("updatedAt"),
@@ -691,6 +706,7 @@ export const triggersRelations = relations(triggers, ({ one }) => ({
     references: [guildedServers.id],
     relationName: "GuildedServer_Trigger",
   }),
+  // Deprecated
   flow: one(flows, {
     fields: [triggers.flowId],
     references: [flows.id],

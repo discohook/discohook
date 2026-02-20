@@ -1,12 +1,18 @@
 # discohook/bot
 
-## Build & start
+This is the source code for the Discohook Utils application. This repository replaces the former `bot`, `bot-ws`, and `bouncer` sub-projects, which relied on Cloudflare Workers. Unfortunately, that platform's capabilities and pricing model are unfeasible for Discohook.
 
-See the [.env example](#env-example) and [config.json](#configjson) sections for setting up the necessary local files. This project uses [Bun](https://bun.sh), so you will need that installed - at least version 1.2.18.
+## Running
 
-After configuring, you can run `bun deploy` to register commands. Then run `bun start --cluster=x` to start the bot, where `x` is the zero-indexed number of the cluster. For example, if you have 4 clusters configured, you will need to run `bun start` four concurrent times with `--cluster=0` through `--cluster=3`.
+Before running any code, do the following, in no particular order:
 
+- Install [Bun](https://bun.sh) (at least version 1.2.18).
+- Set up your [.env](#env-example) and [config.json](#configjson) files.
+- Create a `status` directory. This is where each cluster will automatically push information about its shards' statuses. These files are read by [bot-uptime](/packages/bot-uptime) (TODO) and relayed simplistically to our [statuspage](https://github.com/discohook/statuspage).
 
+Run `bun deploy` to register commands. Then run `bun start --cluster=x` to start the bot, where `x` is the zero-indexed number of the cluster. For example, if you have 4 clusters configured, you will need to run `bun start` four concurrent times with `--cluster=0` through `--cluster=3`.
+
+Swap out `bun start` for `bun dev` in the above commands to use an [auto-restarting](https://bun.sh/docs/runtime/hot#watch-mode) development server instead.
 
 #### .env example
 

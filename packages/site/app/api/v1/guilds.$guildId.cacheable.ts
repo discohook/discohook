@@ -1,6 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
+  type APIThreadOnlyChannel,
   ChannelType,
   type RESTGetAPIGuildChannelsResult,
   Routes,
@@ -118,17 +119,26 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       channels: channels
         .filter(
           (c) =>
-            ![ChannelType.GuildCategory, ChannelType.GuildDirectory].includes(
-              c.type,
-            ),
+            c.type !== ChannelType.GuildCategory &&
+            c.type !== ChannelType.GuildDirectory,
         )
         .map((channel) => ({
           id: channel.id,
           name: channel.name,
           type: getChannelIconType(channel),
           tags:
+            /**
+             * I don't know why TS is refusing to cooperate with me but it
+             * suddenly decided that available_tags being in channel does not
+             * mean anything as it did before, so I have to further define it
+             * with an 'as'.
+             */
             "available_tags" in channel
-              ? channel.available_tags.map(tagToResolvableTag)
+              ? (
+                  channel as APIThreadOnlyChannel<
+                    ChannelType.GuildForum | ChannelType.GuildMedia
+                  >
+                ).available_tags?.map(tagToResolvableTag)
               : undefined,
         })) satisfies ResolvableAPIChannel[] as ResolvableAPIChannel[],
       emojis: guild.emojis.map((emoji) => ({

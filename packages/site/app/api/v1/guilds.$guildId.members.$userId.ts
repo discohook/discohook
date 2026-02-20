@@ -46,8 +46,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       } satisfies ResolvableAPIGuildMember;
 
       await context.env.KV.put(key, JSON.stringify(member), {
-        // 2 hours
-        expirationTtl: 7200,
+        expirationTtl: 60 * 30,
       });
       return respond(json(member));
     }
@@ -103,8 +102,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   }
 
   await context.env.KV.put(key, JSON.stringify(member), {
-    // 2 hours
-    expirationTtl: 7200,
+    expirationTtl: 60 * 30,
   });
   return respond(json(member));
 };

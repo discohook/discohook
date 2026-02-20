@@ -26,17 +26,12 @@ import {
 } from "~/session.server";
 import {
   autoRollbackTx,
-  destroyComponentDurableObject,
+  type DraftComponent,
+  destroyComponentKV,
   discordMessageComponents,
-  discordMessageComponentsToFlows,
   eq,
-  flowActions,
-  flows,
-  generateId,
   getDb,
-  inArray,
   makeSnowflake,
-  type StorableComponent,
   sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
@@ -258,11 +253,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             guildId: true,
             channelId: true,
           },
-          with: {
-            componentsToFlows: {
-              columns: { flowId: true },
-            },
-          },
         });
         if (!current) {
           throw respond(json({ message: "Unknown Component" }, 404));
@@ -278,133 +268,54 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
         const updated = await db.transaction(
           autoRollbackTx(async (tx) => {
-            await tx
-              .delete(discordMessageComponentsToFlows)
-              .where(
-                eq(
-                  discordMessageComponentsToFlows.discordMessageComponentId,
-                  id,
-                ),
-              );
-            const curFlowIds = current.componentsToFlows.map(
-              (ctf) => ctf.flowId,
-            );
-            if (curFlowIds.length !== 0) {
-              await tx.delete(flows).where(inArray(flows.id, curFlowIds));
-            }
-
             const { custom_id: _, ...c } = component;
-            let data: StorableComponent | undefined;
-            let allFlowIds: string[] = [];
+            let data: DraftComponent | undefined;
             switch (c.type) {
               case ComponentType.Button: {
                 if (
                   c.style === ButtonStyle.Link ||
                   c.style === ButtonStyle.Premium
                 ) {
-                  data = c; //{ ...current.data, ...c };
+                  data = c;
                   break;
                 }
-
-                const { flow, ...rest } = c;
-
-                const flowId = generateId();
-                allFlowIds = [flowId];
-                await tx
-                  .insert(flows)
-                  .values({ id: BigInt(flowId), name: flow?.name });
-                if (flow && flow.actions.length !== 0) {
-                  await tx.insert(flowActions).values(
-                    flow.actions.map((action) => ({
-                      flowId: BigInt(flowId),
-                      type: action.type,
-                      data: action,
-                    })),
-                  );
-                }
-
-                data = { ...rest, flowId };
+                data = { ...c, flow: c.flow ?? { actions: [] } };
                 break;
               }
               case ComponentType.StringSelect: {
-                let { flows: cFlows, ...rest } = c;
-                cFlows = cFlows ?? {};
-                const flowIds = Object.fromEntries(
-                  Object.keys(cFlows).map((optionValue) => [
-                    optionValue,
-                    generateId(),
-                  ]),
-                );
-                allFlowIds = Object.values(flowIds);
-
-                if (Object.keys(flowIds).length !== 0) {
-                  await tx.insert(flows).values(
-                    Object.entries(cFlows).map(([optionValue, flow]) => ({
-                      id: BigInt(flowIds[optionValue]),
-                      name: flow.name,
-                    })),
-                  );
-                  const flowsWithActions = Object.entries(cFlows)
-                    .filter(([, flow]) => flow.actions.length !== 0)
-                    .map(([optionValue, flow]) => ({
-                      id: BigInt(flowIds[optionValue]),
-                      ...flow,
-                    }));
-                  if (flowsWithActions.length !== 0) {
-                    await tx.insert(flowActions).values(
-                      flowsWithActions.flatMap((flow) =>
-                        flow.actions.map((action) => ({
-                          flowId: flow.id,
-                          type: action.type,
-                          data: action,
-                        })),
-                      ),
-                    );
-                  }
-                }
-
-                data = { ...rest, flowIds };
+                const {
+                  min_values: _,
+                  max_values: __,
+                  flows = {},
+                  ...rest
+                } = c;
+                data = { ...rest, minValues: 1, maxValues: 1, flows };
                 break;
               }
               case ComponentType.UserSelect:
               case ComponentType.RoleSelect:
               case ComponentType.MentionableSelect:
               case ComponentType.ChannelSelect: {
-                const flowId = generateId();
-                allFlowIds = [flowId];
                 const {
-                  flow,
                   default_values: defaultValues,
                   min_values: _,
                   max_values: __,
+                  flow = { actions: [] },
                   ...rest
                 } = c;
-                await tx
-                  .insert(flows)
-                  .values({ id: BigInt(flowId), name: flow?.name });
-                if (flow && flow.actions.length !== 0) {
-                  await tx.insert(flowActions).values(
-                    flow.actions.map((action) => ({
-                      flowId: BigInt(flowId),
-                      type: action.type,
-                      data: action,
-                    })),
-                  );
-                }
-
                 data = {
                   ...rest,
-                  // See above
                   minValues: 1,
                   maxValues: 1,
-                  flowId,
                   defaultValues,
+                  flow,
                 };
                 break;
               }
               default:
                 break;
             }
+
             if (!data) {
               throw respond(
                 json(
@@ -415,18 +326,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                   500,
                 ),
               );
-            }
-
-            if (allFlowIds.length !== 0) {
-              await tx
-                .insert(discordMessageComponentsToFlows)
-                .values(
-                  allFlowIds.map((flowId) => ({
-                    discordMessageComponentId: id,
-                    flowId: BigInt(flowId),
-                  })),
-                )
-                .onConflictDoNothing();
             }
 
             const updated = (
@@ -539,11 +438,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
 
         if (current.channelId && current.messageId) {
-          await destroyComponentDurableObject(context.env, {
-            messageId: String(current.messageId),
-            customId: `p_${id}`,
-            componentId: id,
-          });
+          // await destroyComponentDurableObject(context.env, {
+          //   messageId: String(current.messageId),
+          //   customId: `p_${id}`,
+          //   componentId: id,
+          // });
+          await destroyComponentKV(context.env, id);
 
           const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
           let message: APIMessage | undefined;

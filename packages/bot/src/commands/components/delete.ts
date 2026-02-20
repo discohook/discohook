@@ -22,7 +22,7 @@ import {
 import { eq } from "drizzle-orm";
 import {
   autoRollbackTx,
-  destroyComponentDurableObject,
+  destroyComponentKV,
   discordMessageComponents,
   getDb,
 } from "store";
@@ -490,7 +490,6 @@ const registerComponentDelete = async (
   shouldKeepRecord?: boolean,
 ) => {
   const db = getDb(ctx.env.HYPERDRIVE);
-  const customId = `p_${id}`;
 
   const removed = extractComponentByPath(message, path, {
     operation: "remove",
@@ -521,11 +520,12 @@ const registerComponentDelete = async (
   );
 
   if (!shouldKeepRecord) {
-    await destroyComponentDurableObject(ctx.env, {
-      messageId: editedMsg.id,
-      customId,
-      componentId: id,
-    });
+    // await destroyComponentDurableObject(ctx.env, {
+    //   messageId: editedMsg.id,
+    //   customId,
+    //   componentId: id,
+    // });
+    await destroyComponentKV(ctx.env, id);
   }
 
   return editedMsg;

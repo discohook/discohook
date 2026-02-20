@@ -1,4 +1,4 @@
-import type { TFunction } from "i18next";
+import type { TFunction } from "~/types/i18next";
 
 export const copyText = (text: string) => {
   const input = document.createElement("textarea");

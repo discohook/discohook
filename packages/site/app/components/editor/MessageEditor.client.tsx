@@ -8,7 +8,6 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -22,6 +21,7 @@ import {
   PlainModalHeader,
 } from "~/modals/Modal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import type { TFunction } from "~/types/i18next";
 import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import type {
   CacheManager,
@@ -41,14 +41,14 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
-import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
+import { CoolIcon } from "../icons/CoolIcon";
 import { isAudioType } from "../preview/FileAttachment";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import {
-  selectStyles,
   SelectValueTrigger,
+  selectStyles,
   withDefaultItem,
 } from "../StringSelect";
 import { TextArea } from "../TextArea";
@@ -359,7 +359,7 @@ const MessageEditorCollapsibleTrigger = ({
   setData,
   setEditingName,
 }: {
-  t: TFunction<"translation", undefined>;
+  t: TFunction;
   message: MessageEditorChildProps["data"]["messages"][number];
 } & Pick<
   MessageEditorChildProps,
@@ -433,7 +433,9 @@ const MessageEditorCollapsibleTrigger = ({
           type="button"
           className={data.messages.length >= 10 ? "hidden" : ""}
           onClick={() => {
-            data.messages.splice(i + 1, 0, structuredClone(message));
+            const cloned = structuredClone(message);
+            cloned._id = randomString(10);
+            data.messages.splice(i + 1, 0, cloned);
             setData({ ...data });
           }}
         >

@@ -15,24 +15,10 @@ import { fetchTags } from "../src/commands/help";
 import { isDiscordError } from "../src/util/error";
 import { color } from "../src/util/meta";
 
-const categories = {
-  "How-to basics": [
-    "send",
-    "edit",
-    "sidebar",
-    "mention",
-    "link",
-    "buttons",
-    "reaction role",
-    "schedule",
-    "welcomer",
-    "profile",
-  ],
-  Troubleshooting: ["blocked", "ise", "nothing", "image"],
-};
 const titleOverride: Record<string, string> = {
   buttons: "Add buttons to messages/embeds",
   blocked: "My request to Discord was blocked",
+  schedule: "Schedule a message",
 };
 
 const argparser = new ArgumentParser();
@@ -154,39 +140,60 @@ for (const [tag, embed] of Object.entries(tags)) {
 // update starter message
 const embed = new EmbedBuilder().setColor(color);
 
-for (const [category, keys] of Object.entries(categories)) {
+const getKeyLinkItem = (key: string) => {
+  let title: string;
+  if (titleOverride[key]) {
+    title = titleOverride[key];
+  } else {
+    title = (tags[key] as APIEmbed)?.title ?? key;
+    if (title.toLowerCase().startsWith("how do i")) {
+      title = title
+        .replace(/^how do i/i, "")
+        .replace(/\?$/, "")
+        .trim();
+      title = title.slice(0, 1).toUpperCase() + title.slice(1);
+    }
+    title = title.replace(/\.$/, "");
+  }
+
+  const messageId = tagsToId[key];
+  if (messageId) {
+    return `- [${title}](${messageLink(
+      threadId,
+      messageId,
+      // biome-ignore lint/style/noNonNullAssertion: we're in a guild
+      webhook.guild_id!,
+    )})\n`;
+  }
+  return "";
+};
+
+embed.setDescription(
+  // This one is too long to fit in a field
+  `**How-to basics**\n${[
+    "send",
+    "edit",
+    "sidebar",
+    "mention",
+    "link",
+    "buttons",
+    "reaction role",
+    "schedule",
+    "welcomer",
+    "profile",
+  ]
+    .map(getKeyLinkItem)
+    .join("")
+    .trim()}`,
+);
+
+const otherCategories = {
+  Troubleshooting: ["blocked", "ise", "nothing", "image"],
+};
+for (const [category, keys] of Object.entries(otherCategories)) {
   embed.addFields({
     name: category,
-    value: keys
-      .map((key) => {
-        let title: string;
-        if (titleOverride[key]) {
-          title = titleOverride[key];
-        } else {
-          title = (tags[key] as APIEmbed)?.title ?? key;
-          if (title.toLowerCase().startsWith("how do i")) {
-            title = title
-              .replace(/^how do i/i, "")
-              .replace(/\?$/, "")
-              .trim();
-            title = title.slice(0, 1).toUpperCase() + title.slice(1);
-          }
-          title = title.replace(/\.$/, "");
-        }
-
-        const messageId = tagsToId[key];
-        if (messageId) {
-          return `- [${title}](${messageLink(
-            threadId,
-            messageId,
-            // biome-ignore lint/style/noNonNullAssertion: we're in a guild
-            webhook.guild_id!,
-          )})\n`;
-        }
-        return "";
-      })
-      .join("")
-      .trim(),
+    value: keys.map(getKeyLinkItem).join("").trim(),
     inline: false,
   });
 }

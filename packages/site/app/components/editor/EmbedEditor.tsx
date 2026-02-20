@@ -1,8 +1,8 @@
 import { type APIEmbedField, ButtonStyle } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
+import type { TFunction } from "~/types/i18next";
 import type { QueryData } from "~/types/QueryData";
 import type { APIEmbed } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";

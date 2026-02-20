@@ -1,5 +1,5 @@
-import type { TFunction } from "i18next";
 import { useState } from "react";
+import type { TFunction } from "~/types/i18next";
 import { InfoBox } from "./InfoBox";
 import { codeBlockStyle } from "./preview/Markdown";
 

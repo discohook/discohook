@@ -9,18 +9,11 @@ import { and, eq } from "drizzle-orm";
 import {
   backups,
   type DBWithSchema,
-  type FlowAction,
-  type FlowActionCheck,
+  type DraftFlow,
+  ensureTriggerFlow,
   FlowActionCheckFunctionType,
-  type FlowActionDeleteMessage,
-  flowActions,
-  type FlowActionSendMessage,
-  type FlowActionSendWebhookMessage,
-  type FlowActionSetVariable,
   FlowActionSetVariableType,
   FlowActionType,
-  type FlowActionWait,
-  flows,
   getchTriggerGuild,
   getDb,
   makeSnowflake,
@@ -47,17 +40,8 @@ export const getWelcomerConfigurations = async (
     columns: {
       id: true,
       disabled: true,
-    },
-    with: {
-      flow: {
-        columns: {
-          id: true,
-          name: true,
-        },
-        with: {
-          actions: true,
-        },
-      },
+      flow: true,
+      flowId: true,
     },
     where: and(
       eq(triggers.platform, "discord"),
@@ -156,89 +140,69 @@ export const getWelcomerConfigurations = async (
       }
       await upsertGuild(db, guild);
 
-      const flow = (
-        await db
-          .insert(flows)
-          .values({
-            name: `Welcomer (${type})`,
-          })
-          .returning()
-      )[0];
-      const actions: FlowAction[] = backupId
-        ? [
-            ...(oldConfiguration[0].ignoreBots
-              ? [
-                  {
-                    type: FlowActionType.Check,
-                    function: {
-                      type: FlowActionCheckFunctionType.Equals,
-                      a: {
-                        varType: FlowActionSetVariableType.Get,
-                        value: "member.bot",
-                      },
-                      b: {
-                        varType: FlowActionSetVariableType.Static,
-                        value: true,
-                      },
-                    },
-                    // biome-ignore lint/suspicious/noThenProperty: see note in quick.ts about this
-                    then: [{ type: FlowActionType.Stop }],
-                    else: [],
-                  } satisfies FlowActionCheck,
-                ]
-              : []),
-            ...(oldConfiguration[0].webhookId && !webhookInvalid
-              ? [
-                  {
-                    type: FlowActionType.SendWebhookMessage,
-                    webhookId: String(oldConfiguration[0].webhookId),
-                    backupId: backupId.toString(),
-                  } satisfies FlowActionSendWebhookMessage,
-                  {
-                    type: FlowActionType.SetVariable,
-                    varType: FlowActionSetVariableType.Adaptive,
-                    name: "channelId",
-                    value: "channel_id",
-                  } satisfies FlowActionSetVariable,
-                ]
-              : [
-                  {
-                    type: FlowActionType.SetVariable,
-                    name: "channelId",
-                    value: String(oldConfiguration[0].channelId),
-                  } satisfies FlowActionSetVariable,
-                  {
-                    type: FlowActionType.SendMessage,
-                    backupId: backupId.toString(),
-                  } satisfies FlowActionSendMessage,
-                ]),
-            ...(oldConfiguration[0].deleteMessagesAfter
-              ? [
-                  {
-                    type: FlowActionType.SetVariable,
-                    varType: FlowActionSetVariableType.Adaptive,
-                    name: "messageId",
-                    value: "id",
-                  } satisfies FlowActionSetVariable,
-                  {
-                    type: FlowActionType.Wait,
-                    seconds: oldConfiguration[0].deleteMessagesAfter,
-                  } satisfies FlowActionWait,
-                  {
-                    type: FlowActionType.DeleteMessage,
-                  } satisfies FlowActionDeleteMessage,
-                ]
-              : []),
-          ]
-        : [];
-      if (actions.length !== 0) {
-        await db.insert(flowActions).values(
-          actions.map((action) => ({
-            flowId: flow.id,
-            type: action.type,
-            data: action,
-          })),
-        );
+      const flow: DraftFlow = { actions: [] };
+      if (backupId !== undefined) {
+        if (oldConfiguration[0].ignoreBots) {
+          flow.actions.push({
+            type: FlowActionType.Check,
+            function: {
+              type: FlowActionCheckFunctionType.Equals,
+              a: {
+                varType: FlowActionSetVariableType.Get,
+                value: "member.bot",
+              },
+              b: {
+                varType: FlowActionSetVariableType.Static,
+                value: true,
+              },
+            },
+            // biome-ignore lint/suspicious/noThenProperty: see note in quick.ts about this
+            then: [{ type: FlowActionType.Stop }],
+            else: [],
+          });
+        }
+        if (oldConfiguration[0].webhookId && !webhookInvalid) {
+          flow.actions.push(
+            {
+              type: FlowActionType.SendWebhookMessage,
+              webhookId: String(oldConfiguration[0].webhookId),
+              backupId: backupId.toString(),
+            },
+            {
+              type: FlowActionType.SetVariable,
+              varType: FlowActionSetVariableType.Adaptive,
+              name: "channelId",
+              value: "channel_id",
+            },
+          );
+        } else {
+          flow.actions.push(
+            {
+              type: FlowActionType.SetVariable,
+              name: "channelId",
+              value: String(oldConfiguration[0].channelId),
+            },
+            {
+              type: FlowActionType.SendMessage,
+              backupId: backupId.toString(),
+            },
+          );
+        }
+        if (oldConfiguration[0].deleteMessagesAfter) {
+          flow.actions.push(
+            {
+              type: FlowActionType.SetVariable,
+              varType: FlowActionSetVariableType.Adaptive,
+              name: "messageId",
+              value: "id",
+            },
+            {
+              type: FlowActionType.Wait,
+              seconds: oldConfiguration[0].deleteMessagesAfter,
+            },
+            { type: FlowActionType.DeleteMessage },
+          );
+        }
       }
 
       const protoConfigs = await db
@@ -253,32 +217,26 @@ export const getWelcomerConfigurations = async (
             ? new Date(oldConfiguration[0].lastModifiedAt)
             : undefined,
           disabled: oldConfiguration[0].overrideDisabled ?? undefined,
-          flowId: flow.id,
+          flow,
         })
         .onConflictDoNothing()
         .returning({
           id: triggers.id,
-          // flowId: triggers.flowId,
           disabled: triggers.disabled,
         });
-      configs = [
-        {
-          ...protoConfigs[0],
-          flow: {
-            ...flow,
-            actions: actions.map((data) => ({
-              id: 0n, // this might need to be real in the future for diagnostics
-              flowId: flow.id,
-              type: data.type,
-              data,
-            })),
-          },
-        },
-      ];
+      configs = [{ ...protoConfigs[0], flow, flowId: null }];
       await db.delete(oldTable).where(eq(oldTable.id, oldConfiguration[0].id));
     }
+  } else {
+    for (const trigger of configs) {
+      await ensureTriggerFlow(trigger, db);
+    }
   }
-  return configs;
+
+  return configs.map(({ flowId: _, ...c }) => ({
+    ...c,
+    flow: c.flow ?? { actions: [] },
+  }));
 };
 
 export type Trigger = Awaited<

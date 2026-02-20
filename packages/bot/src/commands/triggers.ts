@@ -15,7 +15,6 @@ import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
 import {
   FlowActionType,
-  flows,
   getchTriggerGuild,
   getDb,
   makeSnowflake,
@@ -29,8 +28,8 @@ import type {
 } from "../commands.js";
 import type { ButtonCallback } from "../components.js";
 import { emojiToString, getEmojis } from "../emojis.js";
-import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
+import { gatewayEventNameToCallback } from "../events.js";
 import type { FlowResult } from "../flows/flows.js";
 import type { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";
@@ -67,23 +66,15 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
         }
       }
       const user = await upsertDiscordUser(db, ctx.user);
-      const { id: flowId } = (
-        await db.insert(flows).values({}).returning({ id: flows.id })
-      )[0];
-      const trigger = (
-        await db
-          .insert(triggers)
-          .values({
-            platform: "discord",
-            event,
-            discordGuildId: makeSnowflake(guild.id),
-            disabled: true,
-            flowId,
-            updatedAt: new Date(),
-            updatedById: user.id,
-          })
-          .returning()
-      )[0];
+      await db.insert(triggers).values({
+        platform: "discord",
+        event,
+        discordGuildId: makeSnowflake(guild.id),
+        disabled: true,
+        flow: { actions: [] },
+        updatedAt: new Date(),
+        updatedById: user.id,
+      });
 
       await ctx.followup.editOriginalMessage({
         content: ctx.t("triggerCreated", { replace: { name } }),
@@ -92,9 +83,7 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
             new ButtonBuilder()
               .setStyle(ButtonStyle.Link)
               .setLabel(ctx.t("addActions"))
-              .setURL(
-                `${ctx.env.DISCOHOOK_ORIGIN}/s/${trigger.discordGuildId}?t=triggers`,
-              ),
+              .setURL(`${ctx.env.DISCOHOOK_ORIGIN}/s/${guild.id}?t=triggers`),
           ),
         ],
       });
@@ -114,7 +103,7 @@ export const getFlowEmbed = (
         ? ctx.t("noActions")
         : flow.actions
             .map(
-              ({ data: action }, i) =>
+              (action, i) =>
                 `${i + 1}. ${spaceEnum(FlowActionType[action.type])}${
                   action.type === FlowActionType.Wait
                     ? ` ${action.seconds}s`
@@ -187,7 +176,7 @@ export const viewTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
 export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
   async (ctx) => {
     const db = getDb(ctx.env.HYPERDRIVE);
-    // This doesn't reflect pre-migration triggers
+    // This doesn't reflect pre-migration triggers (from v1 utils)
     const triggers = await db.query.triggers.findMany({
       where: (triggers, { eq }) =>
         eq(
@@ -195,19 +184,16 @@ export const triggerAutocompleteCallback: AppCommandAutocompleteCallback =
           // biome-ignore lint/style/noNonNullAssertion: Guild only command
           makeSnowflake(ctx.interaction.guild_id!),
         ),
-      columns: {
-        id: true,
-      },
-      with: {
-        flow: {
-          columns: {
-            name: true,
-          },
-        },
-      },
+      columns: { id: true, event: true, flow: true },
     });
     return triggers.map((trigger) => ({
-      name: trigger.flow?.name ?? ctx.t("unnamedTrigger"),
+      name:
+        trigger.flow?.name ??
+        (trigger.event === TriggerEvent.MemberAdd
+          ? "Member Join"
+          : trigger.event === TriggerEvent.MemberRemove
+            ? "Member Remove"
+            : ctx.t("unnamedTrigger")),
       value: `_id:${trigger.id}`,
     }));
   };

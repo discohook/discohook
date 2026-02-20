@@ -16,10 +16,7 @@ export const action = async ({ request, params, context }: LoaderArgs) => {
   await context.env.KV.put(
     `donation-key-${type}-${key}`,
     JSON.stringify({ userId }),
-    {
-      // 3 hours
-      expirationTtl: 10_8000,
-    },
+    { expirationTtl: 3600 * 3 },
   );
   return { key };
 };

@@ -2,9 +2,7 @@ import { ChannelType, ThreadAutoArchiveDuration } from "discord-api-types/v10";
 import { z } from "zod/v3";
 import type {
   AnonymousVariable,
-  DBFlowAction,
   DraftFlow,
-  Flow,
   FlowAction,
   FlowActionAddRole,
   FlowActionCheck,
@@ -71,6 +69,7 @@ export enum FlowActionSetVariableType {
    * this variable will be the channel ID of the message that was sent.
    */
   Adaptive = 1,
+  /** Mirrors the value of a previous variable by exact qualified name */
   Get = 2,
 }
 
@@ -248,26 +247,6 @@ export const ZodFlowAction: z.ZodType<FlowAction> = z.discriminatedUnion(
     ZodFlowActionDeleteMessage,
   ],
 );
-
-export const ZodFlowDBAction: z.ZodType<DBFlowAction> = z.object({
-  id: z.bigint(),
-  flowId: z.bigint(),
-  data: ZodFlowAction,
-  type: ZodFlowActionType,
-});
-
-export const ZodFlow: z.ZodType<Flow> = z.object({
-  id: z.bigint(),
-  name: z.string().nullable(),
-  actions: ZodFlowDBAction.array(),
-});
-
-export const ZodFlowWithMax = (max: number): z.ZodType<Flow> =>
-  z.object({
-    id: z.bigint(),
-    name: z.string().nullable(),
-    actions: ZodFlowDBAction.array().max(max),
-  });
 
 export const ZodDraftFlow: z.ZodType<DraftFlow> = z.object({
   name: z.string().nullable().optional(),

@@ -32,7 +32,7 @@ import {
   type APIModalInteractionResponse,
   type APIModalInteractionResponseCallbackData,
   type APIModalSubmitInteraction,
-  APIModalSubmitTextInputComponent,
+  type APIModalSubmitTextInputComponent,
   type APIPartialChannel,
   type APIRole,
   type APIUser,

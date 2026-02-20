@@ -17,25 +17,26 @@ import {
   MessageFlags,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { MessageFlagsBitField, PermissionFlags } from "discord-bitflag";
+import { PermissionFlags } from "discord-bitflag";
 import { isValidRequest, PlatformAlgorithm } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
+  type DraftComponent,
+  type DraftFlow,
   discordMessageComponents,
-  type DurableStoredComponent,
-  type Flow,
+  ensureComponentFlows,
   getchTriggerGuild,
   getDb,
   getRedis,
-  launchComponentDurableObject,
+  launchComponentKV,
   type TriggerKVGuild,
 } from "store";
 import { Snowflake } from "tif-snowflake";
-import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import { migrateLegacyButtons } from "./commands/components/migrate.js";
+import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import {
   type ComponentCallbackT,
   type ComponentRoutingId,
@@ -255,38 +256,55 @@ const handleInteraction = async (
         return respond({ error: "Must be in a guild context", status: 400 });
       }
 
-      const db = getDb(env.HYPERDRIVE);
-      const doId = env.COMPONENTS.idFromName(
-        `${interaction.message.id}-${customId}`,
+      const componentId = getComponentId(
+        type === ComponentType.Button
+          ? { type, style: ButtonStyle.Primary, custom_id: customId }
+          : { type, custom_id: customId },
       );
-      const stub = env.COMPONENTS.get(doId, { locationHint: "enam" });
-      const response = await stub.fetch("http://do/", { method: "GET" });
-      let component: DurableStoredComponent;
-      if (response.status === 404) {
-        // In case a durable object does not exist for this component for
-        // whatever reason. Usually because of migrated components that have
-        // not yet actually been activated.
-        const componentId = getComponentId(
-          type === ComponentType.Button
-            ? { type, style: ButtonStyle.Primary, custom_id: customId }
-            : { type, custom_id: customId },
-        );
-
-        if (componentId === undefined) {
-          return respond({ error: "Bad Request", status: 400 });
-        }
-
-        // Don't allow component data to leak into other servers
-        const dryComponent = await db.query.discordMessageComponents.findFirst({
-          where: (table, { eq }) => eq(table.id, componentId),
-          columns: { guildId: true, channelId: true },
-          with: {
-            createdBy: {
-              columns: { discordId: true },
-            },
-          },
+      if (componentId === undefined) {
+        return respond({
+          error: "Bad Request: Custom ID could not be resolved",
+          status: 400,
         });
-        if (!dryComponent) {
+      }
+
+      const db = getDb(env.HYPERDRIVE);
+      // Jan 7 2026: Moving away from durable objects for component storage
+      // for a few reasons:
+      // - Cost
+      // - May be introducing data-update latency
+      // - Future bot version (non-worker) will not be able to easily access
+      //   DOs and I expect it wouldn't benefit much from using them
+      //
+      // However, I'm anticipating some downsides:
+      // - More stress on the DB server
+      // - Potentially more latency (DO KV probably faster than DB via hyperdrive/webdis?)
+      //
+      // Therefore, a timed cache system (i.e. with Redis) would probably be
+      // advantageous vs. always requesting DB.
+      const kvKey = `custom-component-${componentId}`;
+      let hotComponent = await env.KV.get<{
+        data: DraftComponent;
+        channelId?: string;
+        guildId?: string;
+        createdById?: string;
+      }>(kvKey, "json");
+      if (!hotComponent) {
+        const coldComponentPre =
+          await db.query.discordMessageComponents.findFirst({
+            where: (table, { eq }) => eq(table.id, componentId),
+            columns: { id: true, guildId: true, channelId: true, data: true },
+            with: {
+              createdBy: { columns: { discordId: true } },
+              componentsToFlows: {
+                columns: {},
+                with: {
+                  flow: { with: { actions: { columns: { data: true } } } },
+                },
+              },
+            },
+          });
+        if (!coldComponentPre) {
           return respond(
             ctx.reply({
               content:
@@ -295,13 +313,24 @@ const handleInteraction = async (
             }),
           );
         }
-        if (!dryComponent.guildId) {
+        const coldComponent = await ensureComponentFlows(coldComponentPre, db);
+
+        const newHotComponent = {
+          data: coldComponent.data,
+          channelId: coldComponent.channelId?.toString(),
+          guildId: coldComponent.guildId?.toString(),
+          createdById: coldComponent.createdBy?.discordId?.toString(),
+        };
+        if (!coldComponent.guildId) {
+          // Allow the component creator to set this data since they can always
+          // access the component's contents
           if (
-            // Allow the component creator to set this data since it's obvious
-            // they can access the component's contents
-            dryComponent.createdBy?.discordId &&
-            dryComponent.createdBy.discordId === BigInt(ctx.user.id)
+            coldComponent.createdBy?.discordId &&
+            coldComponent.createdBy.discordId === BigInt(ctx.user.id)
           ) {
+            // deprecated - we want to move to "placements" instead, wherein
+            // a component can be "shared" between multiple channels or even
+            // guilds at once
             await db
               .update(discordMessageComponents)
               .set({
@@ -310,8 +339,8 @@ const handleInteraction = async (
               })
               .where(eq(discordMessageComponents.id, componentId));
 
-            dryComponent.guildId = BigInt(guildId);
-            dryComponent.channelId = BigInt(interaction.channel.id);
+            newHotComponent.guildId = guildId;
+            newHotComponent.channelId = interaction.channel.id;
           } else {
             return respond(
               ctx.reply({
@@ -326,54 +355,146 @@ const handleInteraction = async (
               }),
             );
           }
-        } else if (dryComponent.guildId.toString() !== interaction.guild_id) {
-          return respond({
-            error: response.statusText,
-            status: response.status,
+        } else if (coldComponent.guildId.toString() !== interaction.guild_id) {
+          // return respond({
+          //   error: response.statusText,
+          //   status: response.status,
+          // });
+          return ctx.reply({
+            content: [
+              "The server associated with this component does not match the",
+              "current server. If this component should be able to be used in",
+              "this server, contact support to have its server association",
+              "changed. It is recommended that the component owner do this so",
+              "we can verify that you are properly authorized.",
+            ].join(" "),
+            ephemeral: true,
           });
-          // ctx.reply({
-          //   content: [
-          //     "The server associated with this component does not match the current server.",
-          //     "If this component should be able to be used in this server,",
-          //     "contact support to have its server association changed.",
-          //   ].join(" "),
-          //   ephemeral: true,
-          // }),
         }
 
-        const params = new URLSearchParams({ id: componentId.toString() });
-        if (
-          new MessageFlagsBitField(interaction.message.flags ?? 0).has(
-            MessageFlags.Ephemeral,
-          )
-        ) {
-          // Ephemeral buttons last one hour to avoid durable object clutter.
-          // To be honest, this is not necessary at all, but if someone spams
-          // any button then we would rather the requests go to Cloudflare and
-          // not the database.
-          params.set(
-            "expireAt",
-            new Date(new Date().getTime() + 3_600_000).toISOString(),
-          );
-        }
-        const doResponse = await stub.fetch(`http://do/?${params}`, {
-          method: "PUT",
-        });
-        if (!doResponse.ok) {
-          return respond({
-            error: doResponse.statusText,
-            status: doResponse.status,
-          });
-        }
-        component = await doResponse.json();
-      } else if (!response.ok) {
-        return respond({
-          error: response.statusText,
-          status: response.status,
-        });
-      } else {
-        component = (await response.json()) as DurableStoredComponent;
+        hotComponent = newHotComponent;
+        await launchComponentKV(env, { componentId, ...newHotComponent });
       }
+      const component = hotComponent;
+
+      // const doId = env.COMPONENTS.idFromName(
+      //   `${interaction.message.id}-${customId}`,
+      // );
+      // const stub = env.COMPONENTS.get(doId, { locationHint: "enam" });
+      // const response = await stub.fetch("http://do/", { method: "GET" });
+      // let component: DurableStoredComponent;
+      // if (response.status === 404) {
+      //   // In case a durable object does not exist for this component for
+      //   // whatever reason. Usually because of migrated components that have
+      //   // not yet actually been activated.
+      //   const componentId = getComponentId(
+      //     type === ComponentType.Button
+      //       ? { type, style: ButtonStyle.Primary, custom_id: customId }
+      //       : { type, custom_id: customId },
+      //   );
+
+      //   if (componentId === undefined) {
+      //     return respond({ error: "Bad Request", status: 400 });
+      //   }
+
+      //   // Don't allow component data to leak into other servers
+      //   const dryComponent = await db.query.discordMessageComponents.findFirst({
+      //     where: (table, { eq }) => eq(table.id, componentId),
+      //     columns: { guildId: true, channelId: true },
+      //     with: {
+      //       createdBy: {
+      //         columns: { discordId: true },
+      //       },
+      //     },
+      //   });
+      //   if (!dryComponent) {
+      //     return respond(
+      //       ctx.reply({
+      //         content:
+      //           "No data could be found for this component. It may have been deleted by a moderator but not removed from the message.",
+      //         ephemeral: true,
+      //       }),
+      //     );
+      //   }
+      //   if (!dryComponent.guildId) {
+      //     if (
+      //       // Allow the component creator to set this data since it's obvious
+      //       // they can access the component's contents
+      //       dryComponent.createdBy?.discordId &&
+      //       dryComponent.createdBy.discordId === BigInt(ctx.user.id)
+      //     ) {
+      //       await db
+      //         .update(discordMessageComponents)
+      //         .set({
+      //           guildId: BigInt(guildId),
+      //           channelId: BigInt(interaction.channel.id),
+      //         })
+      //         .where(eq(discordMessageComponents.id, componentId));
+
+      //       dryComponent.guildId = BigInt(guildId);
+      //       dryComponent.channelId = BigInt(interaction.channel.id);
+      //     } else {
+      //       return respond(
+      //         ctx.reply({
+      //           content: [
+      //             "This component hasn't been linked with a server. Please tell",
+      //             "the component owner (the person who created the component on",
+      //             "the Discohook site) to use the component at least once. This",
+      //             "will link the component with the current server. After you do",
+      //             "this, the component should work as expected.",
+      //           ].join(" "),
+      //           ephemeral: true,
+      //         }),
+      //       );
+      //     }
+      //   } else if (dryComponent.guildId.toString() !== interaction.guild_id) {
+      //     return respond({
+      //       error: response.statusText,
+      //       status: response.status,
+      //     });
+      //     // ctx.reply({
+      //     //   content: [
+      //     //     "The server associated with this component does not match the current server.",
+      //     //     "If this component should be able to be used in this server,",
+      //     //     "contact support to have its server association changed.",
+      //     //   ].join(" "),
+      //     //   ephemeral: true,
+      //     // }),
+      //   }
+
+      //   const params = new URLSearchParams({ id: componentId.toString() });
+      //   if (
+      //     new MessageFlagsBitField(interaction.message.flags ?? 0).has(
+      //       MessageFlags.Ephemeral,
+      //     )
+      //   ) {
+      //     // Ephemeral buttons last one hour to avoid durable object clutter.
+      //     // To be honest, this is not necessary at all, but if someone spams
+      //     // any button then we would rather the requests go to Cloudflare and
+      //     // not the database.
+      //     params.set(
+      //       "expireAt",
+      //       new Date(new Date().getTime() + 3_600_000).toISOString(),
+      //     );
+      //   }
+      //   const doResponse = await stub.fetch(`http://do/?${params}`, {
+      //     method: "PUT",
+      //   });
+      //   if (!doResponse.ok) {
+      //     return respond({
+      //       error: doResponse.statusText,
+      //       status: doResponse.status,
+      //     });
+      //   }
+      //   component = await doResponse.json();
+      // } else if (!response.ok) {
+      //   return respond({
+      //     error: response.statusText,
+      //     status: response.status,
+      //   });
+      // } else {
+      //   component = (await response.json()) as DurableStoredComponent;
+      // }
       // if (component.draft) {
       //   return respond({ error: "Component is marked as draft" });
       // }
@@ -437,14 +558,25 @@ const handleInteraction = async (
           break;
       }
 
-      const allFlows = component.componentsToFlows.map((ctf) => ctf.flow);
-      let flows: Flow[] = [];
+      // This is what the switch could be reduced to, but I'm not sure I want
+      // to do this yet (+ select key filter)
+      // const allFlows =
+      //   "flow" in component.data
+      //     ? [component.data.flow]
+      //     : "flows" in component.data
+      //       ? Object.entries(component.data.flows)
+      //       : [];
+      let flows: DraftFlow[] = [];
       switch (component.data.type) {
         case ComponentType.Button: {
           if (component.data.type !== interaction.data.component_type) break;
-
-          if (component.data.style === ButtonStyle.Link) break;
-          flows = allFlows;
+          if (
+            component.data.style === ButtonStyle.Link ||
+            component.data.style === ButtonStyle.Premium
+          ) {
+            break;
+          }
+          flows = [component.data.flow];
           break;
         }
         case ComponentType.StringSelect: {
@@ -455,16 +587,13 @@ const handleInteraction = async (
           // saving components. Nonetheless, if a user manually saved a select
           // menu allowing multiple values, we are able to deal with it
           // gracefully. Should we truncate here too?
-          flows = Object.entries(component.data.flowIds)
+          flows = Object.entries(component.data.flows)
             .filter(([key]) =>
               (
                 interaction.data as APIMessageStringSelectInteractionData
               ).values.includes(key),
             )
-            .map(([_, flowId]) =>
-              allFlows.find((flow) => String(flow.id) === flowId),
-            )
-            .filter((v): v is NonNullable<typeof v> => Boolean(v));
+            .map(([_, flow]) => flow);
           break;
         }
         case ComponentType.ChannelSelect:
@@ -472,13 +601,13 @@ const handleInteraction = async (
         case ComponentType.RoleSelect:
         case ComponentType.UserSelect: {
           if (component.data.type !== interaction.data.component_type) break;
-
-          flows = allFlows;
+          flows = [component.data.flow];
           break;
         }
         default:
           break;
       }
+
       if (env.ENVIRONMENT === "dev") console.log(flows.map((f) => f.actions));
       if (flows.length === 0) {
         const messageCreatedAt = Snowflake.parse(
@@ -503,7 +632,7 @@ const handleInteraction = async (
                     new ButtonBuilder()
                       .setStyle(ButtonStyle.Link)
                       .setURL(
-                        `${env.DISCOHOOK_ORIGIN}/edit/component/${component.id}`,
+                        `${env.DISCOHOOK_ORIGIN}/edit/component/${componentId}`,
                       )
                       .setLabel(ctx.t("customize")),
                   ),
@@ -621,11 +750,11 @@ const handleInteraction = async (
             thisButton.data.style !== ButtonStyle.Link &&
             thisButton.data.style !== ButtonStyle.Premium
           ) {
-            const thisButtonData = await launchComponentDurableObject(env, {
-              messageId: interaction.message.id,
-              customId,
-              componentId: thisButton.id,
-            });
+            // const thisButtonData = await launchComponentDurableObject(env, {
+            //   messageId: interaction.message.id,
+            //   customId,
+            //   componentId: thisButton.id,
+            // });
 
             const liveVars: LiveVariables = {
               guild,
@@ -634,7 +763,7 @@ const handleInteraction = async (
             };
             const result = await executeFlow({
               env,
-              flow: thisButtonData.componentsToFlows[0].flow,
+              flow: thisButton.data.flow,
               rest,
               db,
               liveVars,

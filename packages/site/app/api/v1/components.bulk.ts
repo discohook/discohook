@@ -2,9 +2,10 @@ import { z } from "zod/v3";
 import { authorizeRequest } from "~/session.server";
 import {
   discordMessageComponents,
+  ensureComponentFlows,
   getDb,
   inArray,
-  launchComponentDurableObject,
+  launchComponentKV,
 } from "~/store.server";
 import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson } from "~/util/zod";
@@ -38,7 +39,14 @@ export const action = async ({ request, context }: ActionArgs) => {
       and(inArray(table.id, ids), eq(table.createdById, BigInt(token.user.id))),
     columns: {
       id: true,
+      data: true,
       draft: true,
+    },
+    with: {
+      componentsToFlows: {
+        columns: {},
+        with: { flow: { with: { actions: { columns: { data: true } } } } },
+      },
     },
   });
   if (current.length === 0) {
@@ -84,13 +92,17 @@ export const action = async ({ request, context }: ActionArgs) => {
       );
   }
 
+  // We don't need to update every component here, but since we've already
+  // fetched the data, we may as well
+  for (const component of current) {
+    await ensureComponentFlows(component, db);
+  }
   if (update.draft === false && update.messageId) {
     for (const component of current) {
       if (component.draft) {
-        await launchComponentDurableObject(context.env, {
-          messageId: update.messageId.toString(),
+        await launchComponentKV(context.env, {
           componentId: component.id,
-          customId: `p_${component.id}`,
+          data: component.data,
         });
       }
     }

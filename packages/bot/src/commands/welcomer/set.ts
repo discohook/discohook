@@ -12,8 +12,6 @@ import {
   type FlowAction,
   FlowActionSetVariableType,
   FlowActionType,
-  flowActions,
-  flows,
   generateId,
   getchTriggerGuild,
   getDb,
@@ -164,9 +162,11 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
       );
 
       const emojis = await getEmojis(ctx.env);
+      // This block is not actually used currently since we limit triggers to
+      // one per event per server, but I want to open it in the future
       if (triggers.length > 1) {
         await ctx.followup.editOriginalMessage({
-          content: `This server has ${triggers.length} triggers with this event. Please choose which one you would like to modify in the select menu, or [modify the trigger online](${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}).`,
+          content: `This server has ${triggers.length} triggers with this event. Please select one to modify, or [modify the trigger online](${ctx.env.DISCOHOOK_ORIGIN}/s/${ctx.interaction.guild_id}).`,
           components: [
             new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
               new StringSelectMenuBuilder()
@@ -201,25 +201,15 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
         return;
       }
 
+      const title = `Welcomer (${addRemove})`;
       let currentFlow: (typeof triggers)[number]["flow"];
       if (triggers.length === 0) {
-        currentFlow = {
-          id: BigInt(generateId()),
-          name: `Welcomer (${addRemove})`,
-          actions: [],
-        };
+        currentFlow = { actions: [] };
       } else {
         currentFlow = triggers[0].flow;
-        // Possible shenanigans
-        if (currentFlow.id === 0n) {
-          currentFlow.id = BigInt(generateId());
-        }
       }
 
-      const current = getWelcomerConfigFromActions(
-        currentFlow.actions.map((a) => a.data),
-      );
-
+      const current = getWelcomerConfigFromActions(currentFlow.actions);
       if (deleteAfter === 0) {
         current.deleteAfter = undefined;
       } else if (deleteAfter && deleteAfter > 0) {
@@ -271,45 +261,32 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
           // biome-ignore lint/style/noNonNullAssertion: Checked above or re-assigned
           backupId: current.backupId!,
         });
+        const flow = { ...currentFlow, actions };
+
         await db.transaction(
           autoRollbackTx(async (tx) => {
-            const flowId = currentFlow.id;
             if (triggers.length === 0) {
-              await tx
-                .insert(flows)
-                .values({ id: flowId, name: currentFlow.name })
-                .onConflictDoNothing();
               await tx.insert(dTriggers).values({
                 platform: "discord",
                 discordGuildId: BigInt(ctx.interaction.guild_id),
-                flowId,
+                flow,
                 event,
               });
             } else {
               await tx
                 .update(dTriggers)
                 .set({
-                  flowId,
+                  flow,
+                  flowId: null,
                   updatedAt: sql`NOW()`,
                   updatedById: user.id,
                 })
                 .where(eq(dTriggers.id, triggers[0].id));
             }
-            await tx.delete(flowActions).where(eq(flowActions.flowId, flowId));
-            const newActions = await tx
-              .insert(flowActions)
-              .values(
-                actions.map((action) => ({
-                  flowId,
-                  type: action.type,
-                  data: action,
-                })),
-              )
-              .returning();
 
             triggers.splice(0, 1, {
-              ...(triggers[0] ?? { id: flowId, disabled: false }),
-              flow: { ...currentFlow, actions: newActions },
+              ...(triggers[0] ?? { disabled: false }),
+              flow,
             });
             await ctx.env.KV.put(
               `cache:triggers-${event}-${ctx.interaction.guild_id}`,
@@ -326,7 +303,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
             backup: backupName ? { name: backupName } : undefined,
             webhook,
             emojis,
-          }).setTitle(currentFlow.name),
+          }).setTitle(title),
         ],
         components: [
           getWelcomerConfigComponents(

@@ -1,5 +1,4 @@
 import { Form } from "@remix-run/react";
-import type { TFunction } from "i18next";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { StringSelect } from "~/components/StringSelect";
 import type { DraftFlow, TriggerEvent } from "~/store.server";
+import type { TFunction } from "~/types/i18next";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { useSafeFetcher } from "~/util/loader";
 import { FlowEditModal } from "./FlowEditModal";
