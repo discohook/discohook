@@ -1,5 +1,5 @@
 import { Collapsible } from "@base-ui-components/react/collapsible";
-import { DiscordErrorData } from "@discordjs/rest";
+import type { DiscordErrorData } from "@discordjs/rest";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { collapsibleStyles } from "~/components/collapsible";

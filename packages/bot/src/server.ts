@@ -24,9 +24,9 @@ import i18next from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
-  discordMessageComponents,
   type DraftComponent,
   type DraftFlow,
+  discordMessageComponents,
   ensureComponentFlows,
   getchTriggerGuild,
   getDb,
@@ -35,8 +35,8 @@ import {
   type TriggerKVGuild,
 } from "store";
 import { Snowflake } from "tif-snowflake";
-import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import { migrateLegacyButtons } from "./commands/components/migrate.js";
+import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import {
   type ComponentCallbackT,
   type ComponentRoutingId,

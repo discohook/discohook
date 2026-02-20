@@ -30,7 +30,7 @@ import {
   makeSnowflake,
   messageLogEntries,
   type TriggerKVGuild,
-  webhooks
+  webhooks,
 } from "store";
 import type { Client } from "../client.js";
 import { getWebhook } from "../commands/webhooks/webhookInfo.js";

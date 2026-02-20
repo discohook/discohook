@@ -12,7 +12,7 @@ import {
   ButtonStyle,
   CDNRoutes,
   ImageFormat,
-  RouteBases
+  RouteBases,
 } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { and, eq } from "drizzle-orm";

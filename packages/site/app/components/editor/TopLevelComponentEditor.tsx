@@ -1,12 +1,12 @@
 import { Collapsible } from "@base-ui-components/react/collapsible";
 import {
-  ButtonStyle,
-  ComponentType,
   type APIActionRowComponent,
   type APIComponentInContainer,
   type APIComponentInModalActionRow,
   type APIContainerComponent,
   type APIMessageComponent,
+  ButtonStyle,
+  ComponentType,
 } from "discord-api-types/v10";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
@@ -20,8 +20,8 @@ import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isActionRow, isComponentsV2 } from "~/util/discord";
 import type { DragManager } from "~/util/drag";
 import { collapsibleStyles } from "../collapsible";
-import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
+import { CoolIcon } from "../icons/CoolIcon";
 import { resolveAttachmentUri } from "../preview/Embed";
 
 /** Also strips query and fragment */

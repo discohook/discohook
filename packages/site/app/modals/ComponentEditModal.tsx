@@ -11,8 +11,8 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Checkbox } from "~/components/Checkbox";
-import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
 import { type SetErrorFunction, useError } from "~/components/Error";
+import { PopoutEmojiPicker } from "~/components/editor/EmojiPicker";
 import { InfoBox } from "~/components/InfoBox";
 import type { TFunction } from "~/types/i18next";
 import type {

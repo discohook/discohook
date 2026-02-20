@@ -31,7 +31,7 @@ import {
   generateId,
   getDb,
   makeSnowflake,
-  StorableButtonWithCustomIdResolved
+  type StorableButtonWithCustomIdResolved,
 } from "store";
 import type { ModalCallback, SelectMenuCallback } from "../../components.js";
 import { getShareLink, getShareLinkExists } from "../../durable/share-links.js";

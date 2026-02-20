@@ -1,14 +1,14 @@
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 import {
   GatewayDispatchEvents,
   GatewayIntentBits,
-  PresenceUpdateStatus
+  PresenceUpdateStatus,
 } from "@discordjs/core";
 import { REST } from "@discordjs/rest";
 import { WebSocketManager, WebSocketShardEvents } from "@discordjs/ws";
 import { ArgumentParser } from "argparse";
 import i18next from "i18next";
-import { readdir } from "node:fs/promises";
-import path from "node:path";
 import { Client } from "./client";
 
 const {

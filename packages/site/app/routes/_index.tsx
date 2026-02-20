@@ -18,13 +18,13 @@ import { apiUrl, BRoutes } from "~/api/routing";
 import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import type { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
-import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { useError } from "~/components/Error";
+import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { Header } from "~/components/Header";
-import { PostChannelIcon } from "~/components/icons/channel";
-import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Logo } from "~/components/icons/Logo";
 import { InfoBox } from "~/components/InfoBox";
+import { CoolIcon } from "~/components/icons/CoolIcon";
+import { PostChannelIcon } from "~/components/icons/channel";
+import { Logo } from "~/components/icons/Logo";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { TextInput } from "~/components/TextInput";
@@ -96,9 +96,7 @@ import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import type { ApiGetBackupWithData } from "../api/v1/backups.$id";
 import type { loader as ApiGetComponents } from "../api/v1/components";
-import {
-  buildStorableComponent
-} from "./edit.component.$id";
+import { buildStorableComponent } from "./edit.component.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const userId = await getUserId(request, context);

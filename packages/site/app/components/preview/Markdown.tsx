@@ -20,6 +20,7 @@ import {
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
+import { CoolIcon } from "../icons/CoolIcon";
 import {
   BrowseChannelIcon,
   ForumChannelIcon,
@@ -31,7 +32,6 @@ import {
   ThreadChannelIcon,
   VoiceChannelIcon,
 } from "../icons/channel";
-import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 
 type Renderable = string | JSX.Element;

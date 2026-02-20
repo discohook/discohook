@@ -4,8 +4,8 @@ import {
   EmbedBuilder,
   inlineCode,
   spoiler,
-  time,
   TimestampStyles,
+  time,
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";

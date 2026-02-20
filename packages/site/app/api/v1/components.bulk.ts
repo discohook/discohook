@@ -5,7 +5,7 @@ import {
   ensureComponentFlows,
   getDb,
   inArray,
-  launchComponentKV
+  launchComponentKV,
 } from "~/store.server";
 import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson } from "~/util/zod";

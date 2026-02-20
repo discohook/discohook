@@ -285,9 +285,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
   const db = getDb(env.HYPERDRIVE);
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.id, userId),
-    columns: {
-      discordId: true,
-    },
+    columns: { discordId: true },
   });
   if (!user?.discordId) {
     throw Error("User has no linked Discord account");

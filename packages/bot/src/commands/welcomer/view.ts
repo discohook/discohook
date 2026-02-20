@@ -1,7 +1,7 @@
 import {
   ActionRowBuilder,
-  bold,
   ButtonBuilder,
+  bold,
   EmbedBuilder,
 } from "@discordjs/builders";
 import dedent from "dedent-js";

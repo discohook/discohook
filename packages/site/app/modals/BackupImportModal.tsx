@@ -4,8 +4,8 @@ import { Trans, useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { FileInput } from "~/components/FileInput";
-import { CoolIcon } from "~/components/icons/CoolIcon";
 import { InfoBox } from "~/components/InfoBox";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import type {
   DiscohookBackup,

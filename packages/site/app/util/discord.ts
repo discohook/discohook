@@ -3,8 +3,8 @@ import {
   calculateUserDefaultAvatarIndex,
   type ImageExtension,
   type RawFile,
-  RequestMethod,
   type REST,
+  RequestMethod,
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {

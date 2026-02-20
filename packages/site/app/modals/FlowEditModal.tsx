@@ -52,8 +52,8 @@ import type {
   PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
-import { CoolIcon } from "../components/icons/CoolIcon";
 import { InfoBox } from "../components/InfoBox";
+import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { RoleSelect } from "../components/RoleSelect";
 import {

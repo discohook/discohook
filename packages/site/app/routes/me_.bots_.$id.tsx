@@ -26,10 +26,10 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { linkClassName } from "~/components/preview/Markdown";
 import { Prose } from "~/components/Prose";
-import { TabHeader, TabsWindow } from "~/components/tabs";
+import { linkClassName } from "~/components/preview/Markdown";
 import { TextInput } from "~/components/TextInput";
+import { TabHeader, TabsWindow } from "~/components/tabs";
 import { BotDeleteConfirmModal } from "~/modals/BotDeleteConfirmModal";
 import { getUser } from "~/session.server";
 import {

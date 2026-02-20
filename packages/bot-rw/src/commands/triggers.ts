@@ -4,9 +4,9 @@ import {
   EmbedBuilder,
 } from "@discordjs/builders";
 import {
+  type APIInteractionGuildMember,
   ButtonStyle,
   GatewayDispatchEvents,
-  type APIInteractionGuildMember,
   type GatewayGuildMemberAddDispatchData,
   type GatewayGuildMemberRemoveDispatchData,
   type GuildMemberFlags,
@@ -14,18 +14,18 @@ import {
 import { PermissionFlags } from "discord-bitflag";
 import { inArray } from "drizzle-orm";
 import {
+  type DraftFlow,
   FlowActionType,
   makeSnowflake,
   TriggerEvent,
   triggers,
   upsertDiscordUser,
-  type DraftFlow,
 } from "store";
 import type { Client } from "../client.js";
 import type { ButtonCallback } from "../components.js";
 import { emojiToString } from "../emojis.js";
-import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
+import { gatewayEventNameToCallback } from "../events.js";
 import type { FlowResult } from "../flows/flows.js";
 import type { InteractionContext } from "../interactions.js";
 import { parseAutoComponentId } from "../util/components.js";
