@@ -2,7 +2,7 @@ import {
   type APIMessageComponentEmoji,
   ButtonStyle,
 } from "discord-api-types/v10";
-import { twMerge } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { cdn } from "~/util/discord";
 import { CoolIcon } from "./icons/CoolIcon";
 import { Twemoji } from "./icons/Twemoji";
@@ -40,7 +40,12 @@ export const Button = (
         props.className ?? "",
       )}
     >
-      <div className={`inline-flex${props.loading ? " invisible" : ""}`}>
+      <div
+        className={twJoin(
+          "inline-flex",
+          props.loading ? "invisible" : undefined,
+        )}
+      >
         {props.emoji &&
           (props.emoji.id ? (
             <div
@@ -68,7 +73,9 @@ export const Button = (
               </div>
             </div>
           ))}
-        <div className={props.emoji ? "my-auto" : "m-auto"}>{props.children}</div>
+        <div className={props.emoji ? "my-auto" : "m-auto"}>
+          {props.children}
+        </div>
         {props.discordstyle === ButtonStyle.Link && (
           <CoolIcon
             icon="External_Link"
