@@ -5,13 +5,12 @@ import {
 } from "discord-api-types/v10";
 import { eq, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
+import { JSONParse, JSONStringify } from "json-with-bigint";
 import postgres from "postgres";
 import * as schemaV1 from "./schema/schema-v1.js";
 import * as schema from "./schema/schema.js";
 import type { DraftFlow } from "./types/components.js";
 import type { PartialKVGuild } from "./types/guild.js";
-
-// const JSONbig = JSONbig_({ useNativeBigInt: true, alwaysParseAsBig: true });
 
 const getDbWithClient = (
   client: postgres.Sql,
@@ -28,22 +27,13 @@ export const getDb = ({
     // Thanks https://github.com/drizzle-team/drizzle-orm/issues/989#issuecomment-1936564267
     types: {
       bigint: postgres.BigInt,
-      /**
-       * This was causing all int types to be transformed to str. I assumed
-       * because `alwaysParseAsBig` was enabled, but disabling that option
-       * caused all parse attempts to fail. I have therefore commented this
-       * whole section out but left it intact in case it turns out that
-       * bigints stored in json values are being parsed incorrectly, at which
-       * point we can devise a new solution, but I do not recall any instance
-       * where we do that.
-       */
-      // json: {
-      //   // "json" in pg_catalog.pg_type
-      //   from: [114],
-      //   to: 114,
-      //   parse: JSONbig.parse,
-      //   serialize: JSONbig.stringify,
-      // },
+      json: {
+        // "json" in pg_catalog.pg_type
+        from: [114],
+        to: 114,
+        parse: JSONParse,
+        serialize: JSONStringify,
+      },
     },
   });
   return getDbWithClient(client, { logger });

@@ -905,13 +905,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.0":
-  version: 9.1.2
-  resolution: "bignumber.js@npm:9.1.2"
-  checksum: 10c0/e17786545433f3110b868725c449fa9625366a6e675cd70eb39b60938d6adbd0158cb4b3ad4f306ce817165d37e63f4aa3098ba4110db1d9a3b9f66abfbaf10d
-  languageName: node
-  linkType: hard
-
 "binary-extensions@npm:^2.0.0":
   version: 2.2.0
   resolution: "binary-extensions@npm:2.2.0"
@@ -2091,12 +2084,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-bigint@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "json-bigint@npm:1.0.0"
-  dependencies:
-    bignumber.js: "npm:^9.0.0"
-  checksum: 10c0/e3f34e43be3284b573ea150a3890c92f06d54d8ded72894556357946aeed9877fd795f62f37fe16509af189fd314ab1104d0fd0f163746ad231b9f378f5b33f4
+"json-with-bigint@npm:^3.5.3":
+  version: 3.5.3
+  resolution: "json-with-bigint@npm:3.5.3"
+  checksum: 10c0/df102e21ae8f54e48d77bbed0d67ac00527910a0d1fed5d3e2def0f7fe63277ff3202a449cc9c8bdb73298d97ae2784d5181f80d91866ad5c9dab59c0336d56e
   languageName: node
   linkType: hard
 
@@ -2905,17 +2896,17 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=0f3e1a&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=16ecd1&locator=discohook-bot%40workspace%3A."
   dependencies:
     discord-api-types: "npm:^0.38.32"
     discord-snowflake: "npm:^2.0.0"
     drizzle-orm: "npm:^0.45.1"
-    json-bigint: "npm:^1.0.0"
+    json-with-bigint: "npm:^3.5.3"
     postgres: "npm:^3.4.5"
     tif-snowflake: discohook/snowflake
     zod: "npm:^4.1.5"
     zodix: "npm:@coji/zodix@^0.5.0"
-  checksum: 10c0/39cafa8e1a47bbf60bef151a51b50282487316be60decb0f9e0ee840c8b77e55469c87b26cb748a8829d428f39ac83b14ae6779307e0b10bdb996a532466ccad
+  checksum: 10c0/f7a77d0cf7af11c49823e043e6cdd10803c6bf6ec1d20217fb508a9a0aebf841db9283c521ac8610cf8e376e52fbfad537041fbe94ac1e5f1c8d041be8c51a37
   languageName: node
   linkType: hard
 
