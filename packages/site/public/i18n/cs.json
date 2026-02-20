@@ -42,7 +42,6 @@
     "send": "Odeslat",
     "sendToAll": "Odeslat všem",
     "sendAll": "Odeslat vše",
-    "sending": "Odesílání",
     "sendNoWebhooks": "Nemáš žádné webhooky k odeslání.",
     "sendNoMessages": "Nemáš žádné zprávy k odeslání.",
     "orgRedirectTitle": "Byl jsi právě přesměrován z discohook.org",
