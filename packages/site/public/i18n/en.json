@@ -227,7 +227,7 @@
   "forceRefresh": "Force Refresh",
   "refreshed": "Refreshed",
   "sessions": "Sessions",
-  "sessionsSubtitle": "Below is a list of active sessions with permissions for <0>{{guild.name}}</0>",
+  "sessionsSubtitle": "The below sessions are active and have permissions for <0>{{guild.name}}</0>. Because of technical limitations, this page might not list every session.",
   "revokeSession": "Revoke Session",
   "sessionsAllChannels": "All Channels (server permissions only)",
   "thisDevice": "This Device",

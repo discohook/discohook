@@ -69,8 +69,15 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
     with: {
       user: {
-        columns: {
-          name: true,
+        columns: {},
+        with: {
+          discordUser: {
+            columns: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
         },
       },
     },

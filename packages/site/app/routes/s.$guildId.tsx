@@ -76,6 +76,7 @@ import {
 } from "~/util/discord";
 import { getId } from "~/util/id";
 import { type LoaderArgs, useSafeFetcher } from "~/util/loader";
+import { copyText } from "~/util/text";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
 import type { action as ApiDeleteComponent } from "../api/v1/components.$id";
@@ -1247,18 +1248,45 @@ export default () => {
                         <div className="truncate my-auto">
                           <div className="flex max-w-full">
                             <p className="font-medium truncate dark:text-[#f9f9f9] text-base">
+                              {entry.user?.discordUser ? (
+                                <img
+                                  {...cdnImgAttributes(64, (size) =>
+                                    getUserAvatar(
+                                      {
+                                        discordUser: {
+                                          // biome-ignore lint/style/noNonNullAssertion: Ternary above
+                                          ...entry.user?.discordUser!,
+                                          discriminator: null,
+                                        },
+                                      },
+                                      { size },
+                                    ),
+                                  )}
+                                  alt=""
+                                  className="rounded-full h-4 inline-block self-center me-1 -mt-[0.375rem]"
+                                />
+                              ) : null}
                               <Trans
                                 t={t}
                                 i18nKey={`auditLogMessage.${webhook ? "webhookAction" : "webhooklessAction"}.${entry.type}`}
                                 values={{
-                                  username: entry.user?.name ?? t("anonymous"),
+                                  username:
+                                    entry.user?.discordUser?.name ??
+                                    t("anonymous"),
                                   webhook,
                                 }}
                                 components={[
-                                  entry.user?.name ? (
-                                    <span
+                                  entry.user?.discordUser ? (
+                                    <button
                                       key="0"
-                                      className="dark:text-primary-230"
+                                      type="button"
+                                      className="dark:text-primary-300 cursor-pointer"
+                                      onClick={() => {
+                                        if (!entry.user?.discordUser) return;
+                                        copyText(
+                                          String(entry.user.discordUser.id),
+                                        );
+                                      }}
                                     />
                                   ) : (
                                     <span key="0" />
