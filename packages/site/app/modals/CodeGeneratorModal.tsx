@@ -70,7 +70,7 @@ const generateThumbnailCode = (
   lines.push(`    .setURL(${quoteString(component.media.url, preferences)})`);
   if (component.description) {
     lines.push(
-      `    .setDescription(${quoteString(component.description, preferences)})`
+      `    .setDescription(${quoteString(component.description, preferences)})`,
     );
   }
   if (component.spoiler) {
@@ -88,7 +88,7 @@ const generateMediaGalleryCode = (
   preferences: CodeGeneratorPreferences,
 ): string[] => {
   const lines = ["new MediaGalleryBuilder()"];
-  
+
   if (component.items && component.items.length > 0) {
     lines.push("    .addItems(");
     for (let i = 0; i < component.items.length; i++) {
@@ -98,24 +98,24 @@ const generateMediaGalleryCode = (
         "        mediaGalleryItem",
         `            .setURL(${quoteString(item.media.url, preferences)})`,
       ];
-      
+
       if (item.description) {
         itemLines.push(
-          `            .setDescription(${quoteString(item.description, preferences)})`
+          `            .setDescription(${quoteString(item.description, preferences)})`,
         );
       }
       if (item.spoiler) {
         itemLines.push("            .setSpoiler(true)");
       }
-      
+
       const lastIdx = itemLines.length - 1;
       itemLines[lastIdx] += i === component.items.length - 1 ? "" : ",";
-      
+
       lines.push(...indentList(itemLines, 4));
     }
     lines.push("    )");
   }
-  
+
   if (component.id) {
     lines.push(`    .setId(${component.id})`);
   }
@@ -141,22 +141,22 @@ const generateSeparatorCode = (
   preferences: CodeGeneratorPreferences,
 ): string[] => {
   const lines = ["new SeparatorBuilder()"];
-  
+
   if (component.divider === false) {
     lines.push("    .setDivider(false)");
   } else {
     lines.push("    .setDivider(true)");
   }
-  
+
   if (component.spacing) {
     const spacingName = Object.entries(SeparatorSpacingSize).find(
-      ([_, v]) => v === component.spacing
+      ([_, v]) => v === component.spacing,
     )?.[0];
     if (spacingName) {
       lines.push(`    .setSpacing(SeparatorSpacingSize.${spacingName})`);
     }
   }
-  
+
   if (component.id) {
     lines.push(`    .setId(${component.id})`);
   }
@@ -169,7 +169,7 @@ const generateSectionCode = (
   preferences: CodeGeneratorPreferences,
 ): string[] => {
   const lines = ["new SectionBuilder()"];
-  
+
   if (component.components && component.components.length > 0) {
     lines.push("    .addTextDisplayComponents(");
     for (let i = 0; i < component.components.length; i++) {
@@ -179,37 +179,48 @@ const generateSectionCode = (
         "        textDisplay",
         `            .setContent(${quoteString(textDisplay.content, preferences)})`,
       ];
-      
+
       if (textDisplay.id) {
         itemLines.push(`            .setId(${textDisplay.id})`);
       }
-      
+
       const lastIdx = itemLines.length - 1;
       itemLines[lastIdx] += i === component.components.length - 1 ? "" : ",";
-      
+
       lines.push(...indentList(itemLines, 4));
     }
     lines.push("    )");
   }
-  
+
   // Handle accessory (button or thumbnail)
-      if (component.accessory) {
+  if (component.accessory) {
     if (component.accessory.type === ComponentType.Button) {
       const button = component.accessory as APIButtonComponent;
       lines.push("    .setButtonAccessory((button) =>");
       if ("url" in button && button.url) {
         lines.push(
-          `        button.setURL(${quoteString(button.url, preferences)})`
+          `        button.setURL(${quoteString(button.url, preferences)})`,
         );
       } else {
-        const customId = "custom_id" in button ? button.custom_id : "sku_id" in button ? button.sku_id : "btn";
-        lines.push(`        button.setCustomId(${quoteString(customId, preferences)})`);
+        const customId =
+          "custom_id" in button
+            ? button.custom_id
+            : "sku_id" in button
+              ? button.sku_id
+              : "btn";
+        lines.push(
+          `        button.setCustomId(${quoteString(customId, preferences)})`,
+        );
       }
       if ("label" in button && button.label) {
-        lines.push(`            .setLabel(${quoteString(button.label, preferences)})`);
+        lines.push(
+          `            .setLabel(${quoteString(button.label, preferences)})`,
+        );
       }
       if ("style" in button) {
-        lines.push(`            .setStyle(ButtonStyle.${ButtonStyle[button.style]})`);
+        lines.push(
+          `            .setStyle(ButtonStyle.${ButtonStyle[button.style]})`,
+        );
       }
       if ("disabled" in button && button.disabled) {
         lines.push("            .setDisabled(true)");
@@ -221,10 +232,12 @@ const generateSectionCode = (
     } else if (component.accessory.type === ComponentType.Thumbnail) {
       const thumbnail = component.accessory as APIThumbnailComponent;
       lines.push("    .setThumbnailAccessory((thumbnail) =>");
-      lines.push(`        thumbnail.setURL(${quoteString(thumbnail.media.url, preferences)})`);
+      lines.push(
+        `        thumbnail.setURL(${quoteString(thumbnail.media.url, preferences)})`,
+      );
       if (thumbnail.description) {
         lines.push(
-          `            .setDescription(${quoteString(thumbnail.description, preferences)})`
+          `            .setDescription(${quoteString(thumbnail.description, preferences)})`,
         );
       }
       if (thumbnail.spoiler) {
@@ -233,7 +246,7 @@ const generateSectionCode = (
       lines.push("    )");
     }
   }
-  
+
   if (component.id) {
     lines.push(`    .setId(${component.id})`);
   }
@@ -244,18 +257,18 @@ const generateSectionCode = (
 const generateContainerCode = (
   component: APIContainerComponent,
   preferences: CodeGeneratorPreferences,
-  packages: Set<string>
+  packages: Set<string>,
 ): string[] => {
   const lines = ["new ContainerBuilder()"];
-  
+
   if (component.accent_color) {
     lines.push(`    .setAccentColor(${component.accent_color})`);
   }
-  
+
   if (component.spoiler) {
     lines.push("    .setSpoiler(true)");
   }
-  
+
   if (component.components && component.components.length > 0) {
     for (const child of component.components) {
       switch (child.type) {
@@ -265,8 +278,8 @@ const generateContainerCode = (
           lines.push(
             `        textDisplay.setContent(${quoteString(
               (child as APITextDisplayComponent).content,
-              preferences
-            )})`
+              preferences,
+            )})`,
           );
           if (child.id) {
             lines.push(`            .setId(${child.id})`);
@@ -275,40 +288,51 @@ const generateContainerCode = (
           break;
         case ComponentType.Section:
           packages.add("SectionBuilder");
-          const section = child as APISectionComponent;
           lines.push("    .addSectionComponents((section) =>");
           lines.push("        section");
-          if (section.components && section.components.length > 0) {
+          if (child.components && child.components.length > 0) {
             lines.push("            .addTextDisplayComponents(");
-            for (let i = 0; i < section.components.length; i++) {
-              const textDisplay = section.components[i];
+            for (let i = 0; i < child.components.length; i++) {
+              const textDisplay = child.components[i];
               lines.push(
                 `                (textDisplay) => textDisplay.setContent(${quoteString(
                   textDisplay.content,
-                  preferences
-                )})${i === section.components.length - 1 ? "" : ","}`
+                  preferences,
+                )})${i === child.components.length - 1 ? "" : ","}`,
               );
             }
             lines.push("            )");
           }
-          if (section.accessory && section.accessory.type === ComponentType.Button) {
-            const button = section.accessory as APIButtonComponent;
+          if (
+            child.accessory &&
+            child.accessory.type === ComponentType.Button
+          ) {
+            const button = child.accessory as APIButtonComponent;
             lines.push("            .setButtonAccessory((button) =>");
             if ("url" in button && button.url) {
               lines.push(
-                `                button.setURL(${quoteString(button.url, preferences)})`
+                `                button.setURL(${quoteString(button.url, preferences)})`,
               );
             } else {
-              const customId = "custom_id" in button ? button.custom_id : "sku_id" in button ? button.sku_id : "btn";
-              lines.push(`                button.setCustomId(${quoteString(customId, preferences)})`);
+              const customId =
+                "custom_id" in button
+                  ? button.custom_id
+                  : "sku_id" in button
+                    ? button.sku_id
+                    : "btn";
+              lines.push(
+                `                button.setCustomId(${quoteString(customId, preferences)})`,
+              );
             }
             if ("label" in button && button.label) {
               lines.push(
-                `                    .setLabel(${quoteString(button.label, preferences)})`
+                `                    .setLabel(${quoteString(button.label, preferences)})`,
               );
             }
             if ("style" in button) {
-              lines.push(`                    .setStyle(ButtonStyle.${ButtonStyle[button.style]})`);
+              lines.push(
+                `                    .setStyle(ButtonStyle.${ButtonStyle[button.style]})`,
+              );
             }
             lines.push("            )");
           }
@@ -316,18 +340,17 @@ const generateContainerCode = (
           break;
         case ComponentType.Separator:
           packages.add("SeparatorBuilder");
-          const separator = child as APISeparatorComponent;
           lines.push("    .addSeparatorComponents((separator) => separator");
-          if (separator.divider === false) {
+          if (child.divider === false) {
             lines.push("        .setDivider(false)");
           }
-          if (separator.spacing) {
+          if (child.spacing) {
             const spacingName = Object.entries(SeparatorSpacingSize).find(
-              ([_, v]) => v === separator.spacing
+              ([_, v]) => v === child.spacing,
             )?.[0];
             if (spacingName) {
               lines.push(
-                `        .setSpacing(SeparatorSpacingSize.${spacingName})`
+                `        .setSpacing(SeparatorSpacingSize.${spacingName})`,
               );
             }
           }
@@ -335,26 +358,24 @@ const generateContainerCode = (
           break;
         case ComponentType.File:
           packages.add("FileBuilder");
-          const file = child as APIFileComponent;
           lines.push("    .addFileComponents((file) =>");
           lines.push(
-            `        file.setURL(${quoteString(file.file.url, preferences)})`
+            `        file.setURL(${quoteString(child.file.url, preferences)})`,
           );
           lines.push("    )");
           break;
         case ComponentType.MediaGallery:
           packages.add("MediaGalleryBuilder");
-          const gallery = child as APIMediaGalleryComponent;
           lines.push("    .addMediaGalleryComponents((gallery) =>");
           lines.push("        gallery.addItems(");
-          if (gallery.items && gallery.items.length > 0) {
-            for (let i = 0; i < gallery.items.length; i++) {
-              const item = gallery.items[i];
+          if (child.items && child.items.length > 0) {
+            for (let i = 0; i < child.items.length; i++) {
+              const item = child.items[i];
               lines.push(
                 `            (item) => item.setURL(${quoteString(
                   item.media.url,
-                  preferences
-                )})${i === gallery.items.length - 1 ? "" : ","}`
+                  preferences,
+                )})${i === child.items.length - 1 ? "" : ","}`,
               );
             }
           }
@@ -369,7 +390,7 @@ const generateContainerCode = (
       }
     }
   }
-  
+
   if (component.id) {
     lines.push(`    .setId(${component.id})`);
   }
@@ -402,7 +423,7 @@ const codegen: Record<
           comp.type === ComponentType.Container ||
           comp.type === ComponentType.Separator ||
           comp.type === ComponentType.File ||
-          comp.type === ComponentType.MediaGallery
+          comp.type === ComponentType.MediaGallery,
       );
 
       if (hasDisplayComponents) {
@@ -415,8 +436,8 @@ const codegen: Record<
               componentLines.push(
                 ...generateTextDisplayCode(
                   component as APITextDisplayComponent,
-                  preferences
-                )
+                  preferences,
+                ),
               );
               break;
             case ComponentType.Section:
@@ -424,8 +445,8 @@ const codegen: Record<
               componentLines.push(
                 ...generateSectionCode(
                   component as APISectionComponent,
-                  preferences
-                )
+                  preferences,
+                ),
               );
               break;
             case ComponentType.Container:
@@ -434,8 +455,8 @@ const codegen: Record<
                 ...generateContainerCode(
                   component as APIContainerComponent,
                   preferences,
-                  packages
-                )
+                  packages,
+                ),
               );
               break;
             case ComponentType.Separator:
@@ -443,17 +464,14 @@ const codegen: Record<
               componentLines.push(
                 ...generateSeparatorCode(
                   component as APISeparatorComponent,
-                  preferences
-                )
+                  preferences,
+                ),
               );
               break;
             case ComponentType.File:
               packages.add("FileBuilder");
               componentLines.push(
-                ...generateFileCode(
-                  component as APIFileComponent,
-                  preferences
-                )
+                ...generateFileCode(component as APIFileComponent, preferences),
               );
               break;
             case ComponentType.MediaGallery:
@@ -461,8 +479,8 @@ const codegen: Record<
               componentLines.push(
                 ...generateMediaGalleryCode(
                   component as APIMediaGalleryComponent,
-                  preferences
-                )
+                  preferences,
+                ),
               );
               break;
             default:
@@ -487,7 +505,10 @@ const codegen: Record<
                 // Replace the ending semicolon of the builder with a comma so
                 // each builder is trailed with a comma inside the array.
                 const lastIdx = currentBlock.length - 1;
-                currentBlock[lastIdx] = currentBlock[lastIdx].replace(/;$/, ",");
+                currentBlock[lastIdx] = currentBlock[lastIdx].replace(
+                  /;$/,
+                  ",",
+                );
                 for (const blkLine of currentBlock) {
                   lines.push(`    ${blkLine}`);
                 }
