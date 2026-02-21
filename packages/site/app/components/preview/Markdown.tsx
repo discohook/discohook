@@ -1,10 +1,10 @@
 // This file is a fork of @maddymeow's work on Discohook (AGPL 3.0) - thank you
 // https://github.com/discohook/site
 
-import type { TFunction } from "i18next";
 import { useEffect } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import type {
   CacheManager,
   Resolutions,
@@ -20,6 +20,7 @@ import {
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
+import { CoolIcon } from "../icons/CoolIcon";
 import {
   BrowseChannelIcon,
   ForumChannelIcon,
@@ -31,7 +32,6 @@ import {
   ThreadChannelIcon,
   VoiceChannelIcon,
 } from "../icons/channel";
-import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 
 type Renderable = string | JSX.Element;

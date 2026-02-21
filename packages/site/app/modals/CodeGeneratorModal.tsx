@@ -1,7 +1,17 @@
+import type {
+  APIButtonComponent,
+  APIContainerComponent,
+  APIFileComponent,
+  APIMediaGalleryComponent,
+  APISectionComponent,
+  APISeparatorComponent,
+  APITextDisplayComponent,
+  APIThumbnailComponent,
+} from "discord-api-types/v10";
 import {
   ButtonStyle,
   ComponentType,
-  SeparatorSpacingSize
+  SeparatorSpacingSize,
 } from "discord-api-types/v10";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -12,16 +22,6 @@ import { codeBlockStyle, linkClassName } from "~/components/preview/Markdown";
 import { StringSelect } from "~/components/StringSelect";
 import type { QueryData } from "~/types/QueryData";
 import type { APIEmbed } from "~/types/QueryData-raw";
-import type {
-  APIContainerComponent,
-  APIFileComponent,
-  APIMediaGalleryComponent,
-  APISectionComponent,
-  APISeparatorComponent,
-  APITextDisplayComponent,
-  APIThumbnailComponent,
-  APIButtonComponent,
-} from "discord-api-types/v10";
 import { cycleCopyText } from "~/util/text";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 

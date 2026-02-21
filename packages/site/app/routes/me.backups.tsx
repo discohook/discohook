@@ -214,7 +214,7 @@ export default () => {
           {t("backups")}
         </p>
         <Button
-          className="ltr:ml-auto rtl:mr-auto my-auto"
+          className="ms-auto my-auto"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setImportModalOpen(true)}
           disabled={legacyImportFetcher.state !== "idle"}
@@ -223,7 +223,7 @@ export default () => {
         </Button>
         {legacyPostsCount !== 0 && (
           <Button
-            className="ltr:ml-2 rtl:mr-2 my-auto"
+            className="ms-2 my-auto"
             discordstyle={ButtonStyle.Secondary}
             onClick={async () => {
               await legacyImportFetcher.submitAsync(null, {
@@ -238,7 +238,7 @@ export default () => {
           </Button>
         )}
         <Button
-          className="ltr:ml-2 rtl:mr-2 my-auto"
+          className="ms-2 my-auto"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setExportModalOpen(true)}
           disabled={legacyImportFetcher.state !== "idle"}
@@ -275,7 +275,7 @@ export default () => {
                     <p className="font-medium truncate">{backup.name}</p>
                     <button
                       type="button"
-                      className="ltr:ml-2 rtl:mr-2 my-auto"
+                      className="ms-2 my-auto"
                       onClick={() => setEditingBackup(backup)}
                     >
                       <CoolIcon icon="Edit_Pencil_01" />

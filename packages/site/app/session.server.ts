@@ -27,6 +27,7 @@ import {
   generateId,
   getDb,
   makeSnowflake,
+  type PartialKVGuild,
   type tokens,
   type upsertDiscordUser,
 } from "./store.server";
@@ -284,9 +285,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
   const db = getDb(env.HYPERDRIVE);
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.id, userId),
-    columns: {
-      discordId: true,
-    },
+    columns: { discordId: true },
   });
   if (!user?.discordId) {
     throw Error("User has no linked Discord account");
@@ -859,8 +858,8 @@ export const getGuild = async (
       id: guild.id,
       name: guild.name,
       icon: guild.icon,
-    }),
-    { expirationTtl: 10800 }, // 3 hours
+    } satisfies PartialKVGuild),
+    { expirationTtl: 3600 },
   );
   return guild;
 };

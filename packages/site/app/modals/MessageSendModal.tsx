@@ -9,16 +9,16 @@ import {
   ComponentType,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
-import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
+import type { SetErrorFunction } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
+import type { TFunction } from "~/types/i18next";
 import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
@@ -579,13 +579,16 @@ export const MessageSendModal = (
                       <p className="text-rose-400 text-sm leading-none">
                         {(() => {
                           const { result } = messages[id];
-                          return result.data.code ===
-                            RESTJSONErrorCodes.UnknownMessage
-                            ? "Message link does not match webhook. Did you forget to provide a thread ID?"
-                            : result.data.code ===
-                                RESTJSONErrorCodes.UnknownChannel
-                              ? "Unknown thread ID. The webhook should be in the thread's parent channel."
-                              : result.data.message;
+                          switch (result.data.code) {
+                            case RESTJSONErrorCodes.UnknownMessage:
+                              return "Message link does not match webhook. Did you forget to provide a thread ID?";
+                            case RESTJSONErrorCodes.UnknownChannel:
+                              return "Unknown thread ID. The webhook should be in the thread's parent channel.";
+                            case RESTJSONErrorCodes.InvalidFormBodyOrContentType:
+                              return "Invalid data. Click the error icon for more info.";
+                            default:
+                              return result.data.message;
+                          }
                         })()}
                       </p>
                     )}
@@ -689,6 +692,7 @@ export const MessageSendModal = (
             enabledMessagesCount === 0 ||
             sending
           }
+          loading={sending}
           onClick={() =>
             submitMessages(
               Object.entries(targets)
@@ -698,25 +702,19 @@ export const MessageSendModal = (
           }
         >
           {t(
-            sending
+            countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
               ? withReferenceCount === 0
-                ? "sending"
-                : withReferenceCount === enabledMessagesCount
-                  ? "editing"
-                  : "submitting"
-              : countSelected(selectedWebhooks) <= 1 && enabledMessagesCount > 1
+                ? "sendAll"
+                : "submitAll"
+              : countSelected(selectedWebhooks) > 1
                 ? withReferenceCount === 0
-                  ? "sendAll"
-                  : "submitAll"
-                : countSelected(selectedWebhooks) > 1
-                  ? withReferenceCount === 0
-                    ? "sendToAll"
-                    : "submitToAll"
-                  : withReferenceCount === 0
-                    ? "send"
-                    : withReferenceCount === enabledMessagesCount
-                      ? "edit"
-                      : "submit",
+                  ? "sendToAll"
+                  : "submitToAll"
+                : withReferenceCount === 0
+                  ? "send"
+                  : withReferenceCount === enabledMessagesCount
+                    ? "edit"
+                    : "submit",
           )}
         </Button>
         <Dialog.Root>

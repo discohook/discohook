@@ -86,6 +86,12 @@ export default {
           "normal-dark": "#4A4A51",
         },
       },
+      keyframes: {
+        "loading-dots": {
+          "0%, 70%, 100%": { opacity: "0.2", transform: "scale(1)" },
+          "35%": { opacity: "1", transform: "scale(1.35)" },
+        },
+      },
     },
   },
   plugins: [],

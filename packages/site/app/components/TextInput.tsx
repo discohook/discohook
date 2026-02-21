@@ -1,6 +1,6 @@
-import type { TFunction } from "i18next";
 import { type ReactNode, useRef, useState } from "react";
 import { twJoin, twMerge } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import { CoolIcon } from "./icons/CoolIcon";
 
 export const textInputStyles = {

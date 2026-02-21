@@ -5,8 +5,8 @@ import {
   escapeMarkdown,
   formatEmoji,
   type MessageActionRowComponentBuilder,
-  messageLink,
   ModalBuilder,
+  messageLink,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
@@ -28,14 +28,13 @@ import {
 import { SignJWT } from "jose";
 import {
   autoRollbackTx,
+  type DraftComponent,
   discordMessageComponents,
-  flows,
   generateId,
   getchGuild,
   getDb,
-  launchComponentDurableObject,
+  launchComponentKV,
   makeSnowflake,
-  type StorableComponent,
   upsertDiscordUser,
   upsertGuild,
 } from "store";
@@ -70,7 +69,7 @@ import { partialEmojiToComponentEmoji } from "./edit.js";
 import { quickButtonConfigs } from "./quick.js";
 
 export const buildStorableComponent = (
-  component: StorableComponent,
+  component: DraftComponent,
   customId?: string,
 ): APIButtonComponent | APISelectMenuComponent | undefined => {
   switch (component.type) {
@@ -138,7 +137,7 @@ export interface ComponentFlow extends MinimumKVComponentState {
     premium: ReturnType<typeof getUserPremiumDetails>;
   };
   componentId?: string;
-  component?: StorableComponent;
+  component?: DraftComponent;
 }
 
 export const getComponentFlowContainer = (
@@ -300,11 +299,7 @@ const registerComponent = async (
       )) as APIMessage;
 
       if (customId !== undefined) {
-        await launchComponentDurableObject(ctx.env, {
-          messageId: editedMsg.id,
-          componentId: id,
-          customId,
-        });
+        await launchComponentKV(ctx.env, { componentId: id, data });
       }
       return editedMsg;
     }),
@@ -696,17 +691,13 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
     case "mentionable-select":
     case "channel-select": {
       const db = getDb(ctx.env.HYPERDRIVE);
-      const { id: flowId } =
-        (state.component ?? value === "string-select")
-          ? { id: 0 }
-          : (await db.insert(flows).values({}).returning({ id: flows.id }))[0];
 
       state.component =
         (state.component ?? value === "string-select")
           ? {
               type: ComponentType.StringSelect,
               options: [],
-              flowIds: {},
+              flows: {},
             }
           : {
               type:
@@ -717,7 +708,7 @@ export const continueComponentFlow: SelectMenuCallback = async (ctx) => {
                     : value === "mentionable-select"
                       ? ComponentType.MentionableSelect
                       : ComponentType.ChannelSelect,
-              flowId: String(flowId),
+              flow: { actions: [] },
             };
 
       const component = (

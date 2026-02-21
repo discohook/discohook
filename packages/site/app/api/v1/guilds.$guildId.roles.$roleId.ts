@@ -54,8 +54,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     } satisfies ResolvableAPIRole;
 
     await context.env.KV.put(key, JSON.stringify(returnRole), {
-      // 2 hours
-      expirationTtl: 7200,
+      expirationTtl: 60 * 30,
     });
     return respond(json(returnRole));
   }
@@ -131,8 +130,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   } satisfies ResolvableAPIRole;
 
   await context.env.KV.put(key, JSON.stringify(returnRole), {
-    // 2 hours
-    expirationTtl: 7200,
+    expirationTtl: 60 * 30,
   });
   return respond(json(returnRole));
 };

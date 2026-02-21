@@ -9,7 +9,6 @@ import {
   parseExpression,
   type SixtyRange,
 } from "cron-parser";
-import type { TFunction } from "i18next";
 import moment, { type Moment } from "moment";
 import { useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -23,6 +22,7 @@ import DatePicker, { generateDateRange } from "~/components/pickers/DatePicker";
 import { StringSelect } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import type { LoadedBackup } from "~/routes/me.backups";
+import type { TFunction } from "~/types/i18next";
 import { useSafeFetcher } from "~/util/loader";
 import {
   cronDaysOfMonth,

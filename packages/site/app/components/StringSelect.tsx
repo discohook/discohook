@@ -1,6 +1,5 @@
 import { Combobox } from "@base-ui-components/react/combobox";
 import { Select as MuiSelect } from "@base-ui-components/react/select";
-import type { TFunction } from "i18next";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Select, {
@@ -9,6 +8,7 @@ import Select, {
   type Props,
 } from "react-select";
 import { twJoin, twMerge } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import { CoolIcon } from "./icons/CoolIcon";
 import { textInputStyles } from "./TextInput";
 

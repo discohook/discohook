@@ -4,7 +4,10 @@ import {
   type MessageComponentBuilder,
   ModalBuilder,
 } from "@discordjs/builders";
-import type { API, APIApplicationCommandOptionChoice } from "@discordjs/core";
+import type {
+  APIApplicationCommandOptionChoice,
+  APIModalSubmitTextInputComponent,
+} from "@discordjs/core";
 import {
   type APIAllowedMentions,
   type APIApplicationCommandInteractionDataBooleanOption,
@@ -33,6 +36,7 @@ import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ChannelType,
+  ComponentType,
   EntitlementType,
   InteractionResponseType,
   InteractionType,
@@ -46,6 +50,8 @@ import {
   PermissionsBitField,
 } from "discord-bitflag";
 import { getDate, type Snowflake } from "discord-snowflake";
+import { t as nativeT, type TOptionsBase } from "i18next";
+import type { Client } from "./client.js";
 import type { MinimumKVComponentState } from "./components.js";
 import type { APIPartialResolvedChannel } from "./types/api.js";
 
@@ -118,15 +124,16 @@ export class InteractionContext<
   T extends APIInteraction = APIInteraction,
   S extends MinimumKVComponentState | Record<string, any> = {},
 > {
-  public api: API;
-  public interaction: T;
   public followup: InteractionFollowup;
   public state: S | Record<string, any> = {};
 
-  constructor(api: API, interaction: T, state?: S) {
-    this.api = api;
+  constructor(
+    public client: Client,
+    public interaction: T,
+    state?: S,
+  ) {
     this.interaction = interaction;
-    this.followup = new InteractionFollowup(api, interaction);
+    this.followup = new InteractionFollowup(client, interaction);
 
     if (state) this.state = state;
   }
@@ -230,6 +237,12 @@ export class InteractionContext<
   isExpired(): boolean {
     // assume 100ms margin of error
     return new Date().getTime() > this.expiresAt.getTime() - 100;
+  }
+
+  /** call `t` using the user locale or fallback to guild locale */
+  t(key: string, options?: TOptionsBase) {
+    const locale = this.user.locale ?? this.interaction.guild_locale ?? "en";
+    return nativeT(key, { lng: locale, ...options });
   }
 
   /**
@@ -504,19 +517,30 @@ export class InteractionContext<
     return user;
   }
 
-  getModalComponent(
-    customId: string,
-  ): T extends APIModalSubmitInteraction ? ModalSubmitComponent : undefined;
-  getModalComponent(customId: string): ModalSubmitComponent | undefined {
+  getModalComponent<
+    C extends ModalSubmitComponent = APIModalSubmitTextInputComponent,
+  >(customId: string): T extends APIModalSubmitInteraction ? C : undefined;
+  getModalComponent<
+    C extends ModalSubmitComponent = APIModalSubmitTextInputComponent,
+  >(customId: string): C | undefined {
     if (this.interaction.type !== InteractionType.ModalSubmit) return undefined;
 
     const allComponents = [];
     for (const row of this.interaction.data.components) {
-      allComponents.push(...row.components);
+      switch (row.type) {
+        case ComponentType.ActionRow:
+          allComponents.push(...row.components);
+          break;
+        case ComponentType.Label:
+          allComponents.push(row.component);
+          break;
+        default:
+          break;
+      }
     }
 
     const component = allComponents.find((c) => c.custom_id === customId);
-    return component;
+    return component as C;
   }
 
   async defer(options?: {
@@ -540,19 +564,19 @@ export class InteractionContext<
       this.interaction.type === InteractionType.ModalSubmit
     ) {
       if (options?.thinking) {
-        return await this.api.interactions.defer(
+        return await this.client.api.interactions.defer(
           this.interaction.id,
           this.interaction.token,
           flags.value !== 0n ? { flags: Number(flags.value) } : undefined,
         );
       } else {
-        return await this.api.interactions.deferMessageUpdate(
+        return await this.client.api.interactions.deferMessageUpdate(
           this.interaction.id,
           this.interaction.token,
         );
       }
     } else if (this.interaction.type === InteractionType.ApplicationCommand) {
-      return await this.api.interactions.defer(
+      return await this.client.api.interactions.defer(
         this.interaction.id,
         this.interaction.token,
         flags.value !== 0n ? { flags: Number(flags.value) } : undefined,
@@ -564,19 +588,18 @@ export class InteractionContext<
   }
 
   reply(data: string | MessageConstructorData) {
-    return this.api.interactions.reply(
+    return this.client.api.interactions.reply(
       this.interaction.id,
       this.interaction.token,
       {
         ...messageConstructorDataToResponseCallbackData(data),
-        // TODO: update? present in docs but missing locally
         // with_response: true,
       },
     );
   }
 
   updateMessage(data: string | Omit<MessageConstructorData, "ephemeral">) {
-    return this.api.interactions.editReply(
+    return this.client.api.interactions.editReply(
       this.interaction.application_id,
       this.interaction.token,
       {
@@ -587,7 +610,7 @@ export class InteractionContext<
   }
 
   modal(builder: ModalBuilder | APIModalInteractionResponseCallbackData) {
-    return this.api.interactions.createModal(
+    return this.client.api.interactions.createModal(
       this.interaction.id,
       this.interaction.token,
       {
@@ -600,7 +623,7 @@ export class InteractionContext<
   createAutocompleteResponse(
     choices: APIApplicationCommandOptionChoice<string | number>[],
   ) {
-    return this.api.interactions.createAutocompleteResponse(
+    return this.client.api.interactions.createAutocompleteResponse(
       this.interaction.id,
       this.interaction.token,
       { choices },
@@ -609,18 +632,17 @@ export class InteractionContext<
 }
 
 class InteractionFollowup {
-  public api: API;
   public applicationId: string;
-  public interaction: APIInteraction;
 
-  constructor(api: API, interaction: APIInteraction) {
-    this.api = api;
+  constructor(
+    public client: Client,
+    public interaction: APIInteraction,
+  ) {
     this.applicationId = Bun.env.DISCORD_APPLICATION_ID;
-    this.interaction = interaction;
   }
 
   send(data: string | MessageConstructorData) {
-    return this.api.interactions.followUp(
+    return this.client.api.interactions.followUp(
       this.applicationId,
       this.interaction.token,
       messageConstructorDataToResponseCallbackData(data),
@@ -628,7 +650,7 @@ class InteractionFollowup {
   }
 
   getMessage(messageId: string) {
-    return this.api.webhooks.getMessage(
+    return this.client.api.webhooks.getMessage(
       this.applicationId,
       this.interaction.token,
       messageId,
@@ -639,7 +661,7 @@ class InteractionFollowup {
     messageId: string,
     data: Omit<MessageConstructorData, "ephemeral">,
   ) {
-    return this.api.webhooks.editMessage(
+    return this.client.api.webhooks.editMessage(
       this.applicationId,
       this.interaction.token,
       messageId,
@@ -648,7 +670,7 @@ class InteractionFollowup {
   }
 
   deleteMessage(messageId: string) {
-    return this.api.webhooks.deleteMessage(
+    return this.client.api.webhooks.deleteMessage(
       this.applicationId,
       this.interaction.token,
       messageId,

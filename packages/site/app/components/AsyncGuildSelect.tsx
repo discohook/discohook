@@ -1,7 +1,7 @@
 import { calculateUserDefaultAvatarIndex } from "@discordjs/rest";
-import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { twJoin } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import { cdn } from "~/util/discord";
 import { Twemoji } from "./icons/Twemoji";
 import { SimpleCombobox } from "./StringSelect";

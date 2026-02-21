@@ -24,6 +24,7 @@ This monorepo comes in a few main parts:
 Along with some shared packages:
 
 - [store](/packages/store) - Database & KV utilities
+  - Upgrading? Make sure to check out this package's README for database migration notes.
 
 ## Attribution
 

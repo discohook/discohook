@@ -1,5 +1,5 @@
 import { Popover } from "@base-ui-components/react/popover";
-import type { TFunction } from "i18next";
+import type { TFunction } from "~/types/i18next";
 import {
   ColorPicker,
   decimalToHex,

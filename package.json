@@ -16,14 +16,14 @@
     "db-migrate": "drizzle-kit migrate",
     "db-push": "drizzle-kit push",
     "db-studio": "drizzle-kit studio",
-    "refresh-store": "cd packages/bot && yarn && cd ../site && yarn"
+    "refresh-store": "cd packages/bot && yarn && cd ../site && yarn && cd ../bot-rw && yarn"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
-    "drizzle-kit": "^0.23.1"
+    "drizzle-kit": "^0.31.8"
   },
   "packageManager": "yarn@4.1.0"
 }

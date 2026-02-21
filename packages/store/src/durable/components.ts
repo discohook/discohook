@@ -2,7 +2,7 @@ import { z } from "zod";
 import { zx } from "zodix/v4";
 import { getDb } from "../db.js";
 import { makeSnowflake } from "../schema/schema.js";
-import type { Flow, StorableComponent } from "../types/index.js";
+import type { DraftComponent } from "../types/index.js";
 
 interface MockStoreEnv {
   HYPERDRIVE: Hyperdrive;
@@ -12,10 +12,7 @@ interface MockStoreEnv {
 
 export interface DurableStoredComponent {
   id: bigint;
-  data: StorableComponent;
-  componentsToFlows: {
-    flow: Flow;
-  }[];
+  data: DraftComponent;
   draft?: boolean;
 }
 
@@ -61,16 +58,6 @@ export class DurableComponentState implements DurableObject {
             id: true,
             data: true,
             draft: true,
-          },
-          with: {
-            componentsToFlows: {
-              columns: {},
-              with: {
-                flow: {
-                  with: { actions: true },
-                },
-              },
-            },
           },
         });
         if (!component) {
@@ -121,6 +108,7 @@ export class DurableComponentState implements DurableObject {
   }
 }
 
+/** @deprecated */
 export const launchComponentDurableObject = async (
   env: MockStoreEnv,
   options: {
@@ -145,6 +133,7 @@ export const launchComponentDurableObject = async (
   return data;
 };
 
+/** @deprecated */
 export const destroyComponentDurableObject = async (
   env: MockStoreEnv,
   options: {

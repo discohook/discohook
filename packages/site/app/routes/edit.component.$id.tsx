@@ -1,83 +1,72 @@
 import { REST } from "@discordjs/rest";
-import { defer, json, redirect } from "@remix-run/cloudflare";
+import { json, redirect } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useLocation } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,
-  type APIChannel,
+  type APIComponentInActionRow,
   type APIComponentInContainer,
-  type APIComponentInModalActionRow,
   type APIMessage,
   type APISectionComponent,
   type APIWebhook,
   ButtonStyle,
-  ChannelType,
   ComponentType,
   RESTJSONErrorCodes,
   type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
 } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import type { JWTPayload } from "jose";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
-import { getChannelIconType } from "~/api/v1/channels.$channelId";
 import { canModifyComponent } from "~/api/v1/components.$id";
 import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { Button } from "~/components/Button";
+import { useError } from "~/components/Error";
 import { submitComponent } from "~/components/editor/ComponentEditor";
 import {
   getComponentText,
   getComponentWidth,
   getRowWidth,
 } from "~/components/editor/TopLevelComponentEditor";
-import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { Prose } from "~/components/Prose";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
-import { Prose } from "~/components/Prose";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
 import { submitMessage } from "~/modals/MessageSendModal";
 import {
   authorizeRequest,
   getEditorTokenStorage,
-  getGuild,
   getUser,
   verifyToken,
 } from "~/session.server";
 import {
   autoRollbackTx,
-  discordMessageComponents,
   type DraftComponent,
+  discordMessageComponents,
+  ensureComponentFlows,
   eq,
-  type Flow,
   getDb,
-  launchComponentDurableObject,
+  launchComponentKV,
   makeSnowflake,
   messageLogEntries,
-  type StorableComponent,
   tokens,
 } from "~/store.server";
 import { ZodAPITopLevelComponentRaw } from "~/types/components-raw";
+import type { TFunction } from "~/types/i18next";
 import type {
   APIButtonComponentWithCustomId,
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
-import {
-  type ResolutionKey,
-  type ResolvableAPIChannel,
-  type ResolvableAPIEmoji,
-  type ResolvableAPIRole,
-  useCache,
-} from "~/util/cache/CacheManager";
+import { useCache } from "~/util/cache/CacheManager";
 import {
   MAX_ACTION_ROW_WIDTH,
   MAX_TOTAL_COMPONENTS,
@@ -93,7 +82,6 @@ import {
   isStorableComponent,
   onlyActionRows,
 } from "~/util/discord";
-import { draftFlowToFlow, flowToDraftFlow } from "~/util/flow";
 import {
   type ActionArgs,
   type LoaderArgs,
@@ -210,11 +198,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     with: {
       componentsToFlows: {
         columns: {},
-        with: {
-          flow: {
-            with: { actions: true },
-          },
-        },
+        with: { flow: { with: { actions: { columns: { data: true } } } } },
       },
     },
   });
@@ -290,84 +274,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     });
   }
 
-  let emojis: ResolvableAPIEmoji[] = [];
-  let roles: ResolvableAPIRole[] = [];
-  if (component.guildId) {
-    try {
-      const guild = await getGuild(component.guildId, rest, context.env);
-      emojis = guild.emojis.map(
-        (emoji) =>
-          ({
-            id: emoji.id ?? undefined,
-            name: emoji.name ?? "",
-            animated: emoji.animated,
-            available: emoji.available === false ? false : undefined,
-          }) as ResolvableAPIEmoji,
-      );
-      roles = guild.roles.map(
-        (role) =>
-          ({
-            id: role.id,
-            name: role.name,
-            color: role.color,
-            managed: role.managed,
-            mentionable: role.mentionable,
-            position: role.position,
-            unicode_emoji: role.unicode_emoji,
-            icon: role.icon,
-          }) as ResolvableAPIRole,
-      );
-    } catch {}
-  }
-
-  const channels = (async () => {
-    if (component.guildId) {
-      try {
-        return (
-          (await rest.get(
-            Routes.guildChannels(String(component.guildId)),
-          )) as APIChannel[]
-        )
-          .filter((c) =>
-            [
-              ChannelType.GuildText,
-              ChannelType.GuildAnnouncement,
-              ChannelType.GuildForum,
-              ChannelType.GuildMedia,
-              ChannelType.PublicThread,
-              ChannelType.PrivateThread,
-              ChannelType.AnnouncementThread,
-              ChannelType.GuildVoice,
-              ChannelType.GuildStageVoice,
-            ].includes(c.type),
-          )
-          .map(
-            (channel) =>
-              ({
-                id: channel.id,
-                name: channel.name,
-                type: getChannelIconType(channel),
-                tags:
-                  "available_tags" in channel
-                    ? channel.available_tags
-                    : undefined,
-              }) as ResolvableAPIChannel,
-          );
-      } catch {}
-    }
-    return [];
-  })();
-
-  return defer(
+  await ensureComponentFlows(component, db);
+  return json(
     {
       user,
       component,
       token: editorToken,
       editingMeta,
       message,
-      emojis,
-      roles,
-      channels,
       threadId,
     },
     { headers },
@@ -421,6 +335,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           // guildId: true,
           channelId: true,
           messageId: true,
+        },
+        with: {
+          componentsToFlows: {
+            columns: {},
+            with: { flow: { with: { actions: { columns: { data: true } } } } },
+          },
         },
       });
       if (!component) {
@@ -505,6 +425,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
       }
 
+      // This is probably not necessary because it's already done in the loader
+      await ensureComponentFlows(component, db);
       const built = buildStorableComponent(
         component.data,
         String(component.id),
@@ -661,10 +583,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       )[0];
 
       if (built.custom_id) {
-        await launchComponentDurableObject(context.env, {
-          messageId: message.id,
-          customId: built.custom_id,
+        await launchComponentKV(context.env, {
           componentId: component.id,
+          data: component.data,
         });
       }
 
@@ -675,21 +596,20 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 };
 
 export const buildStorableComponent = (
-  component: StorableComponent,
+  component: DraftComponent,
   id: string,
-  flows: Flow[] = [],
 ): APIComponentInMessageActionRow => {
   switch (component.type) {
     case ComponentType.Button: {
-      if (component.style === ButtonStyle.Link) {
+      if (
+        component.style === ButtonStyle.Link ||
+        component.style === ButtonStyle.Premium
+      ) {
         return component;
       }
-      // if (isSkuButton(component)) {
-      // }
       return {
         ...component,
         custom_id: `p_${id}`,
-        flow: flows[0] ? flowToDraftFlow(flows[0]) : { actions: [] },
       } as APIButtonComponentWithCustomId;
     }
     case ComponentType.StringSelect: {
@@ -704,15 +624,6 @@ export const buildStorableComponent = (
         custom_id: `p_${id}`,
         min_values,
         max_values,
-        flows: Object.fromEntries(
-          Object.entries(rest.flowIds).map(([optionValue, flowId]) => {
-            const flow = flows.find((flow) => String(flow.id) === flowId);
-            return [
-              optionValue,
-              flow ? flowToDraftFlow(flow) : { actions: [] },
-            ];
-          }),
-        ),
       };
     }
     case ComponentType.UserSelect:
@@ -733,72 +644,12 @@ export const buildStorableComponent = (
         max_values,
         // @ts-expect-error
         default_values,
-        flow: flows[0] ? flowToDraftFlow(flows[0]) : { actions: [] },
       };
     }
     default:
       break;
   }
   throw Error("Unsupported storable component type.");
-};
-
-export const unresolveStorableComponent = (
-  component: DraftComponent,
-): { component: StorableComponent; flows: Flow[] } => {
-  switch (component.type) {
-    case ComponentType.Button: {
-      if (
-        component.style === ButtonStyle.Link ||
-        component.style === ButtonStyle.Premium
-      ) {
-        return { component, flows: [] };
-      }
-      const { flow, ...rest } = component;
-      return {
-        component: {
-          ...rest,
-          flowId: "0",
-        },
-        flows: [draftFlowToFlow(flow)],
-      };
-    }
-    case ComponentType.StringSelect: {
-      const { flows, ...rest } = component;
-      const flowIds: Record<string, string> = {};
-      const undraftedFlows: Flow[] = [];
-      Object.entries(flows).forEach(([optionValue, flow], i) => {
-        const undrafted = draftFlowToFlow(flow);
-        undrafted.id = BigInt(i);
-        for (const a of undrafted.actions) {
-          a.flowId = BigInt(i);
-        }
-        flowIds[optionValue] = String(i);
-        undraftedFlows.push(undrafted);
-      });
-      return {
-        component: {
-          ...rest,
-          flowIds,
-        },
-        flows: undraftedFlows,
-      };
-    }
-    case ComponentType.RoleSelect:
-    case ComponentType.UserSelect:
-    case ComponentType.ChannelSelect:
-    case ComponentType.MentionableSelect: {
-      const { flow, ...rest } = component;
-      return {
-        component: {
-          ...rest,
-          flowId: "0",
-        },
-        flows: [draftFlowToFlow(flow)],
-      };
-    }
-    default:
-      throw new Error("Unhandled component type");
-  }
 };
 
 const isSameComponent = ({
@@ -828,9 +679,7 @@ const isSameComponent = ({
       : false;
 };
 
-const rowHasSpace = <
-  T extends APIComponentInMessageActionRow | APIComponentInModalActionRow,
->(
+const rowHasSpace = <T extends APIComponentInActionRow>(
   row: APIActionRowComponent<T>,
   component: T,
 ) => MAX_ACTION_ROW_WIDTH - getRowWidth(row) >= getComponentWidth(component);
@@ -1291,9 +1140,6 @@ export default () => {
     token,
     editingMeta,
     message,
-    emojis,
-    channels,
-    roles,
     threadId,
   } = useLoaderData<typeof loader>();
 
@@ -1312,27 +1158,13 @@ export default () => {
     [fetcher.state],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Once! Or whenever one of these changes, which would be never right now
+  // biome-ignore lint/correctness/useExhaustiveDependencies: No inf loop for `cache` dependency
   useEffect(() => {
-    if (component_.guildId) {
-      cache.fill(
-        ...emojis.map(
-          (r) => [`emoji:${r.id}`, r] as [ResolutionKey, ResolvableAPIEmoji],
-        ),
-        ...roles.map(
-          (r) => [`role:${r.id}`, r] as [ResolutionKey, ResolvableAPIRole],
-        ),
-      );
-      channels.then((resolved) =>
-        cache.fill(
-          ...resolved.map(
-            (r) =>
-              [`channel:${r.id}`, r] as [ResolutionKey, ResolvableAPIChannel],
-          ),
-        ),
-      );
-    }
-  }, [emojis, roles, channels]);
+    if (component_.guildId === null) return;
+    cache
+      .fetchGuildCacheable(String(component_.guildId))
+      .then(() => console.log(`Cached cacheables for ${component_.guildId}`));
+  }, [component_.guildId]);
 
   // Don't allow the token to persist in the page address
   const location = useLocation();
@@ -1349,11 +1181,7 @@ export default () => {
   const [settings] = useLocalStorage();
 
   const [component, setComponent] = useState(
-    buildStorableComponent(
-      component_.data,
-      String(component_.id),
-      component_.componentsToFlows.map((ctf) => ctf.flow),
-    ),
+    buildStorableComponent(component_.data, String(component_.id)),
   );
 
   // TODO: use this to reduce "flicker" when opening/closing modal

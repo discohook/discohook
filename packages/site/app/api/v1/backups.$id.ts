@@ -65,9 +65,9 @@ export type ApiGetBackupWithData = ApiGetBackup & {
 const removeExtraneousBackupData = (data: QueryData): QueryData => {
   // `_id` is editor-only state
   data.messages = data.messages.map(({ _id: _, ...m }) => {
-    for (const row of onlyActionRows(m.data.components ?? [])) {
+    for (const row of onlyActionRows(m.data.components ?? [], true)) {
       // We don't want to store flow data in backups since
-      // it is already stored separately.
+      // it is already stored in DiscordMessageComponent.data
       row.components = row.components.map((component) => {
         if ("flow" in component) {
           const { flow: _, ...rest } = component;

@@ -215,10 +215,7 @@ export const welcomerViewEntry: ChatInputAppCommandCallback<true> = async (
     });
   }
 
-  const config = getWelcomerConfigFromActions(
-    triggers[0].flow.actions.map((a) => a.data),
-  );
-
+  const config = getWelcomerConfigFromActions(triggers[0].flow.actions);
   let webhook: APIWebhook | undefined;
   if (config.webhookId) {
     try {

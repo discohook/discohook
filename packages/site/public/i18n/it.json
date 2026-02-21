@@ -61,7 +61,6 @@
     "messageDisplay": "Visualizzazione dei Messaggi",
     "cozy": "Accogliente",
     "orgRedirectBody": "Discohook è orsa disponibile su <bold>discohook.app</bold>. Per migrare i tuoi backup, <importLink>premi qui</importLink>. Per leggere più informazioni su questo aggiornamento, <infoLink>premi qui</infoLink>.",
-    "sending": "Inviando",
     "sendNoWebhooks": "Non hai nessun webhook a cui inviare.",
     "orgRedirectTitle": "Sei stato appena reindirizzato da discohook.org",
     "chooseServer": "Seleziona un server",
@@ -409,7 +408,6 @@
     "submit": "Invia",
     "submitToAll": "Invia a Tutti",
     "submitAll": "Invia Tutti",
-    "editing": "Modificando",
     "flagsOptional": "Flag (facoltativi)",
     "urlEmpty": "I pulsanti dei link devono avere un URL",
     "messageFlag": {
@@ -457,7 +455,6 @@
     "titleUrlManaged": "Questo valore è impostato automaticamente dall'embed principale della galleria. Modificarlo solo se si vuole cambiare la galleria a cui appartiene l'immagine.",
     "checkFunctionThen": "Se la funzione passa:",
     "checkFunctionElse": "Altrimenti, se la funzione non passa:",
-    "submitting": "Invio",
     "removeMessageLink": "Rimuovi il collegamento al messaggio",
     "setLink": "Imposta Link",
     "checkFunctionTypeText": "Funzione",

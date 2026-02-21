@@ -4,7 +4,6 @@ import {
   AllowedMentionsTypes,
   type APIAllowedMentions,
 } from "discord-api-types/v10";
-import type { TFunction } from "i18next";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -16,6 +15,7 @@ import { codeStyle } from "~/components/preview/Markdown";
 import { switchStyles } from "~/components/switch";
 import { TextInput } from "~/components/TextInput";
 import { getQdMessageId } from "~/routes/_index";
+import type { TFunction } from "~/types/i18next";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";

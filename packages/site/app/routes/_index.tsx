@@ -96,10 +96,7 @@ import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import type { ApiGetBackupWithData } from "../api/v1/backups.$id";
 import type { loader as ApiGetComponents } from "../api/v1/components";
-import {
-  buildStorableComponent,
-  unresolveStorableComponent,
-} from "./edit.component.$id";
+import { buildStorableComponent } from "./edit.component.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const userId = await getUserId(request, context);
@@ -212,15 +209,7 @@ export const loadMessageComponents = async (
     for (const stored of raw) {
       const local = allComponentsById[stored.id];
       if (local) {
-        const unresolved = unresolveStorableComponent(stored.data);
-        Object.assign(
-          local,
-          buildStorableComponent(
-            unresolved.component,
-            stored.id,
-            unresolved.flows,
-          ),
-        );
+        Object.assign(local, buildStorableComponent(stored.data, stored.id));
       }
     }
 
@@ -916,6 +905,7 @@ export default function Index() {
               )}
               <Button
                 disabled={data.messages.length === 0 || sending}
+                loading={sending}
                 onClick={async () => {
                   if (settings.webhookInput !== "classic") {
                     setSendingMessages(true);
@@ -938,26 +928,20 @@ export default function Index() {
                       : messagesWithReference === data.messages.length
                         ? "edit"
                         : "submit"
-                    : sending
+                    : Object.keys(targets).length <= 1 &&
+                        data.messages.length > 1
                       ? messagesWithReference === 0
-                        ? "sending"
-                        : messagesWithReference === data.messages.length
-                          ? "editing"
-                          : "submitting"
-                      : Object.keys(targets).length <= 1 &&
-                          data.messages.length > 1
+                        ? "sendAll"
+                        : "submitAll"
+                      : Object.keys(targets).length > 1
                         ? messagesWithReference === 0
-                          ? "sendAll"
-                          : "submitAll"
-                        : Object.keys(targets).length > 1
-                          ? messagesWithReference === 0
-                            ? "sendToAll"
-                            : "submitToAll"
-                          : messagesWithReference === 0
-                            ? "send"
-                            : messagesWithReference === data.messages.length
-                              ? "edit"
-                              : "submit",
+                          ? "sendToAll"
+                          : "submitToAll"
+                        : messagesWithReference === 0
+                          ? "send"
+                          : messagesWithReference === data.messages.length
+                            ? "edit"
+                            : "submit",
                 )}
               </Button>
             </div>

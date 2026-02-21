@@ -190,6 +190,9 @@ export const retrofitQueryData = <T extends QueryDataRaw>(data: T): T => {
   const transformed = structuredClone(data);
   for (const message of transformed.messages) {
     message.data = queryDataMessageDataTransform(message.data);
+
+    // 4/27/2025: Removal of nested author profile fields
+    // https://discord.com/channels/668218342779256857/1282464728907780166/1366122676065931286
     if (message.data.avatar_url && !message.data.author?.icon_url) {
       message.data.author = message.data.author ?? {};
       message.data.author.icon_url = message.data.avatar_url;

@@ -1,5 +1,4 @@
 import { json } from "@remix-run/cloudflare";
-import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
@@ -14,13 +13,12 @@ import { Snowflake } from "tif-snowflake";
 import { z } from "zod/v3";
 import { getBucket } from "~/durable/rate-limits";
 import { getUserId } from "~/session.server";
-import type { APIComponentInMessageActionRow } from "~/types/QueryData";
 import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import {
+  extractInteractiveComponents,
   getWebhook,
   getWebhookMessage,
   hasCustomId,
-  isComponentsV2,
   isErrorData,
 } from "~/util/discord";
 import type { ActionArgs } from "~/util/loader";
@@ -31,12 +29,11 @@ import {
   autoRollbackTx,
   discordGuilds,
   discordMessageComponents,
+  ensureComponentFlows,
   eq,
-  flows,
-  generateId,
   getDb,
   inArray,
-  launchComponentDurableObject,
+  launchComponentKV,
   messageLogEntries,
   sql,
   webhooks,
@@ -142,13 +139,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     if (isErrorData(message)) {
       throw json(message, { status: 404, headers });
     }
-    if (isComponentsV2(message)) {
-      // We currently do not support logging these messages out of an abundance of caution
-      throw json(
-        { message: "Message is not loggable" },
-        { status: 400, headers },
-      );
-    }
+    // if (isComponentsV2(message)) {
+    //   // We currently do not support logging these messages out of an abundance of caution
+    //   throw json(
+    //     { message: "Message is not loggable" },
+    //     { status: 400, headers },
+    //   );
+    // }
     if (type === "edit") {
       if (!message.edited_timestamp) {
         throw json(
@@ -238,36 +235,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     )[0];
   }
 
+  // deleted message or no components
   if (!message || !message.components || message.components.length === 0) {
     await db
       .delete(discordMessageComponents)
       .where(eq(discordMessageComponents.messageId, BigInt(messageId)));
   } else {
-    const storableComponents = message.components.flatMap((component) => {
-      switch (component.type) {
-        case ComponentType.ActionRow:
-          return component.components;
-        case ComponentType.Section:
-          return component.accessory.type === ComponentType.Button
-            ? [component.accessory]
-            : [];
-        case ComponentType.Container:
-          return component.components.flatMap((child) => {
-            switch (child.type) {
-              case ComponentType.ActionRow:
-                return child.components;
-              case ComponentType.Section:
-                return child.accessory.type === ComponentType.Button
-                  ? [child.accessory]
-                  : [];
-              default:
-                return [];
-            }
-          });
-        default:
-          return [];
-      }
-    }) satisfies APIComponentInMessageActionRow[];
+    const storableComponents = extractInteractiveComponents(message.components);
     const componentIds = storableComponents
       .map(getComponentId)
       .filter((id): id is bigint => id !== undefined);
@@ -278,25 +252,21 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           componentIds.length !== 0
             ? await tx.query.discordMessageComponents.findMany({
                 where: inArray(discordMessageComponents.id, componentIds),
-                columns: {
-                  id: true,
-                  data: true,
-                  createdById: true,
-                },
+                columns: { id: true, data: true, createdById: true },
                 with: {
                   componentsToFlows: {
+                    columns: {},
                     with: {
-                      flow: {
-                        with: {
-                          actions: true,
-                        },
-                      },
+                      flow: { with: { actions: { columns: { data: true } } } },
                     },
                   },
                 },
               })
             : [];
 
+        // Delete all components stored for this message that weren't found in
+        // the new message data. If there are no components, delete all stored
+        // components for the message.
         await tx.delete(discordMessageComponents).where(
           and(
             eq(discordMessageComponents.messageId, BigInt(message.id)),
@@ -306,61 +276,40 @@ export const action = async ({ request, context, params }: ActionArgs) => {
               : notInArray(discordMessageComponents.id, componentIds),
           ),
         );
-
-        const flowsById: Record<string, string[]> = {};
-        const flowsValues: (typeof flows.$inferInsert)[] =
-          storableComponents.flatMap((component) => {
-            const match = stored.find((c) =>
-              "custom_id" in component
-                ? component.custom_id === `p_${c.id}`
-                : false,
-            );
-            const id = getComponentId(component);
-            flowsById[String(id)] = [];
-
-            if (
-              match ||
-              component.type === ComponentType.StringSelect ||
-              (component.type === ComponentType.Button &&
-                isLinkButton(component))
-            ) {
-              return [];
-            }
-
-            const newId = generateId();
-            flowsById[String(id)].push(newId);
-            return [{ id: BigInt(newId) }];
-          });
-        if (flowsValues.length !== 0) {
-          await tx.insert(flows).values(flowsValues).onConflictDoNothing();
+        for (const component of stored) {
+          await ensureComponentFlows(component, tx);
         }
 
         const now = new Date();
         const values: (typeof discordMessageComponents.$inferInsert)[] =
           storableComponents.flatMap((component) => {
+            // const id = String(getComponentId(component));
             const match =
               "custom_id" in component
                 ? stored.find((c) => component.custom_id === `p_${c.id}`)
                 : undefined;
 
-            const id = String(getComponentId(component));
-
+            // DraftComponent
             let data:
               | (typeof discordMessageComponents.$inferInsert)["data"]
               | undefined;
             switch (component.type) {
               case ComponentType.Button: {
-                if (!hasCustomId(component)) {
-                  data = component;
-                } else {
+                if (hasCustomId(component)) {
                   const { custom_id: _, ...c } = component;
-                  data = {
-                    ...c,
-                    flowId:
-                      match && "flowId" in match.data
-                        ? match.data.flowId
-                        : flowsById[id][0],
-                  };
+                  if (c.type === ComponentType.Button) {
+                    data = {
+                      ...c,
+                      type: ComponentType.Button,
+                      flow:
+                        match && "flow" in match.data
+                          ? match.data.flow
+                          : // New (unstored) component; assign it a new flow
+                            { actions: [] },
+                    };
+                  }
+                } else {
+                  data = component;
                 }
                 break;
               }
@@ -376,8 +325,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                   maxValues: 1,
                   // minValues: component.min_values,
                   // maxValues: component.max_values,
-                  flowIds:
-                    match && "flowIds" in match.data ? match.data.flowIds : {},
+                  flows: match && "flows" in match.data ? match.data.flows : {},
                 };
                 break;
               }
@@ -391,10 +339,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                   // See above
                   minValues: 1,
                   maxValues: 1,
-                  flowId:
-                    match && "flowId" in match.data
-                      ? match.data.flowId
-                      : flowsById[id][0],
+                  flow:
+                    match && "flow" in match.data
+                      ? match.data.flow
+                      : { actions: [] },
                 };
                 break;
               }
@@ -458,10 +406,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           (created.data.style !== ButtonStyle.Link &&
             created.data.style !== ButtonStyle.Premium))
       ) {
-        await launchComponentDurableObject(context.env, {
-          messageId: created.messageId.toString(),
+        // TODO: Now that we're using redis we probably could do a bulk upsert
+        // using a script like we do for member sessions
+        await launchComponentKV(context.env, {
           componentId: created.id,
-          customId: `p_${created.id}`,
+          data: created.data,
         });
       }
     }

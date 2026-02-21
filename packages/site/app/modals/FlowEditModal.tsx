@@ -9,7 +9,6 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import type { TFunction } from "i18next";
 import type React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -35,6 +34,7 @@ import {
   FlowActionType,
   ZodDraftFlow,
 } from "~/types/flows";
+import type { TFunction } from "~/types/i18next";
 import type {
   CacheManager,
   ResolvableAPIRole,
@@ -52,8 +52,8 @@ import type {
   PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
-import { CoolIcon } from "../components/icons/CoolIcon";
 import { InfoBox } from "../components/InfoBox";
+import { CoolIcon } from "../components/icons/CoolIcon";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { RoleSelect } from "../components/RoleSelect";
 import {

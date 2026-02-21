@@ -1,6 +1,6 @@
 import { Select } from "@base-ui-components/react/select";
-import type { TFunction } from "i18next";
 import { twJoin } from "tailwind-merge";
+import type { TFunction } from "~/types/i18next";
 import type { ResolvableAPIRole } from "~/util/cache/CacheManager";
 import { decimalToHex } from "./editor/ColorPicker";
 import { CoolIcon } from "./icons/CoolIcon";

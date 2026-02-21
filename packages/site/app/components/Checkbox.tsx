@@ -12,7 +12,7 @@ export const Checkbox = (
   > & {
     label: React.ReactNode;
     description?: React.ReactNode;
-    onCheckedChange?: (checked: boolean, event: Event) => void;
+    onCheckedChange?: MuiCheckbox.Root.Props["onCheckedChange"];
   },
 ) => (
   <div>
@@ -20,7 +20,7 @@ export const Checkbox = (
       <MuiCheckbox.Root
         className={(s) =>
           twJoin(
-            "box-border flex w-6 h-6 items-center justify-center p-0 m-0",
+            "box-border flex w-6 h-6 items-center justify-center p-0 m-0 shrink-0",
             // anomalous 6px border radius
             "outline-0 border rounded-md",
             s.checked

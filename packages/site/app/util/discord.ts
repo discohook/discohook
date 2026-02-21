@@ -3,8 +3,8 @@ import {
   calculateUserDefaultAvatarIndex,
   type ImageExtension,
   type RawFile,
-  RequestMethod,
   type REST,
+  RequestMethod,
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
@@ -694,7 +694,7 @@ export const onlyActionRows = (
 
 export const extractInteractiveComponents = (
   components: APIMessageTopLevelComponent[],
-) => {
+): APIComponentInMessageActionRow[] => {
   const children: APIComponentInMessageActionRow[] = [];
   for (const component of components) {
     if (component.type === ComponentType.Container) {
