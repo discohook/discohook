@@ -215,6 +215,11 @@ export const onlyActionRows = (
    * useful if you do not need sibling context.
    */
   includeNested?: boolean,
+  /**
+   * Creates a fake action row for button accessories so that they can be
+   * safely returned by this function.
+   */
+  includeAccessories?: boolean,
 ) => {
   const rows: APIActionRowComponent<APIComponentInMessageActionRow>[] = [];
   if (includeNested) {
@@ -223,10 +228,32 @@ export const onlyActionRows = (
         rows.push(...component.components.filter(isActionRow));
       } else if (component.type === ComponentType.ActionRow) {
         rows.push(component);
+      } else if (
+        component.type === ComponentType.Section &&
+        component.accessory.type === ComponentType.Button &&
+        includeAccessories
+      ) {
+        rows.push({
+          type: ComponentType.ActionRow,
+          components: [component.accessory],
+        });
       }
     }
   } else {
-    rows.push(...components.filter(isActionRow));
+    for (const component of components) {
+      if (component.type === ComponentType.ActionRow) {
+        rows.push(component);
+      } else if (
+        component.type === ComponentType.Section &&
+        component.accessory.type === ComponentType.Button &&
+        includeAccessories
+      ) {
+        rows.push({
+          type: ComponentType.ActionRow,
+          components: [component.accessory],
+        });
+      }
+    }
   }
   return rows;
 };

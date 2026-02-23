@@ -32,6 +32,9 @@ import {
   getDb,
   getRedis,
   launchComponentKV,
+  type StorableAutopopulatedSelectResolved,
+  type StorableButtonWithCustomIdResolved,
+  type StorableStringSelectResolved,
   type TriggerKVGuild,
 } from "store";
 import { Snowflake } from "tif-snowflake";
@@ -61,7 +64,11 @@ import {
   type APIWebhookEvent,
   WebhookEventType,
 } from "./types/webhook-events.js";
-import { getComponentId, parseAutoComponentId } from "./util/components.js";
+import {
+  getComponentId,
+  onlyActionRows,
+  parseAutoComponentId,
+} from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 import { createREST } from "./util/rest.js";
 import { sleep } from "./util/sleep.js";
@@ -290,9 +297,16 @@ const handleInteraction = async (
         createdById?: string;
       }>(kvKey, "json");
       if (!hotComponent) {
-        const coldComponentPre =
-          await db.query.discordMessageComponents.findFirst({
-            where: (table, { eq }) => eq(table.id, componentId),
+        const allColdCandidates =
+          await db.query.discordMessageComponents.findMany({
+            where: (table, { eq, and, or }) =>
+              or(
+                eq(table.id, componentId),
+                and(
+                  eq(table.messageId, BigInt(interaction.message.id)),
+                  eq(table.type, type),
+                ),
+              ),
             columns: { id: true, guildId: true, channelId: true, data: true },
             with: {
               createdBy: { columns: { discordId: true } },
@@ -304,6 +318,100 @@ const handleInteraction = async (
               },
             },
           });
+
+        let coldComponentPre = allColdCandidates.find(
+          (c) => c.id === componentId,
+        );
+        if (!coldComponentPre) {
+          if (env.ENVIRONMENT === "dev") {
+            console.log("Component not found by ID");
+          }
+          // Find the button that was interacted with
+          // We know it's on the message because we're using interaction.data
+          // biome-ignore lint/style/noNonNullAssertion: ^
+          const source = onlyActionRows(
+            interaction.message.components ?? [],
+            true,
+            true,
+          )
+            .flatMap((row) => row.components)
+            .find(
+              (c) =>
+                c.type === type && "custom_id" in c && c.custom_id === customId,
+            )!;
+          if (env.ENVIRONMENT === "dev") {
+            console.log("Component from message", source);
+          }
+
+          // https://github.com/discohook/discohook/issues/56
+          // It seems that there is something "delinking" published component IDs from their stored
+          // values. It could be a number of factors, including:
+          // - Draft cleanup (probably not - I think the data remains, hence this strategy)
+          // - Saving shenanigans during editing (either on the main page or component specific page)
+          // - ???
+          // As a patch, the below code attempts to find another component in the database (for the
+          // message ID) which has the same surface details (label, style, emoji, placeholder), only
+          // in the event that the component cannot be matched by exact ID. I don't love this, but for
+          // now I think it's my best bet to relieve user frustration.
+          //
+          // This is currently a bot-only system designed only for this one purpose. If I can't figure
+          // out what's causing this issue in the first place, I will probably have little choice but to
+          // also expand this logic to the site and basically do away with solid custom_id-based
+          // identification.
+          // --
+          // I kind of want to reject the candidate if there are multiple matches. But I don't know if
+          // that would cause yet more confusion. Maybe I could look at all other components on the
+          // message and filter out components that have matches, to only look at ones that would
+          // return the message we're trying to avoid.
+          coldComponentPre = allColdCandidates.find((c) => {
+            if (source.type !== c.data.type) return false;
+            if (source.type === ComponentType.Button) {
+              const cdata = c.data as StorableButtonWithCustomIdResolved;
+              if (cdata.style !== source.style) return false;
+
+              let labelMatch = false;
+              let emojiMatch = false;
+              if ("label" in source && "label" in cdata) {
+                labelMatch = source.label === cdata.label;
+              } else if (!("label" in source) && !("label" in source)) {
+                // match is N/A
+                labelMatch = true;
+              }
+              if ("emoji" in source && "emoji" in cdata) {
+                if (source.emoji && cdata.emoji) {
+                  if (source.emoji.id !== undefined) {
+                    emojiMatch = source.emoji.id === cdata.emoji.id;
+                  } else {
+                    emojiMatch = source.emoji.name === cdata.emoji.name;
+                  }
+                } else {
+                  emojiMatch =
+                    source.emoji === undefined && cdata.emoji === undefined;
+                }
+              } else if (!("emoji" in source) && !("emoji" in source)) {
+                // match is N/A
+                emojiMatch = true;
+              }
+              return labelMatch && emojiMatch;
+            } else if (
+              source.type === ComponentType.StringSelect ||
+              source.type === ComponentType.ChannelSelect ||
+              source.type === ComponentType.MentionableSelect ||
+              source.type === ComponentType.RoleSelect ||
+              source.type === ComponentType.UserSelect
+            ) {
+              const cdata = c.data as
+                | StorableStringSelectResolved
+                | StorableAutopopulatedSelectResolved;
+              return cdata.placeholder === source.placeholder;
+            }
+            return false;
+          });
+          if (coldComponentPre && env.ENVIRONMENT === "dev") {
+            console.log("Found match:", String(coldComponentPre.id));
+          }
+        }
+
         if (!coldComponentPre) {
           return respond(
             ctx.reply({
@@ -376,128 +484,6 @@ const handleInteraction = async (
         await launchComponentKV(env, { componentId, ...newHotComponent });
       }
       const component = hotComponent;
-
-      // const doId = env.COMPONENTS.idFromName(
-      //   `${interaction.message.id}-${customId}`,
-      // );
-      // const stub = env.COMPONENTS.get(doId, { locationHint: "enam" });
-      // const response = await stub.fetch("http://do/", { method: "GET" });
-      // let component: DurableStoredComponent;
-      // if (response.status === 404) {
-      //   // In case a durable object does not exist for this component for
-      //   // whatever reason. Usually because of migrated components that have
-      //   // not yet actually been activated.
-      //   const componentId = getComponentId(
-      //     type === ComponentType.Button
-      //       ? { type, style: ButtonStyle.Primary, custom_id: customId }
-      //       : { type, custom_id: customId },
-      //   );
-
-      //   if (componentId === undefined) {
-      //     return respond({ error: "Bad Request", status: 400 });
-      //   }
-
-      //   // Don't allow component data to leak into other servers
-      //   const dryComponent = await db.query.discordMessageComponents.findFirst({
-      //     where: (table, { eq }) => eq(table.id, componentId),
-      //     columns: { guildId: true, channelId: true },
-      //     with: {
-      //       createdBy: {
-      //         columns: { discordId: true },
-      //       },
-      //     },
-      //   });
-      //   if (!dryComponent) {
-      //     return respond(
-      //       ctx.reply({
-      //         content:
-      //           "No data could be found for this component. It may have been deleted by a moderator but not removed from the message.",
-      //         ephemeral: true,
-      //       }),
-      //     );
-      //   }
-      //   if (!dryComponent.guildId) {
-      //     if (
-      //       // Allow the component creator to set this data since it's obvious
-      //       // they can access the component's contents
-      //       dryComponent.createdBy?.discordId &&
-      //       dryComponent.createdBy.discordId === BigInt(ctx.user.id)
-      //     ) {
-      //       await db
-      //         .update(discordMessageComponents)
-      //         .set({
-      //           guildId: BigInt(guildId),
-      //           channelId: BigInt(interaction.channel.id),
-      //         })
-      //         .where(eq(discordMessageComponents.id, componentId));
-
-      //       dryComponent.guildId = BigInt(guildId);
-      //       dryComponent.channelId = BigInt(interaction.channel.id);
-      //     } else {
-      //       return respond(
-      //         ctx.reply({
-      //           content: [
-      //             "This component hasn't been linked with a server. Please tell",
-      //             "the component owner (the person who created the component on",
-      //             "the Discohook site) to use the component at least once. This",
-      //             "will link the component with the current server. After you do",
-      //             "this, the component should work as expected.",
-      //           ].join(" "),
-      //           ephemeral: true,
-      //         }),
-      //       );
-      //     }
-      //   } else if (dryComponent.guildId.toString() !== interaction.guild_id) {
-      //     return respond({
-      //       error: response.statusText,
-      //       status: response.status,
-      //     });
-      //     // ctx.reply({
-      //     //   content: [
-      //     //     "The server associated with this component does not match the current server.",
-      //     //     "If this component should be able to be used in this server,",
-      //     //     "contact support to have its server association changed.",
-      //     //   ].join(" "),
-      //     //   ephemeral: true,
-      //     // }),
-      //   }
-
-      //   const params = new URLSearchParams({ id: componentId.toString() });
-      //   if (
-      //     new MessageFlagsBitField(interaction.message.flags ?? 0).has(
-      //       MessageFlags.Ephemeral,
-      //     )
-      //   ) {
-      //     // Ephemeral buttons last one hour to avoid durable object clutter.
-      //     // To be honest, this is not necessary at all, but if someone spams
-      //     // any button then we would rather the requests go to Cloudflare and
-      //     // not the database.
-      //     params.set(
-      //       "expireAt",
-      //       new Date(new Date().getTime() + 3_600_000).toISOString(),
-      //     );
-      //   }
-      //   const doResponse = await stub.fetch(`http://do/?${params}`, {
-      //     method: "PUT",
-      //   });
-      //   if (!doResponse.ok) {
-      //     return respond({
-      //       error: doResponse.statusText,
-      //       status: doResponse.status,
-      //     });
-      //   }
-      //   component = await doResponse.json();
-      // } else if (!response.ok) {
-      //   return respond({
-      //     error: response.statusText,
-      //     status: response.status,
-      //   });
-      // } else {
-      //   component = (await response.json()) as DurableStoredComponent;
-      // }
-      // if (component.draft) {
-      //   return respond({ error: "Component is marked as draft" });
-      // }
 
       let guild: TriggerKVGuild;
       try {
