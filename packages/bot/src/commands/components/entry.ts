@@ -9,8 +9,7 @@ import {
   type APIWebhook,
   ApplicationCommandOptionType,
   ButtonStyle,
-  type ChannelType,
-  Routes,
+  Routes
 } from "discord-api-types/v10";
 import { getDate, type Snowflake } from "discord-snowflake";
 import type {
@@ -46,7 +45,7 @@ export const resolveMessageLink = async (
   if (checkGuildId) {
     const channel = (await rest.get(
       Routes.channel(match[2]),
-    )) as APIGuildChannel<ChannelType>;
+    )) as APIGuildChannel;
     if (!channel.guild_id || channel.guild_id !== checkGuildId) {
       return "That message is not from this server.";
     }

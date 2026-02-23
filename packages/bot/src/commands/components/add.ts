@@ -5,8 +5,8 @@ import {
   escapeMarkdown,
   formatEmoji,
   type MessageActionRowComponentBuilder,
-  ModalBuilder,
   messageLink,
+  ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
@@ -28,8 +28,8 @@ import {
 import { SignJWT } from "jose";
 import {
   autoRollbackTx,
-  type DraftComponent,
   discordMessageComponents,
+  type DraftComponent,
   generateId,
   getchGuild,
   getDb,
@@ -408,32 +408,31 @@ export const startComponentFlow = async (
                 },
                 {
                   label: "String Select",
-                  description:
-                    "Select from a custom list of options (up to 25)",
+                  description: "Define a custom list of options (up to 25)",
                   value: "string-select",
                   emoji: { name: "🔽" },
                 },
                 {
                   label: "User Select",
-                  description: "Select from a list of all server members",
+                  description: "Show a list of all server members",
                   value: "user-select",
                   emoji: { name: "👤" },
                 },
                 {
                   label: "Role Select",
-                  description: "Select from a list of all server roles",
+                  description: "Show a list of all server roles",
                   value: "role-select",
                   emoji: { name: "🏷️" },
                 },
                 {
                   label: "User/Role Select",
-                  description: "Select from a list of all members and roles",
+                  description: "Show a list of all members and roles",
                   value: "mentionable-select",
                   emoji: { name: "*️⃣" },
                 },
                 {
                   label: "Channel Select",
-                  description: "Select from a list of all server channels",
+                  description: "Show a list of all server channels",
                   value: "channel-select",
                   emoji: { name: "#️⃣" },
                 },
