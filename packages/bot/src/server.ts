@@ -63,9 +63,7 @@ import {
 } from "./types/webhook-events.js";
 import {
   getComponentId,
-  matchComponentByDetails,
-  onlyActionRows,
-  parseAutoComponentId,
+  parseAutoComponentId
 } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 import { createREST } from "./util/rest.js";
@@ -292,16 +290,9 @@ const handleInteraction = async (
         createdById?: string;
       }>(kvKey, "json");
       if (!hotComponent) {
-        const allColdCandidates =
-          await db.query.discordMessageComponents.findMany({
-            where: (table, { eq, and, or }) =>
-              or(
-                eq(table.id, componentId),
-                and(
-                  eq(table.messageId, BigInt(interaction.message.id)),
-                  eq(table.type, type),
-                ),
-              ),
+        const coldComponentPre =
+          await db.query.discordMessageComponents.findFirst({
+            where: (table, { eq }) => eq(table.id, componentId),
             columns: { id: true, guildId: true, channelId: true, data: true },
             with: {
               createdBy: { columns: { discordId: true } },
@@ -313,34 +304,6 @@ const handleInteraction = async (
               },
             },
           });
-
-        let coldComponentPre = allColdCandidates.find(
-          (c) => c.id === componentId,
-        );
-        if (!coldComponentPre) {
-          if (env.ENVIRONMENT === "dev") {
-            console.log("Component not found by ID");
-          }
-          // Find the component that was interacted with
-          // We know it's on the message because we're using interaction.data
-          // biome-ignore lint/style/noNonNullAssertion: ^
-          const source = onlyActionRows(
-            interaction.message.components ?? [],
-            true,
-            true,
-          )
-            .flatMap((row) => row.components)
-            .find(
-              (c) =>
-                c.type === type && "custom_id" in c && c.custom_id === customId,
-            )!;
-          if (env.ENVIRONMENT === "dev") {
-            console.log("Component from message", source);
-          }
-
-          // See comment above this function signature
-          coldComponentPre = matchComponentByDetails(source, allColdCandidates);
-        }
 
         if (!coldComponentPre) {
           return respond(

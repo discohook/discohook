@@ -34,10 +34,7 @@ import {
 import { MessageFlagsBitField } from "discord-bitflag";
 import {
   type DraftComponent,
-  generateId,
-  StorableAutopopulatedSelectResolved,
-  StorableButtonWithCustomIdResolved,
-  StorableStringSelectResolved,
+  generateId
 } from "store";
 import type { MinimumKVComponentState } from "../components.js";
 import type { Env } from "../types/env.js";
@@ -289,55 +286,55 @@ export const onlyActionRows = (
 // that would cause yet more confusion. Maybe I could look at all other components on the
 // message and filter out components that have matches, to only look at ones that would
 // return the message we're trying to avoid.
-export const matchComponentByDetails = <T extends { data: DraftComponent }>(
-  source: APIComponentInMessageActionRow,
-  wrappedCandidates: T[],
-): T | undefined =>
-  wrappedCandidates.find((c) => {
-    if (source.type !== c.data.type) return false;
-    if (source.type === ComponentType.Button) {
-      const cdata = c.data as StorableButtonWithCustomIdResolved;
-      if (cdata.style !== source.style) return false;
+// export const matchComponentByDetails = <T extends { data: DraftComponent }>(
+//   source: APIComponentInMessageActionRow,
+//   wrappedCandidates: T[],
+// ): T | undefined =>
+//   wrappedCandidates.find((c) => {
+//     if (source.type !== c.data.type) return false;
+//     if (source.type === ComponentType.Button) {
+//       const cdata = c.data as StorableButtonWithCustomIdResolved;
+//       if (cdata.style !== source.style) return false;
 
-      let labelMatch = false;
-      let emojiMatch = false;
-      if ("label" in source && "label" in cdata) {
-        labelMatch = source.label === cdata.label;
-      } else if (!("label" in source) && !("label" in source)) {
-        // match is N/A
-        labelMatch = true;
-      }
-      if ("emoji" in source && "emoji" in cdata) {
-        if (source.emoji && cdata.emoji) {
-          if (source.emoji.id !== undefined) {
-            emojiMatch = source.emoji.id === cdata.emoji.id;
-          } else {
-            emojiMatch = source.emoji.name === cdata.emoji.name;
-          }
-        } else {
-          emojiMatch = source.emoji === undefined && cdata.emoji === undefined;
-        }
-      } else if (!("emoji" in source) && !("emoji" in source)) {
-        // match is N/A
-        emojiMatch = true;
-      }
-      return labelMatch && emojiMatch;
-    } else if (
-      [
-        ComponentType.StringSelect,
-        ComponentType.ChannelSelect,
-        ComponentType.MentionableSelect,
-        ComponentType.RoleSelect,
-        ComponentType.UserSelect,
-      ].includes(source.type)
-    ) {
-      const cdata = c.data as
-        | StorableStringSelectResolved
-        | StorableAutopopulatedSelectResolved;
-      return cdata.placeholder === source.placeholder;
-    }
-    return false;
-  });
+//       let labelMatch = false;
+//       let emojiMatch = false;
+//       if ("label" in source && "label" in cdata) {
+//         labelMatch = source.label === cdata.label;
+//       } else if (!("label" in source) && !("label" in source)) {
+//         // match is N/A
+//         labelMatch = true;
+//       }
+//       if ("emoji" in source && "emoji" in cdata) {
+//         if (source.emoji && cdata.emoji) {
+//           if (source.emoji.id !== undefined) {
+//             emojiMatch = source.emoji.id === cdata.emoji.id;
+//           } else {
+//             emojiMatch = source.emoji.name === cdata.emoji.name;
+//           }
+//         } else {
+//           emojiMatch = source.emoji === undefined && cdata.emoji === undefined;
+//         }
+//       } else if (!("emoji" in source) && !("emoji" in source)) {
+//         // match is N/A
+//         emojiMatch = true;
+//       }
+//       return labelMatch && emojiMatch;
+//     } else if (
+//       [
+//         ComponentType.StringSelect,
+//         ComponentType.ChannelSelect,
+//         ComponentType.MentionableSelect,
+//         ComponentType.RoleSelect,
+//         ComponentType.UserSelect,
+//       ].includes(source.type)
+//     ) {
+//       const cdata = c.data as
+//         | StorableStringSelectResolved
+//         | StorableAutopopulatedSelectResolved;
+//       return cdata.placeholder === source.placeholder;
+//     }
+//     return false;
+//   });
 
 export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>
   new MessageFlagsBitField(message.flags ?? 0).has(MessageFlags.IsComponentsV2);
