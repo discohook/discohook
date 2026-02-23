@@ -24,22 +24,19 @@ import i18next from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
+  discordMessageComponents,
   type DraftComponent,
   type DraftFlow,
-  discordMessageComponents,
   ensureComponentFlows,
   getchTriggerGuild,
   getDb,
   getRedis,
   launchComponentKV,
-  type StorableAutopopulatedSelectResolved,
-  type StorableButtonWithCustomIdResolved,
-  type StorableStringSelectResolved,
   type TriggerKVGuild,
 } from "store";
 import { Snowflake } from "tif-snowflake";
-import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
+import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import {
   type ComponentCallbackT,
   type ComponentRoutingId,
@@ -66,6 +63,7 @@ import {
 } from "./types/webhook-events.js";
 import {
   getComponentId,
+  matchComponentByDetails,
   onlyActionRows,
   parseAutoComponentId,
 } from "./util/components.js";
@@ -285,10 +283,7 @@ const handleInteraction = async (
       //
       // However, I'm anticipating some downsides:
       // - More stress on the DB server
-      // - Potentially more latency (DO KV probably faster than DB via hyperdrive/webdis?)
-      //
-      // Therefore, a timed cache system (i.e. with Redis) would probably be
-      // advantageous vs. always requesting DB.
+      // - Potentially more latency (DO KV probably faster than hyperdrive/webdis?)
       const kvKey = `custom-component-${componentId}`;
       let hotComponent = await env.KV.get<{
         data: DraftComponent;
@@ -326,7 +321,7 @@ const handleInteraction = async (
           if (env.ENVIRONMENT === "dev") {
             console.log("Component not found by ID");
           }
-          // Find the button that was interacted with
+          // Find the component that was interacted with
           // We know it's on the message because we're using interaction.data
           // biome-ignore lint/style/noNonNullAssertion: ^
           const source = onlyActionRows(
@@ -343,73 +338,8 @@ const handleInteraction = async (
             console.log("Component from message", source);
           }
 
-          // https://github.com/discohook/discohook/issues/56
-          // It seems that there is something "delinking" published component IDs from their stored
-          // values. It could be a number of factors, including:
-          // - Draft cleanup (probably not - I think the data remains, hence this strategy)
-          // - Saving shenanigans during editing (either on the main page or component specific page)
-          // - ???
-          // As a patch, the below code attempts to find another component in the database (for the
-          // message ID) which has the same surface details (label, style, emoji, placeholder), only
-          // in the event that the component cannot be matched by exact ID. I don't love this, but for
-          // now I think it's my best bet to relieve user frustration.
-          //
-          // This is currently a bot-only system designed only for this one purpose. If I can't figure
-          // out what's causing this issue in the first place, I will probably have little choice but to
-          // also expand this logic to the site and basically do away with solid custom_id-based
-          // identification.
-          // --
-          // I kind of want to reject the candidate if there are multiple matches. But I don't know if
-          // that would cause yet more confusion. Maybe I could look at all other components on the
-          // message and filter out components that have matches, to only look at ones that would
-          // return the message we're trying to avoid.
-          coldComponentPre = allColdCandidates.find((c) => {
-            if (source.type !== c.data.type) return false;
-            if (source.type === ComponentType.Button) {
-              const cdata = c.data as StorableButtonWithCustomIdResolved;
-              if (cdata.style !== source.style) return false;
-
-              let labelMatch = false;
-              let emojiMatch = false;
-              if ("label" in source && "label" in cdata) {
-                labelMatch = source.label === cdata.label;
-              } else if (!("label" in source) && !("label" in source)) {
-                // match is N/A
-                labelMatch = true;
-              }
-              if ("emoji" in source && "emoji" in cdata) {
-                if (source.emoji && cdata.emoji) {
-                  if (source.emoji.id !== undefined) {
-                    emojiMatch = source.emoji.id === cdata.emoji.id;
-                  } else {
-                    emojiMatch = source.emoji.name === cdata.emoji.name;
-                  }
-                } else {
-                  emojiMatch =
-                    source.emoji === undefined && cdata.emoji === undefined;
-                }
-              } else if (!("emoji" in source) && !("emoji" in source)) {
-                // match is N/A
-                emojiMatch = true;
-              }
-              return labelMatch && emojiMatch;
-            } else if (
-              source.type === ComponentType.StringSelect ||
-              source.type === ComponentType.ChannelSelect ||
-              source.type === ComponentType.MentionableSelect ||
-              source.type === ComponentType.RoleSelect ||
-              source.type === ComponentType.UserSelect
-            ) {
-              const cdata = c.data as
-                | StorableStringSelectResolved
-                | StorableAutopopulatedSelectResolved;
-              return cdata.placeholder === source.placeholder;
-            }
-            return false;
-          });
-          if (coldComponentPre && env.ENVIRONMENT === "dev") {
-            console.log("Found match:", String(coldComponentPre.id));
-          }
+          // See comment above this function signature
+          coldComponentPre = matchComponentByDetails(source, allColdCandidates);
         }
 
         if (!coldComponentPre) {

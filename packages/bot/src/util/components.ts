@@ -32,7 +32,13 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
-import { type DraftComponent, generateId } from "store";
+import {
+  type DraftComponent,
+  generateId,
+  StorableAutopopulatedSelectResolved,
+  StorableButtonWithCustomIdResolved,
+  StorableStringSelectResolved,
+} from "store";
 import type { MinimumKVComponentState } from "../components.js";
 import type { Env } from "../types/env.js";
 import { MAX_TOTAL_COMPONENTS } from "./constants.js";
@@ -257,6 +263,81 @@ export const onlyActionRows = (
   }
   return rows;
 };
+
+// https://github.com/discohook/discohook/issues/56
+// It seems that there is something "delinking" published component IDs from their stored
+// values. It could be a number of factors, including:
+// - Draft cleanup (probably not - I think the data remains, hence this strategy)
+// - Saving shenanigans during editing (either on the main page or component specific page)
+// - ???
+// As a patch, the below code attempts to find another component in the database (for the
+// message ID) which has the same surface details (label, style, emoji, placeholder), only
+// in the event that the component cannot be matched by exact ID. I don't love this, but for
+// now I think it's my best bet to relieve user frustration.
+//
+// This is currently a bot-only system designed only for this one purpose. If I can't figure
+// out what's causing this issue in the first place, I will probably have little choice but to
+// also expand this logic to the site and basically do away with solid custom_id-based
+// identification.
+//
+// I think that an automatic message fixer might also be useful; if we're sure the matched
+// component is the right one, we can edit the message to update its ID. But maybe that is best
+// left to a queue of things done automatically next time the user edits manually, because a
+// lot can go wrong when editing.
+// --
+// I kind of want to reject the candidate if there are multiple matches. But I don't know if
+// that would cause yet more confusion. Maybe I could look at all other components on the
+// message and filter out components that have matches, to only look at ones that would
+// return the message we're trying to avoid.
+export const matchComponentByDetails = <T extends { data: DraftComponent }>(
+  source: APIComponentInMessageActionRow,
+  wrappedCandidates: T[],
+): T | undefined =>
+  wrappedCandidates.find((c) => {
+    if (source.type !== c.data.type) return false;
+    if (source.type === ComponentType.Button) {
+      const cdata = c.data as StorableButtonWithCustomIdResolved;
+      if (cdata.style !== source.style) return false;
+
+      let labelMatch = false;
+      let emojiMatch = false;
+      if ("label" in source && "label" in cdata) {
+        labelMatch = source.label === cdata.label;
+      } else if (!("label" in source) && !("label" in source)) {
+        // match is N/A
+        labelMatch = true;
+      }
+      if ("emoji" in source && "emoji" in cdata) {
+        if (source.emoji && cdata.emoji) {
+          if (source.emoji.id !== undefined) {
+            emojiMatch = source.emoji.id === cdata.emoji.id;
+          } else {
+            emojiMatch = source.emoji.name === cdata.emoji.name;
+          }
+        } else {
+          emojiMatch = source.emoji === undefined && cdata.emoji === undefined;
+        }
+      } else if (!("emoji" in source) && !("emoji" in source)) {
+        // match is N/A
+        emojiMatch = true;
+      }
+      return labelMatch && emojiMatch;
+    } else if (
+      [
+        ComponentType.StringSelect,
+        ComponentType.ChannelSelect,
+        ComponentType.MentionableSelect,
+        ComponentType.RoleSelect,
+        ComponentType.UserSelect,
+      ].includes(source.type)
+    ) {
+      const cdata = c.data as
+        | StorableStringSelectResolved
+        | StorableAutopopulatedSelectResolved;
+      return cdata.placeholder === source.placeholder;
+    }
+    return false;
+  });
 
 export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>
   new MessageFlagsBitField(message.flags ?? 0).has(MessageFlags.IsComponentsV2);
