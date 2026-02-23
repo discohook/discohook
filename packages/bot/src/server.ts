@@ -61,16 +61,12 @@ import {
   type APIWebhookEvent,
   WebhookEventType,
 } from "./types/webhook-events.js";
-import {
-  getComponentId,
-  parseAutoComponentId
-} from "./util/components.js";
+import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
 import { createREST } from "./util/rest.js";
 import { sleep } from "./util/sleep.js";
 
 // durable objects
-export { DurableComponentState } from "store";
 export { EmojiManager } from "./emojis.js";
 
 const resources = {
@@ -629,12 +625,6 @@ const handleInteraction = async (
             thisButton.data.style !== ButtonStyle.Link &&
             thisButton.data.style !== ButtonStyle.Premium
           ) {
-            // const thisButtonData = await launchComponentDurableObject(env, {
-            //   messageId: interaction.message.id,
-            //   customId,
-            //   componentId: thisButton.id,
-            // });
-
             const liveVars: LiveVariables = {
               guild,
               member: interaction.member,

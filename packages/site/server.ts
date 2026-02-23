@@ -4,7 +4,6 @@ import * as build from "@remix-run/dev/server-build";
 import { getRedis } from "~/store.server";
 import type { Env } from "~/types/env";
 
-export { DurableComponentState } from "store";
 export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
 export { RateLimiter } from "./app/durable/rate-limits";
 export { DurableScheduler } from "./app/durable/scheduler";

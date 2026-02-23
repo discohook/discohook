@@ -26,9 +26,9 @@ import {
 } from "~/session.server";
 import {
   autoRollbackTx,
-  type DraftComponent,
   destroyComponentKV,
   discordMessageComponents,
+  type DraftComponent,
   eq,
   getDb,
   makeSnowflake,
@@ -438,11 +438,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
 
         if (current.channelId && current.messageId) {
-          // await destroyComponentDurableObject(context.env, {
-          //   messageId: String(current.messageId),
-          //   customId: `p_${id}`,
-          //   componentId: id,
-          // });
           await destroyComponentKV(context.env, id);
 
           const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);

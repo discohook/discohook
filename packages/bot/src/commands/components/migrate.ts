@@ -21,9 +21,9 @@ import {
   backups,
   buttons,
   type DBWithSchema,
+  discordMessageComponents,
   type DraftComponent,
   type DraftFlow,
-  discordMessageComponents,
   FlowActionCheckFunctionType,
   FlowActionSetVariableType,
   FlowActionType,
@@ -450,11 +450,6 @@ export const migrateComponentsConfirm: ButtonCallback = async (ctx) => {
           ) {
             const customId = `p_${component.id}`;
             button.setCustomId(customId);
-            // await launchComponentDurableObject(ctx.env, {
-            //   messageId: message.id,
-            //   componentId: component.id,
-            //   customId,
-            // });
           }
           row.addComponents(button);
         }
