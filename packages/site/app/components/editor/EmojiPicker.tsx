@@ -428,6 +428,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                       .filter(
                         (e) =>
                           e.id.includes(query) ||
+                          e.id.includes(query.replace(/ /g, "_")) ||
                           e.keywords
                             .map((k) => k.includes(query))
                             .includes(true),
