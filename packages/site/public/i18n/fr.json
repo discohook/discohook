@@ -138,7 +138,7 @@
     "sendToAll": "Envoyer à Tous",
     "orgRedirectBody": "Discohook est désormais disponible sur <bold>discohook.app</bold>. Pour migrer vos sauvegardes, <importLink>cliquez ici</importLink>. Pour en savoir plus sur cette mise à jour, <infoLink>cliquez ici</infoLink>.",
     "compactAvatars": "Afficher les avatars",
-    "options": "options",
+    "options": "Options",
     "selectWebhookGuildMissing": "Vous ne voyez pas un serveur où vous avez les permissions ? <0>Essayez de vous reconnecter</0>.",
     "noBackups": "Il n'y a aucune sauvegarde ici. Vous pouvez créer une sauvegarde sur la <0>page principale</0> dans le menu \"Sauvegardes\".",
     "backToServerSelection": "Retour à la sélection du serveur",
