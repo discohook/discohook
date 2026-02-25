@@ -575,7 +575,7 @@
     "allActions": "Todas las acciones",
     "guides": "Guías",
     "linkEmbedType": "Tipo de Embed (<0>¿qué es esto?</0>)",
-    "defaultMessageCreationChoice": "Tipo de mensaje por defecto",
+    "defaultMessageCreationChoice": "Tipo de Mensaje Predeterminado",
     "allWebhooks": "Todos los Webhooks",
     "allChannels": "Todos los canales",
     "allUsers": "Todos los usuarios",
