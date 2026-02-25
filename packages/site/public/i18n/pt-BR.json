@@ -189,5 +189,7 @@
     "shareLinks": "Compartilhar Links",
     "deleteShareLinkConfirm": "Você tem certeza que deseja deletar esse link compartilhado? Isso não pode ser desfeito.",
     "beta": "BETA",
-    "messageTooLong": "Os dados da sua mensagem são muito longos para serem exibidos na URL da página. Se você precisa compartilhar esta página, use o botão \"$t(share)\""
+    "messageTooLong": "Os dados da sua mensagem são muito longos para serem exibidos na URL da página. Se você precisa compartilhar esta página, use o botão \"$t(share)\"",
+    "threadWebhookApplyConfirm": "O tópico será aplicado para todas as mensagens. <toggle>Desfazer</toggle>",
+    "threadWebhookApplyPrompt": "<open>ID do Tópico</open> especificado na URL. <toggle>Aplicar às mensagens</toggle>"
 }
