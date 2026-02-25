@@ -403,5 +403,7 @@
     "botInteractionUrlNote": "将其粘贴到 <0>Discord 开发者门户</0> 中的 “General Information” 部分，以便您的机器人可以响应用户。",
     "formatMemberDescription": "此处使用的成员取决于消息的上下文。在组件响应中，它是与组件交互的成员。对于成员加入/移除触发响应，它是加入或从服务器移除的成员。",
     "troubleshootMessage": "如果您按下发送按钮后没有任何反应，则可能是因为您的浏览器阻止了与 Discord 的连接，这对于隐私保护扩展程序（如 Privacy Badger）来说并不罕见。请尝试禁用隐私扩展程序或进入隐身/私人模式。",
-    "componentsNoWebhook": "为了使按钮和选择菜单正常工作，请使用 Discohook 拥有的 webhook。添加 webhook 以获取更多信息。"
+    "componentsNoWebhook": "为了使按钮和选择菜单正常工作，请使用 Discohook 拥有的 webhook。添加 webhook 以获取更多信息。",
+    "modern": "现代",
+    "classic": "经典"
 }
