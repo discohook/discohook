@@ -46,7 +46,7 @@
     "helpSearchPlaceholder": "Jak mam …",
     "messageTooLong": "Dane Twojej wiadomości są za duże, aby wyświetlić je w adresie URL strony. Jeśli chcesz udostępnić tę stronę, użyj przycisku \"$t(share)\".",
     "submitAll": "Zatwierdź wszystko",
-    "clickGenerate": "Naciśnij „Generuj”, aby wygenerować link do udostępniania.",
+    "clickGenerate": "Naciśnij \"Generuj\" aby wygenerować link do udostępniania.",
     "sendMessageN_one": "Wyślij wiadomość",
     "sendMessageN_few": "Wyślij wiadomości",
     "sendMessageN_many": "Wyślij wiadomości",
