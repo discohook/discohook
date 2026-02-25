@@ -34,7 +34,7 @@
     "cozy": "Acogedor",
     "createdAtTime": "Creado {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
     "successResultTroubleshoot": "Si no puede ver el mensaje, asegúrese de que otro bot no lo haya eliminado. Algunos bots de moderación consideran que todos los mensajes de webhook son spam de forma predeterminada.",
-    "compactAvatars": "Mostrar avatares en modo compacto",
+    "compactAvatars": "Mostrar avatares",
     "editorPanes": "Paneles del editor",
     "compact": "Compacto",
     "createdAt": "Creado el {{ createdAt, MMM D, YYYY }}",
@@ -582,5 +582,14 @@
     "noDescription": "Sin descripción",
     "botTokenCheck": "Token de Bot <0/>",
     "linkEmbedsVideoUrlDirect": "URL (solo enlace directo)",
-    "botNoTokenNote": "Proveer un Token de Bot es opcional. Cuando hay un Token establecido, tu bot puede realizar acciones independientemente de Discohook Utils"
+    "botNoTokenNote": "Proveer un Token de Bot es opcional. Cuando hay un Token establecido, tu bot puede realizar acciones independientemente de Discohook Utils",
+    "componentsMessage": "Mensaje basado en Componentes",
+    "standardMessage": "Mensaje Estándar",
+    "messageTooLong": "El contenido de tu mensaje es demasiado grande para mostrarse en la URL de la página. Si necesitas compartir esta página, usa el botón de \"$t(share)\".",
+    "new": "NUEVO",
+    "download": "Descargar",
+    "beta": "BETA",
+    "linkEmbedTypeStandard": "Estándar (sin markdown, más flexible)",
+    "linkEmbedTypeMastodon": "Publicación (markdown, autor y pie necesarios)",
+    "safariAvatarTooLarge": "Atención: en Safari y navegadores de iOS, es posible que tengas problemas al subir avatares grandes. Si no puedes guardar, prueba subiendo a través de la app de Discord o comprimiendo la imagen antes."
 }
