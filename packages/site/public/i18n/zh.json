@@ -405,5 +405,26 @@
     "troubleshootMessage": "如果您按下发送按钮后没有任何反应，则可能是因为您的浏览器阻止了与 Discord 的连接，这对于隐私保护扩展程序（如 Privacy Badger）来说并不罕见。请尝试禁用隐私扩展程序或进入隐身/私人模式。",
     "componentsNoWebhook": "为了使按钮和选择菜单正常工作，请使用 Discohook 拥有的 webhook。添加 webhook 以获取更多信息。",
     "modern": "现代",
-    "classic": "经典"
+    "classic": "经典",
+    "bio": "简介（关于我）",
+    "removeAvatar": "移除头像",
+    "guidePath": {
+        "changelogs": "变更日志"
+    },
+    "bioWriteOnlyChange": "由于 Discord 的限制，Discohook 无法读取您当前的个人简介。如果您想要更改简介，请启用此复选框。",
+    "serverProfileDescription": "您可以在这里自定义服务器上 Discohook Utils 的用户个人资料。您可以通过点击预览中的图标来自定义头像和横幅。",
+    "removeBanner": "移除横幅",
+    "threadWebhookApplyPrompt": "<open>子区ID</open>已在链接中注明。<toggle>应用到信息</toggle>",
+    "threadWebhookApplyConfirm": "子区会被应用到所有信息上。<toggle>回退</toggle>",
+    "new": "新",
+    "defaultMessageCreationChoice": "默认信息类别",
+    "standardMessage": "标准信息",
+    "avatar": "头像",
+    "banner": "横幅",
+    "changeBio": "更改简介",
+    "bioWriteOnly": "由于 Discord 的限制，此处无法显示个人简介。",
+    "bioDefault": "Discohook 的默认简介会被使用。",
+    "orgRedirectBody": "Discohook 现已在 <bold>discohook.app</bold>上线。若要迁移您的备份，请<importLink>点击此处</importLink>。要了解更多关于本次更新的信息，请<infoLink>点击此处</infoLink>。",
+    "compactAvatars": "显示头像",
+    "beta": "Beta"
 }
