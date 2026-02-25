@@ -51,5 +51,14 @@
     "sendMessageN_few": "Wyślij wiadomości",
     "sendMessageN_many": "Wyślij wiadomości",
     "send": "Wyślij",
-    "sendNoWebhooks": "Nie masz żadnych webhooków do wysłania."
+    "sendNoWebhooks": "Nie masz żadnych webhooków do wysłania.",
+    "orgRedirectBody": "Discohook jest dostępny na <bold>discohook.app</bold>. Aby przenieść kopie zapasowe, <importLink>kliknij tutaj</importLink>. Aby dowiedzieć się więcej o tej aktualizacji, <infoLink>kliknij tutaj</infoLink>.",
+    "willBeEdited": "Ta wiadomość ma już ustawiony link, więc zostanie edytowana.",
+    "skippedEdit": "Pominięto edycję z powodu niezgodnego identyfikatora webhooka.",
+    "success": "Sukces",
+    "error": "Błąd",
+    "messageDetails": "Szczegóły wiadomości",
+    "messageId": "Identyfikator Wiadomości: <0/>",
+    "channelId": "Identyfikator kanału: <0/>",
+    "guildId": "Identyfikator Serwera: <0/>"
 }
