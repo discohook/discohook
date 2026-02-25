@@ -187,6 +187,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
   const [settings, setSettings] = useLocalStorage();
   const [hoverEmoji, setHoverEmoji] = useState<SelectedEmoji>();
   const [query, setQuery] = useState("");
+  const skinTone = settings.skinTone;
 
   const [inputtingCustom, setInputtingCustom] = useState(false);
   const [inputtingCustomDetails, setInputtingCustomDetails] =
@@ -210,8 +211,6 @@ const EmojiPicker_: React.FC<PickerProps> = ({
     };
   }
   const data = useEmojiData(customEmojisData);
-
-  const skinTone = settings.skinTone;
 
   const categories: Category[] = [
     // {
@@ -383,6 +382,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                   } else {
                     setSettings({ skinTone: undefined });
                   }
+                  return;
                 }
 
                 if (skinTone === undefined) {
