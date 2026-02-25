@@ -8,8 +8,8 @@ import {
 } from "~/types/QueryData";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
-import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import DatePicker from "../pickers/DatePicker";
 import { TextArea } from "../TextArea";
@@ -128,7 +128,7 @@ export const LinkEmbedEditor: React.FC<{
             </div>
             {embed.provider?.url === undefined && (
               <Button
-                className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
+                className="ms-2 mt-auto h-9"
                 onClick={() =>
                   updateEmbed({
                     provider: {
@@ -163,7 +163,7 @@ export const LinkEmbedEditor: React.FC<{
                 </div>
                 <button
                   type="button"
-                  className="ml-2 mt-auto mb-1 text-xl"
+                  className="ms-2 mt-auto mb-1 text-xl"
                   onClick={() =>
                     updateEmbed({
                       provider: {
@@ -203,7 +203,7 @@ export const LinkEmbedEditor: React.FC<{
           </div>
           {embed.author?.url === undefined && (
             <Button
-              className="ltr:ml-2 rtl:mr-2 mt-auto h-9"
+              className="ms-2 mt-auto h-9"
               onClick={() =>
                 updateEmbed({
                   author: {
@@ -239,7 +239,7 @@ export const LinkEmbedEditor: React.FC<{
               </div>
               <button
                 type="button"
-                className="ltr:ml-2 rtl:mr-2 mt-auto mb-1 text-xl"
+                className="ms-2 mt-auto mb-1 text-xl"
                 onClick={() =>
                   updateEmbed({
                     author: {

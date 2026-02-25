@@ -41,14 +41,14 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
-import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { isAudioType } from "../preview/FileAttachment";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import {
-  SelectValueTrigger,
   selectStyles,
+  SelectValueTrigger,
   withDefaultItem,
 } from "../StringSelect";
 import { TextArea } from "../TextArea";
@@ -852,6 +852,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                 data={data}
                 setData={setData}
                 files={files}
+                setFiles={setFiles}
                 cache={cache}
                 cdn={cdn}
               />
