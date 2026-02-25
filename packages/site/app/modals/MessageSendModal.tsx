@@ -14,8 +14,8 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
-import type { SetErrorFunction } from "~/components/Error";
 import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
+import type { SetErrorFunction } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
@@ -329,8 +329,9 @@ export const useMessageSubmissionManager = (
               isLinkButton(withoutFlow) &&
               withoutFlow.custom_id
             ) {
-              const url = new URL(withoutFlow.url);
-              withoutFlow.url = url.href;
+              // Since this is a clone that we're submitting straight to
+              // discord (not saving anywhere), we don't need to validate
+              // the URL
               withoutFlow.custom_id = undefined;
             }
           }
