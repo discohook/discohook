@@ -319,7 +319,8 @@
     "appSecretHiddenNote": "出于安全原因，您在此处保存密钥后，密钥将永远不会显示给您。如果您已重置客户端密钥，请按 “Clear Secret” 然后重新保存。",
     "botName": "机器人名称",
     "deleteBot": {
-        "title": "删除机器人"
+        "title": "删除机器人",
+        "note": "要删除此自定义机器人，请在下面输入其名称。这不会删除连接的 Discord 机器人。"
     },
     "information": "资讯",
     "havingTrouble": "有困难？",
@@ -359,14 +360,17 @@
             "avatar_url": "成员展示头像URL",
             "default_avatar_url": "成员默认头像URL",
             "bot": "该会员是否是机器人",
-            "id": "成员 ID"
+            "id": "成员 ID",
+            "discriminator": "成员鉴别器（旧版用户名称系统）",
+            "tag": "成员的的完整用户标签"
         },
         "server": {
             "members": "服务器成员数",
             "icon_url": "服务器图标 URL",
             "id": "服务器 ID",
             "name": "服务器名称"
-        }
+        },
+        "now": "格式化后的当前时间"
     },
     "howToFormat": "如何格式化您的消息",
     "deleteLinkBackupConfirm": "您确定要删除此链接嵌入吗？此操作无法撤销。",
@@ -393,5 +397,11 @@
     },
     "searchOrCreateBackup": "搜索或者创建备份",
     "unlink": "断链",
-    "close": "关闭"
+    "close": "关闭",
+    "applicationId": "Application ID",
+    "botNoTokenNote": "提供机器人令牌是可选的。设置令牌后，您的机器人可以独立于 Discohook Utils 执行操作。",
+    "botInteractionUrlNote": "将其粘贴到 <0>Discord 开发者门户</0> 中的 “General Information” 部分，以便您的机器人可以响应用户。",
+    "formatMemberDescription": "此处使用的成员取决于消息的上下文。在组件响应中，它是与组件交互的成员。对于成员加入/移除触发响应，它是加入或从服务器移除的成员。",
+    "troubleshootMessage": "如果您按下发送按钮后没有任何反应，则可能是因为您的浏览器阻止了与 Discord 的连接，这对于隐私保护扩展程序（如 Privacy Badger）来说并不罕见。请尝试禁用隐私扩展程序或进入隐身/私人模式。",
+    "componentsNoWebhook": "为了使按钮和选择菜单正常工作，请使用 Discohook 拥有的 webhook。添加 webhook 以获取更多信息。"
 }
