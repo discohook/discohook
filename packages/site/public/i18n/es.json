@@ -177,7 +177,24 @@
         "ViewAuditLog": "Ver registro de auditoría",
         "ManageChannels": "Gestionar canales",
         "ManageGuild": "Gestionar servidor",
-        "BanMembers": "Banear Miembros"
+        "BanMembers": "Banear Miembros",
+        "ManageThreads": "Administrar hilos",
+        "ManageNicknames": "Administrar apodos",
+        "MuteMembers": "Silenciar miembros",
+        "SendMessages": "Enviar mensajes",
+        "CreatePublicThreads": "Crear hilos públicos",
+        "ManageRoles": "Administrar roles",
+        "CreatePrivateThreads": "Crear hilos privados",
+        "SendVoiceMessages": "Enviar mensajes de voz",
+        "UseExternalSounds": "Usar sonidos externos",
+        "ManageMessages": "Administrar mensajes",
+        "ViewChannel": "Ver canales",
+        "ManageWebhooks": "Administrar Webhooks",
+        "ChangeNickname": "Cambiar apodo",
+        "UseExternalStickers": "Usar Pegatinas externas",
+        "MentionEveryone": "Mencionar a Todos (@everyone)",
+        "SendMessagesInThreads": "Enviar mensajes en hilos",
+        "UseExternalEmojis": "Usar emojis externos"
     },
     "actionType": {
         "10": "Eliminar mensaje",
@@ -266,7 +283,8 @@
     "refreshed": "Refrescado",
     "auditLog": "Registro de auditoría",
     "createBot": {
-        "title": "Crear Bot"
+        "title": "Crear Bot",
+        "step1": "Visita el <0>Portal de Desarrolladores</0>"
     },
     "provider": "Proveedor",
     "fieldNText": "Campo {{n}} - {{text}}",
@@ -530,5 +548,39 @@
     "miscellaneous": "Varios",
     "formatDescription": "Algunos mensajes pueden planificarse dinámicamente con una selección de opciones de formato que se muestran a continuación. Todas las opciones deben incluir las llaves: <0>{}</0>",
     "formatOptionsNone": "Pasa el cursor sobre una opción de arriba para ver un ejemplo.",
-    "option": "Opción"
+    "option": "Opción",
+    "applicationId": "ID de aplicación",
+    "portal": "Portal",
+    "thisDevice": "Este dispositivo",
+    "permissionsCount_one": "{{count}} permiso",
+    "permissionsCount_many": "{{count}} permisos",
+    "permissionsCount_other": "",
+    "owner": "Propietario",
+    "selectAll": "Seleccionar todo",
+    "linkEmbedsVideoUrl": "URL (enlace directo, YouTube, Vimeo)",
+    "usingDiscohook": "Usando Discohook",
+    "anonymous": "Anónimo",
+    "auditLogMessage": {
+        "webhooklessAction": {
+            "send": "<0>{{username}}</0> ha enviado un mensaje",
+            "edit": "<0>{{username}}</0> ha editado un mensaje",
+            "delete": "<0>{{username}}</0> ha eliminado un mensaje"
+        },
+        "webhookAction": {
+            "send": "<0>{{username}}</0> ha enviado un mensaje con {{webhook.name}}",
+            "delete": "<0>{{username}}</0> ha eliminado un mensaje con {{webhook.name}}",
+            "edit": "<0>{{username}}</0> ha editado un mensaje con {{webhook.name}}"
+        }
+    },
+    "allActions": "Todas las acciones",
+    "guides": "Guías",
+    "linkEmbedType": "Tipo de Embed (<0>¿qué es esto?</0>)",
+    "defaultMessageCreationChoice": "Tipo de mensaje por defecto",
+    "allWebhooks": "Todos los Webhooks",
+    "allChannels": "Todos los canales",
+    "allUsers": "Todos los usuarios",
+    "noDescription": "Sin descripción",
+    "botTokenCheck": "Token de Bot <0/>",
+    "linkEmbedsVideoUrlDirect": "URL (solo enlace directo)",
+    "botNoTokenNote": "Proveer un Token de Bot es opcional. Cuando hay un Token establecido, tu bot puede realizar acciones independientemente de Discohook Utils"
 }
