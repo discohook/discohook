@@ -14,6 +14,7 @@ import {
 import dedent from "dedent-js";
 import {
   type APIButtonComponent,
+  type APIGuildInteraction,
   type APIInteraction,
   type APIMessage,
   type APIModalInteractionResponseCallbackData,
@@ -307,7 +308,7 @@ const registerComponent = async (
 };
 
 export const startComponentFlow = async (
-  ctx: InteractionContext<APIInteraction>,
+  ctx: InteractionContext<APIGuildInteraction>,
   message: APIMessage,
   components?: ActionRowBuilder<MessageActionRowComponentBuilder>[],
 ): Promise<InteractionInstantOrDeferredResponse> => {
@@ -384,68 +385,69 @@ export const startComponentFlow = async (
     },
   };
 
+  const container = getComponentFlowContainer(componentFlow);
+  container.addActionRowComponents(
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      await storeComponents(ctx.env.KV, [
+        new StringSelectMenuBuilder({
+          placeholder: "Add a component",
+          options: [
+            {
+              label: "Button",
+              description:
+                "A simple button that runs a flow (add roles/send messages/etc)",
+              value: "button",
+              emoji: { name: "🟦" },
+            },
+            {
+              label: "Link Button",
+              description: "Direct a user to a webpage",
+              value: "link-button",
+              emoji: { name: "🌐" },
+            },
+            {
+              label: "String Select",
+              description: "Define a custom list of options (up to 25)",
+              value: "string-select",
+              emoji: { name: "🔽" },
+            },
+            {
+              label: "User Select",
+              description: "Show a list of all server members",
+              value: "user-select",
+              emoji: { name: "👤" },
+            },
+            {
+              label: "Role Select",
+              description: "Show a list of all server roles",
+              value: "role-select",
+              emoji: { name: "🏷️" },
+            },
+            {
+              label: "User/Role Select",
+              description: "Show a list of all members and roles",
+              value: "mentionable-select",
+              emoji: { name: "*️⃣" },
+            },
+            {
+              label: "Channel Select",
+              description: "Show a list of all server channels",
+              value: "channel-select",
+              emoji: { name: "#️⃣" },
+            },
+          ],
+        }),
+        {
+          ...componentFlow,
+          componentOnce: true,
+        },
+      ]),
+    ),
+  );
+
   return [
     ctx.reply({
-      components: [
-        getComponentFlowContainer(componentFlow),
-        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-          await storeComponents(ctx.env.KV, [
-            new StringSelectMenuBuilder({
-              placeholder: "Add a component",
-              options: [
-                {
-                  label: "Button",
-                  description:
-                    "A simple button that runs a flow (add roles/send messages/etc)",
-                  value: "button",
-                  emoji: { name: "🟦" },
-                },
-                {
-                  label: "Link Button",
-                  description: "Direct a user to a webpage",
-                  value: "link-button",
-                  emoji: { name: "🌐" },
-                },
-                {
-                  label: "String Select",
-                  description: "Define a custom list of options (up to 25)",
-                  value: "string-select",
-                  emoji: { name: "🔽" },
-                },
-                {
-                  label: "User Select",
-                  description: "Show a list of all server members",
-                  value: "user-select",
-                  emoji: { name: "👤" },
-                },
-                {
-                  label: "Role Select",
-                  description: "Show a list of all server roles",
-                  value: "role-select",
-                  emoji: { name: "🏷️" },
-                },
-                {
-                  label: "User/Role Select",
-                  description: "Show a list of all members and roles",
-                  value: "mentionable-select",
-                  emoji: { name: "*️⃣" },
-                },
-                {
-                  label: "Channel Select",
-                  description: "Show a list of all server channels",
-                  value: "channel-select",
-                  emoji: { name: "#️⃣" },
-                },
-              ],
-            }),
-            {
-              ...componentFlow,
-              componentOnce: true,
-            },
-          ]),
-        ),
-        ...(components ?? []),
-      ],
+      components: [container, ...(components ?? [])],
       ephemeral: true,
       componentsV2: true,
     }),
@@ -453,8 +455,7 @@ export const startComponentFlow = async (
       const guild = await getchGuild(
         ctx.rest,
         ctx.env,
-        // biome-ignore lint/style/noNonNullAssertion: we are in a guild
-        ctx.interaction.guild_id!,
+        ctx.interaction.guild_id,
       );
       await upsertGuild(db, guild);
     },
