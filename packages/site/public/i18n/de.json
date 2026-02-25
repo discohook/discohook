@@ -682,5 +682,5 @@
     "beta": "BETA",
     "separatorLine": "Trennlinie",
     "deleteRow": "Lösche Reihe",
-    "messageTooLong": "Die Nachrichtendaten sind zu groß, um in der Seiten-URL angezeigt zu werden.\nWenn du diese Seite teilen möchtest, verwende die Schaltfläche „$t(share)“."
+    "messageTooLong": "Die Nachrichtendaten sind zu groß, um in der Seiten-URL angezeigt zu werden. Wenn du diese Seite teilen möchtest, verwende die Schaltfläche „$t(share)“."
 }
