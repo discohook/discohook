@@ -681,5 +681,6 @@
     "emojis": "Emojis",
     "beta": "BETA",
     "separatorLine": "Trennlinie",
-    "deleteRow": "Lösche Reihe"
+    "deleteRow": "Lösche Reihe",
+    "messageTooLong": "Die Nachrichtendaten sind zu groß, um in der Seiten-URL angezeigt zu werden.\nWenn du diese Seite teilen möchtest, verwende die Schaltfläche „$t(share)“."
 }
