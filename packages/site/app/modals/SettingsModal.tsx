@@ -1,7 +1,8 @@
 import { Link } from "@remix-run/react";
-import type { i18n as i18nT } from "i18next";
+import { ButtonStyle } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
@@ -9,6 +10,7 @@ import { linkClassName } from "~/components/preview/Markdown";
 import { Radio } from "~/components/Radio";
 import type { LocaleCode } from "~/i18n";
 import type { User } from "~/session.server";
+import type { TFunction } from "~/types/i18next";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
@@ -42,7 +44,7 @@ const LocaleRadio = ({
 }: {
   locale: LocaleCode;
   entry: LanguageEntry;
-  i18n: i18nT;
+  i18n: { changeLanguage: (lng?: string) => Promise<TFunction> };
   settings: Settings;
   updateSettings: (data: Partial<Settings>) => void;
 }) => (
@@ -279,6 +281,28 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
               }
             }}
           />
+        </div>
+      </div>
+      <div className="mt-8">
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
+          {t("cache")}
+        </p>
+        <div className="space-y-2 mt-2">
+          <div>
+            <p>
+              Default emoji cache is automatically refreshed every 14 days. If
+              there has been an emoji update, you can refresh instantly by
+              clicking this button.
+            </p>
+            <Button
+              discordstyle={ButtonStyle.Secondary}
+              onClick={() => {
+                localStorage.removeItem("discohook_unicode_emojis");
+              }}
+            >
+              Clear Emoji Cache
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

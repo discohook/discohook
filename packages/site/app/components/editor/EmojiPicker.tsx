@@ -1,10 +1,5 @@
 import { Popover } from "@base-ui-components/react/popover";
-import emojiData, {
-  type Category,
-  type Emoji,
-  type EmojiMartData,
-  type Skin,
-} from "@emoji-mart/data";
+import type { Category, Emoji, Skin } from "@emoji-mart/data";
 import {
   type APIMessageComponentEmoji,
   ButtonStyle,
@@ -15,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdn } from "~/util/discord";
+import { useEmojiData } from "~/util/emojis";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -42,6 +38,10 @@ import { TextInput } from "../TextInput";
 
 // Dec 18 2023
 // emoji-picker-react
+
+// Feb 24 2026
+// Keeping emoji-mart/data for its types, but not using the data package
+// anymore because it is out of date and hasn't been updated in 2 years.
 
 type SelectedEmoji = Omit<Emoji, "skins"> & { skin: Skin };
 
@@ -71,9 +71,9 @@ const categoryToIcon: Record<string, IconFC> = {
   ),
   people: EmojiIconPeople,
   nature: EmojiIconNature,
-  foods: EmojiIconFood,
-  activity: EmojiIconActivities,
-  places: EmojiIconTravel,
+  food: EmojiIconFood,
+  activities: EmojiIconActivities,
+  travel: EmojiIconTravel,
   objects: EmojiIconObjects,
   symbols: EmojiIconSymbols,
   flags: EmojiIconFlags,
@@ -192,29 +192,24 @@ const EmojiPicker_: React.FC<PickerProps> = ({
   const [inputtingCustomDetails, setInputtingCustomDetails] =
     useState<ReturnType<typeof findCustomEmojiSubstring>>();
 
-  const data = structuredClone(emojiData as EmojiMartData);
   const validCustomEmojis = (customEmojis ?? []).filter(
     (e): e is { id: string; name: string; animated?: boolean } =>
       !!e.id && !!e.name,
   );
-
+  const customEmojisData: Record<string, Emoji> = {};
   for (const emoji of validCustomEmojis) {
     const id = `discord_${emoji.id}`;
-    data.emojis[id] = {
+    customEmojisData[id] = {
       id,
       name: emoji.name,
       // We were originally using the `custom` keyword to filter custom emojis,
       // but beware: passport_control also includes this keyword.
       keywords: ["discord", emoji.animated ? "animated" : "static"],
-      skins: [
-        {
-          native: emoji.id,
-          unified: "",
-        },
-      ],
+      skins: [{ native: emoji.id, unified: "" }],
       version: 1,
     };
   }
+  const data = useEmojiData(customEmojisData);
 
   const skinTone = settings.skinTone;
 
@@ -362,7 +357,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
         </div>
       ) : (
         <>
-          <div className="p-2 shadow border-b border-b-black/5 flex items-center gap-3 ltr:mr-1 rtl:ml-1">
+          <div className="p-2 shadow border-b border-b-black/5 flex items-center gap-3 me-1">
             <div className="grow">
               <TextInput
                 label=""
@@ -376,7 +371,20 @@ const EmojiPicker_: React.FC<PickerProps> = ({
             <button
               type="button"
               className="shrink-0"
-              onClick={() => {
+              onClick={(e) => {
+                // Go back without cycling through all options
+                if (e.shiftKey) {
+                  if (skinTone === undefined) {
+                    setSettings({ skinTone: 4 });
+                  } else if (skinTone > 0) {
+                    setSettings({
+                      skinTone: (skinTone - 1) as typeof skinTone,
+                    });
+                  } else {
+                    setSettings({ skinTone: undefined });
+                  }
+                }
+
                 if (skinTone === undefined) {
                   setSettings({ skinTone: 0 });
                 } else if (skinTone < 4) {
@@ -390,17 +398,9 @@ const EmojiPicker_: React.FC<PickerProps> = ({
             >
               <Twemoji
                 emoji={
-                  skinTone === 0
-                    ? "👏🏻"
-                    : skinTone === 1
-                      ? "👏🏼"
-                      : skinTone === 2
-                        ? "👏🏽"
-                        : skinTone === 3
-                          ? "👏🏾"
-                          : skinTone === 4
-                            ? "👏🏿"
-                            : "👏"
+                  (skinTone !== undefined
+                    ? ["👏🏻", "👏🏼", "👏🏽", "👏🏾", "👏🏿"][skinTone]
+                    : undefined) ?? "👏"
                 }
                 className="h-6 align-[-0.3em] w-6"
                 title="Set skin tone"
@@ -494,6 +494,19 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                             )}
                             {category.emojis.map((name) => {
                               const emoji = data.emojis[name];
+                              /**
+                               * This will always happen when adding custom emojis because our useEmojiData
+                               * hook doesn't depend on customEmojisData. However, it doesn't matter because
+                               * when a custom emoji is created, the menu closes automatically, then the data
+                               * is refreshed on the next render (when the menu is opened again).
+                               */
+                              if (!emoji) {
+                                console.log(
+                                  `${name} from ${category.id} not found`,
+                                );
+                                return <></>;
+                              }
+
                               const skin =
                                 emoji.skins[
                                   skinTone === undefined ? 0 : skinTone + 1
