@@ -191,5 +191,7 @@
     "beta": "BETA",
     "messageTooLong": "Os dados da sua mensagem são muito longos para serem exibidos na URL da página. Se você precisa compartilhar esta página, use o botão \"$t(share)\"",
     "threadWebhookApplyConfirm": "O tópico será aplicado para todas as mensagens. <toggle>Desfazer</toggle>",
-    "threadWebhookApplyPrompt": "<open>ID do Tópico</open> especificado na URL. <toggle>Aplicar às mensagens</toggle>"
+    "threadWebhookApplyPrompt": "<open>ID do Tópico</open> especificado na URL. <toggle>Aplicar às mensagens</toggle>",
+    "id": "ID:{{id}}",
+    "refreshShareLink": "Recarregue o link de compartilhamento por outras 2 semanas (Recurso Deluxe!)"
 }
