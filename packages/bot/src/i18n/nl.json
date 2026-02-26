@@ -61,7 +61,12 @@
                     "name": "migreer",
                     "options": {
                         "message": {
-                            "name": "bericht"
+                            "name": "bericht",
+                            "description": "Migreer componenten op dit bericht. Een berichtlink wordt hier ook geaccepteerd"
+                        },
+                        "channel": {
+                            "description": "Het kanaal waarin het bericht zich bevindt, voor resultaten van automatisch aanvullen",
+                            "name": "kanaal"
                         }
                     }
                 }
@@ -242,6 +247,20 @@
         },
         "welcomer": {
             "description": "Welkomstberichten zijn verhuisd naar /triggers!"
+        },
+        "deluxe": {
+            "name": "deluxe",
+            "options": {
+                "info": {
+                    "name": "informatie",
+                    "description": "Informatie over Discohook Deluxe, onze premium abonnementsoptie"
+                },
+                "sync": {
+                    "name": "synchroniseren",
+                    "description": "Zorg ervoor dat de Discohook-website up-to-date is met je Deluxe-abonnement"
+                }
+            },
+            "description": "Synchroniseer je Deluxe-abonnement"
         }
     }
 }
