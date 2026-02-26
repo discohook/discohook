@@ -1,5 +1,3 @@
-import fs from "node:fs/promises";
-import process from "node:process";
 import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
@@ -24,6 +22,8 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import dotenv from "dotenv";
+import fs from "node:fs/promises";
+import process from "node:process";
 import { TriggerEvent } from "store";
 
 /**
@@ -113,6 +113,9 @@ const main = async () => {
     nl: await loadLocalization("nl"),
     fr: await loadLocalization("fr"),
     it: await loadLocalization("it"),
+    pl: await loadLocalization("pl"),
+    ru: await loadLocalization("ru"),
+    tr: await loadLocalization("tr"),
     // "zh-CN": await loadLocalization("zh-CN"),
   };
   const english = { "en-US": await loadLocalization("en") };
