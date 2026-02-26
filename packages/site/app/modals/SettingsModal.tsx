@@ -33,6 +33,7 @@ const languages: Partial<Record<LocaleCode, LanguageEntry>> = {
   // id: {native: "", flag: "🇮🇩"},
   uk: { native: "українська", flag: "🇺🇦" },
   ru: { native: "Русский", flag: "🇷🇺" },
+  tr: { native: "Türkçe", flag: "🇹🇷" },
 };
 
 const LocaleRadio = ({

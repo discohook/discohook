@@ -17,6 +17,7 @@ export const supportedLanguages = [
   "id",
   "uk",
   "ru",
+  "tr",
 ] as const;
 
 export type LocaleCode = (typeof supportedLanguages)[number];
