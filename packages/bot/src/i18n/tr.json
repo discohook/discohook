@@ -360,7 +360,122 @@
         },
         "format": {
             "name": "format",
-            "description": "Kullanıcılar, roller, kanallar ve emojiler için Markdown formatı (biçimlendirmesi) edin"
+            "description": "Kullanıcılar, roller, kanallar ve emojiler için Markdown formatı (biçimlendirmesi) edin",
+            "options": {
+                "mention": {
+                    "name": "mention",
+                    "description": "Bir kullanıcı veya rol için ping formatını atar",
+                    "options": {
+                        "target": {
+                            "name": "hedef",
+                            "description": "Pinglenecek kullanıcı veya rol"
+                        }
+                    }
+                },
+                "channel": {
+                    "name": "kanal",
+                    "description": "Bir kanal için ping formatını atar",
+                    "options": {
+                        "target": {
+                            "name": "hedef",
+                            "description": "Pinglenecek kanal"
+                        }
+                    }
+                },
+                "emoji": {
+                    "name": "emoji",
+                    "description": "Bir sunucu emojisi için kullanım formatını atar",
+                    "options": {
+                        "target": {
+                            "name": "hedef",
+                            "description": "Kullanılacak emoji"
+                        }
+                    }
+                }
+            }
+        },
+        "invite": {
+            "name": "davet",
+            "description": "Bu botun davet URL'si"
+        },
+        "id": {
+            "name": "id",
+            "description": "Bir Discord kaynağının sayı ID'sini al",
+            "options": {
+                "mention": {
+                    "name": "mention",
+                    "description": "Bir kullanıcının veya rolün ID'sini atar",
+                    "options": {
+                        "target": {
+                            "name": "hedef",
+                            "description": "Kullanıcı veya kanal"
+                        }
+                    }
+                },
+                "channel": {
+                    "name": "kanal",
+                    "description": "Bir kanal veya tiradin ID'sini atar",
+                    "options": {
+                        "target": {
+                            "name": "hedef",
+                            "description": "Kanal veya tirad"
+                        }
+                    }
+                },
+                "emoji": {
+                    "name": "emoji",
+                    "description": "Bir sunucu emojisinin ID'sini atar",
+                    "options": {
+                        "target": {
+                            "name": "hedef",
+                            "description": "Emoji"
+                        }
+                    }
+                }
+            }
+        },
+        "_ctx": {
+            "components": {
+                "name": "Düğmeler & Bileşenler"
+            },
+            "edit": {
+                "name": "Hızlı Düzenleme"
+            },
+            "restore": {
+                "name": "Kurtarma"
+            },
+            "webhook": {
+                "name": "Webhook Bilgisi"
+            },
+            "quickedit": {
+                "name": "Hızlı Düzenleme"
+            },
+            "debug": {
+                "name": "Hata Ayıklama"
+            }
         }
+    },
+    "noMigratableComponents": "Bu mesajda kayıtlı ve taşınabilir bir bileşen bulunmamaktadır.",
+    "noContentAvailable": "Bir içerik yok",
+    "noComponentFlow": "Bu bileşen için kayıtlı bir akış bulunmamaktadır. Yeni bir akış ayarlamak için düğmeye tıkla.",
+    "noComponentFlowMigratePrompt": "Bu mesajda 5 Eylül 2024'ten önce oluşturulmuş düğmeler varsa, </buttons migrate:908884724087410729> komutunu çalıştırman gerekebilir.",
+    "componentWillExpire": "Lütfen düzenlemeyi tamamlayıp bu bileşeni 2 hafta içinde gönder, aksi takdirde taslağın silinecektir.",
+    "noTrigger": "Bu sunucuda böyle bir tetikleyici yok.",
+    "unnamedTrigger": "İsimsiz tetikleyici",
+    "triggerDuplicate": "Bu sunucuda zaten bu olay için bir tetikleyici var.",
+    "triggerCreated": "**{{name}}** tetikleyicisi oluşturuldu.",
+    "addActions": "Eylem Ekle",
+    "noActions": "Eylem yok",
+    "manageActions": "Eylemleri Yönet",
+    "idUnavailable": "ID mevcut değil.",
+    "customize": "Özelleştir",
+    "gteNMessagesSent_one": "En az {{count}} mesaj gönderildi",
+    "gteNMessagesSent_other": "En az {{count}} messaj gönderildi",
+    "webhookDelete": {
+        "confirm": "Bu webhooku silmek istediğinden emin misin? Gönderdiği herhangi bir mesajı düzenlemek imkansız olacaktır.",
+        "forbidden": "Webhookları yönetme yetkin yok.",
+        "wrongServer": "Böyle bir webhook yok ya da bu sunucuda değil.",
+        "success": "Webhook başarıyla silindi.",
+        "cancel": "Webhook emin ellerde."
     }
 }
