@@ -1,1 +1,359 @@
-{}
+{
+    "commands": {
+        "webhook": {
+            "options": {
+                "create": {
+                    "options": {
+                        "name": {
+                            "name": "isim",
+                            "description": "Webhook'un ismi"
+                        },
+                        "avatar": {
+                            "name": "avatar",
+                            "description": "Webhook'un avatarı"
+                        },
+                        "show-url": {
+                            "description": "Bunu sadece bir üçüncü taraf uygulama için URL'ye ihtiyacın varsa aç",
+                            "name": "url-göster"
+                        },
+                        "channel": {
+                            "name": "kanal",
+                            "description": "Webhook'un oluşturulacağı kanal"
+                        }
+                    },
+                    "name": "oluştur",
+                    "description": "Webhook oluştur"
+                },
+                "info": {
+                    "options": {
+                        "filter-channel": {
+                            "description": "Oto-tamamlanan sonuçların filtreleneceği kanal",
+                            "name": "filtre-kanal"
+                        },
+                        "webhook": {
+                            "name": "webhook",
+                            "description": "Bilgisini istediğin webhook"
+                        },
+                        "show-url": {
+                            "name": "url-göster",
+                            "description": "\"URL al\" adımının atlanması için. Mesajı gizler"
+                        }
+                    },
+                    "name": "info",
+                    "description": "Bir webhook hakkında bilgi al"
+                },
+                "delete": {
+                    "name": "sil",
+                    "description": "Bir webhook sil",
+                    "options": {
+                        "webhook": {
+                            "name": "webhook",
+                            "description": "Silinecek webhook"
+                        },
+                        "filter-channel": {
+                            "name": "filtre-kanal",
+                            "description": "Oto-tamamlanan sonuçların filtreleneceği kanal"
+                        }
+                    }
+                }
+            },
+            "name": "webhook",
+            "description": "Webhookları yönet"
+        },
+        "welcomer": {
+            "options": {
+                "delete": {
+                    "options": {
+                        "event": {
+                            "name": "olay",
+                            "description": "Karşılayıcının olayı"
+                        }
+                    },
+                    "name": "sil",
+                    "description": "Bir karşılama konfigürasyonu sil"
+                },
+                "set": {
+                    "options": {
+                        "event": {
+                            "description": "Bu karşılayıcıyı hangi olayların tetikleyeceği",
+                            "name": "olay",
+                            "choices": {
+                                "0": "Üye Katıldı (ağırlama)",
+                                "1": "Üye Ayrıldı (geçirme)"
+                            }
+                        },
+                        "share-link": {
+                            "description": "Mesaj için kullanılacak paylaşım linki",
+                            "name": "paylaşım-link"
+                        },
+                        "channel": {
+                            "name": "kanal",
+                            "description": "Eğer bir webhook belirtilmediyse, mesajın gönderileceği kanal"
+                        },
+                        "webhook": {
+                            "name": "webhook",
+                            "description": "Mesajı göndermek için kullanılacak webhook"
+                        },
+                        "delete-after": {
+                            "name": "sonra-sil",
+                            "description": "Mesajı silmeden önce kaç saniye bekleyeceği (0 = asla silme)"
+                        }
+                    },
+                    "name": "set",
+                    "description": "Yeni bir karşılama sistemi setuplayın veya var olanın üzerine yazın"
+                },
+                "view": {
+                    "name": "görüntüle",
+                    "description": "Karşılayıcı konfigürasyonunun özetini gör",
+                    "options": {
+                        "event": {
+                            "name": "olay",
+                            "description": "Karşılayıcının olayı"
+                        }
+                    }
+                }
+            },
+            "name": "karşılayıcı",
+            "description": "Basit bi karşılama sistemi hazırlayın (Bir de /triggers göz atın)"
+        },
+        "profile": {
+            "name": "profil",
+            "description": "Discohook Utils için sunucu profilini ayarla",
+            "options": {
+                "set": {
+                    "name": "set",
+                    "description": "Bot'un adını, avatarını, veya bannerını özel değerlerle değiştir",
+                    "options": {
+                        "name": {
+                            "name": "isim",
+                            "description": "Botun ismi"
+                        },
+                        "avatar": {
+                            "name": "avatar",
+                            "description": "Botun avatarı"
+                        },
+                        "banner": {
+                            "name": "banner",
+                            "description": "Botun bannerı"
+                        }
+                    }
+                },
+                "clear": {
+                    "description": "Profil değerlerinin birini veya tamamını varsayılan değere döndür",
+                    "name": "temizle",
+                    "options": {
+                        "value": {
+                            "name": "değer",
+                            "description": "Sıfırlanacak değer. Eğer boş bırakılırsa bütün değerler sıfırlanır"
+                        }
+                    }
+                }
+            }
+        },
+        "restore": {
+            "description": "Bir mesajı Discohook editöründe kurtar",
+            "name": "kurtarma",
+            "options": {
+                "message": {
+                    "name": "mesaj",
+                    "description": "Kurtarılacak mesaj. Buraya mesaj linki de girilebilir"
+                },
+                "mode": {
+                    "description": "Mesajın nasıl kurtarılacağı. Şu anlık sadece düzenleme seçenekleri kullanılabilir",
+                    "name": "mod",
+                    "choices": {
+                        "edit": "Düzenleme seçenekleriyle",
+                        "link": "Gömülü editörü linklemek için"
+                    }
+                }
+            }
+        },
+        "buttons": {
+            "options": {
+                "migrate": {
+                    "options": {
+                        "channel": {
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)",
+                            "name": "kanal"
+                        },
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Bu mesajdaki bileşenleri taşıyın. Buraya mesaj linki de girilebilir"
+                        }
+                    },
+                    "name": "taşı",
+                    "description": "Bütün eski düğmeleri taşı"
+                },
+                "add": {
+                    "options": {
+                        "channel": {
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)",
+                            "name": "kanal"
+                        },
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Bu mesaja bir bileşen ekle. Buraya mesaj linki de girilebilir"
+                        }
+                    },
+                    "name": "ekle",
+                    "description": "Bileşen ekle"
+                },
+                "edit": {
+                    "options": {
+                        "channel": {
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)",
+                            "name": "kanal"
+                        },
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Bu mesajdaki bir bileşeni düzenle. Buraya mesaj linki de girilebilir"
+                        }
+                    },
+                    "name": "düzenle",
+                    "description": "Bir bileşen düzenle"
+                },
+                "delete": {
+                    "options": {
+                        "channel": {
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)"
+                        }
+                    }
+                }
+            },
+            "name": "düğmeler",
+            "description": "Bileşenleri (düğmeleri/seçimleri) ekle, kaldır ve yönet"
+        },
+        "reaction-role": {
+            "options": {
+                "delete": {
+                    "options": {
+                        "emoji": {
+                            "description": "Tepkinin göstereceği emoji. Silme menüsünü görüntülemek için bu seçeneği atla",
+                            "name": "emoji"
+                        },
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Tepki rolünün silineceği mesaj. Buraya mesaj linki de girilebilir"
+                        },
+                        "channel": {
+                            "name": "kanal",
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)"
+                        }
+                    },
+                    "name": "sil",
+                    "description": "Bir mesajdan bir tepki rolü sil"
+                },
+                "create": {
+                    "options": {
+                        "emoji": {
+                            "description": "Tepkide gözükecek emoji. Eğer özel emojiler kullanıyorsan tepkiyi sen at",
+                            "name": "emoji"
+                        },
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Tepki atılacak mesaj. Buraya mesaj linki de girilebilir"
+                        },
+                        "role": {
+                            "name": "rol",
+                            "description": "Tepkiye basılınca eklenecek veya çıkarılacak rol"
+                        },
+                        "channel": {
+                            "name": "kanal",
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)"
+                        }
+                    },
+                    "name": "oluştur",
+                    "description": "Yeni tepki rolü oluştur"
+                },
+                "list": {
+                    "options": {
+                        "channel": {
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)"
+                        },
+                        "message": {
+                            "description": "Listelenecek tepki rollerinin olduğu mesaj. Buraya mesaj linki de girilebilir"
+                        }
+                    },
+                    "name": "liste",
+                    "description": "Bir mesajdaki bütün tepki rollerini listele"
+                }
+            },
+            "name": "tepki-roller",
+            "description": "Tepki rolleri ekle, sil veya yönet"
+        },
+        "triggers": {
+            "options": {
+                "add": {
+                    "options": {
+                        "name": {
+                            "description": "Tetikleyicinin ismi",
+                            "name": "isim"
+                        },
+                        "event": {
+                            "name": "olay",
+                            "description": "Tetikleyiciyi çalıştıracak olay",
+                            "choices": {
+                                "0": "Üye Katıldı",
+                                "1": "Üye Ayrıldı"
+                            }
+                        }
+                    },
+                    "name": "ekle",
+                    "description": "Yeni tetikleyici ekle"
+                },
+                "view": {
+                    "name": "görüntüleme",
+                    "description": "Bir tetikleyiciyi gör ve yönet",
+                    "options": {
+                        "name": {
+                            "name": "isim",
+                            "description": "Tetikleyicinin ismi"
+                        }
+                    }
+                }
+            },
+            "description": "Sunucundaki belirli olaylara yanıt vermesi için tetikleyiciler ekle"
+        },
+        "help": {
+            "options": {
+                "mention": {
+                    "description": "Eğer başkasına yardım ediyorsan onu bot yanıtlarında mentleyebilirsin",
+                    "name": "mention"
+                },
+                "tag": {
+                    "name": "tag",
+                    "description": "Yardım tagi"
+                }
+            },
+            "description": "Birçok konu hakkında yardım al"
+        },
+        "_options": {
+            "webhook": {
+                "name": "webhook",
+                "description": "Hedef webhook"
+            },
+            "filter-channel": {
+                "name": "filtre-kanal",
+                "description": "Oto-tamamlanan sonuçların filtreleneceği kanal"
+            }
+        },
+        "deluxe": {
+            "name": "deluxe",
+            "description": "Deluxe üyeliğinizi senkronize edin",
+            "options": {
+                "info": {
+                    "name": "info",
+                    "description": "Premium abonelik sistemimiz olan Discohook Deluxe hakkında bilgi al"
+                },
+                "sync": {
+                    "name": "senkronizasyon",
+                    "description": "Deluxe üyeliğinle Discohook websitesinin güncel olduğundan emin ol"
+                }
+            }
+        },
+        "format": {
+            "name": "format",
+            "description": "Kullanıcılar, roller, kanallar ve emojiler için Markdown formatı (biçimlendirmesi) edin."
+        }
+    }
+}
