@@ -215,9 +215,16 @@
                 "delete": {
                     "options": {
                         "channel": {
-                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)"
+                            "description": "Mesajın bulunduğu kanal (oto-tamamlama sonuçları için)",
+                            "name": "kanal"
+                        },
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Bu mesajdaki bir bileşeni sil. Buraya mesaj linki de girilebilir"
                         }
-                    }
+                    },
+                    "name": "sil",
+                    "description": "Bileşen sil"
                 }
             },
             "name": "düğmeler",
@@ -353,7 +360,7 @@
         },
         "format": {
             "name": "format",
-            "description": "Kullanıcılar, roller, kanallar ve emojiler için Markdown formatı (biçimlendirmesi) edin."
+            "description": "Kullanıcılar, roller, kanallar ve emojiler için Markdown formatı (biçimlendirmesi) edin"
         }
     }
 }
