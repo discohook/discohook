@@ -98,8 +98,8 @@ export const submitComponent = async (
     case ComponentType.StringSelect: {
       const { minValues, maxValues, ...rest } = raw.data;
       component = {
-        flows: structuredClone(data as APIStringSelectComponent).flows,
         ...rest,
+        flows: structuredClone(data as APIStringSelectComponent).flows,
         custom_id: `p_${raw.id}`,
         min_values: minValues,
         max_values: maxValues,
@@ -112,8 +112,8 @@ export const submitComponent = async (
     case ComponentType.ChannelSelect: {
       const { minValues, maxValues, defaultValues, ...rest } = raw.data;
       component = {
-        flow: structuredClone(data as APIAutoPopulatedSelectMenuComponent).flow,
         ...rest,
+        flow: structuredClone(data as APIAutoPopulatedSelectMenuComponent).flow,
         custom_id: `p_${raw.id}`,
         min_values: minValues,
         max_values: maxValues,
