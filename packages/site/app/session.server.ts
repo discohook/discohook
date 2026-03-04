@@ -21,7 +21,6 @@ import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { type JWTPayload, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
-import { getDiscordUserOAuth } from "./auth-discord.server";
 import {
   discordMembers,
   generateId,
@@ -581,7 +580,7 @@ export const getTokenGuildPermissions = async (
             ...e.rawError,
             message:
               e.code === RESTJSONErrorCodes.UnknownGuild
-                ? "Server does not exist or Discohook Utils is not a member of it"
+                ? "Discohook Utils cannot access this server"
                 : e.rawError.message,
           },
           e.status,
@@ -590,50 +589,29 @@ export const getTokenGuildPermissions = async (
       throw json({ message: String(e) }, 500);
     }
 
-    const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
+    // const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
     let member: APIGuildMember;
-    if (oauth) {
-      try {
-        member = (await rest.get(Routes.userGuildMember(String(guildId)), {
-          headers: { Authorization: `Bearer ${oauth.accessToken}` },
-          auth: false,
-        })) as RESTGetAPIGuildMemberResult;
-      } catch (e) {
-        if (isDiscordError(e)) {
-          throw json(
-            {
-              ...e.rawError,
-              message:
-                e.code === RESTJSONErrorCodes.UnknownGuild
-                  ? "Server does not exist or you are not a member of it"
-                  : e.rawError.message,
-            },
-            e.status,
-          );
-        }
-        throw json({ message: String(e) }, 500);
+    try {
+      member = (await rest.get(
+        Routes.guildMember(String(guildId), String(token.user.discordId)),
+      )) as RESTGetAPIGuildMemberResult;
+    } catch (e) {
+      if (isDiscordError(e)) {
+        // UnknownGuild shouldn't happen because we just fetched this guild above
+        throw json(
+          {
+            ...e.rawError,
+            message:
+              e.code === RESTJSONErrorCodes.UnknownMember
+                ? "You are not a member of this server"
+                : e.rawError.message,
+          },
+          e.status,
+        );
       }
-    } else {
-      try {
-        member = (await rest.get(
-          Routes.guildMember(String(guildId), String(token.user.discordId)),
-        )) as RESTGetAPIGuildMemberResult;
-      } catch (e) {
-        if (isDiscordError(e)) {
-          throw json(
-            {
-              ...e.rawError,
-              message:
-                e.code === RESTJSONErrorCodes.UnknownGuild
-                  ? "Server does not exist or you are not a member of it"
-                  : e.rawError.message,
-            },
-            e.status,
-          );
-        }
-        throw json({ message: String(e) }, 500);
-      }
+      throw json({ message: String(e) }, 500);
     }
+
     const permissions = new PermissionsBitField(
       member.roles
         .map((roleId) => {
@@ -706,13 +684,20 @@ export const getTokenGuildChannelPermissions = async (
       channel = (await rest.get(
         Routes.channel(String(channelId)),
       )) as typeof channel;
-    } catch {
-      throw json(
-        {
-          message: "Channel does not exist or Discohook Utils cannot access it",
-        },
-        404,
-      );
+    } catch (e) {
+      if (isDiscordError(e)) {
+        throw json(
+          {
+            ...e.rawError,
+            message:
+              e.code === RESTJSONErrorCodes.UnknownChannel
+                ? "Channel does not exist or Discohook Utils cannot access it"
+                : e.rawError.message,
+          },
+          e.status,
+        );
+      }
+      throw json({ message: String(e) }, 500);
     }
     if (!channel.guild_id) {
       // Could be confusing
@@ -733,45 +718,47 @@ export const getTokenGuildChannelPermissions = async (
       };
     }
 
-    const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
+    // const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
     let member: APIGuildMember;
-    if (oauth) {
-      try {
-        member = (await rest.get(Routes.userGuildMember(channel.guild_id), {
-          headers: { Authorization: `Bearer ${oauth.accessToken}` },
-          auth: false,
-        })) as RESTGetAPIGuildMemberResult;
-      } catch {
+    try {
+      member = (await rest.get(
+        Routes.guildMember(channel.guild_id, String(token.user.discordId)),
+      )) as RESTGetAPIGuildMemberResult;
+    } catch (e) {
+      if (isDiscordError(e)) {
+        // UnknownGuild shouldn't happen because we just fetched the channel above
         throw json(
-          { message: "Server does not exist or you are not a member of it" },
-          404,
+          {
+            ...e.rawError,
+            message:
+              e.code === RESTJSONErrorCodes.UnknownMember
+                ? "You are not a member of this server"
+                : e.rawError.message,
+          },
+          e.status,
         );
       }
-    } else {
-      try {
-        member = (await rest.get(
-          Routes.guildMember(channel.guild_id, String(token.user.discordId)),
-        )) as RESTGetAPIGuildMemberResult;
-      } catch {
-        throw json(
-          { message: "Server does not exist or you are not a member of it" },
-          404,
-        );
-      }
+      throw json({ message: String(e) }, 500);
     }
 
     let guild: APIGuild;
     try {
       guild = await getGuild(channel.guild_id, rest, env);
-    } catch {
+    } catch (e) {
       // This shouldn't fail since we were able to get the channel
-      throw json(
-        {
-          message:
-            "Server does not exist or Discohook Utils is not a member of it",
-        },
-        404,
-      );
+      if (isDiscordError(e)) {
+        throw json(
+          {
+            ...e.rawError,
+            message:
+              e.code === RESTJSONErrorCodes.UnknownGuild
+                ? "Discohook Utils cannot access this server"
+                : e.rawError.message,
+          },
+          e.status,
+        );
+      }
+      throw json({ message: String(e) }, 500);
     }
 
     const guildPermissions = new PermissionsBitField(
