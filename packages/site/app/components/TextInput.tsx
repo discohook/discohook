@@ -6,7 +6,7 @@ import { CoolIcon } from "./icons/CoolIcon";
 export const textInputStyles = {
   label: "text-sm font-medium",
   input:
-    "rounded-lg border min-h-[36px] max-h-9 py-0 px-[14px] bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
+    "rounded-lg border min-h-[36px] max-h-9 py-0 px-3.5 bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
 };
 
 export const TextInput = (
