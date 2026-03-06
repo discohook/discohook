@@ -5,13 +5,16 @@ import type {
 import { useState } from "react";
 
 export enum DragType {
-  Embed = 0,
-  Attachment = 1,
-  TopLevelComponent = 2,
-  ActionRowComponent = 3,
-  SelectOption = 4,
-  SectionText = 5,
-  GalleryItem = 6,
+  // message elements
+  Embed = 100,
+  Attachment = 101,
+  TopLevelComponent = 102,
+  ActionRowComponent = 103,
+  SelectOption = 104,
+  SectionText = 105,
+  GalleryItem = 106,
+  // misc standalone
+  Backup = 200,
 }
 
 type DragDataMap = {
@@ -26,11 +29,12 @@ type DragDataMap = {
   [DragType.SelectOption]: null;
   [DragType.SectionText]: null;
   [DragType.GalleryItem]: null;
+  [DragType.Backup]: null;
 };
 
 type DragData<T extends keyof DragDataMap> = DragDataMap[T];
 
-type OnDropCallback = (messageId: string, args: unknown) => void;
+type OnDropCallback = (scopeId: string, args: unknown) => void;
 
 interface DragManagerState {
   type: DragType | null;

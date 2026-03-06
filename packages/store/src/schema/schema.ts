@@ -388,6 +388,9 @@ export const backups = pgTable("Backup", {
   ownerId: snowflake("ownerId")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
+  // folderId: snowflake("folderId").references(() => backupFolders.id, {
+  //   onDelete: "set null",
+  // }),
 });
 
 export const backupsRelations = relations(backups, ({ one, many }) => ({
@@ -397,7 +400,21 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
   }),
   guilds: many(discordGuildsToBackups),
   servers: many(guildedServers),
+  // folder: one(backupFolders, {
+  //   fields: [backups.folderId],
+  //   references: [backupFolders.id],
+  // }),
 }));
+
+// export const backupFolders = pgTable("BackupFolder", {
+//   id: snowflakePk(),
+//   name: text().notNull(),
+//   color: integer(),
+// });
+
+// export const backupFoldersRelations = relations(backupFolders, ({ many }) => ({
+//   backups: many(backups),
+// }));
 
 export const linkBackups = pgTable("LinkBackup", {
   id: snowflakePk(),
