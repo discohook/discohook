@@ -117,6 +117,7 @@ interface SimpleSelectOption<T> {
   label: React.ReactNode;
   value: T;
   stringLabel?: string;
+  className?: string;
 }
 
 export function SimpleStringSelect<T>(
@@ -172,7 +173,7 @@ export function SimpleStringSelect<T>(
               <MuiSelect.Item
                 key={`simple-string-select-option-${option.value}`}
                 value={option.value}
-                className={selectStyles.item}
+                className={twMerge(selectStyles.item, option.className)}
               >
                 <MuiSelect.ItemText className={selectStyles.itemText}>
                   {option.label}
@@ -283,7 +284,7 @@ export function SimpleCombobox<T>(
                 <Combobox.Item
                   key={option.value as string}
                   value={option}
-                  className={comboboxStyles.item}
+                  className={twMerge(comboboxStyles.item, option.className)}
                 >
                   <div className="col-start-1">{option.label}</div>
                   <Combobox.ItemIndicator className="col-start-2">

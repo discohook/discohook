@@ -84,7 +84,7 @@
     "backToServerSelection": "Обратно к выбору сервера",
     "createdAtBy": "Создано {{ createdAt, MMM D, YYYY }} пользователем {{username}}",
     "someone": "кто-то",
-    "addWebhook": "Добавить вебхук",
+    "addTarget": { "1": "Добавить вебхук" },
     "createWebhook": "Создать вебхук",
     "editWebhook": "Изменить вебхук",
     "copyWebhookUrl": "Скопировать ссылку (дополнительно)",

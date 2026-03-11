@@ -85,7 +85,7 @@
     "copyWebhookUrl": "Copia URL (avanzato)",
     "createdAtBy": "Creato il {{ createdAt, MMM D, YYYY }} da {{username}}",
     "someone": "qualcuno",
-    "addWebhook": "Aggiungi un Webhook",
+    "addTarget": { "1": "Aggiungi un Webhook" },
     "preview": "Anteprima",
     "share": "Condividi",
     "previewAll": "Visualizza un'anteprima di tutti",
@@ -297,7 +297,7 @@
     },
     "componentsNoWebhook": "Per far funzionare correttamente i pulsanti e i menu a tendina, usa un webhook di proprietà di Discohook. Aggiungi un webhook per più informazioni.",
     "havingTrouble": "Hai Difficoltà?",
-    "botTokenCheck": "Token del Bot <0/>",
+    "botToken": "Token del Bot",
     "botNoTokenNote": "Fornire un token di un bot è facoltativo. Quando un token è impostato, il tuo bot può eseguire azioni indipendentemente da Discohook Utils.",
     "hourTime": "Ora {{timezone}}",
     "createTrigger": {

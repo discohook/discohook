@@ -43,19 +43,19 @@ import { Button } from "~/components/Button";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
 import { collapsibleStyles } from "~/components/collapsible";
-import { useError } from "~/components/Error";
 import { getComponentWidth } from "~/components/editor/TopLevelComponentEditor";
+import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
-import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { PostChannelIcon } from "~/components/icons/channel";
+import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { CrownIcon, PeopleIcon, RoleShield } from "~/components/icons/role";
-import { Prose } from "~/components/Prose";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
 import { type FeatureConfig, Markdown } from "~/components/preview/Markdown";
 import { UsernameBadge } from "~/components/preview/Message.client";
+import { Prose } from "~/components/Prose";
+import { TabHeader, TabsWindow } from "~/components/tabs";
 import { TextArea } from "~/components/TextArea";
 import { TextInput } from "~/components/TextInput";
-import { TabHeader, TabsWindow } from "~/components/tabs";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
@@ -214,7 +214,7 @@ const bioMarkdownFeatures: FeatureConfig = {
   timestamps: true,
 };
 
-const ProfilePreview = ({
+export const ProfilePreview = ({
   t,
   user,
   member,

@@ -4,6 +4,20 @@ import type { ZodDonateKeyType } from "./v1/donate.$type";
 
 export const BRoutes = {
   /**
+   * - GET /applications/:id
+   */
+  // application(id: bigint | string) {
+  //   return `/applications/${id}` as const;
+  // },
+
+  /**
+   * - POST /applications/token
+   */
+  applicationToken() {
+    return "/applications/token" as const;
+  },
+
+  /**
    * - POST /backups
    * - GET /backups/:id
    * - PATCH /backups/:id

@@ -155,7 +155,7 @@
     "someone": "alguém",
     "modern": "Moderno",
     "webhookUrl": "URL do Webhook",
-    "addWebhook": "Adicionar Webhook",
+    "addTarget": { "1": "Adicionar Webhook" },
     "createWebhook": "Criar Webhook",
     "invalidWebhookUrl": "URL de Webhook inválida. Elas começam com https://discord.com/api/webhooks/...",
     "backToServerSelection": "Voltar para a seleção de servidor",
@@ -348,7 +348,7 @@
         "0": "Membro Entrar"
     },
     "componentsNoUsableWebhook": "Nenhum dos seus webhooks é compatível com botões que não sejam links, portanto, nenhum será visível. Adicione um webhook pertencente ao Discohook.",
-    "botTokenCheck": "Token do Robô <0/>",
+    "botToken": "Token do Robô",
     "botNoTokenNote": "Providenciar um token de robô é opcional. Quando um token é definido, seu robô pode performar ações independentemente do Discohook Utils.",
     "applicationId": "ID da Aplicação",
     "noDescription": "Sem descrição",

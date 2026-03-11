@@ -89,7 +89,24 @@ export type QueryDataVersion = "d2";
 
 export enum TargetType {
   Webhook = 1,
+  Bot = 2,
 }
+
+export interface TargetWebhook {
+  type?: TargetType.Webhook;
+  url: string;
+}
+
+// Token intentionally omitted because we do not store them on the server.
+// The client instead stores encrypted JWTs alongside rich application data.
+export interface TargetBot {
+  type: TargetType.Bot;
+  application_id: string;
+  bot_id?: string;
+  channel_id: string;
+}
+
+export type QueryDataTarget = TargetWebhook | TargetBot;
 
 export interface QueryDataRaw {
   version?: QueryDataVersion;
@@ -101,7 +118,7 @@ export interface QueryDataRaw {
     reference?: string;
     thread_id?: string;
   }[];
-  targets?: { type?: TargetType; url: string }[];
+  targets?: TargetWebhook[];
 }
 
 export interface QueryDataMessageDataRaw {

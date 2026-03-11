@@ -18,13 +18,13 @@ import { apiUrl, BRoutes } from "~/api/routing";
 import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import type { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
-import { useError } from "~/components/Error";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
+import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
-import { InfoBox } from "~/components/InfoBox";
-import { CoolIcon } from "~/components/icons/CoolIcon";
 import { PostChannelIcon } from "~/components/icons/channel";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Logo } from "~/components/icons/Logo";
+import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { TextInput } from "~/components/TextInput";
@@ -900,7 +900,7 @@ export default function Index() {
                   onClick={() => setAddingTarget(true)}
                   disabled={Object.keys(targets).length >= 10}
                 >
-                  {t("addWebhook")}
+                  {t("addTarget.1")}
                 </Button>
               )}
               <Button

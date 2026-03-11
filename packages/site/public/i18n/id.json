@@ -77,7 +77,7 @@
     "manageBackups": "Kunjungi halaman pengguna Anda untuk mengimpor, mengekspor, dan mengelola backup.",
     "logInToSaveBackups": "Masuk untuk menyimpan backup permanen.",
     "messageDisplay": "Tampilan Pesan",
-    "addWebhook": "Tambah Webhook",
+    "addTarget": { "1": "Tambah Webhook" },
     "editor": "Editor",
     "error": "Eror",
     "unlink": "Putuskan",

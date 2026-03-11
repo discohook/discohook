@@ -26,10 +26,10 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Prose } from "~/components/Prose";
 import { linkClassName } from "~/components/preview/Markdown";
-import { TextInput } from "~/components/TextInput";
+import { Prose } from "~/components/Prose";
 import { TabHeader, TabsWindow } from "~/components/tabs";
+import { TextInput } from "~/components/TextInput";
 import { BotDeleteConfirmModal } from "~/modals/BotDeleteConfirmModal";
 import { getUser } from "~/session.server";
 import {
@@ -47,6 +47,7 @@ import {
   DISCORD_BOT_TOKEN_RE,
   isDiscordError,
 } from "~/util/discord";
+import { uploadTokenGist } from "~/util/github";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import { base64Encode, cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
@@ -174,48 +175,18 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             )
           )
         ) {
-          let reset = false;
-          if (context.env.GIST_TOKEN) {
-            const response = await fetch("https://api.github.com/gists", {
-              method: "POST",
-              body: JSON.stringify({
-                files: {
-                  "token.md": {
-                    content: [
-                      "Someone used your bot token on Discohook. If this",
-                      "was one of your team members, make sure their account",
-                      "is ranked **Developer** or higher (not read-only).",
-                      "A token may only be set for a custom bot if it can",
-                      "already be accessed by that user through Discord.",
-                      "\n\n",
-                      `- Token: ${token}\n`,
-                      `- Username: ${
-                        user.discordUser ? getUserTag(user) : "unknown"
-                      }`,
-                    ].join(" "),
-                  },
-                },
-                public: true,
-              }),
-              headers: {
-                Authorization: `Bearer ${context.env.GIST_TOKEN}`,
-                Accept: "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-                "User-Agent": "Discohook",
-              },
-            });
-            if (!response.ok) {
-              console.error(await response.text());
-            }
-            reset = response.ok;
-          }
+          const isReset = await uploadTokenGist(
+            context.env,
+            token,
+            user.discordUser,
+          );
           throw json(
             {
-              message: reset
+              message: isReset
                 ? "You do not own this token. It has been reset and the owner has been notified"
                 : "Invalid token",
             },
-            reset ? 403 : 400,
+            isReset ? 403 : 400,
           );
         }
         if (application.id !== String(bot.applicationId)) {
@@ -479,7 +450,7 @@ export default function CustomBot() {
                   </a>
                   <Button
                     discordstyle={ButtonStyle.Danger}
-                    className="ltr:ml-1 rtl:mr-1"
+                    className="ms-1"
                     onClick={() => setDeleting(true)}
                   >
                     <CoolIcon icon="Trash_Full" />
@@ -490,30 +461,16 @@ export default function CustomBot() {
                   {bot.hasToken ? (
                     <div>
                       <p className="text-sm font-medium">
-                        <Trans
-                          t={t}
-                          i18nKey="botTokenCheck"
-                          components={[
-                            <CoolIcon
-                              key="0"
-                              icon="Check_Big"
-                              className="text-green-300"
-                            />,
-                          ]}
-                        />
+                        {t("botToken")}{" "}
+                        <CoolIcon icon="Check_Big" className="text-green-300" />
                       </p>
                       <p>{t("botTokenHiddenNote")}</p>
                       <Button
                         className="mt-1 text-sm"
                         onClick={() => {
                           submit(
-                            {
-                              token: "null",
-                            },
-                            {
-                              method: "PATCH",
-                              navigate: false,
-                            },
+                            { token: "null" },
+                            { method: "PATCH", navigate: false },
                           );
                           // setBot({ ...bot, hasToken: false });
                         }}
@@ -526,17 +483,13 @@ export default function CustomBot() {
                       <TextInput
                         name="token"
                         label={
-                          <Trans
-                            t={t}
-                            i18nKey="botTokenCheck"
-                            components={[
-                              <CoolIcon
-                                key="0"
-                                icon="Close_MD"
-                                className="text-red-400"
-                              />,
-                            ]}
-                          />
+                          <span>
+                            {t("botToken")}{" "}
+                            <CoolIcon
+                              icon="Close_MD"
+                              className="text-red-400"
+                            />
+                          </span>
                         }
                         className="w-full"
                         // pattern={escapeRegex(DISCORD_BOT_TOKEN_RE)}

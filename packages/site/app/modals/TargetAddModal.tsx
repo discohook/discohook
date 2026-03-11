@@ -5,9 +5,9 @@ import {
   PermissionFlagsBits,
 } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { ApiGetCurrentUserMemberships } from "~/api/v1/users.@me.memberships";
 import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
@@ -16,13 +16,25 @@ import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
 import { TextInput } from "~/components/TextInput";
+import { ProfilePreview } from "~/routes/s.$guildId";
 import type { TFunction } from "~/types/i18next";
+import { TargetType } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
-import { cdnImgAttributes, getWebhook, webhookAvatarUrl } from "~/util/discord";
+import {
+  cdnImgAttributes,
+  DISCORD_BOT_TOKEN_RE,
+  getWebhook,
+  webhookAvatarUrl,
+} from "~/util/discord";
 import { useApiLoader, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
+import type {
+  ApiPostApplicationsToken,
+  ApplicationWithJwt,
+} from "../api/v1/applications.$id";
+import type { loader as ApiGetGuildChannels } from "../api/v1/guilds.$guildId.channels";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
@@ -88,37 +100,72 @@ export const ListWebhook = ({
   );
 };
 
-export const TargetAddModal = (
-  props: ModalProps & {
-    discordApplicationId: string;
-    updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
-    hasAuthentication?: boolean;
-    cache?: CacheManager;
-    applyThreadId?: (threadId: string) => void;
-  },
-) => {
-  const { t } = useTranslation();
+const EXP_MORE_TARGETS = false;
+
+const TargetSelector = ({
+  type,
+  targetType,
+  setTargetType,
+  t,
+  nameKey,
+  descriptionKey,
+}: {
+  type: TargetType;
+  targetType: TargetType;
+  setTargetType: React.Dispatch<React.SetStateAction<TargetType>>;
+  t: TFunction;
+  nameKey: string;
+  descriptionKey: string;
+}) => (
+  <button
+    type="button"
+    onClick={() => setTargetType(type)}
+    data-selected={targetType === type ? "" : null}
+    className={twMerge(
+      "group",
+      "rounded-lg bg-white dark:bg-gray-700 shadow-sm hover:shadow-md border p-2 text-center",
+      "transition-[box-shadow,border-color,background-color]",
+      targetType === type
+        ? "bg-blurple-100 dark:bg-blurple-600 border-blurple"
+        : "border-border-normal dark:border-border-normal-dark",
+    )}
+  >
+    <p className="font-medium">{t(nameKey)}</p>
+    <p className="text-muted dark:text-muted-dark dark:group-data-[selected]:text-primary-230 text-sm transition-colors">
+      {t(descriptionKey)}
+    </p>
+  </button>
+);
+
+const AddWebhookTarget = ({
+  t,
+  visible,
+  memberships,
+  cache,
+  setOpen,
+  setSetOpen,
+  updateTargets,
+  applyThreadId,
+  hasAuthentication,
+  discordApplicationId,
+}: {
+  t: TFunction;
+  visible: boolean;
+  memberships: ReturnType<typeof useApiLoader<ApiGetCurrentUserMemberships>>;
+  cache: CacheManager | undefined;
+  setOpen: (v: boolean) => void;
+  setSetOpen: React.Dispatch<(open: boolean) => void>;
+  updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+  applyThreadId?: (threadId: string) => void;
+  hasAuthentication?: boolean;
+  discordApplicationId?: string;
+}) => {
   const [webhook, setWebhook] = useState<APIWebhook>();
   const [urlError, setUrlError] = useState<ReactNode>();
-  const [manualWebhook, setManualWebhook] = useState(!props.hasAuthentication);
-  const memberships = useApiLoader<ApiGetCurrentUserMemberships>(
-    `${BRoutes.currentUserMemberships()}?permissions=${
-      PermissionFlagsBits.ManageWebhooks
-    }`,
-  );
+  const [manualWebhook, setManualWebhook] = useState(!hasAuthentication);
+
   const [threadId, setThreadId] = useState<string>();
   const [willApplyThread, setWillApplyThread] = useState(false);
-
-  const [, setCache] = useLocalStorage<{ memberships: typeof memberships }>(
-    "discohook_cache",
-  );
-  // biome-ignore lint/correctness/useExhaustiveDependencies: setCache is not relevant
-  useEffect(() => {
-    if (memberships) setCache({ memberships });
-    // clear this cache if the user logged out
-    else if (!props.hasAuthentication) setCache({ memberships: [] });
-  }, [memberships, props.hasAuthentication]);
-
   const [error, setError] = useError(t);
   const [guildId, setGuildId] = useState<string>();
   const [page, setPage] = useState(1);
@@ -136,7 +183,7 @@ export const TargetAddModal = (
       guildWebhookTokenFetcher.state === "idle"
     ) {
       if (webhook) {
-        props.updateTargets({
+        updateTargets({
           [guildWebhookTokenFetcher.data.id]: webhook,
         });
         setOpen(false);
@@ -147,8 +194,8 @@ export const TargetAddModal = (
         ).then((webhook) => {
           if (webhook.id) {
             setWebhook(webhook);
-            if (props.cache && webhook.guild_id) {
-              props.cache.fetchGuildCacheable(webhook.guild_id);
+            if (cache && webhook.guild_id) {
+              cache.fetchGuildCacheable(webhook.guild_id);
             }
           } else if ("message" in webhook) {
             setError({ message: webhook.message as string });
@@ -156,13 +203,25 @@ export const TargetAddModal = (
         });
       }
     }
-  }, [guildWebhookTokenFetcher, webhook, props.updateTargets]);
+  }, [guildWebhookTokenFetcher, webhook, updateTargets]);
 
   const avatarUrl = webhook ? webhookAvatarUrl(webhook, { size: 128 }) : null;
 
-  const setOpen = (s: boolean) => {
-    props.setOpen(s);
-    if (!s) {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We need to depend on the stateful webhook value
+  useEffect(() => {
+    // @ts-expect-error
+    window.handlePopupClose = (result: APIWebhook) => {
+      if (cache && result.guild_id) {
+        cache.fetchGuildCacheable(result.guild_id);
+      }
+      updateTargets({ [result.id]: result });
+      setOpen(false);
+    };
+  }, [webhook, updateTargets]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only when the component becomes visible
+  useEffect(() => {
+    const doReset = () => {
       guildWebhooksFetcher.reset();
       guildWebhookTokenFetcher.reset();
       setPage(1);
@@ -170,24 +229,18 @@ export const TargetAddModal = (
       setWebhook(undefined);
       setError(undefined);
       setUrlError(undefined);
-    }
-  };
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We need to depend on the stateful webhook value
-  useEffect(() => {
-    // @ts-expect-error
-    window.handlePopupClose = (result: APIWebhook) => {
-      if (props.cache && result.guild_id) {
-        props.cache.fetchGuildCacheable(result.guild_id);
-      }
-      props.updateTargets({ [result.id]: result });
-      setOpen(false);
     };
-  }, [webhook, props.updateTargets]);
+    if (!visible) {
+      doReset();
+      return;
+    }
+    setSetOpen((open: boolean) => {
+      if (!open) doReset();
+    });
+  }, [visible]);
 
-  return (
-    <Modal {...props} setOpen={setOpen}>
-      <PlainModalHeader>{t("addWebhook")}</PlainModalHeader>
+  return visible ? (
+    <>
       {!manualWebhook ? (
         <div>
           {error}
@@ -282,7 +335,7 @@ export const TargetAddModal = (
                     key={`webhook-${gWebhook.id}`}
                     t={t}
                     webhook={gWebhook}
-                    discordApplicationId={props.discordApplicationId}
+                    discordApplicationId={discordApplicationId}
                     endComponent={
                       <Button
                         disabled={
@@ -344,7 +397,7 @@ export const TargetAddModal = (
               }
             }}
           />
-          {memberships && props.hasAuthentication ? (
+          {memberships !== undefined && hasAuthentication ? (
             <button
               className={twJoin(linkClassName, "text-sm")}
               onClick={() => setManualWebhook(false)}
@@ -354,7 +407,12 @@ export const TargetAddModal = (
             </button>
           ) : null}
           <hr className="border border-gray-400 dark:border-gray-600 my-4" />
-          <div className={`flex py-4 ${!webhook ? "animate-pulse" : ""}`}>
+          <div
+            className={twJoin(
+              "flex py-4",
+              webhook ? undefined : "animate-pulse",
+            )}
+          >
             <div className="w-1/3 mr-4 my-auto">
               {avatarUrl ? (
                 <img
@@ -370,7 +428,7 @@ export const TargetAddModal = (
               {webhook ? (
                 <>
                   <p className="font-bold text-xl">{webhook.name}</p>
-                  {threadId && props.applyThreadId !== undefined ? (
+                  {threadId && applyThreadId !== undefined ? (
                     <p className="text-gray-500 dark:text-gray-400 transition">
                       <Trans
                         t={t}
@@ -456,18 +514,18 @@ export const TargetAddModal = (
               disabled={!webhook}
               onClick={() => {
                 if (webhook) {
-                  if (props.cache && webhook.guild_id) {
-                    props.cache.fetchGuildCacheable(webhook.guild_id);
+                  if (cache && webhook.guild_id) {
+                    cache.fetchGuildCacheable(webhook.guild_id);
                   }
-                  props.updateTargets({ [webhook.id]: webhook });
-                  if (willApplyThread && props.applyThreadId && threadId) {
-                    props.applyThreadId(threadId);
+                  updateTargets({ [webhook.id]: webhook });
+                  if (willApplyThread && applyThreadId && threadId) {
+                    applyThreadId(threadId);
                   }
                   setOpen(false);
                 }
               }}
             >
-              {t("addWebhook")}
+              {t("addTarget.1")}
             </Button>
           )}
           <Button
@@ -482,6 +540,275 @@ export const TargetAddModal = (
           >
             {t("createWebhook")}
           </Button>
+        </div>
+      </div>
+    </>
+  ) : null;
+};
+
+const AddBotTarget = ({
+  t,
+  visible,
+  memberships,
+  cache,
+  setOpen,
+  setSetOpen,
+  updateTargets,
+  applyThreadId,
+  hasAuthentication,
+  discordApplicationId,
+}: {
+  t: TFunction;
+  visible: boolean;
+  memberships: ReturnType<typeof useApiLoader<ApiGetCurrentUserMemberships>>;
+  cache: CacheManager | undefined;
+  setOpen: (v: boolean) => void;
+  setSetOpen: React.Dispatch<(open: boolean) => void>;
+  updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+  applyThreadId?: (threadId: string) => void;
+  hasAuthentication?: boolean;
+  discordApplicationId?: string;
+}) => {
+  const [target, setTarget] = useState<ApplicationWithJwt>();
+
+  const [tokenError, setTokenError] = useState<ReactNode>();
+  const [error, setError] = useError(t);
+  const [guildId, setGuildId] = useState<string>();
+  const [channelId, setChannelId] = useState<string>();
+  const guildChannelsFetcher = useSafeFetcher<typeof ApiGetGuildChannels>({
+    onError: setError,
+  });
+  const botTokenFetcher = useSafeFetcher<ApiPostApplicationsToken>({
+    onError: setError,
+  });
+
+  // const avatarUrl = target
+  //   ? botAppAvatar(
+  //       {
+  //         applicationId: target.id,
+  //         applicationUserId: target.bot.id,
+  //         icon: target.icon,
+  //         avatar: target.bot.avatar,
+  //         discriminator: target.bot.discriminator,
+  //       },
+  //       { size: 128 },
+  //     )
+  //   : null;
+  // const flags = useMemo(
+  //   () => new UserFlagsBitField(target?.bot?.flags ?? 0),
+  //   [target?.bot?.flags],
+  // );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only when the component becomes visible
+  useEffect(() => {
+    const doReset = () => {
+      guildChannelsFetcher.reset();
+      setGuildId(undefined);
+      setTarget(undefined);
+      setError(undefined);
+    };
+    if (!visible) {
+      doReset();
+      return;
+    }
+    setSetOpen((open: boolean) => {
+      if (!open) doReset();
+    });
+  }, [visible]);
+
+  return visible ? (
+    <div>
+      <div className="flex gap-2">
+        <TextInput
+          label={t("botToken")}
+          type="password"
+          labelClassName="grow"
+          className="w-full"
+          errors={[tokenError]}
+          onFocus={(e) => {
+            e.currentTarget.type = "text";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.type = "password";
+          }}
+          delayOnInput={200}
+          onInput={async (e) => {
+            setTokenError(undefined);
+            setTarget(undefined);
+            if (!e.currentTarget.value) return;
+
+            const match = e.currentTarget.value.match(DISCORD_BOT_TOKEN_RE);
+            if (!match) {
+              setTokenError(t("invalidBotToken"));
+              return;
+            }
+
+            // const result = await getApplicationRpc(match[1], match[2]);
+            const result = await botTokenFetcher.submitAsync(
+              { token: match[0] },
+              { action: apiUrl(BRoutes.applicationToken()), method: "POST" },
+            );
+            if (result.app.id) {
+              setTarget(result.app);
+            } else if ("message" in result) {
+              setTokenError(result.message as string);
+            }
+          }}
+        />
+        <Button
+          disabled={!target || !channelId}
+          onClick={() => {}}
+          className="h-9 mt-auto"
+        >
+          {t("save")}
+        </Button>
+      </div>
+      <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+      <div
+        className={twJoin(
+          "flex pt-2 pb-4 gap-4 flex-col md:flex-row relative",
+          target ? undefined : "animate-pulse",
+        )}
+      >
+        <div className="self-center md:self-auto">
+          {target ? (
+            <ProfilePreview
+              t={t}
+              user={{ ...target.bot, bot: true }}
+              member={{
+                bio: botTokenFetcher.data?.extra.description ?? "",
+                guild_id: "",
+              }}
+            />
+          ) : (
+            <div
+              className={twJoin(
+                "rounded-lg w-64 h-48 shadow-lg bg-white dark:bg-gray-800",
+                "box-border border border-border-normal dark:border-border-normal-dark",
+              )}
+            />
+          )}
+        </div>
+        {target ? (
+          <div
+            className={twJoin(
+              "md:absolute top-2 right-0 md:w-1/2 lg:w-auto lg:relative",
+              "md:p-2 lg:p-0 bg-gray-50 dark:bg-[#37373D] rounded-lg",
+              "md:shadow-md lg:shadow-none",
+              "md:border lg:border-none border-border-normal dark:border-border-normal-dark",
+              "transition-[padding]",
+            )}
+          >
+            <div className="shrink md:grow">
+              <TextInput
+                label={t("channel")}
+                description={t("botTargetChannelPrompt", {
+                  replace: {
+                    name: target.bot.global_name ?? target.bot.username,
+                  },
+                })}
+                required
+                className="w-full"
+                onChange={(e) => {
+                  const val = e.currentTarget.value;
+                  // setChannelId();
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  ) : null;
+};
+
+export const TargetAddModal = (
+  props: ModalProps & {
+    discordApplicationId: string;
+    updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+    hasAuthentication?: boolean;
+    cache?: CacheManager;
+    applyThreadId?: (threadId: string) => void;
+  },
+) => {
+  const { t } = useTranslation();
+  const [targetType, setTargetType] = useState(TargetType.Webhook);
+
+  const memberships = useApiLoader<ApiGetCurrentUserMemberships>(
+    `${BRoutes.currentUserMemberships()}?permissions=${
+      PermissionFlagsBits.ManageWebhooks
+    }`,
+  );
+  const [, setCache] = useLocalStorage<{ memberships: typeof memberships }>(
+    "discohook_cache",
+  );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setCache is not relevant
+  useEffect(() => {
+    if (memberships) setCache({ memberships });
+    // clear this cache if the user logged out
+    else if (!props.hasAuthentication) setCache({ memberships: [] });
+  }, [memberships, props.hasAuthentication]);
+
+  // Allow target adders to define their own post-setOpen callback
+  const [setOpen, setSetOpen] = useReducer(
+    (_: typeof props.setOpen, newFunc: typeof props.setOpen) => {
+      return (v: boolean) => {
+        props.setOpen(v);
+        newFunc(v);
+      };
+    },
+    props.setOpen,
+  );
+
+  return (
+    <Modal {...props} setOpen={setOpen}>
+      <PlainModalHeader>{t(`addTarget.${targetType}`)}</PlainModalHeader>
+      <div className="flex flex-col md:flex-row-reverse gap-4">
+        {EXP_MORE_TARGETS ? (
+          <div className="w-full md:w-1/4 flex flex-row md:flex-col gap-2">
+            <TargetSelector
+              type={TargetType.Webhook}
+              targetType={targetType}
+              setTargetType={setTargetType}
+              t={t}
+              nameKey="webhook"
+              descriptionKey="The most common type of target, and the easiest to use"
+            />
+            <TargetSelector
+              type={TargetType.Bot}
+              targetType={targetType}
+              setTargetType={setTargetType}
+              t={t}
+              nameKey="bot"
+              descriptionKey="Just like webhooks, but with more profile options"
+            />
+          </div>
+        ) : null}
+        <div className="w-full">
+          <AddWebhookTarget
+            t={t}
+            visible={targetType === TargetType.Webhook}
+            setOpen={setOpen}
+            setSetOpen={setSetOpen}
+            memberships={memberships}
+            updateTargets={props.updateTargets}
+            cache={props.cache}
+            hasAuthentication={props.hasAuthentication}
+            discordApplicationId={props.discordApplicationId}
+            applyThreadId={props.applyThreadId}
+          />
+          <AddBotTarget
+            t={t}
+            visible={targetType === TargetType.Bot}
+            setOpen={setOpen}
+            setSetOpen={setSetOpen}
+            memberships={memberships}
+            updateTargets={props.updateTargets}
+            cache={props.cache}
+            hasAuthentication={props.hasAuthentication}
+            // discordApplicationId={props.discordApplicationId}
+            // applyThreadId={props.applyThreadId}
+          />
         </div>
       </div>
     </Modal>

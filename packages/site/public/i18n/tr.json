@@ -10,7 +10,7 @@
     "invalidWebhookUrl": "Geçersiz webhook URL. Başının şöyle olması lazım: https://discord.com/api/webhooks/...",
     "backToServerSelection": "Sunucu seçimine geri dön",
     "createdAtBy": "{{ createdAt, MMM D, YYYY }} tarihinde {{username}} tarafından oluşturuldu",
-    "addWebhook": "Webhook Ekle",
+    "addTarget": { "1": "Webhook Ekle" },
     "createWebhook": "Webhook Oluştur",
     "editWebhook": "Webhook'u Düzenle",
     "copyWebhookUrl": "URL'yi Kopyala (gelişmiş)",

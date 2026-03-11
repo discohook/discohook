@@ -14,47 +14,65 @@ export interface OptionGuild {
   favorite?: boolean | null;
 }
 
-const getOption = (guild: OptionGuild) => ({
-  label: (
-    <div
-      // If botJoinedAt was selected but it is null, fade the option, but
-      // allow users to still select it
-      className={twJoin(
-        "flex items-center",
-        guild.botJoinedAt === null ? "opacity-80" : undefined,
-      )}
-    >
-      {guild.icon ? (
-        <img
-          src={cdn.icon(String(guild.id), guild.icon)}
-          alt=""
-          className="rounded-lg size-6 me-1.5 inline-block"
-        />
-      ) : (
-        <img
-          src={cdn.defaultAvatar(
-            calculateUserDefaultAvatarIndex(String(guild.id)),
-          )}
-          alt=""
-          className="rounded-lg size-6 me-1.5 inline-block"
-        />
-        // <div className="rounded-lg size-6 me-1.5 inline-flex relative bg-black/10 p-2 text-xs uppercase overflow-x-hidden">
-        //   <p className="m-auto">
-        //     {guild.name
-        //       .split(" ")
-        //       .map((s) => s[0] ?? "")
-        //       .join("")}
-        //   </p>
-        // </div>
-      )}
-      <span>{guild.name}</span>
-      {guild.favorite ? <Twemoji emoji="⭐️" className="ms-1" /> : null}
-    </div>
-  ),
-  stringLabel: guild.name,
-  value: String(guild.id),
-  guild,
-});
+const getOption = (guild: OptionGuild) => {
+  // If botJoinedAt is explicitly null, fade the option slightly, but allow
+  // users to still select it
+  // I disabled this for now because it might be confusing for users
+  // const botMaybeMissing = guild.botJoinedAt === null;
+  return {
+    // className: "p-0",
+    label: (
+      <div
+        className={twJoin(
+          "flex items-center group/guild",
+          // padding in the label instead of the option so we can have
+          // full-option hover effects
+          // "py-2 pe-8 ps-4",
+          // botMaybeMissing ? "opacity-80 hover:opacity-100" : undefined,
+        )}
+      >
+        {guild.icon ? (
+          <img
+            src={cdn.icon(String(guild.id), guild.icon)}
+            alt=""
+            className={twJoin(
+              "rounded-lg size-6 me-1.5 inline-block",
+              // botMaybeMissing
+              //   ? "saturate-[0.25] group-hover/guild:saturate-100"
+              //   : undefined,
+            )}
+          />
+        ) : (
+          <img
+            src={cdn.defaultAvatar(
+              calculateUserDefaultAvatarIndex(String(guild.id)),
+            )}
+            alt=""
+            className={twJoin(
+              "rounded-lg size-6 me-1.5 inline-block",
+              // botMaybeMissing
+              //   ? "saturate-[0.25] group-hover/guild:saturate-100"
+              //   : undefined,
+            )}
+          />
+          // <div className="rounded-lg size-6 me-1.5 inline-flex relative bg-black/10 p-2 text-xs uppercase overflow-x-hidden">
+          //   <p className="m-auto">
+          //     {guild.name
+          //       .split(" ")
+          //       .map((s) => s[0] ?? "")
+          //       .join("")}
+          //   </p>
+          // </div>
+        )}
+        <span>{guild.name}</span>
+        {guild.favorite ? <Twemoji emoji="⭐️" className="ms-1" /> : null}
+      </div>
+    ),
+    stringLabel: guild.name,
+    value: String(guild.id),
+    guild,
+  };
+};
 
 export const AsyncGuildSelect = (props: {
   t: TFunction;

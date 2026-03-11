@@ -80,7 +80,7 @@
     "webhookUrl": "Webhook URL",
     "createdAtBy": "Gemaakt op {{ createdAt, d MMM, YYYY }} door {{username}}",
     "someone": "iemand",
-    "addWebhook": "Voeg Webhook Toe",
+    "addTarget": { "1": "Voeg Webhook Toe" },
     "createWebhook": "Creëer Webhook",
     "editWebhook": "Bewerk Webhook",
     "createdByDiscohook": "Deze webhook is eigendom van Discohook",
@@ -153,7 +153,7 @@
         "step3": "In het \"Algemene Informatie\" tabblad (automatisch geslecteerd), druk op \"Kopieer\" onder \"Applicatie ID\""
     },
     "portal": "Portaal",
-    "botTokenCheck": "Bot Token <0/>",
+    "botToken": "Bot Token",
     "botNoTokenNote": "Het verstrekken van een bot token is optioneel. Wanneer een token is ingesteld, je bot kan acties uitvoeren onafhankelijk van Discohook Utils.",
     "botTokenHiddenNote": "Voor veiligheidsredenen, je token wordt niet meer getoond nadat het is opgeslagen. Als sindsdien de token gereset is, druk op \"Leeg Token\" en sla het opnieuw op.",
     "botClearToken": "Leeg Token",

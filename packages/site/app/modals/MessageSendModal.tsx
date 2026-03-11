@@ -680,7 +680,7 @@ export const MessageSendModal = (
           <div>
             <p>{t("sendNoWebhooks")}</p>
             <Button onClick={() => setAddingTarget(true)}>
-              {t("addWebhook")}
+              {t("addTarget.1")}
             </Button>
           </div>
         )}

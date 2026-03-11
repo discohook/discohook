@@ -43,12 +43,19 @@ export const requirePremiumOrThrow = (user: User | null) => {
   return details;
 };
 
-export const getUserTag = (user: User): string =>
-  user.discordUser
-    ? user.discordUser.discriminator === "0"
-      ? user.discordUser.name
-      : `${user.discordUser.name}#${user.discordUser.discriminator}`
-    : user.name;
+export interface MinimalDiscordUser {
+  id: bigint | string;
+  name: string;
+  globalName?: string | null;
+  discriminator?: string | null;
+  avatar?: string | null;
+}
+
+export const getDiscordUserTag = (user: MinimalDiscordUser): string =>
+  user.discriminator === "0" ? user.name : `${user.name}#${user.discriminator}`;
+
+export const getUserTag = (user: Pick<User, "name" | "discordUser">): string =>
+  user.discordUser ? getDiscordUserTag(user.discordUser) : user.name;
 
 export const getUserAvatar = (
   user: {

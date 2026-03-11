@@ -6,8 +6,8 @@ import {
 import { type ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button, TextButton } from "~/components/Button";
-import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { loadMessageComponents } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
@@ -151,7 +151,7 @@ export const MessageSetModal = (
               messageLink &&
               messageLink[0] && <p>{t("referenceNoWebhooks")}</p>}
             <Button onClick={() => setAddingTarget(true)}>
-              {t("addWebhook")}
+              {t("addTarget.1")}
             </Button>
           </div>
         )}

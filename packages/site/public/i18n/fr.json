@@ -167,7 +167,7 @@
     "selectWebhookGuildNoWebhooks": "Le serveur que vous avez sélectionné n'a aucun webhook accessible par Discohook Utils. Essayez d'en créer un nouveau avec le bouton ci-dessous.",
     "refreshShareLink": "Actualiser le lien de partage pour 2 semaines supplémentaires (fonctionnalité Deluxe !)",
     "inviteBot": "Inviter le Bot",
-    "addWebhook": "Ajouter un Webhook",
+    "addTarget": { "1": "Ajouter un Webhook" },
     "deleteShareLinkConfirm": "Êtes-vous sûr de vouloir supprimer ce lien de partage ? Cette action est irréversible.",
     "addMessage": "Ajouter un Message",
     "deleteBackupConfirm": "Êtes-vous sûr de vouloir supprimer cette sauvegarde ? Cette action est irréversible.",
