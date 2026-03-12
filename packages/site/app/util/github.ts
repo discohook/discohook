@@ -30,7 +30,7 @@ export const uploadTokenGist = async (
       headers: {
         Authorization: `Bearer ${env.GIST_TOKEN}`,
         Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
+        "X-GitHub-Api-Version": "2026-03-10",
         "User-Agent": "Discohook",
       },
     });
