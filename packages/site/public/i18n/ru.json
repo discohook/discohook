@@ -84,7 +84,10 @@
     "backToServerSelection": "Обратно к выбору сервера",
     "createdAtBy": "Создано {{ createdAt, MMM D, YYYY }} пользователем {{username}}",
     "someone": "кто-то",
-    "addTarget": { "1": "Добавить вебхук" },
+    "addTarget": {
+        "1": "Добавить вебхук",
+        "2": "Добавить Бота"
+    },
     "createWebhook": "Создать вебхук",
     "editWebhook": "Изменить вебхук",
     "copyWebhookUrl": "Скопировать ссылку (дополнительно)",
@@ -581,5 +584,18 @@
     "addAnother": "Добавить ещё",
     "messageTooLong": "Обьем данных вашего сообщения слишком велик, чтобы отобразиться в URL-страницы. Если вам нужно поделиться этой страницей, воспользуйтесь кнопкой \"$t(share)\".",
     "threadWebhookApplyPrompt": "<open>ID ветки</open>указаный в ссылке.<toggle>Применить к сообщению</toggle>",
-    "threadWebhookApplyConfirm": "Ветка будет применена ко всем сообщениям. <toggle>Отменить</toggle>"
+    "threadWebhookApplyConfirm": "Ветка будет применена ко всем сообщениям. <toggle>Отменить</toggle>",
+    "firstSubscribed": "Впервые подписан",
+    "permissionsCount_one": "{{count}} право",
+    "permissionsCount_few": "{{count}} прав",
+    "permissionsCount_many": "{{count}} прав",
+    "selectAll": "Выбрать все",
+    "deluxe": "Делюкс",
+    "notSubscribed": "Не подписан",
+    "joinedDiscohook": "Присоеденился(лась) к Discohook",
+    "guides": "Гайды",
+    "searching": "Ищем...",
+    "sessions": "Сессии",
+    "thisDevice": "Это Устройство",
+    "owner": "Владелец"
 }
