@@ -64,5 +64,21 @@
     "galleryImageN": "תמונת גלריה {{n}}",
     "fieldN": "שדה {{n}}",
     "actionN": "פעולה {{n}}",
-    "actionNText": "פעולה {{n}} - {{text}}"
+    "actionNText": "פעולה {{n}} - {{text}}",
+    "help": "עזרה",
+    "search": "חיפוש",
+    "helpSearchPlaceholder": "איך אני…",
+    "logIn": "כניסה",
+    "logOut": "יציאה",
+    "name": "שם",
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "ok": "אוקיי",
+    "close": "סגירה",
+    "edit": "עריכה",
+    "delete": "מחיקה",
+    "supportServer": "שרת תמיכה",
+    "editBackupMessages": "כדי לערוך את ההודעות בגיבוי, לחץ על הכפתור </0>.",
+    "messageTooLong": "נתוני ההודעה שלך גדולים מדי בכדי להיות מוצגים בקישור העמוד. אם את/ה צריכ/ה לשתף את העמוד הזה, תשמש/י בכפתור  ה-\"$t(share)$\".",
+    "temporaryShareUrl": "קישור לשיתוף"
 }
