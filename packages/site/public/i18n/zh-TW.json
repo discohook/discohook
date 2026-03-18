@@ -40,7 +40,7 @@
     "editBackupMessages": "要編輯備份中的訊息，請點擊 <0/> 按鈕。",
     "temporaryShareUrlExpires": "分享連結（到期時間：<0>$t(timestamp.relative.days_future)</0>）",
     "clickGenerate": "按下「產生」以產生分享連結",
-    "sendMessageN_other": "傳送訊息\n傳送訊息",
+    "sendMessageN_other": "傳送訊息",
     "messages": "訊息",
     "copyLink": "複製連結",
     "submit": "提交",
