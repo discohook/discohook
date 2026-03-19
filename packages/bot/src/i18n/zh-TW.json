@@ -1,1 +1,481 @@
-{}
+{
+    "commands": {
+        "_options": {
+            "webhook": {
+                "name": "webhook",
+                "description": "目標 Webhook"
+            },
+            "filter-channel": {
+                "description": "用來篩選自動完成結果的頻道",
+                "name": "filter-channel"
+            }
+        },
+        "buttons": {
+            "name": "buttons",
+            "options": {
+                "add": {
+                    "name": "add",
+                    "options": {
+                        "message": {
+                            "name": "message",
+                            "description": "新增元件至此訊息。此處也接受訊息連結"
+                        },
+                        "channel": {
+                            "description": "訊息所在的頻道，用於自動完成結果",
+                            "name": "channel"
+                        }
+                    },
+                    "description": "新增元件"
+                },
+                "edit": {
+                    "options": {
+                        "message": {
+                            "name": "message",
+                            "description": "編輯此訊息上的元件。此處也接受訊息連結"
+                        },
+                        "channel": {
+                            "description": "訊息所在的頻道，用於自動完成結果",
+                            "name": "channel"
+                        }
+                    },
+                    "description": "編輯元件",
+                    "name": "edit"
+                },
+                "delete": {
+                    "name": "delete",
+                    "description": "刪除元件",
+                    "options": {
+                        "message": {
+                            "name": "message",
+                            "description": "刪除此訊息上的元件。此處也接受訊息連結"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "訊息所在的頻道，用於自動完成結果"
+                        }
+                    }
+                },
+                "migrate": {
+                    "name": "migrate",
+                    "description": "遷移所有舊版按鈕",
+                    "options": {
+                        "message": {
+                            "name": "message",
+                            "description": "遷移此訊息上的元件。此處也接受訊息連結"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "訊息所在的頻道，用於自動完成結果"
+                        }
+                    }
+                }
+            },
+            "description": "新增、移除及管理元件（按鈕／選單）"
+        },
+        "deluxe": {
+            "name": "deluxe",
+            "description": "同步你的進階版訂閱",
+            "options": {
+                "info": {
+                    "name": "info",
+                    "description": "關於 Discohook 進階版（我們的高級訂閱選項）的資訊"
+                },
+                "sync": {
+                    "name": "sync",
+                    "description": "確保 Discohook 網站與你的進階版訂閱保持同步"
+                }
+            }
+        },
+        "triggers": {
+            "description": "設定觸發器以回應伺服器中的事件",
+            "options": {
+                "add": {
+                    "name": "add",
+                    "options": {
+                        "name": {
+                            "name": "name",
+                            "description": "觸發器的名稱"
+                        },
+                        "event": {
+                            "name": "event",
+                            "description": "將觸發此觸發器的事件",
+                            "choices": {
+                                "0": "成員加入",
+                                "1": "成員離開"
+                            }
+                        }
+                    },
+                    "description": "新增觸發器"
+                },
+                "view": {
+                    "name": "view",
+                    "description": "檢視並管理觸發器",
+                    "options": {
+                        "name": {
+                            "name": "name",
+                            "description": "觸發器的名稱"
+                        }
+                    }
+                }
+            }
+        },
+        "webhook": {
+            "name": "webhook",
+            "options": {
+                "create": {
+                    "name": "create",
+                    "description": "建立 Webhook",
+                    "options": {
+                        "name": {
+                            "name": "name",
+                            "description": "Webhook 的名稱"
+                        },
+                        "avatar": {
+                            "description": "Webhook 的大頭貼",
+                            "name": "avatar"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "建立 Webhook 的頻道"
+                        },
+                        "show-url": {
+                            "name": "show-url",
+                            "description": "僅在你需要提供 URL 給外部應用程式時才啟用此選項"
+                        }
+                    }
+                },
+                "delete": {
+                    "name": "delete",
+                    "options": {
+                        "webhook": {
+                            "name": "webhook",
+                            "description": "要刪除的 Webhook"
+                        },
+                        "filter-channel": {
+                            "name": "filter-channel",
+                            "description": "用來篩選自動完成結果的頻道"
+                        }
+                    },
+                    "description": "刪除 Webhook"
+                },
+                "info": {
+                    "description": "取得 Webhook 的資訊",
+                    "options": {
+                        "webhook": {
+                            "name": "webhook",
+                            "description": "要查詢資訊的 Webhook"
+                        },
+                        "filter-channel": {
+                            "name": "filter-channel",
+                            "description": "用來篩選自動完成結果的頻道"
+                        },
+                        "show-url": {
+                            "name": "show-url",
+                            "description": "是否跳過「取得 URL」步驟。這會使訊息變為隱藏"
+                        }
+                    },
+                    "name": "info"
+                }
+            },
+            "description": "管理 Webhook"
+        },
+        "welcomer": {
+            "name": "welcomer",
+            "description": "設定簡易歡迎功能（另請參閱 /triggers）",
+            "options": {
+                "set": {
+                    "name": "set",
+                    "options": {
+                        "event": {
+                            "name": "event",
+                            "choices": {
+                                "0": "成員加入（哈囉）",
+                                "1": "成員離開（再見）"
+                            },
+                            "description": "哪個事件應觸發此歡迎功能"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "若未提供 Webhook，則發送訊息的頻道"
+                        },
+                        "share-link": {
+                            "name": "share-link",
+                            "description": "訊息使用的分享連結"
+                        },
+                        "delete-after": {
+                            "name": "delete-after",
+                            "description": "在刪除訊息前等待的秒數（0 表示永不刪除）"
+                        },
+                        "webhook": {
+                            "name": "webhook",
+                            "description": "用來發送訊息的 Webhook"
+                        }
+                    },
+                    "description": "設定新的歡迎功能或覆蓋現有設定"
+                },
+                "view": {
+                    "description": "檢視目前歡迎功能設定的摘要",
+                    "options": {
+                        "event": {
+                            "name": "event",
+                            "description": "歡迎功能的事件"
+                        }
+                    },
+                    "name": "view"
+                },
+                "delete": {
+                    "name": "delete",
+                    "options": {
+                        "event": {
+                            "name": "event",
+                            "description": "歡迎功能的事件"
+                        }
+                    },
+                    "description": "刪除歡迎功能設定"
+                }
+            }
+        },
+        "profile": {
+            "name": "profile",
+            "description": "設定 Discohook Utils 在伺服器中的個人檔案",
+            "options": {
+                "set": {
+                    "options": {
+                        "name": {
+                            "name": "name",
+                            "description": "機器人的暱稱"
+                        },
+                        "avatar": {
+                            "name": "avatar",
+                            "description": "機器人的大頭貼"
+                        },
+                        "banner": {
+                            "name": "banner",
+                            "description": "機器人的橫幅"
+                        }
+                    },
+                    "name": "set",
+                    "description": "以自訂值覆蓋機器人的暱稱、大頭貼或橫幅"
+                },
+                "clear": {
+                    "name": "clear",
+                    "description": "將一個或全部個人檔案值重設為預設值",
+                    "options": {
+                        "value": {
+                            "name": "value",
+                            "description": "要重設的值。若未提供，則清除所有值"
+                        }
+                    }
+                }
+            }
+        },
+        "help": {
+            "description": "取得各種主題的幫助",
+            "options": {
+                "tag": {
+                    "name": "tag",
+                    "description": "要取得幫助的標籤"
+                },
+                "mention": {
+                    "name": "mention",
+                    "description": "若你正在協助他人，在機器人回覆中提及對方"
+                }
+            }
+        },
+        "reaction-role": {
+            "name": "reaction-role",
+            "description": "新增、移除及管理反應身分組",
+            "options": {
+                "create": {
+                    "name": "create",
+                    "description": "建立新的反應身分組",
+                    "options": {
+                        "message": {
+                            "description": "要建立反應的訊息。此處也接受訊息連結",
+                            "name": "message"
+                        },
+                        "emoji": {
+                            "name": "emoji",
+                            "description": "反應應顯示的表情符號。若為外部表情符號，請在機器人之前先反應"
+                        },
+                        "role": {
+                            "name": "role",
+                            "description": "點擊反應時應授予／移除的身分組"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "訊息所在的頻道，用於自動完成結果"
+                        }
+                    }
+                },
+                "delete": {
+                    "name": "delete",
+                    "description": "從訊息中刪除反應身分組",
+                    "options": {
+                        "emoji": {
+                            "name": "emoji",
+                            "description": "反應顯示的表情符號。省略此參數可查看刪除選單"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "訊息所在的頻道，用於自動完成結果"
+                        },
+                        "message": {
+                            "description": "要刪除反應身分組的訊息。此處也接受訊息連結",
+                            "name": "message"
+                        }
+                    }
+                },
+                "list": {
+                    "options": {
+                        "message": {
+                            "description": "要列出反應身分組的訊息。此處也接受訊息連結"
+                        },
+                        "channel": {
+                            "description": "訊息所在的頻道，用於自動完成結果"
+                        }
+                    },
+                    "description": "列出訊息上的所有反應身分組",
+                    "name": "list"
+                }
+            }
+        },
+        "restore": {
+            "name": "restore",
+            "description": "將訊息還原至 Discohook 編輯器",
+            "options": {
+                "message": {
+                    "description": "要還原的訊息。此處也接受訊息連結",
+                    "name": "message"
+                },
+                "mode": {
+                    "name": "mode",
+                    "choices": {
+                        "edit": "含編輯選項",
+                        "link": "至連結嵌入編輯器"
+                    },
+                    "description": "還原訊息的方式。目前僅支援包含編輯選項"
+                }
+            }
+        },
+        "format": {
+            "name": "format",
+            "options": {
+                "mention": {
+                    "name": "mention",
+                    "description": "輸出使用者或身分組的提及格式",
+                    "options": {
+                        "target": {
+                            "name": "target",
+                            "description": "要提及的使用者或身分組"
+                        }
+                    }
+                },
+                "channel": {
+                    "description": "輸出頻道的提及格式",
+                    "options": {
+                        "target": {
+                            "name": "target",
+                            "description": "要提及的頻道"
+                        }
+                    },
+                    "name": "channel"
+                },
+                "emoji": {
+                    "name": "emoji",
+                    "description": "輸出伺服器表情符號的使用格式",
+                    "options": {
+                        "target": {
+                            "name": "target",
+                            "description": "要使用的表情符號"
+                        }
+                    }
+                }
+            },
+            "description": "取得使用者、身分組、頻道和表情符號的 Markdown 格式"
+        },
+        "invite": {
+            "name": "invite",
+            "description": "此機器人的邀請連結"
+        },
+        "id": {
+            "name": "id",
+            "options": {
+                "mention": {
+                    "name": "mention",
+                    "description": "輸出使用者或身分組的 ID",
+                    "options": {
+                        "target": {
+                            "description": "使用者或身分組",
+                            "name": "target"
+                        }
+                    }
+                },
+                "channel": {
+                    "name": "channel",
+                    "description": "輸出頻道或討論串的 ID",
+                    "options": {
+                        "target": {
+                            "name": "target",
+                            "description": "頻道或討論串"
+                        }
+                    }
+                },
+                "emoji": {
+                    "name": "emoji",
+                    "options": {
+                        "target": {
+                            "name": "target",
+                            "description": "表情符號"
+                        }
+                    },
+                    "description": "輸出伺服器表情符號的 ID"
+                }
+            },
+            "description": "取得 Discord 資源的數字 ID"
+        },
+        "_ctx": {
+            "edit": {
+                "name": "快速編輯"
+            },
+            "restore": {
+                "name": "還原"
+            },
+            "webhook": {
+                "name": "Webhook 資訊"
+            },
+            "debug": {
+                "name": "偵錯"
+            },
+            "components": {
+                "name": "按鈕與元件"
+            },
+            "quickedit": {
+                "name": "快速編輯"
+            }
+        }
+    },
+    "noMigratableComponents": "此訊息沒有已註冊、可遷移的元件。",
+    "noContentAvailable": "無可用內容",
+    "componentWillExpire": "請在 2 週內完成編輯並提交此元件，否則草稿將被刪除。",
+    "noTrigger": "此伺服器沒有該名稱的觸發器。",
+    "unnamedTrigger": "未命名觸發器",
+    "addActions": "新增動作",
+    "noActions": "無動作",
+    "manageActions": "管理動作",
+    "idUnavailable": "ID 無法取得。",
+    "customize": "自訂",
+    "gteNMessagesSent_one": "至少已發送 {{count}} 則訊息",
+    "webhookDelete": {
+        "forbidden": "你沒有管理 Webhook 的權限。",
+        "wrongServer": "Webhook 不存在或不在此伺服器中。",
+        "success": "已成功刪除 Webhook。",
+        "cancel": "Webhook 安然無恙。",
+        "confirm": "你確定要刪除此 Webhook 嗎？這將使所有透過它發送的訊息無法再被編輯。"
+    },
+    "gteNMessagesSent_other": "至少已發送 {{count}} 則訊息",
+    "noComponentFlow": "此元件未註冊任何流程。點擊按鈕以設定新流程。",
+    "triggerDuplicate": "此伺服器已有該事件的觸發器。",
+    "triggerCreated": "觸發器 **{{name}}** 建立成功。",
+    "noComponentFlowMigratePrompt": "如果此訊息包含 2024 年 9 月 5 日前的按鈕，你可能需要執行 </buttons migrate:908884724087410729>。"
+}
