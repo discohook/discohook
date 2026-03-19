@@ -22,6 +22,7 @@ interface LanguageEntry {
 const languages: Partial<Record<LocaleCode, LanguageEntry>> = {
   ar: { native: "العربية", flag: "🇪🇬" },
   zh: { native: "中文", flag: "🇨🇳" },
+  "zh-TW": { native: "繁體中文", flag: "🇹🇼" },
   nl: { native: "Nederlands", flag: "🇳🇱" },
   en: { native: "English, US", flag: "🇺🇸" },
   "en-GB": { native: "English, UK", flag: "🇬🇧" },

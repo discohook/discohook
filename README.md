@@ -30,17 +30,19 @@ Along with some shared packages:
 
 ### Translations
 
-| Thanks to              | Language(s) | Progress |
-|------------------------|-------------|----------|
-| anonymous              | Chinese     | [![](https://translate.shay.cat/widget/discohook/-/zh_Hans/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/zh_Hans/) |
-| mew610                 | Arabic      | [![](https://translate.shay.cat/widget/discohook/-/ar/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/ar/)           |
-| maddymeows             | Dutch       | [![](https://translate.shay.cat/widget/discohook/-/nl/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/nl/)           |
-| yaraej_                | Spanish     | [![](https://translate.shay.cat/widget/discohook/-/es/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/es/)           |
-|                        | French      | [![](https://translate.shay.cat/widget/discohook/-/fr/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/fr/)           |
-| dustytheonly, Kamfkeks | German      | [![](https://translate.shay.cat/widget/discohook/-/de/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/de/)           |
-| ilprofilodineko        | Italian     | [![](https://translate.shay.cat/widget/discohook/-/it/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/it/)           |
-| denyshon               | Ukranian    | [![](https://translate.shay.cat/widget/discohook/-/uk/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/uk/)           |
-| Mathew Rozhdestvensky  | Russian     | [![](https://translate.shay.cat/widget/discohook/-/ru/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/ru/)           |
+| Thanks to              | Language(s)           | Progress |
+|------------------------|-----------------------|----------|
+| mew610                 | Arabic                | [![](https://translate.shay.cat/widget/discohook/-/ar/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/ar/)           |
+| mumu-oo                | Chinese (Traditional) | [![](https://translate.shay.cat/widget/discohook/-/zh_Hant/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/zh-Hant/) |
+| dustytheonly, Kamfkeks | German                | [![](https://translate.shay.cat/widget/discohook/-/de/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/de/)           |
+| ilprofilodineko        | Italian               | [![](https://translate.shay.cat/widget/discohook/-/it/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/it/)           |
+| Mathew Rozhdestvensky  | Russian               | [![](https://translate.shay.cat/widget/discohook/-/ru/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/ru/)           |
+| yaraej_                | Spanish               | [![](https://translate.shay.cat/widget/discohook/-/es/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/es/)           |
+| anonymous              | Portuguese (Brazil)   | [![](https://translate.shay.cat/widget/discohook/-/pt_BR/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/pt_BR/)     |
+| maddymeows             | Dutch                 | [![](https://translate.shay.cat/widget/discohook/-/nl/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/nl/)           |
+| anonymous              | Chinese (Simplified)  | [![](https://translate.shay.cat/widget/discohook/-/zh_Hans/svg-badge.svg)](https://translate.shay.cat/engage/discohook/-/zh_Hans/) |
+
+[... and more!](https://translate.shay.cat/projects/discohook/site/) (site translations must be at least 50% complete to be shown in this table)
 
 ### Original Project
 
