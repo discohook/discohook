@@ -206,7 +206,7 @@ const createFakeWaveform = (): string => {
   // spikes. this resolves to `AA==`
   const array = new Uint8Array(1).fill(0);
   try {
-    // baseline 2025
+    // @ts-expect-error baseline 2025
     return array.toBase64({ alphabet: "base64" });
   } catch {
     return btoa(new TextDecoder("utf8").decode(array));
