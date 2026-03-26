@@ -39,7 +39,10 @@
     "invalidWebhookUrl": "رابط الويبهوك خطأ, يجب ان يبدأ ب https://discord.com/api/webhooks/...",
     "createdAtBy": "تم الإنشاء في {{ createdAt, MMM D, YYYY }} بواسطة {{username}}",
     "someone": "شخص مجهول",
-    "addTarget": { "1": "اضافة ويبهوك" },
+    "addTarget": {
+        "1": "اضافة ويبهوك",
+        "2": "أضف البوت"
+    },
     "editor": "المحرر",
     "preview": "عرض مسبق",
     "channel": "التشانل",
@@ -867,5 +870,6 @@
     "nResults_two": "{{count}} نتائج. <reset>مسح</reset>",
     "nResults_few": "{{count}} نتائج. <reset>مسح</reset>",
     "nResults_many": "{{count}} نتيجة. <reset>مسح</reset>",
-    "nResults_other": "{{count}} نتيجة. <reset>مسح</reset>"
+    "nResults_other": "{{count}} نتيجة. <reset>مسح</reset>",
+    "botTargetChannelPrompt": "­أدخل اي دي القناة أو الرابط الذي ترغب في استخدامه لإرسال رسائلك باستخدام {{name}}."
 }
