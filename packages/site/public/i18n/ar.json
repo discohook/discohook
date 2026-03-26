@@ -871,5 +871,5 @@
     "nResults_few": "{{count}} نتائج. <reset>مسح</reset>",
     "nResults_many": "{{count}} نتيجة. <reset>مسح</reset>",
     "nResults_other": "{{count}} نتيجة. <reset>مسح</reset>",
-    "botTargetChannelPrompt": "­أدخل اي دي القناة أو الرابط الذي ترغب في استخدامه لإرسال رسائلك باستخدام {{name}}."
+    "botTargetChannelPrompt": "أدخل اي دي التشانل أو الرابط الذي ترغب في استخدامه لإرسال رسائلك باستخدام {{name}}."
 }
