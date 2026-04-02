@@ -4,7 +4,7 @@ import {
   StringSelectMenuOptionBuilder,
 } from "@discordjs/builders";
 import type { APIWebhook } from "discord-api-types/v10";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   autoRollbackTx,
   backups,
@@ -275,12 +275,7 @@ export const welcomerSetupEntry: ChatInputAppCommandCallback<true> = async (
             } else {
               await tx
                 .update(dTriggers)
-                .set({
-                  flow,
-                  flowId: null,
-                  updatedAt: sql`NOW()`,
-                  updatedById: user.id,
-                })
+                .set({ flow, flowId: null, updatedById: user.id })
                 .where(eq(dTriggers.id, triggers[0].id));
             }
 

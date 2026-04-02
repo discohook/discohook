@@ -24,8 +24,8 @@ import {
 import type { Client } from "../client.js";
 import type { ButtonCallback } from "../components.js";
 import { emojiToString } from "../emojis.js";
-import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import { gatewayEventNameToCallback } from "../events.js";
+import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import type { FlowResult } from "../flows/flows.js";
 import type { InteractionContext } from "../interactions.js";
 import { parseAutoComponentId } from "../util/components.js";
@@ -68,7 +68,6 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
     disabled: true,
     flow: { actions: [] },
     flowId: null,
-    updatedAt: new Date(),
     updatedById: user.id,
   });
 

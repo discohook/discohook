@@ -3,8 +3,8 @@ import {
   ButtonBuilder,
   ContainerBuilder,
   LabelBuilder,
-  ModalBuilder,
   messageLink,
+  ModalBuilder,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
@@ -31,8 +31,8 @@ import {
 import { sql } from "drizzle-orm";
 import {
   autoRollbackTx,
-  type DraftComponent,
   discordMessageComponents,
+  type DraftComponent,
   getDb,
   launchComponentKV,
   makeSnowflake,
@@ -952,7 +952,6 @@ const registerComponentUpdate = async (
           set: {
             data,
             draft: false,
-            updatedAt: new Date(),
             updatedById: user.id,
           },
         });

@@ -32,7 +32,6 @@ import {
   eq,
   getDb,
   makeSnowflake,
-  sql,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import type { Env } from "~/types/env";
@@ -334,7 +333,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                 .set({
                   data,
                   updatedById: token.user.id,
-                  updatedAt: sql`NOW()`,
                 })
                 .where(eq(discordMessageComponents.id, id))
                 .returning({
@@ -377,14 +375,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         });
         const update: Pick<
           typeof discordMessageComponents.$inferInsert,
-          | "channelId"
-          | "messageId"
-          | "guildId"
-          | "draft"
-          | "updatedById"
-          | "updatedAt"
+          "channelId" | "messageId" | "guildId" | "draft" | "updatedById"
         > = {
-          updatedAt: new Date(),
           updatedById: BigInt(token.user.id),
         };
         if (payload.channelId && payload.messageId && payload.guildId) {

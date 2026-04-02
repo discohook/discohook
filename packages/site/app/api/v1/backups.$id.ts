@@ -1,6 +1,6 @@
 import { json, type SerializeFrom } from "@remix-run/cloudflare";
 import { parseExpression } from "cron-parser";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { doubleDecode, getUserId } from "~/session.server";
@@ -179,7 +179,6 @@ export const action = async ({ request, params, context }: ActionArgs) => {
         nextRunAt,
         cron: cron === null ? null : cron ? cron.stringify() : undefined,
         timezone,
-        updatedAt: sql`now()`,
       })
       .where(eq(backups.id, id))
       .returning({

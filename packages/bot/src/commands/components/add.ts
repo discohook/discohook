@@ -277,7 +277,6 @@ const registerComponent = async (
           set: {
             data,
             draft: false,
-            updatedAt: new Date(),
             updatedById: makeSnowflake(state.user.id),
           },
         })

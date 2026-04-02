@@ -939,7 +939,6 @@ const registerComponentUpdate = async (
           set: {
             data,
             draft: false,
-            updatedAt: new Date(),
             updatedById: user.id,
           },
         });

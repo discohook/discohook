@@ -68,9 +68,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     | "guildId"
     | "draft"
     | "updatedById"
-    | "updatedAt"
   > = {
-    updatedAt: new Date(),
     updatedById: BigInt(token.user.id),
   };
   if (body.channelId && body.messageId && body.guildId) {

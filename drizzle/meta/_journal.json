@@ -50,6 +50,20 @@
       "when": 1771435813968,
       "tag": "0006_json-columns",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775160717092,
+      "tag": "0007_update-at-default-now",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775165675686,
+      "tag": "0008_update-at-default-now-utc",
+      "breakpoints": true
     }
   ]
 }
