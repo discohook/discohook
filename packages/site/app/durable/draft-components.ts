@@ -54,9 +54,10 @@ export class DurableDraftComponentCleaner implements DurableObject {
       columns: {
         updatedAt: true,
         draft: true,
+        messageId: true,
       },
     });
-    if (!component || !component.draft) {
+    if (!component || !component.draft || component.messageId !== null) {
       // The component no longer exists or it is
       // no longer a draft, don't delete it.
       try {
