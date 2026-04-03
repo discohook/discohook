@@ -7,7 +7,7 @@ import {
 import { getDate } from "discord-snowflake";
 import { type ReactNode, useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin, twMerge } from "tailwind-merge";
+import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { ApiGetCurrentUserMemberships } from "~/api/v1/users.@me.memberships";
 import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
@@ -15,6 +15,7 @@ import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { linkClassName } from "~/components/preview/Markdown";
+import { RadioishBox } from "~/components/Radio";
 import { TextInput } from "~/components/TextInput";
 import { ProfilePreview } from "~/routes/s.$guildId";
 import type { TFunction } from "~/types/i18next";
@@ -101,41 +102,6 @@ export const ListWebhook = ({
 };
 
 const EXP_MORE_TARGETS = false;
-
-const TargetSelector = ({
-  type,
-  targetType,
-  setTargetType,
-  t,
-  nameKey,
-  descriptionKey,
-}: {
-  type: TargetType;
-  targetType: TargetType;
-  setTargetType: React.Dispatch<React.SetStateAction<TargetType>>;
-  t: TFunction;
-  nameKey: string;
-  descriptionKey: string;
-}) => (
-  <button
-    type="button"
-    onClick={() => setTargetType(type)}
-    data-selected={targetType === type ? "" : null}
-    className={twMerge(
-      "group",
-      "rounded-lg bg-white dark:bg-gray-700 shadow-sm hover:shadow-md border p-2 text-center",
-      "transition-[box-shadow,border-color,background-color]",
-      targetType === type
-        ? "bg-blurple-100 dark:bg-blurple-600 border-blurple"
-        : "border-border-normal dark:border-border-normal-dark",
-    )}
-  >
-    <p className="font-medium">{t(nameKey)}</p>
-    <p className="text-muted dark:text-muted-dark dark:group-data-[selected]:text-primary-230 text-sm transition-colors">
-      {t(descriptionKey)}
-    </p>
-  </button>
-);
 
 const AddWebhookTarget = ({
   t,
@@ -766,21 +732,21 @@ export const TargetAddModal = (
       <div className="flex flex-col md:flex-row-reverse gap-4">
         {EXP_MORE_TARGETS ? (
           <div className="w-full md:w-1/4 flex flex-row md:flex-col gap-2">
-            <TargetSelector
-              type={TargetType.Webhook}
-              targetType={targetType}
-              setTargetType={setTargetType}
-              t={t}
-              nameKey="webhook"
-              descriptionKey="The most common type of target, and the easiest to use"
+            <RadioishBox
+              isSelected={targetType === TargetType.Webhook}
+              onSelect={() => setTargetType(TargetType.Webhook)}
+              name={t("webhook")}
+              description={t(
+                "The most common type of target, and the easiest to use",
+              )}
             />
-            <TargetSelector
-              type={TargetType.Bot}
-              targetType={targetType}
-              setTargetType={setTargetType}
-              t={t}
-              nameKey="bot"
-              descriptionKey="Just like webhooks, but with more profile options"
+            <RadioishBox
+              isSelected={targetType === TargetType.Bot}
+              onSelect={() => setTargetType(TargetType.Bot)}
+              name={t("bot")}
+              description={t(
+                "Just like webhooks, but with more profile options",
+              )}
             />
           </div>
         ) : null}

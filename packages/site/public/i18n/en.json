@@ -1,5 +1,6 @@
 {
   "settings": "Settings",
+  "backToSettings": "Back to Settings",
   "help": "Help",
   "search": "Search",
   "helpSearchPlaceholder": "How do I …",
@@ -77,6 +78,15 @@
   "webhookInput": "Webhook Input",
   "modern": "Modern",
   "classic": "Classic",
+  "appearance": "Appearance",
+  "behavior": "Behavior",
+  "advanced": "Advanced",
+  "settingsFooter": "Thanks for using Discohook!",
+  "settingsCache": {
+    "title": "Cache",
+    "emojiDescription": "Default emoji cache is automatically refreshed every 14 days. If there has been an emoji update, you can refresh instantly by clicking this button.",
+    "emojiButton": "Clear Emoji Cache"
+  },
   "chooseServer": "Choose a server",
   "webhookUrl": "Webhook URL",
   "invalidWebhookUrl": "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",

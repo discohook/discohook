@@ -80,7 +80,7 @@ import {
   extractInteractiveComponents,
   getWebhook,
   isComponentsV2,
-  webhookAvatarUrl,
+  webhookAvatarUrl
 } from "~/util/discord";
 import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
@@ -297,6 +297,13 @@ export default function Index() {
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
 
+  // const [isDefaultOrBlank, setIsDefaultOrBlank] = useState(
+  //   // Default message data will be loaded
+  //   shareId === null &&
+  //     backupIdParsed.data === undefined &&
+  //     searchParams.get("data") === null,
+  // );
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
     const loadInitialTargets = async (targets: QueryDataTarget[]) => {
@@ -369,13 +376,13 @@ export default function Index() {
         | SafeParseReturnType<QueryData, QueryData>
         | SafeParseError<QueryData>;
       try {
-        parsed = ZodQueryData.safeParse(
-          JSON.parse(
-            searchParams.get("data")
-              ? (base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
-              : JSON.stringify({ messages: [INDEX_MESSAGE] }),
-          ),
-        );
+        if (searchParams.get("data")) {
+          parsed = ZodQueryData.safeParse(
+            JSON.parse(base64Decode(searchParams.get("data") ?? "{}") ?? "{}"),
+          );
+        } else {
+          parsed = ZodQueryData.safeParse({ messages: [INDEX_MESSAGE] });
+        }
       } catch (e) {
         parsed = {
           success: false,
@@ -774,6 +781,7 @@ export default function Index() {
                                   targets: undefined,
                                 });
                                 setConfirm(undefined);
+                                // setIsDefaultOrBlank(true);
                               }}
                               discordstyle={ButtonStyle.Danger}
                             >
@@ -945,6 +953,29 @@ export default function Index() {
                 )}
               </Button>
             </div>
+            {/* {isDefaultOrBlank ? (
+              <div className="w-full mt-2 flex gap-2">
+                <RadioishBox
+                  isSelected
+                  onSelect={() => {}}
+                  name="Embeds"
+                  description=""
+                />
+                <RadioishBox
+                  isSelected={false}
+                  onSelect={() => {
+                    if (data.messages.length === 0) return;
+                    const converted = convertMessageToComponents(
+                      data.messages[0].data,
+                    );
+                    data.messages[0].data = converted;
+                    setData({ ...data });
+                  }}
+                  name="Containers"
+                  description=""
+                />
+              </div>
+            ) : null} */}
           </div>
           {data.messages.map((d, i) => {
             const id = getQdMessageId(d);
