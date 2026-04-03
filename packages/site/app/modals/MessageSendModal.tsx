@@ -245,7 +245,7 @@ export const useMessageSubmissionManager = (
       // If a message created a forum thread, assume subsequent
       // messages with no thread_id or thread_name set are intended
       // to send into the new thread. This should be a reasonably
-      // harmless assumption since the request will error otherwise.
+      // harmless assumption since the request will fail otherwise.
       let forumThreadId: string | undefined;
 
       for (const message of data.messages.filter((m) => {
@@ -379,53 +379,28 @@ export const useMessageSubmissionManager = (
           if (message.data.thread_name) {
             forumThreadId = result.data.channel_id;
           }
-          // const componentIds = result.data.components?.flatMap((row) =>
-          //   row.components
-          //     .map((c) => getComponentId(c)?.toString())
-          //     .filter((c): c is string => c !== undefined),
-          // );
-          // if (componentIds && componentIds.length > 0 && webhook.guild_id) {
-          //   await fetch(apiUrl(BRoutes.componentsBulk()), {
-          //     method: "PATCH",
-          //     body: JSON.stringify({
-          //       ids: componentIds,
-          //       body: {
-          //         guildId: webhook.guild_id,
-          //         channelId: result.data.channel_id,
-          //         messageId: result.data.id,
-          //       },
-          //     }),
-          //     headers: {
-          //       "Content-Type": "application/json",
-          //     },
-          //   });
-          // }
 
-          // Don't log V2 for now; in beta. This also means interactive
-          // components won't be registered right away.
-          if (!isComponentsV2(message.data)) {
-            auditLogFetcher.submit(
-              {
-                type: message.reference ? "edit" : "send",
-                threadId:
-                  result.data.position !== undefined
-                    ? result.data.channel_id
-                    : undefined,
-              },
-              {
-                method: "POST",
-                action: apiUrl(
-                  BRoutes.messageLog(
-                    webhook.id,
-                    // We needed the token in order to arrive at a success state
-                    // biome-ignore lint/style/noNonNullAssertion: ^
-                    webhook.token!,
-                    result.data.id,
-                  ),
+          auditLogFetcher.submit(
+            {
+              type: message.reference ? "edit" : "send",
+              threadId:
+                result.data.position !== undefined
+                  ? result.data.channel_id
+                  : undefined,
+            },
+            {
+              method: "POST",
+              action: apiUrl(
+                BRoutes.messageLog(
+                  webhook.id,
+                  // We needed the token in order to arrive at a success state
+                  // biome-ignore lint/style/noNonNullAssertion: ^
+                  webhook.token!,
+                  result.data.id,
                 ),
-              },
-            );
-          }
+              ),
+            },
+          );
         }
 
         updateMessages({

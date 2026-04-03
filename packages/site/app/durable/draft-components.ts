@@ -57,7 +57,7 @@ export class DurableDraftComponentCleaner implements DurableObject {
         messageId: true,
       },
     });
-    if (!component || !component.draft || component.messageId !== null) {
+    if (!component || !component.draft) {
       // The component no longer exists or it is
       // no longer a draft, don't delete it.
       try {
