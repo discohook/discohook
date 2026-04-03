@@ -985,6 +985,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
               | "jsonEditor"
               | "codeGenerator"
               | "copyQueryData"
+              | "switchStyle"
             >
               discordstyle={ButtonStyle.Secondary}
               options={[
@@ -1013,6 +1014,11 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   icon: "Copy",
                   value: "copyQueryData",
                 },
+                // {
+                //   label: t("switchMessageStyle"),
+                //   icon: "Swatches_Palette",
+                //   value: "switchStyle",
+                // },
               ]}
               onValueChange={(value) => {
                 switch (value) {
@@ -1038,6 +1044,11 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                     break;
                   case "copyQueryData":
                     copyText(JSON.stringify(message));
+                    break;
+                  case "switchStyle":
+                    if (isComponentsV2(message.data)) {
+                    } else {
+                    }
                     break;
                   default:
                     break;
