@@ -80,7 +80,7 @@ import {
   extractInteractiveComponents,
   getWebhook,
   isComponentsV2,
-  webhookAvatarUrl
+  webhookAvatarUrl,
 } from "~/util/discord";
 import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";

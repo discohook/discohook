@@ -24,7 +24,7 @@ import {
   autoRollbackTx,
   destroyComponentKV,
   discordMessageComponents,
-  getDb
+  getDb,
 } from "store";
 import type { ChatInputAppCommandCallback } from "../../commands.js";
 import type {

@@ -37,7 +37,7 @@ import {
   type StorableButtonWithUrl,
   type StorableComponent,
   upsertDiscordUser,
-  webhooks
+  webhooks,
 } from "store";
 import { parseApplicationsValue } from "../../client.js";
 import type {

@@ -9,7 +9,7 @@ import {
   type APIWebhook,
   ApplicationCommandOptionType,
   ButtonStyle,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { getDate, type Snowflake } from "discord-snowflake";
 import type {

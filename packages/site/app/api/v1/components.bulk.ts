@@ -63,11 +63,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   const update: Pick<
     typeof discordMessageComponents.$inferInsert,
-    | "channelId"
-    | "messageId"
-    | "guildId"
-    | "draft"
-    | "updatedById"
+    "channelId" | "messageId" | "guildId" | "draft" | "updatedById"
   > = {
     updatedById: BigInt(token.user.id),
   };
