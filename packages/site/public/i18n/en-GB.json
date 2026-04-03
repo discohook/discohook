@@ -13,5 +13,11 @@
     },
     "permission": {
         "ViewCreatorMonetizationAnalytics": "View Creator Monetisation Analytics"
-    }
+    },
+    "behavior": "Behaviour",
+    "allowedMentionsProps": {
+        "automaticUsersNote": "All user mentions in content will be delivered. This is the default behaviour without controlling allowed mentions.",
+        "automaticRolesNote": "All role mentions in content will be delivered. This is the default behaviour without controlling allowed mentions."
+    },
+    "sidebarColor": "Sidebar Colour"
 }
