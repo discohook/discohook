@@ -114,7 +114,10 @@
     "shareMessage": "Compartir mensaje",
     "cannotChangeChannel": "El canal de webhooks debe configurarse dentro de Discord o desde el <0>menú de webhooks del servidor</0>.",
     "requestedBy": "Solicitado en Discohook por {{username}}",
-    "addTarget": { "1": "Añadir Webhook" },
+    "addTarget": {
+        "1": "Añadir Webhook",
+        "2": "Añadir Bot"
+    },
     "selectWebhookGuildNote": "Selecciona un servidor en el que se encuentre Discohook Utils para ver sus webhooks, o crea un nuevo webhook en cualquiera de tus servidores haciendo clic en el botón de abajo.",
     "editor": "Editor",
     "webhookCreateSubtitle": "En breve, se te devolverá al editor.",
