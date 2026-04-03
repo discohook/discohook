@@ -4,7 +4,7 @@
     "helpSearchPlaceholder": "我要怎麼做⋯",
     "logIn": "登入",
     "logOut": "登出",
-    "name": "名字",
+    "name": "名稱",
     "cancel": "取消",
     "ok": "OK",
     "close": "關閉",
@@ -776,5 +776,15 @@
     "formatMemberDescription": "此處使用的成員取決於訊息的情境。在元件回應中，是與元件互動的成員；在成員加入／移除觸發器回應中，是加入或被移出伺服器的成員。",
     "serverProfileDescription": "你可以在此自訂 Discohook Utils 在你的伺服器中的使用者個人檔案。在預覽中點擊大頭貼或橫幅即可設定自訂圖片。",
     "bioWriteOnlyChange": "由於 Discord 的限制，Discohook 無法讀取目前的個人簡介。若你想要變更，請啟用此核取方塊。",
-    "setMessageLinkNote": "這是什麼？<br/>您可以在編輯已傳送的訊息時使用此選單。請先對要編輯的訊息按右鍵／長按，選取「複製訊息連結」，然後將連結貼入下方方框。<br/><br/>若要覆蓋 Discohook 中目前的內容：請新增傳送該訊息的 webhook，然後按「$t(overwriteMessage)」。否則，只需選取「$t(setMessageLink)」。頁面頂部的提交按鈕現在可讓您編輯訊息。"
+    "setMessageLinkNote": "這是什麼？<br/>您可以在編輯已傳送的訊息時使用此選單。請先對要編輯的訊息按右鍵／長按，選取「複製訊息連結」，然後將連結貼入下方方框。<br/><br/>若要覆蓋 Discohook 中目前的內容：請新增傳送該訊息的 webhook，然後按「$t(overwriteMessage)」。否則，只需選取「$t(setMessageLink)」。頁面頂部的提交按鈕現在可讓您編輯訊息。",
+    "backToSettings": "回到設定",
+    "settingsFooter": "非常感謝您使用 Discohook！",
+    "appearance": "外觀",
+    "behavior": "行為",
+    "advanced": "進階",
+    "settingsCache": {
+        "title": "快取",
+        "emojiButton": "清除表情符號快取",
+        "emojiDescription": "預設表情符號快取每 14 天自動重新整理一次。若有表情符號更新，可點擊此按鈕立即重新整理。"
+    }
 }
