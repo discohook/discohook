@@ -52,8 +52,8 @@ import type {
   PartialBackupsWithMessages,
 } from "../api/v1/users.@me.backups";
 import { Button } from "../components/Button";
-import { InfoBox } from "../components/InfoBox";
 import { CoolIcon } from "../components/icons/CoolIcon";
+import { InfoBox } from "../components/InfoBox";
 import { linkClassName, mentionStyle } from "../components/preview/Markdown";
 import { RoleSelect } from "../components/RoleSelect";
 import {
@@ -170,7 +170,7 @@ export const FlowEditModal = (
             ) : null}
           </div>
           <div className="w-full flex items-start">
-            <div className="flex gap-x-2">
+            <div className="flex gap-x-3">
               <ButtonSelect
                 options={actionTypes.map((value) => ({
                   value,

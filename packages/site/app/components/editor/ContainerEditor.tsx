@@ -5,6 +5,7 @@ import {
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { APIMessageTopLevelComponent, QueryData } from "~/types/QueryData";
@@ -38,6 +39,7 @@ export const AutoTopLevelComponentEditor = (
     >;
     files: DraftFile[];
     setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+    componentFoundBackupsHook: ComponentFoundBackupHook;
     cache: CacheManager | undefined;
     drag?: DragManager;
     cdn?: string;
@@ -115,6 +117,7 @@ export const ContainerEditor: React.FC<{
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
   >;
+  componentFoundBackupsHook: ComponentFoundBackupHook;
   files: DraftFile[];
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   drag?: DragManager;

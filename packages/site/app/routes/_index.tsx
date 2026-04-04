@@ -9,7 +9,7 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import type React from "react";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
@@ -96,6 +96,11 @@ import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import type { ApiGetBackupWithData } from "../api/v1/backups.$id";
 import type { loader as ApiGetComponents } from "../api/v1/components";
+import type {
+  ComponentFoundBackupHook,
+  ComponentFoundBackupMap,
+  ComponentFoundBackupStateAction,
+} from "../api/v1/components.$id.backups";
 import { buildStorableComponent } from "./edit.component.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -293,6 +298,32 @@ export default function Index() {
   const [editingComponent, setEditingComponent] =
     useState<EditingComponentData>();
   const drag = useDragManager();
+
+  const [rawComponentFoundBackups, setComponentFoundBackups] = useReducer(
+    (
+      prev: ComponentFoundBackupMap,
+      action: ComponentFoundBackupStateAction,
+    ) => {
+      if (action.action === "add") {
+        prev[action.id] = action.value;
+        return { ...prev };
+      }
+      return prev;
+    },
+    {},
+  );
+  // Keep ignorable backup data in rawComponentFoundBackups in case the user
+  // unlinks the backup so that warnings can show for it
+  const componentFoundBackupsHook: ComponentFoundBackupHook = useMemo(() => {
+    if (backupId !== undefined) {
+      const modified = { ...rawComponentFoundBackups };
+      for (const cId of Object.keys(modified)) {
+        modified[cId] = modified[cId].filter((b) => b.id !== String(backupId));
+      }
+      return [modified, setComponentFoundBackups];
+    }
+    return [rawComponentFoundBackups, setComponentFoundBackups];
+  }, [backupId, rawComponentFoundBackups, setComponentFoundBackups]);
 
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
@@ -534,6 +565,7 @@ export default function Index() {
         open={!!editingComponent}
         setOpen={() => setEditingComponent(undefined)}
         {...editingComponent}
+        componentFoundBackupsHook={componentFoundBackupsHook}
         submit={user ? editingComponent?.submit : undefined}
         cache={cache}
         // confusing
@@ -872,10 +904,6 @@ export default function Index() {
             ))}
             {settings.webhookInput === "classic" && (
               <div className="flex mb-2">
-                {/* <CoolIcon
-                icon="Add_Plus_Circle"
-                className="my-auto text-2xl me-2 text-muted dark:text-muted-dark"
-              /> */}
                 <div className="grow">
                   <TextInput
                     className="w-full text-base"
@@ -1001,6 +1029,7 @@ export default function Index() {
                 setCodeGenerator={setCodeGenerator}
                 webhooks={Object.values(targets)}
                 setEditingComponent={setEditingComponent}
+                componentFoundBackupsHook={componentFoundBackupsHook}
                 drag={drag}
                 cache={cache}
                 cdn={cdn}

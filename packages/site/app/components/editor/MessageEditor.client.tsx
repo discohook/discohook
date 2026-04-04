@@ -11,6 +11,7 @@ import { MessageFlagsBitField } from "discord-bitflag";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
+import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
 import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { JsonEditorProps } from "~/modals/JsonEditorModal";
@@ -268,6 +269,7 @@ interface MessageEditorProps {
   setCodeGenerator: React.Dispatch<
     React.SetStateAction<CodeGeneratorProps | undefined>
   >;
+  componentFoundBackupsHook: ComponentFoundBackupHook;
   drag?: DragManager;
   webhooks?: APIWebhook[];
   cache?: CacheManager;
@@ -472,6 +474,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   setEditingComponent,
   setJsonEditor,
   setCodeGenerator,
+  componentFoundBackupsHook,
   webhooks,
   cache,
   cdn,
@@ -910,6 +913,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                     setData={setData}
                     cache={cache}
                     setEditingComponent={setEditingComponent}
+                    componentFoundBackupsHook={componentFoundBackupsHook}
                     open
                   />
                 </div>
@@ -1064,7 +1068,6 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   );
 };
 
-// Blank message with cv2 flag: http://localhost:8788/?data=eyJ2ZXJzaW9uIjoiZDIiLCJtZXNzYWdlcyI6W3siX2lkIjoiOWZNd0QxYzVLZCIsImRhdGEiOnsiY29tcG9uZW50cyI6W10sImZsYWdzIjozMjc2OH19XX0
 /** Components V2-based editor */
 const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   index: i,
@@ -1079,6 +1082,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   setEditingComponent,
   setJsonEditor,
   setCodeGenerator,
+  componentFoundBackupsHook,
   webhooks,
   cache,
   cdn,
@@ -1401,6 +1405,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   files={files}
                   setFiles={setFiles}
                   setEditingComponent={setEditingComponent}
+                  componentFoundBackupsHook={componentFoundBackupsHook}
                   drag={drag}
                   open
                 />

@@ -81,6 +81,13 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /components/:id/backups
+   */
+  componentBackups(id: string) {
+    return `/components/${id}/backups` as const;
+  },
+
+  /**
    * - PATCH /components/bulk
    */
   componentsBulk() {

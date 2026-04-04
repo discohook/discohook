@@ -6,6 +6,7 @@ import {
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { DraftFile } from "~/routes/_index";
 import type { APIButtonComponent, QueryData } from "~/types/QueryData";
@@ -38,6 +39,7 @@ export const SectionEditor: React.FC<{
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
   >;
+  componentFoundBackupsHook: ComponentFoundBackupHook;
   files: DraftFile[];
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   drag?: DragManager;
@@ -52,6 +54,7 @@ export const SectionEditor: React.FC<{
   cdn,
   open,
   setEditingComponent,
+  componentFoundBackupsHook,
   files,
   setFiles,
   drag,
@@ -186,6 +189,7 @@ export const SectionEditor: React.FC<{
                 component={accessory}
                 index={0}
                 actionsBar={{ up: null, down: null, copy: null, delete: null }}
+                componentFoundBackupsHook={componentFoundBackupsHook}
                 row={{
                   type: ComponentType.ActionRow,
                   components: [accessory],

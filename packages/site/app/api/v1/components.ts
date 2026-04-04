@@ -3,11 +3,11 @@ import { parseQuery } from "zodix";
 import { getUserId } from "~/session.server";
 import {
   autoRollbackTx,
-  type DraftComponent,
   discordMessageComponents,
   ensureComponentFlows,
   getDb,
   inArray,
+  type DraftComponent,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
@@ -20,7 +20,8 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       id: snowflakeAsString()
         .array()
         .min(1)
-        .max(25 * 10),
+        // 25 for normal messages, but potentially up to 35 in CV2 (40 total - 5 action rows)
+        .max(35 * 10),
     },
     {
       parser: (params) => ({ id: params.getAll("id") }),
