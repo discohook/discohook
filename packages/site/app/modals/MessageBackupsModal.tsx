@@ -142,10 +142,10 @@ export const MessageBackupsModal = (
     if (backupFetcher.data) {
       return backupFetcher.data;
     }
-    if (backups) {
-      return backups.find((b) => b.id.toString() === data.backup_id);
+    if (backups && data.backup_id !== undefined) {
+      return backups.find((b) => String(b.id) === String(data.backup_id));
     }
-  }, [backups, data.backup_id, backupFetcher]);
+  }, [backups, data.backup_id, backupFetcher.data]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: only update on open change
   useEffect(() => {

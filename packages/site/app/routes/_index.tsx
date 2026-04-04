@@ -365,9 +365,13 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               raw.data.messages = [];
             }
-            setData({ ...raw.data, backup_id: backupIdParsed.data.toString() });
-            loadInitialTargets(raw.data.targets ?? []);
-            loadMessageComponents(raw.data, setData);
+            const newData = {
+              ...raw.data,
+              backup_id: backupIdParsed.data.toString(),
+            };
+            setData(newData);
+            loadInitialTargets(newData.targets ?? []);
+            loadMessageComponents(newData, setData);
           });
         }
       });
