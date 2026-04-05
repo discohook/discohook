@@ -652,7 +652,7 @@
   },
   "allowedMentions": "Allowed Mentions",
   "allowedMentionsEnabled": "Allowed Mentions is enabled",
-  "allowedMentionsNote": "If this is enabled, Discord will only send notifications & highlight the message for users and roles that are specified below. Mentions in embeds are never delivered.",
+  "allowedMentionsNote": "If this is enabled, you may specify which users and roles will get notifications based on the mentions in your message. Mentions in standard embeds cannot be used to deliver notifications.",
   "enableAllowedMentions": "Control mentions in this message",
   "allowedMentionsProps": {
     "mentionEveryone": "@everyone and @here",
