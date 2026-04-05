@@ -75,7 +75,9 @@
     "backToServerSelection": "Zpět na výběr serveru",
     "createdAtBy": "Vytvořeno dne {{ createdAt, MMM D, YYYY }} uživatelem {{username}}",
     "someone": "někdo",
-    "addTarget": { "1": "Přidat webhook" },
+    "addTarget": {
+        "1": "Přidat webhook"
+    },
     "createWebhook": "Vytvořit webhook",
     "editWebhook": "Upravit webhook",
     "copyWebhookUrl": "Kopírovat URL (pokročilé)",
