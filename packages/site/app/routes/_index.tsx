@@ -318,6 +318,7 @@ export default function Index() {
     if (backupId !== undefined) {
       const modified = { ...rawComponentFoundBackups };
       for (const cId of Object.keys(modified)) {
+        if (!modified[cId]) continue;
         modified[cId] = modified[cId].filter((b) => b.id !== String(backupId));
       }
       return [modified, setComponentFoundBackups];

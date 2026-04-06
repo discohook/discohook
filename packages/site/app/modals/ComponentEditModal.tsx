@@ -10,7 +10,7 @@ import {
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type {
   ComponentFoundBackup,
@@ -323,15 +323,13 @@ export const ComponentEditForm = ({
             {component.type === ComponentType.StringSelect ? (
               <>
                 <div
-                  className={twJoin(
-                    component.options.length === 0 ? undefined : "-mb-2",
-                    component.options.length === 0 && !backupsWarningButton
-                      ? "pt-2"
-                      : undefined,
+                  className={twMerge(
+                    component.options.length === 0 ? undefined : "-mb-2 pt-2",
+                    backupsWarningButton ? "pt-1.5" : undefined,
                   )}
                 >
                   {backupsWarningButton ? (
-                    <div className="mt-1.5 mb-1">{backupsWarningButton}</div>
+                    <div className="mb-1">{backupsWarningButton}</div>
                   ) : null}
                   {component.options.map((option, oi) => (
                     <SelectMenuOptionsSection
