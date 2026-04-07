@@ -33,7 +33,14 @@ export const PreviewSection: React.FC<{
             ),
           )}
         </div>
-        <div className="flex items-start">
+        <div
+          className={twJoin(
+            "flex items-start min-w-0",
+            component.accessory.type === ComponentType.Button
+              ? "max-w-[calc(50%_-_0.75rem)]"
+              : undefined,
+          )}
+        >
           {component.accessory.type === ComponentType.Thumbnail ? (
             <div
               className={twJoin(
@@ -75,11 +82,7 @@ export const PreviewSection: React.FC<{
               </div>
             </div>
           ) : component.accessory.type === ComponentType.Button ? (
-            <div
-              className={twJoin("max-w-[calc(50%_-_0.75rem)] items-start flex")}
-            >
-              <PreviewButton data={component.accessory} />
-            </div>
+            <PreviewButton data={component.accessory} />
           ) : null}
         </div>
       </div>
