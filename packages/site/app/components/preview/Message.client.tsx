@@ -407,7 +407,7 @@ export const Message: React.FC<{
                 )}
               >
                 <div className="w-full">
-                  <div className="flex flex-col items-stretch max-w-[min(600px,_100%)] gap-y-2 w-fit overflow-hidden">
+                  <div className="flex flex-col items-stretch max-w-[min(600px,_100%)] gap-y-1.5 w-fit overflow-hidden">
                     {message.components.map((component, i) => (
                       <AutoTopLevelComponentPreview
                         key={`top-level-component-${i}`}

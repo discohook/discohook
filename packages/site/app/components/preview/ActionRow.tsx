@@ -54,7 +54,7 @@ export const PreviewButton: PreviewComponent<APIButtonComponent> = ({
     </Button>
   );
   return data.style === ButtonStyle.Link && data.url !== "" ? (
-    <a href={data.url} target="_blank" rel="noreferrer">
+    <a href={data.url} target="_blank" rel="noreferrer" className="contents">
       {button}
     </a>
   ) : (
@@ -96,7 +96,7 @@ const PreviewMemberSelectOption: React.FC<{
             avatar: null,
           },
         })}
-        className="w-[22px] h-[22px] shrink-0 rounded-full"
+        className="size-[22px] shrink-0 rounded-full"
         alt=""
       />
     }
@@ -306,10 +306,7 @@ export const PreviewActionRow: React.FC<{
     .includes(false);
 
   return (
-    <div
-      className="flex flex-wrap gap-x-1.5 gap-y-0"
-      // data-action-row-index={i}
-    >
+    <div className="flex flex-wrap gap-2">
       {row.components.map((component, ci) => (
         <div key={`action-row-component-${ci}`} className="contents">
           <GenericPreviewComponentInActionRow

@@ -25,7 +25,7 @@ export const Button = ({
     type="button"
     {...props}
     className={twMerge(
-      "relative border border-[#ffffff14] rounded-lg font-medium text-base h-8 py-0 px-4 min-w-[60px] text-white transition shrink-0",
+      "relative border border-[#ffffff14] rounded-lg font-medium text-base h-8 py-0 px-4 min-w-[60px] max-w-full text-white transition shrink-0",
       loading ? "" : "disabled:opacity-50 disabled:cursor-not-allowed",
       !style || style === ButtonStyle.Primary
         ? "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700"
@@ -40,12 +40,17 @@ export const Button = ({
       props.className ?? "",
     )}
   >
-    <div className={twJoin("inline-flex", loading ? "invisible" : undefined)}>
+    <div
+      className={twJoin(
+        "inline-flex max-w-full",
+        loading ? "invisible" : undefined,
+      )}
+    >
       {emoji &&
         (emoji.id ? (
           <div
             className={`aspect-square h-[22px] my-auto ${
-              props.children ? "ltr:mr-1 rtl:ml-1" : "mx-auto"
+              props.children ? "me-1" : "mx-auto"
             }`}
           >
             <img
@@ -55,7 +60,7 @@ export const Button = ({
             />
           </div>
         ) : (
-          <div className="ltr:mr-1 rtl:ml-1 aspect-square my-auto h-7 flex">
+          <div className="me-1 aspect-square my-auto h-7 flex">
             <div className="m-auto">
               <Twemoji
                 // biome-ignore lint/style/noNonNullAssertion: Must have name if not an ID
@@ -65,7 +70,9 @@ export const Button = ({
             </div>
           </div>
         ))}
-      <div className={emoji ? "my-auto" : "m-auto"}>{props.children}</div>
+      <div className={twJoin(emoji ? "my-auto" : "m-auto", "truncate")}>
+        {props.children}
+      </div>
       {style === ButtonStyle.Link && (
         <CoolIcon
           icon="External_Link"
