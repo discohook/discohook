@@ -16,7 +16,15 @@ export const PreviewSection: React.FC<{
   return (
     <div className="flex flex-col gap-1">
       <div className="flex gap-3 justify-between">
-        <div className="flex flex-col gap-y-1">
+        <div
+          className={twJoin(
+            "flex flex-col gap-y-1",
+            component.components.length === 1 &&
+              component.accessory.type !== ComponentType.Thumbnail
+              ? "justify-center"
+              : undefined,
+          )}
+        >
           {component.components.map((child, i) =>
             child.type === ComponentType.TextDisplay ? (
               <PreviewTextDisplay key={i} component={child} cache={cache} />
