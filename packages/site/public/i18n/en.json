@@ -468,6 +468,16 @@
   "messageN": "Message {{n}}",
   "messageNText": "Message {{n}} - {{text}}",
   "messageName": "Message Name",
+  "invalidData": {
+    "title": "Invalid message data",
+    "message": "The data you loaded this page with seems to have errors. Most of the time, this just means some parts of it are not complete.",
+    "loadable": "You can attempt to load the data anyway, but it may not work.",
+    "unloadable": "It cannot be force-loaded because it could not be parsed into valid JSON.",
+    "raw": "Raw (base64 encoded)",
+    "b64": "Decoded String",
+    "json": "Parsed JSON (formatted)",
+    "loadAnyway": "Load Anyway"
+  },
   "componentN": {
     "1": "Row {{n}}",
     "2": "Button {{n}}",

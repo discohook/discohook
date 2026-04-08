@@ -42,6 +42,10 @@ import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
 import {
+  InvalidDataModal,
+  InvalidDataModalProps,
+} from "~/modals/InvalidDataModal";
+import {
   JsonEditorModal,
   type JsonEditorProps,
 } from "~/modals/JsonEditorModal";
@@ -324,10 +328,11 @@ export default function Index() {
       return [modified, setComponentFoundBackups];
     }
     return [rawComponentFoundBackups, setComponentFoundBackups];
-  }, [backupId, rawComponentFoundBackups, setComponentFoundBackups]);
+  }, [backupId, rawComponentFoundBackups]);
 
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
+  const [badLoadData, setBadLoadData] = useState<InvalidDataModalProps>();
 
   // const [isDefaultOrBlank, setIsDefaultOrBlank] = useState(
   //   // Default message data will be loaded
@@ -411,10 +416,11 @@ export default function Index() {
       let parsed:
         | SafeParseReturnType<QueryData, QueryData>
         | SafeParseError<QueryData>;
+      const dataParam = searchParams.get("data");
       try {
-        if (searchParams.get("data")) {
+        if (dataParam) {
           parsed = ZodQueryData.safeParse(
-            JSON.parse(base64Decode(searchParams.get("data") ?? "{}") ?? "{}"),
+            JSON.parse(base64Decode(dataParam) ?? "{}"),
           );
         } else {
           parsed = ZodQueryData.safeParse({ messages: [INDEX_MESSAGE] });
@@ -436,6 +442,10 @@ export default function Index() {
       } else {
         console.log("QueryData failed parsing:", parsed.error.format());
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
+        setTab("preview");
+        if (dataParam) {
+          setBadLoadData({ raw: dataParam, zodError: parsed.error });
+        }
       }
     }
   }, []);
@@ -677,6 +687,13 @@ export default function Index() {
         open={!!badShareData}
         setOpen={() => setBadShareData(undefined)}
         data={badShareData}
+      />
+      <InvalidDataModal
+        open={!!badLoadData}
+        setOpen={() => setBadLoadData(undefined)}
+        setData={setData}
+        setTab={setTab}
+        {...badLoadData}
       />
       <SimpleTextModal open={showOrgMigration} setOpen={setShowOrgMigration}>
         <p className="font-medium text-lg mb-2">{t("orgRedirectTitle")}</p>
