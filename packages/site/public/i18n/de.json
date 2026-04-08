@@ -73,7 +73,9 @@
     "backToServerSelection": "Zurück zur Server auswahl",
     "wordWrap": "Zeilenumbrüche",
     "edit": "Bearbeiten",
-    "addTarget": { "1": "Webhook Hinzufügen" },
+    "addTarget": {
+        "1": "Webhook Hinzufügen"
+    },
     "channel": "Kanal",
     "copyWebhookUrl": "Link Kopieren (erweitert)",
     "resetAvatar": "Entfernen",
