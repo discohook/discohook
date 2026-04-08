@@ -85,7 +85,9 @@
     "copyWebhookUrl": "Copia URL (avanzato)",
     "createdAtBy": "Creato il {{ createdAt, MMM D, YYYY }} da {{username}}",
     "someone": "qualcuno",
-    "addTarget": { "1": "Aggiungi un Webhook" },
+    "addTarget": {
+        "1": "Aggiungi un Webhook"
+    },
     "preview": "Anteprima",
     "share": "Condividi",
     "previewAll": "Visualizza un'anteprima di tutti",
