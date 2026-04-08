@@ -80,7 +80,9 @@
     "webhookUrl": "Webhook URL",
     "createdAtBy": "Gemaakt op {{ createdAt, d MMM, YYYY }} door {{username}}",
     "someone": "iemand",
-    "addTarget": { "1": "Voeg Webhook Toe" },
+    "addTarget": {
+        "1": "Voeg Webhook Toe"
+    },
     "createWebhook": "Creëer Webhook",
     "editWebhook": "Bewerk Webhook",
     "createdByDiscohook": "Deze webhook is eigendom van Discohook",
