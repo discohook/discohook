@@ -5,9 +5,9 @@ import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Prose } from "~/components/Prose";
 import { codeStyle } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { Prose } from "~/components/Prose";
 import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
 import type { TFunction } from "~/types/i18next";
@@ -138,7 +138,8 @@ export default function FormattingPage() {
           "member.display_name": "Discohook Utils",
           "member.tag": "Discohook Utils#4333",
           "member.mention": "<@792842038332358656>",
-          "member.avatar_url": "/discord-avatars/discohook-bot.webp",
+          "member.avatar_url":
+            "https://cdn.discordapp.com/avatars/792842038332358656/da056550fd65a4d7e4636cb1707ca801.webp?size=2048",
           "member.default_avatar_url": cdn.defaultAvatar(4333 % 5),
           "member.bot": "True",
           "member.created": time(getSnowflakeDate("792842038332358656"), "d"),
@@ -154,7 +155,8 @@ export default function FormattingPage() {
           "member.role_ids": '["123456789012345678","234567890123456789"]',
         }),
     "server.name": "Discohook",
-    "server.icon_url": "/discord-avatars/discohook.webp",
+    "server.icon_url":
+      "https://cdn.discordapp.com/icons/668218342779256857/76be0060e74977fa7e9c688f752ba342.webp?size=2048",
     "server.members": 17377,
     "server.roles": 34,
     "server.boosts": 2,
