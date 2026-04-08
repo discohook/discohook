@@ -108,6 +108,8 @@ export const FlowEditModal = (
   const hasMaxActions = counted.length >= actionMax;
 
   const parsed = ZodDraftFlow.safeParse(flow);
+  // TODO: assign each part of the error a unique string which can be "queried"
+  // by each FlowActionEditor to see if it has any errors pertaining to it
 
   return (
     <Modal {...props}>
