@@ -18,6 +18,7 @@ import { apiUrl, BRoutes } from "~/api/routing";
 import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import type { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
+import { ButtonSelect } from "~/components/ButtonSelect";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -56,6 +57,7 @@ import {
   MessageSendModal,
   useMessageSubmissionManager,
 } from "~/modals/MessageSendModal";
+import { MessageSendModeModal } from "~/modals/MessageSendModeModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { MessageShareModal } from "~/modals/MessageShareModal";
 import { DialogPortal, ModalFooter } from "~/modals/Modal";
@@ -547,6 +549,7 @@ export default function Index() {
   const [codeGenerator, setCodeGenerator] = useState<CodeGeneratorProps>();
   const [showOrgMigration, setShowOrgMigration] = useState(dm === "org");
   const [showAddMessageMenu, setShowAddMessageMenu] = useState(false);
+  const [showSendModeModal, setShowModeModal] = useState(dm === "send-mode");
   const [confirm, setConfirm] = useConfirmModal();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
@@ -570,6 +573,28 @@ export default function Index() {
   };
   useEffect(performBlockTest, []);
 
+  // This is so awkward
+  const sendButtonKey =
+    settings.webhookInput !== "classic"
+      ? messagesWithReference === 0
+        ? "send"
+        : messagesWithReference === data.messages.length
+          ? "edit"
+          : "submit"
+      : Object.keys(targets).length <= 1 && data.messages.length > 1
+        ? messagesWithReference === 0
+          ? "sendAll"
+          : "submitAll"
+        : Object.keys(targets).length > 1
+          ? messagesWithReference === 0
+            ? "sendToAll"
+            : "submitToAll"
+          : messagesWithReference === 0
+            ? "send"
+            : messagesWithReference === data.messages.length
+              ? "edit"
+              : "submit";
+
   return (
     <div className="h-screen overflow-hidden">
       <ComponentEditModal
@@ -592,6 +617,12 @@ export default function Index() {
         setData={setData}
         messageIndex={settingMessageIndex}
         cache={cache}
+      />
+      <MessageSendModeModal
+        open={showSendModeModal}
+        setOpen={setShowModeModal}
+        data={data}
+        setSettingMessageIndex={setSettingMessageIndex}
       />
       <MessageFlagsEditModal
         open={editingMessageFlags !== undefined}
@@ -952,7 +983,7 @@ export default function Index() {
                 </div>
               </div>
             )}
-            <div className="flex space-x-2 rtl:space-x-reverse">
+            <div className="flex gap-x-2">
               {settings.webhookInput !== "classic" && (
                 <Button
                   onClick={() => setAddingTarget(true)}
@@ -961,47 +992,49 @@ export default function Index() {
                   {t("addTarget.1")}
                 </Button>
               )}
-              <Button
-                disabled={data.messages.length === 0 || sending}
-                loading={sending}
-                onClick={async () => {
-                  if (settings.webhookInput !== "classic") {
-                    setSendingMessages(true);
-                    return;
-                  }
-                  const results = await submitMessages(Object.values(targets));
-                  const errors = results.filter((r) => r.status === "error");
-                  if (errors.length === 1) {
-                    setShowingResult(errors[0]);
-                  } else if (errors.length !== 0) {
-                    setSendingMessages(true);
-                  }
-                }}
-              >
-                {t(
-                  // This is so awkward
-                  settings.webhookInput !== "classic"
-                    ? messagesWithReference === 0
-                      ? "send"
-                      : messagesWithReference === data.messages.length
-                        ? "edit"
-                        : "submit"
-                    : Object.keys(targets).length <= 1 &&
-                        data.messages.length > 1
-                      ? messagesWithReference === 0
-                        ? "sendAll"
-                        : "submitAll"
-                      : Object.keys(targets).length > 1
-                        ? messagesWithReference === 0
-                          ? "sendToAll"
-                          : "submitToAll"
-                        : messagesWithReference === 0
-                          ? "send"
-                          : messagesWithReference === data.messages.length
-                            ? "edit"
-                            : "submit",
-                )}
-              </Button>
+              <div className="flex gap-0">
+                <Button
+                  disabled={data.messages.length === 0 || sending}
+                  className="rounded-e-none border-e-0"
+                  loading={sending}
+                  onClick={async () => {
+                    if (settings.webhookInput !== "classic") {
+                      setSendingMessages(true);
+                      return;
+                    }
+                    const results = await submitMessages(
+                      Object.values(targets),
+                    );
+                    const errors = results.filter((r) => r.status === "error");
+                    if (errors.length === 1) {
+                      setShowingResult(errors[0]);
+                    } else if (errors.length !== 0) {
+                      setSendingMessages(true);
+                    }
+                  }}
+                >
+                  {t(sendButtonKey)}
+                </Button>
+                <ButtonSelect
+                  className="w-7 min-w-0 px-0 rounded-s-none"
+                  iconClassName="ms-0"
+                  options={[
+                    {
+                      value: "",
+                      label: t(
+                        sendButtonKey.startsWith("edit") ? "send" : "edit",
+                      ),
+                    },
+                  ]}
+                  onValueChange={() => {
+                    if (data.messages.length === 1) {
+                      setSettingMessageIndex(0);
+                    } else {
+                      setShowModeModal(true);
+                    }
+                  }}
+                />
+              </div>
             </div>
             {/* {isDefaultOrBlank ? (
               <div className="w-full mt-2 flex gap-2">

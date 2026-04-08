@@ -51,6 +51,8 @@
   "submitAll": "Submit All",
   "sendNoWebhooks": "You have no webhooks to send to.",
   "sendNoMessages": "You have no messages to send.",
+  "switchSendMode": "Change Sending Mode",
+  "switchSendModeBody": "Select one of your messages to set or remove its message link, which will change whether Discohook edits the existing message.",
   "orgRedirectTitle": "You were just redirected from discohook.org",
   "orgRedirectBody": "Discohook is now available at <bold>discohook.app</bold>. To migrate your backups, <importLink>click here</importLink>. To read more about this update, <infoLink>click here</infoLink>.",
   "willBeEdited": "This message has its link set, so it will be edited.",

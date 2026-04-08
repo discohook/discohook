@@ -1,6 +1,6 @@
 import { Select } from "@base-ui-components/react/select";
 import type { ButtonStyle } from "discord-api-types/v10";
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { Button } from "./Button";
 import { CoolIcon, type CoolIconsGlyph } from "./icons/CoolIcon";
 import { selectStyles } from "./StringSelect";
@@ -23,6 +23,7 @@ export function ButtonSelect<T>(
     className?: string;
     discordstyle?: ButtonStyle;
     icon?: CoolIconsGlyph | null;
+    iconClassName?: string;
   }>,
 ) {
   return (
@@ -36,7 +37,7 @@ export function ButtonSelect<T>(
       readOnly={props.readOnly}
     >
       <Select.Trigger
-        className="w-fit h-fit"
+        className="size-fit"
         disabled={props.disabled}
         // don't duplicate trigger in tab nav
         tabIndex={-1}
@@ -50,7 +51,10 @@ export function ButtonSelect<T>(
           {props.icon !== null ? (
             <CoolIcon
               icon={props.icon ?? "Chevron_Down"}
-              className="my-auto ltr:ml-1.5 rtl:mr-1.5 transition-transform"
+              className={twMerge(
+                "my-auto ms-1.5 transition-transform",
+                props.iconClassName,
+              )}
             />
           ) : null}
         </Button>
@@ -75,10 +79,7 @@ export function ButtonSelect<T>(
                   className={twJoin(selectStyles.itemText, "flex items-center")}
                 >
                   {option.icon ? (
-                    <CoolIcon
-                      icon={option.icon}
-                      className="text-lg ltr:mr-1.5 rtl:ml-1.5"
-                    />
+                    <CoolIcon icon={option.icon} className="text-lg me-1.5" />
                   ) : null}
                   {option.label}
                 </Select.ItemText>

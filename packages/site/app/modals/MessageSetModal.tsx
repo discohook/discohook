@@ -78,7 +78,9 @@ export const MessageSetModal = (
 
   return (
     <Modal {...props} setOpen={setOpen}>
-      <PlainModalHeader>{t("setMessageLink")}</PlainModalHeader>
+      <PlainModalHeader onClose={() => setOpen(false)}>
+        {t("setMessageLink")}
+      </PlainModalHeader>
       <InfoBox severity="blue" icon="Info" collapsible open={false}>
         <Trans t={t} i18nKey="setMessageLinkNote" components={{ br: <br /> }} />
       </InfoBox>
