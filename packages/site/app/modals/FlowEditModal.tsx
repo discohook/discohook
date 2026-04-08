@@ -638,7 +638,7 @@ const FlowActionEditor: React.FC<{
             className={twJoin(
               "w-1 rounded bg-border-normal dark:bg-border-normal-dark",
               prevAction.type === FlowActionType.Check
-                ? "ms-4 me-auto h-6 -mt-3"
+                ? ["me-auto h-6 -mt-3", !checkLevel ? "ms-4" : "ms-0"]
                 : "h-3 mx-auto",
             )}
           />
