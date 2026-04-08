@@ -438,42 +438,27 @@ const FlowCheckActionsEditor: React.FC<{
 
   const [selected, setSelected] = useState<"then" | "else">("then");
   useEffect(() => {
-    if (!ref.current || !thenRef.current || !elseRef.current) return;
-    if (selected === "then") {
-      // prevent auto-resize if new pane is larger
-      ref.current.style.height = `${elseRef.current.scrollHeight}px`;
-      thenRef.current.style.height = "";
-      // scroll
-      thenRef.current.scrollIntoView({ behavior: "smooth" });
-      // hide other side
-      elseRef.current.style.height = "0px";
-      // transition to new correct height
-      ref.current.style.height = `${thenRef.current.scrollHeight}px`;
-      // remove hardcoded height after transition is done
-      setTimeout(() => {
-        if (!ref.current) return;
-        ref.current.style.height = "";
-      }, 150);
-    } else {
-      // prevent auto-resize if new pane is larger
-      ref.current.style.height = `${thenRef.current.scrollHeight}px`;
-      elseRef.current.style.height = "";
-      // scroll
-      elseRef.current.scrollIntoView({ behavior: "smooth" });
-      // hide other side
-      thenRef.current.style.height = "0px";
-      // transition to new correct height
-      ref.current.style.height = `${elseRef.current.scrollHeight}px`;
-      // remove hardcoded height after transition is done
-      setTimeout(() => {
-        if (!ref.current) return;
-        ref.current.style.height = "";
-      }, 150);
-    }
+    const newPanel = selected === "then" ? thenRef : elseRef;
+    const oldPanel = selected === "then" ? elseRef : thenRef;
+    if (!ref.current || !newPanel.current || !oldPanel.current) return;
+
+    // prevent auto-resize if new panel is larger
+    ref.current.style.height = `${oldPanel.current.scrollHeight}px`;
+    newPanel.current.style.height = "";
+    // scroll
+    newPanel.current.scrollIntoView({ behavior: "smooth" });
+    // hide other side
+    oldPanel.current.style.height = "0px";
+    // transition to new correct height
+    ref.current.style.height = `${newPanel.current.scrollHeight}px`;
+    // remove hardcoded height after transition is done
+    setTimeout(() => {
+      if (!ref.current) return;
+      ref.current.style.height = "";
+    }, 150);
 
     const listener = () => {
-      if (selected !== "else") return;
-      elseRef.current?.scrollIntoView({ behavior: "smooth" });
+      newPanel.current?.scrollIntoView({ behavior: "instant" });
     };
     window.addEventListener("resize", listener);
     return () => window.removeEventListener("resize", listener);
