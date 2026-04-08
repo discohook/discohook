@@ -444,7 +444,7 @@ const FlowCheckActionsEditor: React.FC<{
       ref.current.style.height = `${elseRef.current.scrollHeight}px`;
       thenRef.current.style.height = "";
       // scroll
-      ref.current.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+      thenRef.current.scrollIntoView({ behavior: "smooth" });
       // hide other side
       elseRef.current.style.height = "0px";
       // transition to new correct height
@@ -459,8 +459,7 @@ const FlowCheckActionsEditor: React.FC<{
       ref.current.style.height = `${thenRef.current.scrollHeight}px`;
       elseRef.current.style.height = "";
       // scroll
-      const half = (ref.current?.scrollWidth ?? 0) / 2;
-      ref.current.scrollTo({ left: half, top: 0, behavior: "smooth" });
+      elseRef.current.scrollIntoView({ behavior: "smooth" });
       // hide other side
       thenRef.current.style.height = "0px";
       // transition to new correct height
@@ -474,8 +473,7 @@ const FlowCheckActionsEditor: React.FC<{
 
     const listener = () => {
       if (selected !== "else") return;
-      const half = (ref.current?.scrollWidth ?? 0) / 2;
-      ref.current?.scrollTo({ left: half, top: 0, behavior: "instant" });
+      elseRef.current?.scrollIntoView({ behavior: "smooth" });
     };
     window.addEventListener("resize", listener);
     return () => window.removeEventListener("resize", listener);

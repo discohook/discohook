@@ -221,21 +221,21 @@ export default function FormattingPage() {
           <details className="group mt-4">
             <FormatCategoryHeader>
               <img
-                className="rounded-full my-auto h-6 w-6 ml-1 border border-gray-200 dark:border-primary-700"
+                className="rounded-full my-auto size-6 ml-1 border border-gray-200 dark:border-primary-700"
                 src={getCharacterAvatarUrl(characterAvatars[1])}
                 alt=""
               />
               <img
-                className="rounded-full my-auto h-6 w-6 -ml-2 border border-gray-200 dark:border-primary-700"
+                className="rounded-full my-auto size-6 -ml-2 border border-gray-200 dark:border-primary-700"
                 src={getCharacterAvatarUrl(characterAvatars[6])}
                 alt=""
               />
               <img
-                className="rounded-full my-auto h-6 w-6 -ml-2 border border-gray-200 dark:border-primary-700"
+                className="rounded-full my-auto size-6 -ml-2 border border-gray-200 dark:border-primary-700"
                 src={getCharacterAvatarUrl(characterAvatars[4])}
                 alt=""
               />
-              <p className="font-bold ltr:ml-2 rtl:mr-2">{t("members")}</p>
+              <p className="font-bold ms-2">{t("members")}</p>
             </FormatCategoryHeader>
             <p>
               {t("formatMemberDescription")} {user && t("formatMemberYou")}
@@ -270,9 +270,7 @@ export default function FormattingPage() {
           </details>
           <details className="group mt-4">
             <FormatCategoryHeader>
-              <p className="font-bold ltr:ml-1 rtl:mr-1">
-                {t("miscellaneous")}
-              </p>
+              <p className="font-bold ms-1">{t("miscellaneous")}</p>
             </FormatCategoryHeader>
             <FormatCategoryBody
               t={t}
@@ -284,7 +282,7 @@ export default function FormattingPage() {
           </details>
           <div>
             <div className="invisible p-4 mt-8">{previewValue}</div>
-            <div className="bg-gray-200 dark:bg-gray-900 shadow rounded-lg p-4 fixed bottom-4 ltr:mr-8 rtl:ml-8">
+            <div className="bg-gray-200 dark:bg-gray-900 shadow rounded-lg p-4 fixed bottom-4 me-8">
               <Message
                 message={{
                   content: previewValue || t("formatOptionsNone"),

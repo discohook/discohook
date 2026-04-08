@@ -20,10 +20,10 @@ export const OptionSlider = <T extends string | number>({
         )}
         style={{
           width: `calc(${individualPct} - 0.25rem)`,
-          left: `max(${selectedIndex * individualWidth * 100}%, 0.25rem)`,
+          insetInlineStart: `max(${selectedIndex * individualWidth * 100}%, 0.25rem)`,
         }}
       />
-      <div className="absolute top-0 left-0 w-full h-full flex z-10">
+      <div className="absolute top-0 start-0 w-full h-full flex z-10">
         {options.map((opt) => (
           <button
             type="button"
