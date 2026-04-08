@@ -414,6 +414,7 @@ const FlowCheckActionsEditor: React.FC<{
   checkLevel?: number;
   allActions: FlowAction[];
   actionMax: number;
+  parentContext?: FlowParentContext;
 }> = ({
   t,
   action,
@@ -426,6 +427,7 @@ const FlowCheckActionsEditor: React.FC<{
   checkLevel,
   allActions,
   actionMax,
+  parentContext,
 }) => {
   const counted = allActions.filter(
     (a) => a.type !== FlowActionType.Check && a.type !== FlowActionType.Stop,
@@ -499,6 +501,7 @@ const FlowCheckActionsEditor: React.FC<{
                 cache={cache}
                 t={t}
                 checkLevel={(checkLevel ?? 0) + 1}
+                parentContext={parentContext}
               />
             ))}
           </div>
@@ -545,6 +548,7 @@ const FlowCheckActionsEditor: React.FC<{
                 cache={cache}
                 t={t}
                 checkLevel={(checkLevel ?? 0) + 1}
+                parentContext={parentContext}
               />
             ))}
           </div>
@@ -1378,6 +1382,7 @@ const FlowActionEditor: React.FC<{
             checkLevel={checkLevel}
             allActions={allActions}
             actionMax={actionMax}
+            parentContext={parentContext}
           />
         </div>
       ) : null}
