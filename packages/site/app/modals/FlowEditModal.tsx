@@ -1,3 +1,4 @@
+import { Collapsible } from "@base-ui-components/react/collapsible";
 import { NumberField } from "@base-ui-components/react/number-field";
 import { Switch } from "@base-ui-components/react/switch";
 import { Link } from "@remix-run/react";
@@ -17,6 +18,7 @@ import { apiUrl, BRoutes } from "~/api/routing";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import { ChannelSelect } from "~/components/ChannelSelect";
 import { Checkbox } from "~/components/Checkbox";
+import { collapsibleStyles } from "~/components/collapsible";
 import { useError } from "~/components/Error";
 import { OptionSlider } from "~/components/OptionSlider";
 import { switchStyles } from "~/components/switch";
@@ -636,6 +638,9 @@ const FlowActionEditor: React.FC<{
   // const isMemberTrigger = parentContext && [`trigger.${TriggerEvent.MemberAdd}`, `trigger.${TriggerEvent.MemberRemove}`].includes(parentContext);
 
   const prevAction = flow.actions[i - 1];
+  const nextAction = flow.actions[i + 1];
+  // Decided on a stateful value because I didn't want to fiddle with nested group classes
+  const [isOpen, setOpen] = useState(true);
   return (
     <div>
       {prevAction ? (
@@ -643,22 +648,52 @@ const FlowActionEditor: React.FC<{
           <div
             className={twJoin(
               "w-1 rounded bg-border-normal dark:bg-border-normal-dark",
+              "transition-[height]",
               prevAction.type === FlowActionType.Check
-                ? ["me-auto h-6 -mt-3", !checkLevel ? "ms-4" : "ms-0"]
-                : "h-3 mx-auto",
+                ? [
+                    "me-auto -mt-3",
+                    !checkLevel ? "ms-4" : "ms-0",
+                    isOpen ? "h-6" : "h-0",
+                  ]
+                : ["mx-auto", isOpen ? "h-3" : "h-0"],
             )}
           />
         </div>
       ) : null}
-      <div className={"shadow rounded-lg"}>
-        <div
+      <Collapsible.Root
+        open={isOpen}
+        onOpenChange={setOpen}
+        className={twJoin(
+          // Compensate for negative margin on future sibling's thread line
+          // Unfortunately this creates unwanted extra space between many
+          // collapsed siblings, but I don't have a good solution for that atm.
+          action.type === FlowActionType.Check && nextAction && !isOpen
+            ? "mb-4"
+            : "",
+        )}
+      >
+        <Collapsible.Trigger
           className={twJoin(
-            "flex text-sm font-semibold select-none items-center",
+            "flex text-sm font-semibold select-none items-center w-full",
             "px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-t-lg",
             "border border-border-normal dark:border-border-normal-dark",
-            action.type === FlowActionType.Dud ? "rounded-b-lg" : "border-b-0",
+            "shadow",
+            action.type === FlowActionType.Dud || !isOpen
+              ? "rounded-b-lg"
+              : undefined,
           )}
         >
+          {action.type === FlowActionType.Dud ? null : (
+            <CoolIcon
+              icon="Chevron_Right"
+              rtl="Chevron_Left"
+              className={twJoin(
+                "transition-transform me-1",
+                isOpen ? "rotate-90 rtl:-rotate-90" : "rotate-0",
+                "text-muted dark:text-muted-dark",
+              )}
+            />
+          )}
           {errors.length > 0 && (
             <CoolIcon
               icon="Circle_Warning"
@@ -720,674 +755,682 @@ const FlowActionEditor: React.FC<{
               <CoolIcon icon="Trash_Full" />
             </button>
           </div>
-        </div>
-        <div
-          className={twJoin(
-            action.type !== FlowActionType.Dud
-              ? "px-4 py-2.5 border border-t-0 border-border-normal dark:border-border-normal-dark bg-gray-200 dark:bg-gray-700 rounded-b-lg"
-              : undefined,
-          )}
-        >
-          {errors.length > 0 && (
-            <div className="-mt-1 mb-1">
-              <InfoBox severity="red" icon="Circle_Warning">
-                {errors.map((k) => t(k)).join("\n")}
-              </InfoBox>
-            </div>
-          )}
-          <div className="space-y-1">
-            {action.type === FlowActionType.Dud ? (
-              <div />
-            ) : action.type === FlowActionType.Wait ? (
-              <NumberField.Root
-                min={0}
-                max={60}
-                value={action.seconds}
-                required
-                onValueChange={(e) => {
-                  if (e !== null) {
-                    action.seconds = e;
-                    update();
-                  }
-                }}
-                className="w-full group"
-              >
-                <NumberField.Group className="w-full rounded grid grid-cols-3 h-9 bg-gray-300 group-focus:border-blurple-500 dark:bg-[#292b2f] group-invalid:border-rose-400 dark:group-invalid:border-rose-400 group-disabled:text-gray-500 group-disabled:cursor-not-allowed transition">
-                  <NumberField.Decrement className="border border-gray-200 dark:border-gray-300/20 dark:bg-gray-900 dark:hover:bg-primary-600 transition rounded-l">
-                    <CoolIcon icon="Remove_Minus" />
-                  </NumberField.Decrement>
-                  <NumberField.Input className="border-y border-gray-200 dark:border-gray-300/20 bg-transparent text-center" />
-                  <NumberField.Increment className="border border-gray-200 dark:border-gray-300/20 dark:bg-gray-900 dark:hover:bg-primary-600 transition rounded-r">
-                    <CoolIcon icon="Add_Plus" />
-                  </NumberField.Increment>
-                </NumberField.Group>
-              </NumberField.Root>
-            ) : action.type === FlowActionType.Check ? (
-              <div>
-                <CheckFunctionEditor
-                  t={t}
-                  function={action.function}
-                  setFunction={(f) => {
-                    action.function = f;
-                  }}
-                  update={update}
-                  level={0}
-                  guildId={guildId}
-                  roles={roles}
-                  parentContext={parentContext}
-                />
+        </Collapsible.Trigger>
+        <Collapsible.Panel className={collapsibleStyles.panel}>
+          <div
+            className={twJoin(
+              action.type !== FlowActionType.Dud
+                ? [
+                    "px-4 py-2.5",
+                    "border border-t-0 border-border-normal dark:border-border-normal-dark",
+                    "bg-gray-200 dark:bg-gray-700 rounded-b-lg shadow",
+                  ]
+                : undefined,
+            )}
+          >
+            {errors.length > 0 && (
+              <div className="-mt-1 mb-1">
+                <InfoBox severity="red" icon="Circle_Warning">
+                  {errors.map((k) => t(k)).join("\n")}
+                </InfoBox>
               </div>
-            ) : action.type === FlowActionType.AddRole ||
-              action.type === FlowActionType.RemoveRole ||
-              action.type === FlowActionType.ToggleRole ? (
-              <>
-                <p className="text-sm font-medium select-none">{t("role")}</p>
-                <RoleSelect
-                  t={t}
-                  name="roleId"
-                  roles={roles}
-                  value={roles.find((r) => r.id === action.roleId)}
-                  onChange={(role) => {
-                    if (role) {
-                      action.roleId = role.id;
+            )}
+            <div className="space-y-1">
+              {action.type === FlowActionType.Dud ? (
+                <div />
+              ) : action.type === FlowActionType.Wait ? (
+                <NumberField.Root
+                  min={0}
+                  max={60}
+                  value={action.seconds}
+                  required
+                  onValueChange={(e) => {
+                    if (e !== null) {
+                      action.seconds = e;
                       update();
                     }
                   }}
-                  unassignable="omit"
-                  guildId={guildId}
-                />
-                {roles.length === 0 ? (
-                  <p className="text-blurple dark:text-blurple-300 text-sm leading-tight">
-                    {t("noMentionsActionNote")}
-                  </p>
-                ) : null}
-                {/* <TextArea label="Reason" maxLength={512} className="w-full" /> */}
-              </>
-            ) : action.type === FlowActionType.SendMessage ? (
-              (() => {
-                const selected = backupsFetcher.data?.find(
-                  (b) => b.id === action.backupId,
-                );
-                const messageOptions: {
-                  label: string;
-                  value: number | "null";
-                }[] = [
-                  ...(selected
-                    ? selected.data.messages.map((msg, i) => ({
-                        label: `${i + 1}. ${msg.text ?? "no content"}`,
-                        value: i,
-                      }))
-                    : []),
-                  {
-                    label: t("random"),
-                    value: "null",
-                  },
-                ];
-                const flags = new MessageFlagsBitField(action.flags ?? 0);
-                return (
-                  <>
-                    <p className="text-sm">
-                      <Trans
-                        t={t}
-                        i18nKey="messageActionGuideNote"
-                        components={[
-                          <Link
-                            key="0"
-                            to="/guide/recipes/message-buttons"
-                            target="_blank"
-                            className={linkClassName}
-                          />,
-                        ]}
-                      />
+                  className="w-full group"
+                >
+                  <NumberField.Group className="w-full rounded grid grid-cols-3 h-9 bg-gray-300 group-focus:border-blurple-500 dark:bg-[#292b2f] group-invalid:border-rose-400 dark:group-invalid:border-rose-400 group-disabled:text-gray-500 group-disabled:cursor-not-allowed transition">
+                    <NumberField.Decrement className="border border-gray-200 dark:border-gray-300/20 dark:bg-gray-900 dark:hover:bg-primary-600 transition rounded-l">
+                      <CoolIcon icon="Remove_Minus" />
+                    </NumberField.Decrement>
+                    <NumberField.Input className="border-y border-gray-200 dark:border-gray-300/20 bg-transparent text-center" />
+                    <NumberField.Increment className="border border-gray-200 dark:border-gray-300/20 dark:bg-gray-900 dark:hover:bg-primary-600 transition rounded-r">
+                      <CoolIcon icon="Add_Plus" />
+                    </NumberField.Increment>
+                  </NumberField.Group>
+                </NumberField.Root>
+              ) : action.type === FlowActionType.Check ? (
+                <div>
+                  <CheckFunctionEditor
+                    t={t}
+                    function={action.function}
+                    setFunction={(f) => {
+                      action.function = f;
+                    }}
+                    update={update}
+                    level={0}
+                    guildId={guildId}
+                    roles={roles}
+                    parentContext={parentContext}
+                  />
+                </div>
+              ) : action.type === FlowActionType.AddRole ||
+                action.type === FlowActionType.RemoveRole ||
+                action.type === FlowActionType.ToggleRole ? (
+                <>
+                  <p className="text-sm font-medium select-none">{t("role")}</p>
+                  <RoleSelect
+                    t={t}
+                    name="roleId"
+                    roles={roles}
+                    value={roles.find((r) => r.id === action.roleId)}
+                    onChange={(role) => {
+                      if (role) {
+                        action.roleId = role.id;
+                        update();
+                      }
+                    }}
+                    unassignable="omit"
+                    guildId={guildId}
+                  />
+                  {roles.length === 0 ? (
+                    <p className="text-blurple dark:text-blurple-300 text-sm leading-tight">
+                      {t("noMentionsActionNote")}
                     </p>
-                    <div>
-                      <p className="text-sm select-none">
-                        {t("backup")}
-                        {selected && (
-                          <>
-                            {" "}
-                            (
+                  ) : null}
+                  {/* <TextArea label="Reason" maxLength={512} className="w-full" /> */}
+                </>
+              ) : action.type === FlowActionType.SendMessage ? (
+                (() => {
+                  const selected = backupsFetcher.data?.find(
+                    (b) => b.id === action.backupId,
+                  );
+                  const messageOptions: {
+                    label: string;
+                    value: number | "null";
+                  }[] = [
+                    ...(selected
+                      ? selected.data.messages.map((msg, i) => ({
+                          label: `${i + 1}. ${msg.text ?? "no content"}`,
+                          value: i,
+                        }))
+                      : []),
+                    {
+                      label: t("random"),
+                      value: "null",
+                    },
+                  ];
+                  const flags = new MessageFlagsBitField(action.flags ?? 0);
+                  return (
+                    <>
+                      <p className="text-sm">
+                        <Trans
+                          t={t}
+                          i18nKey="messageActionGuideNote"
+                          components={[
                             <Link
-                              to={`/?backup=${selected.id}`}
+                              key="0"
+                              to="/guide/recipes/message-buttons"
                               target="_blank"
                               className={linkClassName}
-                            >
-                              {t("edit")}
-                            </Link>
-                            )
-                          </>
-                        )}
+                            />,
+                          ]}
+                        />
                       </p>
-                      <div className="flex">
-                        <BackupSelect
-                          t={t}
-                          fetcher={backupsFetcher}
-                          value={selected}
-                          onChange={(backup) => {
-                            action.backupId = backup.id;
-                            action.backupMessageIndex = 0;
-                            update();
-                          }}
-                        />
-                        <Button
-                          className="ltr:ml-2 rtl:mr-2 my-auto h-9"
-                          onClick={() =>
-                            backupsFetcher.load(
-                              apiUrl(BRoutes.currentUserBackups()),
-                            )
-                          }
-                          disabled={backupsFetcher.state !== "idle"}
-                          discordstyle={ButtonStyle.Secondary}
-                        >
-                          <CoolIcon icon="Redo" />
-                        </Button>
+                      <div>
+                        <p className="text-sm select-none">
+                          {t("backup")}
+                          {selected && (
+                            <>
+                              {" "}
+                              (
+                              <Link
+                                to={`/?backup=${selected.id}`}
+                                target="_blank"
+                                className={linkClassName}
+                              >
+                                {t("edit")}
+                              </Link>
+                              )
+                            </>
+                          )}
+                        </p>
+                        <div className="flex">
+                          <BackupSelect
+                            t={t}
+                            fetcher={backupsFetcher}
+                            value={selected}
+                            onChange={(backup) => {
+                              action.backupId = backup.id;
+                              action.backupMessageIndex = 0;
+                              update();
+                            }}
+                          />
+                          <Button
+                            className="ltr:ml-2 rtl:mr-2 my-auto h-9"
+                            onClick={() =>
+                              backupsFetcher.load(
+                                apiUrl(BRoutes.currentUserBackups()),
+                              )
+                            }
+                            disabled={backupsFetcher.state !== "idle"}
+                            discordstyle={ButtonStyle.Secondary}
+                          >
+                            <CoolIcon icon="Redo" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    {
-                      // incl. the random option
-                      messageOptions.length > 2 ? (
-                        <SimpleStringSelect
-                          t={t}
-                          name="backupMessageIndex"
-                          label={t("message")}
-                          value={
-                            (action.backupMessageIndex === null
-                              ? "null"
-                              : (action.backupMessageIndex ?? 0)) as
-                              | number
-                              | "null"
-                          }
-                          options={messageOptions}
-                          onChange={(value) => {
-                            action.backupMessageIndex =
-                              value === "null" ? null : value;
+                      {
+                        // incl. the random option
+                        messageOptions.length > 2 ? (
+                          <SimpleStringSelect
+                            t={t}
+                            name="backupMessageIndex"
+                            label={t("message")}
+                            value={
+                              (action.backupMessageIndex === null
+                                ? "null"
+                                : (action.backupMessageIndex ?? 0)) as
+                                | number
+                                | "null"
+                            }
+                            options={messageOptions}
+                            onChange={(value) => {
+                              action.backupMessageIndex =
+                                value === "null" ? null : value;
+                              update();
+                            }}
+                            required
+                            disabled={
+                              !selected || selected.data.messages.length <= 1
+                            }
+                          />
+                        ) : null
+                      }
+                      <div>
+                        <p className="text-sm font-medium">{t("flags")}</p>
+                        <Checkbox
+                          label={t(`messageFlag.${MessageFlags.Ephemeral}`)}
+                          checked={flags.has(MessageFlags.Ephemeral)}
+                          onCheckedChange={(checked) => {
+                            checked
+                              ? flags.add(MessageFlags.Ephemeral)
+                              : flags.remove(MessageFlags.Ephemeral);
+
+                            action.flags = Number(flags.value) || undefined;
                             update();
                           }}
-                          required
-                          disabled={
-                            !selected || selected.data.messages.length <= 1
-                          }
                         />
-                      ) : null
-                    }
-                    <div>
-                      <p className="text-sm font-medium">{t("flags")}</p>
-                      <Checkbox
-                        label={t(`messageFlag.${MessageFlags.Ephemeral}`)}
-                        checked={flags.has(MessageFlags.Ephemeral)}
-                        onCheckedChange={(checked) => {
-                          checked
-                            ? flags.add(MessageFlags.Ephemeral)
-                            : flags.remove(MessageFlags.Ephemeral);
+                      </div>
+                    </>
+                  );
+                })()
+              ) : action.type === FlowActionType.SendWebhookMessage ? (
+                (() => {
+                  const selected = backupsFetcher.data?.find(
+                    (b) => b.id === action.backupId,
+                  );
+                  const messageOptions: {
+                    label: string;
+                    value: number | "null";
+                  }[] = [
+                    ...(selected
+                      ? selected.data.messages.map((msg, i) => ({
+                          label: `${i + 1}. ${msg.text ?? "no content"}`,
+                          value: i,
+                        }))
+                      : []),
+                    {
+                      label: t("random"),
+                      value: "null",
+                    },
+                  ];
 
-                          action.flags = Number(flags.value) || undefined;
-                          update();
-                        }}
-                      />
-                    </div>
-                  </>
-                );
-              })()
-            ) : action.type === FlowActionType.SendWebhookMessage ? (
-              (() => {
-                const selected = backupsFetcher.data?.find(
-                  (b) => b.id === action.backupId,
-                );
-                const messageOptions: {
-                  label: string;
-                  value: number | "null";
-                }[] = [
-                  ...(selected
-                    ? selected.data.messages.map((msg, i) => ({
-                        label: `${i + 1}. ${msg.text ?? "no content"}`,
-                        value: i,
-                      }))
-                    : []),
-                  {
-                    label: t("random"),
-                    value: "null",
-                  },
-                ];
+                  const selectedWebhook = webhooksFetcher.data?.find(
+                    (w) => w.id === action.webhookId,
+                  );
 
-                const selectedWebhook = webhooksFetcher.data?.find(
-                  (w) => w.id === action.webhookId,
-                );
+                  return (
+                    <>
+                      <p className="text-sm">
+                        <Trans
+                          t={t}
+                          i18nKey="messageActionGuideNote"
+                          components={[
+                            <Link
+                              key="0"
+                              to="/guide/recipes/message-buttons"
+                              target="_blank"
+                              className={linkClassName}
+                            />,
+                          ]}
+                        />
+                      </p>
+                      <div>
+                        <p className="text-sm select-none">{t("webhook")}</p>
+                        <div className="flex">
+                          {(() => {
+                            if (
+                              !webhooksFetcher.data &&
+                              webhooksFetcher.state === "idle" &&
+                              guildId
+                            ) {
+                              webhooksFetcher.load(
+                                apiUrl(BRoutes.guildWebhooks(guildId)),
+                              );
+                            }
+                            return (
+                              <SimpleCombobox
+                                t={t}
+                                clearable={false}
+                                label={t("webhook")}
+                                disabled={
+                                  !guildId || webhooksFetcher.state !== "idle"
+                                }
+                                name="webhookId"
+                                required
+                                value={selectedWebhook?.id || null}
+                                options={
+                                  webhooksFetcher.data
+                                    ? webhooksFetcher.data.map(
+                                        getWebhookSelectOption,
+                                      )
+                                    : []
+                                }
+                                filter={(option, query) => {
+                                  if (!option) return false;
+                                  const { webhook } =
+                                    option as unknown as ReturnType<
+                                      typeof getWebhookSelectOption
+                                    >;
 
-                return (
-                  <>
-                    <p className="text-sm">
-                      <Trans
-                        t={t}
-                        i18nKey="messageActionGuideNote"
-                        components={[
-                          <Link
-                            key="0"
-                            to="/guide/recipes/message-buttons"
-                            target="_blank"
-                            className={linkClassName}
-                          />,
-                        ]}
-                      />
-                    </p>
-                    <div>
-                      <p className="text-sm select-none">{t("webhook")}</p>
-                      <div className="flex">
-                        {(() => {
-                          if (
-                            !webhooksFetcher.data &&
-                            webhooksFetcher.state === "idle" &&
-                            guildId
-                          ) {
-                            webhooksFetcher.load(
-                              apiUrl(BRoutes.guildWebhooks(guildId)),
-                            );
-                          }
-                          return (
-                            <SimpleCombobox
-                              t={t}
-                              clearable={false}
-                              label={t("webhook")}
-                              disabled={
-                                !guildId || webhooksFetcher.state !== "idle"
-                              }
-                              name="webhookId"
-                              required
-                              value={selectedWebhook?.id || null}
-                              options={
-                                webhooksFetcher.data
-                                  ? webhooksFetcher.data.map(
-                                      getWebhookSelectOption,
-                                    )
-                                  : []
-                              }
-                              filter={(option, query) => {
-                                if (!option) return false;
-                                const { webhook } =
-                                  option as unknown as ReturnType<
-                                    typeof getWebhookSelectOption
-                                  >;
+                                  const q = query.toLowerCase();
+                                  const nameContains = (webhook.name ?? "")
+                                    .toLowerCase()
+                                    .includes(q);
 
-                                const q = query.toLowerCase();
-                                const nameContains = (webhook.name ?? "")
-                                  .toLowerCase()
-                                  .includes(q);
+                                  // stricter from-start channel name match + fuzzy
+                                  // webhook name match (a webhook name could start
+                                  // with #)
+                                  if (query.startsWith("#")) {
+                                    return (
+                                      nameContains ||
+                                      (webhook.channel?.name ?? "")
+                                        .toLowerCase()
+                                        .startsWith(q.replace(/^#/, ""))
+                                    );
+                                    // I think a user search might be feasible so I
+                                    // didn't want to take up the @ prefix for a
+                                    // webhook name
+                                  } else if (query.startsWith("^")) {
+                                    return (webhook.name ?? "")
+                                      .toLowerCase()
+                                      .startsWith(q.replace(/^\^/, ""));
+                                  }
 
-                                // stricter from-start channel name match + fuzzy
-                                // webhook name match (a webhook name could start
-                                // with #)
-                                if (query.startsWith("#")) {
                                   return (
+                                    webhook.id === query ||
+                                    webhook.channelId === query ||
                                     nameContains ||
                                     (webhook.channel?.name ?? "")
                                       .toLowerCase()
-                                      .startsWith(q.replace(/^#/, ""))
+                                      .includes(q)
                                   );
-                                  // I think a user search might be feasible so I
-                                  // didn't want to take up the @ prefix for a
-                                  // webhook name
-                                } else if (query.startsWith("^")) {
-                                  return (webhook.name ?? "")
-                                    .toLowerCase()
-                                    .startsWith(q.replace(/^\^/, ""));
-                                }
-
-                                return (
-                                  webhook.id === query ||
-                                  webhook.channelId === query ||
-                                  nameContains ||
-                                  (webhook.channel?.name ?? "")
-                                    .toLowerCase()
-                                    .includes(q)
-                                );
-                              }}
-                              className="grow"
-                              onChange={(webhookId) => {
-                                if (webhookId) {
-                                  action.webhookId = webhookId;
-                                  update();
-                                }
-                              }}
-                            />
-                          );
-                        })()}
-                        <Button
-                          className="ms-2 my-auto h-9"
-                          onClick={() => {
-                            if (!guildId) return;
-                            webhooksFetcher.load(
-                              apiUrl(BRoutes.guildWebhooks(guildId)),
+                                }}
+                                className="grow"
+                                onChange={(webhookId) => {
+                                  if (webhookId) {
+                                    action.webhookId = webhookId;
+                                    update();
+                                  }
+                                }}
+                              />
                             );
-                          }}
-                          disabled={
-                            !guildId || webhooksFetcher.state !== "idle"
-                          }
-                          discordstyle={ButtonStyle.Secondary}
-                        >
-                          <CoolIcon icon="Redo" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm select-none">
-                        {t("backup")}
-                        {selected && (
-                          <>
-                            {" "}
-                            (
-                            <Link
-                              to={`/?backup=${selected.id}`}
-                              target="_blank"
-                              className={linkClassName}
-                            >
-                              {t("edit")}
-                            </Link>
-                            )
-                          </>
-                        )}
-                      </p>
-                      <div className="flex">
-                        <BackupSelect
-                          t={t}
-                          fetcher={backupsFetcher}
-                          value={backupsFetcher.data?.find(
-                            (b) => b.id === action.backupId,
-                          )}
-                          onChange={(backup) => {
-                            action.backupId = backup.id;
-                            update();
-                          }}
-                        />
-                        <Button
-                          className="ltr:ml-2 rtl:mr-2 my-auto h-9"
-                          onClick={() =>
-                            backupsFetcher.load(
-                              apiUrl(BRoutes.currentUserBackups()),
-                            )
-                          }
-                          disabled={backupsFetcher.state !== "idle"}
-                          discordstyle={ButtonStyle.Secondary}
-                        >
-                          <CoolIcon icon="Redo" />
-                        </Button>
-                      </div>
-                    </div>
-                    {
-                      // incl. the random option
-                      messageOptions.length > 2 && (
-                        <SimpleStringSelect
-                          t={t}
-                          name="backupMessageIndex"
-                          label={t("message")}
-                          value={
-                            (action.backupMessageIndex === null
-                              ? "null"
-                              : (action.backupMessageIndex ?? 0)) as
-                              | number
-                              | "null"
-                          }
-                          options={messageOptions}
-                          onChange={(value) => {
-                            action.backupMessageIndex =
-                              value === "null" ? null : value;
-                            update();
-                          }}
-                          required
-                          disabled={
-                            !selected || selected.data.messages.length <= 1
-                          }
-                        />
-                      )
-                    }
-                  </>
-                );
-              })()
-            ) : action.type === FlowActionType.CreateThread ? (
-              (() => {
-                const channel = channels.find(
-                  (c) => c.id === action.channel?.value,
-                );
-                return (
-                  <>
-                    <div>
-                      <p className="text-sm select-none">{t("channel")}</p>
-                      <ChannelSelect
-                        t={t}
-                        name="channelId"
-                        channels={channels.filter((c) =>
-                          ["text", "forum", "media"].includes(c.type),
-                        )}
-                        value={channel}
-                        onChange={(c) => {
-                          if (c) {
-                            action.channel = { value: c.id };
-                            if (["forum", "media"].includes(c.type)) {
-                              action.threadType = ChannelType.PublicThread;
+                          })()}
+                          <Button
+                            className="ms-2 my-auto h-9"
+                            onClick={() => {
+                              if (!guildId) return;
+                              webhooksFetcher.load(
+                                apiUrl(BRoutes.guildWebhooks(guildId)),
+                              );
+                            }}
+                            disabled={
+                              !guildId || webhooksFetcher.state !== "idle"
                             }
-                            update();
-                          }
-                        }}
-                      />
-                      {channels.length === 0 ? (
-                        <p className="text-blurple dark:text-blurple-300 text-sm leading-tight">
-                          {t("noMentionsActionNote")}
+                            discordstyle={ButtonStyle.Secondary}
+                          >
+                            <CoolIcon icon="Redo" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm select-none">
+                          {t("backup")}
+                          {selected && (
+                            <>
+                              {" "}
+                              (
+                              <Link
+                                to={`/?backup=${selected.id}`}
+                                target="_blank"
+                                className={linkClassName}
+                              >
+                                {t("edit")}
+                              </Link>
+                              )
+                            </>
+                          )}
                         </p>
-                      ) : null}
-                    </div>
-                    <TextInput
-                      name="name"
-                      label={t("name")}
-                      className="w-full"
-                      value={action.name}
-                      maxLength={100}
-                      onChange={(e) => {
-                        action.name = e.currentTarget.value;
-                        update();
-                      }}
-                    />
-                    {(!channel ||
-                      !["forum", "media"].includes(channel.type)) && (
-                      <SimpleStringSelect
-                        t={t}
-                        name="threadType"
-                        label={t("type")}
-                        required
-                        options={
-                          threadTypeOptions as {
-                            label: string;
-                            value: typeof action.threadType;
-                          }[]
-                        }
-                        value={action.threadType}
-                        onChange={(value) => {
-                          action.threadType = value ?? undefined;
+                        <div className="flex">
+                          <BackupSelect
+                            t={t}
+                            fetcher={backupsFetcher}
+                            value={backupsFetcher.data?.find(
+                              (b) => b.id === action.backupId,
+                            )}
+                            onChange={(backup) => {
+                              action.backupId = backup.id;
+                              update();
+                            }}
+                          />
+                          <Button
+                            className="ltr:ml-2 rtl:mr-2 my-auto h-9"
+                            onClick={() =>
+                              backupsFetcher.load(
+                                apiUrl(BRoutes.currentUserBackups()),
+                              )
+                            }
+                            disabled={backupsFetcher.state !== "idle"}
+                            discordstyle={ButtonStyle.Secondary}
+                          >
+                            <CoolIcon icon="Redo" />
+                          </Button>
+                        </div>
+                      </div>
+                      {
+                        // incl. the random option
+                        messageOptions.length > 2 && (
+                          <SimpleStringSelect
+                            t={t}
+                            name="backupMessageIndex"
+                            label={t("message")}
+                            value={
+                              (action.backupMessageIndex === null
+                                ? "null"
+                                : (action.backupMessageIndex ?? 0)) as
+                                | number
+                                | "null"
+                            }
+                            options={messageOptions}
+                            onChange={(value) => {
+                              action.backupMessageIndex =
+                                value === "null" ? null : value;
+                              update();
+                            }}
+                            required
+                            disabled={
+                              !selected || selected.data.messages.length <= 1
+                            }
+                          />
+                        )
+                      }
+                    </>
+                  );
+                })()
+              ) : action.type === FlowActionType.CreateThread ? (
+                (() => {
+                  const channel = channels.find(
+                    (c) => c.id === action.channel?.value,
+                  );
+                  return (
+                    <>
+                      <div>
+                        <p className="text-sm select-none">{t("channel")}</p>
+                        <ChannelSelect
+                          t={t}
+                          name="channelId"
+                          channels={channels.filter((c) =>
+                            ["text", "forum", "media"].includes(c.type),
+                          )}
+                          value={channel}
+                          onChange={(c) => {
+                            if (c) {
+                              action.channel = { value: c.id };
+                              if (["forum", "media"].includes(c.type)) {
+                                action.threadType = ChannelType.PublicThread;
+                              }
+                              update();
+                            }
+                          }}
+                        />
+                        {channels.length === 0 ? (
+                          <p className="text-blurple dark:text-blurple-300 text-sm leading-tight">
+                            {t("noMentionsActionNote")}
+                          </p>
+                        ) : null}
+                      </div>
+                      <TextInput
+                        name="name"
+                        label={t("name")}
+                        className="w-full"
+                        value={action.name}
+                        maxLength={100}
+                        onChange={(e) => {
+                          action.name = e.currentTarget.value;
                           update();
                         }}
                       />
-                    )}
-                    <SimpleStringSelect
-                      t={t}
-                      name="autoArchiveDuration"
-                      label={t("autoArchiveDuration")}
-                      options={threadAutoArchiveOptions}
-                      value={action.autoArchiveDuration}
-                      onChange={(value) => {
-                        action.autoArchiveDuration = value;
-                        update();
-                      }}
-                    />
-                    {channel?.type &&
-                      ["forum", "media"].includes(channel.type) && (
-                        <StringSelect
-                          name="appliedTags"
-                          label="Tags"
-                          options={[]}
-                        />
-                      )}
-                  </>
-                );
-              })()
-            ) : action.type === FlowActionType.SetVariable ? (
-              <FlowActionSetVariableEditor
-                t={t}
-                action={action}
-                update={update}
-              />
-            ) : action.type === FlowActionType.DeleteMessage ? (
-              (() => {
-                const varAction = allActions.find(
-                  (a, subI): a is FlowActionSetVariable => {
-                    return (
-                      subI < absoluteI && a.type === 9 && a.name === "messageId"
-                    );
-                  },
-                );
-                return (
-                  <p className="text-sm">
-                    <Trans
-                      t={t}
-                      i18nKey={
-                        isComponent
-                          ? `deleteMessageIdOnComponent.${!!varAction}`
-                          : `deleteMessageIdNote.${!!varAction}`
-                      }
-                      components={[
-                        !!varAction || isComponent ? (
-                          <CoolIcon
-                            key="0"
-                            icon="Circle_Check"
-                            className="text-green-400"
-                          />
-                        ) : (
-                          <CoolIcon
-                            key="0"
-                            icon="Close_Circle"
-                            className="text-red-400"
-                          />
-                        ),
-                        <span
-                          key="0"
-                          className={twJoin(mentionStyle, "font-code")}
-                        />,
-                      ]}
-                      values={{
-                        value: varAction?.value,
-                      }}
-                    />
-                  </p>
-                );
-              })()
-            ) : action.type === FlowActionType.Stop ? (
-              <>
-                <p className="text-sm">
-                  <Trans
-                    t={t}
-                    i18nKey="stopMessageNote"
-                    components={[
-                      <Link
-                        key="0"
-                        to="/guide/getting-started/formatting"
-                        className={linkClassName}
-                        target="_blank"
-                      />,
-                    ]}
-                  />
-                </p>
-                <TextArea
-                  name="content"
-                  label={t("contentOptional")}
-                  className="w-full"
-                  maxLength={2000}
-                  value={action.message?.content ?? ""}
-                  onChange={(e) => {
-                    action.message = action.message ?? {};
-                    action.message.content = e.currentTarget.value;
-
-                    if (
-                      !action.message.content?.trim() &&
-                      !action.message.flags
-                    ) {
-                      action.message = undefined;
-                    }
-
-                    update();
-                  }}
-                />
-                <div>
-                  <p className="text-sm font-medium">{t("flagsOptional")}</p>
-                  <div className="space-y-0.5">
-                    {[
-                      MessageFlags.Ephemeral,
-                      MessageFlags.SuppressNotifications,
-                      MessageFlags.SuppressEmbeds,
-                    ].map((flag) => {
-                      const flags = new MessageFlagsBitField(
-                        action.message?.flags ?? 0,
-                      );
-                      return (
-                        <Checkbox
-                          key={`edit-flow-action-${i}-${action.type}-flag-${flag}`}
-                          label={t(`messageFlag.${flag}`)}
-                          checked={flags.has(flag)}
-                          onCheckedChange={(checked) => {
-                            checked ? flags.add(flag) : flags.remove(flag);
-
-                            action.message = action.message ?? {};
-                            action.message.flags =
-                              Number(flags.value) || undefined;
-                            if (
-                              !action.message.content?.trim() &&
-                              !action.message.flags
-                            ) {
-                              action.message = undefined;
-                            }
-
+                      {(!channel ||
+                        !["forum", "media"].includes(channel.type)) && (
+                        <SimpleStringSelect
+                          t={t}
+                          name="threadType"
+                          label={t("type")}
+                          required
+                          options={
+                            threadTypeOptions as {
+                              label: string;
+                              value: typeof action.threadType;
+                            }[]
+                          }
+                          value={action.threadType}
+                          onChange={(value) => {
+                            action.threadType = value ?? undefined;
                             update();
                           }}
                         />
+                      )}
+                      <SimpleStringSelect
+                        t={t}
+                        name="autoArchiveDuration"
+                        label={t("autoArchiveDuration")}
+                        options={threadAutoArchiveOptions}
+                        value={action.autoArchiveDuration}
+                        onChange={(value) => {
+                          action.autoArchiveDuration = value;
+                          update();
+                        }}
+                      />
+                      {channel?.type &&
+                        ["forum", "media"].includes(channel.type) && (
+                          <StringSelect
+                            name="appliedTags"
+                            label="Tags"
+                            options={[]}
+                          />
+                        )}
+                    </>
+                  );
+                })()
+              ) : action.type === FlowActionType.SetVariable ? (
+                <FlowActionSetVariableEditor
+                  t={t}
+                  action={action}
+                  update={update}
+                />
+              ) : action.type === FlowActionType.DeleteMessage ? (
+                (() => {
+                  const varAction = allActions.find(
+                    (a, subI): a is FlowActionSetVariable => {
+                      return (
+                        subI < absoluteI &&
+                        a.type === 9 &&
+                        a.name === "messageId"
                       );
-                    })}
+                    },
+                  );
+                  return (
+                    <p className="text-sm">
+                      <Trans
+                        t={t}
+                        i18nKey={
+                          isComponent
+                            ? `deleteMessageIdOnComponent.${!!varAction}`
+                            : `deleteMessageIdNote.${!!varAction}`
+                        }
+                        components={[
+                          !!varAction || isComponent ? (
+                            <CoolIcon
+                              key="0"
+                              icon="Circle_Check"
+                              className="text-green-400"
+                            />
+                          ) : (
+                            <CoolIcon
+                              key="0"
+                              icon="Close_Circle"
+                              className="text-red-400"
+                            />
+                          ),
+                          <span
+                            key="0"
+                            className={twJoin(mentionStyle, "font-code")}
+                          />,
+                        ]}
+                        values={{
+                          value: varAction?.value,
+                        }}
+                      />
+                    </p>
+                  );
+                })()
+              ) : action.type === FlowActionType.Stop ? (
+                <>
+                  <p className="text-sm">
+                    <Trans
+                      t={t}
+                      i18nKey="stopMessageNote"
+                      components={[
+                        <Link
+                          key="0"
+                          to="/guide/getting-started/formatting"
+                          className={linkClassName}
+                          target="_blank"
+                        />,
+                      ]}
+                    />
+                  </p>
+                  <TextArea
+                    name="content"
+                    label={t("contentOptional")}
+                    className="w-full"
+                    maxLength={2000}
+                    value={action.message?.content ?? ""}
+                    onChange={(e) => {
+                      action.message = action.message ?? {};
+                      action.message.content = e.currentTarget.value;
+
+                      if (
+                        !action.message.content?.trim() &&
+                        !action.message.flags
+                      ) {
+                        action.message = undefined;
+                      }
+
+                      update();
+                    }}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">{t("flagsOptional")}</p>
+                    <div className="space-y-0.5">
+                      {[
+                        MessageFlags.Ephemeral,
+                        MessageFlags.SuppressNotifications,
+                        MessageFlags.SuppressEmbeds,
+                      ].map((flag) => {
+                        const flags = new MessageFlagsBitField(
+                          action.message?.flags ?? 0,
+                        );
+                        return (
+                          <Checkbox
+                            key={`edit-flow-action-${i}-${action.type}-flag-${flag}`}
+                            label={t(`messageFlag.${flag}`)}
+                            checked={flags.has(flag)}
+                            onCheckedChange={(checked) => {
+                              checked ? flags.add(flag) : flags.remove(flag);
+
+                              action.message = action.message ?? {};
+                              action.message.flags =
+                                Number(flags.value) || undefined;
+                              if (
+                                !action.message.content?.trim() &&
+                                !action.message.flags
+                              ) {
+                                action.message = undefined;
+                              }
+
+                              update();
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              </>
-            ) : (
-              t("actionTypeUnsupported")
-            )}
-          </div>
-        </div>
-      </div>
-      {action.type === FlowActionType.Check ? (
-        <div className="flex flex-row gap-2 mt-2">
-          <div
-            className={twJoin(
-              !checkLevel ? "w-8 ps-4" : "w-4",
-              "shrink-0 relative",
-            )}
-          >
-            <div className="w-1 h-full rounded bg-border-normal dark:bg-border-normal-dark" />
-            <div
-              className={twJoin(
-                "w-4 h-1 rounded-e bg-border-normal dark:bg-border-normal-dark",
-                "absolute top-14",
-                !checkLevel ? "start-4" : "start-0",
+                </>
+              ) : (
+                t("actionTypeUnsupported")
               )}
-            />
+            </div>
           </div>
-          <FlowCheckActionsEditor
-            t={t}
-            action={action}
-            actionIndex={i}
-            guildId={guildId}
-            update={update}
-            webhooksFetcher={webhooksFetcher}
-            backupsFetcher={backupsFetcher}
-            cache={cache}
-            checkLevel={checkLevel}
-            allActions={allActions}
-            actionMax={actionMax}
-            parentContext={parentContext}
-          />
-        </div>
-      ) : null}
+          {action.type === FlowActionType.Check ? (
+            <div className="flex flex-row gap-2">
+              <div
+                className={twJoin(
+                  !checkLevel ? "w-8 ps-4" : "w-4",
+                  "shrink-0 relative",
+                )}
+              >
+                <div className="w-1 h-full rounded bg-border-normal dark:bg-border-normal-dark" />
+                <div
+                  className={twJoin(
+                    "w-4 h-1 rounded-e bg-border-normal dark:bg-border-normal-dark",
+                    "absolute top-14",
+                    !checkLevel ? "start-4" : "start-0",
+                  )}
+                />
+              </div>
+              <FlowCheckActionsEditor
+                t={t}
+                action={action}
+                actionIndex={i}
+                guildId={guildId}
+                update={update}
+                webhooksFetcher={webhooksFetcher}
+                backupsFetcher={backupsFetcher}
+                cache={cache}
+                checkLevel={checkLevel}
+                allActions={allActions}
+                actionMax={actionMax}
+                parentContext={parentContext}
+              />
+            </div>
+          ) : null}
+        </Collapsible.Panel>
+      </Collapsible.Root>
     </div>
   );
 };
