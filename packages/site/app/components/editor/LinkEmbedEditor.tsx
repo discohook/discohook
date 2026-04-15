@@ -52,6 +52,7 @@ export const LinkEmbedEditor: React.FC<{
 }> = ({ embed: embedContainer, data, setData, open }) => {
   const { data: embed, redirect_url: _ } = embedContainer;
   const strategy = embed.strategy ?? LinkEmbedStrategy.Link;
+  const hasFooterSection = strategy === LinkEmbedStrategy.Mastodon;
 
   const { t } = useTranslation();
 
@@ -462,8 +463,8 @@ export const LinkEmbedEditor: React.FC<{
           </div> */}
         </div>
       </EmbedEditorSection>
-      <hr className="border border-gray-500/20" />
-      {strategy === "mastodon" ? (
+      {hasFooterSection ? <hr className="border border-gray-500/20" /> : null}
+      {hasFooterSection ? (
         <EmbedEditorSection name={t("footer")} open={open}>
           <div className="flex">
             <div className="grow">
