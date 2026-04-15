@@ -380,7 +380,7 @@ export const Header: React.FC<{
           <Link to="/donate" target="_blank" className="contents">
             <Button
               discordstyle={ButtonStyle.Secondary}
-              className="my-auto ltr:ml-2 rtl:mr-2 bg-gradient-to-r from-blurple/80 to-brand-pink/80 shadow shadow-transparent hover:shadow-blurple/70 transition-shadow"
+              className="my-auto ltr:ml-2 rtl:mr-2 bg-gradient-to-r from-blurple/80 to-brand-pink/80 shadow shadow-transparent hover:shadow-blurple/70 transition-shadow border-none"
             >
               {t("donate")}
             </Button>
