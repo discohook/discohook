@@ -60,7 +60,7 @@ export const PreviewContainer: React.FC<{
       <div
         data-type={container.type}
         className={twJoin(
-          "rounded-lg flex flex-col grow gap-2 overflow-hidden p-4",
+          "rounded-lg flex flex-col grow gap-y-1.5 overflow-hidden p-4",
           "dark:text-gray-100 bg-white dark:bg-background-secondary-dark",
           "rounded-lg border border-[#E2E2E4] dark:border-[#434349]",
           "group/parent relative",

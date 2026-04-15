@@ -14,7 +14,6 @@ services = [
 [durable_objects]
 bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
-  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
   { name = "SHARE_LINKS", class_name = "ShareLinks" },
@@ -43,6 +42,10 @@ new_classes = ["ShareLinks"]
 [[migrations]]
 tag = "v4"
 new_classes = ["SessionManager"]
+
+[[migrations]]
+tag = "v5"
+deleted_classes = ["DurableComponentState"]
 
 [assets]
 directory = "./public"
@@ -76,7 +79,6 @@ binding = "VERSION"
 [env.preview.durable_objects]
 bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
-  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-preview" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
   { name = "SHARE_LINKS", class_name = "ShareLinks" },
@@ -102,6 +104,10 @@ new_classes = ["ShareLinks"]
 [[env.preview.migrations]]
 tag = "v4"
 new_classes = ["SessionManager"]
+
+[[env.preview.migrations]]
+tag = "v5"
+deleted_classes = ["DurableComponentState"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -133,7 +139,6 @@ binding = "VERSION"
 [env.production.durable_objects]
 bindings = [
   { name = "SCHEDULER", class_name = "DurableScheduler" },
-  { name = "COMPONENTS", class_name = "DurableComponentState", script_name = "discohook-bot-production" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner" },
   { name = "RATE_LIMITER", class_name = "RateLimiter" },
   { name = "SHARE_LINKS", class_name = "ShareLinks" },
@@ -159,6 +164,10 @@ new_classes = ["ShareLinks"]
 [[env.production.migrations]]
 tag = "v4"
 new_classes = ["SessionManager"]
+
+[[env.production.migrations]]
+tag = "v5"
+deleted_classes = ["DurableComponentState"]
 
 [env.production.vars]
 ENVIRONMENT = "production"

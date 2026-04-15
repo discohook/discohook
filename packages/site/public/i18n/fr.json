@@ -126,11 +126,9 @@
     "manageBackups": "Visitez votre page utilisateur pour importer, exporter et gérer les sauvegardes.",
     "createdAt": "Créé le {{ createdAt, D MMM YYYY }}",
     "logInToSaveBackups": "Connectez-vous pour enregistrer des sauvegardes permanentes.",
-    "sending": "Envoi en cours",
     "messages": "Messages",
     "sendAll": "Tout Envoyer",
     "sendNoMessages": "Vous n'avez aucun message à envoyer.",
-    "editing": "Édition en cours",
     "sendMessageN_one": "Envoyer le Message",
     "sendMessageN_many": "Envoyer les Messages",
     "sendMessageN_other": "Envoyer les Messages",
@@ -140,7 +138,7 @@
     "sendToAll": "Envoyer à Tous",
     "orgRedirectBody": "Discohook est désormais disponible sur <bold>discohook.app</bold>. Pour migrer vos sauvegardes, <importLink>cliquez ici</importLink>. Pour en savoir plus sur cette mise à jour, <infoLink>cliquez ici</infoLink>.",
     "compactAvatars": "Afficher les avatars",
-    "options": "options",
+    "options": "Options",
     "selectWebhookGuildMissing": "Vous ne voyez pas un serveur où vous avez les permissions ? <0>Essayez de vous reconnecter</0>.",
     "noBackups": "Il n'y a aucune sauvegarde ici. Vous pouvez créer une sauvegarde sur la <0>page principale</0> dans le menu \"Sauvegardes\".",
     "backToServerSelection": "Retour à la sélection du serveur",
@@ -169,7 +167,9 @@
     "selectWebhookGuildNoWebhooks": "Le serveur que vous avez sélectionné n'a aucun webhook accessible par Discohook Utils. Essayez d'en créer un nouveau avec le bouton ci-dessous.",
     "refreshShareLink": "Actualiser le lien de partage pour 2 semaines supplémentaires (fonctionnalité Deluxe !)",
     "inviteBot": "Inviter le Bot",
-    "addWebhook": "Ajouter un Webhook",
+    "addTarget": {
+        "1": "Ajouter un Webhook"
+    },
     "deleteShareLinkConfirm": "Êtes-vous sûr de vouloir supprimer ce lien de partage ? Cette action est irréversible.",
     "addMessage": "Ajouter un Message",
     "deleteBackupConfirm": "Êtes-vous sûr de vouloir supprimer cette sauvegarde ? Cette action est irréversible.",
@@ -215,5 +215,6 @@
     "backupsFile": "Fichier de Sauvegarde",
     "selectWebhookGuildNote": "Sélectionnez un serveur où Discohook Utils est présent pour afficher ses webhooks, ou créez un nouveau webhook dans l'un de vos serveurs en cliquant sur le bouton ci-dessous.",
     "nextPage": "Page Suivante <0/>",
-    "previousPage": "<0/> Page Précédente"
+    "previousPage": "<0/> Page Précédente",
+    "close": "Fermer"
 }

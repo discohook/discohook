@@ -11,6 +11,7 @@ import { MessageFlagsBitField } from "discord-bitflag";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
+import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
 import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { JsonEditorProps } from "~/modals/JsonEditorModal";
@@ -41,14 +42,14 @@ import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
-import { InfoBox } from "../InfoBox";
 import { CoolIcon } from "../icons/CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { isAudioType } from "../preview/FileAttachment";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import {
-  SelectValueTrigger,
   selectStyles,
+  SelectValueTrigger,
   withDefaultItem,
 } from "../StringSelect";
 import { TextArea } from "../TextArea";
@@ -268,6 +269,7 @@ interface MessageEditorProps {
   setCodeGenerator: React.Dispatch<
     React.SetStateAction<CodeGeneratorProps | undefined>
   >;
+  componentFoundBackupsHook: ComponentFoundBackupHook;
   drag?: DragManager;
   webhooks?: APIWebhook[];
   cache?: CacheManager;
@@ -472,6 +474,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   setEditingComponent,
   setJsonEditor,
   setCodeGenerator,
+  componentFoundBackupsHook,
   webhooks,
   cache,
   cdn,
@@ -852,6 +855,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                 data={data}
                 setData={setData}
                 files={files}
+                setFiles={setFiles}
                 cache={cache}
                 cdn={cdn}
               />
@@ -909,6 +913,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                     setData={setData}
                     cache={cache}
                     setEditingComponent={setEditingComponent}
+                    componentFoundBackupsHook={componentFoundBackupsHook}
                     open
                   />
                 </div>
@@ -984,6 +989,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
               | "jsonEditor"
               | "codeGenerator"
               | "copyQueryData"
+              | "switchStyle"
             >
               discordstyle={ButtonStyle.Secondary}
               options={[
@@ -1012,6 +1018,11 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   icon: "Copy",
                   value: "copyQueryData",
                 },
+                // {
+                //   label: t("switchMessageStyle"),
+                //   icon: "Swatches_Palette",
+                //   value: "switchStyle",
+                // },
               ]}
               onValueChange={(value) => {
                 switch (value) {
@@ -1038,6 +1049,11 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   case "copyQueryData":
                     copyText(JSON.stringify(message));
                     break;
+                  case "switchStyle":
+                    if (isComponentsV2(message.data)) {
+                    } else {
+                    }
+                    break;
                   default:
                     break;
                 }
@@ -1052,7 +1068,6 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   );
 };
 
-// Blank message with cv2 flag: http://localhost:8788/?data=eyJ2ZXJzaW9uIjoiZDIiLCJtZXNzYWdlcyI6W3siX2lkIjoiOWZNd0QxYzVLZCIsImRhdGEiOnsiY29tcG9uZW50cyI6W10sImZsYWdzIjozMjc2OH19XX0
 /** Components V2-based editor */
 const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   index: i,
@@ -1067,6 +1082,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   setEditingComponent,
   setJsonEditor,
   setCodeGenerator,
+  componentFoundBackupsHook,
   webhooks,
   cache,
   cdn,
@@ -1389,6 +1405,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   files={files}
                   setFiles={setFiles}
                   setEditingComponent={setEditingComponent}
+                  componentFoundBackupsHook={componentFoundBackupsHook}
                   drag={drag}
                   open
                 />

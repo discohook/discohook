@@ -4,7 +4,10 @@ import moment from "moment";
 export const supportedLanguages = [
   "en",
   "en-GB",
+  // this should be zh-CN but I didn't change it to avoid
+  // breaking extant cookie values or needing a migration
   "zh",
+  "zh-TW",
   "ar",
   "nl",
   "de",
@@ -17,6 +20,7 @@ export const supportedLanguages = [
   "id",
   "uk",
   "ru",
+  "tr",
 ] as const;
 
 export type LocaleCode = (typeof supportedLanguages)[number];

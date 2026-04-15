@@ -3,8 +3,8 @@ import {
   calculateUserDefaultAvatarIndex,
   type ImageExtension,
   type RawFile,
-  type REST,
   RequestMethod,
+  type REST,
 } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
@@ -15,6 +15,7 @@ import {
   type APIComponentInContainer,
   type APIContainerComponent,
   type APIEmbed,
+  type APIMediaGalleryItem,
   type APIMessage,
   type APIMessageComponent,
   type APISectionComponent,
@@ -45,6 +46,7 @@ import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
+import type { QueryDataMessageDataRaw } from "~/types/QueryData-raw";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "./constants";
 import { transformFileName } from "./files";
 import { sleep } from "./time";
@@ -206,7 +208,7 @@ const createFakeWaveform = (): string => {
   // spikes. this resolves to `AA==`
   const array = new Uint8Array(1).fill(0);
   try {
-    // baseline 2025
+    // @ts-expect-error baseline 2025
     return array.toBase64({ alphabet: "base64" });
   } catch {
     return btoa(new TextDecoder("utf8").decode(array));
@@ -782,3 +784,126 @@ export const isComponentHousable = (
     ComponentType.ActionRow,
     ComponentType.Section,
   ].includes(component.type);
+
+export const convertMessageToComponents = (
+  message: QueryDataMessageDataRaw,
+) => {
+  const flags = new MessageFlagsBitField(message.flags ?? 0);
+  if (flags.has(MessageFlags.IsComponentsV2)) return message;
+  flags.add(MessageFlags.IsComponentsV2);
+
+  const { content, embeds, components, flags: _, ...keepData } = message;
+  const data: QueryDataMessageDataRaw = {
+    flags: Number(flags.value),
+    ...keepData,
+  };
+
+  data.components = [];
+  if (content) {
+    data.components.push({ type: ComponentType.TextDisplay, content });
+  }
+  for (const embed of embeds ?? []) {
+    const container: APIContainerComponent = {
+      type: ComponentType.Container,
+      accent_color: embed.color,
+      components: [],
+    };
+
+    if (embed.author) {
+      container.components.push({
+        type: ComponentType.TextDisplay,
+        content: embed.author.url
+          ? `-# [${embed.author.name}](${embed.author.url})`
+          : `-# ${embed.author.name}`,
+      });
+    }
+
+    const addBody = <T extends typeof container.components>(
+      components: T,
+    ): T => {
+      if (embed.title) {
+        components.push({
+          type: ComponentType.TextDisplay,
+          content: embed.url
+            ? `### [${embed.title}](${embed.url})`
+            : `### ${embed.title}`,
+        });
+      }
+      if (embed.description) {
+        // This alone may push the message over the text limit (4096 vs 4000)
+        // In an effort to minimize loss, I'm choosing not to strip the text.
+        // It won't fail zod validation, but it will fail when the user sends
+        // it to Discord
+        components.push({
+          type: ComponentType.TextDisplay,
+          content: embed.description,
+        });
+      }
+      if (embed.fields?.length) {
+        components.push({
+          type: ComponentType.TextDisplay,
+          content: embed.fields
+            .map((field) => `**${field.name}**\n\n${field.value}`)
+            .join("\n"),
+        });
+      }
+      return components;
+    };
+
+    if (embed.thumbnail) {
+      const filename = embed.thumbnail.url.split("/").slice(-1)[0];
+      container.components.push({
+        type: ComponentType.Section,
+        components: addBody([]),
+        accessory: {
+          type: ComponentType.Thumbnail,
+          media: embed.thumbnail,
+          spoiler: filename.startsWith("SPOILER_"),
+        },
+      });
+    } else {
+      addBody(container.components);
+    }
+
+    if (embed.image) {
+      const filename = embed.image.url.split("/").slice(-1)[0];
+      const item: APIMediaGalleryItem = {
+        media: embed.image,
+        spoiler: filename.startsWith("SPOILER_"),
+      };
+      const extantGallery = container.components.find(
+        (c) => c.type === ComponentType.MediaGallery,
+      );
+      if (extantGallery) {
+        extantGallery.items.push(item);
+      } else {
+        container.components.push({
+          type: ComponentType.MediaGallery,
+          items: [item],
+        });
+      }
+    }
+    if (embed.video?.url) {
+      container.components.push({
+        type: ComponentType.MediaGallery,
+        items: [{ media: { ...embed.video, url: embed.video.url } }],
+      });
+    }
+
+    if (embed.footer) {
+      container.components.push({
+        type: ComponentType.TextDisplay,
+        content: `-# ${embed.footer.text}`,
+      });
+    }
+
+    data.components.push(container);
+  }
+
+  // Only going to be action rows
+  if (components) {
+    data.components.push(...components);
+  }
+
+  return data;
+};

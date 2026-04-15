@@ -371,7 +371,9 @@ export const discordGuildsToBackupsRelations = relations(
 export const backups = pgTable("Backup", {
   id: snowflakePk(),
   name: text("name").notNull(),
-  updatedAt: date("updatedAt"),
+  updatedAt: date("updatedAt")
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date()),
   dataVersion: text("dataVersion").notNull(),
   data: json("data").notNull().$type<QueryData>(),
   previewImageUrl: text("previewImageUrl"),
@@ -388,6 +390,9 @@ export const backups = pgTable("Backup", {
   ownerId: snowflake("ownerId")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
+  // folderId: snowflake("folderId").references(() => backupFolders.id, {
+  //   onDelete: "set null",
+  // }),
 });
 
 export const backupsRelations = relations(backups, ({ one, many }) => ({
@@ -397,13 +402,29 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
   }),
   guilds: many(discordGuildsToBackups),
   servers: many(guildedServers),
+  // folder: one(backupFolders, {
+  //   fields: [backups.folderId],
+  //   references: [backupFolders.id],
+  // }),
 }));
+
+// export const backupFolders = pgTable("BackupFolder", {
+//   id: snowflakePk(),
+//   name: text().notNull(),
+//   color: integer(),
+// });
+
+// export const backupFoldersRelations = relations(backupFolders, ({ many }) => ({
+//   backups: many(backups),
+// }));
 
 export const linkBackups = pgTable("LinkBackup", {
   id: snowflakePk(),
   code: text("code").notNull(),
   name: text("name").notNull(),
-  updatedAt: date("updatedAt"),
+  updatedAt: date("updatedAt")
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date()),
   dataVersion: text("dataVersion").notNull(),
   data: json("data").notNull().$type<LinkQueryData>(),
   previewImageUrl: text("previewImageUrl"),
@@ -552,7 +573,9 @@ export const discordMessageComponents = pgTable("DiscordMessageComponent", {
   messageId: snowflake("messageId"),
   createdById: snowflake("createdById"),
   updatedById: snowflake("updatedById"),
-  updatedAt: date("updatedAt"),
+  updatedAt: date("updatedAt")
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date()),
   type: integer("type").notNull().$type<ComponentType>(),
   data: json("data").notNull().$type<DraftComponent>(),
   draft: boolean("draft").notNull().default(false),
@@ -691,7 +714,9 @@ export const triggers = pgTable("Trigger", {
     // .notNull()
     .references(() => flows.id, { onDelete: "cascade" }),
   updatedById: snowflake("updatedById"),
-  updatedAt: date("updatedAt"),
+  updatedAt: date("updatedAt")
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date()),
   disabled: boolean("disabled").notNull().default(false),
 });
 

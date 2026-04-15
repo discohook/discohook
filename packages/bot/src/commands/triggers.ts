@@ -28,8 +28,8 @@ import type {
 } from "../commands.js";
 import type { ButtonCallback } from "../components.js";
 import { emojiToString, getEmojis } from "../emojis.js";
-import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import { gatewayEventNameToCallback } from "../events.js";
+import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import type { FlowResult } from "../flows/flows.js";
 import type { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";
@@ -72,7 +72,6 @@ export const addTriggerCallback: ChatInputAppCommandCallback = async (ctx) => {
         discordGuildId: makeSnowflake(guild.id),
         disabled: true,
         flow: { actions: [] },
-        updatedAt: new Date(),
         updatedById: user.id,
       });
 

@@ -9,7 +9,7 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import type React from "react";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
@@ -18,6 +18,7 @@ import { apiUrl, BRoutes } from "~/api/routing";
 import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import type { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
+import { ButtonSelect } from "~/components/ButtonSelect";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -42,6 +43,10 @@ import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
 import {
+  InvalidDataModal,
+  InvalidDataModalProps,
+} from "~/modals/InvalidDataModal";
+import {
   JsonEditorModal,
   type JsonEditorProps,
 } from "~/modals/JsonEditorModal";
@@ -52,6 +57,7 @@ import {
   MessageSendModal,
   useMessageSubmissionManager,
 } from "~/modals/MessageSendModal";
+import { MessageSendModeModal } from "~/modals/MessageSendModeModal";
 import { MessageSetModal } from "~/modals/MessageSetModal";
 import { MessageShareModal } from "~/modals/MessageShareModal";
 import { DialogPortal, ModalFooter } from "~/modals/Modal";
@@ -96,6 +102,11 @@ import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import type { ApiGetBackupWithData } from "../api/v1/backups.$id";
 import type { loader as ApiGetComponents } from "../api/v1/components";
+import type {
+  ComponentFoundBackupHook,
+  ComponentFoundBackupMap,
+  ComponentFoundBackupStateAction,
+} from "../api/v1/components.$id.backups";
 import { buildStorableComponent } from "./edit.component.$id";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -294,8 +305,43 @@ export default function Index() {
     useState<EditingComponentData>();
   const drag = useDragManager();
 
+  const [rawComponentFoundBackups, setComponentFoundBackups] = useReducer(
+    (
+      prev: ComponentFoundBackupMap,
+      action: ComponentFoundBackupStateAction,
+    ) => {
+      if (action.action === "add") {
+        prev[action.id] = action.value;
+        return { ...prev };
+      }
+      return prev;
+    },
+    {},
+  );
+  // Keep ignorable backup data in rawComponentFoundBackups in case the user
+  // unlinks the backup so that warnings can show for it
+  const componentFoundBackupsHook: ComponentFoundBackupHook = useMemo(() => {
+    if (backupId !== undefined) {
+      const modified = { ...rawComponentFoundBackups };
+      for (const cId of Object.keys(modified)) {
+        if (!modified[cId]) continue;
+        modified[cId] = modified[cId].filter((b) => b.id !== String(backupId));
+      }
+      return [modified, setComponentFoundBackups];
+    }
+    return [rawComponentFoundBackups, setComponentFoundBackups];
+  }, [backupId, rawComponentFoundBackups]);
+
   const [urlTooLong, setUrlTooLong] = useState(false);
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
+  const [badLoadData, setBadLoadData] = useState<InvalidDataModalProps>();
+
+  // const [isDefaultOrBlank, setIsDefaultOrBlank] = useState(
+  //   // Default message data will be loaded
+  //   shareId === null &&
+  //     backupIdParsed.data === undefined &&
+  //     searchParams.get("data") === null,
+  // );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
@@ -358,9 +404,13 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               raw.data.messages = [];
             }
-            setData({ ...raw.data, backup_id: backupIdParsed.data.toString() });
-            loadInitialTargets(raw.data.targets ?? []);
-            loadMessageComponents(raw.data, setData);
+            const newData = {
+              ...raw.data,
+              backup_id: backupIdParsed.data.toString(),
+            };
+            setData(newData);
+            loadInitialTargets(newData.targets ?? []);
+            loadMessageComponents(newData, setData);
           });
         }
       });
@@ -368,14 +418,15 @@ export default function Index() {
       let parsed:
         | SafeParseReturnType<QueryData, QueryData>
         | SafeParseError<QueryData>;
+      const dataParam = searchParams.get("data");
       try {
-        parsed = ZodQueryData.safeParse(
-          JSON.parse(
-            searchParams.get("data")
-              ? (base64Decode(searchParams.get("data") ?? "{}") ?? "{}")
-              : JSON.stringify({ messages: [INDEX_MESSAGE] }),
-          ),
-        );
+        if (dataParam) {
+          parsed = ZodQueryData.safeParse(
+            JSON.parse(base64Decode(dataParam) ?? "{}"),
+          );
+        } else {
+          parsed = ZodQueryData.safeParse({ messages: [INDEX_MESSAGE] });
+        }
       } catch (e) {
         parsed = {
           success: false,
@@ -393,6 +444,10 @@ export default function Index() {
       } else {
         console.log("QueryData failed parsing:", parsed.error.format());
         setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
+        setTab("preview");
+        if (dataParam) {
+          setBadLoadData({ raw: dataParam, zodError: parsed.error });
+        }
       }
     }
   }, []);
@@ -494,6 +549,7 @@ export default function Index() {
   const [codeGenerator, setCodeGenerator] = useState<CodeGeneratorProps>();
   const [showOrgMigration, setShowOrgMigration] = useState(dm === "org");
   const [showAddMessageMenu, setShowAddMessageMenu] = useState(false);
+  const [showSendModeModal, setShowModeModal] = useState(dm === "send-mode");
   const [confirm, setConfirm] = useConfirmModal();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
@@ -517,12 +573,35 @@ export default function Index() {
   };
   useEffect(performBlockTest, []);
 
+  // This is so awkward
+  const sendButtonKey =
+    settings.webhookInput !== "classic"
+      ? messagesWithReference === 0
+        ? "send"
+        : messagesWithReference === data.messages.length
+          ? "edit"
+          : "submit"
+      : Object.keys(targets).length <= 1 && data.messages.length > 1
+        ? messagesWithReference === 0
+          ? "sendAll"
+          : "submitAll"
+        : Object.keys(targets).length > 1
+          ? messagesWithReference === 0
+            ? "sendToAll"
+            : "submitToAll"
+          : messagesWithReference === 0
+            ? "send"
+            : messagesWithReference === data.messages.length
+              ? "edit"
+              : "submit";
+
   return (
     <div className="h-screen overflow-hidden">
       <ComponentEditModal
         open={!!editingComponent}
         setOpen={() => setEditingComponent(undefined)}
         {...editingComponent}
+        componentFoundBackupsHook={componentFoundBackupsHook}
         submit={user ? editingComponent?.submit : undefined}
         cache={cache}
         // confusing
@@ -538,6 +617,12 @@ export default function Index() {
         setData={setData}
         messageIndex={settingMessageIndex}
         cache={cache}
+      />
+      <MessageSendModeModal
+        open={showSendModeModal}
+        setOpen={setShowModeModal}
+        data={data}
+        setSettingMessageIndex={setSettingMessageIndex}
       />
       <MessageFlagsEditModal
         open={editingMessageFlags !== undefined}
@@ -633,6 +718,13 @@ export default function Index() {
         open={!!badShareData}
         setOpen={() => setBadShareData(undefined)}
         data={badShareData}
+      />
+      <InvalidDataModal
+        open={!!badLoadData}
+        setOpen={() => setBadLoadData(undefined)}
+        setData={setData}
+        setTab={setTab}
+        {...badLoadData}
       />
       <SimpleTextModal open={showOrgMigration} setOpen={setShowOrgMigration}>
         <p className="font-medium text-lg mb-2">{t("orgRedirectTitle")}</p>
@@ -774,6 +866,7 @@ export default function Index() {
                                   targets: undefined,
                                 });
                                 setConfirm(undefined);
+                                // setIsDefaultOrBlank(true);
                               }}
                               discordstyle={ButtonStyle.Danger}
                             >
@@ -860,10 +953,6 @@ export default function Index() {
             ))}
             {settings.webhookInput === "classic" && (
               <div className="flex mb-2">
-                {/* <CoolIcon
-                icon="Add_Plus_Circle"
-                className="my-auto text-2xl me-2 text-muted dark:text-muted-dark"
-              /> */}
                 <div className="grow">
                   <TextInput
                     className="w-full text-base"
@@ -894,57 +983,82 @@ export default function Index() {
                 </div>
               </div>
             )}
-            <div className="flex space-x-2 rtl:space-x-reverse">
+            <div className="flex gap-x-2">
               {settings.webhookInput !== "classic" && (
                 <Button
                   onClick={() => setAddingTarget(true)}
                   disabled={Object.keys(targets).length >= 10}
                 >
-                  {t("addWebhook")}
+                  {t("addTarget.1")}
                 </Button>
               )}
-              <Button
-                disabled={data.messages.length === 0 || sending}
-                loading={sending}
-                onClick={async () => {
-                  if (settings.webhookInput !== "classic") {
-                    setSendingMessages(true);
-                    return;
-                  }
-                  const results = await submitMessages(Object.values(targets));
-                  const errors = results.filter((r) => r.status === "error");
-                  if (errors.length === 1) {
-                    setShowingResult(errors[0]);
-                  } else if (errors.length !== 0) {
-                    setSendingMessages(true);
-                  }
-                }}
-              >
-                {t(
-                  // This is so awkward
-                  settings.webhookInput !== "classic"
-                    ? messagesWithReference === 0
-                      ? "send"
-                      : messagesWithReference === data.messages.length
-                        ? "edit"
-                        : "submit"
-                    : Object.keys(targets).length <= 1 &&
-                        data.messages.length > 1
-                      ? messagesWithReference === 0
-                        ? "sendAll"
-                        : "submitAll"
-                      : Object.keys(targets).length > 1
-                        ? messagesWithReference === 0
-                          ? "sendToAll"
-                          : "submitToAll"
-                        : messagesWithReference === 0
-                          ? "send"
-                          : messagesWithReference === data.messages.length
-                            ? "edit"
-                            : "submit",
-                )}
-              </Button>
+              <div className="flex gap-0">
+                <Button
+                  disabled={data.messages.length === 0 || sending}
+                  className="rounded-e-none border-e-0"
+                  loading={sending}
+                  onClick={async () => {
+                    if (settings.webhookInput !== "classic") {
+                      setSendingMessages(true);
+                      return;
+                    }
+                    const results = await submitMessages(
+                      Object.values(targets),
+                    );
+                    const errors = results.filter((r) => r.status === "error");
+                    if (errors.length === 1) {
+                      setShowingResult(errors[0]);
+                    } else if (errors.length !== 0) {
+                      setSendingMessages(true);
+                    }
+                  }}
+                >
+                  {t(sendButtonKey)}
+                </Button>
+                <ButtonSelect
+                  className="w-7 min-w-0 px-0 rounded-s-none"
+                  iconClassName="ms-0"
+                  options={[
+                    {
+                      value: "",
+                      label: t(
+                        sendButtonKey.startsWith("edit") ? "send" : "edit",
+                      ),
+                    },
+                  ]}
+                  onValueChange={() => {
+                    if (data.messages.length === 1) {
+                      setSettingMessageIndex(0);
+                    } else {
+                      setShowModeModal(true);
+                    }
+                  }}
+                />
+              </div>
             </div>
+            {/* {isDefaultOrBlank ? (
+              <div className="w-full mt-2 flex gap-2">
+                <RadioishBox
+                  isSelected
+                  onSelect={() => {}}
+                  name="Embeds"
+                  description=""
+                />
+                <RadioishBox
+                  isSelected={false}
+                  onSelect={() => {
+                    if (data.messages.length === 0) return;
+                    const converted = convertMessageToComponents(
+                      data.messages[0].data,
+                    );
+                    data.messages[0].data = converted;
+                    setData({ ...data });
+                  }}
+                  name="Containers"
+                  description=""
+                />
+              </div>
+            ) : null} */}
           </div>
           {data.messages.map((d, i) => {
             const id = getQdMessageId(d);
@@ -966,6 +1080,7 @@ export default function Index() {
                 setCodeGenerator={setCodeGenerator}
                 webhooks={Object.values(targets)}
                 setEditingComponent={setEditingComponent}
+                componentFoundBackupsHook={componentFoundBackupsHook}
                 drag={drag}
                 cache={cache}
                 cdn={cdn}

@@ -5,8 +5,8 @@ import {
   escapeMarkdown,
   formatEmoji,
   type MessageActionRowComponentBuilder,
-  ModalBuilder,
   messageLink,
+  ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
@@ -27,8 +27,8 @@ import {
 import { SignJWT } from "jose";
 import {
   autoRollbackTx,
-  type DraftComponent,
   discordMessageComponents,
+  type DraftComponent,
   generateId,
   makeSnowflake,
   type StorableComponent,
@@ -268,7 +268,6 @@ const registerComponent = async (
           set: {
             data,
             draft: false,
-            updatedAt: new Date(),
             updatedById: makeSnowflake(state.user.id),
           },
         })

@@ -22,7 +22,7 @@ import {
 import { eq } from "drizzle-orm";
 import {
   autoRollbackTx,
-  destroyComponentDurableObject,
+  destroyComponentKV,
   discordMessageComponents,
   getDb,
 } from "store";
@@ -521,11 +521,7 @@ const registerComponentDelete = async (
   );
 
   if (!shouldKeepRecord) {
-    await destroyComponentDurableObject(ctx.env, {
-      messageId: editedMsg.id,
-      customId,
-      componentId: id,
-    });
+    await destroyComponentKV(ctx.env, id);
   }
 
   return editedMsg;

@@ -24,9 +24,9 @@ import i18next from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
+  discordMessageComponents,
   type DraftComponent,
   type DraftFlow,
-  discordMessageComponents,
   ensureComponentFlows,
   getchTriggerGuild,
   getDb,
@@ -35,8 +35,8 @@ import {
   type TriggerKVGuild,
 } from "store";
 import { Snowflake } from "tif-snowflake";
-import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
+import { migrateLegacyButtons } from "./commands/components/migrate.js";
 import {
   type ComponentCallbackT,
   type ComponentRoutingId,
@@ -67,7 +67,6 @@ import { createREST } from "./util/rest.js";
 import { sleep } from "./util/sleep.js";
 
 // durable objects
-export { DurableComponentState } from "store";
 export { EmojiManager } from "./emojis.js";
 
 const resources = {
@@ -278,10 +277,7 @@ const handleInteraction = async (
       //
       // However, I'm anticipating some downsides:
       // - More stress on the DB server
-      // - Potentially more latency (DO KV probably faster than DB via hyperdrive/webdis?)
-      //
-      // Therefore, a timed cache system (i.e. with Redis) would probably be
-      // advantageous vs. always requesting DB.
+      // - Potentially more latency (DO KV probably faster than hyperdrive/webdis?)
       const kvKey = `custom-component-${componentId}`;
       let hotComponent = await env.KV.get<{
         data: DraftComponent;
@@ -304,6 +300,7 @@ const handleInteraction = async (
               },
             },
           });
+
         if (!coldComponentPre) {
           return respond(
             ctx.reply({
@@ -376,128 +373,6 @@ const handleInteraction = async (
         await launchComponentKV(env, { componentId, ...newHotComponent });
       }
       const component = hotComponent;
-
-      // const doId = env.COMPONENTS.idFromName(
-      //   `${interaction.message.id}-${customId}`,
-      // );
-      // const stub = env.COMPONENTS.get(doId, { locationHint: "enam" });
-      // const response = await stub.fetch("http://do/", { method: "GET" });
-      // let component: DurableStoredComponent;
-      // if (response.status === 404) {
-      //   // In case a durable object does not exist for this component for
-      //   // whatever reason. Usually because of migrated components that have
-      //   // not yet actually been activated.
-      //   const componentId = getComponentId(
-      //     type === ComponentType.Button
-      //       ? { type, style: ButtonStyle.Primary, custom_id: customId }
-      //       : { type, custom_id: customId },
-      //   );
-
-      //   if (componentId === undefined) {
-      //     return respond({ error: "Bad Request", status: 400 });
-      //   }
-
-      //   // Don't allow component data to leak into other servers
-      //   const dryComponent = await db.query.discordMessageComponents.findFirst({
-      //     where: (table, { eq }) => eq(table.id, componentId),
-      //     columns: { guildId: true, channelId: true },
-      //     with: {
-      //       createdBy: {
-      //         columns: { discordId: true },
-      //       },
-      //     },
-      //   });
-      //   if (!dryComponent) {
-      //     return respond(
-      //       ctx.reply({
-      //         content:
-      //           "No data could be found for this component. It may have been deleted by a moderator but not removed from the message.",
-      //         ephemeral: true,
-      //       }),
-      //     );
-      //   }
-      //   if (!dryComponent.guildId) {
-      //     if (
-      //       // Allow the component creator to set this data since it's obvious
-      //       // they can access the component's contents
-      //       dryComponent.createdBy?.discordId &&
-      //       dryComponent.createdBy.discordId === BigInt(ctx.user.id)
-      //     ) {
-      //       await db
-      //         .update(discordMessageComponents)
-      //         .set({
-      //           guildId: BigInt(guildId),
-      //           channelId: BigInt(interaction.channel.id),
-      //         })
-      //         .where(eq(discordMessageComponents.id, componentId));
-
-      //       dryComponent.guildId = BigInt(guildId);
-      //       dryComponent.channelId = BigInt(interaction.channel.id);
-      //     } else {
-      //       return respond(
-      //         ctx.reply({
-      //           content: [
-      //             "This component hasn't been linked with a server. Please tell",
-      //             "the component owner (the person who created the component on",
-      //             "the Discohook site) to use the component at least once. This",
-      //             "will link the component with the current server. After you do",
-      //             "this, the component should work as expected.",
-      //           ].join(" "),
-      //           ephemeral: true,
-      //         }),
-      //       );
-      //     }
-      //   } else if (dryComponent.guildId.toString() !== interaction.guild_id) {
-      //     return respond({
-      //       error: response.statusText,
-      //       status: response.status,
-      //     });
-      //     // ctx.reply({
-      //     //   content: [
-      //     //     "The server associated with this component does not match the current server.",
-      //     //     "If this component should be able to be used in this server,",
-      //     //     "contact support to have its server association changed.",
-      //     //   ].join(" "),
-      //     //   ephemeral: true,
-      //     // }),
-      //   }
-
-      //   const params = new URLSearchParams({ id: componentId.toString() });
-      //   if (
-      //     new MessageFlagsBitField(interaction.message.flags ?? 0).has(
-      //       MessageFlags.Ephemeral,
-      //     )
-      //   ) {
-      //     // Ephemeral buttons last one hour to avoid durable object clutter.
-      //     // To be honest, this is not necessary at all, but if someone spams
-      //     // any button then we would rather the requests go to Cloudflare and
-      //     // not the database.
-      //     params.set(
-      //       "expireAt",
-      //       new Date(new Date().getTime() + 3_600_000).toISOString(),
-      //     );
-      //   }
-      //   const doResponse = await stub.fetch(`http://do/?${params}`, {
-      //     method: "PUT",
-      //   });
-      //   if (!doResponse.ok) {
-      //     return respond({
-      //       error: doResponse.statusText,
-      //       status: doResponse.status,
-      //     });
-      //   }
-      //   component = await doResponse.json();
-      // } else if (!response.ok) {
-      //   return respond({
-      //     error: response.statusText,
-      //     status: response.status,
-      //   });
-      // } else {
-      //   component = (await response.json()) as DurableStoredComponent;
-      // }
-      // if (component.draft) {
-      //   return respond({ error: "Component is marked as draft" });
-      // }
 
       let guild: TriggerKVGuild;
       try {
@@ -750,12 +625,6 @@ const handleInteraction = async (
             thisButton.data.style !== ButtonStyle.Link &&
             thisButton.data.style !== ButtonStyle.Premium
           ) {
-            // const thisButtonData = await launchComponentDurableObject(env, {
-            //   messageId: interaction.message.id,
-            //   customId,
-            //   componentId: thisButton.id,
-            // });
-
             const liveVars: LiveVariables = {
               guild,
               member: interaction.member,

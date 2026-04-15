@@ -520,11 +520,6 @@ const registerComponentDelete = async (
   );
 
   if (!shouldKeepRecord) {
-    // await destroyComponentDurableObject(ctx.env, {
-    //   messageId: editedMsg.id,
-    //   customId,
-    //   componentId: id,
-    // });
     await destroyComponentKV(ctx.env, id);
   }
 

@@ -5,9 +5,19 @@ import type { LoaderArgs } from "~/util/loader";
 import { getMessageText } from "~/util/message";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
+  // const { query: searchQuery } = zxParseQuery(request, {
+  //   query: z
+  //     .string()
+  //     .max(100)
+  //     .default("")
+  //     .transform((s) => s.replace(/%/g, "\%")),
+  // });
+
   const userId = await getUserId(request, context, true);
   const db = getDb(context.env.HYPERDRIVE);
   const userBackups = await db.query.backups.findMany({
+    // where: (backups, { eq, and, ilike }) =>
+    //   and(eq(backups.ownerId, userId), ilike(backups.name, `%${searchQuery}%`)),
     where: (backups, { eq }) => eq(backups.ownerId, userId),
     columns: {
       id: true,

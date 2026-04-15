@@ -54,6 +54,7 @@ export class DurableDraftComponentCleaner implements DurableObject {
       columns: {
         updatedAt: true,
         draft: true,
+        messageId: true,
       },
     });
     if (!component || !component.draft) {

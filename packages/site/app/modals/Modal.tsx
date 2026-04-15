@@ -18,12 +18,16 @@ export const DialogBackdrop = () => (
 );
 
 export const DialogPortal: React.FC<
-  React.PropsWithChildren<{ title?: React.ReactNode; className?: string }>
-> = ({ title, children, className }) => (
+  React.PropsWithChildren<{
+    title?: React.ReactNode;
+    className?: string;
+    parentClassName?: string;
+  }>
+> = ({ title, children, className, parentClassName }) => (
   <Dialog.Portal>
     <DialogBackdrop />
     <Dialog.Popup
-      className={twJoin(
+      className={twMerge(
         // position & size
         "box-border fixed z-[calc(31_-_var(--nested-dialogs))] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
         "w-screen sm:w-[32rem] md:w-3/4 max-w-[100vw] sm:max-w-[calc(100vw_-_3rem)] rounded-xl",
@@ -42,6 +46,7 @@ export const DialogPortal: React.FC<
         "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
         "data-[starting-style]:-translate-x-1/2 data-[starting-style]:-translate-y-1/2 data-[starting-style]:scale-90",
         "data-[ending-style]:-translate-x-1/2 data-[ending-style]:-translate-y-1/2 data-[ending-style]:scale-90",
+        parentClassName,
       )}
     >
       {title ? (
@@ -66,11 +71,21 @@ export const DialogPortal: React.FC<
   </Dialog.Portal>
 );
 
-export const Modal: React.FC<ModalProps & { title?: React.ReactNode }> = (
-  props,
-) => (
+export const Modal: React.FC<
+  ModalProps & {
+    title?: React.ReactNode;
+    className?: string;
+    parentClassName?: string;
+  }
+> = (props) => (
   <Dialog.Root open={props.open} onOpenChange={props.setOpen}>
-    <DialogPortal title={props.title}>{props.children}</DialogPortal>
+    <DialogPortal
+      title={props.title}
+      className={props.className}
+      parentClassName={props.parentClassName}
+    >
+      {props.children}
+    </DialogPortal>
   </Dialog.Root>
 );
 

@@ -1,4 +1,4 @@
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 
 export const Radio = (
@@ -32,11 +32,42 @@ const ConditionalBox: React.FC<{ check?: boolean; className?: string }> = ({
   <CoolIcon
     icon={check ? "Radio_Fill" : "Radio_Unchecked"}
     className={twJoin(
-      "text-2xl my-auto ltr:mr-2 rtl:ml-2",
+      "text-2xl my-auto me-2",
       check
         ? "hidden peer-checked:inline-flex"
         : "inline-flex peer-checked:hidden",
       className,
     )}
   />
+);
+
+export const RadioishBox = ({
+  isSelected,
+  onSelect,
+  name,
+  description,
+}: {
+  isSelected: boolean;
+  onSelect: () => void;
+  name: React.ReactNode;
+  description: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    onClick={onSelect}
+    data-selected={isSelected ? "" : null}
+    className={twMerge(
+      "group",
+      "rounded-lg bg-white dark:bg-gray-700 shadow-sm hover:shadow-md border p-2 text-center",
+      "transition-[box-shadow,border-color,background-color]",
+      isSelected
+        ? "bg-blurple-100 dark:bg-blurple-600 border-blurple"
+        : "border-border-normal dark:border-border-normal-dark",
+    )}
+  >
+    <p className="font-medium">{name}</p>
+    <p className="text-muted dark:text-muted-dark dark:group-data-[selected]:text-primary-230 text-sm transition-colors">
+      {description}
+    </p>
+  </button>
 );

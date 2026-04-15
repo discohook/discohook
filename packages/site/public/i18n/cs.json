@@ -36,13 +36,12 @@
     "savedAutomatically": "Uloženo automaticky",
     "createBackup": "Vytvořit zálohu",
     "sendMessageN_one": "Odeslat zprávu",
-    "sendMessageN_few": "",
-    "sendMessageN_other": "Odeslat zprávy",
+    "sendMessageN_few": "Odeslat zprávy",
+    "sendMessageN_other": "Odeslat zpráv",
     "messages": "Zprávy",
     "send": "Odeslat",
     "sendToAll": "Odeslat všem",
     "sendAll": "Odeslat vše",
-    "sending": "Odesílání",
     "sendNoWebhooks": "Nemáš žádné webhooky k odeslání.",
     "sendNoMessages": "Nemáš žádné zprávy k odeslání.",
     "orgRedirectTitle": "Byl jsi právě přesměrován z discohook.org",
@@ -76,7 +75,9 @@
     "backToServerSelection": "Zpět na výběr serveru",
     "createdAtBy": "Vytvořeno dne {{ createdAt, MMM D, YYYY }} uživatelem {{username}}",
     "someone": "někdo",
-    "addWebhook": "Přidat webhook",
+    "addTarget": {
+        "1": "Přidat webhook"
+    },
     "createWebhook": "Vytvořit webhook",
     "editWebhook": "Upravit webhook",
     "copyWebhookUrl": "Kopírovat URL (pokročilé)",
@@ -160,8 +161,8 @@
     "graceRemaining_few": "",
     "graceRemaining_other": "Zbývá {{count}} dní",
     "server_one": "Server",
-    "server_few": "",
-    "server_other": "Servery",
+    "server_few": "Servery",
+    "server_other": "Serverů",
     "noServers": "Nevypadá to, že bys sdílel(a) nějaké servery s Discohook Utils.",
     "inviteBot": "Pozvat bota",
     "addToServer": "Přidat na server",
@@ -272,5 +273,22 @@
         "64": "Skrytý (prchavý)",
         "4096": "Tichý"
     },
-    "close": "Zavřít"
+    "close": "Zavřít",
+    "allowedMentionsProps": {
+        "mentionEveryone": "@everyone a @here",
+        "automatic": "Automatický",
+        "automaticUsersNote": "Všechny uživatelské zmínky ve zprávě budou doručeny. Toto je základní chování bez ovládání povoloné zmínky.",
+        "manual": "Manuální"
+    },
+    "enableAllowedMentions": "Spravovat zmínky v této zprávě",
+    "submit": "Odeslat",
+    "searchOrCreateBackup": "Hledej nebo vytvoř zálohu.",
+    "messageTooLong": "Data tvé zprávy jsou příliš velká aby jse ukázala v URL. pokud potřebuješ sdílet tuto stránku, použí \"$t(share)\" tlačítko.",
+    "submitToAll": "Odeslat všem",
+    "unlink": "Odpojit",
+    "submitAll": "Odeslat vše",
+    "appClearSecret": "Vymazat Tajemství",
+    "allowedMentionsNote": "Pokud tohle je zaplé, Discord bude pouze posílat oznámení & zvýraznovat zprávy pro uživatele a role specifikováné dole. Zmínky v embedech nejsou nikdy doručené.",
+    "author": "Author",
+    "new": "NOVÝ"
 }

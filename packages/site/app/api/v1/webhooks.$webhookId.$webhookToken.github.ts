@@ -46,7 +46,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     } catch (e) {
       if (isDiscordError(e)) {
         if (e.code === RESTJSONErrorCodes.UnknownWebhook) {
-          throw json({ message: "Unknown Webhook" }, 404);
+          throw json(e.rawError, 404);
         }
       }
       throw e;

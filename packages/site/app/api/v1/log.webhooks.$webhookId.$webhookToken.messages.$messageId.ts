@@ -280,7 +280,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           await ensureComponentFlows(component, tx);
         }
 
-        const now = new Date();
         const values: (typeof discordMessageComponents.$inferInsert)[] =
           storableComponents.flatMap((component) => {
             // const id = String(getComponentId(component));
@@ -363,7 +362,6 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                 draft: false,
                 createdById: match?.createdById ?? userId,
                 updatedById: userId,
-                updatedAt: now,
                 guildId,
                 messageId: BigInt(message.id),
                 channelId: BigInt(message.channel_id),

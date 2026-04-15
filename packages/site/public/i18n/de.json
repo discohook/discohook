@@ -61,7 +61,6 @@
     "clickToCopy": "Klick zum Kopieren",
     "createBackup": "Backup erstellen",
     "sendToAll": "An alle Senden",
-    "sending": "Sendet",
     "sendNoWebhooks": "Du hast keine Webhooks, an die gesendet werden kann.",
     "createdAtTime": "Erstellt Am {{ createdAt, dddd, MMMM D, YYYY h:mm:ss A }}",
     "translatePrompt": "Du möchtest Discohook in deine Sprache übersetzen? Schau dir <0>das Übersetzungsportal</0> an und tritt <1>dem Support-Server</1> bei, um dich mit uns abzustimmen.",
@@ -74,7 +73,9 @@
     "backToServerSelection": "Zurück zur Server auswahl",
     "wordWrap": "Zeilenumbrüche",
     "edit": "Bearbeiten",
-    "addWebhook": "Webhook Hinzufügen",
+    "addTarget": {
+        "1": "Webhook Hinzufügen"
+    },
     "channel": "Kanal",
     "copyWebhookUrl": "Link Kopieren (erweitert)",
     "resetAvatar": "Entfernen",
@@ -192,8 +193,6 @@
     "linkEmbedsPremiumNote": "Du hast eine Deluxe-Funktion entdeckt! <0>Hier erfährst du mehr über Link-Einbettungen.</0>",
     "willBeEdited": "Diese Nachricht hat einen Link gesetzt und wird deshalb bearbeitet.",
     "submitAll": "Alle einreichen",
-    "editing": "Bearbeitung",
-    "submitting": "Einreichung",
     "submitToAll": "Alle einreichen",
     "submit": "Einreichen",
     "webhookInput": "Webhook Eingabe",
@@ -262,7 +261,7 @@
     "sidebarColor": "Seitenleiste Farbe",
     "addAction": "Aktion hinzufügen",
     "provider": "Anbieter",
-    "largeImageUrl": "Großes Bild URL",
+    "largeImage": "Großes Bild",
     "file": "Datei",
     "messageFlagsNote": "Flaggen sind optionale Nachrichtenmerkmale, die aktiviert oder deaktiviert werden können.",
     "providerUrl": "Anbieter URL",
@@ -378,7 +377,7 @@
     "title": "Titel",
     "titleUrl": "Title URL",
     "images": "Bilder",
-    "thumbnailUrl": "Thumbnail URL",
+    "thumbnail": "Thumbnail",
     "galleryImageN": "Galeriebild {{n}}",
     "useLargeImages": "Große Bilder verwenden",
     "addImage": "Bild hinzufügen",
@@ -586,7 +585,7 @@
     "botInteractionUrl": "Interaktions Endpunkt URL",
     "backToBots": "Zurück zu den Bots",
     "nextRunAtOnce": "<0/> Geplant für $t(timestamp.full) ({{relative}})",
-    "botTokenCheck": "Bot Token <0/>",
+    "botToken": "Bot Token",
     "botNoTokenNote": "Ein Bot-Token anzugeben ist optional. Wenn ein Token gesetzt wird, kann dein Bot eigenständig Aktionen durchführen, ohne Discohook Utils dafür zu benötigen.",
     "botTokenOwnerWarning": "Stelle sicher, dass dein aktuelles Discord-Konto ({{username}}) der Besitzer dieses Bots ist oder Teil seines Teams, ansonsten wird der Token aus Sicherheitsgründen zurückgesetzt.",
     "commands": "Befehle",
@@ -684,5 +683,6 @@
     "emojis": "Emojis",
     "beta": "BETA",
     "separatorLine": "Trennlinie",
-    "deleteRow": "Lösche Reihe"
+    "deleteRow": "Lösche Reihe",
+    "messageTooLong": "Die Nachrichtendaten sind zu groß, um in der Seiten-URL angezeigt zu werden. Wenn du diese Seite teilen möchtest, verwende die Schaltfläche „$t(share)“."
 }

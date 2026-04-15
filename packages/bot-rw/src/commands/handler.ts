@@ -732,12 +732,6 @@ export const interactionCreateHandler = async ({
     //           thisButton.data.style !== ButtonStyle.Link &&
     //           thisButton.data.style !== ButtonStyle.Premium
     //         ) {
-    //           const thisButtonData = await launchComponentDurableObject(env, {
-    //             messageId: interaction.message.id,
-    //             customId,
-    //             componentId: thisButton.id,
-    //           });
-
     //           const liveVars: LiveVariables = {
     //             guild,
     //             member: interaction.member,

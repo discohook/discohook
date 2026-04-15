@@ -13,7 +13,6 @@ LIFETIME_SKU = "1266826214807572542"
 
 [durable_objects]
 bindings = [
-  { name = "COMPONENTS", class_name = "DurableComponentState" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site" },
   { name = "EMOJIS", class_name = "EmojiManager" },
@@ -28,6 +27,10 @@ new_classes = ["DurableComponentState"]
 tag = "v2"
 new_classes = ["EmojiManager"]
 
+[[migrations]]
+tag = "v3"
+deleted_classes = ["DurableComponentState"]
+
 [env.preview]
 route = { pattern = "bots.preview.discohook.app", custom_domain = true }
 hyperdrive = [
@@ -37,7 +40,6 @@ services = [{ binding = "SITE", service = "discohook-site-preview" }]
 
 [env.preview.durable_objects]
 bindings = [
-  { name = "COMPONENTS", class_name = "DurableComponentState" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-preview" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-preview" },
   { name = "EMOJIS", class_name = "EmojiManager" },
@@ -51,6 +53,10 @@ new_classes = ["DurableComponentState"]
 [[env.preview.migrations]]
 tag = "v2"
 new_classes = ["EmojiManager"]
+
+[[env.preview.migrations]]
+tag = "v3"
+deleted_classes = ["DurableComponentState"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -76,7 +82,6 @@ logs.invocation_logs = false
 
 [env.production.durable_objects]
 bindings = [
-  { name = "COMPONENTS", class_name = "DurableComponentState" },
   { name = "DRAFT_CLEANER", class_name = "DurableDraftComponentCleaner", script_name = "discohook-site-production" },
   { name = "SHARE_LINKS", class_name = "ShareLinks", script_name = "discohook-site-production" },
   { name = "EMOJIS", class_name = "EmojiManager" },
@@ -90,6 +95,10 @@ new_classes = ["DurableComponentState"]
 [[env.production.migrations]]
 tag = "v2"
 new_classes = ["EmojiManager"]
+
+[[env.production.migrations]]
+tag = "v3"
+deleted_classes = ["DurableComponentState"]
 
 [env.production.vars]
 ENVIRONMENT = "production"

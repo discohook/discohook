@@ -6,7 +6,7 @@ import { CoolIcon } from "./icons/CoolIcon";
 export const textInputStyles = {
   label: "text-sm font-medium",
   input:
-    "rounded-lg border min-h-[36px] max-h-9 py-0 px-[14px] bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
+    "rounded-lg border min-h-[36px] max-h-9 py-0 px-3.5 bg-white border-border-normal placeholder-gray-500 focus:outline-none focus:border-blurple dark:border-border-normal-dark dark:focus:border-blue-345 dark:bg-[#333338] invalid:border-rose-400 dark:invalid:border-rose-400 disabled:text-gray-600 disabled:cursor-not-allowed transition",
 };
 
 export const TextInput = (
@@ -15,6 +15,7 @@ export const TextInput = (
     HTMLInputElement
   > & {
     label?: ReactNode;
+    labelClassName?: string;
     description?: ReactNode;
     delayOnInput?: number;
     freeLength?: boolean;
@@ -22,7 +23,15 @@ export const TextInput = (
     t?: TFunction;
   },
 ) => {
-  const { label, onInput, delayOnInput, t, freeLength, ...newProps } = props;
+  const {
+    label,
+    labelClassName,
+    onInput,
+    delayOnInput,
+    t,
+    freeLength,
+    ...newProps
+  } = props;
   const ref = useRef<HTMLInputElement>(null);
   const length = ref.current ? ref.current.value.length : 0;
 
@@ -33,11 +42,11 @@ export const TextInput = (
   }
 
   return (
-    <label className="block">
-      {(label || newProps.required || props.maxLength) && (
+    <label className={twJoin("block", labelClassName)}>
+      {label || newProps.required || props.maxLength ? (
         <p className={textInputStyles.label}>
           {label}
-          {newProps.required && (
+          {newProps.required ? (
             <span
               className={twJoin(
                 "align-baseline",
@@ -46,11 +55,11 @@ export const TextInput = (
             >
               {t ? t("required") : "*"}
             </span>
-          )}
-          {props.maxLength && (
+          ) : null}
+          {props.maxLength ? (
             <span
               className={twJoin(
-                "ml-2 italic text-xs align-baseline",
+                "ms-2 italic text-xs align-baseline",
                 length >= props.maxLength
                   ? "text-red-300"
                   : length / (props.maxLength || 1) >= 0.9
@@ -60,10 +69,12 @@ export const TextInput = (
             >
               {length}/{props.maxLength}
             </span>
-          )}
+          ) : null}
         </p>
-      )}
-      {props.description && <p className="text-sm">{props.description}</p>}
+      ) : null}
+      {props.description ? (
+        <p className="text-sm mb-0.5">{props.description}</p>
+      ) : null}
       <input
         type="text"
         {...newProps}
@@ -100,7 +111,7 @@ export const TextInput = (
             key={`${props.id ?? label}-error-${i}`}
             className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
           >
-            <CoolIcon icon="Circle_Warning" className="mr-1.5" />
+            <CoolIcon icon="Circle_Warning" className="me-1.5" />
             {error}
           </p>
         ))}

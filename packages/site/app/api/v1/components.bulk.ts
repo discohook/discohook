@@ -63,14 +63,8 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   const update: Pick<
     typeof discordMessageComponents.$inferInsert,
-    | "channelId"
-    | "messageId"
-    | "guildId"
-    | "draft"
-    | "updatedById"
-    | "updatedAt"
+    "channelId" | "messageId" | "guildId" | "draft" | "updatedById"
   > = {
-    updatedAt: new Date(),
     updatedById: BigInt(token.user.id),
   };
   if (body.channelId && body.messageId && body.guildId) {

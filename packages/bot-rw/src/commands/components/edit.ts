@@ -2,8 +2,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ContainerBuilder,
-  ModalBuilder,
   messageLink,
+  ModalBuilder,
   SelectMenuBuilder,
   SelectMenuOptionBuilder,
   StringSelectMenuBuilder,
@@ -32,7 +32,7 @@ import {
   autoRollbackTx,
   discordMessageComponents,
   getDb,
-  launchComponentDurableObject,
+  launchComponentKV,
   makeSnowflake,
   type StorableButtonWithUrl,
   type StorableComponent,
@@ -939,7 +939,6 @@ const registerComponentUpdate = async (
           set: {
             data,
             draft: false,
-            updatedAt: new Date(),
             updatedById: user.id,
           },
         });
@@ -956,10 +955,9 @@ const registerComponentUpdate = async (
   );
 
   if (customId !== undefined) {
-    await launchComponentDurableObject(ctx.env, {
-      messageId: editedMsg.id,
+    await launchComponentKV(env, {
       componentId: id,
-      customId,
+      data,
     });
   }
   return editedMsg;

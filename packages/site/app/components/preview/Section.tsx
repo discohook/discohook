@@ -16,7 +16,15 @@ export const PreviewSection: React.FC<{
   return (
     <div className="flex flex-col gap-1">
       <div className="flex gap-3 justify-between">
-        <div className="flex flex-col gap-y-1">
+        <div
+          className={twJoin(
+            "flex flex-col gap-y-1",
+            component.components.length === 1 &&
+              component.accessory.type !== ComponentType.Thumbnail
+              ? "justify-center"
+              : undefined,
+          )}
+        >
           {component.components.map((child, i) =>
             child.type === ComponentType.TextDisplay ? (
               <PreviewTextDisplay key={i} component={child} cache={cache} />
@@ -25,7 +33,14 @@ export const PreviewSection: React.FC<{
             ),
           )}
         </div>
-        <div className="flex items-start">
+        <div
+          className={twJoin(
+            "flex items-start min-w-0",
+            component.accessory.type === ComponentType.Button
+              ? "max-w-[calc(50%_-_0.75rem)]"
+              : undefined,
+          )}
+        >
           {component.accessory.type === ComponentType.Thumbnail ? (
             <div
               className={twJoin(
@@ -67,11 +82,7 @@ export const PreviewSection: React.FC<{
               </div>
             </div>
           ) : component.accessory.type === ComponentType.Button ? (
-            <div
-              className={twJoin("max-w-[calc(50%_-_0.75rem)] items-start flex")}
-            >
-              <PreviewButton data={component.accessory} />
-            </div>
+            <PreviewButton data={component.accessory} />
           ) : null}
         </div>
       </div>
