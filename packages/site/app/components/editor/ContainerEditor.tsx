@@ -145,14 +145,20 @@ export const ContainerEditor: React.FC<{
   return (
     <Collapsible.Root
       className={twJoin(
-        "group/top-2 rounded-lg p-2 border border-gray-300 dark:border-gray-700 shadow transition-[border-color,border-width]",
-        container.accent_color != null ? "border-l-4" : undefined,
-      )}
-      style={
+        "group/top-2 relative overflow-hidden rounded-lg border border-gray-300 bg-gray-100 p-2 shadow transition-[border-color,border-width] dark:border-gray-700 dark:bg-gray-800",
         container.accent_color != null
-          ? { borderLeftColor: decimalToHex(container.accent_color) }
-          : undefined
-      }
+          ? [
+              "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-[--accent-color] before:content-['']",
+            ]
+          : undefined,
+      )}
+      style={{
+        // @ts-expect-error
+        "--accent-color":
+          container.accent_color != null
+            ? decimalToHex(container.accent_color)
+            : "",
+      }}
       defaultOpen={open}
     >
       <TopLevelComponentEditorContainerSummary
