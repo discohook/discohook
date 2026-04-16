@@ -125,7 +125,7 @@ export interface QueryDataRaw {
     reference?: string;
     thread_id?: string;
   }[];
-  targets?: TargetWebhook[];
+  targets?: QueryDataTarget[];
 }
 
 export interface QueryDataMessageDataRaw {
@@ -210,7 +210,12 @@ export const ZodQueryDataMessageDataRaw = ZodQueryDataMessageDataBase.transform(
 );
 
 /** Make zod-transformed payloads compatible with possibly-old API consumers */
-export const retrofitQueryData = <T extends QueryDataRaw>(data: T): T => {
+export const retrofitQueryData = <T extends QueryDataRaw>(
+  data: T,
+  options?: Partial<{
+    newTargets: boolean;
+  }>,
+): T => {
   const transformed = structuredClone(data);
   for (const message of transformed.messages) {
     message.data = queryDataMessageDataTransform(message.data);
@@ -226,5 +231,18 @@ export const retrofitQueryData = <T extends QueryDataRaw>(data: T): T => {
       message.data.author.name = message.data.username;
     }
   }
+
+  // 4/16/2026: Addition of new target types
+  transformed.targets = transformed.targets?.filter((target) => {
+    if (
+      !options?.newTargets &&
+      target.type !== undefined &&
+      target.type !== TargetType.Webhook
+    ) {
+      return false;
+    }
+    return true;
+  });
+
   return transformed;
 };

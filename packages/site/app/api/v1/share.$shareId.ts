@@ -1,11 +1,12 @@
 import { json } from "@remix-run/cloudflare";
 import { z } from "zod/v3";
+import { zx } from "zodix";
 import { getBucket } from "~/durable/rate-limits";
 import { getShareLink } from "~/durable/share-links";
 import type { QueryData } from "~/types/QueryData";
 import { retrofitQueryData } from "~/types/QueryData-raw";
 import type { LoaderArgs } from "~/util/loader";
-import { zxParseParams } from "~/util/zod";
+import { zxParseParams, zxParseQuery } from "~/util/zod";
 
 export interface InvalidShareIdData {
   message: string;
@@ -14,6 +15,9 @@ export interface InvalidShareIdData {
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const { shareId } = zxParseParams(params, { shareId: z.string() });
+  const { with_new_targets: newTargets } = zxParseQuery(request, {
+    with_new_targets: zx.BoolAsString.default("false"),
+  });
   const headers = await getBucket(request, context, "share");
 
   let data: QueryData;
@@ -33,7 +37,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   }
 
   return json(
-    { data: retrofitQueryData(data), expires: new Date(alarm) },
+    { data: retrofitQueryData(data, { newTargets }), expires: new Date(alarm) },
     { headers },
   );
 };

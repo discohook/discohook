@@ -405,7 +405,9 @@ export default function Index() {
     };
 
     if (shareId) {
-      fetch(apiUrl(BRoutes.share(shareId)), { method: "GET" }).then((r) => {
+      fetch(`${apiUrl(BRoutes.share(shareId))}?with_new_targets=true`, {
+        method: "GET",
+      }).then((r) => {
         if (r.status === 200) {
           r.json().then((d: any) => {
             const qd: QueryData = d.data;
