@@ -90,6 +90,7 @@ export type QueryDataVersion = "d2";
 export enum TargetType {
   Webhook = 1,
   Bot = 2,
+  FluxerWebhook = 3,
 }
 
 export interface TargetWebhook {
@@ -106,7 +107,13 @@ export interface TargetBot {
   channel_id: string;
 }
 
-export type QueryDataTarget = TargetWebhook | TargetBot;
+export interface TargetFluxerWebhook {
+  type: TargetType.FluxerWebhook;
+  id: string;
+  token: string;
+}
+
+export type QueryDataTarget = TargetWebhook | TargetBot | TargetFluxerWebhook;
 
 export interface QueryDataRaw {
   version?: QueryDataVersion;

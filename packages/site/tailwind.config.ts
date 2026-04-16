@@ -33,6 +33,15 @@ export default {
           blue: "#58B9FF",
           pink: "#FF81FF",
         },
+        fluxer: {
+          DEFAULT: "#3D39CE",
+          1: "#4641D9",
+          2: "#F0B100",
+          3: "#00BBA7",
+          4: "#2B7FFF",
+          5: "#AD46FF",
+          6: "#6A7282",
+        },
         primary: {
           130: "#EFF0F3",
           160: "#EBEDEF",

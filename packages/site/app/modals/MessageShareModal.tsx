@@ -1,4 +1,4 @@
-import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { ButtonStyle } from "discord-api-types/v10";
 import { useCallback, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { apiUrl, BRoutes } from "~/api/routing";
@@ -10,11 +10,12 @@ import type { QueryData } from "~/types/QueryData";
 import { useSafeFetcher } from "~/util/loader";
 import { cycleCopyText } from "~/util/text";
 import type { action as ApiPostShare } from "../api/v1/share";
+import { draftTargetToQueryTarget, type TargetMap } from "./MessageSendModal";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageShareModal = (
   props: ModalProps & {
-    targets: Record<string, APIWebhook>;
+    targets: TargetMap;
     data: QueryData;
   },
 ) => {
@@ -36,9 +37,7 @@ export const MessageShareModal = (
         (includeTargets_ ?? includeTargets)
           ? {
               ...data,
-              targets: Object.values(targets).map((t) => ({
-                url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-              })),
+              targets: Object.values(targets).map(draftTargetToQueryTarget),
             }
           : // On the original site (.org), targets would be stripped upon
             // loading the page and thus would never be available in the

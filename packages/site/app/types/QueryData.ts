@@ -22,9 +22,13 @@ import { ZodAPITopLevelComponent } from "./components";
 import {
   type APIEmbed,
   type QueryDataMessageDataRaw,
-  type QueryDataVersion,
   queryDataMessageDataTransform,
+  type QueryDataTarget,
+  type QueryDataVersion,
+  TargetBot,
+  TargetFluxerWebhook,
   TargetType,
+  TargetWebhook,
   ZodQueryDataMessageDataBase,
 } from "./QueryData-raw";
 
@@ -106,11 +110,6 @@ export type APIMessageTopLevelComponent =
   | APISeparatorComponent
   | APITextDisplayComponent;
 
-export interface QueryDataTarget {
-  type?: TargetType;
-  url: string;
-}
-
 export interface QueryData {
   version?: QueryDataVersion;
   backup_id?: string;
@@ -136,10 +135,30 @@ export const ZodQueryDataMessage = z.object({
   thread_id: z.ostring(),
 }) satisfies z.ZodType<QueryData["messages"][number]>;
 
-export const ZodQueryDataTarget: z.ZodType<QueryDataTarget> = z.object({
-  type: z.nativeEnum(TargetType).optional(),
+export const ZodQueryDataTargetWebhook: z.ZodType<TargetWebhook> = z.object({
+  type: z.literal(TargetType.Webhook).default(TargetType.Webhook).optional(),
   url: z.string(),
 });
+
+export const ZodQueryDataTargetBot: z.ZodType<TargetBot> = z.object({
+  type: z.literal(TargetType.Bot),
+  application_id: z.string(),
+  bot_id: z.string().optional(),
+  channel_id: z.string(),
+});
+
+export const ZodQueryDataTargetFluxerWebhook: z.ZodType<TargetFluxerWebhook> =
+  z.object({
+    type: z.literal(TargetType.FluxerWebhook),
+    id: z.string(),
+    token: z.string(),
+  });
+
+export const ZodQueryDataTarget: z.ZodType<QueryDataTarget> = z.union([
+  ZodQueryDataTargetWebhook,
+  ZodQueryDataTargetBot,
+  ZodQueryDataTargetFluxerWebhook,
+]);
 
 export const ZodQueryData: z.ZodType<QueryData> = z.object({
   version: z.enum(["d2"]).optional(),

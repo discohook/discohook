@@ -203,7 +203,7 @@ const cascadeFileNameChange = (
   return newEmbeds;
 };
 
-const createFakeWaveform = (): string => {
+export const createFakeWaveform = (): string => {
   // basically empty waveform with no audio
   // spikes. this resolves to `AA==`
   const array = new Uint8Array(1).fill(0);

@@ -3,9 +3,10 @@ import {
   type APIWebhook,
   ButtonStyle,
   PermissionFlagsBits,
+  WebhookType,
 } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
-import { type ReactNode, useEffect, useReducer, useState } from "react";
+import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
@@ -14,20 +15,23 @@ import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { FluxerLogo } from "~/components/icons/Logo";
 import { linkClassName } from "~/components/preview/Markdown";
 import { RadioishBox } from "~/components/Radio";
 import { TextInput } from "~/components/TextInput";
 import { ProfilePreview } from "~/routes/s.$guildId";
+import type { FluxerAPIWebhookWithoutUser } from "~/types/fluxer";
 import type { TFunction } from "~/types/i18next";
 import { TargetType } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
-import { WEBHOOK_URL_RE } from "~/util/constants";
+import { FLUXER_WEBHOOK_URL_RE, WEBHOOK_URL_RE } from "~/util/constants";
 import {
   cdnImgAttributes,
   DISCORD_BOT_TOKEN_RE,
   getWebhook,
   webhookAvatarUrl,
 } from "~/util/discord";
+import { fluxerWebhookAvatarUrl, getFluxerWebhook } from "~/util/fluxer";
 import { useApiLoader, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { randomString } from "~/util/text";
@@ -38,70 +42,110 @@ import type {
 import type { loader as ApiGetGuildChannels } from "../api/v1/guilds.$guildId.channels";
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
+import { getTargetKey, type Target, type TargetMap } from "./MessageSendModal";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
-export const ListWebhook = ({
+interface GenericListedTargetInfo {
+  name: string;
+  avatar?: {
+    src: string | undefined;
+    srcSet: string;
+  };
+  user?: { name: string | null };
+  createdAt: Date;
+  checkmark?: boolean;
+}
+
+export const getGenericTargetInfo = (
+  target: Target,
+  discordApplicationId?: string,
+): GenericListedTargetInfo => {
+  switch (target.type) {
+    case TargetType.Webhook:
+      return {
+        name: target.webhook.name ?? "Webhook",
+        avatar: cdnImgAttributes(64, (size) =>
+          webhookAvatarUrl(target.webhook, { size }),
+        ),
+        createdAt: getDate(target.webhook.id as `${bigint}`),
+        user: target.webhook.user
+          ? { name: target.webhook.user.username }
+          : undefined,
+        checkmark:
+          discordApplicationId !== undefined &&
+          discordApplicationId === target.webhook.application_id,
+      };
+    case TargetType.FluxerWebhook:
+      return {
+        name: target.webhook.name,
+        avatar: cdnImgAttributes(64, (size) =>
+          fluxerWebhookAvatarUrl(target.webhook, { size }),
+        ),
+        createdAt: getDate(target.webhook.id as `${bigint}`),
+        user: target.webhook.user
+          ? { name: target.webhook.user.username }
+          : undefined,
+      };
+    default:
+      return {
+        name: `Unknown (${TargetType[target.type]})`,
+        createdAt: new Date(),
+      };
+  }
+};
+
+export const ListTarget = ({
   t,
-  webhook,
+  target,
+  channel,
   discordApplicationId,
   endComponent,
 }: {
   t: TFunction;
-  webhook: {
-    id: string;
-    name: string;
-    avatar: string | null;
-    applicationId: string | null;
-    user: { name: string } | null;
-    channel?: { name: string | null };
-  };
+  target: Target;
+  channel?: { name: string | null };
   discordApplicationId?: string;
   endComponent?: JSX.Element;
 }) => {
-  const createdAt = getDate(webhook.id as `${bigint}`);
+  const info = getGenericTargetInfo(target, discordApplicationId);
   return (
-    <div className="rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex">
-      <img
-        {...cdnImgAttributes(64, (size) => webhookAvatarUrl(webhook, { size }))}
-        className="rounded-full my-auto size-8 me-3"
-        alt={webhook.name}
-      />
-      <div className="truncate my-auto">
+    <div className="rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex items-center">
+      <div className="relative me-3">
+        <img {...info.avatar} className="rounded-full size-8" alt={info.name} />
+        {target.type === TargetType.FluxerWebhook ? (
+          <FluxerLogo className="text-[#F5F4FC] size-4 rounded-full bg-fluxer absolute -bottom-0.5 -end-0.5" />
+        ) : null}
+      </div>
+      <div className="truncate">
         <div className="flex max-w-full">
           <p className="font-semibold truncate dark:text-primary-230 text-base">
-            {webhook.name}
+            {info.name}
           </p>
-          {!!discordApplicationId &&
-            webhook.applicationId === discordApplicationId && (
-              <span
-                className="ms-1 inline-block"
-                title={t("createdByDiscohook")}
-              >
-                <CoolIcon
-                  icon="Circle_Check"
-                  className="text-blurple-500 dark:text-blurple-400"
-                />
-              </span>
-            )}
+          {info.checkmark ? (
+            <span className="ms-1 inline-block" title={t("createdByDiscohook")}>
+              <CoolIcon
+                icon="Circle_Check"
+                className="text-blurple-500 dark:text-blurple-400"
+              />
+            </span>
+          ) : null}
         </div>
-        <p className="text-gray-600 dark:text-gray-500 text-xs">
-          #{webhook.channel?.name ?? "unknown"} •{" "}
-          {t(webhook.user ? "createdAtBy" : "createdAt", {
+        <p className="text-muted dark:text-muted-dark text-xs">
+          {target.type === TargetType.FluxerWebhook
+            ? null
+            : `#${channel?.name ?? "unknown"} • `}
+          {t(info.user ? "createdAtBy" : "createdAt", {
             replace: {
-              createdAt: new Date(createdAt),
-              username: webhook.user?.name,
+              createdAt: new Date(info.createdAt),
+              username: info.user?.name,
             },
           })}
         </p>
       </div>
-      {endComponent ? (
-        <div className="ms-auto ps-2 my-auto">{endComponent}</div>
-      ) : null}
+      {endComponent ? <div className="ms-auto ps-2">{endComponent}</div> : null}
     </div>
   );
 };
-
-const EXP_MORE_TARGETS = false;
 
 const AddWebhookTarget = ({
   t,
@@ -121,7 +165,7 @@ const AddWebhookTarget = ({
   cache: CacheManager | undefined;
   setOpen: (v: boolean) => void;
   setSetOpen: React.Dispatch<(open: boolean) => void>;
-  updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+  updateTargets: React.Dispatch<Partial<TargetMap>>;
   applyThreadId?: (threadId: string) => void;
   hasAuthentication?: boolean;
   discordApplicationId?: string;
@@ -149,9 +193,8 @@ const AddWebhookTarget = ({
       guildWebhookTokenFetcher.state === "idle"
     ) {
       if (webhook) {
-        updateTargets({
-          [guildWebhookTokenFetcher.data.id]: webhook,
-        });
+        const target: Target = { type: TargetType.Webhook, webhook };
+        updateTargets({ [getTargetKey(target)]: target });
         setOpen(false);
       } else {
         getWebhook(
@@ -180,7 +223,8 @@ const AddWebhookTarget = ({
       if (cache && result.guild_id) {
         cache.fetchGuildCacheable(result.guild_id);
       }
-      updateTargets({ [result.id]: result });
+      const target: Target = { type: TargetType.Webhook, webhook: result };
+      updateTargets({ [getTargetKey(target)]: target });
       setOpen(false);
     };
   }, [webhook, updateTargets]);
@@ -297,10 +341,21 @@ const AddWebhookTarget = ({
             ) : (
               <div className="space-y-2">
                 {guildWebhooksFetcher.data.map((gWebhook) => (
-                  <ListWebhook
+                  <ListTarget
                     key={`webhook-${gWebhook.id}`}
                     t={t}
-                    webhook={gWebhook}
+                    target={{
+                      type: TargetType.Webhook,
+                      webhook: {
+                        id: gWebhook.id,
+                        name: gWebhook.name,
+                        avatar: gWebhook.avatar,
+                        channel_id: gWebhook.channelId,
+                        application_id: gWebhook.applicationId,
+                        type: WebhookType.Incoming,
+                      },
+                    }}
+                    channel={gWebhook.channel}
                     discordApplicationId={discordApplicationId}
                     endComponent={
                       <Button
@@ -379,15 +434,15 @@ const AddWebhookTarget = ({
               webhook ? undefined : "animate-pulse",
             )}
           >
-            <div className="w-1/3 mr-4 my-auto">
+            <div className="w-1/3 me-4 my-auto">
               {avatarUrl ? (
                 <img
-                  className="rounded-full h-24 w-24 m-auto"
+                  className="rounded-full size-24 m-auto"
                   src={avatarUrl}
                   alt={webhook?.name ?? "Webhook"}
                 />
               ) : (
-                <div className="rounded-full h-24 w-24 bg-gray-400 dark:bg-gray-600 m-auto" />
+                <div className="rounded-full size-24 bg-gray-400 dark:bg-gray-600 m-auto" />
               )}
             </div>
             <div className="grow">
@@ -425,7 +480,7 @@ const AddWebhookTarget = ({
                     </p>
                   ) : null}
                   <hr className="border border-gray-400 dark:border-gray-600 my-2" />
-                  <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-400 transition">
+                  <p className="text-muted dark:text-muted-dark transition">
                     <Trans
                       t={t}
                       i18nKey="channelId"
@@ -442,7 +497,7 @@ const AddWebhookTarget = ({
                       ]}
                     />
                   </p>
-                  <p className="text-gray-500 hover:text-gray-700 dark:text-gray-500 hover:dark:text-gray-400 transition">
+                  <p className="text-muted dark:text-muted-dark transition">
                     <Trans
                       t={t}
                       i18nKey="guildId"
@@ -483,7 +538,8 @@ const AddWebhookTarget = ({
                   if (cache && webhook.guild_id) {
                     cache.fetchGuildCacheable(webhook.guild_id);
                   }
-                  updateTargets({ [webhook.id]: webhook });
+                  const target: Target = { type: TargetType.Webhook, webhook };
+                  updateTargets({ [getTargetKey(target)]: target });
                   if (willApplyThread && applyThreadId && threadId) {
                     applyThreadId(threadId);
                   }
@@ -530,7 +586,7 @@ const AddBotTarget = ({
   cache: CacheManager | undefined;
   setOpen: (v: boolean) => void;
   setSetOpen: React.Dispatch<(open: boolean) => void>;
-  updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+  updateTargets: React.Dispatch<Partial<TargetMap>>;
   applyThreadId?: (threadId: string) => void;
   hasAuthentication?: boolean;
   discordApplicationId?: string;
@@ -688,10 +744,177 @@ const AddBotTarget = ({
   ) : null;
 };
 
+const AddFluxerWebhookTarget = ({
+  t,
+  visible,
+  setOpen,
+  setSetOpen,
+  updateTargets,
+}: {
+  t: TFunction;
+  visible: boolean;
+  setOpen: (v: boolean) => void;
+  setSetOpen: React.Dispatch<(open: boolean) => void>;
+  updateTargets: React.Dispatch<Partial<TargetMap>>;
+}) => {
+  const [webhook, setWebhook] = useState<FluxerAPIWebhookWithoutUser>();
+  const [urlError, setUrlError] = useState<ReactNode>();
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only when the component becomes visible
+  useEffect(() => {
+    const doReset = () => {
+      setWebhook(undefined);
+      setUrlError(undefined);
+    };
+    if (!visible) {
+      doReset();
+      return;
+    }
+    setSetOpen((open: boolean) => {
+      if (!open) doReset();
+    });
+  }, [visible]);
+
+  return visible ? (
+    <>
+      <div>
+        <TextInput
+          label={t("webhookUrl")}
+          type="password"
+          className="w-full"
+          errors={[urlError]}
+          onFocus={(e) => {
+            e.currentTarget.type = "text";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.type = "password";
+          }}
+          delayOnInput={200}
+          onInput={async (e) => {
+            setUrlError(undefined);
+            setWebhook(undefined);
+            if (!e.currentTarget.value) return;
+
+            const match = e.currentTarget.value.match(FLUXER_WEBHOOK_URL_RE);
+            if (!match) {
+              setUrlError(t("invalidWebhookUrl"));
+              return;
+            }
+
+            const webhook = await getFluxerWebhook(match[1], match[2]);
+            if (webhook.id) {
+              setWebhook(webhook);
+            } else if ("message" in webhook) {
+              setUrlError(webhook.message as string);
+            }
+          }}
+        />
+        <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+        <div
+          className={twJoin("flex py-4", webhook ? undefined : "animate-pulse")}
+        >
+          <div className="w-1/3 me-4 my-auto">
+            <div className="relative m-auto w-fit">
+              {webhook ? (
+                <img
+                  {...cdnImgAttributes(128, (size) =>
+                    fluxerWebhookAvatarUrl(webhook, { size }),
+                  )}
+                  className="rounded-full size-24"
+                  alt={webhook.name ?? "Webhook"}
+                />
+              ) : (
+                <div className="rounded-full size-24 bg-gray-400 dark:bg-gray-600" />
+              )}
+              <FluxerLogo
+                className={twJoin(
+                  "text-[#F5F4FC] size-8 rounded-full p-0.5 absolute -bottom-0 -end-0",
+                  webhook ? "bg-fluxer" : "bg-gray-500",
+                )}
+              />
+            </div>
+          </div>
+          <div className="grow">
+            {webhook ? (
+              <>
+                <p className="font-bold text-xl">{webhook.name}</p>
+                <hr className="border border-gray-400 dark:border-gray-600 my-2" />
+                <p className="text-muted dark:text-muted-dark transition">
+                  <Trans
+                    t={t}
+                    i18nKey="channelId"
+                    components={[
+                      <a
+                        key="0"
+                        className="hover:underline"
+                        href={`https://web.fluxer.app/channels/${webhook.guild_id}/${webhook.channel_id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {webhook.channel_id}
+                      </a>,
+                    ]}
+                  />
+                </p>
+                <p className="text-muted dark:text-muted-dark transition">
+                  <Trans
+                    t={t}
+                    i18nKey="guildId"
+                    components={[
+                      <a
+                        key="0"
+                        className="hover:underline"
+                        href={`https://web.fluxer.app/channels/${webhook.guild_id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {webhook.guild_id}
+                      </a>,
+                    ]}
+                  />
+                </p>
+              </>
+            ) : (
+              <div>
+                <div className="h-5 rounded-full bg-gray-400 dark:bg-gray-600 w-1/3" />
+                <div className="h-4 rounded-full bg-gray-400 dark:bg-gray-600 mt-1 w-1/2" />
+                <hr className="border border-gray-400 dark:border-gray-600 my-4" />
+                <div className="h-4 rounded-full bg-gray-400 dark:bg-gray-600 mt-1 w-4/6" />
+                <div className="h-4 rounded-full bg-gray-400 dark:bg-gray-600 mt-1 w-3/6" />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex mt-4">
+        <div className="mx-auto space-x-2 rtl:space-x-reverse">
+          <Button
+            disabled={!webhook}
+            onClick={() => {
+              if (webhook) {
+                const target: Target = {
+                  type: TargetType.FluxerWebhook,
+                  id: webhook.id,
+                  token: webhook.token,
+                  webhook,
+                };
+                updateTargets({ [getTargetKey(target)]: target });
+                setOpen(false);
+              }
+            }}
+          >
+            {t("addTarget.3")}
+          </Button>
+        </div>
+      </div>
+    </>
+  ) : null;
+};
+
 export const TargetAddModal = (
   props: ModalProps & {
     discordApplicationId: string;
-    updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+    updateTargets: React.Dispatch<Partial<TargetMap>>;
     hasAuthentication?: boolean;
     cache?: CacheManager;
     applyThreadId?: (threadId: string) => void;
@@ -699,6 +922,10 @@ export const TargetAddModal = (
 ) => {
   const { t } = useTranslation();
   const [targetType, setTargetType] = useState(TargetType.Webhook);
+
+  const [{ experiments = [] }] = useLocalStorage();
+  const expMoreTargets =
+    experiments.find((e) => e.id === "MORE_TARGETS") !== undefined;
 
   const memberships = useApiLoader<ApiGetCurrentUserMemberships>(
     `${BRoutes.currentUserMemberships()}?permissions=${
@@ -726,12 +953,31 @@ export const TargetAddModal = (
     props.setOpen,
   );
 
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [viewportWidth, setViewportWidth] = useState(0);
+  useEffect(() => {
+    const callback = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", callback);
+    callback(); // initialize value on page load
+    return () => window.removeEventListener("resize", callback);
+  }, []);
+
   return (
     <Modal {...props} setOpen={setOpen}>
       <PlainModalHeader>{t(`addTarget.${targetType}`)}</PlainModalHeader>
       <div className="flex flex-col md:flex-row-reverse gap-4">
-        {EXP_MORE_TARGETS ? (
-          <div className="w-full md:w-1/4 flex flex-row md:flex-col gap-2">
+        {expMoreTargets ? (
+          <div
+            className="w-full md:w-1/4 flex flex-row md:flex-col gap-2 md:overflow-y-auto md:transition-[height]"
+            style={{
+              height:
+                viewportWidth >= 768
+                  ? panelRef.current
+                    ? `${panelRef.current.scrollHeight}px`
+                    : "auto"
+                  : "auto",
+            }}
+          >
             <RadioishBox
               isSelected={targetType === TargetType.Webhook}
               onSelect={() => setTargetType(TargetType.Webhook)}
@@ -748,9 +994,21 @@ export const TargetAddModal = (
                 "Just like webhooks, but with more profile options",
               )}
             />
+            <RadioishBox
+              isSelected={targetType === TargetType.FluxerWebhook}
+              onSelect={() => setTargetType(TargetType.FluxerWebhook)}
+              name={t("fluxer")}
+              description={t("Discord-compatible webhooks for Fluxer.app")}
+            />
+            {/* <RadioishBox
+              isSelected={targetType === TargetType.StoatWebhook}
+              onSelect={() => setTargetType(TargetType.StoatWebhook)}
+              name={t("stoat")}
+              description={t("Discord-compatible webhooks for Stoat.chat")}
+            /> */}
           </div>
         ) : null}
-        <div className="w-full">
+        <div className="w-full h-fit" ref={panelRef}>
           <AddWebhookTarget
             t={t}
             visible={targetType === TargetType.Webhook}
@@ -774,6 +1032,13 @@ export const TargetAddModal = (
             hasAuthentication={props.hasAuthentication}
             // discordApplicationId={props.discordApplicationId}
             // applyThreadId={props.applyThreadId}
+          />
+          <AddFluxerWebhookTarget
+            t={t}
+            visible={targetType === TargetType.FluxerWebhook}
+            setOpen={setOpen}
+            setSetOpen={setSetOpen}
+            updateTargets={props.updateTargets}
           />
         </div>
       </div>

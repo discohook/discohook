@@ -10,6 +10,8 @@ export interface Settings {
   forceDualPane?: boolean;
   locale?: LocaleCode;
   defaultMessageFlag?: "standard" | "components";
+  developer?: boolean;
+  experiments?: { id: string }[];
 }
 
 export const useLocalStorage = <T = Settings>(
@@ -42,3 +44,11 @@ export const useLocalStorage = <T = Settings>(
 
   return [state, update];
 };
+
+export const EXPERIMENTS = [
+  {
+    id: "MORE_TARGETS",
+    date: "2026-04-15",
+    description: 'Create more types of targets in the "Add Webhook" menu',
+  },
+];

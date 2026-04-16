@@ -97,8 +97,11 @@
   "someone": "someone",
   "addTarget": {
     "1": "Add Webhook",
-    "2": "Add Bot"
+    "2": "Add Bot",
+    "3": "Add Fluxer Webhook"
   },
+  "bot": "Bot",
+  "fluxer": "Fluxer",
   "createWebhook": "Create Webhook",
   "editWebhook": "Edit Webhook",
   "copyWebhookUrl": "Copy URL (advanced)",

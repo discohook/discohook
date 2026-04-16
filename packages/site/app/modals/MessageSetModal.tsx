@@ -11,15 +11,20 @@ import { InfoBox } from "~/components/InfoBox";
 import { TextInput } from "~/components/TextInput";
 import { loadMessageComponents } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
+import { TargetType } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { getWebhookMessage } from "~/util/discord";
+import type {
+  DraftTargetWebhook,
+  TargetMap
+} from "./MessageSendModal";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
-import { ListWebhook } from "./TargetAddModal";
+import { ListTarget } from "./TargetAddModal";
 
 export const MessageSetModal = (
   props: ModalProps & {
-    targets: Record<string, APIWebhook>;
+    targets: TargetMap;
     setAddingTarget: (open: boolean) => void;
     data: QueryData;
     setData: React.Dispatch<QueryData>;
@@ -33,9 +38,7 @@ export const MessageSetModal = (
   const message =
     messageIndex !== undefined ? data.messages[messageIndex] : undefined;
 
-  const [webhook, setWebhook] = useState<
-    (typeof targets)[string] | undefined
-  >();
+  const [webhook, setWebhook] = useState<APIWebhook>();
   const [messageLink, setMessageLink] =
     useState<[string | undefined, string | undefined, string]>();
   const [error, setError] = useState<ReactNode>();
@@ -49,13 +52,18 @@ export const MessageSetModal = (
     }
   };
 
-  const possibleWebhooks = Object.values(targets).filter((w) =>
-    messageLink && w.guild_id && messageLink[0]
-      ? w.guild_id === messageLink[0]
-      : true,
+  const possibleWebhooks = Object.values(targets).filter(
+    (w): w is DraftTargetWebhook =>
+      w.type !== TargetType.Webhook
+        ? false
+        : messageLink && w.webhook.guild_id && messageLink[0]
+          ? w.webhook.guild_id === messageLink[0]
+          : true,
   );
   if (message?.data?.webhook_id) {
-    const extantWebhookMatch = targets[message.data.webhook_id];
+    const extantWebhookMatch = targets[
+      `${TargetType.Webhook}:${message.data.webhook_id}`
+    ] as DraftTargetWebhook | undefined;
     if (extantWebhookMatch && !possibleWebhooks.includes(extantWebhookMatch)) {
       possibleWebhooks.splice(0, 0, extantWebhookMatch);
     }
@@ -65,7 +73,13 @@ export const MessageSetModal = (
   useEffect(() => {
     if (message) {
       if (message.data.webhook_id) {
-        setWebhook(targets[message.data.webhook_id]);
+        setWebhook(
+          (
+            targets[
+              `${TargetType.Webhook}:${message.data.webhook_id}`
+            ] as DraftTargetWebhook
+          )?.webhook,
+        );
       }
       if (message.reference) {
         const match = message.reference.match(MESSAGE_REF_RE);
@@ -113,31 +127,25 @@ export const MessageSetModal = (
               <input
                 type="radio"
                 name="webhook"
-                checked={!!webhook && target.id === webhook.id}
+                checked={!!webhook && target.webhook.id === webhook.id}
                 onChange={(e) => {
-                  if (e.currentTarget.checked) setWebhook(target);
+                  if (e.currentTarget.checked) setWebhook(target.webhook);
                 }}
                 onClick={() => {
-                  if (webhook && target.id === webhook.id) {
+                  if (webhook && target.webhook.id === webhook.id) {
                     setWebhook(undefined);
                   }
                 }}
                 hidden
               />
-              <ListWebhook
+              <ListTarget
                 t={t}
-                webhook={{
-                  id: target.id,
-                  applicationId: target.application_id,
-                  avatar: target.avatar,
-                  name: target.name ?? "",
-                  user: target.user ? { name: target.user.username } : null,
-                  channel: cache?.channel.get(target.channel_id),
-                }}
+                target={target}
+                channel={cache?.channel.get(target.webhook.channel_id)}
                 endComponent={
                   <CoolIcon
                     icon={
-                      !!webhook && webhook.id === target.id
+                      !!webhook && webhook.id === target.webhook.id
                         ? "Radio_Fill"
                         : "Radio_Unchecked"
                     }

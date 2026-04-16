@@ -6,14 +6,21 @@ import {
   UserFlags,
   UserFlagsBitField,
 } from "discord-bitflag";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
+import { Target } from "~/modals/MessageSendModal";
+import { getGenericTargetInfo } from "~/modals/TargetAddModal";
 import type { DraftFile } from "~/routes/_index";
 import type { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
-import type { APIAttachment, APIEmbed } from "~/types/QueryData-raw";
+import {
+  TargetType,
+  type APIAttachment,
+  type APIEmbed,
+} from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
-import { cdn, isComponentsV2, webhookAvatarUrl } from "~/util/discord";
+import { cdn, isComponentsV2 } from "~/util/discord";
 import type { Settings } from "~/util/localstorage";
 import { PostChannelIcon } from "../icons/channel";
 import { Svg } from "../icons/Svg";
@@ -99,7 +106,7 @@ export const Message: React.FC<{
   index?: number;
   data?: QueryData;
   files?: DraftFile[];
-  webhooks?: APIWebhook[];
+  targets?: Target[];
   messageDisplay?: Settings["messageDisplay"];
   compactAvatars?: boolean;
   date?: Date;
@@ -116,7 +123,7 @@ export const Message: React.FC<{
   index,
   data,
   files,
-  webhooks,
+  targets,
   messageDisplay,
   compactAvatars,
   date,
@@ -128,11 +135,22 @@ export const Message: React.FC<{
   cdn: cdnOrigin,
 }) => {
   const { t } = useTranslation();
-  const webhook = webhooks
-    ? (webhooks.find((w) => w.application_id === discordApplicationId) ??
-      webhooks[0])
-    : undefined;
-  const username = message.username ?? webhook?.name ?? "Discohook";
+
+  const profile = useMemo(() => {
+    const preferredTarget = targets?.find(
+      (target) =>
+        target.type === TargetType.Webhook &&
+        discordApplicationId !== undefined &&
+        target.webhook.application_id === discordApplicationId,
+    );
+    return preferredTarget
+      ? getGenericTargetInfo(preferredTarget)
+      : targets?.length
+        ? getGenericTargetInfo(targets[0])
+        : null;
+  }, [targets, discordApplicationId]);
+
+  const username = message.username ?? profile?.name ?? "Discohook";
   // Trim out obviously bad data before attempting to load the image
   const avatarUrl =
     (message.avatar_url
@@ -146,9 +164,8 @@ export const Message: React.FC<{
         : // Discards attachment URIs, which are not supported for avatars
           getImageUri(message.avatar_url)
       : null) ||
-    (webhook
-      ? webhookAvatarUrl(webhook, { size: 64 })
-      : "/logos/discohook.svg");
+    profile?.avatar?.src ||
+    "/logos/discohook.svg";
   const badge =
     message.author?.badge === null
       ? null

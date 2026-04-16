@@ -2,7 +2,6 @@ import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Select } from "@base-ui-components/react/select";
 import { Link } from "@remix-run/react";
 import {
-  type APIWebhook,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -15,6 +14,7 @@ import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
 import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { JsonEditorProps } from "~/modals/JsonEditorModal";
+import type { Target } from "~/modals/MessageSendModal";
 import {
   Modal,
   ModalFooter,
@@ -24,6 +24,7 @@ import {
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
 import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
+import { TargetType } from "~/types/QueryData-raw";
 import type {
   CacheManager,
   ResolvableAPIChannel,
@@ -271,7 +272,7 @@ interface MessageEditorProps {
   >;
   componentFoundBackupsHook: ComponentFoundBackupHook;
   drag?: DragManager;
-  webhooks?: APIWebhook[];
+  targets?: Target[];
   cache?: CacheManager;
   cdn?: string;
 }
@@ -475,7 +476,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   setJsonEditor,
   setCodeGenerator,
   componentFoundBackupsHook,
-  webhooks,
+  targets,
   cache,
   cdn,
   // Parent
@@ -491,31 +492,31 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
       : 0;
   const flags = new MessageFlagsBitField(message.data.flags ?? 0);
 
-  const authorTypes = webhooks
-    ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
+  const webhookTargets = targets
+    ? targets.filter((t) => t.type === TargetType.Webhook)
     : [];
+  const authorTypes = webhookTargets
+    .filter((t) => t.type === TargetType.Webhook)
+    .map((w) => getAuthorType(discordApplicationId, w.webhook));
   const possiblyActionable = authorTypes.includes(AuthorType.ActionableWebhook);
   const possiblyApplication = authorTypes.includes(
     AuthorType.ApplicationWebhook,
   );
-  const channels =
-    webhooks && cache
-      ? webhooks
-          .map((w) => cache.channel.get(w.channel_id))
-          .filter((c): c is ResolvableAPIChannel => !!c)
-      : [];
+  const channels = cache
+    ? webhookTargets
+        .map((w) => cache.channel.get(w.webhook.channel_id))
+        .filter((c): c is ResolvableAPIChannel => !!c)
+    : [];
 
   const isAllForum =
-    !!webhooks &&
-    webhooks.length !== 0 &&
+    webhookTargets.length !== 0 &&
     channels.filter((c) => ["forum", "media"].includes(c.type)).length ===
-      webhooks.length;
+      webhookTargets.length;
   const isNoneForum =
     // There are webhooks
-    !!webhooks &&
-    webhooks.length !== 0 &&
+    webhookTargets.length !== 0 &&
     // All of their channels are resolved
-    channels.length === webhooks?.length &&
+    channels.length === webhookTargets?.length &&
     // None of them are forums
     channels.filter((c) => ["forum", "media"].includes(c.type)).length === 0;
 
@@ -882,7 +883,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                 <InfoBox
                   icon="Info"
                   severity={
-                    !webhooks || webhooks?.length === 0
+                    webhookTargets.length === 0
                       ? "blue"
                       : possiblyApplication
                         ? "yellow"
@@ -892,7 +893,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                   open
                 >
                   {t(
-                    !webhooks || webhooks?.length === 0
+                    webhookTargets.length === 0
                       ? "componentsNoWebhook"
                       : possiblyApplication
                         ? "componentsPossibleWebhook"
@@ -1083,7 +1084,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   setJsonEditor,
   setCodeGenerator,
   componentFoundBackupsHook,
-  webhooks,
+  targets,
   cache,
   cdn,
   drag,
@@ -1105,6 +1106,9 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           .reduce((a, b) => a + b, 0)
       : 0;
 
+  const webhookTargets = targets
+    ? targets.filter((t) => t.type === TargetType.Webhook)
+    : [];
   // const authorTypes = webhooks
   //   ? webhooks.map((w) => getAuthorType(discordApplicationId, w))
   //   : [];
@@ -1112,24 +1116,21 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   // const possiblyApplication = authorTypes.includes(
   //   AuthorType.ApplicationWebhook,
   // );
-  const channels =
-    webhooks && cache
-      ? webhooks
-          .map((w) => cache.channel.get(w.channel_id))
-          .filter((c): c is ResolvableAPIChannel => !!c)
-      : [];
+  const channels = cache
+    ? webhookTargets
+        .map((w) => cache.channel.get(w.webhook.channel_id))
+        .filter((c): c is ResolvableAPIChannel => !!c)
+    : [];
 
   const isAllForum =
-    !!webhooks &&
-    webhooks.length !== 0 &&
+    webhookTargets.length !== 0 &&
     channels.filter((c) => ["forum", "media"].includes(c.type)).length ===
-      webhooks.length;
+      webhookTargets.length;
   const isNoneForum =
     // There are webhooks
-    !!webhooks &&
-    webhooks.length !== 0 &&
+    webhookTargets.length !== 0 &&
     // All of their channels are resolved
-    channels.length === webhooks?.length &&
+    channels.length === webhookTargets?.length &&
     // None of them are forums
     channels.filter((c) => ["forum", "media"].includes(c.type)).length === 0;
 

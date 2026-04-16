@@ -402,7 +402,7 @@ export const linkBackupsRelations = relations(backups, ({ one }) => ({
 export const webhooks = pgTable(
   "Webhook",
   {
-    platform: text("platform").notNull().$type<"discord">(),
+    platform: text("platform").notNull().$type<"discord" | "fluxer">(),
     id: text("id").notNull(),
     token: text("token"),
     name: text("name").notNull(),

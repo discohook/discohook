@@ -327,6 +327,13 @@ const tabs: {
             {t("settingsCache.emojiButton")}
           </Button>
         </div>
+        {/* <p className="text-sm font-bold uppercase dark:text-gray-400">
+          {t("developerMode")}
+        </p> */}
+        {/* <hr className="border-border-normal dark:border-border-normal-dark border rounded my-2" />
+        <p className="text-sm font-bold uppercase dark:text-gray-400">
+          {t("experiments")}
+        </p> */}
       </div>
     ),
   },
