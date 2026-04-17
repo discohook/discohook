@@ -147,9 +147,7 @@ export const ContainerEditor: React.FC<{
       className={twJoin(
         "group/top-2 relative overflow-hidden rounded-lg border border-gray-300 bg-gray-100 py-2 pe-2 ps-3 shadow transition-[border-color,border-width] dark:border-gray-700 dark:bg-gray-800",
         container.accent_color != null
-          ? [
-              "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-[--accent-color] before:content-['']",
-            ]
+          ? "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-[--accent-color] before:content-['']"
           : undefined,
       )}
       style={{
