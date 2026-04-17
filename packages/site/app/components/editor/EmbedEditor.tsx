@@ -220,11 +220,18 @@ export const EmbedEditor: React.FC<{
   const errors = getEmbedErrors(embed);
   return (
     <details
-      className="group/embed rounded-lg p-2 bg-gray-100 dark:bg-gray-800 border border-l-4 border-gray-300 dark:border-gray-700 border-l-[#D9D9DC] dark:border-l-[#4A4A50] shadow"
+      className={twJoin(
+        "group/embed relative overflow-hidden rounded-lg py-2 pe-2 ps-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow",
+        "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:content-['']",
+        embed.color
+          ? "before:bg-[--accent-color]"
+          : "before:bg-[#D9D9DC] dark:before:bg-[#4A4A50]",
+      )}
       open={open}
-      style={
-        embed.color ? { borderLeftColor: decimalToHex(embed.color) } : undefined
-      }
+      style={{
+        // @ts-expect-error
+        "--accent-color": embed.color ? decimalToHex(embed.color) : "",
+      }}
     >
       <summary className="group-open/embed:mb-2 py-1 px-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
         <CoolIcon

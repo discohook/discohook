@@ -324,7 +324,7 @@ export const Header: React.FC<{
           {premiumDetails?.active && (
             <p
               className={twJoin(
-                "ltr:ml-2 rtl:mr-2 text-xs font-semibold hidden sm:block my-auto rounded py-px px-2 text-black uppercase",
+                "ms-2 text-xs font-semibold hidden sm:block my-auto rounded py-px px-2 text-black uppercase",
                 premiumDetails.grace ? "bg-yellow-400" : "bg-brand-pink",
               )}
             >
@@ -347,14 +347,14 @@ export const Header: React.FC<{
             className="text-[28px] text-blurple dark:text-blurple-400 rotate-180"
             title={t("logIn")}
           />
-          <p className="ltr:ml-1.5 rtl:mr-1.5 text-base font-medium hidden sm:block my-auto">
+          <p className="ms-1.5 text-base font-medium hidden sm:block my-auto">
             {t("logIn")}
           </p>
         </button>
       )}
-      <div className="grow flex overflow-x-auto ltr:ml-6 rtl:mr-6">
+      <div className="grow flex overflow-x-auto ms-6 items-center">
         <Button
-          className="my-auto ltr:mr-2 rtl:ml-2"
+          className="me-2"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setSettingsOpen(true)}
         >
@@ -362,7 +362,7 @@ export const Header: React.FC<{
         </Button>
         {setShowHistoryModal && (
           <Button
-            className="my-auto ltr:mr-2 rtl:ml-2"
+            className="me-2"
             onClick={() => setShowHistoryModal(true)}
             discordstyle={ButtonStyle.Secondary}
           >
@@ -370,7 +370,7 @@ export const Header: React.FC<{
           </Button>
         )}
         <Button
-          className="my-auto ltr:ml-auto rtl:mr-auto"
+          className="ms-auto"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => setHelpOpen(true)}
         >
@@ -380,7 +380,7 @@ export const Header: React.FC<{
           <Link to="/donate" target="_blank" className="contents">
             <Button
               discordstyle={ButtonStyle.Secondary}
-              className="my-auto ltr:ml-2 rtl:mr-2 bg-gradient-to-r from-blurple/80 to-brand-pink/80 shadow shadow-transparent hover:shadow-blurple/70 transition-shadow"
+              className="ms-2 bg-gradient-to-r from-blurple/80 to-brand-pink/80 shadow shadow-transparent hover:shadow-blurple/70 transition-shadow border-none"
             >
               {t("donate")}
             </Button>
