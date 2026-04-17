@@ -71,6 +71,13 @@
       "when": 1776183432926,
       "tag": "0009_no-guilded",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1776426591652,
+      "tag": "0010_saved-attachments",
+      "breakpoints": true
     }
   ]
 }

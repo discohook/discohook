@@ -51,4 +51,10 @@ export const EXPERIMENTS = [
     date: "2026-04-15",
     description: 'Create more types of targets in the "Add Webhook" menu',
   },
+  {
+    id: "SAVE_ATTACHMENTS",
+    date: "2026-04-16",
+    description:
+      "Upload attachments to a media channel and re-use them in backups",
+  },
 ];

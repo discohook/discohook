@@ -100,6 +100,16 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /guilds/:id/attachments
+   * - POST /guilds/:id/attachments
+   *
+   * Accepts token auth.
+   */
+  guildAttachments(id: string) {
+    return `/guilds/${id}/attachments` as const;
+  },
+
+  /**
    * - GET /guilds/:id/log
    *
    * Accepts token auth.

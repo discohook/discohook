@@ -103,6 +103,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [userToWebhook.userId],
     relationName: "User_UserToWebhook",
   }),
+  attachments: many(savedAttachments, { relationName: "User_SavedAttachment" }),
 }));
 
 // Deprecated
@@ -186,6 +187,7 @@ export const discordGuilds = pgTable("DiscordGuild", {
   icon: text("icon"),
   ownerDiscordId: snowflake("ownerDiscordId"),
   botJoinedAt: date("botJoinedAt"),
+  attachmentChannelId: snowflake("attachmentChannelId"),
 });
 
 export const discordGuildsRelations = relations(
@@ -211,6 +213,9 @@ export const discordGuildsRelations = relations(
     }),
     tokens: many(tokens, {
       relationName: "Token_DiscordGuild",
+    }),
+    attachments: many(savedAttachments, {
+      relationName: "DiscordGuild_SavedAttachment",
     }),
   }),
 );
@@ -755,6 +760,42 @@ export const reactionRoleRelations = relations(
       relationName: "DiscordGuild_ReactionRole",
       fields: [discordReactionRoles.guildId],
       references: [discordGuilds.id],
+    }),
+  }),
+);
+
+export const savedAttachments = pgTable("SavedAttachment", {
+  id: snowflakePk(),
+  filename: text().notNull(),
+  url: text().notNull(),
+
+  title: text(),
+  description: text(),
+  contentType: text().notNull(),
+
+  // In case we need to refresh
+  discordMessageId: snowflake("discordMessageId"),
+  // for now, we require guild id, but this may change in the future
+  discordGuildId: snowflake("discordGuildId")
+    .notNull()
+    .references(() => discordGuilds.id, { onDelete: "cascade" }),
+  userId: snowflake("userId").references(() => users.id, {
+    onDelete: "set null",
+  }),
+});
+
+export const savedAttachmentsRelations = relations(
+  savedAttachments,
+  ({ one }) => ({
+    discordGuild: one(discordGuilds, {
+      fields: [savedAttachments.discordGuildId],
+      references: [discordGuilds.id],
+      relationName: "DiscordGuild_SavedAttachment",
+    }),
+    user: one(users, {
+      fields: [savedAttachments.userId],
+      references: [users.id],
+      relationName: "User_SavedAttachment",
     }),
   }),
 );
