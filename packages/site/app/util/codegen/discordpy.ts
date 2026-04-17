@@ -121,7 +121,7 @@ const generateSectionCode = (
   if (component.accessory) {
     if (component.accessory.type === ComponentType.Button) {
       const button = component.accessory as APIButtonComponent;
-      lines.push("    ui.Button(");
+      lines.push("    accessory=ui.Button(");
       if ("style" in button) {
         lines.push(
           `        style=discord.ButtonStyle.${ButtonStyle[button.style].toLowerCase()}),`,
@@ -163,7 +163,7 @@ const generateSectionCode = (
     } else if (component.accessory.type === ComponentType.Thumbnail) {
       const thumbnail = component.accessory as APIThumbnailComponent;
       lines.push(
-        "    ui.Thumbnail(",
+        "    accessory=ui.Thumbnail(",
         `        ${quoteString(thumbnail.media.url, preferences)},`,
       );
       if (thumbnail.description) {
