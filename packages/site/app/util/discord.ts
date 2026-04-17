@@ -203,7 +203,7 @@ const cascadeFileNameChange = (
   return newEmbeds;
 };
 
-const createFakeWaveform = (): string => {
+export const createFakeWaveform = (): string => {
   // basically empty waveform with no audio
   // spikes. this resolves to `AA==`
   const array = new Uint8Array(1).fill(0);
@@ -906,4 +906,48 @@ export const convertMessageToComponents = (
   }
 
   return data;
+};
+
+const hexTimestampToDate = (hex: string): Date =>
+  new Date(Number.parseInt(hex.replace(/^0x/i, ""), 16) * 1000);
+
+export const parseAttachmentParams = (params: URLSearchParams) => {
+  const ex = params.get("ex");
+  const is = params.get("is");
+  const hm = params.get("hm");
+  return {
+    ex: ex ? hexTimestampToDate(ex) : null,
+    is: is ? hexTimestampToDate(is) : null,
+    hm,
+    sv: params.get("sv") === "1",
+  };
+};
+
+export const parseAttachmentUrl = (url: string) => {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw Error(`Invalid attachment URL: ${url}`);
+  }
+  const [_, __, channelId, attachmentId, filename] = parsed.pathname.split("/");
+  return {
+    channelId,
+    attachmentId,
+    filename,
+    ...parseAttachmentParams(parsed.searchParams),
+  };
+};
+
+export const isDiscordAttachmentUrl = (url: string | URL): boolean => {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return false;
+  }
+  return (
+    ["media.discordapp.net", "cdn.discordapp.com"].includes(u.hostname) &&
+    u.pathname.startsWith("/attachments")
+  );
 };

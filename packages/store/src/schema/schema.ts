@@ -81,7 +81,6 @@ export const users = pgTable("User", {
   lifetime: boolean("lifetime").default(false),
 
   discordId: snowflake("discordId").unique(),
-  guildedId: text("guildedId").unique(),
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -96,11 +95,6 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [discordUsers.id],
     relationName: "User_DiscordUser",
   }),
-  guildedUser: one(guildedUsers, {
-    fields: [users.guildedId],
-    references: [guildedUsers.id],
-    relationName: "User_GuildedUser",
-  }),
   updatedTriggers: many(triggers, { relationName: "User_Trigger-updated" }),
   tokens: many(tokens, { relationName: "User_Token" }),
   bots: many(customBots, { relationName: "User_CustomBot" }),
@@ -109,12 +103,13 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [userToWebhook.userId],
     relationName: "User_UserToWebhook",
   }),
+  attachments: many(savedAttachments, { relationName: "User_SavedAttachment" }),
 }));
 
 // Deprecated
 export const tokens = pgTable("Token", {
   id: snowflakePk(),
-  platform: text("platform").$type<"discord" | "guilded">().notNull(),
+  platform: text("platform").$type<"discord">().notNull(),
   prefix: text("prefix").$type<"user" | "editor" | "bot">().notNull(),
   userId: snowflake("userId").references(() => users.id, {
     onDelete: "set null",
@@ -162,24 +157,9 @@ export const discordUsersRelations = relations(
   }),
 );
 
-export const guildedUsers = pgTable("GuildedUser", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  avatarUrl: text("avatarUrl"),
-});
-
-export const guildedUsersRelations = relations(guildedUsers, ({ one }) => ({
-  user: one(users, {
-    fields: [guildedUsers.id],
-    references: [users.guildedId],
-    relationName: "User_GuildedUser",
-  }),
-}));
-
 export const oauthInfo = pgTable("OAuthInfo", {
   id: snowflakePk(),
   discordId: snowflake("discordId").unique(),
-  guildedId: text("guildedId").unique(),
   botId: snowflake("botId").unique(),
 
   accessToken: text("accessToken").notNull(),
@@ -194,11 +174,6 @@ export const oauthInfoRelations = relations(oauthInfo, ({ one }) => ({
     references: [discordUsers.id],
     relationName: "DiscordUser_OAuthInfo",
   }),
-  guildedUser: one(guildedUsers, {
-    fields: [oauthInfo.guildedId],
-    references: [guildedUsers.id],
-    relationName: "GuildedUser_OAuthInfo",
-  }),
   customBot: one(customBots, {
     fields: [oauthInfo.botId],
     references: [customBots.id],
@@ -212,6 +187,7 @@ export const discordGuilds = pgTable("DiscordGuild", {
   icon: text("icon"),
   ownerDiscordId: snowflake("ownerDiscordId"),
   botJoinedAt: date("botJoinedAt"),
+  attachmentChannelId: snowflake("attachmentChannelId"),
 });
 
 export const discordGuildsRelations = relations(
@@ -237,6 +213,9 @@ export const discordGuildsRelations = relations(
     }),
     tokens: many(tokens, {
       relationName: "Token_DiscordGuild",
+    }),
+    attachments: many(savedAttachments, {
+      relationName: "DiscordGuild_SavedAttachment",
     }),
   }),
 );
@@ -301,22 +280,6 @@ export const discordMembersRelations = relations(discordMembers, ({ one }) => ({
     relationName: "DiscordGuild_DiscordMember",
   }),
 }));
-
-export const guildedServers = pgTable("GuildedServer", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  avatarUrl: text("avatarUrl"),
-});
-
-export const guildedServersRelations = relations(
-  guildedServers,
-  ({ many }) => ({
-    backups: many(backups),
-    webhooks: many(webhooks, { relationName: "GuildedServer_Webhook" }),
-    triggers: many(triggers, { relationName: "GuildedServer_Trigger" }),
-    messageLogEntries: many(messageLogEntries),
-  }),
-);
 
 export const shareLinks = pgTable("ShareLink", {
   id: snowflakePk(),
@@ -401,7 +364,6 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
     references: [users.id],
   }),
   guilds: many(discordGuildsToBackups),
-  servers: many(guildedServers),
   // folder: one(backupFolders, {
   //   fields: [backups.folderId],
   //   references: [backupFolders.id],
@@ -445,7 +407,7 @@ export const linkBackupsRelations = relations(backups, ({ one }) => ({
 export const webhooks = pgTable(
   "Webhook",
   {
-    platform: text("platform").notNull().$type<"discord" | "guilded">(),
+    platform: text("platform").notNull().$type<"discord" | "fluxer">(),
     id: text("id").notNull(),
     token: text("token"),
     name: text("name").notNull(),
@@ -455,7 +417,6 @@ export const webhooks = pgTable(
 
     userId: snowflake("userId"),
     discordGuildId: snowflake("discordGuildId"),
-    guildedServerId: text("guildedServerId"),
   },
   (table) => ({
     unq: unique().on(table.platform, table.id),
@@ -473,11 +434,6 @@ export const webhooksRelations = relations(webhooks, ({ one }) => ({
     references: [discordGuilds.id],
     relationName: "DiscordGuild_Webhook",
   }),
-  guildedServer: one(guildedServers, {
-    fields: [webhooks.guildedServerId],
-    references: [guildedServers.id],
-    relationName: "GuildedServer_Webhook",
-  }),
   userToWebhook: one(userToWebhook, {
     fields: [webhooks.platform, webhooks.id],
     references: [userToWebhook.webhookPlatform, userToWebhook.webhookId],
@@ -492,9 +448,7 @@ export const userToWebhook = pgTable(
     userId: snowflake("userId")
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
-    webhookPlatform: text("webhookPlatform")
-      .notNull()
-      .$type<"discord" | "guilded">(),
+    webhookPlatform: text("webhookPlatform").notNull().$type<"discord">(),
     webhookId: text("webhookId").notNull(),
     favorite: boolean("favorite").default(false).notNull(),
   },
@@ -529,9 +483,6 @@ export const messageLogEntries = pgTable("MessageLogEntry", {
     () => discordGuilds.id,
     { onDelete: "cascade" },
   ),
-  guildedServerId: text("guildedServerId").references(() => guildedServers.id, {
-    onDelete: "cascade",
-  }),
   channelId: text("channelId").notNull(),
   messageId: text("messageId").notNull(),
   threadId: text("threadId"),
@@ -552,11 +503,6 @@ export const messageLogEntriesRelations = relations(
       fields: [messageLogEntries.discordGuildId],
       references: [discordGuilds.id],
       relationName: "DiscordGuild_MessageLogEntry",
-    }),
-    guildedServer: one(guildedServers, {
-      fields: [messageLogEntries.guildedServerId],
-      references: [guildedServers.id],
-      relationName: "GuildedServer_MessageLogEntry",
     }),
     user: one(users, {
       fields: [messageLogEntries.userId],
@@ -701,13 +647,9 @@ export const flowActionsRelations = relations(flowActions, ({ one }) => ({
 
 export const triggers = pgTable("Trigger", {
   id: snowflakePk(),
-  platform: text("platform")
-    .$type<"discord" | "guilded">()
-    .default("discord")
-    .notNull(),
+  platform: text("platform").$type<"discord">().default("discord").notNull(),
   event: integer("event").$type<TriggerEvent>().notNull(),
   discordGuildId: snowflake("discordGuildId"),
-  guildedServerId: text("guildedServerId"),
   flow: json("flow").$type<DraftFlow>(),
   // Deprecated
   flowId: snowflake("flowId")
@@ -725,11 +667,6 @@ export const triggersRelations = relations(triggers, ({ one }) => ({
     fields: [triggers.discordGuildId],
     references: [discordGuilds.id],
     relationName: "DiscordGuild_Trigger",
-  }),
-  guildedServer: one(guildedServers, {
-    fields: [triggers.guildedServerId],
-    references: [guildedServers.id],
-    relationName: "GuildedServer_Trigger",
   }),
   // Deprecated
   flow: one(flows, {
@@ -773,7 +710,7 @@ export const customBotsRelations = relations(customBots, ({ one }) => ({
   oauthInfo: one(oauthInfo, {
     fields: [customBots.id],
     references: [oauthInfo.botId],
-    relationName: "GuildedUser_OAuthInfo",
+    relationName: "OAuthInfo_CustomBot",
   }),
 }));
 
@@ -781,7 +718,7 @@ export const githubPosts = pgTable(
   "GithubPost",
   {
     id: snowflakePk(),
-    platform: text("platform").$type<"discord" | "guilded">().notNull(),
+    platform: text("platform").$type<"discord">().notNull(),
     type: text("type").$type<"issue" | "pull" | "discussion">().notNull(),
     githubId: bigint("githubId", { mode: "bigint" }).notNull(),
     repositoryOwner: text("repositoryOwner").notNull(),
@@ -823,6 +760,42 @@ export const reactionRoleRelations = relations(
       relationName: "DiscordGuild_ReactionRole",
       fields: [discordReactionRoles.guildId],
       references: [discordGuilds.id],
+    }),
+  }),
+);
+
+export const savedAttachments = pgTable("SavedAttachment", {
+  id: snowflakePk(),
+  filename: text().notNull(),
+  url: text().notNull(),
+
+  title: text(),
+  description: text(),
+  contentType: text().notNull(),
+
+  // In case we need to refresh
+  discordMessageId: snowflake("discordMessageId"),
+  // for now, we require guild id, but this may change in the future
+  discordGuildId: snowflake("discordGuildId")
+    .notNull()
+    .references(() => discordGuilds.id, { onDelete: "cascade" }),
+  userId: snowflake("userId").references(() => users.id, {
+    onDelete: "set null",
+  }),
+});
+
+export const savedAttachmentsRelations = relations(
+  savedAttachments,
+  ({ one }) => ({
+    discordGuild: one(discordGuilds, {
+      fields: [savedAttachments.discordGuildId],
+      references: [discordGuilds.id],
+      relationName: "DiscordGuild_SavedAttachment",
+    }),
+    user: one(users, {
+      fields: [savedAttachments.userId],
+      references: [users.id],
+      relationName: "User_SavedAttachment",
     }),
   }),
 );

@@ -66,6 +66,7 @@ import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
+import { TargetType } from "~/types/QueryData-raw";
 import { useCache } from "~/util/cache/CacheManager";
 import {
   MAX_ACTION_ROW_WIDTH,
@@ -1732,11 +1733,14 @@ export default () => {
                       ),
                     );
                   }
-                  const result = await submitMessage(wt, {
-                    data: { components: data.components },
-                    reference: component_.messageId.toString(),
-                    thread_id: threadId,
-                  });
+                  const result = await submitMessage(
+                    { type: TargetType.Webhook, webhook: wt },
+                    {
+                      data: { components: data.components },
+                      reference: component_.messageId.toString(),
+                      thread_id: threadId,
+                    },
+                  );
                   if (result.status === "success") {
                     setError(undefined);
                     if (!isComponentsV2(message)) {

@@ -3,35 +3,35 @@ import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Field } from "@base-ui-components/react/field";
 import { REST } from "@discordjs/rest";
 import {
-  json,
-  type MetaFunction,
-  redirect,
-  type SerializeFrom,
+    json,
+    type MetaFunction,
+    redirect,
+    type SerializeFrom,
 } from "@remix-run/cloudflare";
 import {
-  Form,
-  Link,
-  useFetcher,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
+    Form,
+    Link,
+    useFetcher,
+    useLoaderData,
+    useNavigate,
+    useSearchParams,
 } from "@remix-run/react";
 import {
-  type APIGuild,
-  type APIGuildMember,
-  type APIUser,
-  type APIWebhook,
-  ButtonStyle,
-  ComponentType,
-  RESTJSONErrorCodes,
-  UserFlags,
-  WebhookType,
+    type APIGuild,
+    type APIGuildMember,
+    type APIUser,
+    type APIWebhook,
+    ButtonStyle,
+    ComponentType,
+    RESTJSONErrorCodes,
+    UserFlags,
+    WebhookType,
 } from "discord-api-types/v10";
 import {
-  type BitFlagResolvable,
-  PermissionFlags,
-  PermissionsBitField,
-  UserFlagsBitField,
+    type BitFlagResolvable,
+    PermissionFlags,
+    PermissionsBitField,
+    UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
 import { useEffect, useReducer, useState } from "react";
@@ -59,20 +59,20 @@ import { TextInput } from "~/components/TextInput";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
-import { WebhookEditModal } from "~/modals/WebhookEditModal";
+import { TargetEditModal } from "~/modals/WebhookEditModal";
 import {
-  authorizeRequest,
-  getGuild,
-  getTokenGuildPermissions,
+    authorizeRequest,
+    getGuild,
+    getTokenGuildPermissions,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
 import type { TFunction } from "~/types/i18next";
 import { type CacheManager, useCache } from "~/util/cache/CacheManager";
 import {
-  cdn,
-  cdnImgAttributes,
-  isDiscordError,
-  webhookAvatarUrl,
+    cdn,
+    cdnImgAttributes,
+    isDiscordError,
+    webhookAvatarUrl,
 } from "~/util/discord";
 import { getId } from "~/util/id";
 import { type LoaderArgs, useSafeFetcher } from "~/util/loader";
@@ -658,7 +658,7 @@ export default () => {
 
   return (
     <div>
-      <WebhookEditModal
+      <TargetEditModal
         targets={Object.fromEntries(
           webhooksFetcher.data
             ? webhooksFetcher.data.map((webhook) => [

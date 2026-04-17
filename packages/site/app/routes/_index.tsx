@@ -3,7 +3,6 @@ import type { SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  type APIWebhook,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -24,7 +23,7 @@ import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { PostChannelIcon } from "~/components/icons/channel";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { Logo } from "~/components/icons/Logo";
+import { FluxerLogo, Logo } from "~/components/icons/Logo";
 import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
@@ -44,7 +43,7 @@ import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
 import {
   InvalidDataModal,
-  InvalidDataModalProps,
+  type InvalidDataModalProps,
 } from "~/modals/InvalidDataModal";
 import {
   JsonEditorModal,
@@ -54,7 +53,12 @@ import { MessageAllowedMentionsModal } from "~/modals/MessageAllowedMentionsModa
 import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
 import { MessageFlagsEditModal } from "~/modals/MessageFlagsEditModal";
 import {
+  type DraftTargetFluxerWebhook,
+  type DraftTargetWebhook,
+  getTargetKey,
   MessageSendModal,
+  type TargetKey,
+  type TargetMap,
   useMessageSubmissionManager,
 } from "~/modals/MessageSendModal";
 import { MessageSendModeModal } from "~/modals/MessageSendModeModal";
@@ -63,33 +67,36 @@ import { MessageShareModal } from "~/modals/MessageShareModal";
 import { DialogPortal, ModalFooter } from "~/modals/Modal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
-import { TargetAddModal } from "~/modals/TargetAddModal";
-import { WebhookEditModal } from "~/modals/WebhookEditModal";
+import { getGenericTargetInfo, TargetAddModal } from "~/modals/TargetAddModal";
+import { TargetEditModal } from "~/modals/WebhookEditModal";
 import { getSessionStorage, getUserId } from "~/session.server";
 import {
   type APIComponentInMessageActionRow,
   type QueryData,
-  type QueryDataTarget,
   ZodQueryData,
 } from "~/types/QueryData";
-import type { QueryDataMessageDataRaw } from "~/types/QueryData-raw";
+import {
+  type QueryDataMessageDataRaw,
+  type QueryDataTarget,
+  TargetType,
+} from "~/types/QueryData-raw";
 import { useCache } from "~/util/cache/CacheManager";
 import {
+  FLUXER_WEBHOOK_URL_RE,
   INDEX_FAILURE_MESSAGE,
   INDEX_MESSAGE,
   WEBHOOK_URL_RE,
 } from "~/util/constants";
 import {
-  cdnImgAttributes,
   DISCORD_API,
   DISCORD_API_V,
   extractInteractiveComponents,
   getWebhook,
   isComponentsV2,
-  webhookAvatarUrl,
 } from "~/util/discord";
 import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
+import { getFluxerWebhook } from "~/util/fluxer";
 import { type LoaderArgs, useApiLoader } from "~/util/loader";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import {
@@ -348,32 +355,59 @@ export default function Index() {
     const loadInitialTargets = async (targets: QueryDataTarget[]) => {
       const cachingGuildIds: string[] = [];
       for (const target of targets) {
-        const match = target.url.match(WEBHOOK_URL_RE);
-        if (!match) continue;
+        switch (target.type) {
+          case undefined:
+          case TargetType.Webhook: {
+            const match = target.url.match(WEBHOOK_URL_RE);
+            if (!match) continue;
 
-        const webhook = await getWebhook(match[1], match[2]);
-        if (webhook.id) {
-          updateTargets({ [webhook.id]: webhook });
-        }
-        if (
-          webhook.guild_id &&
-          !cachingGuildIds.includes(webhook.guild_id) &&
-          cache
-        ) {
-          cachingGuildIds.push(webhook.guild_id);
-          cache
-            .fetchGuildCacheable(webhook.guild_id)
-            .then(() =>
-              console.log(
-                `Cached cacheables for ${webhook.guild_id} (webhook ID ${webhook.id})`,
-              ),
-            );
+            const webhook = await getWebhook(match[1], match[2]);
+            if (webhook.id) {
+              const target: DraftTargetWebhook = {
+                type: TargetType.Webhook,
+                webhook,
+              };
+              updateTargets({ [getTargetKey(target)]: target });
+            }
+            if (
+              webhook.guild_id &&
+              !cachingGuildIds.includes(webhook.guild_id) &&
+              cache
+            ) {
+              cachingGuildIds.push(webhook.guild_id);
+              cache
+                .fetchGuildCacheable(webhook.guild_id)
+                .then(() =>
+                  console.log(
+                    `Cached cacheables for ${webhook.guild_id} (webhook ID ${webhook.id})`,
+                  ),
+                );
+            }
+            break;
+          }
+          case TargetType.FluxerWebhook: {
+            const webhook = await getFluxerWebhook(target.id, target.token);
+            if (webhook.id) {
+              const target: DraftTargetFluxerWebhook = {
+                type: TargetType.FluxerWebhook,
+                id: webhook.id,
+                token: webhook.token,
+                webhook,
+              };
+              updateTargets({ [getTargetKey(target)]: target });
+            }
+            break;
+          }
+          default:
+            break;
         }
       }
     };
 
     if (shareId) {
-      fetch(apiUrl(BRoutes.share(shareId)), { method: "GET" }).then((r) => {
+      fetch(`${apiUrl(BRoutes.share(shareId))}?with_new_targets=true`, {
+        method: "GET",
+      }).then((r) => {
         if (r.status === 200) {
           r.json().then((d: any) => {
             const qd: QueryData = d.data;
@@ -516,10 +550,9 @@ export default function Index() {
     (m) => !!m.reference,
   ).length;
 
-  type Targets = Record<string, APIWebhook>;
   const [targets, updateTargets] = useReducer(
-    (d: Targets, partialD: Partial<Targets>) =>
-      ({ ...d, ...partialD }) as Targets,
+    (d: TargetMap, partialD: Partial<TargetMap>) =>
+      ({ ...d, ...partialD }) as TargetMap,
     {},
   );
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
@@ -543,7 +576,7 @@ export default function Index() {
   const [sendingMessages, setSendingMessages] = useState(dm === "submit");
   const [sharing, setSharing] = useState(dm === "share-create");
   const [showBackups, setShowBackups] = useState(dm === "backups");
-  const [editingWebhook, setEditingWebhook] = useState<string>();
+  const [editingTargetKey, setEditingTarget] = useState<TargetKey>();
   const [showHistory, setShowHistory] = useState(dm === "history");
   const [jsonEditor, setJsonEditor] = useState<JsonEditorProps>();
   const [codeGenerator, setCodeGenerator] = useState<CodeGeneratorProps>();
@@ -605,7 +638,10 @@ export default function Index() {
         submit={user ? editingComponent?.submit : undefined}
         cache={cache}
         // confusing
-        guildId={Object.values(targets)[0]?.guild_id}
+        guildId={
+          Object.values(targets).find((t) => t.type === TargetType.Webhook)
+            ?.webhook.guild_id
+        }
         isPremium={isPremium}
       />
       <MessageSetModal
@@ -657,12 +693,12 @@ export default function Index() {
         }
       />
       {settings.webhookInput === "classic" ? resultModal : undefined}
-      <WebhookEditModal
-        open={editingWebhook !== undefined}
-        setOpen={() => setEditingWebhook(undefined)}
+      <TargetEditModal
+        open={editingTargetKey !== undefined}
+        setOpen={() => setEditingTarget(undefined)}
         targets={targets}
         updateTargets={updateTargets}
-        webhookId={editingWebhook}
+        targetKey={editingTargetKey}
         user={user}
         cache={cache}
       />
@@ -900,57 +936,63 @@ export default function Index() {
                 <CoolIcon icon="Chevron_Right" rtl="Chevron_Left" />
               </Button>
             </div>
-            {Object.values(targets).map((webhook) => (
-              <div
-                key={`target-${webhook.id}`}
-                className="rounded-lg py-2 px-3 mb-2 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
-              >
-                <img
-                  {...cdnImgAttributes(64, (size) =>
-                    webhookAvatarUrl(webhook, { size }),
-                  )}
-                  className="rounded-full my-auto size-8 me-3"
-                  alt=""
-                />
-                <div className="truncate my-auto">
-                  <div className="flex max-w-full">
-                    <p className="font-semibold truncate dark:text-primary-230 text-lg">
-                      <span className="align-baseline">{webhook.name}</span>
-                      {webhook.application_id === discordApplicationId && (
-                        <span
-                          className="ms-1 inline-block"
-                          title={t("createdByDiscohook")}
-                        >
-                          <CoolIcon
-                            icon="Circle_Check"
-                            className="text-blurple-500 dark:text-blurple-400"
-                          />
-                        </span>
-                      )}
-                    </p>
+            {Object.entries(targets).map(([targetKey, target]) => {
+              const info = getGenericTargetInfo(target, discordApplicationId);
+              return (
+                <div
+                  key={`target-${targetKey}`}
+                  className="rounded-lg py-2 px-3 mb-2 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex"
+                >
+                  <div className="relative me-3">
+                    <img
+                      {...info.avatar}
+                      className="rounded-full my-auto size-8"
+                      alt=""
+                    />
+                    {target.type === TargetType.FluxerWebhook ? (
+                      <FluxerLogo className="text-[#F5F4FC] size-4 rounded-full bg-fluxer absolute -bottom-0.5 -end-0.5" />
+                    ) : null}
+                  </div>
+                  <div className="truncate my-auto">
+                    <div className="flex max-w-full">
+                      <p className="font-semibold truncate dark:text-primary-230 text-lg">
+                        <span className="align-baseline">{info.name}</span>
+                        {info.checkmark ? (
+                          <span
+                            className="ms-1 inline-block"
+                            title={t("createdByDiscohook")}
+                          >
+                            <CoolIcon
+                              icon="Circle_Check"
+                              className="text-blurple-500 dark:text-blurple-400"
+                            />
+                          </span>
+                        ) : null}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="ms-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
+                    <button
+                      type="button"
+                      title={t("editResource", { replace: [info.name] })}
+                      onClick={() => setEditingTarget(targetKey as TargetKey)}
+                    >
+                      <CoolIcon icon="Edit_Pencil_01" />
+                    </button>
+                    <button
+                      type="button"
+                      title={t("removeResource", { replace: [info.name] })}
+                      onClick={() => {
+                        delete targets[targetKey as TargetKey];
+                        updateTargets({ ...targets });
+                      }}
+                    >
+                      <CoolIcon icon="Trash_Full" />
+                    </button>
                   </div>
                 </div>
-                <div className="ms-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">
-                  <button
-                    type="button"
-                    title={t("editResource", { replace: [webhook.name] })}
-                    onClick={() => setEditingWebhook(webhook.id)}
-                  >
-                    <CoolIcon icon="Edit_Pencil_01" />
-                  </button>
-                  <button
-                    type="button"
-                    title={t("removeResource", { replace: [webhook.name] })}
-                    onClick={() => {
-                      delete targets[webhook.id];
-                      updateTargets({ ...targets });
-                    }}
-                  >
-                    <CoolIcon icon="Trash_Full" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {settings.webhookInput === "classic" && (
               <div className="flex mb-2">
                 <div className="grow">
@@ -961,22 +1003,51 @@ export default function Index() {
                       const { value } = currentTarget;
                       if (!value.trim()) return;
 
-                      const match = WEBHOOK_URL_RE.exec(value);
-                      if (!match) {
-                        setError({ code: "invalidWebhookUrl" });
+                      const webhookMatch = WEBHOOK_URL_RE.exec(value);
+                      if (webhookMatch) {
+                        const live = await getWebhook(
+                          webhookMatch[1],
+                          webhookMatch[2],
+                        );
+                        if (live.id) {
+                          const target: DraftTargetWebhook = {
+                            type: TargetType.Webhook,
+                            webhook: live,
+                          };
+                          const targetKey = getTargetKey(target);
+                          if (cache && live.guild_id && !targets[targetKey]) {
+                            cache.fetchGuildCacheable(live.guild_id);
+                          }
+                          updateTargets({ [targetKey]: target });
+                          currentTarget.value = "";
+                        } else if ("message" in live) {
+                          setError({ message: live.message as string });
+                        }
+                        return;
+                      }
+                      const fluxerWebhookMatch =
+                        FLUXER_WEBHOOK_URL_RE.exec(value);
+                      if (fluxerWebhookMatch) {
+                        const live = await getFluxerWebhook(
+                          fluxerWebhookMatch[1],
+                          fluxerWebhookMatch[2],
+                        );
+                        if (live.id) {
+                          const target: DraftTargetFluxerWebhook = {
+                            type: TargetType.FluxerWebhook,
+                            id: live.id,
+                            token: live.token,
+                            webhook: live,
+                          };
+                          updateTargets({ [getTargetKey(target)]: target });
+                          currentTarget.value = "";
+                        } else if ("message" in live) {
+                          setError({ message: live.message as string });
+                        }
                         return;
                       }
 
-                      const live = await getWebhook(match[1], match[2]);
-                      if (live.id) {
-                        if (cache && live.guild_id && !targets[live.id]) {
-                          cache.fetchGuildCacheable(live.guild_id);
-                        }
-                        updateTargets({ [live.id]: live });
-                        currentTarget.value = "";
-                      } else if ("message" in live) {
-                        setError({ message: live.message as string });
-                      }
+                      setError({ code: "invalidWebhookUrl" });
                     }}
                     placeholder="https://discord.com/api/webhooks/..."
                   />
@@ -1078,7 +1149,7 @@ export default function Index() {
                 setEditingAllowedMentions={setEditingAllowedMentions}
                 setJsonEditor={setJsonEditor}
                 setCodeGenerator={setCodeGenerator}
-                webhooks={Object.values(targets)}
+                targets={Object.values(targets)}
                 setEditingComponent={setEditingComponent}
                 componentFoundBackupsHook={componentFoundBackupsHook}
                 drag={drag}
@@ -1280,7 +1351,7 @@ export default function Index() {
                   message={message.data}
                   cache={cache}
                   discordApplicationId={discordApplicationId}
-                  webhooks={Object.values(targets)}
+                  targets={Object.values(targets)}
                   index={i}
                   data={data}
                   files={files[mid]}

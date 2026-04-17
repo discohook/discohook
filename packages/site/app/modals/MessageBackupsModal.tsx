@@ -1,6 +1,6 @@
 import { Avatar } from "@base-ui-components/react/avatar";
 import { Link } from "@remix-run/react";
-import { type APIWebhook, ButtonStyle } from "discord-api-types/v10";
+import { ButtonStyle } from "discord-api-types/v10";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,8 +17,8 @@ import type {
   loader as MeBackupsLoader,
 } from "~/routes/me.backups";
 import type { User } from "~/session.server";
-import type { QueryData, QueryDataTarget } from "~/types/QueryData";
-import { TargetType } from "~/types/QueryData-raw";
+import type { QueryData } from "~/types/QueryData";
+import { type QueryDataTarget, TargetType } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { getWebhook } from "~/util/discord";
@@ -27,14 +27,21 @@ import { useSafeFetcher } from "~/util/loader";
 import type { action as ApiPostBackups } from "../api/v1/backups";
 import type { loader as ApiGetBackup } from "../api/v1/backups.$id";
 import { BackupEditModal } from "./BackupEditModal";
+import {
+  draftTargetToQueryTarget,
+  type DraftTargetWebhook,
+  getTargetKey,
+  type TargetKey,
+  type TargetMap,
+} from "./MessageSendModal";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 export const MessageBackupsModal = (
   props: ModalProps & {
-    targets: Record<string, APIWebhook>;
+    targets: TargetMap;
     data: QueryData;
     setBackupId: React.Dispatch<React.SetStateAction<bigint | undefined>>;
-    updateTargets: React.Dispatch<Partial<Record<string, APIWebhook>>>;
+    updateTargets: React.Dispatch<Partial<TargetMap>>;
     setData: React.Dispatch<QueryData>;
     user?: User | null;
     cache?: CacheManager;
@@ -50,10 +57,7 @@ export const MessageBackupsModal = (
     () =>
       ({
         ...data,
-        targets: Object.values(targets).map((t) => ({
-          type: TargetType.Webhook,
-          url: `https://discord.com/api/webhooks/${t.id}/${t.token}`,
-        })),
+        targets: Object.values(targets).map(draftTargetToQueryTarget),
       }) satisfies QueryData,
     [data, targets],
   );
@@ -61,7 +65,7 @@ export const MessageBackupsModal = (
   // Reset existing targets and add from the backup (if any)
   const setTargets = useCallback(
     async (newTargets: QueryDataTarget[] | undefined) => {
-      const keys = Object.keys(targets);
+      const keys = Object.keys(targets) as TargetKey[];
       for (const key of keys) {
         delete targets[key];
       }
@@ -79,7 +83,11 @@ export const MessageBackupsModal = (
 
         const webhook = await getWebhook(match[1], match[2]);
         if (webhook.id) {
-          updateTargets({ [webhook.id]: webhook });
+          const target: DraftTargetWebhook = {
+            type: TargetType.Webhook,
+            webhook,
+          };
+          updateTargets({ [getTargetKey(target)]: target });
         }
         if (
           webhook.guild_id &&

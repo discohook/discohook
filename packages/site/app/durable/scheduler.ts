@@ -12,6 +12,7 @@ import {
   ScheduledRunStatus,
 } from "~/store.server";
 import type { Env } from "~/types/env";
+import { TargetType } from "~/types/QueryData-raw";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { isDiscordError } from "~/util/discord";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";
@@ -83,7 +84,7 @@ export class DurableScheduler implements DurableObject {
       for (const target of targets) {
         try {
           const result = await submitMessage(
-            target,
+            { type: TargetType.Webhook, webhook: target },
             message,
             // TODO: pull files from S3
             undefined,

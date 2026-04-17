@@ -2896,7 +2896,7 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=e28390&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=841270&locator=discohook-bot%40workspace%3A."
   dependencies:
     discord-api-types: "npm:^0.38.32"
     discord-snowflake: "npm:^2.0.0"
@@ -2906,7 +2906,7 @@ __metadata:
     tif-snowflake: discohook/snowflake
     zod: "npm:^4.1.5"
     zodix: "npm:@coji/zodix@^0.5.0"
-  checksum: 10c0/1fadfc4ce2f7248660a8b76e901f23ed1b1c8b523fe7efb8916bede8e666bc38655ac322ba3fcb63bceb7e3c9b533cf3ffb301a422b15497a02d5f414987262d
+  checksum: 10c0/5f50bd83ef95fdd39dc61c68354fcee33fa24212982020a2d8e7de43ca870d79994ed97300cddc5d825099e29fc5c5323e7aef199f90cd9b878a08cea33e4f9f
   languageName: node
   linkType: hard
 
