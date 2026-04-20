@@ -8,6 +8,7 @@ import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
 import { CoolIcon } from "../icons/CoolIcon";
+import { InfoBox } from "../InfoBox";
 import { TextInput } from "../TextInput";
 import { PopoutEmojiPicker } from "./EmojiPicker";
 
@@ -24,6 +25,7 @@ const PollAnswerEditor = ({
   answer,
   index,
   answersCount,
+  disabled,
   cache,
   onUpdate,
   onMoveUp,
@@ -34,6 +36,7 @@ const PollAnswerEditor = ({
   answer: RESTAPIPoll["answers"][number];
   index: number;
   answersCount: number;
+  disabled: boolean;
   cache?: CacheManager;
   onUpdate: (updated: RESTAPIPoll["answers"][number]) => void;
   onMoveUp: () => void;
@@ -62,6 +65,7 @@ const PollAnswerEditor = ({
           <button
             type="button"
             className={index === 0 ? "hidden" : undefined}
+            disabled={disabled}
             onClick={onMoveUp}
           >
             <CoolIcon icon="Chevron_Up" />
@@ -69,6 +73,7 @@ const PollAnswerEditor = ({
           <button
             type="button"
             className={index === answersCount - 1 ? "hidden" : undefined}
+            disabled={disabled}
             onClick={onMoveDown}
           >
             <CoolIcon icon="Chevron_Down" />
@@ -77,6 +82,7 @@ const PollAnswerEditor = ({
             type="button"
             className={answersCount >= 10 ? "hidden" : undefined}
             title={t("copy")}
+            disabled={disabled}
             onClick={onDuplicate}
           >
             <CoolIcon icon="Copy" />
@@ -85,6 +91,7 @@ const PollAnswerEditor = ({
             type="button"
             title="Delete Answer"
             className={answersCount <= 1 ? "hidden" : undefined}
+            disabled={disabled}
             onClick={onDelete}
           >
             <CoolIcon icon="Trash_Full" />
@@ -99,6 +106,7 @@ const PollAnswerEditor = ({
             <p className="cursor-default text-sm font-medium">{t("emoji")}</p>
             <PopoutEmojiPicker
               cache={cache}
+              disabled={disabled}
               emoji={
                 answer.poll_media.emoji
                   ? {
@@ -133,6 +141,7 @@ const PollAnswerEditor = ({
               maxLength={55}
               required
               t={t}
+              disabled={disabled}
               value={answer.poll_media.text ?? ""}
               onInput={(e) => {
                 onUpdate({
@@ -160,6 +169,7 @@ export const PollEditor: React.FC<{
 }> = ({ poll, message, data, setData, cache }) => {
   const { t } = useTranslation();
   const previewText = poll.question.text?.trim();
+  const disabled = !!message.reference;
 
   const updatePoll = (updated: RESTAPIPoll) => {
     message.data.poll = updated;
@@ -186,6 +196,7 @@ export const PollEditor: React.FC<{
           <button
             type="button"
             title="Delete Poll"
+            disabled={disabled}
             onClick={() => {
               message.data.poll = undefined;
               setData({ ...data });
@@ -199,12 +210,18 @@ export const PollEditor: React.FC<{
         className={twJoin(collapsibleStyles.editorPanel, "pt-2")}
       >
         <div className="space-y-2">
+          {disabled && (
+            <InfoBox severity="blue" icon="Info">
+              Polls cannot be edited for existing messages.
+            </InfoBox>
+          )}
           <TextInput
             label="Question"
             className="w-full"
             maxLength={300}
             required
             t={t}
+            disabled={disabled}
             value={poll.question.text ?? ""}
             onInput={(e) => {
               updatePoll({
@@ -223,6 +240,7 @@ export const PollEditor: React.FC<{
                 answer={answer}
                 index={index}
                 answersCount={poll.answers.length}
+                disabled={disabled}
                 cache={cache}
                 onUpdate={(updatedAnswer) => {
                   const answers = [...poll.answers];
@@ -267,7 +285,7 @@ export const PollEditor: React.FC<{
                     answers: [...poll.answers, createEmptyPollAnswer()],
                   });
                 }}
-                disabled={poll.answers.length >= 10}
+                disabled={disabled || poll.answers.length >= 10}
               >
                 Add Answer
               </Button>
@@ -282,6 +300,7 @@ export const PollEditor: React.FC<{
               max={32}
               step={1}
               placeholder="24"
+              disabled={disabled}
               value={poll.duration?.toString() ?? ""}
               onInput={(e) => {
                 const value = e.currentTarget.value;
@@ -299,6 +318,7 @@ export const PollEditor: React.FC<{
               <Checkbox
                 label="Allow Multiple Answers"
                 checked={poll.allow_multiselect ?? false}
+                disabled={disabled}
                 onCheckedChange={(checked) => {
                   updatePoll({
                     ...poll,
