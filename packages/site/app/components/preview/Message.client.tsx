@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
-import { Target } from "~/modals/MessageSendModal";
+import type { Target } from "~/modals/MessageSendModal";
 import { getGenericTargetInfo } from "~/modals/TargetAddModal";
 import type { DraftFile } from "~/routes/_index";
 import type { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
@@ -32,6 +32,7 @@ import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 import { MessageDivider } from "./MessageDivider.client";
+import { Poll } from "./poll";
 
 export enum AuthorType {
   /** A user. */
@@ -151,9 +152,7 @@ const SilentMessageBadge = () => (
                 />
               </svg>
             </Tooltip.Arrow>
-            <p className="text-sm font-medium">
-              This is a @silent message.
-            </p>
+            <p className="text-sm font-medium">This is a @silent message.</p>
           </Tooltip.Popup>
         </Tooltip.Positioner>
       </Tooltip.Portal>
@@ -385,7 +384,11 @@ export const Message: React.FC<{
                   {t("todayAt", { replace: { date: date ?? new Date() } })}
                 </span>
               </span>
-              {isSilent && <span className="ml-1"><SilentMessageBadge /></span>}
+              {isSilent && (
+                <span className="ml-1">
+                  <SilentMessageBadge />
+                </span>
+              )}
             </p>
           )}
           <div
@@ -396,41 +399,41 @@ export const Message: React.FC<{
             {messageDisplay === "compact" && (
               <h3 className="flex gap-0.5 items-center">
                 <div className="inline text-base ">
-                <span className="mr-1 h-5 break-words align-baseline font-medium text-[11px] leading-[22px] text-[#5C5E66] dark:text-[#949BA4]">
-                  <span className="cursor-default">
-                    {(date ?? new Date()).toLocaleTimeString(undefined, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
+                  <span className="mr-1 h-5 break-words align-baseline font-medium text-[11px] leading-[22px] text-[#5C5E66] dark:text-[#949BA4]">
+                    <span className="cursor-default">
+                      {(date ?? new Date()).toLocaleTimeString(undefined, {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </span>
-                </span>
-                {compactAvatars && (
-                  <Avatar.Root className="contents">
-                    <Avatar.Image
-                      className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
-                      src={avatarUrl}
-                      alt={username}
-                    />
-                    <Avatar.Fallback>
-                      <img
+                  {compactAvatars && (
+                    <Avatar.Root className="contents">
+                      <Avatar.Image
                         className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
-                        src={cdn.defaultAvatar(0)}
+                        src={avatarUrl}
                         alt={username}
                       />
-                    </Avatar.Fallback>
-                  </Avatar.Root>
-                )}
-                <span className="mr-1">
-                  {badge && (
-                    <span className="font-semibold mr-2 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem] indent-0">
-                      {badge}
-                    </span>
+                      <Avatar.Fallback>
+                        <img
+                          className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
+                          src={cdn.defaultAvatar(0)}
+                          alt={username}
+                        />
+                      </Avatar.Fallback>
+                    </Avatar.Root>
                   )}
-                  <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
-                    {username}
+                  <span className="mr-1">
+                    {badge && (
+                      <span className="font-semibold mr-2 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem] indent-0">
+                        {badge}
+                      </span>
+                    )}
+                    <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
+                      {username}
+                    </span>
                   </span>
-                </span>
-                  </div>
+                </div>
                 {isSilent && <SilentMessageBadge />}
               </h3>
             )}
@@ -466,6 +469,11 @@ export const Message: React.FC<{
                     setImageModalData={setImageModalData}
                   />
                 )}
+              </div>
+            )}
+            {!!message.poll && (
+              <div className="mt-1">
+                <Poll poll={message.poll} />
               </div>
             )}
             {embeds.length > 0 && !flags.has(MessageFlags.SuppressEmbeds) && (
