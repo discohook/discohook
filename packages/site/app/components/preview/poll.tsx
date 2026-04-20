@@ -6,7 +6,7 @@ export const Poll: React.FC<{
 }> = ({ poll }) => {
   return (
     <div className="border border-[#E2E2E4] dark:border-[#434349] bg-white dark:bg-background-secondary-dark rounded-lg p-4 max-w-[472px]">
-      <h4 className="break-words whitespace-pre-wrap font-medium text-[#fbfbfb] mr-9">
+      <h4 className="break-words whitespace-pre-wrap font-medium dark:text-[#fbfbfb] text-[#28282d] mr-9">
         {poll.question.text}
       </h4>
       <div className="mt-1 text-muted dark:text-muted-dark text-[14px]">
@@ -16,11 +16,14 @@ export const Poll: React.FC<{
         {poll.answers.map((answer, index) => (
           <div
             key={`message-preview-poll-answer-${index}`}
-            className="flex min-h-[50px] cursor-pointer items-center gap-3 rounded-lg border border-transparent bg-[#97979f0a] px-4 py-2 font-medium text-[#fbfbfb] transition-[border-color] duration-200 hover:border-[#97979f70]"
+            className="flex min-h-[50px] cursor-pointer items-center gap-3 rounded-lg border border-transparent bg-[#97979f14] dark:bg-[#97979f0a] px-4 py-2 font-medium text-[#28282d] dark:text-[#fbfbfb] transition-[border-color] duration-200 hover:border-[#97979f70]"
           >
-            <span className="min-w-0 grow break-words whitespace-pre-wrap">
+            <span className="min-w-0 grow break-words whitespace-pre-wrap font-semibold">
               {answer.poll_media.text}
             </span>
+            {poll.allow_multiselect ? (
+              <div className="border-2 dark:border-[#fbfbfb] border-[#28282d] rounded-[3px] size-5 shrink-0"/>
+            ) : (
             <svg
               aria-hidden="true"
               role="img"
@@ -39,12 +42,13 @@ export const Poll: React.FC<{
               <circle cx="12" cy="12" r="5" fill="currentColor"></circle>
               */}
             </svg>
+            )}
           </div>
         ))}
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center text-[14px]">
-          <div className="text-[#fbfbfb] hover:underline cursor-pointer">
+          <div className="text-[#28282d] dark:text-[#fbfbfb] hover:underline cursor-pointer">
             0 votes
           </div>
           <div className="before:mx-2 before:text-[20px] before:leading-none before:content-['\2219'] text-muted dark:text-muted-dark" />
@@ -53,7 +57,7 @@ export const Poll: React.FC<{
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-[#fbfbfb] hover:underline cursor-pointer text-[14px]">
+          <div className="text-[#28282d] dark:text-[#fbfbfb] hover:underline cursor-pointer text-[14px]">
             Show results
           </div>
           <Button disabled>Vote</Button>

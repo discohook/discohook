@@ -32,7 +32,7 @@ import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 import { MessageDivider } from "./MessageDivider.client";
-import { Poll } from "./poll";
+import { Poll } from "./Poll";
 
 export enum AuthorType {
   /** A user. */
