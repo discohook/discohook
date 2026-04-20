@@ -1,5 +1,35 @@
 import type { QueryData } from "~/types/QueryData";
+import { cdn } from "~/util/discord";
 import { Button } from "../Button";
+import { Twemoji } from "../icons/Twemoji";
+
+const PollMediaEmoji: React.FC<{
+  emoji?: NonNullable<
+    NonNullable<QueryData["messages"][number]["data"]["poll"]>["question"]["emoji"]
+  >;
+}> = ({ emoji }) => {
+  if (emoji?.id) {
+    return (
+      <img
+        src={cdn.emoji(emoji.id, emoji.animated ? "gif" : "webp")}
+        className="h-[22px] w-[22px] shrink-0 object-contain"
+        alt={emoji.name ?? ""}
+      />
+    );
+  }
+
+  if (emoji?.name) {
+    return (
+      <Twemoji
+        emoji={emoji.name}
+        className="h-[22px] w-[22px] shrink-0 align-middle"
+        spanClassName="contents"
+      />
+    );
+  }
+
+  return null;
+};
 
 export const Poll: React.FC<{
   poll: NonNullable<QueryData["messages"][number]["data"]["poll"]>;
@@ -18,6 +48,7 @@ export const Poll: React.FC<{
             key={`message-preview-poll-answer-${index}`}
             className="flex min-h-[50px] cursor-pointer items-center gap-3 rounded-lg border border-transparent bg-[#97979f14] dark:bg-[#97979f0a] px-4 py-2 font-medium text-[#28282d] dark:text-[#fbfbfb] transition-[border-color] duration-200 hover:border-[#97979f70]"
           >
+            <PollMediaEmoji emoji={answer.poll_media.emoji} />
             <span className="min-w-0 grow break-words whitespace-pre-wrap font-semibold">
               {answer.poll_media.text}
             </span>
