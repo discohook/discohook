@@ -3,35 +3,34 @@ import { Collapsible } from "@base-ui-components/react/collapsible";
 import { Field } from "@base-ui-components/react/field";
 import { REST } from "@discordjs/rest";
 import {
-    json,
-    type MetaFunction,
-    redirect,
-    type SerializeFrom,
+  json,
+  type MetaFunction,
+  redirect,
+  type SerializeFrom,
 } from "@remix-run/cloudflare";
 import {
-    Form,
-    Link,
-    useFetcher,
-    useLoaderData,
-    useNavigate,
-    useSearchParams,
+  Form,
+  Link,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
 } from "@remix-run/react";
 import {
-    type APIGuild,
-    type APIGuildMember,
-    type APIUser,
-    type APIWebhook,
-    ButtonStyle,
-    ComponentType,
-    RESTJSONErrorCodes,
-    UserFlags,
-    WebhookType,
+  type APIGuild,
+  type APIGuildMember,
+  type APIUser,
+  ButtonStyle,
+  ComponentType,
+  RESTJSONErrorCodes,
+  UserFlags,
+  WebhookType,
 } from "discord-api-types/v10";
 import {
-    type BitFlagResolvable,
-    PermissionFlags,
-    PermissionsBitField,
-    UserFlagsBitField,
+  type BitFlagResolvable,
+  PermissionFlags,
+  PermissionsBitField,
+  UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
 import { useEffect, useReducer, useState } from "react";
@@ -58,21 +57,23 @@ import { TextArea } from "~/components/TextArea";
 import { TextInput } from "~/components/TextInput";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
+import { Target } from "~/modals/MessageSendModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
 import { TargetEditModal } from "~/modals/WebhookEditModal";
 import {
-    authorizeRequest,
-    getGuild,
-    getTokenGuildPermissions,
+  authorizeRequest,
+  getGuild,
+  getTokenGuildPermissions,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
 import type { TFunction } from "~/types/i18next";
+import { TargetType } from "~/types/QueryData-raw";
 import { type CacheManager, useCache } from "~/util/cache/CacheManager";
 import {
-    cdn,
-    cdnImgAttributes,
-    isDiscordError,
-    webhookAvatarUrl,
+  cdn,
+  cdnImgAttributes,
+  isDiscordError,
+  webhookAvatarUrl,
 } from "~/util/discord";
 import { getId } from "~/util/id";
 import { type LoaderArgs, useSafeFetcher } from "~/util/loader";
@@ -618,7 +619,9 @@ export default () => {
       guildWebhookFetcher.state === "idle" &&
       guildWebhookFetcher.data
     ) {
-      webhooksFetcher.load(apiUrl(BRoutes.guildWebhooks(guild.id)));
+      webhooksFetcher.load(
+        `${apiUrl(BRoutes.guildWebhooks(guild.id))}?withInaccessible=true`,
+      );
     }
   }, [guildWebhookFetcher.state, guildWebhookFetcher.data]);
 
@@ -662,15 +665,18 @@ export default () => {
         targets={Object.fromEntries(
           webhooksFetcher.data
             ? webhooksFetcher.data.map((webhook) => [
-                webhook.id,
+                `${TargetType.Webhook}:${webhook.id}`,
                 {
-                  type: WebhookType.Incoming,
-                  application_id: webhook.applicationId,
-                  id: webhook.id,
-                  name: webhook.name,
-                  avatar: webhook.avatar,
-                  channel_id: webhook.channelId,
-                } satisfies APIWebhook,
+                  type: TargetType.Webhook,
+                  webhook: {
+                    type: WebhookType.Incoming,
+                    application_id: webhook.applicationId,
+                    id: webhook.id,
+                    name: webhook.name,
+                    avatar: webhook.avatar,
+                    channel_id: webhook.channelId,
+                  },
+                } satisfies Target,
               ])
             : [],
         )}
@@ -683,7 +689,7 @@ export default () => {
           });
         }}
         channels={cache.channel.getAll()}
-        webhookId={openWebhookId}
+        targetKey={`${TargetType.Webhook}:${openWebhookId}`}
         open={!!openWebhookId}
         setOpen={() => setOpenWebhookId(undefined)}
         user={user}
