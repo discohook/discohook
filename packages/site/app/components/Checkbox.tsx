@@ -20,7 +20,7 @@ export const Checkbox = (
       <MuiCheckbox.Root
         className={(s) =>
           twJoin(
-            "box-border flex w-6 h-6 items-center justify-center p-0 m-0 shrink-0",
+            "box-border flex w-6 h-6 items-center justify-center p-0 m-0 shrink-0 disabled:opacity-50",
             // anomalous 6px border radius
             "outline-0 border rounded-md",
             s.checked
