@@ -91,8 +91,7 @@ import {
   DISCORD_API,
   DISCORD_API_V,
   extractInteractiveComponents,
-  getWebhook,
-  isComponentsV2,
+  getWebhook
 } from "~/util/discord";
 import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
@@ -1238,7 +1237,7 @@ export default function Index() {
                     </p>
                   </div>
                   <div className="absolute -top-1 -right-1 rounded-full bg-blurple text-white font-bold text-xs px-2 py-0.5 uppercase">
-                    {t("beta")}
+                    {t("new")}
                   </div>
                 </button>
               </DialogPortal>
@@ -1335,14 +1334,6 @@ export default function Index() {
               </Button>
               <hr className="border border-gray-400 dark:border-gray-600 my-4" />
             </div>
-            {data.messages.find((m) => isComponentsV2(m.data)) !== undefined ? (
-              <InfoBox severity="blue" icon="Flag" collapsible open>
-                Hey! You're currently using an open beta for components-based
-                messages. Some things are still incomplete, including
-                interactive components. Please give feedback in the Components
-                V2 thread, found in #feature-requests.
-              </InfoBox>
-            ) : null}
             {data.messages.map((message, i) => {
               const mid = getQdMessageId(message);
               return (
