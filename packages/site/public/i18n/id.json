@@ -77,7 +77,10 @@
     "manageBackups": "Kunjungi halaman pengguna Anda untuk mengimpor, mengekspor, dan mengelola backup.",
     "logInToSaveBackups": "Masuk untuk menyimpan backup permanen.",
     "messageDisplay": "Tampilan Pesan",
-    "addTarget": { "1": "Tambah Webhook" },
+    "addTarget": {
+        "1": "Tambah Webhook",
+        "2": "Tambah bot"
+    },
     "editor": "Editor",
     "error": "Eror",
     "unlink": "Putuskan",
@@ -99,5 +102,41 @@
     "selectWebhookGuildManual": "Anda juga dapat <0>memasukkan URL webhook secara manual</0> (advanced)",
     "preview": "Pratinjau",
     "previewAll": "Pratinjau Semua",
-    "beta": "BETA"
+    "beta": "BETA",
+    "backToSettings": "Kembali ke Pengaturan",
+    "switchSendMode": "Ubah Mode Mengirim",
+    "appearance": "Penampilan",
+    "behavior": "Perilaku",
+    "advanced": "Tingkat Lanjut",
+    "settingsFooter": "Terima kasih telah menggunakan Discohook!",
+    "settingsCache": {
+        "title": "Cache",
+        "emojiDescription": "Cache emoji standar otomatis disegarkan setiap 14 hari. Jika ada emoji yang baru diperbarui, kamu bisa segera segarkan dengan klik tombol ini.",
+        "emojiButton": "Bersihkan cache emoji"
+    },
+    "bot": "Bot",
+    "botTargetChannelPrompt": "Masukkan ID kanal atau link yang ingin kamu gunakan untuk mengirim pesan dengan {{name}}.",
+    "standardMessageDescription": "Bisa menampilkan pesan, lalu lampiran, lalu sematan. Jika kamu tidak yakin, pilih ini. Tahan shift ketika mengklik Tambah Pesan untuk menggunakan ini secara otomatis (Atau ubah standarnya di pengaturanmu).",
+    "componentsMessageDescription": "Bisa menampilkan teks, media, berkas, dan kontainer (Mirip dengan sematan) dalam urutan apapun! Ini lebih mudah disesuaikan daripada pesan standar, tetapi fitur-fitur tertentu masih kurang, seperti kolom sisipan sebaris.",
+    "developer": "Pengembang",
+    "jsonEditor": "Editor JSON",
+    "download": "Unduh",
+    "jsonDownload": {
+        "backup": "Sebagai Cadangan",
+        "plain": "JSON Biasa"
+    },
+    "codeGenerator": "Generator Kode",
+    "library": "Perpustakaan",
+    "imports": "Impor",
+    "noImports": "Impor tidak diperlukan untuk kode ini.",
+    "code": "Kode",
+    "copyImports": "Salin Impor",
+    "copyCode": "Salin Kode",
+    "copyQueryData": "Salin Data Kueri",
+    "editResource": "Ubah {{0}}",
+    "removeResource": "Hapus {{0}}",
+    "use": "Gunakan",
+    "embedExample": "Contoh",
+    "previewInfo": "Informasi Pratinjau",
+    "editingBackupNote": "Kamu mengedit cadangan, jadi pekerjaanmu otomatis disimpan ketika kamu mengedit. Untuk membagikan pesan ini dengan yang lain, gunakan tombol \"$t(share)\"."
 }
