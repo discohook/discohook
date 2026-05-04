@@ -216,6 +216,7 @@ export const submitMessage = async (
                 e.color = e.color ?? undefined;
                 return e as APIEmbed;
               }) ?? [],
+            poll: message.data.poll,
             components,
             flags: message.data.flags,
             thread_name: threadName || undefined,

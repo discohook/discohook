@@ -1,4 +1,5 @@
 import { Avatar } from "@base-ui-components/react/avatar";
+import { Tooltip } from "@base-ui-components/react/tooltip";
 import type { APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import {
   MessageFlags,
@@ -10,7 +11,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
-import { Target } from "~/modals/MessageSendModal";
+import type { Target } from "~/modals/MessageSendModal";
 import { getGenericTargetInfo } from "~/modals/TargetAddModal";
 import type { DraftFile } from "~/routes/_index";
 import type { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
@@ -23,6 +24,7 @@ import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdn, isComponentsV2 } from "~/util/discord";
 import type { Settings } from "~/util/localstorage";
 import { PostChannelIcon } from "../icons/channel";
+import { SilentMessageIcon } from "../icons/message";
 import { Svg } from "../icons/Svg";
 import { AutoTopLevelComponentPreview } from "./Container";
 import { Embed, getImageUri } from "./Embed";
@@ -30,6 +32,7 @@ import { FileAttachment } from "./FileAttachment";
 import { Gallery } from "./Gallery";
 import { Markdown } from "./Markdown";
 import { MessageDivider } from "./MessageDivider.client";
+import { Poll } from "./Poll";
 
 export enum AuthorType {
   /** A user. */
@@ -97,6 +100,64 @@ export const UsernameBadge = ({
     ) : null}
     {label}
   </span>
+);
+
+const SilentMessageBadge = () => (
+  <Tooltip.Provider delay={0}>
+    <Tooltip.Root>
+      <Tooltip.Trigger
+        aria-label="This is a @silent message."
+        className="m-0 inline-flex h-4 w-4 shrink-0 items-center justify-center border-0 bg-transparent p-0 align-middle leading-none text-inherit appearance-none"
+      >
+        <SilentMessageIcon />
+      </Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Positioner
+          sideOffset={10}
+          side="top"
+          align="center"
+          className="z-40"
+        >
+          <Tooltip.Popup
+            className={twJoin(
+              "relative overflow-visible flex origin-[var(--transform-origin)] rounded-lg px-2 py-1 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[instant]:duration-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0",
+              "bg-gray-50 dark:bg-gray-800 outline outline-1 outline-gray-200 dark:outline-gray-600",
+              "shadow-lg dark:shadow-none dark:-outline-offset-1",
+            )}
+          >
+            <Tooltip.Arrow
+              className="pointer-events-none z-10 block"
+              style={{
+                top: "auto",
+                bottom: "-6px",
+              }}
+            >
+              <svg
+                width="18"
+                height="8"
+                viewBox="0 0 18 8"
+                aria-hidden="true"
+                className="block"
+              >
+                <path
+                  d="M1 1H17L10.8 6.4C9.77 7.29 8.23 7.29 7.2 6.4L1 1Z"
+                  className="fill-gray-50 dark:fill-gray-800"
+                />
+                <path
+                  d="M1 1L7.2 6.4C8.23 7.29 9.77 7.29 10.8 6.4L17 1"
+                  className="stroke-gray-200 dark:stroke-gray-600"
+                  fill="none"
+                  strokeWidth="1"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Tooltip.Arrow>
+            <p className="text-sm font-medium">This is a @silent message.</p>
+          </Tooltip.Popup>
+        </Tooltip.Positioner>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  </Tooltip.Provider>
 );
 
 export const Message: React.FC<{
@@ -174,6 +235,7 @@ export const Message: React.FC<{
     message.author?.flags &&
     new UserFlagsBitField(message.author.flags).has(UserFlags.VerifiedBot);
   const flags = new MessageFlagsBitField(BigInt(message.flags ?? 0));
+  const isSilent = flags.has(MessageFlags.SuppressNotifications);
 
   const lastMessage =
     data && index !== undefined ? data.messages[index - 1] : undefined;
@@ -317,9 +379,16 @@ export const Message: React.FC<{
               {badge ? (
                 <UsernameBadge label={badge} verified={isVerified} />
               ) : null}
-              <span className="font-medium ml-1 cursor-default text-xs align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-                {t("todayAt", { replace: { date: date ?? new Date() } })}
+              <span className="ml-1 inline-flex items-center gap-1 align-baseline font-medium text-xs text-[#5C5E66] dark:text-[#949BA4]">
+                <span className="cursor-default">
+                  {t("todayAt", { replace: { date: date ?? new Date() } })}
+                </span>
               </span>
+              {isSilent && (
+                <span className="ml-1">
+                  <SilentMessageBadge />
+                </span>
+              )}
             </p>
           )}
           <div
@@ -328,39 +397,44 @@ export const Message: React.FC<{
             }
           >
             {messageDisplay === "compact" && (
-              <h3 className="inline text-base">
-                <span className="font-medium mr-1 h-5 text-[11px] leading-[22px] break-words cursor-default align-baseline text-[#5C5E66] dark:text-[#949BA4]">
-                  {(date ?? new Date()).toLocaleTimeString(undefined, {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </span>
-                {compactAvatars && (
-                  <Avatar.Root className="contents">
-                    <Avatar.Image
-                      className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
-                      src={avatarUrl}
-                      alt={username}
-                    />
-                    <Avatar.Fallback>
-                      <img
+              <h3 className="flex gap-0.5 items-center">
+                <div className="inline text-base ">
+                  <span className="mr-1 h-5 break-words align-baseline font-medium text-[11px] leading-[22px] text-[#5C5E66] dark:text-[#949BA4]">
+                    <span className="cursor-default">
+                      {(date ?? new Date()).toLocaleTimeString(undefined, {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </span>
+                  {compactAvatars && (
+                    <Avatar.Root className="contents">
+                      <Avatar.Image
                         className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
-                        src={cdn.defaultAvatar(0)}
+                        src={avatarUrl}
                         alt={username}
                       />
-                    </Avatar.Fallback>
-                  </Avatar.Root>
-                )}
-                <span className="mr-1">
-                  {badge && (
-                    <span className="font-semibold mr-2 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem] indent-0">
-                      {badge}
-                    </span>
+                      <Avatar.Fallback>
+                        <img
+                          className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
+                          src={cdn.defaultAvatar(0)}
+                          alt={username}
+                        />
+                      </Avatar.Fallback>
+                    </Avatar.Root>
                   )}
-                  <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
-                    {username}
+                  <span className="mr-1">
+                    {badge && (
+                      <span className="font-semibold mr-2 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem] indent-0">
+                        {badge}
+                      </span>
+                    )}
+                    <span className="hover:underline cursor-pointer underline-offset-1 decoration-1 font-semibold dark:font-medium dark:text-[#f2f3f5]">
+                      {username}
+                    </span>
                   </span>
-                </span>
+                </div>
+                {isSilent && <SilentMessageBadge />}
               </h3>
             )}
             {message.content && (
@@ -395,6 +469,11 @@ export const Message: React.FC<{
                     setImageModalData={setImageModalData}
                   />
                 )}
+              </div>
+            )}
+            {!!message.poll && (
+              <div className="mt-1">
+                <Poll poll={message.poll} />
               </div>
             )}
             {embeds.length > 0 && !flags.has(MessageFlags.SuppressEmbeds) && (
