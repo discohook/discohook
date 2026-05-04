@@ -19,7 +19,7 @@ export const META_HTML_REGEX =
 export const HTML_ATTRIBUTE_REGEX = /(\w+) ?= ?["']([^"']+)["']/gim;
 
 export const userAgent =
-  "Discohook-Crawler/1.0.0 (+https://github.com/discohook/discohook)";
+  "Discohook-Crawler/1.0 (+https://discohook.app; Discordbot/2.0; +https://discordapp.com)";
 
 const decode = (text: string) => {
   return he.decode(text).replace(/<br\/?>/gi, "\n");
