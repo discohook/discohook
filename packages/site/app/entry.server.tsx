@@ -1,5 +1,11 @@
-import type { EntryContext } from "@remix-run/cloudflare";
-import { RemixServer } from "@remix-run/react";
+import type {
+  ActionFunctionArgs,
+  EntryContext,
+  LoaderFunctionArgs,
+} from "@remix-run/cloudflare";
+import { isRouteErrorResponse, RemixServer } from "@remix-run/react";
+import type { Context } from "./util/loader";
+
 // i18n
 import { createInstance } from "i18next";
 import isbot from "isbot";
@@ -7,7 +13,6 @@ import { renderToReadableStream } from "react-dom/server";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import i18n from "./i18n";
 import getI18next from "./i18next.server";
-import type { Context } from "./util/loader";
 
 export default async function handleRequest(
   request: Request,
@@ -51,4 +56,19 @@ export default async function handleRequest(
     headers: responseHeaders,
     status,
   });
+}
+
+// Suppress 404s & other errors we don't need to log in production
+// Thanks Kazuki Matsuda: https://zenn.dev/mkizka/articles/0db9bc30e1f707?locale=en
+export function handleError(
+  error: unknown,
+  { request }: LoaderFunctionArgs | ActionFunctionArgs,
+) {
+  if (
+    (isRouteErrorResponse(error) && error.status === 404) ||
+    request.signal.aborted
+  ) {
+    return;
+  }
+  console.error(error);
 }
