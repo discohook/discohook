@@ -36,6 +36,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
       importedFromOrg: true,
       scheduled: true,
       nextRunAt: true,
+      updatedAt: true,
       cron: true,
       timezone: true,
     },

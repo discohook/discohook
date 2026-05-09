@@ -174,6 +174,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         importedFromOrg: backups.importedFromOrg,
         scheduled: backups.scheduled,
         nextRunAt: backups.nextRunAt,
+        updatedAt: backups.updatedAt,
         cron: backups.cron,
         timezone: backups.timezone,
       })

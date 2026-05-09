@@ -1,3 +1,4 @@
+import { Avatar } from "@base-ui-components/react/avatar";
 import { Dialog } from "@base-ui-components/react/dialog";
 import type { SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
@@ -8,7 +9,7 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import type React from "react";
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
@@ -27,6 +28,7 @@ import { FluxerLogo, Logo } from "~/components/icons/Logo";
 import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
+import { RadioishBox } from "~/components/Radio";
 import { TextInput } from "~/components/TextInput";
 import { AuthFailureModal } from "~/modals/AuthFaillureModal";
 import { AuthSuccessModal } from "~/modals/AuthSuccessModal";
@@ -50,7 +52,7 @@ import {
   type JsonEditorProps,
 } from "~/modals/JsonEditorModal";
 import { MessageAllowedMentionsModal } from "~/modals/MessageAllowedMentionsModal";
-import { MessageBackupsModal } from "~/modals/MessageBackupsModal";
+import { MessageBackupsModal, setTargets } from "~/modals/MessageBackupsModal";
 import { MessageFlagsEditModal } from "~/modals/MessageFlagsEditModal";
 import {
   type DraftTargetFluxerWebhook,
@@ -69,6 +71,7 @@ import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
 import { getGenericTargetInfo, TargetAddModal } from "~/modals/TargetAddModal";
 import { TargetEditModal } from "~/modals/WebhookEditModal";
+import type { loader as MeBackupsLoader } from "~/routes/me.backups";
 import { getSessionStorage, getUserId } from "~/session.server";
 import {
   type APIComponentInMessageActionRow,
@@ -88,15 +91,16 @@ import {
   WEBHOOK_URL_RE,
 } from "~/util/constants";
 import {
+  convertMessageToComponents,
   DISCORD_API,
   DISCORD_API_V,
   extractInteractiveComponents,
-  getWebhook
+  getWebhook,
 } from "~/util/discord";
 import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
 import { getFluxerWebhook } from "~/util/fluxer";
-import { type LoaderArgs, useApiLoader } from "~/util/loader";
+import { type LoaderArgs, useApiLoader, useSafeFetcher } from "~/util/loader";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,
@@ -104,6 +108,7 @@ import {
   copyText,
   randomString,
 } from "~/util/text";
+import { relativeTime } from "~/util/time";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString } from "~/util/zod";
 import type { ApiGetBackupWithData } from "../api/v1/backups.$id";
@@ -342,12 +347,28 @@ export default function Index() {
   const [badShareData, setBadShareData] = useState<InvalidShareIdData>();
   const [badLoadData, setBadLoadData] = useState<InvalidDataModalProps>();
 
-  // const [isDefaultOrBlank, setIsDefaultOrBlank] = useState(
-  //   // Default message data will be loaded
-  //   shareId === null &&
-  //     backupIdParsed.data === undefined &&
-  //     searchParams.get("data") === null,
-  // );
+  const [isLanding, setIsLanding] = useState(
+    // Default message data will be loaded
+    shareId === null &&
+      backupIdParsed.data === undefined &&
+      searchParams.get("data") === null,
+  );
+  // Get 10 most recently edited backups on the landing page if logged in
+  const meBackupsFetcher = useSafeFetcher<typeof MeBackupsLoader>({
+    onError: setError,
+  });
+  useEffect(() => {
+    if (
+      isLanding &&
+      userId !== null &&
+      meBackupsFetcher.state === "idle" &&
+      !meBackupsFetcher.data
+    ) {
+      meBackupsFetcher.load(
+        "/me/backups?_data=routes/me.backups&limit=10&sort=updatedAt.d",
+      );
+    }
+  }, [isLanding, userId, meBackupsFetcher]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
   useEffect(() => {
@@ -584,7 +605,40 @@ export default function Index() {
   const [showSendModeModal, setShowModeModal] = useState(dm === "send-mode");
   const [confirm, setConfirm] = useConfirmModal();
 
-  const [tab, setTab] = useState<"editor" | "preview">("editor");
+  const [tab, setTab] = useState<"editor" | "preview">(
+    // opened a blank page and not logged in: likely new user.
+    // otherwise, probably wants to jump right into editing.
+    isLanding && userId === null ? "preview" : "editor",
+  );
+  // Using refs here instead of dividing the viewport width by 2 because I
+  // want to allow changing the size of each pane independently
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [editorWidth, setEditorWidth] = useState(0);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [previewWidth, setPreviewWidth] = useState(0);
+  useEffect(() => {
+    const callback = () => {
+      if (editorRef.current) setEditorWidth(editorRef.current.clientWidth);
+      if (previewRef.current) setPreviewWidth(previewRef.current.clientWidth);
+    };
+    callback(); // initialize values
+
+    window.addEventListener("resize", callback);
+    return () => window.removeEventListener("resize", callback);
+  }, []);
+  const bounds = useMemo(() => {
+    const getBounds = (w: number) => ({
+      sm: w >= 640,
+      md: w >= 768,
+      lg: w >= 1024,
+      xl: w >= 1280,
+      "2xl": w >= 1536,
+    });
+    return {
+      editor: getBounds(editorWidth),
+      preview: getBounds(previewWidth),
+    };
+  }, [editorWidth, previewWidth]);
 
   const ua = new UAParser(navigator.userAgent).getResult();
 
@@ -715,6 +769,9 @@ export default function Index() {
         setData={setData}
         updateTargets={updateTargets}
         setBackupId={setBackupId}
+        onBackupLoad={() => {
+          setIsLanding(false);
+        }}
         user={user}
         cache={cache}
       />
@@ -816,6 +873,7 @@ export default function Index() {
               ? "w-1/2"
               : twJoin("md:w-1/2", tab === "editor" ? "" : "hidden md:block"),
           )}
+          ref={editorRef}
         >
           <div className="px-4">
             {blockTest === "failure" ? (
@@ -848,7 +906,12 @@ export default function Index() {
               </InfoBox>
             )}
             <div className="flex">
-              <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 me-2">
+              <div
+                className={twJoin(
+                  "flex mb-2 flex-wrap gap-x-2 gap-y-1 me-2",
+                  isLanding ? "hidden" : undefined,
+                )}
+              >
                 <Button
                   onClick={() => setSharing(true)}
                   discordstyle={ButtonStyle.Secondary}
@@ -901,7 +964,7 @@ export default function Index() {
                                   targets: undefined,
                                 });
                                 setConfirm(undefined);
-                                // setIsDefaultOrBlank(true);
+                                setIsLanding(false);
                               }}
                               discordstyle={ButtonStyle.Danger}
                             >
@@ -927,6 +990,7 @@ export default function Index() {
                 className={twJoin(
                   "ms-auto",
                   settings.forceDualPane ? "hidden" : "md:hidden",
+                  isLanding ? "mb-2" : undefined,
                 )}
                 onClick={() => setTab("preview")}
                 discordstyle={ButtonStyle.Secondary}
@@ -992,256 +1056,395 @@ export default function Index() {
                 </div>
               );
             })}
-            {settings.webhookInput === "classic" && (
-              <div className="flex mb-2">
-                <div className="grow">
-                  <TextInput
-                    className="w-full text-base"
-                    onChange={async ({ currentTarget }) => {
-                      setError(undefined);
-                      const { value } = currentTarget;
-                      if (!value.trim()) return;
+            {!isLanding ? (
+              <>
+                {settings.webhookInput === "classic" && (
+                  <div className="flex mb-2">
+                    <div className="grow">
+                      <TextInput
+                        className="w-full text-base"
+                        onChange={async ({ currentTarget }) => {
+                          setError(undefined);
+                          const { value } = currentTarget;
+                          if (!value.trim()) return;
 
-                      const webhookMatch = WEBHOOK_URL_RE.exec(value);
-                      if (webhookMatch) {
-                        const live = await getWebhook(
-                          webhookMatch[1],
-                          webhookMatch[2],
-                        );
-                        if (live.id) {
-                          const target: DraftTargetWebhook = {
-                            type: TargetType.Webhook,
-                            webhook: live,
-                          };
-                          const targetKey = getTargetKey(target);
-                          if (cache && live.guild_id && !targets[targetKey]) {
-                            cache.fetchGuildCacheable(live.guild_id);
+                          const webhookMatch = WEBHOOK_URL_RE.exec(value);
+                          if (webhookMatch) {
+                            const live = await getWebhook(
+                              webhookMatch[1],
+                              webhookMatch[2],
+                            );
+                            if (live.id) {
+                              const target: DraftTargetWebhook = {
+                                type: TargetType.Webhook,
+                                webhook: live,
+                              };
+                              const targetKey = getTargetKey(target);
+                              if (
+                                cache &&
+                                live.guild_id &&
+                                !targets[targetKey]
+                              ) {
+                                cache.fetchGuildCacheable(live.guild_id);
+                              }
+                              updateTargets({ [targetKey]: target });
+                              currentTarget.value = "";
+                            } else if ("message" in live) {
+                              setError({ message: live.message as string });
+                            }
+                            return;
                           }
-                          updateTargets({ [targetKey]: target });
-                          currentTarget.value = "";
-                        } else if ("message" in live) {
-                          setError({ message: live.message as string });
-                        }
-                        return;
-                      }
-                      const fluxerWebhookMatch =
-                        FLUXER_WEBHOOK_URL_RE.exec(value);
-                      if (fluxerWebhookMatch) {
-                        const live = await getFluxerWebhook(
-                          fluxerWebhookMatch[1],
-                          fluxerWebhookMatch[2],
-                        );
-                        if (live.id) {
-                          const target: DraftTargetFluxerWebhook = {
-                            type: TargetType.FluxerWebhook,
-                            id: live.id,
-                            token: live.token,
-                            webhook: live,
-                          };
-                          updateTargets({ [getTargetKey(target)]: target });
-                          currentTarget.value = "";
-                        } else if ("message" in live) {
-                          setError({ message: live.message as string });
-                        }
-                        return;
-                      }
+                          const fluxerWebhookMatch =
+                            FLUXER_WEBHOOK_URL_RE.exec(value);
+                          if (fluxerWebhookMatch) {
+                            const live = await getFluxerWebhook(
+                              fluxerWebhookMatch[1],
+                              fluxerWebhookMatch[2],
+                            );
+                            if (live.id) {
+                              const target: DraftTargetFluxerWebhook = {
+                                type: TargetType.FluxerWebhook,
+                                id: live.id,
+                                token: live.token,
+                                webhook: live,
+                              };
+                              updateTargets({ [getTargetKey(target)]: target });
+                              currentTarget.value = "";
+                            } else if ("message" in live) {
+                              setError({ message: live.message as string });
+                            }
+                            return;
+                          }
 
-                      setError({ code: "invalidWebhookUrl" });
-                    }}
-                    placeholder="https://discord.com/api/webhooks/..."
-                  />
+                          setError({ code: "invalidWebhookUrl" });
+                        }}
+                        placeholder="https://discord.com/api/webhooks/..."
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="flex gap-x-2">
+                  {settings.webhookInput !== "classic" && (
+                    <Button
+                      onClick={() => setAddingTarget(true)}
+                      disabled={Object.keys(targets).length >= 10}
+                    >
+                      {t("addTarget.1")}
+                    </Button>
+                  )}
+                  <div className="flex gap-0">
+                    <Button
+                      disabled={data.messages.length === 0 || sending}
+                      className="rounded-e-none border-e-0"
+                      loading={sending}
+                      onClick={async () => {
+                        if (settings.webhookInput !== "classic") {
+                          setSendingMessages(true);
+                          return;
+                        }
+                        const results = await submitMessages(
+                          Object.values(targets),
+                        );
+                        const errors = results.filter(
+                          (r) => r.status === "error",
+                        );
+                        if (errors.length === 1) {
+                          setShowingResult(errors[0]);
+                        } else if (errors.length !== 0) {
+                          setSendingMessages(true);
+                        }
+                      }}
+                    >
+                      {t(sendButtonKey)}
+                    </Button>
+                    <ButtonSelect
+                      className="w-7 min-w-0 px-0 rounded-s-none"
+                      iconClassName="ms-0"
+                      options={[
+                        {
+                          value: "",
+                          label: t(
+                            sendButtonKey.startsWith("edit") ? "send" : "edit",
+                          ),
+                        },
+                      ]}
+                      onValueChange={() => {
+                        if (data.messages.length === 1) {
+                          setSettingMessageIndex(0);
+                        } else {
+                          setShowModeModal(true);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-            <div className="flex gap-x-2">
-              {settings.webhookInput !== "classic" && (
-                <Button
-                  onClick={() => setAddingTarget(true)}
-                  disabled={Object.keys(targets).length >= 10}
-                >
-                  {t("addTarget.1")}
-                </Button>
-              )}
-              <div className="flex gap-0">
-                <Button
-                  disabled={data.messages.length === 0 || sending}
-                  className="rounded-e-none border-e-0"
-                  loading={sending}
-                  onClick={async () => {
-                    if (settings.webhookInput !== "classic") {
-                      setSendingMessages(true);
-                      return;
-                    }
-                    const results = await submitMessages(
-                      Object.values(targets),
-                    );
-                    const errors = results.filter((r) => r.status === "error");
-                    if (errors.length === 1) {
-                      setShowingResult(errors[0]);
-                    } else if (errors.length !== 0) {
-                      setSendingMessages(true);
-                    }
-                  }}
-                >
-                  {t(sendButtonKey)}
-                </Button>
-                <ButtonSelect
-                  className="w-7 min-w-0 px-0 rounded-s-none"
-                  iconClassName="ms-0"
-                  options={[
-                    {
-                      value: "",
-                      label: t(
-                        sendButtonKey.startsWith("edit") ? "send" : "edit",
-                      ),
-                    },
-                  ]}
-                  onValueChange={() => {
-                    if (data.messages.length === 1) {
-                      setSettingMessageIndex(0);
-                    } else {
-                      setShowModeModal(true);
-                    }
-                  }}
-                />
-              </div>
-            </div>
-            {/* {isDefaultOrBlank ? (
-              <div className="w-full mt-2 flex gap-2">
+              </>
+            ) : null}
+          </div>
+          {isLanding ? (
+            <div className="px-4">
+              <div
+                className={twJoin(
+                  "flex gap-2",
+                  bounds.editor.sm ? "flex-row" : "flex-col",
+                )}
+              >
                 <RadioishBox
-                  isSelected
-                  onSelect={() => {}}
-                  name="Embeds"
-                  description=""
+                  isSelected={false}
+                  onSelect={() => setIsLanding(false)}
+                  name={t("defaultPrompt.standard.name")}
+                  description={t("defaultPrompt.standard.description")}
+                  className={twJoin(
+                    "bg-gray-100 hover:border-blurple",
+                    bounds.editor.sm ? "w-1/3" : "w-full",
+                  )}
                 />
                 <RadioishBox
                   isSelected={false}
                   onSelect={() => {
-                    if (data.messages.length === 0) return;
-                    const converted = convertMessageToComponents(
+                    setIsLanding(false);
+                    if (!data.messages[0]) return;
+
+                    data.messages[0].data = convertMessageToComponents(
                       data.messages[0].data,
                     );
-                    data.messages[0].data = converted;
                     setData({ ...data });
                   }}
-                  name="Containers"
-                  description=""
-                />
-              </div>
-            ) : null} */}
-          </div>
-          {data.messages.map((d, i) => {
-            const id = getQdMessageId(d);
-            return (
-              <MessageEditor
-                key={`edit-message-${id}`}
-                index={i}
-                data={data}
-                files={files[id] ?? []}
-                discordApplicationId={discordApplicationId}
-                setData={setData}
-                setFiles={(newF) =>
-                  setFiles({ ...files, [id]: newF as DraftFile[] })
-                }
-                setSettingMessageIndex={setSettingMessageIndex}
-                setEditingMessageFlags={setEditingMessageFlags}
-                setEditingAllowedMentions={setEditingAllowedMentions}
-                setJsonEditor={setJsonEditor}
-                setCodeGenerator={setCodeGenerator}
-                targets={Object.values(targets)}
-                setEditingComponent={setEditingComponent}
-                componentFoundBackupsHook={componentFoundBackupsHook}
-                drag={drag}
-                cache={cache}
-                cdn={cdn}
-              />
-            );
-          })}
-          <div className="px-4">
-            <Dialog.Root
-              open={showAddMessageMenu}
-              onOpenChange={setShowAddMessageMenu}
-            >
-              <Dialog.Trigger
-                disabled={data.messages.length >= 10}
-                onClick={(e) => {
-                  if (e.shiftKey) {
-                    // doesn't seem to do anything (for our use case)?
-                    e.preventBaseUIHandler();
-                    setShowAddMessageMenu(false);
-
-                    data.messages.push({
-                      data: getNewMessageData(settings),
-                    });
-                    setData({ ...data });
-                  }
-                }}
-                render={
-                  <Button
-                    className="mt-4 w-full"
-                    disabled={data.messages.length >= 10}
-                  >
-                    <div className="flex">
-                      <PostChannelIcon className="size-5 my-auto me-1" />
-                      <span className="my-auto">{t("addMessage")}</span>
-                    </div>
-                  </Button>
-                }
-              />
-              <DialogPortal className="flex flex-col gap-y-2">
-                <button
+                  name={t("defaultPrompt.components.name")}
+                  description={t("defaultPrompt.components.description")}
                   className={twJoin(
-                    "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
-                    "border border-gray-300 dark:border-gray-700 hover:border-blurple",
-                    "shadow hover:shadow-md transition",
+                    "bg-gray-100 hover:border-blurple relative",
+                    bounds.editor.sm ? "w-1/3" : "w-full",
                   )}
-                  type="button"
-                  onClick={() => {
-                    data.messages.push({ data: {} });
-                    setData({ ...data });
-                    setShowAddMessageMenu(false);
-                  }}
                 >
-                  <CoolIcon icon="Text" className="my-auto text-4xl" />
-                  <div className="my-auto">
-                    <p className="font-semibold text-lg">
-                      {t("standardMessage")}
-                    </p>
-                    <p className="text-muted dark:text-muted-dark">
-                      {t("standardMessageDescription")}
-                    </p>
-                  </div>
-                </button>
-                <button
-                  className={twJoin(
-                    "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
-                    "border border-gray-300 dark:border-gray-700 hover:border-blurple",
-                    "shadow hover:shadow-md transition relative",
-                  )}
-                  type="button"
-                  onClick={() => {
-                    data.messages.push({
-                      data: { flags: MessageFlags.IsComponentsV2 },
-                    });
-                    setData({ ...data });
-                    setShowAddMessageMenu(false);
-                  }}
-                >
-                  <CoolIcon icon="Rows" className="my-auto text-4xl" />
-                  <div className="my-auto">
-                    <p className="font-semibold text-lg">
-                      {t("componentsMessage")}
-                    </p>
-                    <p className="text-muted dark:text-muted-dark">
-                      {t("componentsMessageDescription")}
-                    </p>
-                  </div>
                   <div className="absolute -top-1 -right-1 rounded-full bg-blurple text-white font-bold text-xs px-2 py-0.5 uppercase">
                     {t("new")}
                   </div>
-                </button>
-              </DialogPortal>
-            </Dialog.Root>
+                </RadioishBox>
+                <RadioishBox
+                  isSelected={false}
+                  onSelect={() => {
+                    data.messages = [{ data: getNewMessageData(settings) }];
+                    setData({ ...data });
+                    setIsLanding(false);
+                  }}
+                  name={t("defaultPrompt.blank.name")}
+                  description={t("defaultPrompt.blank.description")}
+                  className={twJoin(
+                    "bg-gray-100 hover:border-blurple",
+                    bounds.editor.sm ? "w-1/3" : "w-full",
+                  )}
+                />
+              </div>
+              {userId !== null ? (
+                <div className="mt-2">
+                  <p className="font-medium text-base">
+                    {t("defaultPrompt.loadBackupTitle")}
+                  </p>
+                  {meBackupsFetcher.state === "loading" ? (
+                    <div className="space-y-1.5">
+                      <SkeletonBackup />
+                      <SkeletonBackup />
+                      <SkeletonBackup />
+                      <SkeletonBackup />
+                      <SkeletonBackup />
+                    </div>
+                  ) : meBackupsFetcher.data ? (
+                    <div className="space-y-1.5">
+                      {meBackupsFetcher.data.backups.map((backup) => (
+                        <button
+                          key={`index-${backup.id}`}
+                          type="button"
+                          className={twJoin(
+                            "border border-border-normal dark:border-border-normal-dark bg-gray-100 dark:bg-gray-800",
+                            "hover:border-blurple",
+                            "rounded-lg w-full px-3 py-2.5 flex items-center transition-colors relative",
+                          )}
+                          onClick={async () => {
+                            const res = await fetch(
+                              `${apiUrl(BRoutes.backups(backup.id))}?data=true`,
+                              { method: "GET" },
+                            );
+                            if (!res.ok) {
+                              setError({ message: "Failed to load backup" });
+                              return;
+                            }
+                            const loadedBackup =
+                              (await res.json()) as ApiGetBackupWithData;
+                            document.title = `${backup.name} - Discohook`;
+                            setData({
+                              ...loadedBackup.data,
+                              // Just in case
+                              backup_id: backup.id.toString(),
+                            });
+                            setTargets(
+                              targets,
+                              updateTargets,
+                              loadedBackup.data.targets,
+                              cache,
+                            );
+                            loadMessageComponents(loadedBackup.data, setData);
+                            setBackupId(backup.id);
+                            setIsLanding(false);
+                          }}
+                        >
+                          <div className="cursor-default me-2">
+                            <Avatar.Root>
+                              {backup.previewImageUrl ? (
+                                <Avatar.Image
+                                  src={backup.previewImageUrl}
+                                  className="object-cover size-7 rounded aspect-square"
+                                />
+                              ) : null}
+                              <Avatar.Fallback className="size-7 flex rounded bg-blurple">
+                                <CoolIcon
+                                  icon="File_Document"
+                                  className="m-auto text-lg text-gray-50"
+                                />
+                              </Avatar.Fallback>
+                            </Avatar.Root>
+                          </div>
+                          <p className="truncate">{backup.name}</p>
+                          {backup.updatedAt ? (
+                            <p
+                              className="ms-auto text-sm text-muted dark:text-muted-dark"
+                              title={new Date(
+                                backup.updatedAt,
+                              ).toLocaleDateString()}
+                            >
+                              {relativeTime(new Date(backup.updatedAt), t)}
+                            </p>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  <Button
+                    className="mt-1.5"
+                    onClick={() => setShowBackups(true)}
+                    discordstyle={ButtonStyle.Secondary}
+                  >
+                    {t("defaultPrompt.allBackups")}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            data.messages.map((d, i) => {
+              const id = getQdMessageId(d);
+              return (
+                <MessageEditor
+                  key={`edit-message-${id}`}
+                  index={i}
+                  data={data}
+                  files={files[id] ?? []}
+                  discordApplicationId={discordApplicationId}
+                  setData={setData}
+                  setFiles={(newF) =>
+                    setFiles({ ...files, [id]: newF as DraftFile[] })
+                  }
+                  setSettingMessageIndex={setSettingMessageIndex}
+                  setEditingMessageFlags={setEditingMessageFlags}
+                  setEditingAllowedMentions={setEditingAllowedMentions}
+                  setJsonEditor={setJsonEditor}
+                  setCodeGenerator={setCodeGenerator}
+                  targets={Object.values(targets)}
+                  setEditingComponent={setEditingComponent}
+                  componentFoundBackupsHook={componentFoundBackupsHook}
+                  drag={drag}
+                  cache={cache}
+                  cdn={cdn}
+                />
+              );
+            })
+          )}
+          <div className="px-4">
+            {!isLanding ? (
+              <Dialog.Root
+                open={showAddMessageMenu}
+                onOpenChange={setShowAddMessageMenu}
+              >
+                <Dialog.Trigger
+                  disabled={data.messages.length >= 10}
+                  onClick={(e) => {
+                    if (e.shiftKey) {
+                      // doesn't seem to do anything (for our use case)?
+                      e.preventBaseUIHandler();
+                      setShowAddMessageMenu(false);
+
+                      data.messages.push({
+                        data: getNewMessageData(settings),
+                      });
+                      setData({ ...data });
+                    }
+                  }}
+                  render={
+                    <Button
+                      className="mt-4 w-full"
+                      disabled={data.messages.length >= 10}
+                    >
+                      <div className="flex">
+                        <PostChannelIcon className="size-5 my-auto me-1" />
+                        <span className="my-auto">{t("addMessage")}</span>
+                      </div>
+                    </Button>
+                  }
+                />
+                <DialogPortal className="flex flex-col gap-y-2">
+                  <button
+                    className={twJoin(
+                      "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
+                      "border border-gray-300 dark:border-gray-700 hover:border-blurple",
+                      "shadow hover:shadow-md transition",
+                    )}
+                    type="button"
+                    onClick={() => {
+                      data.messages.push({ data: {} });
+                      setData({ ...data });
+                      setShowAddMessageMenu(false);
+                    }}
+                  >
+                    <CoolIcon icon="Text" className="my-auto text-4xl" />
+                    <div className="my-auto">
+                      <p className="font-semibold text-lg">
+                        {t("standardMessage")}
+                      </p>
+                      <p className="text-muted dark:text-muted-dark">
+                        {t("standardMessageDescription")}
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    className={twJoin(
+                      "rounded-lg bg-gray-200 dark:bg-gray-800 py-4 px-6 gap-4 flex text-start",
+                      "border border-gray-300 dark:border-gray-700 hover:border-blurple",
+                      "shadow hover:shadow-md transition relative",
+                    )}
+                    type="button"
+                    onClick={() => {
+                      data.messages.push({
+                        data: { flags: MessageFlags.IsComponentsV2 },
+                      });
+                      setData({ ...data });
+                      setShowAddMessageMenu(false);
+                    }}
+                  >
+                    <CoolIcon icon="Rows" className="my-auto text-4xl" />
+                    <div className="my-auto">
+                      <p className="font-semibold text-lg">
+                        {t("componentsMessage")}
+                      </p>
+                      <p className="text-muted dark:text-muted-dark">
+                        {t("componentsMessageDescription")}
+                      </p>
+                    </div>
+                    <div className="absolute -top-1 -right-1 rounded-full bg-blurple text-white font-bold text-xs px-2 py-0.5 uppercase">
+                      {t("new")}
+                    </div>
+                  </button>
+                </DialogPortal>
+              </Dialog.Root>
+            ) : null}
             <hr className="border border-gray-400 dark:border-gray-600 my-6" />
             <div className="grayscale hover:grayscale-0 group flex text-sm opacity-60 hover:opacity-100 transition-opacity">
               <div className="mb-auto mt-1 ms-2">
@@ -1322,6 +1525,7 @@ export default function Index() {
                   tab === "preview" ? "flex" : "hidden md:flex",
                 ),
           )}
+          ref={previewRef}
         >
           <div className="overflow-y-scroll grow p-4 pb-8">
             <div className={settings.forceDualPane ? "hidden" : "md:hidden"}>
@@ -1359,3 +1563,16 @@ export default function Index() {
     </div>
   );
 }
+
+const SkeletonBackup = () => (
+  <div
+    className={twJoin(
+      "animate-pulse",
+      "border border-border-normal dark:border-border-normal-dark bg-gray-100 dark:bg-gray-800",
+      "rounded-lg w-full px-3 py-2.5 flex items-center relative",
+    )}
+  >
+    <div className="me-2 size-7 rounded bg-blurple" />
+    <div className="rounded-full bg-gray-300 dark:bg-gray-600 h-4 w-28" />
+  </div>
+);

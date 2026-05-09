@@ -483,6 +483,22 @@
     "json": "Parsed JSON (formatted)",
     "loadAnyway": "Load Anyway"
   },
+  "defaultPrompt": {
+    "standard": {
+      "name": "Edit default message",
+      "description": "Play around in the editor by editing Discohook's default message, which includes embeds and buttons"
+    },
+    "components": {
+      "name": "Edit as components",
+      "description": "Convert the default message to components-based, a new message format from Discord"
+    },
+    "blank": {
+      "name": "New blank message",
+      "description": "Clear the editor and start writing a new message"
+    },
+    "loadBackupTitle": "Or load a recent backup:",
+    "allBackups": "All Backups"
+  },
   "componentN": {
     "1": "Row {{n}}",
     "2": "Button {{n}}",

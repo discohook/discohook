@@ -31,6 +31,7 @@ import {
   inArray,
   type QueryDataVersion,
   scheduled_posts,
+  sql,
 } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import { getId } from "~/util/id";
@@ -59,6 +60,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
   const {
     page,
+    limit,
     settings: importedSettings,
     query: searchQuery,
     sort: sortOrder,
@@ -72,6 +74,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
         expandSections: z.oboolean(),
       }),
     ).optional(),
+    limit: zx.IntAsString.default("50").refine((i) => i > 0 && i <= 100),
     page: zx.IntAsString.default("1")
       .refine((i) => i > 0)
       .transform((i) => i - 1),
@@ -109,15 +112,20 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       importedFromOrg: true,
       scheduled: true,
       nextRunAt: true,
+      updatedAt: true,
       cron: true,
       timezone: true,
     },
     orderBy: (backups, { asc, desc }) => {
       const func = sortOrder[1] === "a" ? asc : desc;
-      return func(backups[sortOrder[0]]);
+      return (
+        func(backups[sortOrder[0]])
+          // Thanks Amit: https://www.answeroverflow.com/m/1295796205187502100?focus=1479104633820549253
+          .append(sql` nulls last`)
+      );
     },
-    limit: 50,
-    offset: page * 50,
+    limit,
+    offset: page * limit,
   });
 
   const legacyPosts = user.discordId
