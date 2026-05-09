@@ -512,7 +512,7 @@
     "titleUrl": "URL do Título",
     "redirectUrl": "URL de Redirecionamento",
     "images": "Imagens",
-    "largeImage": "Imagem Grande",
+    "largeImageUrl": "URL de la imagem Grande",
     "useLargeImages": "Use imagens grandes",
     "addImage": "Adicionar Imagem",
     "video": "Vídeo",

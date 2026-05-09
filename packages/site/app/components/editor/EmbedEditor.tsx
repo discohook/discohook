@@ -597,7 +597,7 @@ export const EmbedEditor: React.FC<{
           <div className="w-full">
             <FileOrUrlInput
               t={t}
-              labelKey="largeImage"
+              labelKey="largeImageUrl"
               files={files}
               setFiles={setFiles}
               value={embed.image?.url}
@@ -639,7 +639,7 @@ export const EmbedEditor: React.FC<{
           <div className="w-full">
             <FileOrUrlInput
               t={t}
-              labelKey="thumbnail"
+              labelKey="thumbnailUrl"
               files={files}
               setFiles={setFiles}
               value={embed.thumbnail?.url}

@@ -61,16 +61,17 @@ export const FileOrUrlInput: React.FC<{
       <p className="font-medium text-sm cursor-default">
         <span>{t(labelKey ?? "attachment")}</span>
         {file.file.type.startsWith("image/") ? (
-          <CoolIcon icon="Image_01" className="ltr:ml-1 rtl:mr-1" />
+          <CoolIcon icon="Image_01" className="ms-1" />
         ) : file.file.type.startsWith("video/") ? (
-          <CoolIcon icon="Monitor_Play" className="ltr:ml-1 rtl:mr-1" />
+          <CoolIcon icon="Monitor_Play" className="ms-1" />
         ) : null}
       </p>
-      <div className="flex gap-2 w-full">
+      <div className="flex w-full items-center">
         <div
           className={twJoin(
-            "my-auto rounded-lg truncate",
-            "border h-9 px-[14px] bg-white border-border-normal dark:border-border-normal-dark dark:bg-[#333338] flex w-full",
+            "rounded-lg truncate flex w-full h-9 px-[14px]",
+            "border border-border-normal dark:border-border-normal-dark",
+            "bg-white dark:bg-[#333338]",
             className,
           )}
         >
@@ -82,12 +83,13 @@ export const FileOrUrlInput: React.FC<{
           <button
             type="button"
             className={twJoin(
-              "my-auto rounded-lg flex shrink-0",
-              "border h-9 aspect-square bg-white border-border-normal dark:border-border-normal-dark dark:bg-[#333338]",
+              "ms-1 rounded-lg h-9 pb-0 pt-0.5 px-2 bg-gray-200 dark:bg-[#333338] shrink-0",
+              "border border-border-normal dark:border-border-normal-dark",
+              "hover:text-red-400 active:hover:border-red-400 transition",
             )}
             onClick={() => onChange("")}
           >
-            <CoolIcon icon="Close_MD" className="m-auto" />
+            <CoolIcon icon="Trash_Full" />
           </button>
         ) : null}
       </div>
@@ -105,6 +107,7 @@ export const FileOrUrlInput: React.FC<{
           label={t(labelKey ?? "url")}
           required={required}
           type="url"
+          placeholder="https://..."
           className="w-full"
           value={value ?? ""}
           onChange={({ currentTarget }) => onChange(currentTarget.value)}
@@ -124,7 +127,7 @@ export const FileOrUrlInput: React.FC<{
           value ? "max-w-[6.75rem]" : "max-w-[50%] w-full",
         )}
       >
-        <p className="text-sm font-medium cursor-default">{t("file")}</p>
+        <p className="text-sm font-medium cursor-default">{t("upload")}</p>
         <div className="flex flex-row-reverse grid-cols-2 gap-1">
           <PasteFileButton
             t={t}
