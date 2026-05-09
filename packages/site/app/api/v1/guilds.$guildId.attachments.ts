@@ -22,7 +22,7 @@ import {
 } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
-  const { id: guildId } = zxParseParams(params, { id: snowflakeAsString() });
+  const { guildId } = zxParseParams(params, { guildId: snowflakeAsString() });
   const { limit, page } = zxParseQuery(request, {
     limit: zx.IntAsString.refine((v) => v > 0 && v < 100).default("50"),
     page: zx.IntAsString.refine((v) => v >= 0).default("0"),
