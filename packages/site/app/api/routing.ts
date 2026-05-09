@@ -100,6 +100,21 @@ export const BRoutes = {
   },
 
   /**
+   * - POST /filehosts/:id/config
+   */
+  filehostsConfig(id: string) {
+    return `/filehosts/${id}/config` as const;
+  },
+
+  /**
+   * - GET /filehosts/:id/upload
+   * - POST /filehosts/:id/upload
+   */
+  filehostsUpload(id: string) {
+    return `/filehosts/${id}/upload` as const;
+  },
+
+  /**
    * - GET /guilds/:id/attachments
    * - POST /guilds/:id/attachments
    *

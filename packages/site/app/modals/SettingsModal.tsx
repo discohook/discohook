@@ -3,15 +3,17 @@ import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Radio } from "~/components/Radio";
+import { TextInput } from "~/components/TextInput";
 import type { LocaleCode } from "~/i18n";
 import type { User } from "~/session.server";
-import type { TFunction, i18n } from "~/types/i18next";
+import type { i18n, TFunction } from "~/types/i18next";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
@@ -243,69 +245,206 @@ const tabs: {
   {
     id: "behavior",
     icon: "Cookie",
-    content: ({ t, settings, updateSettings }) => (
-      <>
-        <div>
-          <p className="text-sm font-bold uppercase dark:text-gray-400">
-            {t("webhookInput")}
-          </p>
-          <div className="space-y-2 mt-2">
-            <Radio
-              name="webhookInput"
-              label={t("modern")}
-              checked={
-                !settings.webhookInput || settings.webhookInput === "modern"
-              }
-              onChange={(e) => {
-                if (e.currentTarget.checked) {
-                  updateSettings({ webhookInput: "modern" });
+    content: ({ t, settings, updateSettings }) => {
+      const filehosts = settings.filehosts ?? {};
+      return (
+        <>
+          <div>
+            <p className="text-sm font-bold uppercase dark:text-gray-400">
+              {t("webhookInput")}
+            </p>
+            <div className="space-y-2 mt-2">
+              <Radio
+                name="webhookInput"
+                label={t("modern")}
+                checked={
+                  !settings.webhookInput || settings.webhookInput === "modern"
                 }
-              }}
-            />
-            <Radio
-              name="webhookInput"
-              label={t("classic")}
-              checked={settings.webhookInput === "classic"}
-              onChange={(e) => {
-                if (e.currentTarget.checked) {
-                  updateSettings({ webhookInput: "classic" });
-                }
-              }}
-            />
+                onChange={(e) => {
+                  if (e.currentTarget.checked) {
+                    updateSettings({ webhookInput: "modern" });
+                  }
+                }}
+              />
+              <Radio
+                name="webhookInput"
+                label={t("classic")}
+                checked={settings.webhookInput === "classic"}
+                onChange={(e) => {
+                  if (e.currentTarget.checked) {
+                    updateSettings({ webhookInput: "classic" });
+                  }
+                }}
+              />
+            </div>
           </div>
-        </div>
-        <div className="mt-8">
-          <p className="text-sm font-bold uppercase dark:text-gray-400">
-            {t("defaultMessageCreationChoice")}
-          </p>
-          <div className="space-y-2 mt-2">
-            <Radio
-              name="defaultMessageFlag"
-              label={t("standardMessage")}
-              checked={
-                !settings.defaultMessageFlag ||
-                settings.defaultMessageFlag === "standard"
-              }
-              onChange={(e) => {
-                if (e.currentTarget.checked) {
-                  updateSettings({ defaultMessageFlag: "standard" });
+          <div className="mt-8">
+            <p className="text-sm font-bold uppercase dark:text-gray-400">
+              {t("defaultMessageCreationChoice")}
+            </p>
+            <div className="space-y-2 mt-2">
+              <Radio
+                name="defaultMessageFlag"
+                label={t("standardMessage")}
+                checked={
+                  !settings.defaultMessageFlag ||
+                  settings.defaultMessageFlag === "standard"
                 }
-              }}
-            />
-            <Radio
-              name="defaultMessageFlag"
-              label={t("componentsMessage")}
-              checked={settings.defaultMessageFlag === "components"}
-              onChange={(e) => {
-                if (e.currentTarget.checked) {
-                  updateSettings({ defaultMessageFlag: "components" });
-                }
-              }}
-            />
+                onChange={(e) => {
+                  if (e.currentTarget.checked) {
+                    updateSettings({ defaultMessageFlag: "standard" });
+                  }
+                }}
+              />
+              <Radio
+                name="defaultMessageFlag"
+                label={t("componentsMessage")}
+                checked={settings.defaultMessageFlag === "components"}
+                onChange={(e) => {
+                  if (e.currentTarget.checked) {
+                    updateSettings({ defaultMessageFlag: "components" });
+                  }
+                }}
+              />
+            </div>
           </div>
-        </div>
-      </>
-    ),
+          {settings.experiments?.find((e) => e.id === "SAVE_ATTACHMENTS") ? (
+            <div className="mt-8">
+              <p className="text-sm font-bold uppercase dark:text-gray-400">
+                {t("saveAttachments")}
+              </p>
+              <p className="text-sm">
+                You can upload draft attachments directly to a filesharing
+                service so that they can be used in backups or shared messages.
+              </p>
+              <div className="space-y-2 mt-2">
+                <div
+                  className={twJoin(
+                    "rounded-lg bg-gray-100 dark:bg-gray-700 border border-border-normal dark:border-border-normal-dark",
+                  )}
+                >
+                  <div className="flex items-center p-4 pb-0">
+                    <img
+                      src="/logos/catbox.png"
+                      alt="Catbox logo"
+                      className="size-8 me-3"
+                    />
+                    <div>
+                      <p className="font-medium text-lg">Catbox</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const res = await fetch(
+                          apiUrl(BRoutes.filehostsConfig("catbox")),
+                          {
+                            method: "POST",
+                            body: JSON.stringify({ userhash: null }),
+                            headers: { "Content-Type": "application/json" },
+                          },
+                        );
+                        if (res.ok) {
+                          updateSettings({
+                            filehosts: { ...filehosts, catbox: undefined },
+                          });
+                        }
+                      }}
+                      className="ms-auto self-start opacity-50 hover:opacity-100 transition-opacity"
+                    >
+                      <CoolIcon
+                        icon="Close_MD"
+                        className="text-muted dark:text-muted-dark"
+                      />
+                    </button>
+                  </div>
+                  <div className="p-4 pt-2">
+                    <form
+                      className="flex items-end gap-2"
+                      onSubmit={async (e) => {
+                        const form = e.currentTarget;
+                        e.preventDefault();
+                        const userhash = new FormData(form).get("userhash");
+                        if (!userhash) return;
+
+                        const res = await fetch(
+                          apiUrl(BRoutes.filehostsConfig("catbox")),
+                          {
+                            method: "POST",
+                            body: JSON.stringify({ userhash }),
+                            headers: { "Content-Type": "application/json" },
+                          },
+                        );
+                        if (res.ok) {
+                          updateSettings({
+                            filehosts: {
+                              ...filehosts,
+                              catbox: { ...filehosts.catbox, cookie: true },
+                            },
+                          });
+                          form.reset();
+                        }
+                      }}
+                    >
+                      <TextInput
+                        name="userhash"
+                        label={
+                          <p className="flex items-center gap-x-1">
+                            Userhash{" "}
+                            {filehosts.catbox?.cookie ? (
+                              <CoolIcon
+                                icon="Circle_Check"
+                                className="text-green-400 align-[center]"
+                              />
+                            ) : (
+                              <CoolIcon
+                                icon="Remove_Minus_Circle"
+                                className="text-muted dark:text-muted-dark align-[center]"
+                              />
+                            )}
+                          </p>
+                        }
+                        description={
+                          <Trans
+                            t={t}
+                            i18nKey={
+                              filehosts.catbox?.cookie
+                                ? "Your userhash is set, but not shown here for security. You can visit <anchor>catbox.moe</anchor> to view or regenerate it."
+                                : "Your <anchor>userhash</anchor> is a private string that can be used to manage your Catbox account. Discohook will use it to upload on your behalf."
+                            }
+                            components={{
+                              anchor: (
+                                // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+                                <a
+                                  href="https://catbox.moe/user/"
+                                  className={linkClassName}
+                                  target="_blank"
+                                  rel="noopener"
+                                />
+                              ),
+                            }}
+                          />
+                        }
+                        pattern="^\w+$"
+                        type="password"
+                        className="w-full"
+                        placeholder="abcdefghijklmnopqrstuvwxyz" // --Big Bird, 1970
+                      />
+                      <Button
+                        type="submit"
+                        discordstyle={ButtonStyle.Primary}
+                        className="h-9"
+                      >
+                        {t("save")}
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : undefined}
+        </>
+      );
+    },
   },
   {
     id: "advanced",

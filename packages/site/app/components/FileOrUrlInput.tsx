@@ -77,6 +77,19 @@ export const FileOrUrlInput: React.FC<{
         >
           <p className="my-auto truncate">{file.file.name}</p>
         </div>
+        {/* <button
+          type="button"
+          className={twJoin(
+            "ms-1 rounded-lg h-9 pb-0 pt-0.5 px-2 bg-gray-200 dark:bg-[#333338] shrink-0",
+            "border border-border-normal dark:border-border-normal-dark",
+            "hover:text-blurple-400 active:hover:border-blurple-400 transition",
+          )}
+          onClick={() => {
+            // Automatically upload or prompt to upload based on user prefs
+          }}
+        >
+          <CoolIcon icon="Cloud_Upload" />
+        </button> */}
         {fileClearable !== false ? (
           // TODO: we should determine whether the file is used elsewhere
           // and remove it from the state if not

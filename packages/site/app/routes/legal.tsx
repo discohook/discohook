@@ -41,47 +41,48 @@ export default function Legal() {
           Terms of Service
         </h1>
         <p>
-          By using Discohook or any of its subsequent services, including but
-          not limited to Discohook's Discord application (Discohook Utils#4333),
-          you agree to follow this document.
+          By using any of Discohook's services, including but not limited to
+          Discohook's Discord applications (Discohook Utils#4333, Discobot#9898)
+          and web-based interfaces (discohook.app, discohook.org), you agree to
+          follow this document.
         </p>
         <ul className="list-disc list-inside my-1 space-y-1">
           <li>
-            You will not use the service(s) to:
-            <ul className="list-disc list-inside ml-4">
+            You will not use or attempt to use the services to:
+            <ul className="list-disc list-inside ms-4">
               <li>break a United States law;</li>
               <li>
-                intentionally bring harm, physical or otherwise, to other users;
+                intentionally bring harm, physical or otherwise, to yourself or
+                other users;
               </li>
               <li>
                 violate Discord's Terms of Service, available at{" "}
                 <a href="https://discord.com/terms" className={linkClassName}>
                   https://discord.com/terms
                 </a>
-                .
+                ;
+              </li>
+              <li>gain access to features otherwise not available to you;</li>
+              <li>bring harm or downtime to the services;</li>
+              <li>
+                bring harm or downtime to the hosting platforms depended on by
+                the services.
               </li>
             </ul>
           </li>
           <li>
-            You will not attempt to:
-            <ul className="list-disc list-inside ml-4">
-              <li>gain access to features otherwise not available to you;</li>
-              <li>bring harm or downtime to the service(s);</li>
-              <li>attack the hosting platforms used by the service(s).</li>
-            </ul>
-          </li>
-          <li>
-            You acknowledge that the developer of the service(s) reserves the
+            You acknowledge that the administrator of the services reserves the
             right to partially or fully forbid you from accessing or using the
-            service(s), without warning, at their own discretion.
+            services, without warning, at their own discretion.
           </li>
         </ul>
-        <h1 className="font-bold text-2xl mt-4" id="privacy">
+        <hr className="border border-gray-500/20 my-4" />
+        <h1 className="font-bold text-2xl" id="privacy">
           Privacy
         </h1>
         <p>
           In short: Discohook stores user-provided data as necessary for
-          operations performed by the service(s). This data is not sold.
+          operations performed by the services. This data is not sold.
         </p>
         <h2 className="font-bold text-lg mt-2">Definitions</h2>
         <ul className="list-disc list-inside my-1 space-y-1">
@@ -97,7 +98,9 @@ export default function Legal() {
             guild in order to investigate suspicious activity.
           </li>
         </ul>
-        <h2 className="font-bold text-lg mt-2">Policy</h2>
+        <h2 className="font-bold text-lg mt-2">
+          Bot Applications (Discohook Utils#4333, Discobot#9898)
+        </h2>
         <ul className="list-disc list-inside my-1 space-y-1">
           <li>
             Some bot commands, especially those that cause new data to be
@@ -105,31 +108,49 @@ export default function Legal() {
             data relevant to the result and the user that caused the execution.
           </li>
           <li>
-            On the dedicated web-based interface:
-            <ul className="list-disc list-inside ml-4">
-              <li>
-                When the user creates a Discord webhook, that webhook's
-                details--especially its ID, name, token, avatar hash, and
-                channel ID--are stored until there is reason to remove it
-                {/* , along
-                with the Database ID of the user that was logged in at the time
-                of authorization */}
-                .
-              </li>
-              <li>
-                When the user sends a message, details about that event are
-                stored for Moderation.
-              </li>
-              <li>
-                When the user modifies a Discord webhook, a value is attached to
-                the payload that identifies the user who made the change in the
-                Discord guild's audit log page for Moderation.
-              </li>
-            </ul>
+            The legacy bot application (Discobot#9898) is able to access a
+            shared database for the purpose of long-term support, but it will
+            not collect any new data on its own.
+          </li>
+        </ul>
+        <h2 className="font-bold text-lg mt-2">Web Interface</h2>
+        <ul className="list-disc list-inside my-1 space-y-1">
+          <li>
+            When the user creates a Discord webhook, that webhook's
+            details--especially its ID, name, token, avatar hash, and channel
+            ID--are stored until there is reason to remove it .
           </li>
           <li>
-            All data is stored either on a PostgreSQL server, Cloudflare KV, or
-            Backblaze B2, depending on the data.
+            When the user sends a message, details about that event are stored
+            for Moderation.
+          </li>
+          <li>
+            When the user modifies a Discord webhook, a value is attached to the
+            payload that identifies the user who made the change in the Discord
+            guild's audit log page for Moderation.
+          </li>
+        </ul>
+        <h2 className="font-semibold text-base mt-2">
+          Sharing Filehost Credentials
+        </h2>
+        <ul className="list-disc list-inside my-1 space-y-1">
+          <li>
+            The user may provide credentials (API tokens) for external filehost
+            services. This enables the user to upload unsent binary attachment
+            data and store it long-term within saved messages.
+          </li>
+          <li>
+            These credentials are only stored on the user's browser within an
+            HTTP-only cookie value and may be revoked at any time. The uploaded
+            attachment data is subject then to those services' privacy policies.
+          </li>
+        </ul>
+        <h2 className="font-bold text-lg mt-2">Storage & Handling</h2>
+        <ul className="list-disc list-inside my-1 space-y-1">
+          <li>
+            All data is stored either on a PostgreSQL server (region us-east),
+            Cloudflare KV (distributed), or Backblaze B2 (region us-east),
+            depending on the data.
           </li>
           <li>
             Data is not sold to third parties for any reason. Discohook is

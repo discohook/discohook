@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import type { LocaleCode } from "~/i18n";
 
+interface FilehostConfigurationBase {
+  cookie: boolean;
+  position?: number;
+}
+
 export interface Settings {
   theme?: "light" | "dark" | "sync";
   messageDisplay?: "cozy" | "compact";
@@ -10,8 +15,15 @@ export interface Settings {
   forceDualPane?: boolean;
   locale?: LocaleCode;
   defaultMessageFlag?: "standard" | "components";
+  filehosts?: Partial<{
+    catbox: FilehostConfigurationBase;
+    imgbb: FilehostConfigurationBase & {
+      access_token: string;
+    };
+  }>;
+
   developer?: boolean;
-  experiments?: { id: string }[];
+  experiments?: (typeof EXPERIMENTS)[number][];
 }
 
 export const useLocalStorage = <T = Settings>(
@@ -57,4 +69,6 @@ export const EXPERIMENTS = [
     description:
       "Upload attachments to a media channel and re-use them in backups",
   },
-];
+] as const;
+
+export type EXPERIMENT_ID = (typeof EXPERIMENTS)[number]["id"];

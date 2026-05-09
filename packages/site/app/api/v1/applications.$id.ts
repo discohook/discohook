@@ -1,7 +1,7 @@
 import { REST } from "@discordjs/rest";
 import {
   type APIApplication,
-  APIUser,
+  type APIUser,
   Routes,
   TeamMemberMembershipState,
   TeamMemberRole,
