@@ -1,6 +1,8 @@
 ---
 title: "New Discohook - 2024 rewrite"
 description: "The good times are here"
+date: 2024-09-05
+author: shay
 ---
 
 Here's a list of things that happened in this update.

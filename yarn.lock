@@ -4718,6 +4718,7 @@ cron-parser@discohook/cron-parser:
     discord-bitflag: "npm:^1.0.2"
     discord-snowflake: "npm:^2.0.0"
     emoji-mart: "npm:^5.5.2"
+    feed: "npm:^5.2.1"
     front-matter: "npm:^4.0.2"
     he: "npm:^1.2.0"
     highlight.js: "npm:^11.9.0"
@@ -5850,6 +5851,15 @@ cron-parser@discohook/cron-parser:
   dependencies:
     format: "npm:^0.2.0"
   checksum: 10c0/b80fbf1019b9ce8b08ee09ce86e02b028563e13a32ac3be34e42bfac00a97b96d8dee6d31e26578ffc16224eb6729e01ff1f97ddfeee00494f4f56c0aeed4bdd
+  languageName: node
+  linkType: hard
+
+"feed@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "feed@npm:5.2.1"
+  dependencies:
+    xml-js: "npm:^1.6.11"
+  checksum: 10c0/ec9cf762d0c7a2a6368b4a292fe5ac776fa067022de7d960b5ee6a6eb1c555dd49ac2000efff3598dbd7d607c48110e3124febd1ee8dbab712ae3236822797a4
   languageName: node
   linkType: hard
 
@@ -9727,6 +9737,13 @@ remix-auth-discord@discohook/remix-auth-discord:
   languageName: node
   linkType: hard
 
+"sax@npm:^1.2.4":
+  version: 1.6.0
+  resolution: "sax@npm:1.6.0"
+  checksum: 10c0/e5593f4a91eb25761a688c4d96902e4e95a0dd6017bc65146b6f21236e3d715cf893333b76bc758923c9574c2fb5a7a76c3a81e96ea15432f2624f906c027c1e
+  languageName: node
+  linkType: hard
+
 "scheduler@npm:^0.23.0":
   version: 0.23.0
   resolution: "scheduler@npm:0.23.0"
@@ -11517,6 +11534,17 @@ tif-snowflake@discohook/snowflake:
     utf-8-validate:
       optional: true
   checksum: 10c0/25eb33aff17edcb90721ed6b0eb250976328533ad3cd1a28a274bd263682e7296a6591ff1436d6cbc50fa67463158b062f9d1122013b361cec99a05f84680e06
+  languageName: node
+  linkType: hard
+
+"xml-js@npm:^1.6.11":
+  version: 1.6.11
+  resolution: "xml-js@npm:1.6.11"
+  dependencies:
+    sax: "npm:^1.2.4"
+  bin:
+    xml-js: ./bin/cli.js
+  checksum: 10c0/c83631057f10bf90ea785cee434a8a1a0030c7314fe737ad9bf568a281083b565b28b14c9e9ba82f11fc9dc582a3a907904956af60beb725be1c9ad4b030bc5a
   languageName: node
   linkType: hard
 

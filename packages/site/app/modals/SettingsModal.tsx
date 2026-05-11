@@ -408,7 +408,7 @@ const tabs: {
                             t={t}
                             i18nKey={
                               filehosts.catbox?.cookie
-                                ? "Your userhash is set, but not shown here for security. You can visit <anchor>catbox.moe</anchor> to view or regenerate it."
+                                ? "Your userhash is set, but not shown here for security. Visit <anchor>catbox.moe</anchor> to view or regenerate it."
                                 : "Your <anchor>userhash</anchor> is a private string that can be used to manage your Catbox account. Discohook will use it to upload on your behalf."
                             }
                             components={{

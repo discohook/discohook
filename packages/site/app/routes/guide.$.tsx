@@ -20,6 +20,14 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { "*": path } = zxParseParams(params, {
     "*": z.string().regex(/^[\w/-]+$/),
   });
+  // We used to host changelogs in the guides section, but have now moved them
+  // to their own "news" route
+  if (path.startsWith("changelogs/")) {
+    throw new Response(null, {
+      status: 301,
+      headers: { Location: `/${path.replace(/^changelogs/, "news")}` },
+    });
+  }
 
   const fileResponse = await context.env.ASSETS.fetch(
     `http://localhost/guide-files/${path}.md`,

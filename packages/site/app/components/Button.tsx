@@ -12,6 +12,7 @@ export const Button = ({
   loading,
   discordstyle: style,
   emoji,
+  contentContainerClassName,
   ...props
 }: React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -20,6 +21,7 @@ export const Button = ({
   discordstyle?: ButtonStyle;
   emoji?: APIMessageComponentEmoji;
   loading?: boolean;
+  contentContainerClassName?: string;
 }) => (
   <button
     type="button"
@@ -37,7 +39,8 @@ export const Button = ({
             : style === ButtonStyle.Success
               ? "bg-[#00863a] hover:bg-[#047e37] active:bg-[#057332]"
               : "",
-      props.className ?? "",
+      emoji ? "flex items-center" : undefined,
+      props.className,
     )}
   >
     <div
@@ -46,38 +49,36 @@ export const Button = ({
         loading ? "invisible" : undefined,
       )}
     >
-      {emoji &&
-        (emoji.id ? (
-          <div
-            className={`aspect-square h-[22px] my-auto ${
-              props.children ? "me-1" : "mx-auto"
-            }`}
-          >
-            <img
-              src={cdn.emoji(emoji.id, emoji.animated ? "gif" : "webp")}
-              alt={emoji.name}
-              className="max-h-full max-w-full"
-            />
+      {emoji?.id ? (
+        <div
+          className={`aspect-square h-[22px] my-auto ${
+            props.children ? "me-1" : "mx-auto"
+          }`}
+        >
+          <img
+            src={cdn.emoji(emoji.id, emoji.animated ? "gif" : "webp")}
+            alt={emoji.name}
+            className="max-h-full max-w-full"
+          />
+        </div>
+      ) : emoji?.name ? (
+        <div className="me-1 aspect-square my-auto h-7 flex">
+          <div className="m-auto">
+            <Twemoji emoji={emoji.name} className="h-[22px] !align-bottom" />
           </div>
-        ) : (
-          <div className="me-1 aspect-square my-auto h-7 flex">
-            <div className="m-auto">
-              <Twemoji
-                // biome-ignore lint/style/noNonNullAssertion: Must have name if not an ID
-                emoji={emoji.name!}
-                className="h-[22px] !align-bottom"
-              />
-            </div>
-          </div>
-        ))}
-      <div className={twJoin(emoji ? "my-auto" : "m-auto", "truncate")}>
+        </div>
+      ) : null}
+      <div
+        className={twJoin(
+          emoji ? "my-auto" : "m-auto",
+          "truncate",
+          contentContainerClassName,
+        )}
+      >
         {props.children}
       </div>
       {style === ButtonStyle.Link && (
-        <CoolIcon
-          icon="External_Link"
-          className="ltr:ml-1.5 rtl:mr-1.5 my-auto"
-        />
+        <CoolIcon icon="External_Link" className="ms-1.5 my-auto" />
       )}
     </div>
     {loading && (

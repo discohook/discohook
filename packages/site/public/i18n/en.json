@@ -230,6 +230,8 @@
   "noServers": "You don't appear to share any servers with Discohook Utils.",
   "usingDiscohook": "Using Discohook",
   "guides": "Guides",
+  "discohookNews": "Discohook News",
+  "newsSubtitle": "We publish full changelogs here and on our <anchor>support server</anchor>.",
   "inviteBot": "Invite Bot",
   "addToServer": "Add to Server",
   "favorite": "Favorite",
