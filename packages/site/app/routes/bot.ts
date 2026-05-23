@@ -23,6 +23,8 @@ permissions.set(PermissionFlags.CreatePrivateThreads, true);
 permissions.set(PermissionFlags.SendMessagesInThreads, true);
 // Flows
 permissions.set(PermissionFlags.ModerateMembers, true);
+// Profile (nickname)
+permissions.set(PermissionFlags.ChangeNickname, true);
 
 export const loader = ({ request, context }: LoaderArgs) =>
   redirect(

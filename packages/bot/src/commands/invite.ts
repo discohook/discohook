@@ -24,6 +24,8 @@ export const inviteCallback: ChatInputAppCommandCallback = async (ctx) => {
   permissions.set(PermissionFlags.SendMessagesInThreads, true);
   // Flows
   permissions.set(PermissionFlags.ModerateMembers, true);
+  // Profile (nickname)
+  permissions.set(PermissionFlags.ChangeNickname, true);
 
   const url = new URL(
     `https://discord.com/oauth2/authorize?${new URLSearchParams({
