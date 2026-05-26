@@ -25,10 +25,10 @@ import {
   queryDataMessageDataTransform,
   type QueryDataTarget,
   type QueryDataVersion,
-  TargetBot,
-  TargetFluxerWebhook,
+  type TargetBot,
+  type TargetFluxerWebhook,
   TargetType,
-  TargetWebhook,
+  type TargetWebhook,
   ZodQueryDataMessageDataBase,
 } from "./QueryData-raw";
 

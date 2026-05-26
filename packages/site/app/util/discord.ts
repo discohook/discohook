@@ -38,7 +38,7 @@ import {
 import {
   MessageFlagsBitField,
   PermissionFlags,
-  PermissionsBitField,
+  type PermissionsBitField,
 } from "discord-bitflag";
 import { getDate, isSnowflake, type Snowflake } from "discord-snowflake";
 import { z } from "zod";

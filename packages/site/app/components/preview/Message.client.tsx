@@ -1,23 +1,23 @@
 import { Avatar } from "@base-ui/react/avatar";
 import type { APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import {
-    MessageFlags,
-    MessageFlagsBitField,
-    UserFlags,
-    UserFlagsBitField,
+  MessageFlags,
+  MessageFlagsBitField,
+  UserFlags,
+  UserFlagsBitField,
 } from "discord-bitflag";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
-import { Target } from "~/modals/MessageSendModal";
+import type { Target } from "~/modals/MessageSendModal";
 import { getGenericTargetInfo } from "~/modals/TargetAddModal";
 import type { DraftFile } from "~/routes/_index";
 import type { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
 import {
-    TargetType,
-    type APIAttachment,
-    type APIEmbed,
+  TargetType,
+  type APIAttachment,
+  type APIEmbed,
 } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdn, isComponentsV2 } from "~/util/discord";

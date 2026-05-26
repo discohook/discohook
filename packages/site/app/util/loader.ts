@@ -10,7 +10,7 @@ import { t } from "i18next";
 import { useEffect, useState } from "react";
 import type { ZodError } from "zod";
 import type { Env } from "~/types/env";
-import { isErrorData, RESTErrorWithContext } from "./discord";
+import { isErrorData, type RESTErrorWithContext } from "./discord";
 
 export interface Context {
   origin: string;

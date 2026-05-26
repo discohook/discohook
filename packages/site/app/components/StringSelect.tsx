@@ -3,9 +3,9 @@ import { Select as MuiSelect } from "@base-ui/react/select";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Select, {
-    type ClassNamesConfig,
-    type GroupBase,
-    type Props,
+  type ClassNamesConfig,
+  type GroupBase,
+  type Props,
 } from "react-select";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { TFunction } from "~/types/i18next";

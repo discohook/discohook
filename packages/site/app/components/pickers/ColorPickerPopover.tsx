@@ -1,10 +1,10 @@
 import { Popover } from "@base-ui/react/popover";
 import type { TFunction } from "~/types/i18next";
 import {
-    ColorPicker,
-    decimalToHex,
-    decimalToRgb,
-    rgbToDecimal,
+  ColorPicker,
+  decimalToHex,
+  decimalToRgb,
+  rgbToDecimal,
 } from "../editor/ColorPicker";
 import { popoverStyles } from "./Popover";
 

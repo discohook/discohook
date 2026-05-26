@@ -33,7 +33,7 @@ import getI18next from "./i18next.server";
 import { Cell } from "./routes/donate";
 import styles from "./styles/app.css";
 import icons from "./styles/coolicons.css";
-import { isErrorData, RESTErrorWithContext } from "./util/discord";
+import { isErrorData, type RESTErrorWithContext } from "./util/discord";
 import {
   getZodErrorMessage,
   useSafeFetcher,

@@ -3,10 +3,7 @@ import mime from "mime";
 import { useMemo } from "react";
 import type { SetImageModalData } from "~/modals/ImageModal";
 import type { DraftFile } from "~/routes/_index";
-import {
-  isDiscordAttachmentUrl,
-  parseAttachmentUrl
-} from "~/util/discord";
+import { isDiscordAttachmentUrl, parseAttachmentUrl } from "~/util/discord";
 import { getImageUri } from "./Embed";
 import { Gallery } from "./Gallery";
 

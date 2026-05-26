@@ -6,7 +6,7 @@ import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
-import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Radio } from "~/components/Radio";

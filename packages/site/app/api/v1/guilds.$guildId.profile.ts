@@ -9,10 +9,7 @@ import { PermissionFlags } from "discord-bitflag";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import {
-  injectErrorContext,
-  isDiscordError
-} from "~/util/discord";
+import { injectErrorContext, isDiscordError } from "~/util/discord";
 import {
   type ActionArgs,
   getZodErrorMessage,

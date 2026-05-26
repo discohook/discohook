@@ -1,20 +1,20 @@
 import { Collapsible } from "@base-ui/react/collapsible";
 import {
-    type APIActionRowComponent,
-    type APIComponentInContainer,
-    type APIComponentInModalActionRow,
-    type APIContainerComponent,
-    type APIMessageComponent,
-    ButtonStyle,
-    ComponentType,
+  type APIActionRowComponent,
+  type APIComponentInContainer,
+  type APIComponentInModalActionRow,
+  type APIContainerComponent,
+  type APIMessageComponent,
+  ButtonStyle,
+  ComponentType,
 } from "discord-api-types/v10";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
 import type {
-    APIComponentInMessageActionRow,
-    APIMessageTopLevelComponent,
-    QueryData,
+  APIComponentInMessageActionRow,
+  APIMessageTopLevelComponent,
+  QueryData,
 } from "~/types/QueryData";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isActionRow, isComponentsV2 } from "~/util/discord";

@@ -31,7 +31,7 @@ import type {
   QueryData,
 } from "~/types/QueryData";
 import {
-  QueryDataTarget,
+  type QueryDataTarget,
   type TargetBot,
   type TargetFluxerWebhook,
   TargetType,

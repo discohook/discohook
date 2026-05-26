@@ -15,10 +15,7 @@ import { TargetType } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { getWebhookMessage } from "~/util/discord";
-import type {
-  DraftTargetWebhook,
-  TargetMap
-} from "./MessageSendModal";
+import type { DraftTargetWebhook, TargetMap } from "./MessageSendModal";
 import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
 import { ListTarget } from "./TargetAddModal";
 
