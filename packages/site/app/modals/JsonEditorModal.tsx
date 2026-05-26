@@ -111,7 +111,7 @@ export const JsonEditorModal = (
             {t("save")}
           </Button>
         </div>
-        <div className="ltr:ml-auto rtl:mr-auto">
+        <div className="ms-auto">
           <ButtonSelect<"backup" | "plain">
             // This select assumes that the JSON editor is for message data.
             // Currently, it always will be, but it was designed to be generic.
