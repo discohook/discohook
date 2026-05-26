@@ -1,7 +1,6 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { Link, useLoaderData } from "@remix-run/react";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import { useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Header } from "~/components/Header";
@@ -55,13 +54,13 @@ export const meta: MetaFunction = () => {
 export default () => {
   const { t } = useTranslation();
   const { user, posts } = useLoaderData<typeof loader>();
-  const origin = useMemo(() => {
-    try {
-      return window.origin;
-    } catch {
-      return "http://localhost";
-    }
-  }, []);
+  // const origin = useMemo(() => {
+  //   try {
+  //     return window.origin;
+  //   } catch {
+  //     return "http://localhost";
+  //   }
+  // }, []);
 
   return (
     <div>
@@ -92,16 +91,17 @@ export default () => {
                   label: "Bluesky",
                   url: "https://bsky.app/profile/discohook.app",
                 },
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Link,
-                  emoji: {
-                    id: "1502729574080053328",
-                    name: "rss",
-                  },
-                  label: "RSS",
-                  url: `${origin}/news.rss`,
-                },
+                // not sure about exposing this yet
+                // {
+                //   type: ComponentType.Button,
+                //   style: ButtonStyle.Link,
+                //   emoji: {
+                //     id: "1502729574080053328",
+                //     name: "rss",
+                //   },
+                //   label: "RSS",
+                //   url: `${origin}/news.rss`,
+                // },
               ],
             }}
           />

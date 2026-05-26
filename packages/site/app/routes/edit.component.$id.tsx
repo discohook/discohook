@@ -11,6 +11,7 @@ import {
   type APIWebhook,
   ButtonStyle,
   ComponentType,
+  PermissionFlagsBits,
   RESTJSONErrorCodes,
   type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
@@ -76,12 +77,14 @@ import {
 import {
   cdnImgAttributes,
   getRemainingComponentsCount,
+  injectErrorContext,
   isActionRow,
   isComponentHousable,
   isComponentsV2,
   isDiscordError,
   isStorableComponent,
   onlyActionRows,
+  routePermissions,
 } from "~/util/discord";
 import {
   type ActionArgs,
@@ -255,7 +258,16 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       )) as APIMessage;
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(e.rawError, 500);
+        throw json(
+          injectErrorContext(e.rawError, {
+            guildId: component.guildId ?? undefined,
+            channelId: component.channelId,
+            permissions:
+              PermissionFlagsBits.ViewChannel |
+              PermissionFlagsBits.ReadMessageHistory,
+          }),
+          400,
+        );
       }
       console.error(e);
       throw json({ message: "Failed to fetch message" }, 500);
@@ -404,7 +416,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           if (e.code === RESTJSONErrorCodes.UnknownMessage) {
             // TODO: delete records and destroy DO
           }
-          throw json(e, 500);
+          throw json(
+            injectErrorContext(e.rawError, {
+              channelId: component.channelId,
+              permissions: routePermissions.GET.channelMessage,
+            }),
+            e.status,
+          );
         }
         throw json({ message: "Failed to retrieve the message" }, 400);
       }

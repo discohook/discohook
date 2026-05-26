@@ -32,33 +32,55 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+type CellEdge = "tl" | "t" | "tr" | "l" | "r" | "bl" | "b" | "br";
+
 export const Cell: React.FC<
   React.PropsWithChildren & {
     className?: string;
     premium?: boolean;
     onClick?: () => void;
+    edges?: CellEdge[] | CellEdge;
   }
-> = ({ children, className, premium, onClick }) => (
-  <div
-    className={twJoin(
-      "table-cell text-center p-1 border border-black/10 dark:border-gray-50/10",
-      premium ? "bg-sky-200 dark:bg-sky-800/30" : "",
-      className ?? "",
-    )}
-  >
-    {onClick ? (
-      <button
-        type="button"
-        onClick={onClick}
-        className="text-blurple-400 hover:underline"
-      >
-        {children}
-      </button>
-    ) : (
-      children
-    )}
-  </div>
-);
+> = ({ children, className, premium, edges, onClick }) => {
+  const e = edges ? (Array.isArray(edges) ? edges : [edges]) : [];
+  return (
+    <div
+      className={twJoin(
+        "table-cell text-center p-1 border border-border-normal dark:border-border-normal-dark",
+        premium ? "bg-sky-200 dark:bg-sky-800/30" : undefined,
+        e.includes("tl") ? "rounded-tl-lg" : undefined,
+        e.includes("tr") ? "rounded-tr-lg" : undefined,
+        e.includes("tl") || e.includes("t") || e.includes("tr")
+          ? "border-t-2"
+          : undefined,
+        e.includes("tl") || e.includes("l") || e.includes("bl")
+          ? "border-l-2"
+          : undefined,
+        e.includes("tr") || e.includes("r") || e.includes("br")
+          ? "border-r-2"
+          : undefined,
+        e.includes("bl") || e.includes("b") || e.includes("br")
+          ? "border-b-2"
+          : undefined,
+        e.includes("bl") ? "rounded-bl-lg" : undefined,
+        e.includes("br") ? "rounded-br-lg" : undefined,
+        className,
+      )}
+    >
+      {onClick ? (
+        <button
+          type="button"
+          onClick={onClick}
+          className="text-blurple-400 hover:underline"
+        >
+          {children}
+        </button>
+      ) : (
+        children
+      )}
+    </div>
+  );
+};
 
 const Feature: React.FC<
   React.PropsWithChildren<{
@@ -71,7 +93,7 @@ const Feature: React.FC<
   <button
     type="button"
     id={id}
-    className="block ltr:text-left rtl:text-right w-full p-4 rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 shadow hover:shadow-lg transition"
+    className="block text-start w-full p-4 rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 shadow hover:shadow-lg transition"
     onClick={() =>
       setFeatProps({
         ...features[id],
@@ -185,41 +207,50 @@ export default function DonatePage() {
           {/* If you donate [x] one time, you can unlock a super-secret lifetime
           subscription. */}
         </p>
-        <div className="mt-4 rounded bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table w-full">
+        <div className="mt-4 rounded-lg bg-slate-100 dark:bg-gray-700 table w-full">
           <div className="table-header-group">
             <div className="table-row">
-              <Cell className="font-semibold rounded-tl">Feature</Cell>
-              <Cell className="font-semibold">Free</Cell>
-              <Cell className="font-semibold rounded-tr" premium>
+              <Cell edges="tl" className="font-semibold">
+                Feature
+              </Cell>
+              <Cell edges="t" className="font-semibold">
+                Free
+              </Cell>
+              <Cell edges="tr" className="font-semibold" premium>
                 Deluxe
               </Cell>
             </div>
           </div>
           <div className="table-row-group">
             <div className="table-row">
-              <Cell>Full-featured message editor</Cell>
+              <Cell edges="l">Full-featured message editor</Cell>
               <Cell>
                 <Twemoji emoji="✅" />
               </Cell>
-              <Cell premium>
+              <Cell edges="r" premium>
                 <Twemoji emoji="✅" />
               </Cell>
             </div>
             <div className="table-row">
-              <Cell>All component types</Cell>
+              <Cell edges="l">All component types</Cell>
               <Cell>
                 <Twemoji emoji="✅" />
               </Cell>
-              <Cell premium>
+              <Cell edges="r" premium>
                 <Twemoji emoji="✅" />
               </Cell>
             </div>
             <div className="table-row">
-              <Cell onClick={() => setFeatProps(features["max-actions"])}>
+              <Cell
+                edges="l"
+                onClick={() => setFeatProps(features["max-actions"])}
+              >
                 Max. flow actions
               </Cell>
               <Cell>10</Cell>
-              <Cell premium>40</Cell>
+              <Cell edges="r" premium>
+                40
+              </Cell>
             </div>
             {/* <div className="table-row">
               <Cell onClick={() => setFeatProps(features["custom-bot"])}>
@@ -231,11 +262,14 @@ export default function DonatePage() {
               </Cell>
             </div> */}
             <div className="table-row">
-              <Cell onClick={() => setFeatProps(features["link-embeds"])}>
+              <Cell
+                edges="bl"
+                onClick={() => setFeatProps(features["link-embeds"])}
+              >
                 Use-anywhere embeds (+ embedded videos)
               </Cell>
-              <Cell>-</Cell>
-              <Cell premium>
+              <Cell edges="b">-</Cell>
+              <Cell edges="br" premium>
                 <Twemoji emoji="✅" />
               </Cell>
             </div>

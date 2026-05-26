@@ -11,7 +11,12 @@ import z from "zod/v3";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { getDb, savedAttachments } from "~/store.server";
-import { isDiscordAttachmentUrl, isDiscordError } from "~/util/discord";
+import {
+  injectErrorContext,
+  isDiscordAttachmentUrl,
+  isDiscordError,
+  routePermissions,
+} from "~/util/discord";
 import type { ActionArgs, LoaderArgs } from "~/util/loader";
 import {
   jsonAsString,
@@ -173,7 +178,16 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         attachments = message.attachments;
       } catch (e) {
         if (isDiscordError(e)) {
-          throw respond(Response.json(e.rawError, { status: e.status }));
+          throw respond(
+            Response.json(
+              injectErrorContext(e.rawError, {
+                guildId,
+                channelId: guild.attachmentChannelId,
+                permissions: routePermissions.GET.channelMessages,
+              }),
+              { status: e.status },
+            ),
+          );
         }
         throw respond(Response.json({ message: String(e) }, { status: 500 }));
       }

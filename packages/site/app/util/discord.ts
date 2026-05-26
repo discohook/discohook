@@ -35,7 +35,11 @@ import {
   type RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
 } from "discord-api-types/v10";
-import { MessageFlagsBitField } from "discord-bitflag";
+import {
+  MessageFlagsBitField,
+  PermissionFlags,
+  PermissionsBitField,
+} from "discord-bitflag";
 import { getDate, isSnowflake, type Snowflake } from "discord-snowflake";
 import { z } from "zod";
 import type { TimestampStyle } from "~/components/editor/TimePicker";
@@ -632,7 +636,7 @@ interface DiscordError {
   code: number;
   rawError: RESTError;
   status: number;
-  method: string;
+  method: RequestMethod;
   url: string;
 }
 
@@ -647,6 +651,66 @@ export const isDiscordError = (error: any): error is DiscordError => {
 
 export const isErrorData = (data: any): data is RESTError =>
   RESTErrorSchema.safeParse(data).success;
+
+export interface RESTErrorContext {
+  guild?: {
+    id: string;
+    name?: string;
+    icon?: string;
+  };
+  channel?: {
+    id: string;
+    name?: string;
+  };
+  required_permissions?: string;
+}
+
+export type RESTErrorWithContext = RESTError & {
+  context?: RESTErrorContext;
+};
+
+export const injectErrorContext = (
+  error: RESTError,
+  context: {
+    guildId?: string | bigint;
+    channelId?: string | bigint;
+    permissions?: string | bigint | PermissionsBitField;
+  } & RESTErrorContext,
+): RESTErrorWithContext => {
+  // shortcuts to prevent unnecessary verbosity in error handlers
+  const { guildId, channelId, permissions, ...rest } = context;
+  const ctx: RESTErrorContext = rest;
+  if (guildId) ctx.guild = { id: String(guildId) };
+  if (channelId) ctx.channel = { id: String(channelId) };
+  if (permissions) ctx.required_permissions = permissions.toString();
+  return { ...error, context: ctx };
+};
+
+export const routePermissions = {
+  GET: {
+    channel: PermissionFlags.ViewChannel,
+    channelMessages:
+      PermissionFlags.ViewChannel | PermissionFlags.ReadMessageHistory,
+    channelMessage:
+      PermissionFlags.ViewChannel | PermissionFlags.ReadMessageHistory,
+    webhook: PermissionFlags.ManageWebhooks,
+    guildWebhooks: PermissionFlags.ManageWebhooks,
+    channelWebhooks: PermissionFlags.ManageWebhooks,
+  },
+  POST: {
+    channelMessages: PermissionFlags.ViewChannel | PermissionFlags.SendMessages,
+    threads: PermissionFlags.CreatePublicThreads,
+    guildWebhooks: PermissionFlags.ManageWebhooks,
+    channelWebhooks: PermissionFlags.ManageWebhooks,
+  },
+  DELETE: {
+    webhook: PermissionFlags.ManageWebhooks,
+  },
+  PATCH: {
+    webhook: PermissionFlags.ManageWebhooks,
+  },
+  PUT: {},
+} satisfies Record<RequestMethod, Partial<Record<keyof typeof Routes, bigint>>>;
 
 export const isSkuButton = (
   component: Pick<APIButtonComponent, "type" | "style">,

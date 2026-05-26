@@ -9,7 +9,10 @@ import { PermissionFlags } from "discord-bitflag";
 import { z } from "zod";
 import { getBucket } from "~/durable/rate-limits";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { isDiscordError } from "~/util/discord";
+import {
+  injectErrorContext,
+  isDiscordError
+} from "~/util/discord";
 import {
   type ActionArgs,
   getZodErrorMessage,
@@ -209,7 +212,16 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     })) as APIGuildMember;
   } catch (e) {
     if (isDiscordError(e)) {
-      throw respond(json(e.rawError, e.status));
+      throw respond(
+        json(
+          injectErrorContext(e.rawError, {
+            guildId,
+            permissions:
+              body.nick !== undefined ? PermissionFlags.ChangeNickname : "0",
+          }),
+          e.status,
+        ),
+      );
     }
     throw e;
   }

@@ -72,6 +72,7 @@ import { type CacheManager, useCache } from "~/util/cache/CacheManager";
 import {
   cdn,
   cdnImgAttributes,
+  injectErrorContext,
   isDiscordError,
   webhookAvatarUrl,
 } from "~/util/discord";
@@ -119,7 +120,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       if (e.code === RESTJSONErrorCodes.UnknownGuild) {
         throw redirect(`/bot?guildId=${guildId}`);
       }
-      throw respond(json(e.rawError, e.status));
+      throw respond(
+        json(injectErrorContext(e.rawError, { guildId }), e.status),
+      );
     } else if (e instanceof Response && e.status === 404) {
       // Making assumptions here
       throw redirect(`/bot?guildId=${guildId}`);
@@ -449,6 +452,13 @@ interface ProfileFormData {
   submitBio?: boolean;
   status?: string;
 }
+
+const PermissionCircleCheck = ({ check }: { check: boolean }) => (
+  <CoolIcon
+    className={check ? "text-green-400" : "text-muted dark:text-muted-dark"}
+    icon={check ? "Circle_Check" : "Close_Circle"}
+  />
+);
 
 // const cloneQuery = (
 //   current: Record<string, string | number | null | undefined>,
@@ -822,95 +832,81 @@ export default () => {
                     </div>
                   </details>
                 </div>
-                <div className="rounded-lg bg-slate-100 dark:bg-gray-700 border border-black/10 dark:border-gray-50/10 table w-full">
+                <div className="rounded-lg bg-gray-100 dark:bg-gray-700 table w-full">
                   <div className="table-header-group">
                     <div className="table-row">
-                      <Cell className="font-semibold rounded-tl-lg">
+                      <Cell edges="tl" className="font-semibold">
                         {t("tab")}
                       </Cell>
-                      <Cell className="font-semibold">{t("permissions")}</Cell>
-                      <Cell className="rounded-tr-lg" />
+                      <Cell edges="t" className="font-semibold">
+                        {t("permissions")}
+                      </Cell>
+                      <Cell edges="tr" />
                     </div>
                   </div>
                   <div className="table-row-group">
                     <div className="table-row">
-                      <Cell>{t("home")}</Cell>
+                      <Cell edges="l">{t("home")}</Cell>
                       <Cell>{t("justBeAMember")}</Cell>
-                      <Cell>
-                        <CoolIcon icon="Check" />
+                      <Cell edges="r">
+                        <PermissionCircleCheck check />
                       </Cell>
                     </div>
                     <div className="table-row">
-                      <Cell className="rounded-bl-lg">{t("profile")}</Cell>
-                      <Cell className="rounded-br-lg">
+                      <Cell edges="l">{t("profile")}</Cell>
+                      <Cell>
                         {new Intl.ListFormat().format(
                           ["ManageNicknames"].map((p) => t(`permission.${p}`)),
                         )}
                       </Cell>
-                      <Cell>
-                        <CoolIcon
-                          icon={
-                            has(PermissionFlags.ManageNicknames)
-                              ? "Check"
-                              : "Close_MD"
-                          }
+                      <Cell edges="r">
+                        <PermissionCircleCheck
+                          check={has(PermissionFlags.ManageNicknames)}
                         />
                       </Cell>
                     </div>
                     <div className="table-row">
-                      <Cell className="rounded-bl-lg">{t("sessions")}</Cell>
-                      <Cell className="rounded-br-lg">
+                      <Cell edges="l">{t("sessions")}</Cell>
+                      <Cell>
                         {new Intl.ListFormat().format(
                           ["Administrator"].map((p) => t(`permission.${p}`)),
                         )}
                       </Cell>
-                      <Cell>
-                        <CoolIcon
-                          icon={
-                            has(PermissionFlags.ManageNicknames)
-                              ? "Check"
-                              : "Close_MD"
-                          }
+                      <Cell edges="r">
+                        <PermissionCircleCheck
+                          check={has(PermissionFlags.ManageNicknames)}
                         />
                       </Cell>
                     </div>
                     <div className="table-row">
-                      <Cell className="rounded-bl-lg">{t("components")}</Cell>
-                      <Cell className="rounded-br-lg">
+                      <Cell edges="l">{t("components")}</Cell>
+                      <Cell>
                         {new Intl.ListFormat().format(
                           ["ManageMessages", "ManageWebhooks"].map((p) =>
                             t(`permission.${p}`),
                           ),
                         )}
                       </Cell>
-                      <Cell>
-                        <CoolIcon
-                          icon={
-                            has(
-                              PermissionFlags.ManageMessages,
-                              PermissionFlags.ManageWebhooks,
-                            )
-                              ? "Check"
-                              : "Close_MD"
-                          }
+                      <Cell edges="r">
+                        <PermissionCircleCheck
+                          check={has(
+                            PermissionFlags.ManageMessages,
+                            PermissionFlags.ManageWebhooks,
+                          )}
                         />
                       </Cell>
                     </div>
                     <div className="table-row">
-                      <Cell>{t("webhooks")}</Cell>
+                      <Cell edges="l">{t("webhooks")}</Cell>
                       <Cell>{t("permission.ManageWebhooks")}</Cell>
-                      <Cell>
-                        <CoolIcon
-                          icon={
-                            has(PermissionFlags.ManageWebhooks)
-                              ? "Check"
-                              : "Close_MD"
-                          }
+                      <Cell edges="r">
+                        <PermissionCircleCheck
+                          check={has(PermissionFlags.ManageWebhooks)}
                         />
                       </Cell>
                     </div>
                     <div className="table-row">
-                      <Cell>{t("auditLog")}</Cell>
+                      <Cell edges="l">{t("auditLog")}</Cell>
                       <Cell>
                         {new Intl.ListFormat().format(
                           ["ViewAuditLog", "ManageGuild"].map((p) =>
@@ -918,36 +914,24 @@ export default () => {
                           ),
                         )}
                       </Cell>
-                      <Cell>
-                        <CoolIcon
-                          icon={
-                            has(
-                              PermissionFlags.ViewAuditLog,
-                              PermissionFlags.ManageGuild,
-                            )
-                              ? "Check"
-                              : "Close_MD"
-                          }
+                      <Cell edges="r">
+                        <PermissionCircleCheck
+                          check={has(
+                            PermissionFlags.ViewAuditLog,
+                            PermissionFlags.ManageGuild,
+                          )}
                         />
                       </Cell>
                     </div>
                     <div className="table-row">
-                      <Cell className="rounded-bl-lg">{t("triggers")}</Cell>
-                      <Cell>{t("permission.ManageGuild")}</Cell>
-                      <Cell className="rounded-br-lg">
-                        <CoolIcon
-                          icon={
-                            has(PermissionFlags.ManageGuild)
-                              ? "Check"
-                              : "Close_MD"
-                          }
+                      <Cell edges="bl">{t("triggers")}</Cell>
+                      <Cell edges="b">{t("permission.ManageGuild")}</Cell>
+                      <Cell edges="br">
+                        <PermissionCircleCheck
+                          check={has(PermissionFlags.ManageGuild)}
                         />
                       </Cell>
                     </div>
-                    {/* <div className="table-row">
-                      <Cell>Sessions</Cell>
-                      <Cell>View Audit Logs, Manage Server</Cell>
-                    </div> */}
                   </div>
                 </div>
               </div>

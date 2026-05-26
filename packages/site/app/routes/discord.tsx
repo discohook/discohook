@@ -3,9 +3,9 @@ import { redirect } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import {
   ButtonStyle,
-  type RESTGetAPIInviteResult,
   RouteBases,
   Routes,
+  type RESTGetAPIInviteResult,
 } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";

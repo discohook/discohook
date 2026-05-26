@@ -4,9 +4,13 @@ import type {
   ActionFunctionArgs as RRActionFunctionArgs,
   LoaderFunctionArgs as RRLoaderFunctionArgs,
 } from "@remix-run/router";
+import { RESTJSONErrorCodes } from "discord-api-types/v10";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import { t } from "i18next";
 import { useEffect, useState } from "react";
 import type { ZodError } from "zod";
 import type { Env } from "~/types/env";
+import { isErrorData, RESTErrorWithContext } from "./discord";
 
 export interface Context {
   origin: string;
@@ -49,6 +53,30 @@ export const getZodErrorMessage = (e: any) => {
   return String(e);
 };
 
+const getDiscordOrZodErrorMessage = (e: any) => {
+  if (isErrorData(e)) {
+    if ("context" in e) {
+      const data = e as RESTErrorWithContext;
+      if (
+        (data.code === RESTJSONErrorCodes.MissingAccess ||
+          data.code === RESTJSONErrorCodes.MissingPermissions) &&
+        data.context?.required_permissions !== undefined
+      ) {
+        const required = new PermissionsBitField(
+          BigInt(data.context.required_permissions),
+        );
+        const str = Object.entries(PermissionFlags)
+          .filter(([_, val]) => required.has(val))
+          .map(([flag]) => t(`permission.${flag}`, { lng: "en" }))
+          .join(", ");
+        return `Ensure Discohook Utils has all of the following permissions in the ${data.context.channel ? "channel" : "server"}: ${str}.`;
+      }
+    }
+    return e.message;
+  }
+  return getZodErrorMessage(e);
+};
+
 const returnRawIf = (raw: unknown): string | undefined => {
   try {
     JSON.parse(JSON.stringify(raw));
@@ -61,6 +89,9 @@ const returnRawIf = (raw: unknown): string | undefined => {
   const keys = Object.keys(data).length;
   if (data.message) {
     if ("code" in data) {
+      if ("context" in data) {
+        return keys === 3 ? undefined : stringified;
+      }
       return keys === 2 ? undefined : stringified;
     }
     return keys === 1 ? undefined : stringified;
@@ -91,7 +122,7 @@ export const useSafeFetcher = <TData = any>({
                 if (onError) {
                   onError({
                     status: response.status,
-                    message: getZodErrorMessage(raw),
+                    message: getDiscordOrZodErrorMessage(raw),
                     raw: returnRawIf(raw),
                   });
                 }
@@ -121,7 +152,7 @@ export const useSafeFetcher = <TData = any>({
           if (onError) {
             onError({
               status: response.status,
-              message: getZodErrorMessage(raw),
+              message: getDiscordOrZodErrorMessage(raw),
               raw: returnRawIf(raw),
             });
           }
@@ -173,7 +204,7 @@ export const useSafeFetcher = <TData = any>({
                   if (onError) {
                     onError({
                       status: response.status,
-                      message: getZodErrorMessage(raw),
+                      message: getDiscordOrZodErrorMessage(raw),
                       raw: returnRawIf(raw),
                     });
                   }
@@ -226,7 +257,7 @@ export const useSafeFetcher = <TData = any>({
           if (onError) {
             onError({
               status: response.status,
-              message: getZodErrorMessage(raw),
+              message: getDiscordOrZodErrorMessage(raw),
               raw: returnRawIf(raw),
             });
           }

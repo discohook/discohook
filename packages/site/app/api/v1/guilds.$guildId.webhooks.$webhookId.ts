@@ -2,6 +2,7 @@ import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import {
   type APIWebhook,
+  RESTJSONErrorCodes,
   type RESTPatchAPIWebhookJSONBody,
   type RESTPatchAPIWebhookResult,
   Routes,
@@ -15,7 +16,11 @@ import {
   getTokenGuildPermissions,
 } from "~/session.server";
 import { upsertGuild } from "~/store.server";
-import { isDiscordError } from "~/util/discord";
+import {
+  injectErrorContext,
+  isDiscordError,
+  routePermissions,
+} from "~/util/discord";
 import type { ActionArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
@@ -52,7 +57,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           Routes.webhook(String(webhookId)),
         )) as APIWebhook;
         if (webhook.guild_id !== String(guildId)) {
-          throw respond(json({ message: "Unknown Webhook", code: 10015 }, 404));
+          throw respond(
+            json(
+              {
+                code: RESTJSONErrorCodes.UnknownWebhook,
+                message: "Unknown Webhook",
+              },
+              404,
+            ),
+          );
         }
         await upsertGuild(
           db,
@@ -99,7 +112,18 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         );
       } catch (e) {
         if (isDiscordError(e)) {
-          throw respond(json(e.rawError, e.status));
+          throw respond(
+            json(
+              injectErrorContext(e.rawError, {
+                guildId,
+                permissions: e.url.includes("/webhooks")
+                  ? // @ts-expect-error
+                    (routePermissions[e.method].webhook ?? "0")
+                  : "0",
+              }),
+              e.status,
+            ),
+          );
         }
         throw respond(json({ message: String(e) }, 500));
       }

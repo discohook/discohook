@@ -4,9 +4,11 @@ import z from "zod/v3";
 import { getUserId } from "~/session.server";
 import { eq, getDb, savedAttachments } from "~/store.server";
 import {
+  injectErrorContext,
   isDiscordAttachmentUrl,
   isDiscordError,
   parseAttachmentUrl,
+  routePermissions,
 } from "~/util/discord";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
@@ -101,7 +103,13 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
         )) as APIMessage;
       } catch (e) {
         if (isDiscordError(e)) {
-          throw Response.json(e.rawError, { status: e.status });
+          throw Response.json(
+            injectErrorContext(e.rawError, {
+              channelId: params.channelId,
+              permissions: routePermissions.GET.channelMessage,
+            }),
+            { status: e.status },
+          );
         }
         throw Response.json({ message: String(e) }, { status: 500 });
       }

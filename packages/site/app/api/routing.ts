@@ -43,6 +43,15 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /channels/:channelId/permissions
+   *
+   * Accepts token auth.
+   */
+  channelPermissions(channelId: string) {
+    return `/channels/${channelId}/permissions` as const;
+  },
+
+  /**
    * - GET /users/@me
    */
   currentUser() {
@@ -167,6 +176,15 @@ export const BRoutes = {
    */
   guildMember(guildId: string, userId: string) {
     return `/guilds/${guildId}/members/${userId}` as const;
+  },
+
+  /**
+   * - GET /guilds/:guildId/permissions
+   *
+   * Accepts token auth.
+   */
+  guildPermissions(guildId: string) {
+    return `/guilds/${guildId}/permissions` as const;
   },
 
   /**
