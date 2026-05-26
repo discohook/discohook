@@ -57,7 +57,7 @@ import { TextArea } from "~/components/TextArea";
 import { TextInput } from "~/components/TextInput";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
-import { Target } from "~/modals/MessageSendModal";
+import type { Target } from "~/modals/MessageSendModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
 import { TargetEditModal } from "~/modals/WebhookEditModal";
 import {
@@ -777,13 +777,22 @@ export default () => {
                   </div>
                   <details className="rounded-lg mt-2 bg-gray-200 dark:bg-gray-800 group">
                     <summary className="flex marker:content-none marker-none cursor-pointer py-2 px-3">
-                      <img
-                        {...cdnImgAttributes(64, (size) =>
-                          getUserAvatar(user, { size }),
-                        )}
-                        className="rounded-full h-10 w-10 me-3 my-auto"
-                        alt={user.name}
-                      />
+                      <Avatar.Root className="size-10 me-3 my-auto">
+                        <Avatar.Image
+                          {...cdnImgAttributes(64, (size) =>
+                            getUserAvatar(user, { size }),
+                          )}
+                          className="rounded-full size-full"
+                          alt={user.name}
+                        />
+                        <Avatar.Fallback>
+                          <img
+                            src={getUserAvatar(user, { forceDefault: true })}
+                            className="rounded-full size-full"
+                            alt=""
+                          />
+                        </Avatar.Fallback>
+                      </Avatar.Root>
                       <p className="font-medium my-auto me-2">
                         {t(
                           `homePermission.${
