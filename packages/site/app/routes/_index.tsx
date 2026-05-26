@@ -1,5 +1,5 @@
-import { Avatar } from "@base-ui-components/react/avatar";
-import { Dialog } from "@base-ui-components/react/dialog";
+import { Avatar } from "@base-ui/react/avatar";
+import { Dialog } from "@base-ui/react/dialog";
 import type { SerializeFrom } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";

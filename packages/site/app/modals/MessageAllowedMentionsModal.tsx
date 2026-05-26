@@ -1,8 +1,8 @@
-import { Collapsible } from "@base-ui-components/react/collapsible";
-import { Switch } from "@base-ui-components/react/switch";
+import { Collapsible } from "@base-ui/react/collapsible";
+import { Switch } from "@base-ui/react/switch";
 import {
-  AllowedMentionsTypes,
-  type APIAllowedMentions,
+    AllowedMentionsTypes,
+    type APIAllowedMentions,
 } from "discord-api-types/v10";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";

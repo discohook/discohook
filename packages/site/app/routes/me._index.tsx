@@ -1,4 +1,4 @@
-import { Avatar } from "@base-ui-components/react/avatar";
+import { Avatar } from "@base-ui/react/avatar";
 import { REST } from "@discordjs/rest";
 import { json } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
@@ -13,12 +13,12 @@ import { TabHeader } from "~/components/tabs";
 import { getBucket } from "~/durable/rate-limits";
 import { getSessionStorage, getUser } from "~/session.server";
 import {
-  autoRollbackTx,
-  discordUsers,
-  eq,
-  getDb,
-  type upsertDiscordUser,
-  users,
+    autoRollbackTx,
+    discordUsers,
+    eq,
+    getDb,
+    type upsertDiscordUser,
+    users,
 } from "~/store.server";
 import { getId } from "~/util/id";
 import type { LoaderArgs } from "~/util/loader";

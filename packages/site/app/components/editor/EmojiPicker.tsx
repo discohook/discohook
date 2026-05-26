@@ -1,8 +1,8 @@
-import { Popover } from "@base-ui-components/react/popover";
+import { Popover } from "@base-ui/react/popover";
 import type { Category, Emoji, Skin } from "@emoji-mart/data";
 import {
-  type APIMessageComponentEmoji,
-  ButtonStyle,
+    type APIMessageComponentEmoji,
+    ButtonStyle,
 } from "discord-api-types/v10";
 import { isSnowflake } from "discord-snowflake";
 import { memo, useState } from "react";
@@ -16,14 +16,14 @@ import { randomString } from "~/util/text";
 import { Button } from "../Button";
 import { CoolIcon } from "../icons/CoolIcon";
 import {
-  EmojiIconActivities,
-  EmojiIconFlags,
-  EmojiIconFood,
-  EmojiIconNature,
-  EmojiIconObjects,
-  EmojiIconPeople,
-  EmojiIconSymbols,
-  EmojiIconTravel,
+    EmojiIconActivities,
+    EmojiIconFlags,
+    EmojiIconFood,
+    EmojiIconNature,
+    EmojiIconObjects,
+    EmojiIconPeople,
+    EmojiIconSymbols,
+    EmojiIconTravel,
 } from "../icons/emoji";
 import { type IconFC, type IconFCProps, Svg } from "../icons/Svg";
 import { Twemoji } from "../icons/Twemoji";

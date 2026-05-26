@@ -1,4 +1,4 @@
-import { Collapsible } from "@base-ui-components/react/collapsible";
+import { Collapsible } from "@base-ui/react/collapsible";
 import { Link } from "@remix-run/react";
 import {
   type APISelectMenuOption,

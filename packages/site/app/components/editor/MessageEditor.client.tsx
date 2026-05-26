@@ -1,10 +1,10 @@
-import { Collapsible } from "@base-ui-components/react/collapsible";
-import { Select } from "@base-ui-components/react/select";
+import { Collapsible } from "@base-ui/react/collapsible";
+import { Select } from "@base-ui/react/select";
 import { Link } from "@remix-run/react";
 import {
-  ButtonStyle,
-  ComponentType,
-  MessageFlags,
+    ButtonStyle,
+    ComponentType,
+    MessageFlags,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField } from "discord-bitflag";
 import { useEffect, useMemo, useState } from "react";
@@ -16,26 +16,26 @@ import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { JsonEditorProps } from "~/modals/JsonEditorModal";
 import type { Target } from "~/modals/MessageSendModal";
 import {
-  Modal,
-  ModalFooter,
-  type ModalProps,
-  PlainModalHeader,
+    Modal,
+    ModalFooter,
+    type ModalProps,
+    PlainModalHeader,
 } from "~/modals/Modal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
 import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
 import { TargetType } from "~/types/QueryData-raw";
 import type {
-  CacheManager,
-  ResolvableAPIChannel,
+    CacheManager,
+    ResolvableAPIChannel,
 } from "~/util/cache/CacheManager";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isComponentsV2, onlyActionRows } from "~/util/discord";
 import type { DragManager } from "~/util/drag";
 import {
-  fileInputChangeHandler,
-  MAX_FILES_PER_MESSAGE,
-  transformFileName,
+    fileInputChangeHandler,
+    MAX_FILES_PER_MESSAGE,
+    transformFileName,
 } from "~/util/files";
 import { getMessageDisplayName } from "~/util/message";
 import { copyText, randomString } from "~/util/text";
@@ -49,9 +49,9 @@ import { isAudioType } from "../preview/FileAttachment";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import {
-  selectStyles,
-  SelectValueTrigger,
-  withDefaultItem,
+    selectStyles,
+    SelectValueTrigger,
+    withDefaultItem,
 } from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
@@ -59,10 +59,10 @@ import { ActionRowEditor } from "./ComponentEditor";
 import { AutoTopLevelComponentEditor } from "./ContainerEditor";
 import { DragArea } from "./DragArea";
 import {
-  DetectGifUrlFooter,
-  EmbedEditor,
-  EmbedEditorSection,
-  getEmbedLength,
+    DetectGifUrlFooter,
+    EmbedEditor,
+    EmbedEditorSection,
+    getEmbedLength,
 } from "./EmbedEditor";
 import { PasteFileButton } from "./PasteFileButton";
 

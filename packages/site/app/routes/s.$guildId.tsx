@@ -1,6 +1,6 @@
-import { Avatar } from "@base-ui-components/react/avatar";
-import { Collapsible } from "@base-ui-components/react/collapsible";
-import { Field } from "@base-ui-components/react/field";
+import { Avatar } from "@base-ui/react/avatar";
+import { Collapsible } from "@base-ui/react/collapsible";
+import { Field } from "@base-ui/react/field";
 import { REST } from "@discordjs/rest";
 import {
   json,

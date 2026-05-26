@@ -1,6 +1,6 @@
-import { Avatar } from "@base-ui-components/react/avatar";
-import { Dialog } from "@base-ui-components/react/dialog";
-import { Tooltip } from "@base-ui-components/react/tooltip";
+import { Avatar } from "@base-ui/react/avatar";
+import { Dialog } from "@base-ui/react/dialog";
+import { Tooltip } from "@base-ui/react/tooltip";
 import {
   Link,
   useLocation,

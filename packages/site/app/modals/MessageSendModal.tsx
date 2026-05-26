@@ -1,4 +1,4 @@
-import { Dialog } from "@base-ui-components/react/dialog";
+import { Dialog } from "@base-ui/react/dialog";
 import type { DiscordErrorData, REST } from "@discordjs/rest";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {

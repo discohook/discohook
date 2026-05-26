@@ -1,7 +1,7 @@
-import { Collapsible } from "@base-ui-components/react/collapsible";
+import { Collapsible } from "@base-ui/react/collapsible";
 import {
-  type APIContainerComponent,
-  ComponentType,
+    type APIContainerComponent,
+    ComponentType,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -26,9 +26,9 @@ import { SectionEditor } from "./SectionEditor";
 import { SeparatorEditor } from "./SeparatorEditor";
 import { TextDisplayEditor } from "./TextDisplayEditor";
 import {
-  getComponentErrors,
-  type TopLevelComponentEditorContainerProps,
-  TopLevelComponentEditorContainerSummary,
+    getComponentErrors,
+    type TopLevelComponentEditorContainerProps,
+    TopLevelComponentEditorContainerSummary,
 } from "./TopLevelComponentEditor";
 
 export const AutoTopLevelComponentEditor = (

@@ -1,4 +1,4 @@
-import { Select } from "@base-ui-components/react/select";
+import { Select } from "@base-ui/react/select";
 import type { ButtonStyle } from "discord-api-types/v10";
 import { twJoin, twMerge } from "tailwind-merge";
 import { Button } from "./Button";
