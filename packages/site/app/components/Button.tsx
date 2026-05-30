@@ -83,7 +83,7 @@ export const Button = ({
     </div>
     {loading && (
       <div className="absolute inset-0 flex items-center justify-center">
-        <LoadingDots />
+        <LoadingDots parentStyle={style} />
       </div>
     )}
   </button>

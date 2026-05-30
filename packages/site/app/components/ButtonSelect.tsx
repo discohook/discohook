@@ -19,6 +19,7 @@ export function ButtonSelect<T>(
     required?: boolean;
     disabled?: boolean;
     readOnly?: boolean;
+    loading?: boolean;
     /** Applied to the trigger (Button) */
     className?: string;
     discordstyle?: ButtonStyle;
@@ -45,6 +46,7 @@ export function ButtonSelect<T>(
         <Button
           className={props.className}
           disabled={props.disabled}
+          loading={props.loading}
           discordstyle={props.discordstyle}
         >
           {props.children}
