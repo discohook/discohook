@@ -219,8 +219,9 @@ export const useSafeFetcher = <TData = any>({
                 setState("idle");
                 throw e;
               });
+          } else {
+            throw Error(`Unhandled content type: ${contentType}`);
           }
-          throw Error(`Unhandled content type: ${contentType}`);
         })
         .catch((e) => {
           setState("idle");
