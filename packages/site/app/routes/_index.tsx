@@ -897,7 +897,7 @@ export default function Index() {
             {error}
             {urlTooLong && (
               <InfoBox icon="Triangle_Warning" severity="yellow">
-                {t("messageTooLarge")}
+                {t("messageTooLong")}
               </InfoBox>
             )}
             {backupId !== undefined && (

@@ -2,6 +2,7 @@ import { Collapsible } from "@base-ui/react/collapsible";
 import { Select } from "@base-ui/react/select";
 import { Link } from "@remix-run/react";
 import {
+  APITextDisplayComponent,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -361,9 +362,11 @@ const MessageEditorCollapsibleTrigger = ({
   data,
   setData,
   setEditingName,
+  hasError,
 }: {
   t: TFunction;
   message: MessageEditorChildProps["data"]["messages"][number];
+  hasError?: boolean;
 } & Pick<
   MessageEditorChildProps,
   "data" | "setData" | "setEditingName" | "index"
@@ -401,6 +404,12 @@ const MessageEditorCollapsibleTrigger = ({
               icon="Bell_Remove"
               title={t("allowedMentionsEnabled")}
               className="me-1"
+            />
+          ) : null}
+          {hasError ? (
+            <CoolIcon
+              icon="Circle_Warning"
+              className="me-1 text-rose-600 dark:text-rose-400"
             />
           ) : null}
           {getMessageDisplayName(t, i, message)}
@@ -538,6 +547,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
         data={data}
         setData={setData}
         setEditingName={setEditingName}
+        hasError={tooManyCharacters}
       />
       <Collapsible.Panel
         className={twMerge(collapsibleStyles.editorPanel, "px-4 space-y-2")}
@@ -833,11 +843,9 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
         {message.data.embeds && message.data.embeds.length > 0 && (
           <div className="mt-1 space-y-1">
             {embedsLength > 6000 && (
-              <div className="-mb-2">
-                <InfoBox severity="red" icon="Circle_Warning">
-                  <Trans i18nKey="embedsTooLarge" count={embedsLength - 6000} />
-                </InfoBox>
-              </div>
+              <InfoBox severity="red" icon="Circle_Warning" className="mb-2">
+                <Trans i18nKey="embedsTooLarge" count={embedsLength - 6000} />
+              </InfoBox>
             )}
             {flags.has(MessageFlags.SuppressEmbeds) && (
               <div className="-mb-2">
@@ -1105,6 +1113,14 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           .map((c) => 1 + ("components" in c ? c.components.length : 0))
           .reduce((a, b) => a + b, 0)
       : 0;
+  // This probably executes more often than necessary, but I wasn't sure
+  // about memo dependencies (`components` was not what I wanted)
+  const totalCharacters = (
+    extractComponentsByType(components, [
+      ComponentType.TextDisplay,
+    ]) as APITextDisplayComponent[]
+  ).reduce((prev, cur) => prev + cur.content.length, 0);
+  const tooManyCharacters = totalCharacters > MAX_TOTAL_COMPONENTS_CHARACTERS;
 
   const webhookTargets = targets
     ? targets.filter((t) => t.type === TargetType.Webhook)
@@ -1152,6 +1168,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
         data={data}
         setData={setData}
         setEditingName={setEditingName}
+        hasError={embedsLength > 6000}
       />
       <Collapsible.Panel
         className={twMerge(collapsibleStyles.editorPanel, "px-4 space-y-2")}
@@ -1383,6 +1400,40 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
             )}
           </EmbedEditorSection>
         </div>
+        {tooManyCharacters ? (
+          <InfoBox severity="red" icon="Circle_Warning">
+            <Trans
+              i18nKey="componentTextTooLarge"
+              count={totalCharacters - MAX_TOTAL_COMPONENTS_CHARACTERS}
+              values={{ maximum: MAX_TOTAL_COMPONENTS_CHARACTERS }}
+            />
+          </InfoBox>
+        ) : (
+          <p className="italic text-sm !mt-0 !-mb-1 text-muted dark:text-muted-dark">
+            <Trans
+              t={t}
+              i18nKey="charactersCount"
+              components={{
+                counter: (
+                  <span
+                    className={
+                      totalCharacters >= MAX_TOTAL_COMPONENTS_CHARACTERS
+                        ? "text-red-300"
+                        : totalCharacters / MAX_TOTAL_COMPONENTS_CHARACTERS >=
+                            0.9
+                          ? "text-yellow-300"
+                          : ""
+                    }
+                  />
+                ),
+              }}
+              values={{
+                current: totalCharacters,
+                maximum: MAX_TOTAL_COMPONENTS_CHARACTERS,
+              }}
+            />
+          </p>
+        )}
         <div className="space-y-1">
           {components.map((component, i) => {
             const key = `${mid}-top-${i}`;

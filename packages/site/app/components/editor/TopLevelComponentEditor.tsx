@@ -221,7 +221,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   drag,
   groupNestLevel = 1,
 }: {
-  t: TFunction<"translation", undefined>;
+  t: TFunction;
   message: QueryData["messages"][number];
   component: APIMessageTopLevelComponent;
   parent: APIContainerComponent | undefined;

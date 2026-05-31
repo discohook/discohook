@@ -1,4 +1,4 @@
-import { twJoin } from "tailwind-merge";
+import { twMerge } from "tailwind-merge";
 import { CoolIcon, type CoolIconsGlyph } from "./icons/CoolIcon";
 
 export const InfoBox: React.FC<
@@ -7,8 +7,9 @@ export const InfoBox: React.FC<
     severity?: "blue" | "yellow" | "red" | "pink";
     collapsible?: boolean;
     open?: boolean;
+    className?: string;
   }>
-> = ({ icon, children, severity, collapsible, open }) => {
+> = ({ icon, children, severity, collapsible, open, className }) => {
   const colors =
     !severity || severity === "blue"
       ? "bg-blurple-100 border-blurple-200 dark:bg-blurple-300 dark:border-blurple-300"
@@ -30,9 +31,10 @@ export const InfoBox: React.FC<
 
   return (
     <div
-      className={twJoin(
+      className={twMerge(
         "mb-4 text-sm font-regular p-2 rounded-lg border-2 dark:font-medium select-none dark:text-black",
         colors,
+        className,
       )}
     >
       {collapsible ? (
