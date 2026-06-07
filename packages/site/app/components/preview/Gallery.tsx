@@ -93,7 +93,7 @@ export const GalleryItem: React.FC<{
   setImageModalData,
   cdn,
 }) => {
-  const { content_type: contentType, url } = attachments[index];
+  const { id, content_type: contentType, url } = attachments[index];
   const youtube = getYoutubeVideoParameters(url);
   const vimeo = getVimeoVideoParameters(url);
   // Preview lighter-weight videos instead of GIF files
@@ -114,10 +114,11 @@ export const GalleryItem: React.FC<{
           rel="noreferrer"
         >
           <img
+            key={id}
             // 0.jpg is more reliable but it seems to always be 4:3 which is
             // undesirable for videos of any other aspect ratio
             src={`https://img.youtube.com/vi/${youtube.id}/maxresdefault.jpg`}
-            className={twJoin("w-full h-full object-cover", itemClassName)}
+            className={twJoin("size-full object-cover", itemClassName)}
             alt="YouTube video thumbnail"
           />
         </a>
@@ -129,7 +130,7 @@ export const GalleryItem: React.FC<{
         //     src={`https://www.youtube-nocookie.com/embed/${youtube.id}${
         //       youtube.seconds != null ? `?start=${youtube.seconds}` : ""
         //     }`}
-        //     className="w-full h-full aspect-video"
+        //     className="size-full aspect-video"
         //     title="YouTube video player"
         //     frameBorder="0"
         //     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -145,15 +146,16 @@ export const GalleryItem: React.FC<{
           rel="noreferrer"
         >
           <img
+            key={id}
             // not sure if this is reliable
             src={`https://vumbnail.com/${vimeo.id}_large.jpg`}
-            className={twJoin("w-full h-full object-cover", itemClassName)}
+            className={twJoin("size-full object-cover", itemClassName)}
             alt="Vimeo video thumbnail"
           />
         </a>
       ) : (
         // biome-ignore lint/a11y/useMediaCaption: User-generated content
-        <video src={url} className={itemClassName} controls />
+        <video key={id} src={url} className={itemClassName} controls />
       )}
     </div>
   ) : contentType === "image/gif" ? (
@@ -174,16 +176,18 @@ export const GalleryItem: React.FC<{
     >
       {cdnGifVideoUrl ? (
         <video
+          key={id}
           src={cdnGifVideoUrl}
-          className={twJoin("w-full h-full object-cover", itemClassName)}
+          className={twJoin("size-full object-cover", itemClassName)}
           autoPlay
           muted
           loop
         />
       ) : (
         <img
+          key={id}
           src={url}
-          className={twJoin("w-full h-full object-cover", itemClassName)}
+          className={twJoin("size-full object-cover", itemClassName)}
           alt=""
         />
       )}
@@ -208,6 +212,7 @@ export const GalleryItem: React.FC<{
       }}
     >
       <img
+        key={id}
         src={url}
         className={twJoin("block object-cover", itemClassName)}
         alt=""
@@ -254,13 +259,13 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
       <div className="grid grid-rows-2 gap-1 h-[350px] w-1/3">
         <GalleryItem
           className="rounded rounded-tr-lg object-center"
-          itemClassName="rounded rounded-tr-lg w-full h-full"
+          itemClassName="rounded rounded-tr-lg size-full"
           {...d}
           index={1}
         />
         <GalleryItem
           className="rounded rounded-br-lg object-center"
-          itemClassName="rounded rounded-br-lg w-full h-full"
+          itemClassName="rounded rounded-br-lg size-full"
           {...d}
           index={2}
         />
@@ -271,25 +276,25 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     <div className="w-full grid grid-cols-2 grid-rows-2 gap-1 max-w-full max-h-[350px] overflow-hidden rounded-lg">
       <GalleryItem
         className="rounded rounded-tl-lg"
-        itemClassName="rounded rounded-tl-lg w-full h-full"
+        itemClassName="rounded rounded-tl-lg size-full"
         {...d}
         index={0}
       />
       <GalleryItem
         className="rounded rounded-tr-lg"
-        itemClassName="rounded rounded-tr-lg w-full h-full"
+        itemClassName="rounded rounded-tr-lg size-full"
         {...d}
         index={1}
       />
       <GalleryItem
         className="rounded rounded-bl-lg"
-        itemClassName="rounded rounded-bl-lg w-full h-full"
+        itemClassName="rounded rounded-bl-lg size-full"
         {...d}
         index={2}
       />
       <GalleryItem
         className="rounded rounded-br-lg"
-        itemClassName="rounded rounded-br-lg w-full h-full"
+        itemClassName="rounded rounded-br-lg size-full"
         {...d}
         index={3}
       />
@@ -387,13 +392,13 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     <div className="w-full grid grid-cols-1 grid-rows-1 gap-1 max-w-full">
       <div className="w-full grid grid-rows-1 grid-cols-2 gap-1">
         <GalleryItem
-          className="rounded rounded-tl-lg w-full h-full object-center aspect-square"
+          className="rounded rounded-tl-lg size-full object-center aspect-square"
           itemClassName="rounded rounded-tl-lg"
           {...d}
           index={0}
         />
         <GalleryItem
-          className="rounded rounded-tr-lg w-full h-full object-center aspect-square"
+          className="rounded rounded-tr-lg size-full object-center aspect-square"
           itemClassName="rounded rounded-tr-lg"
           {...d}
           index={1}
