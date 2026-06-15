@@ -913,10 +913,12 @@ export const executeToggleRole = async (
     if (member.roles.includes(action.roleId)) {
       await rest.delete(
         Routes.guildMemberRole(guildId, setVars.userId, action.roleId),
+        { reason },
       );
     } else {
       await rest.put(
         Routes.guildMemberRole(guildId, setVars.userId, action.roleId),
+        { reason },
       );
     }
   } catch (e) {
