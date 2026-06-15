@@ -1,4 +1,6 @@
+import { Collapsible } from "@base-ui/react";
 import type { APIEmbedField } from "discord-api-types/v10";
+import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
@@ -171,12 +173,13 @@ export const EmbedEditor: React.FC<{
   setData,
   files,
   setFiles,
-  open,
+  open: defaultOpen,
   cache,
   cdn,
 }) => {
   const { t } = useTranslation();
 
+  const [open, setOpen] = useState(defaultOpen ?? false);
   const messageEmbeds = message.data.embeds ?? [];
 
   const updateEmbed = (partialEmbed: Partial<APIEmbed>) => {
@@ -219,49 +222,64 @@ export const EmbedEditor: React.FC<{
   const previewText = getEmbedText(embed);
   const errors = getEmbedErrors(embed);
   return (
-    <details
+    <Collapsible.Root
       className={twJoin(
-        "group/embed relative overflow-hidden rounded-lg py-2 pe-2 ps-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow",
+        "relative rounded-lg py-2 pe-2 ps-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow",
+        // sidebar
         "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:content-['']",
+        // cut off sidebar edges to fit the left curve
+        "overflow-y-hidden",
         embed.color
           ? "before:bg-[--accent-color]"
           : "before:bg-[#D9D9DC] dark:before:bg-[#4A4A50]",
       )}
       open={open}
+      onOpenChange={setOpen}
       style={{
         // @ts-expect-error
         "--accent-color": embed.color ? decimalToHex(embed.color) : "",
       }}
     >
-      <summary className="group-open/embed:mb-2 py-1 px-1 transition-[margin] marker:content-none marker-none flex text-lg font-semibold cursor-default select-none">
-        <CoolIcon
-          icon="Chevron_Right"
-          rtl="Chevron_Left"
-          className="ltr:group-open/embed:rotate-90 rtl:group-open/embed:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-        />
-        {errors.length > 0 && (
+      <div
+        className={twJoin(
+          "flex items-center gap-2 w-full",
+          "text-lg text-gray-600 dark:text-gray-400",
+        )}
+      >
+        <Collapsible.Trigger className="flex items-center gap-2 grow h-full cursor-default select-none truncate">
           <CoolIcon
-            icon="Circle_Warning"
-            className="my-auto text-rose-600 dark:text-rose-400 ltr:mr-1.5 rtl:ml-1.5"
-          />
-        )}
-        {isChild ? (
-          <>
-            <span className="shrink-0">
-              {t("galleryImageN", { replace: { n: localIndex + 2 } })}
-            </span>
-            {embed.image?.url && (
-              <span className="truncate ms-1">- {embed.image.url}</span>
+            icon="Chevron_Right"
+            rtl="Chevron_Left"
+            data-open={open ? "" : null}
+            className={twJoin(
+              "ltr:data-[open]:rotate-90 rtl:data-[open]:-rotate-90",
+              "transition-transform",
             )}
-          </>
-        ) : (
-          <span className="truncate">
-            {t(previewText ? "embedNText" : "embedN", {
-              replace: { n: i + 1, text: previewText },
-            })}
-          </span>
-        )}
-        <div className="ms-auto text-xl space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
+          />
+          {errors.length > 0 && (
+            <CoolIcon
+              icon="Circle_Warning"
+              className="text-rose-600 dark:text-rose-400 -me-1"
+            />
+          )}
+          <p className="font-semibold text-start truncate">
+            {isChild ? (
+              <>
+                <span className="shrink-0">
+                  {t("galleryImageN", { replace: { n: localIndex + 2 } })}
+                </span>
+                {embed.image?.url ? (
+                  <span className="truncate"> - {embed.image.url}</span>
+                ) : null}
+              </>
+            ) : (
+              t(previewText ? "embedNText" : "embedN", {
+                replace: { n: i + 1, text: previewText },
+              })
+            )}
+          </p>
+        </Collapsible.Trigger>
+        <div className="text-xl space-x-2.5 rtl:space-x-reverse shrink-0">
           {!isChild && (
             // Was having issues with this, may re-introduce later
             // For now users just have to manually move gallery items
@@ -310,45 +328,148 @@ export const EmbedEditor: React.FC<{
             <CoolIcon icon="Trash_Full" />
           </button>
         </div>
-      </summary>
-      {errors.length > 0 && (
-        <div className="-mt-1 mb-1">
-          <InfoBox severity="red" icon="Circle_Warning">
-            {errors.map((k) => t(k)).join("\n")}
-          </InfoBox>
-        </div>
-      )}
-      {!isChild && (
-        <>
-          <EmbedEditorSection name={t("author")} open={open}>
+      </div>
+      <Collapsible.Panel
+        className={twJoin(
+          "overflow-hidden transition-all",
+          "h-[--collapsible-panel-height] data-[starting-style]:h-0 data-[ending-style]:h-0",
+          "space-y-2 duration-300",
+          "py-2",
+        )}
+      >
+        {errors.length > 0 && (
+          <div>
+            <InfoBox severity="red" icon="Circle_Warning">
+              {errors.map((k) => t(k)).join("\n")}
+            </InfoBox>
+          </div>
+        )}
+        {!isChild && (
+          <>
+            <EmbedEditorSection className="py-0" name={t("author")} open={open}>
+              <div className="flex">
+                <div className="grow">
+                  <TextArea
+                    label={t("name")}
+                    className="w-full"
+                    maxLength={256}
+                    value={embed.author?.name ?? ""}
+                    short
+                    t={t}
+                    onInput={(e) =>
+                      updateEmbed({
+                        author: {
+                          ...(embed.author ?? {}),
+                          name: e.currentTarget.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                {embed.author?.url === undefined && (
+                  <Button
+                    className="ms-2 mt-auto h-9"
+                    onClick={() =>
+                      updateEmbed({
+                        author: {
+                          ...(embed.author ?? { name: "" }),
+                          url: location.origin,
+                        },
+                      })
+                    }
+                  >
+                    {t("addUrl")}
+                  </Button>
+                )}
+              </div>
+              <div className="grid gap-2 mt-2">
+                {embed.author?.url !== undefined && (
+                  <div className="flex">
+                    <div className="grow">
+                      <TextInput
+                        label={t("authorUrl")}
+                        className="w-full"
+                        type="url"
+                        required
+                        t={t}
+                        value={embed.author?.url ?? ""}
+                        onInput={(e) =>
+                          updateEmbed({
+                            author: {
+                              ...(embed.author ?? { name: "" }),
+                              url: e.currentTarget.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="ms-2 mt-auto mb-1 text-xl"
+                      onClick={() =>
+                        updateEmbed({
+                          author: {
+                            ...(embed.author ?? { name: "" }),
+                            url: undefined,
+                          },
+                        })
+                      }
+                    >
+                      <CoolIcon icon="Close_MD" />
+                    </button>
+                  </div>
+                )}
+                <div className="w-full truncate">
+                  <FileOrUrlInput
+                    t={t}
+                    labelKey="icon"
+                    message={message}
+                    refreshData={() => setData({ ...data })}
+                    files={files}
+                    setFiles={setFiles}
+                    value={embed.author?.icon_url}
+                    onChange={(url) =>
+                      updateEmbed({
+                        author: {
+                          ...(embed.author ?? { name: "" }),
+                          icon_url: url,
+                        },
+                      })
+                    }
+                    cdn={cdn}
+                    gifPrompt
+                  />
+                </div>
+              </div>
+            </EmbedEditorSection>
+            <hr className="border border-gray-500/20" />
+          </>
+        )}
+        <EmbedEditorSection className="py-0" name={t("body")} open={open}>
+          {!isChild ? (
             <div className="flex">
               <div className="grow">
                 <TextArea
-                  label={t("name")}
+                  label={t("title")}
                   className="w-full"
                   maxLength={256}
-                  value={embed.author?.name ?? ""}
+                  value={embed.title ?? ""}
+                  markdown="title"
+                  cache={cache}
                   short
-                  t={t}
                   onInput={(e) =>
                     updateEmbed({
-                      author: {
-                        ...(embed.author ?? {}),
-                        name: e.currentTarget.value,
-                      },
+                      title: e.currentTarget.value || undefined,
                     })
                   }
                 />
               </div>
-              {embed.author?.url === undefined && (
+              {embed.url === undefined && (
                 <Button
                   className="ms-2 mt-auto h-9"
                   onClick={() =>
                     updateEmbed({
-                      author: {
-                        ...(embed.author ?? { name: "" }),
-                        url: location.origin,
-                      },
+                      url: `${location.origin}#default-${randomString(8)}`,
                     })
                   }
                 >
@@ -356,54 +477,258 @@ export const EmbedEditor: React.FC<{
                 </Button>
               )}
             </div>
-            <div className="grid gap-2 mt-2">
-              {embed.author?.url !== undefined && (
-                <div className="flex">
-                  <div className="grow">
-                    <TextInput
-                      label={t("authorUrl")}
-                      className="w-full"
-                      type="url"
-                      required
-                      t={t}
-                      value={embed.author?.url ?? ""}
-                      onInput={(e) =>
-                        updateEmbed({
-                          author: {
-                            ...(embed.author ?? { name: "" }),
-                            url: e.currentTarget.value,
-                          },
-                        })
+          ) : null}
+          <div className="grid gap-2">
+            {(isChild || embed.url !== undefined) && (
+              <div className="flex">
+                <div className="grow">
+                  <TextInput
+                    label={t("titleUrl")}
+                    description={isChild ? t("titleUrlManaged") : ""}
+                    className="w-full"
+                    type="url"
+                    value={embed.url ?? ""}
+                    onInput={(e) => {
+                      if (galleryEmbeds.length > 1) {
+                        const defaultUrl = `${
+                          location.origin
+                        }#default-${randomString(8)}`;
+                        for (const emb of galleryEmbeds) {
+                          emb.url = e.currentTarget.value || defaultUrl;
+                        }
+                        setData({ ...data });
+                      } else {
+                        updateEmbed({ url: e.currentTarget.value });
                       }
-                    />
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  disabled={isChild}
+                  className="ms-2 mt-auto mb-1 text-xl"
+                  onClick={() => {
+                    embed.url = undefined;
+                    message.data.embeds = messageEmbeds.filter(
+                      (e) => !galleryChildren.includes(e),
+                    );
+                    setData({ ...data });
+                  }}
+                >
+                  <CoolIcon icon="Close_MD" />
+                </button>
+              </div>
+            )}
+            {!isChild ? (
+              <ColorPickerPopoverWithTrigger
+                t={t}
+                value={embed.color}
+                onValueChange={(color) => updateEmbed({ color })}
+              />
+            ) : null}
+          </div>
+          {!isChild && (
+            <TextArea
+              label={t("description")}
+              className="w-full h-40"
+              value={embed.description ?? ""}
+              maxLength={4096}
+              markdown="full"
+              cache={cache}
+              onInput={(e) =>
+                updateEmbed({
+                  description: e.currentTarget.value || undefined,
+                })
+              }
+            />
+          )}
+        </EmbedEditorSection>
+        <hr className="border border-gray-500/20" />
+        {!isChild && (
+          <>
+            <EmbedEditorSection className="py-0" name={t("fields")} open={open}>
+              <div className="pt-1">
+                {embed.fields && (
+                  <div className="ms-2 md:ms-4 transition-[margin-inline-start]">
+                    {embed.fields.map((field, fi) => (
+                      <EmbedFieldEditorSection
+                        key={`edit-message-${mi}-embed-${i}-field-${fi}`}
+                        embed={embed}
+                        updateEmbed={updateEmbed}
+                        field={field}
+                        index={fi}
+                        t={t}
+                        open={open}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="grow">
+                            <TextArea
+                              label={t("name")}
+                              value={field.name ?? ""}
+                              maxLength={256}
+                              className="w-full"
+                              markdown="title"
+                              cache={cache}
+                              short
+                              required
+                              t={t}
+                              onInput={(e) => {
+                                field.name = e.currentTarget.value;
+                                updateEmbed({});
+                              }}
+                            />
+                          </div>
+                          <div className="mt-4.5">
+                            <Checkbox
+                              label={t("inline")}
+                              checked={field.inline ?? false}
+                              onCheckedChange={(checked) => {
+                                field.inline = checked;
+                                updateEmbed({});
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <TextArea
+                          label={t("value")}
+                          value={field.value}
+                          maxLength={1024}
+                          className="w-full"
+                          markdown="full"
+                          cache={cache}
+                          required
+                          t={t}
+                          onInput={(e) => {
+                            field.value = e.currentTarget.value;
+                            updateEmbed({});
+                          }}
+                        />
+                      </EmbedFieldEditorSection>
+                    ))}
                   </div>
-                  <button
-                    type="button"
-                    className="ms-2 mt-auto mb-1 text-xl"
-                    onClick={() =>
+                )}
+                <Button
+                  className=""
+                  disabled={!!embed.fields && embed.fields.length >= 25}
+                  onClick={() =>
+                    updateEmbed({
+                      fields: [
+                        ...(embed.fields ?? []),
+                        { name: "", value: "" },
+                      ],
+                    })
+                  }
+                >
+                  {t("addField")}
+                </Button>
+              </div>
+            </EmbedEditorSection>
+            <hr className="border border-gray-500/20" />
+          </>
+        )}
+        <EmbedEditorSection
+          className="py-0"
+          name={t("images")}
+          open={isChild || open}
+        >
+          <div className={galleryChildren.includes(embed) ? "flex" : ""}>
+            <div className="w-full truncate">
+              <FileOrUrlInput
+                t={t}
+                labelKey="largeImageUrl"
+                message={message}
+                refreshData={() => setData({ ...data })}
+                files={files}
+                setFiles={setFiles}
+                value={embed.image?.url}
+                onChange={(url) => updateEmbed({ image: { url } })}
+                cdn={cdn}
+                gifPrompt
+              />
+            </div>
+            <div
+              className={twJoin(
+                "flex gap-2",
+                !galleryChildren.includes(embed)
+                  ? "mt-1 w-full"
+                  : "ml-2 mt-auto",
+              )}
+            >
+              {!galleryChildren.includes(embed) && (
+                <Button
+                  disabled={
+                    !embed.image?.url ||
+                    messageEmbeds.length >= 10 ||
+                    galleryEmbeds.length >= 4
+                  }
+                  onClick={() => {
+                    const url =
+                      embed.url ||
+                      `${location.origin}#gallery-${randomString(8)}`;
+                    embed.url = url;
+                    message.data.embeds = message.data.embeds ?? [];
+                    message.data.embeds.splice(i + 1, 0, { url });
+                    setData({ ...data });
+                  }}
+                >
+                  {t("addAnother")}
+                </Button>
+              )}
+            </div>
+          </div>
+          {!isChild && (
+            <div className="w-full truncate">
+              <FileOrUrlInput
+                t={t}
+                labelKey="thumbnailUrl"
+                message={message}
+                refreshData={() => setData({ ...data })}
+                files={files}
+                setFiles={setFiles}
+                value={embed.thumbnail?.url}
+                onChange={(url) => updateEmbed({ thumbnail: { url } })}
+                cdn={cdn}
+                gifPrompt
+              />
+            </div>
+          )}
+        </EmbedEditorSection>
+        {!isChild && (
+          <>
+            <hr className="border border-gray-500/20" />
+            <EmbedEditorSection className="py-0" name={t("footer")} open={open}>
+              <div className="flex">
+                <div className="grow">
+                  <TextArea
+                    label={t("text")}
+                    className="w-full"
+                    maxLength={2048}
+                    value={embed.footer?.text ?? ""}
+                    short
+                    onInput={(e) =>
                       updateEmbed({
-                        author: {
-                          ...(embed.author ?? { name: "" }),
-                          url: undefined,
+                        footer: {
+                          ...(embed.footer ?? {}),
+                          text: e.currentTarget.value,
                         },
                       })
                     }
-                  >
-                    <CoolIcon icon="Close_MD" />
-                  </button>
+                  />
                 </div>
-              )}
-              <div className="w-full">
+              </div>
+              <div className="w-full truncate">
                 <FileOrUrlInput
                   t={t}
                   labelKey="icon"
+                  message={message}
+                  refreshData={() => setData({ ...data })}
                   files={files}
                   setFiles={setFiles}
-                  value={embed.author?.icon_url}
+                  value={embed.footer?.icon_url}
                   onChange={(url) =>
                     updateEmbed({
-                      author: {
-                        ...(embed.author ?? { name: "" }),
+                      footer: {
+                        ...(embed.footer ?? { text: "" }),
                         icon_url: url,
                       },
                     })
@@ -412,338 +737,62 @@ export const EmbedEditor: React.FC<{
                   gifPrompt
                 />
               </div>
-            </div>
-          </EmbedEditorSection>
-          <hr className="border border-gray-500/20" />
-        </>
-      )}
-      <EmbedEditorSection name={t("body")} open={open}>
-        {!isChild ? (
-          <div className="flex">
-            <div className="grow">
-              <TextArea
-                label={t("title")}
-                className="w-full"
-                maxLength={256}
-                value={embed.title ?? ""}
-                markdown="title"
-                cache={cache}
-                short
-                onInput={(e) =>
-                  updateEmbed({
-                    title: e.currentTarget.value || undefined,
-                  })
-                }
-              />
-            </div>
-            {embed.url === undefined && (
-              <Button
-                className="ms-2 mt-auto h-9"
-                onClick={() =>
-                  updateEmbed({
-                    url: `${location.origin}#default-${randomString(8)}`,
-                  })
-                }
-              >
-                {t("addUrl")}
-              </Button>
-            )}
-          </div>
-        ) : null}
-        <div className="grid gap-2">
-          {(isChild || embed.url !== undefined) && (
-            <div className="flex">
-              <div className="grow">
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <DatePicker
+                  label={t("date")}
+                  value={embed.timestamp ? new Date(embed.timestamp) : null}
+                  onChange={(opt) =>
+                    updateEmbed({
+                      timestamp: opt ? opt.date.toISOString() : undefined,
+                    })
+                  }
+                  isClearable
+                />
                 <TextInput
-                  label={t("titleUrl")}
-                  description={isChild ? t("titleUrlManaged") : ""}
+                  label={t("timeText")}
+                  type="time"
                   className="w-full"
-                  type="url"
-                  value={embed.url ?? ""}
-                  onInput={(e) => {
-                    if (galleryEmbeds.length > 1) {
-                      const defaultUrl = `${
-                        location.origin
-                      }#default-${randomString(8)}`;
-                      for (const emb of galleryEmbeds) {
-                        emb.url = e.currentTarget.value || defaultUrl;
-                      }
-                      setData({ ...data });
-                    } else {
-                      updateEmbed({ url: e.currentTarget.value });
+                  disabled={!embed.timestamp}
+                  step={60}
+                  value={
+                    !embed.timestamp
+                      ? ""
+                      : new Date(embed.timestamp).toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: false,
+                        })
+                  }
+                  onChange={(e) => {
+                    if (embed.timestamp) {
+                      const [hours, minutes] = e.currentTarget.value
+                        .split(":")
+                        .map(Number);
+                      const timestamp = new Date(embed.timestamp);
+                      timestamp.setHours(hours, minutes, 0, 0);
+                      updateEmbed({
+                        timestamp: timestamp.toISOString(),
+                      });
                     }
                   }}
                 />
               </div>
-              <button
-                type="button"
-                disabled={isChild}
-                className="ms-2 mt-auto mb-1 text-xl"
-                onClick={() => {
-                  embed.url = undefined;
-                  message.data.embeds = messageEmbeds.filter(
-                    (e) => !galleryChildren.includes(e),
-                  );
-                  setData({ ...data });
-                }}
-              >
-                <CoolIcon icon="Close_MD" />
-              </button>
-            </div>
-          )}
-          {!isChild ? (
-            <ColorPickerPopoverWithTrigger
-              t={t}
-              value={embed.color}
-              onValueChange={(color) => updateEmbed({ color })}
-            />
-          ) : null}
-        </div>
-        {!isChild && (
-          <TextArea
-            label={t("description")}
-            className="w-full h-40"
-            value={embed.description ?? ""}
-            maxLength={4096}
-            markdown="full"
-            cache={cache}
-            onInput={(e) =>
-              updateEmbed({
-                description: e.currentTarget.value || undefined,
-              })
-            }
-          />
+            </EmbedEditorSection>
+          </>
         )}
-      </EmbedEditorSection>
-      <hr className="border border-gray-500/20" />
-      {!isChild && (
-        <>
-          <EmbedEditorSection name={t("fields")} open={open}>
-            {embed.fields && (
-              <div className="ms-2 md:ms-4 transition-[margin-inline-start]">
-                {embed.fields.map((field, fi) => (
-                  <EmbedFieldEditorSection
-                    key={`edit-message-${mi}-embed-${i}-field-${fi}`}
-                    embed={embed}
-                    updateEmbed={updateEmbed}
-                    field={field}
-                    index={fi}
-                    t={t}
-                    open={open}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="grow">
-                        <TextArea
-                          label={t("name")}
-                          value={field.name ?? ""}
-                          maxLength={256}
-                          className="w-full"
-                          markdown="title"
-                          cache={cache}
-                          short
-                          required
-                          t={t}
-                          onInput={(e) => {
-                            field.name = e.currentTarget.value;
-                            updateEmbed({});
-                          }}
-                        />
-                      </div>
-                      <div className="mt-4.5">
-                        <Checkbox
-                          label={t("inline")}
-                          checked={field.inline ?? false}
-                          onCheckedChange={(checked) => {
-                            field.inline = checked;
-                            updateEmbed({});
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <TextArea
-                      label={t("value")}
-                      value={field.value}
-                      maxLength={1024}
-                      className="w-full"
-                      markdown="full"
-                      cache={cache}
-                      required
-                      t={t}
-                      onInput={(e) => {
-                        field.value = e.currentTarget.value;
-                        updateEmbed({});
-                      }}
-                    />
-                  </EmbedFieldEditorSection>
-                ))}
-              </div>
-            )}
-            <Button
-              disabled={!!embed.fields && embed.fields.length >= 25}
-              onClick={() =>
-                updateEmbed({
-                  fields: [...(embed.fields ?? []), { name: "", value: "" }],
-                })
-              }
-            >
-              {t("addField")}
-            </Button>
-          </EmbedEditorSection>
-          <hr className="border border-gray-500/20" />
-        </>
-      )}
-      <EmbedEditorSection name={t("images")} open={isChild || open}>
-        <div className={galleryChildren.includes(embed) ? "flex" : ""}>
-          <div className="w-full">
-            <FileOrUrlInput
-              t={t}
-              labelKey="largeImageUrl"
-              files={files}
-              setFiles={setFiles}
-              value={embed.image?.url}
-              onChange={(url) => updateEmbed({ image: { url } })}
-              cdn={cdn}
-              gifPrompt
-            />
-          </div>
-          <div
-            className={twJoin(
-              "flex gap-2",
-              !galleryChildren.includes(embed) ? "mt-1 w-full" : "ml-2 mt-auto",
-            )}
-          >
-            {!galleryChildren.includes(embed) && (
-              <Button
-                className="h-9"
-                disabled={
-                  !embed.image?.url ||
-                  messageEmbeds.length >= 10 ||
-                  galleryEmbeds.length >= 4
-                }
-                onClick={() => {
-                  const url =
-                    embed.url ||
-                    `${location.origin}#gallery-${randomString(8)}`;
-                  embed.url = url;
-                  message.data.embeds = message.data.embeds ?? [];
-                  message.data.embeds.splice(i + 1, 0, { url });
-                  setData({ ...data });
-                }}
-              >
-                {t("addAnother")}
-              </Button>
-            )}
-          </div>
-        </div>
-        {!isChild && (
-          <div className="w-full">
-            <FileOrUrlInput
-              t={t}
-              labelKey="thumbnailUrl"
-              files={files}
-              setFiles={setFiles}
-              value={embed.thumbnail?.url}
-              onChange={(url) => updateEmbed({ thumbnail: { url } })}
-              cdn={cdn}
-              gifPrompt
-            />
-          </div>
-        )}
-      </EmbedEditorSection>
-      {!isChild && (
-        <>
-          <hr className="border border-gray-500/20" />
-          <EmbedEditorSection name={t("footer")} open={open}>
-            <div className="flex">
-              <div className="grow">
-                <TextArea
-                  label={t("text")}
-                  className="w-full"
-                  maxLength={2048}
-                  value={embed.footer?.text ?? ""}
-                  short
-                  onInput={(e) =>
-                    updateEmbed({
-                      footer: {
-                        ...(embed.footer ?? {}),
-                        text: e.currentTarget.value,
-                      },
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="w-full">
-              <FileOrUrlInput
-                t={t}
-                labelKey="icon"
-                files={files}
-                setFiles={setFiles}
-                value={embed.footer?.icon_url}
-                onChange={(url) =>
-                  updateEmbed({
-                    footer: {
-                      ...(embed.footer ?? { text: "" }),
-                      icon_url: url,
-                    },
-                  })
-                }
-                cdn={cdn}
-                gifPrompt
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <DatePicker
-                label={t("date")}
-                value={embed.timestamp ? new Date(embed.timestamp) : null}
-                onChange={(opt) =>
-                  updateEmbed({
-                    timestamp: opt ? opt.date.toISOString() : undefined,
-                  })
-                }
-                isClearable
-              />
-              <TextInput
-                label={t("timeText")}
-                type="time"
-                className="w-full"
-                disabled={!embed.timestamp}
-                step={60}
-                value={
-                  !embed.timestamp
-                    ? ""
-                    : new Date(embed.timestamp).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: false,
-                      })
-                }
-                onChange={(e) => {
-                  if (embed.timestamp) {
-                    const [hours, minutes] = e.currentTarget.value
-                      .split(":")
-                      .map(Number);
-                    const timestamp = new Date(embed.timestamp);
-                    timestamp.setHours(hours, minutes, 0, 0);
-                    updateEmbed({
-                      timestamp: timestamp.toISOString(),
-                    });
-                  }
-                }}
-              />
-            </div>
-          </EmbedEditorSection>
-        </>
-      )}
-    </details>
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 };
 
 export const EmbedEditorSection: React.FC<
   React.PropsWithChildren<{
     name: string;
+    hasError?: boolean;
+    hasWarning?: boolean;
     open?: boolean;
     className?: string;
+    panelClassName?: string;
     actionsBar?: Partial<{
       up: { hidden?: boolean; onClick: () => void };
       down: { hidden?: boolean; onClick: () => void };
@@ -751,23 +800,54 @@ export const EmbedEditorSection: React.FC<
       delete: { hidden?: boolean; onClick: () => void };
     }>;
   }>
-> = ({ name, open, children, className, actionsBar }) => {
+> = ({
+  name,
+  hasError,
+  hasWarning,
+  open: defaultOpen,
+  children,
+  className,
+  panelClassName,
+  actionsBar,
+}) => {
+  const [open, setOpen] = useState(defaultOpen ?? false);
   return (
-    <details
-      className={twMerge("group/editor-section p-2", className)}
+    <Collapsible.Root
+      className={twMerge("p-2", className)}
       open={open}
+      onOpenChange={setOpen}
     >
-      <summary className="group-open/editor-section:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-        <div className="my-auto flex">
+      <div
+        className={twJoin(
+          "flex items-center gap-2 w-full",
+          "text-base text-gray-600 dark:text-gray-400",
+        )}
+      >
+        <Collapsible.Trigger className="flex items-center gap-2 grow h-full cursor-default select-none truncate">
           <CoolIcon
             icon="Chevron_Right"
             rtl="Chevron_Left"
-            className="ltr:group-open/editor-section:rotate-90 rtl:group-open/editor-section:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+            data-open={open ? "" : null}
+            className={twJoin(
+              "ltr:data-[open]:rotate-90 rtl:data-[open]:-rotate-90",
+              "transition-transform",
+            )}
           />
-          {name}
-        </div>
+          {hasError ? (
+            <CoolIcon
+              icon="Circle_Warning"
+              className="text-rose-600 dark:text-rose-400 -me-1"
+            />
+          ) : hasWarning ? (
+            <CoolIcon
+              icon="Triangle_Warning"
+              className="text-yellow-600 dark:text-yellow-200 -me-1"
+            />
+          ) : null}
+          <p className="font-semibold text-start truncate">{name}</p>
+        </Collapsible.Trigger>
         {actionsBar && Object.keys(actionsBar).length === 0 ? null : (
-          <div className="ltr:ml-auto rtl:mr-auto text-base space-x-2 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
+          <div className="text-base space-x-2 rtl:space-x-reverse shrink-0 pe-2">
             {actionsBar?.up ? (
               <button
                 type="button"
@@ -806,82 +886,99 @@ export const EmbedEditorSection: React.FC<
             ) : null}
           </div>
         )}
-      </summary>
-      <div className="space-y-2">{children}</div>
-    </details>
+      </div>
+      <Collapsible.Panel
+        className={twMerge(
+          "overflow-hidden transition-all",
+          "h-[--collapsible-panel-height] data-[starting-style]:h-0 data-[ending-style]:h-0",
+          "space-y-2 duration-300",
+          panelClassName,
+        )}
+      >
+        {children}
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 };
 
-export const EmbedFieldEditorSection: React.FC<
+const EmbedFieldEditorSection: React.FC<
   React.PropsWithChildren<{
+    t: TFunction;
     embed: APIEmbed;
     updateEmbed: (partialEmbed: Partial<APIEmbed>) => void;
     field: APIEmbedField;
     index: number;
-    t: TFunction;
     open?: boolean;
   }>
-> = ({ embed, updateEmbed, field, index, t, open, children }) => {
+> = ({ t, embed, updateEmbed, field, index, open, children }) => {
   const previewText = (field.name?.trim() || field.value?.trim()) ?? "";
   const embedFields = embed.fields ?? [];
   return (
-    <details className="group/field pb-2 -my-1" open={open}>
-      <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
-        <CoolIcon
-          icon="Chevron_Right"
-          rtl="Chevron_Left"
-          className="ltr:group-open/field:rotate-90 rtl:group-open/field:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
-        />
-        <span className="truncate">
-          {t(previewText ? "fieldNText" : "fieldN", {
-            replace: { n: index + 1, text: previewText },
-          })}
-        </span>
-        <div className="ml-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
-          <button
-            type="button"
-            className={index === 0 ? "hidden" : ""}
-            onClick={() => {
-              embedFields.splice(index, 1);
-              embedFields.splice(index - 1, 0, field);
-              updateEmbed({});
-            }}
-          >
-            <CoolIcon icon="Chevron_Up" />
-          </button>
-          <button
-            type="button"
-            className={index === embedFields.length - 1 ? "hidden" : ""}
-            onClick={() => {
-              embedFields.splice(index, 1);
-              embedFields.splice(index + 1, 0, field);
-              updateEmbed({});
-            }}
-          >
-            <CoolIcon icon="Chevron_Down" />
-          </button>
-          <button
-            type="button"
-            className={embedFields.length >= 25 ? "hidden" : ""}
-            onClick={() => {
-              embedFields.splice(index + 1, 0, structuredClone(field));
-              updateEmbed({});
-            }}
-          >
-            <CoolIcon icon="Copy" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              embedFields.splice(index, 1);
-              updateEmbed({});
-            }}
-          >
-            <CoolIcon icon="Trash_Full" />
-          </button>
-        </div>
-      </summary>
-      <div className="space-y-2">{children}</div>
-    </details>
+    <EmbedEditorSection
+      className="p-0 mb-1.5 data-[open]:mb-2 transition-[margin-bottom]"
+      open={open}
+      name={t(previewText ? "fieldNText" : "fieldN", {
+        replace: { n: index + 1, text: previewText },
+      })}
+      actionsBar={{
+        up: {
+          hidden: index === 0,
+          onClick() {
+            embedFields.splice(index, 1);
+            embedFields.splice(index - 1, 0, field);
+            updateEmbed({});
+          },
+        },
+        down: {
+          hidden: index === embedFields.length - 1,
+          onClick() {
+            embedFields.splice(index, 1);
+            embedFields.splice(index + 1, 0, field);
+            updateEmbed({});
+          },
+        },
+        copy: {
+          hidden: embedFields.length >= 25,
+          onClick() {
+            embedFields.splice(index + 1, 0, structuredClone(field));
+            updateEmbed({});
+          },
+        },
+        delete: {
+          onClick() {
+            embedFields.splice(index, 1);
+            updateEmbed({});
+          },
+        },
+      }}
+    >
+      {children}
+    </EmbedEditorSection>
   );
+  // return (
+  //   <details className="group/field pb-2 -my-1" open={open}>
+  //     <summary className="group-open/field:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
+  //       <CoolIcon
+  //         icon="Chevron_Right"
+  //         rtl="Chevron_Left"
+  //         className="ltr:group-open/field:rotate-90 rtl:group-open/field:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+  //       />
+  //       <span className="truncate">{}</span>
+  //       <div className="ml-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">
+  //         <button
+  //           type="button"
+  //           className={index === 0 ? "hidden" : ""}
+  //           onClick={() => {
+  //             embedFields.splice(index, 1);
+  //             embedFields.splice(index - 1, 0, field);
+  //             updateEmbed({});
+  //           }}
+  //         >
+  //           <CoolIcon icon="Chevron_Up" />
+  //         </button>
+  //       </div>
+  //     </summary>
+  //     <div className="space-y-2">{children}</div>
+  //   </details>
+  // );
 };
