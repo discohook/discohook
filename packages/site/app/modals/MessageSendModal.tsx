@@ -39,10 +39,12 @@ import {
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
+  DraftRawFile,
   executeWebhook,
   hasCustomId,
   isActionRow,
   isComponentsV2,
+  isSnowflakeSafe,
   onlyActionRows,
   updateWebhookMessage,
 } from "~/util/discord";
@@ -100,6 +102,80 @@ export const submitMessage = async (
       },
     };
   }
+
+  const newFiles: DraftRawFile[] = [...(files ?? [])].map((f) => ({
+    ...f,
+    key: `files[${f.id}]`,
+  }));
+  await Promise.all(
+    (message.data.attachments ?? []).map((attachment) =>
+      (async () => {
+        // We're already providing data, don't bother checking anything else
+        const file = files?.find((f) => f.id === attachment.id);
+        if (file) return;
+
+        if (attachment.url && !attachment.url.startsWith("blob:")) {
+          // References to this attachment will be replaced with the plain
+          // URL, so we do not need to download it
+          if (attachment.placement_count) return;
+
+          if (
+            attachment.id.length >= 18 &&
+            isSnowflakeSafe(attachment.id) &&
+            message.reference
+          ) {
+            // This is probably already an attachment on the message and so we
+            // don't need to provide data with it
+            return;
+          }
+
+          let res: Response;
+          try {
+            res = await fetch(attachment.url);
+          } catch (e) {
+            return {
+              status: "error",
+              data: {
+                code: -1,
+                message: `Failed to fetch the remote attachment at ${attachment.url}`,
+                errors: { message: String(e instanceof Error ? e.message : e) },
+              },
+            };
+          }
+          const contentType = res.headers.get("Content-Type")?.split(";")[0];
+          if (!res.ok) {
+            // The preview will still display non-OK media because browsers are
+            // fine with it. Perform a superficial check to make sure the returned
+            // content is at least not a completely different type of data, like text.
+            // Usually, this will not even happen, because the response won't have
+            // included appropriate CORS headers for this script-initiated request.
+            // To solve that, I wanted to draw the <img/> on a canvas and save the
+            // canvas to a data URL, but I felt that was entirely too complicated
+            // for the edge case of reading images served with a bad response.
+            const prefix = attachment.content_type?.split("/")?.[0];
+            if (!prefix || !contentType?.startsWith(prefix)) {
+              return {
+                status: "error",
+                data: {
+                  code: -1,
+                  message: `Recevied HTTP ${res.status} for attachment ${attachment.filename} via ${attachment.url}`,
+                },
+              };
+            }
+          }
+
+          const blob = await res.blob();
+          newFiles.push({
+            id: attachment.id,
+            file: new File([blob], attachment.filename, {
+              type: contentType ?? attachment.content_type,
+            }),
+            key: `files[${attachment.id}]`,
+          });
+        }
+      })(),
+    ),
+  );
 
   switch (target.type) {
     case TargetType.Webhook: {
@@ -196,10 +272,13 @@ export const submitMessage = async (
             flags: message.data.flags,
             allowed_mentions: message.data.allowed_mentions,
           },
-          files,
-          message.thread_id ?? orThreadId,
-          rest,
-          withComponents,
+          {
+            files: newFiles,
+            attachments: message.data.attachments,
+            threadId: message.thread_id ?? orThreadId,
+            rest,
+            withComponents,
+          },
         );
       } else {
         const threadName = message.data.thread_name?.trim();
@@ -221,10 +300,15 @@ export const submitMessage = async (
             thread_name: threadName || undefined,
             allowed_mentions: message.data.allowed_mentions,
           },
-          files,
-          threadName ? undefined : (message.thread_id ?? orThreadId),
-          rest,
-          withComponents,
+          {
+            files: newFiles,
+            attachments: message.data.attachments,
+            threadId: threadName
+              ? undefined
+              : (message.thread_id ?? orThreadId),
+            rest,
+            withComponents,
+          },
         );
       }
       return {
@@ -260,7 +344,7 @@ export const submitMessage = async (
             }) ?? [],
           flags: Number(flags.value),
         },
-        files,
+        { files: newFiles, attachments: message.data.attachments },
       );
 
       return {

@@ -12,13 +12,8 @@ import { twJoin, twMerge } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
 import type { Target } from "~/modals/MessageSendModal";
 import { getGenericTargetInfo } from "~/modals/TargetAddModal";
-import type { DraftFile } from "~/routes/_index";
 import type { LinkEmbedStrategy, QueryData } from "~/types/QueryData";
-import {
-  TargetType,
-  type APIAttachment,
-  type APIEmbed,
-} from "~/types/QueryData-raw";
+import { TargetType, type APIEmbed } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { cdn, isComponentsV2 } from "~/util/discord";
 import type { Settings } from "~/util/localstorage";
@@ -105,7 +100,6 @@ export const Message: React.FC<{
   cache?: CacheManager;
   index?: number;
   data?: QueryData;
-  files?: DraftFile[];
   targets?: Target[];
   messageDisplay?: Settings["messageDisplay"];
   compactAvatars?: boolean;
@@ -122,7 +116,6 @@ export const Message: React.FC<{
   cache,
   index,
   data,
-  files,
   targets,
   messageDisplay,
   compactAvatars,
@@ -209,23 +202,9 @@ export const Message: React.FC<{
   // in galleries or with the file component
   const allAttachments = isComponentsV2(message)
     ? []
-    : [
-        ...(message.attachments ?? []),
-        ...(files
-          ?.filter((f) => f.embed !== true && f.is_thumbnail !== true)
-          ?.map(
-            ({ id, file, url, duration_secs }) =>
-              ({
-                id,
-                filename: file.name,
-                size: file.size,
-                content_type: file.type,
-                url: url ?? "#",
-                proxy_url: "#",
-                duration_secs,
-              }) satisfies APIAttachment,
-          ) ?? []),
-      ];
+    : (message.attachments ?? []).filter(
+        (a) => !a.placement_count && !a.is_thumbnail,
+      );
   const fileAttachments = allAttachments.filter(
     (a) =>
       !a.content_type ||
@@ -236,10 +215,10 @@ export const Message: React.FC<{
       a.content_type &&
       ["video", "image"].includes(a.content_type.split("/")[0]),
   );
-  const threadThumbnailFile = files?.find((f) => f.is_thumbnail);
+  const threadThumbnailFile = message.attachments?.find((a) => a.is_thumbnail);
 
   return (
-    <div className={twJoin("dark:text-primary-230")} dir="ltr">
+    <div className="dark:text-primary-230" dir="ltr">
       {
         // Show forum header when there is a thread name OR there is a
         // thread ID and post thumbnail file (thus editing the starter
@@ -252,18 +231,19 @@ export const Message: React.FC<{
           <div>
             <div className="flex">
               <div className="shrink-0">
-                <div className="w-16 h-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
-                  <PostChannelIcon className="w-10 h-10" />
+                <div className="size-16 rounded-full mt-4 flex items-center justify-center bg-background-secondary dark:bg-background-secondary-dark">
+                  <PostChannelIcon className="size-10" />
                 </div>
                 <h3 className="font-medium select-text my-2 text-[32px] leading-5">
                   {message.thread_name || t("thread")}
                 </h3>
               </div>
               {threadThumbnailFile?.url &&
-              threadThumbnailFile.file.type.startsWith("image/") ? (
-                <div
-                  className="ml-auto mt-auto rounded-md h-20 aspect-video bg-cover bg-center shadow"
-                  style={{ backgroundImage: `url(${threadThumbnailFile.url})` }}
+              threadThumbnailFile.content_type?.startsWith("image/") ? (
+                <img
+                  className="ml-auto mt-auto rounded-md h-20 aspect-video object-cover object-center shadow"
+                  src={threadThumbnailFile.url}
+                  alt=""
                 />
               ) : null}
             </div>
@@ -297,7 +277,7 @@ export const Message: React.FC<{
                 />
                 <Avatar.Fallback>
                   <img
-                    className="rounded-full h-10 w-10 hover:shadow-lg"
+                    className="rounded-full size-10 hover:shadow-lg"
                     src={cdn.defaultAvatar(0)}
                     alt={username}
                   />
@@ -403,7 +383,7 @@ export const Message: React.FC<{
                   <Embed
                     key={`message-preview-embed-${i}`}
                     {...embedData}
-                    files={files}
+                    attachments={message.attachments}
                     setImageModalData={setImageModalData}
                     cache={cache}
                     isLinkEmbed={isLinkEmbedEditor}
@@ -430,7 +410,7 @@ export const Message: React.FC<{
                         key={`top-level-component-${i}`}
                         component={component}
                         cache={cache}
-                        files={files}
+                        attachments={message.attachments}
                         setImageModalData={setImageModalData}
                         cdn={cdnOrigin}
                       />

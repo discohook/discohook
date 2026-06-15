@@ -1,7 +1,7 @@
 import { type APISectionComponent, ComponentType } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
-import type { DraftFile } from "~/routes/_index";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { PreviewButton } from "./ActionRow";
 import { getImageUri } from "./Embed";
@@ -9,10 +9,10 @@ import { PreviewTextDisplay } from "./TextDisplay";
 
 export const PreviewSection: React.FC<{
   component: APISectionComponent;
-  files?: DraftFile[];
+  attachments?: APIAttachment[];
   cache: CacheManager | undefined;
   setImageModalData?: SetImageModalData;
-}> = ({ component, files, cache, setImageModalData }) => {
+}> = ({ component, attachments, cache, setImageModalData }) => {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex gap-3 justify-between">
@@ -63,7 +63,7 @@ export const PreviewSection: React.FC<{
                           {
                             url: getImageUri(
                               component.accessory.media.url,
-                              files,
+                              attachments,
                             ),
                             alt: component.accessory.description ?? undefined,
                           },
@@ -75,7 +75,10 @@ export const PreviewSection: React.FC<{
                 >
                   <img
                     className="block max-h-inherit m-auto w-[170px] h-full cursor-pointer object-cover"
-                    src={getImageUri(component.accessory.media.url, files)}
+                    src={getImageUri(
+                      component.accessory.media.url,
+                      attachments,
+                    )}
                     alt=""
                   />
                 </button>

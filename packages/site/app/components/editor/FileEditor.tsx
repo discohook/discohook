@@ -8,6 +8,7 @@ import { twJoin } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import {
+  attachmentFromFile,
   fileInputChangeHandler,
   MAX_FILES_PER_MESSAGE,
   transformFileName,
@@ -41,8 +42,12 @@ export const FileEditor: React.FC<{
   setFiles,
 }) => {
   const { t } = useTranslation();
-  // const mid = getQdMessageId(message);
-  const file = resolveAttachmentUri(component.file.url, files, true);
+  const attachments = message.data.attachments ?? [];
+  const attachment = resolveAttachmentUri(
+    component.file.url,
+    attachments,
+    true,
+  );
 
   const id = randomString(10);
   return (
@@ -66,22 +71,32 @@ export const FileEditor: React.FC<{
               className="peer h-9 min-w-0 grow max-w-full px-4"
               onChange={async (list) => {
                 if (files.length >= MAX_FILES_PER_MESSAGE) return;
-
                 const draftFile = list[0];
-                const newFiles = file
-                  ? // Remove the previous file from the payload
-                    files.filter((f) => f.id !== file.id)
+
+                const newAttachments = attachment
+                  ? attachments.filter((a) => a !== attachment)
+                  : [...attachments];
+                const oldFile = attachment
+                  ? files.find((f) => f.id === attachment.id)
+                  : undefined;
+                const newFiles = oldFile
+                  ? files.filter((f) => f !== oldFile)
                   : [...files];
-                newFiles.push({
-                  id: randomString(10),
+
+                const newFile: DraftFile = {
+                  id: randomString(15, true),
                   file: draftFile,
                   url: URL.createObjectURL(draftFile),
-                });
+                };
+                newFiles.push(newFile);
                 setFiles(newFiles);
+                const att = attachmentFromFile(newFile);
+                newAttachments.push(att);
 
                 component.file.url = `attachment://${transformFileName(
-                  draftFile.name,
+                  att.filename,
                 )}`;
+                message.data.attachments = newAttachments;
                 setData({ ...data });
               }}
             />
@@ -90,12 +105,22 @@ export const FileEditor: React.FC<{
               type="file"
               hidden
               onChange={async (e) => {
-                const handler = fileInputChangeHandler(files, setFiles);
+                const handler = fileInputChangeHandler(
+                  files,
+                  setFiles,
+                  attachments,
+                  (newAttachments) => {
+                    message.data.attachments = newAttachments;
+                    setData({ ...data });
+                  },
+                );
                 const draftFiles = await handler(e);
                 if (!draftFiles) return;
-                if (file) {
-                  // Remove the previous file from the payload
-                  setFiles(files.filter((f) => f.id !== file.id));
+                if (attachment) {
+                  // Remove the previous attachment from the payload
+                  message.data.attachments = attachments.filter(
+                    (a) => a !== attachment,
+                  );
                 }
 
                 component.file.url = `attachment://${transformFileName(
@@ -119,11 +144,11 @@ export const FileEditor: React.FC<{
               disabled={files.length >= MAX_FILES_PER_MESSAGE}
               discordstyle={ButtonStyle.Primary}
             >
-              {t(file ? "replaceFile" : "addFile")}
+              {t(attachment ? "replaceFile" : "addFile")}
             </Button>
           </div>
         </div>
-        {file ? (
+        {attachment ? (
           <Checkbox
             label={t("markSpoiler")}
             checked={component.spoiler ?? false}

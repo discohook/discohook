@@ -1,3 +1,5 @@
+import { FilehostUploadResponse } from ".";
+
 export const BASE = "https://imgbb.com";
 const BASE_API = "https://api.imgbb.com/1";
 
@@ -103,12 +105,14 @@ interface IbbOptions {
   height?: number;
   description?: string;
   title?: string;
+  onUploadProgress?: (progress: number) => void;
+  onUploadEnd?: () => void;
 }
 
 export const uploadFile = async (
   fileOrUrl: string | Blob,
   options?: IbbOptions,
-) => {
+): Promise<FilehostUploadResponse> => {
   const body = new FormData();
   if (typeof fileOrUrl === "string") {
     body.set("source", fileOrUrl);
@@ -126,16 +130,50 @@ export const uploadFile = async (
   if (options?.width) body.set("width", String(options.width));
   if (options?.height) body.set("height", String(options.height));
 
-  const res = await fetch(`${BASE}/json`, {
-    method: "POST",
-    body,
-    headers:
-      !isBrowser && options?.cookie ? { Cookie: options.cookie } : undefined,
+  // Thanks https://stackoverflow.com/a/69400632
+  // I suppose I could have put some more time into seeing whether other browsers
+  // now support using fetch for this, but I don't exactly need to be cutting edge
+  // when this solution suffices just fine.
+  const xhr = new XMLHttpRequest();
+  const data = await new Promise<UploadSuccess | null>((resolve) => {
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        options?.onUploadProgress?.(event.loaded / event.total);
+      }
+    });
+    xhr.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        options?.onUploadProgress?.(event.loaded / event.total);
+      }
+    });
+    xhr.addEventListener("loadend", () => {
+      options?.onUploadEnd?.();
+      resolve(
+        xhr.readyState === 4 && xhr.status === 200
+          ? (JSON.parse(xhr.responseText) as UploadSuccess)
+          : null,
+      );
+    });
+    xhr.open("POST", `${BASE}/json`, true);
+    // is this even supported in node? lol
+    if (!isBrowser && options?.cookie) {
+      xhr.setRequestHeader("Cookie", options.cookie);
+    }
+    xhr.send(body);
   });
-  if (!res.ok) {
-    throw Error(`Failed to upload image: HTTP ${res.status}`);
+  if (!data) {
+    let text = `HTTP ${xhr.status}`;
+    try {
+      const err = JSON.parse(xhr.responseText);
+      if (err.error) {
+        text = `${err.error.code}: ${err.error.message}`;
+      } else if (err.status_txt) {
+        text = err.status_txt;
+      }
+    } catch {}
+    throw Error(`Failed to upload: ${text}`);
   }
-  const data = (await res.json()) as UploadSuccess;
+
   return {
     url: data.image.url,
     delete_url: data.image.delete_url,

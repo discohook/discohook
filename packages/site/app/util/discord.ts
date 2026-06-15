@@ -50,7 +50,10 @@ import type {
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
 } from "~/types/QueryData";
-import type { QueryDataMessageDataRaw } from "~/types/QueryData-raw";
+import type {
+  APIAttachment,
+  QueryDataMessageDataRaw,
+} from "~/types/QueryData-raw";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "./constants";
 import { transformFileName } from "./files";
 import { sleep } from "./time";
@@ -64,12 +67,14 @@ export const DISCORD_BOT_TOKEN_RE =
 export const getSnowflakeDate = (snowflake: string) =>
   getDate(snowflake as Snowflake);
 
+export type DraftRawFile = DraftFile & Pick<RawFile, "key">;
+
 export const discordRequest = async <T>(
   method: RequestMethod,
   route: `/${string}`,
   options?: {
     query?: URLSearchParams;
-    files?: DraftFile[];
+    files?: DraftRawFile[];
     init?: Omit<RequestInit, "method">;
     rest?: REST;
   },
@@ -81,8 +86,9 @@ export const discordRequest = async <T>(
   if (options?.rest) {
     const files: RawFile[] = [];
     if (options.files) {
-      for (const { file } of options.files) {
+      for (const { file, key } of options.files) {
         files.push({
+          key,
           name: file.name,
           contentType: file.type,
           data: await file.bytes(),
@@ -117,8 +123,8 @@ export const discordRequest = async <T>(
     body.set("payload_json", JSON.stringify(payload));
 
     let i = 0;
-    for (const { file } of options.files) {
-      body.append(`files[${i}]`, file, file.name);
+    for (const { file, key } of options.files) {
+      body.append(key ?? `files[${i}]`, file, file.name);
       i += 1;
     }
   } else {
@@ -179,16 +185,21 @@ export const getWebhookMessage = async (
   return data;
 };
 
-const cascadeFileNameChange = (
-  files: { oldName: string; newName: string }[],
+const cascadeFileNameChangeEmbeds = (
+  files: { oldName: string; newName: string; newUri?: string }[],
   embeds: APIEmbed[],
 ) => {
   if (files.length === 0) return embeds;
 
   const newEmbeds = structuredClone(embeds);
-  for (const { oldName, newName } of files) {
+  for (const {
+    oldName,
+    newName,
+    newUri = `attachment://${transformFileName(newName)}`,
+  } of files) {
     const uri = `attachment://${transformFileName(oldName)}`;
-    const newUri = `attachment://${transformFileName(newName)}`;
+    if (uri === newUri) continue;
+
     for (const embed of newEmbeds) {
       if (embed.author?.icon_url?.trim() === uri) {
         embed.author.icon_url = newUri;
@@ -207,6 +218,47 @@ const cascadeFileNameChange = (
   return newEmbeds;
 };
 
+const cascadeFileNameChangeComponents = (
+  files: { oldName: string; newName: string; newUri?: string }[],
+  components: APIMessageTopLevelComponent[],
+) => {
+  if (files.length === 0) return components;
+
+  const newComponents = structuredClone(components);
+  const applicable = extractComponentsByType(newComponents, [
+    ComponentType.File,
+    ComponentType.MediaGallery,
+    ComponentType.Thumbnail,
+  ]);
+  for (const {
+    oldName,
+    newName,
+    newUri = `attachment://${transformFileName(newName)}`,
+  } of files) {
+    const uri = `attachment://${transformFileName(oldName)}`;
+    if (uri === newUri) continue;
+
+    for (const component of applicable) {
+      switch (component.type) {
+        case ComponentType.File:
+          if (component.file.url.trim() === uri) component.file.url = newUri;
+          break;
+        case ComponentType.Thumbnail:
+          if (component.media.url.trim() === uri) component.media.url = newUri;
+          break;
+        case ComponentType.MediaGallery:
+          for (const item of component.items) {
+            if (item.media.url.trim() === uri) item.media.url = newUri;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  return newComponents;
+};
+
 export const createFakeWaveform = (): string => {
   // basically empty waveform with no audio
   // spikes. this resolves to `AA==`
@@ -219,15 +271,49 @@ export const createFakeWaveform = (): string => {
   }
 };
 
+const apiAttachmentsToPayloadAttachments = (
+  attachments: APIAttachment[],
+  isThread?: boolean,
+): NonNullable<RESTPostAPIWebhookWithTokenJSONBody["attachments"]> =>
+  attachments.map((attachment) => ({
+    id: attachment.id,
+    // id: String(i),
+    filename: attachment.spoiler
+      ? `SPOILER_${attachment.filename}`
+      : attachment.filename,
+    description: attachment.description,
+    flags: attachment.flags,
+    // This is undocumented! Therefore we are taking precautions:
+    // Only provide any value when it is true and the user is creating a
+    // thread; narrows erroneous behavior if is_thumbnail suddenly gets
+    // blocked for example - users can simply not mark files as thumbnails
+    // instead of requiring an immediate patch.
+    is_thumbnail: attachment.is_thumbnail && isThread ? true : undefined,
+    // It's not officially supported for webhooks to send voice messages.
+    // Hopefully this does not cause issues down the line with regular audio
+    // files - I expect discord will just ignore it if N/A.
+    duration_secs: attachment.duration_secs,
+    waveform:
+      attachment.waveform ??
+      (attachment.duration_secs !== undefined
+        ? createFakeWaveform()
+        : undefined),
+  }));
+
 export const executeWebhook = async (
   webhookId: string,
   webhookToken: string,
   payload: RESTPostAPIWebhookWithTokenJSONBody,
-  files?: DraftFile[],
-  threadId?: string,
-  rest?: REST,
-  withComponents?: boolean,
+  options: {
+    files?: DraftRawFile[];
+    attachments?: APIAttachment[];
+    threadId?: string;
+    rest?: REST;
+    withComponents?: boolean;
+  },
 ) => {
+  const { files, attachments, threadId, rest, withComponents } = options;
+
   const query = new URLSearchParams({ wait: "true" });
   if (threadId) {
     query.set("thread_id", threadId);
@@ -244,43 +330,50 @@ export const executeWebhook = async (
     payload.poll = undefined;
   }
 
-  if (files && payload.embeds) {
-    payload.embeds = cascadeFileNameChange(
-      files
-        .filter(({ spoiler }) => spoiler)
-        .map(({ file }) => ({
-          oldName: file.name,
-          newName: `SPOILER_${file.name}`,
-        })),
-      payload.embeds,
+  const localAttachments =
+    attachments?.filter((a) => !a.url || a.url.startsWith("blob:")) ?? [];
+  if (attachments) {
+    const renameConfig = attachments.map(
+      ({ filename, url, spoiler, placement_count, is_thumbnail }) => {
+        if (!url || url.startsWith("blob:")) {
+          if (spoiler) {
+            return { oldName: filename, newName: `SPOILER_${filename}` };
+          }
+        } else if (placement_count && !is_thumbnail) {
+          // This is a remote attachment which is only used as a reference within embeds/display
+          // components. We have no reason to download and reupload it as an attachment. With CV2,
+          // this should be somewhat rare, since it would only happen if someone manually pasted an
+          // attachment URI.
+          return { oldName: filename, newName: filename, newUri: url };
+        }
+        return { oldName: filename, newName: filename };
+      },
     );
-  }
-
-  if (files && !payload.attachments) {
-    payload.attachments = files.map((file, i) => ({
-      id: i,
-      description: file.description,
-      filename: file.spoiler ? `SPOILER_${file.file.name}` : file.file.name,
-      // This is undocumented! Therefore we are taking precautions:
-      // Only provide any value when it is true and the user is creating a
-      // thread; narrows erroneous behavior if is_thumbnail suddenly gets
-      // blocked for example - users can simply not mark files as thumbnails
-      // instead of requiring an immediate patch.
-      is_thumbnail: file.is_thumbnail && payload.thread_name ? true : undefined,
-      // It's not officially supported for webhooks to send voice messages.
-      // Hopefully this does not cause issues down the line with regular audio
-      // files - I expect discord will just ignore it if N/A.
-      duration_secs: file.duration_secs,
-      waveform:
-        file.duration_secs !== undefined ? createFakeWaveform() : undefined,
-    }));
+    if (payload.embeds) {
+      payload.embeds = cascadeFileNameChangeEmbeds(
+        renameConfig,
+        payload.embeds,
+      );
+    }
+    if (payload.components) {
+      payload.components = cascadeFileNameChangeComponents(
+        renameConfig,
+        payload.components,
+      );
+    }
+    payload.attachments = apiAttachmentsToPayloadAttachments(
+      localAttachments,
+      payload.thread_name !== undefined,
+    );
   }
 
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {
-      for (const { file, spoiler } of files) {
+      for (const { id, file, key } of files) {
+        const spoiler = localAttachments.find((a) => a.id === id)?.spoiler;
         rawFiles.push({
+          key,
           name: spoiler ? `SPOILER_${file.name}` : file.name,
           contentType: file.type,
           data: Buffer.from(await file.arrayBuffer()),
@@ -320,11 +413,16 @@ export const updateWebhookMessage = async (
   webhookToken: string,
   messageId: string,
   payload: RESTPatchAPIWebhookWithTokenMessageJSONBody,
-  files?: DraftFile[],
-  threadId?: string,
-  rest?: REST,
-  withComponents?: boolean,
+  options: {
+    files?: DraftRawFile[];
+    attachments?: APIAttachment[];
+    threadId?: string;
+    rest?: REST;
+    withComponents?: boolean;
+  },
 ) => {
+  const { files, attachments, threadId, rest, withComponents } = options;
+
   const query = new URLSearchParams();
   if (threadId) {
     query.set("thread_id", threadId);
@@ -333,38 +431,47 @@ export const updateWebhookMessage = async (
     query.set("with_components", String(withComponents));
   }
 
-  if (files && payload.embeds) {
-    payload.embeds = cascadeFileNameChange(
-      files
-        .filter(({ spoiler }) => spoiler)
-        .map(({ file }) => ({
-          oldName: file.name,
-          newName: `SPOILER_${file.name}`,
-        })),
-      payload.embeds,
+  const localAttachments =
+    attachments?.filter((a) => !a.url || a.url.startsWith("blob:")) ?? [];
+  if (attachments) {
+    const renameConfig = attachments.map(
+      ({ filename, url, spoiler, placement_count, is_thumbnail }) => {
+        if (!url || url.startsWith("blob:")) {
+          if (spoiler) {
+            return { oldName: filename, newName: `SPOILER_${filename}` };
+          }
+        } else if (placement_count && !is_thumbnail) {
+          // See comment in executeWebhook
+          return { oldName: filename, newName: filename, newUri: url };
+        }
+        return { oldName: filename, newName: filename };
+      },
     );
-  }
-
-  if (files && !payload.attachments) {
-    payload.attachments = files.map((file, i) => ({
-      id: i,
-      description: file.description,
-      filename: file.spoiler ? `SPOILER_${file.file.name}` : file.file.name,
-      // See comment under `executeWebhook`
-      is_thumbnail:
-        file.is_thumbnail && threadId !== undefined ? true : undefined,
-      // See comment under `executeWebhook`
-      duration_secs: file.duration_secs,
-      waveform:
-        file.duration_secs !== undefined ? createFakeWaveform() : undefined,
-    }));
+    if (payload.embeds) {
+      payload.embeds = cascadeFileNameChangeEmbeds(
+        renameConfig,
+        payload.embeds,
+      );
+    }
+    if (payload.components) {
+      payload.components = cascadeFileNameChangeComponents(
+        renameConfig,
+        payload.components,
+      );
+    }
+    payload.attachments = apiAttachmentsToPayloadAttachments(
+      localAttachments,
+      threadId !== undefined,
+    );
   }
 
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {
-      for (const { file, spoiler } of files) {
+      for (const { id, file, key } of files) {
+        const spoiler = localAttachments.find((a) => a.id === id)?.spoiler;
         rawFiles.push({
+          key,
           name: spoiler ? `SPOILER_${file.name}` : file.name,
           contentType: file.type,
           data: Buffer.from(await file.arrayBuffer()),
@@ -761,29 +868,47 @@ export const onlyActionRows = (
 export const extractInteractiveComponents = (
   components: APIMessageTopLevelComponent[],
 ): APIComponentInMessageActionRow[] => {
-  const children: APIComponentInMessageActionRow[] = [];
+  return extractComponentsByType(components, [
+    ComponentType.Button,
+    ComponentType.ChannelSelect,
+    ComponentType.MentionableSelect,
+    ComponentType.RoleSelect,
+    ComponentType.StringSelect,
+    ComponentType.UserSelect,
+  ]) as APIComponentInMessageActionRow[];
+};
+
+// TODO: return type
+export const extractComponentsByType = <T extends ComponentType>(
+  components: APIMessageTopLevelComponent[],
+  types: T[],
+) => {
+  const match = (c: { type: ComponentType }) => types.includes(c.type as T);
+  const found = [];
+
   for (const component of components) {
+    if (match(component)) found.push(component);
+
     if (component.type === ComponentType.Container) {
       for (const r of component.components) {
+        if (match(r)) found.push(r);
+
         if (r.type === ComponentType.ActionRow) {
-          children.push(...r.components);
-        } else if (
-          r.type === ComponentType.Section &&
-          r.accessory.type === ComponentType.Button
-        ) {
-          children.push(r.accessory);
+          found.push(...r.components.filter(match));
+        } else if (r.type === ComponentType.Section && match(r.accessory)) {
+          found.push(r.accessory);
         }
       }
     } else if (component.type === ComponentType.ActionRow) {
-      children.push(...component.components);
+      found.push(...component.components.filter(match));
     } else if (
       component.type === ComponentType.Section &&
-      component.accessory.type === ComponentType.Button
+      match(component.accessory)
     ) {
-      children.push(component.accessory);
+      found.push(component.accessory);
     }
   }
-  return children;
+  return found;
 };
 
 export const isComponentsV2 = (message: Pick<APIMessage, "flags">): boolean =>

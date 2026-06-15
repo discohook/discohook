@@ -231,7 +231,7 @@ export const SectionEditor: React.FC<{
             </div>
           ) : accessory.type === ComponentType.Thumbnail ? (
             <div className="space-y-1">
-              <div className="w-full">
+              <div className="w-full truncate">
                 <FileOrUrlInput
                   t={t}
                   value={accessory.media.url}
@@ -239,6 +239,8 @@ export const SectionEditor: React.FC<{
                     accessory.media = { url: value };
                     setData({ ...data });
                   }}
+                  message={message}
+                  refreshData={() => setData({ ...data })}
                   files={files}
                   setFiles={setFiles}
                   required

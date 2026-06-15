@@ -38,9 +38,12 @@ export const cycleCopyText = (
   }
 };
 
-export const randomString = (length: number) => {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+export const randomString = (length: number, onlyDigits = false) => {
+  const chars = onlyDigits
+    ? // sacrifice uniqueness per length to reduce complexity; we don't want
+      // random digit strings to start with 0, so there are no zeroes
+      "123456789"
+    : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   for (let i = 0; i < length; i += 1) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));

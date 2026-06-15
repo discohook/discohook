@@ -449,18 +449,20 @@ export const CoolIcon: React.FC<{
   rtl?: CoolIconsGlyph;
   title?: string;
   className?: string;
-}> = ({ icon, rtl, title, className }) =>
+}> = ({ icon, rtl, title, className, ...props }) =>
   rtl ? (
     <>
       <i
         title={title}
         className={twJoin("ltr:inline rtl:hidden", `ci-${icon}`, className)}
+        {...props}
       />
       <i
         title={title}
         className={twJoin("rtl:inline ltr:hidden", `ci-${rtl}`, className)}
+        {...props}
       />
     </>
   ) : (
-    <i title={title} className={twJoin(`ci-${icon}`, className)} />
+    <i title={title} className={twJoin(`ci-${icon}`, className)} {...props} />
   );

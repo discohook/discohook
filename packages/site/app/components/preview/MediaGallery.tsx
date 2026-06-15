@@ -3,16 +3,17 @@ import mime from "mime";
 import { useMemo } from "react";
 import type { SetImageModalData } from "~/modals/ImageModal";
 import type { DraftFile } from "~/routes/_index";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import { isDiscordAttachmentUrl, parseAttachmentUrl } from "~/util/discord";
 import { getImageUri } from "./Embed";
 import { Gallery } from "./Gallery";
 
 export const PreviewMediaGallery: React.FC<{
   component: APIMediaGalleryComponent;
-  files?: DraftFile[];
+  attachments?: APIAttachment[];
   setImageModalData?: SetImageModalData;
   cdn?: string;
-}> = ({ component: gallery, files, setImageModalData, cdn }) => {
+}> = ({ component: gallery, attachments, setImageModalData, cdn }) => {
   const origin = useMemo(() => {
     try {
       return window.origin;
@@ -29,8 +30,8 @@ export const PreviewMediaGallery: React.FC<{
           let url = item.media.url;
           let file: DraftFile | undefined;
 
-          if (url.startsWith("attachment://") && files) {
-            const fileUrl = getImageUri(url, files);
+          if (url.startsWith("attachment://") && attachments) {
+            const fileUrl = getImageUri(url, attachments);
             if (fileUrl) url = fileUrl;
           }
           // Allow server to refresh (proxy) attachments if they

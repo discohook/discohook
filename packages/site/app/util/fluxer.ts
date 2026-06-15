@@ -7,6 +7,7 @@ import type {
   FluxerRESTPostAPIWebhookWithTokenJSONBody,
   FluxerRESTPostAPIWebhookWithTokenWaitResult,
 } from "~/types/fluxer";
+import { APIAttachment } from "~/types/QueryData-raw";
 import { createFakeWaveform } from "./discord";
 import { sleep } from "./time";
 
@@ -110,23 +111,17 @@ export const executeFluxerWebhook = async (
   webhookId: string,
   webhookToken: string,
   payload: FluxerRESTPostAPIWebhookWithTokenJSONBody,
-  files?: DraftFile[],
+  options: { files?: DraftFile[]; attachments?: APIAttachment[] },
 ) => {
+  const { files, attachments } = options;
   const query = new URLSearchParams({ wait: "true" });
 
-  if (files && !payload.attachments) {
+  if (attachments) {
+    payload.attachments = apiAttachmentsToFluxerAttachments(attachments);
+  } else if (files && !payload.attachments) {
     payload.attachments = files.map((file, i) => ({
       id: i,
-      description: file.description,
       filename: file.file.name,
-      flags: file.spoiler ? 8 : 0,
-      // Voice messages
-      ...(file.duration_secs !== undefined
-        ? {
-            duration: Math.floor(file.duration_secs),
-            waveform: createFakeWaveform(),
-          }
-        : {}),
     }));
   }
 
@@ -168,6 +163,23 @@ export const executeFluxerWebhook = async (
 //   );
 //   return data;
 // };
+
+export const apiAttachmentsToFluxerAttachments = (
+  attachments: APIAttachment[],
+): NonNullable<FluxerRESTPostAPIWebhookWithTokenJSONBody["attachments"]> =>
+  attachments.map((attachment, i) => ({
+    id: i,
+    description: attachment.description,
+    filename: attachment.filename,
+    flags: attachment.spoiler ? 8 : 0,
+    // Voice messages
+    ...(attachment.duration_secs !== undefined
+      ? {
+          duration: Math.floor(attachment.duration_secs),
+          waveform: createFakeWaveform(),
+        }
+      : {}),
+  }));
 
 // from CDN._withOpts, fortunately exactly compatible
 const fluxerMediaWithOpts = (

@@ -19,11 +19,18 @@ import { ZodMessageFlags } from "./discord";
  */
 export type APIEmbed = Omit<_APIEmbed, "color"> & { color?: number | null };
 
-/**
- * Extending for media channel thumbnails (this attribute is undocumented,
- * so we try to use it with caution)
- */
-export type APIAttachment = _APIAttachment & { is_thumbnail?: boolean };
+/** Extending for internal state */
+export type APIAttachment = _APIAttachment & {
+  /** this attribute is undocumented, so we try to use it with caution */
+  is_thumbnail?: boolean;
+  /**
+   * tracks how many times the attachment is used in the message so we can
+   * know when it's appropriate to remove it
+   */
+  placement_count?: number;
+  /** allows us to wait until execution to prepend SPOILER_ */
+  spoiler?: boolean;
+};
 
 export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({
   // type: z

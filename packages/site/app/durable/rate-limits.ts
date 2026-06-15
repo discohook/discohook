@@ -46,6 +46,10 @@ const apiBuckets: Partial<
   profileRefresh: {
     POST: { capacity: 2, seconds: 600 },
   },
+  filehostsUpload: {
+    GET: { capacity: 1, seconds: 60 },
+    POST: { capacity: 4, seconds: 8 },
+  },
 };
 
 const getBucketInfo = (method: string, bucket: string) => {

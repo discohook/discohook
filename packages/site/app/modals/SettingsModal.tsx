@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
@@ -14,7 +14,9 @@ import { TextInput } from "~/components/TextInput";
 import type { LocaleCode } from "~/i18n";
 import type { User } from "~/session.server";
 import type { i18n, TFunction } from "~/types/i18next";
+import { fileHosts } from "~/util/filehosts";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
+import { fileSize } from "~/util/text";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 interface LanguageEntry {
@@ -79,6 +81,467 @@ const LocaleRadio = ({
     }}
   />
 );
+
+const summarizeAccept = (types: string[]): string => {
+  const summary: string[] = [];
+  if (types.includes("image/*")) {
+    summary.push("images");
+  } else {
+    const exts = types
+      .filter(
+        (t) =>
+          t.startsWith("image/") ||
+          // biome-ignore format: long
+          [".png",".jpg",".jpeg",".webp",".heic",".heif",".avif",".bmp",".tif",".tiff",".gif",".hdr",".pic",".pict",".raw",".tga",".svg",".psd"].includes(t),
+      )
+      .map((t) => t.replace(/^image\/|^\./, ""));
+    if (
+      // I consider this "baseline" image support; what most people would
+      // expect to be able to upload to a service that "accepts images"
+      exts.includes("png") &&
+      (exts.includes("jpg") || exts.includes("jpeg")) &&
+      exts.includes("gif") &&
+      exts.includes("webp")
+    ) {
+      summary.push("images");
+    } else {
+      const formatted = exts
+        .map((ext) => {
+          const cased = { webp: "WebP", jpeg: "JPG" }[ext] ?? ext.toUpperCase();
+          return `${cased}s`;
+        })
+        // remove duplicates (jpeg and jpg both come out to "JPGs")
+        .filter((v, i, a) => a.indexOf(v) === i);
+      summary.push(...formatted);
+    }
+  }
+  if (types.includes("video/*")) {
+    summary.push("videos");
+  } else {
+    const exts = types
+      .filter(
+        (t) =>
+          t.startsWith("video/") ||
+          // biome-ignore format: long
+          [".mp4",".avi",".divx",".wmv",".mov",".mov",".mkv",".mpeg",".mpg"].includes(t),
+      )
+      .map((t) => {
+        const stripped = t.replace(/^video\/|^\./, "");
+        const formatted = { divx: "DivX" }[stripped] ?? stripped.toUpperCase();
+        return `${formatted}s`;
+      });
+    summary.push(...exts);
+  }
+  if (
+    types.includes(".pdf") ||
+    types.includes(".doc") ||
+    types.includes(".docx") ||
+    types.includes(".xls") ||
+    types.includes(".xlsx")
+  ) {
+    summary.push("documents");
+  }
+  if (
+    types.includes(".exe") ||
+    types.includes(".bin") ||
+    types.includes(".dylib") ||
+    types.includes(".dll") ||
+    types.includes(".jar")
+  ) {
+    summary.push("program files");
+  }
+  return new Intl.ListFormat().format(summary);
+};
+
+const FilehostConfigurationBase = ({
+  id,
+  name,
+  iconUrl,
+  clearConfig,
+  children,
+}: React.PropsWithChildren<{
+  t: TFunction;
+  id: string;
+  name: string;
+  iconUrl: string;
+  hasConfig?: boolean;
+  clearConfig?: () => void;
+}>) => {
+  const info = fileHosts.find((f) => f.id === id);
+  return (
+    <div
+      className={twJoin(
+        "rounded-lg bg-gray-100 dark:bg-gray-700",
+        "border border-border-normal dark:border-border-normal-dark",
+      )}
+    >
+      <div className="flex items-center p-4 pb-0">
+        <img
+          src={iconUrl}
+          alt={`${name} logo`}
+          className="size-8 me-3 rounded"
+        />
+        <div>
+          <p className="font-medium text-lg">{name}</p>
+          {info ? (
+            <p className="text-sm text-muted dark:text-muted-dark leading-tight">
+              {fileSize(info.maxSize)} per file
+              {info.accept ? (
+                <>
+                  ,{" "}
+                  <span title={info.accept.join(", ")}>
+                    accepts {summarizeAccept(info.accept)}
+                  </span>
+                </>
+              ) : (
+                ""
+              )}
+            </p>
+          ) : null}
+        </div>
+        {clearConfig ? (
+          <button
+            type="button"
+            onClick={clearConfig}
+            className="ms-auto self-start opacity-50 hover:opacity-100 transition-opacity"
+          >
+            <CoolIcon
+              icon="Close_MD"
+              className="text-muted dark:text-muted-dark"
+            />
+          </button>
+        ) : null}
+      </div>
+      <div className="p-4 pt-2">{children}</div>
+    </div>
+  );
+};
+
+const FilehostConfigurationImgbb = ({
+  t,
+  settings,
+  updateSettings,
+}: {
+  t: TFunction;
+  settings: Settings;
+  updateSettings: (data: Partial<Settings>) => void;
+}) => {
+  const id = "imgbb";
+  const fh = settings.filehosts ?? {};
+  return (
+    <FilehostConfigurationBase
+      t={t}
+      id={id}
+      name="ImgBB"
+      iconUrl="/logos/imgbb.png"
+      clearConfig={async () => {
+        const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+          method: "POST",
+          body: JSON.stringify({ key: null }),
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.ok) {
+          updateSettings({ filehosts: { ...fh, [id]: undefined } });
+        }
+      }}
+    >
+      <form
+        className="flex items-end gap-2"
+        onSubmit={async (e) => {
+          const form = e.currentTarget;
+          e.preventDefault();
+          const key = new FormData(form).get("key");
+          if (!key) return;
+
+          const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+            method: "POST",
+            body: JSON.stringify({ key }),
+            headers: { "Content-Type": "application/json" },
+          });
+          if (res.ok) {
+            updateSettings({
+              filehosts: {
+                ...fh,
+                [id]: { ...fh[id], cookie: true },
+              },
+            });
+            form.reset();
+          }
+        }}
+      >
+        <TextInput
+          name="key"
+          labelClassName="grow"
+          label={
+            <p className="flex items-center gap-x-1">
+              Key{" "}
+              {fh[id]?.cookie ? (
+                <CoolIcon
+                  icon="Circle_Check"
+                  className="text-green-400 align-[center]"
+                />
+              ) : (
+                <CoolIcon
+                  icon="Remove_Minus_Circle"
+                  className="text-muted dark:text-muted-dark align-[center]"
+                />
+              )}
+            </p>
+          }
+          description={
+            <Trans
+              t={t}
+              i18nKey={
+                fh[id]?.cookie
+                  ? "Your API key is set, but not shown here for security. Visit <anchor>imgbb.com</anchor> to view or delete it."
+                  : "Your <anchor>API key</anchor> is a private string that Discohook can use to upload on your behalf. Without it, images may still be uploaded anonymously."
+              }
+              components={{
+                anchor: (
+                  // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+                  <a
+                    href="https://api.imgbb.com"
+                    className={linkClassName}
+                    target="_blank"
+                    rel="noopener"
+                  />
+                ),
+              }}
+            />
+          }
+          pattern="^\w+$"
+          type="password"
+          className="w-full"
+          placeholder="1abcd2345e6fg7h8ijk901lmno234p5q"
+        />
+        <Button
+          type="submit"
+          discordstyle={ButtonStyle.Primary}
+          className="h-9"
+        >
+          {t("save")}
+        </Button>
+      </form>
+    </FilehostConfigurationBase>
+  );
+};
+
+// const FilehostConfigurationCatbox = ({
+//   t,
+//   settings,
+//   updateSettings,
+// }: {
+//   t: TFunction;
+//   settings: Settings;
+//   updateSettings: (data: Partial<Settings>) => void;
+// }) => {
+//   const fh = settings.filehosts ?? {};
+//   return (
+//     <FilehostConfigurationBase
+//       t={t}
+//       id="catbox"
+//       name="Catbox"
+//       iconUrl="/logos/catbox.png"
+//       clearConfig={async () => {
+//         const res = await fetch(apiUrl(BRoutes.filehostsConfig("catbox")), {
+//           method: "POST",
+//           body: JSON.stringify({ userhash: null }),
+//           headers: { "Content-Type": "application/json" },
+//         });
+//         if (res.ok) {
+//           updateSettings({ filehosts: { ...fh, catbox: undefined } });
+//         }
+//       }}
+//     >
+//       <form
+//         className="flex items-end gap-2"
+//         onSubmit={async (e) => {
+//           const form = e.currentTarget;
+//           e.preventDefault();
+//           const userhash = new FormData(form).get("userhash");
+//           if (!userhash) return;
+
+//           const res = await fetch(apiUrl(BRoutes.filehostsConfig("catbox")), {
+//             method: "POST",
+//             body: JSON.stringify({ userhash }),
+//             headers: { "Content-Type": "application/json" },
+//           });
+//           if (res.ok) {
+//             updateSettings({
+//               filehosts: {
+//                 ...fh,
+//                 catbox: { ...fh.catbox, cookie: true },
+//               },
+//             });
+//             form.reset();
+//           }
+//         }}
+//       >
+//         <TextInput
+//           name="userhash"
+//           labelClassName="grow"
+//           label={
+//             <p className="flex items-center gap-x-1">
+//               Userhash{" "}
+//               {fh.catbox?.cookie ? (
+//                 <CoolIcon
+//                   icon="Circle_Check"
+//                   className="text-green-400 align-[center]"
+//                 />
+//               ) : (
+//                 <CoolIcon
+//                   icon="Remove_Minus_Circle"
+//                   className="text-muted dark:text-muted-dark align-[center]"
+//                 />
+//               )}
+//             </p>
+//           }
+//           description={
+//             <Trans
+//               t={t}
+//               i18nKey={
+//                 fh.catbox?.cookie
+//                   ? "Your userhash is set, but not shown here for security. Visit <anchor>catbox.moe</anchor> to view or regenerate it."
+//                   : "Your <anchor>userhash</anchor> is a private string that can be used to manage your Catbox account. Discohook will use it to upload on your behalf."
+//               }
+//               components={{
+//                 anchor: (
+//                   // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+//                   <a
+//                     href="https://catbox.moe/user/"
+//                     className={linkClassName}
+//                     target="_blank"
+//                     rel="noopener"
+//                   />
+//                 ),
+//               }}
+//             />
+//           }
+//           pattern="^\w+$"
+//           type="password"
+//           className="w-full"
+//           placeholder="abcdefghijklmnopqrstuvwxyz" // --Big Bird, 1970
+//         />
+//         <Button
+//           type="submit"
+//           discordstyle={ButtonStyle.Primary}
+//           className="h-9"
+//         >
+//           {t("save")}
+//         </Button>
+//       </form>
+//     </FilehostConfigurationBase>
+//   );
+// };
+
+// const FilehostConfigurationSxcu = ({
+//   t,
+//   settings,
+//   updateSettings,
+// }: {
+//   t: TFunction;
+//   settings: Settings;
+//   updateSettings: (data: Partial<Settings>) => void;
+// }) => {
+//   const id = "sxcu";
+//   const fh = settings.filehosts ?? {};
+//   return (
+//     <FilehostConfigurationBase
+//       t={t}
+//       id={id}
+//       name="sxcu.net"
+//       iconUrl="/logos/sxcu.png"
+//       clearConfig={async () => {
+//         const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+//           method: "POST",
+//           body: JSON.stringify({ key: null }),
+//           headers: { "Content-Type": "application/json" },
+//         });
+//         if (res.ok) {
+//           updateSettings({ filehosts: { ...fh, [id]: undefined } });
+//         }
+//       }}
+//     >
+//       <form
+//         className="flex items-end gap-2"
+//         onSubmit={async (e) => {
+//           const form = e.currentTarget;
+//           e.preventDefault();
+//           const key = new FormData(form).get("key");
+//           if (!key) return;
+
+//           const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+//             method: "POST",
+//             body: JSON.stringify({ key }),
+//             headers: { "Content-Type": "application/json" },
+//           });
+//           if (res.ok) {
+//             updateSettings({
+//               filehosts: {
+//                 ...fh,
+//                 [id]: { ...fh[id], cookie: true },
+//               },
+//             });
+//             form.reset();
+//           }
+//         }}
+//       >
+//         <TextInput
+//           name="key"
+//           labelClassName="grow"
+//           label={
+//             <p className="flex items-center gap-x-1">
+//               Key{" "}
+//               {fh[id]?.cookie ? (
+//                 <CoolIcon
+//                   icon="Circle_Check"
+//                   className="text-green-400 align-[center]"
+//                 />
+//               ) : (
+//                 <CoolIcon
+//                   icon="Remove_Minus_Circle"
+//                   className="text-muted dark:text-muted-dark align-[center]"
+//                 />
+//               )}
+//             </p>
+//           }
+//           description={
+//             <Trans
+//               t={t}
+//               i18nKey={
+//                 fh[id]?.cookie
+//                   ? "Your API key is set, but not shown here for security. Visit <anchor>imgbb.com</anchor> to view or delete it."
+//                   : "Your <anchor>API key</anchor> is a private string that Discohook can use to upload on your behalf. Without it, images may still be uploaded anonymously."
+//               }
+//               components={{
+//                 anchor: (
+//                   // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+//                   <a
+//                     href="https://api.imgbb.com"
+//                     className={linkClassName}
+//                     target="_blank"
+//                     rel="noopener"
+//                   />
+//                 ),
+//               }}
+//             />
+//           }
+//           pattern="^\w+$"
+//           type="password"
+//           className="w-full"
+//           placeholder="1abcd2345e6fg7h8ijk901lmno234p5q"
+//         />
+//         <Button
+//           type="submit"
+//           discordstyle={ButtonStyle.Primary}
+//           className="h-9"
+//         >
+//           {t("save")}
+//         </Button>
+//       </form>
+//     </FilehostConfigurationBase>
+//   );
+// };
 
 interface TabContentProps {
   settings: Settings;
@@ -245,206 +708,107 @@ const tabs: {
   {
     id: "behavior",
     icon: "Cookie",
-    content: ({ t, settings, updateSettings }) => {
-      const filehosts = settings.filehosts ?? {};
-      return (
-        <>
-          <div>
-            <p className="text-sm font-bold uppercase dark:text-gray-400">
-              {t("webhookInput")}
-            </p>
-            <div className="space-y-2 mt-2">
-              <Radio
-                name="webhookInput"
-                label={t("modern")}
-                checked={
-                  !settings.webhookInput || settings.webhookInput === "modern"
+    content: ({ t, settings, updateSettings }) => (
+      <>
+        <div>
+          <p className="text-sm font-bold uppercase dark:text-gray-400">
+            {t("webhookInput")}
+          </p>
+          <div className="space-y-2 mt-2">
+            <Radio
+              name="webhookInput"
+              label={t("modern")}
+              checked={
+                !settings.webhookInput || settings.webhookInput === "modern"
+              }
+              onChange={(e) => {
+                if (e.currentTarget.checked) {
+                  updateSettings({ webhookInput: "modern" });
                 }
-                onChange={(e) => {
-                  if (e.currentTarget.checked) {
-                    updateSettings({ webhookInput: "modern" });
-                  }
-                }}
-              />
-              <Radio
-                name="webhookInput"
-                label={t("classic")}
-                checked={settings.webhookInput === "classic"}
-                onChange={(e) => {
-                  if (e.currentTarget.checked) {
-                    updateSettings({ webhookInput: "classic" });
-                  }
-                }}
-              />
-            </div>
+              }}
+            />
+            <Radio
+              name="webhookInput"
+              label={t("classic")}
+              checked={settings.webhookInput === "classic"}
+              onChange={(e) => {
+                if (e.currentTarget.checked) {
+                  updateSettings({ webhookInput: "classic" });
+                }
+              }}
+            />
           </div>
+        </div>
+        <div className="mt-8">
+          <p className="text-sm font-bold uppercase dark:text-gray-400">
+            {t("defaultMessageCreationChoice")}
+          </p>
+          <div className="space-y-2 mt-2">
+            <Radio
+              name="defaultMessageFlag"
+              label={t("standardMessage")}
+              checked={
+                !settings.defaultMessageFlag ||
+                settings.defaultMessageFlag === "standard"
+              }
+              onChange={(e) => {
+                if (e.currentTarget.checked) {
+                  updateSettings({ defaultMessageFlag: "standard" });
+                }
+              }}
+            />
+            <Radio
+              name="defaultMessageFlag"
+              label={t("componentsMessage")}
+              checked={settings.defaultMessageFlag === "components"}
+              onChange={(e) => {
+                if (e.currentTarget.checked) {
+                  updateSettings({ defaultMessageFlag: "components" });
+                }
+              }}
+            />
+          </div>
+        </div>
+        {settings.experiments?.find((e) => e.id === "SAVE_ATTACHMENTS") ? (
           <div className="mt-8">
             <p className="text-sm font-bold uppercase dark:text-gray-400">
-              {t("defaultMessageCreationChoice")}
+              {t("saveAttachments")}
+            </p>
+            <p className="text-sm">
+              You can upload draft attachments directly to a filesharing service
+              so that they can be used in backups or shared messages.
             </p>
             <div className="space-y-2 mt-2">
-              <Radio
-                name="defaultMessageFlag"
-                label={t("standardMessage")}
-                checked={
-                  !settings.defaultMessageFlag ||
-                  settings.defaultMessageFlag === "standard"
-                }
-                onChange={(e) => {
-                  if (e.currentTarget.checked) {
-                    updateSettings({ defaultMessageFlag: "standard" });
-                  }
-                }}
+              <FilehostConfigurationImgbb
+                t={t}
+                settings={settings}
+                updateSettings={updateSettings}
               />
-              <Radio
-                name="defaultMessageFlag"
-                label={t("componentsMessage")}
-                checked={settings.defaultMessageFlag === "components"}
-                onChange={(e) => {
-                  if (e.currentTarget.checked) {
-                    updateSettings({ defaultMessageFlag: "components" });
-                  }
-                }}
-              />
+              {/*
+                Have not yet received approval from the catbox administrator to
+                publish this feature, so it remains in limbo
+                <FilehostConfigurationCatbox
+                  t={t}
+                  settings={settings}
+                  updateSettings={updateSettings}
+                />
+              */}
+              {/*
+                I didn't want to write another proxy for this service just yet.
+                It returns an appropriate CORS origin header, but not an appropriate
+                allowed methods header. Hopefully this is a mistake and it may allow
+                CORS requests in the future.
+                <FilehostConfigurationSxcu
+                  t={t}
+                  settings={settings}
+                  updateSettings={updateSettings}
+                />
+              */}
             </div>
           </div>
-          {settings.experiments?.find((e) => e.id === "SAVE_ATTACHMENTS") ? (
-            <div className="mt-8">
-              <p className="text-sm font-bold uppercase dark:text-gray-400">
-                {t("saveAttachments")}
-              </p>
-              <p className="text-sm">
-                You can upload draft attachments directly to a filesharing
-                service so that they can be used in backups or shared messages.
-              </p>
-              <div className="space-y-2 mt-2">
-                <div
-                  className={twJoin(
-                    "rounded-lg bg-gray-100 dark:bg-gray-700 border border-border-normal dark:border-border-normal-dark",
-                  )}
-                >
-                  <div className="flex items-center p-4 pb-0">
-                    <img
-                      src="/logos/catbox.png"
-                      alt="Catbox logo"
-                      className="size-8 me-3"
-                    />
-                    <div>
-                      <p className="font-medium text-lg">Catbox</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const res = await fetch(
-                          apiUrl(BRoutes.filehostsConfig("catbox")),
-                          {
-                            method: "POST",
-                            body: JSON.stringify({ userhash: null }),
-                            headers: { "Content-Type": "application/json" },
-                          },
-                        );
-                        if (res.ok) {
-                          updateSettings({
-                            filehosts: { ...filehosts, catbox: undefined },
-                          });
-                        }
-                      }}
-                      className="ms-auto self-start opacity-50 hover:opacity-100 transition-opacity"
-                    >
-                      <CoolIcon
-                        icon="Close_MD"
-                        className="text-muted dark:text-muted-dark"
-                      />
-                    </button>
-                  </div>
-                  <div className="p-4 pt-2">
-                    <form
-                      className="flex items-end gap-2"
-                      onSubmit={async (e) => {
-                        const form = e.currentTarget;
-                        e.preventDefault();
-                        const userhash = new FormData(form).get("userhash");
-                        if (!userhash) return;
-
-                        const res = await fetch(
-                          apiUrl(BRoutes.filehostsConfig("catbox")),
-                          {
-                            method: "POST",
-                            body: JSON.stringify({ userhash }),
-                            headers: { "Content-Type": "application/json" },
-                          },
-                        );
-                        if (res.ok) {
-                          updateSettings({
-                            filehosts: {
-                              ...filehosts,
-                              catbox: { ...filehosts.catbox, cookie: true },
-                            },
-                          });
-                          form.reset();
-                        }
-                      }}
-                    >
-                      <TextInput
-                        name="userhash"
-                        label={
-                          <p className="flex items-center gap-x-1">
-                            Userhash{" "}
-                            {filehosts.catbox?.cookie ? (
-                              <CoolIcon
-                                icon="Circle_Check"
-                                className="text-green-400 align-[center]"
-                              />
-                            ) : (
-                              <CoolIcon
-                                icon="Remove_Minus_Circle"
-                                className="text-muted dark:text-muted-dark align-[center]"
-                              />
-                            )}
-                          </p>
-                        }
-                        description={
-                          <Trans
-                            t={t}
-                            i18nKey={
-                              filehosts.catbox?.cookie
-                                ? "Your userhash is set, but not shown here for security. Visit <anchor>catbox.moe</anchor> to view or regenerate it."
-                                : "Your <anchor>userhash</anchor> is a private string that can be used to manage your Catbox account. Discohook will use it to upload on your behalf."
-                            }
-                            components={{
-                              anchor: (
-                                // biome-ignore lint/a11y/useAnchorContent: Added by i18n
-                                <a
-                                  href="https://catbox.moe/user/"
-                                  className={linkClassName}
-                                  target="_blank"
-                                  rel="noopener"
-                                />
-                              ),
-                            }}
-                          />
-                        }
-                        pattern="^\w+$"
-                        type="password"
-                        className="w-full"
-                        placeholder="abcdefghijklmnopqrstuvwxyz" // --Big Bird, 1970
-                      />
-                      <Button
-                        type="submit"
-                        discordstyle={ButtonStyle.Primary}
-                        className="h-9"
-                      >
-                        {t("save")}
-                      </Button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : undefined}
-        </>
-      );
-    },
+        ) : undefined}
+      </>
+    ),
   },
   {
     id: "advanced",

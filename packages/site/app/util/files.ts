@@ -1,5 +1,6 @@
 import { isAudioType } from "~/components/preview/FileAttachment";
 import type { DraftFile } from "~/routes/_index";
+import { APIAttachment } from "~/types/QueryData-raw";
 import { randomString } from "./text";
 
 export const MAX_FILES_PER_MESSAGE = 10;
@@ -38,6 +39,18 @@ export const transformFileName = (filename: string) =>
     .replace(/[^a-zA-Z0-9._-]/g, "")
     .trim() || "unknown";
 
+export const attachmentFromFile = (file: DraftFile): APIAttachment => ({
+  // file.id should be numeric, but it doesn't *really* matter because we
+  // replace attachment IDs with serials on execution. this is just for
+  // matching blobs to attachments.
+  id: file.id,
+  filename: file.file.name,
+  content_type: file.file.type,
+  size: file.file.size,
+  url: file.url ?? "http://localhost",
+  proxy_url: "http://localhost",
+});
+
 const getAudioDuration = async (src: string): Promise<number | null> => {
   const promise = new Promise<number>((resolve) => {
     const audio = new Audio();
@@ -57,10 +70,15 @@ const getAudioDuration = async (src: string): Promise<number | null> => {
 /**
  * Returns an onChange handler that will add one or multiple files to the
  * state from an input, then return them.
+ *
+ * Additionally, processes the duration of audio files asynchronously and
+ * issues another state update if applicable.
  */
 export const fileInputChangeHandler = (
   files: DraftFile[],
   setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>,
+  attachments: APIAttachment[],
+  setAttachments: (attachments: APIAttachment[]) => void,
   accept?: readonly string[],
 ) =>
   (async (event) => {
@@ -69,6 +87,8 @@ export const fileInputChangeHandler = (
 
     const newFiles = [...files];
     const added: DraftFile[] = [];
+    let newAttachments = [...attachments];
+    const addedAttachments: APIAttachment[] = [];
     for (const file of Array.from(list)
       .filter((file) =>
         accept
@@ -78,34 +98,57 @@ export const fileInputChangeHandler = (
       )
       .slice(0, MAX_FILES_PER_MESSAGE - newFiles.length)) {
       const draft: DraftFile = {
-        id: randomString(10),
+        id: randomString(15, true),
         file,
         url: URL.createObjectURL(file),
       };
       newFiles.push(draft);
       added.push(draft);
+
+      const att = attachmentFromFile(draft);
+
+      // Replace attachment if one already exists but its file is missing - user likely refreshed
+      // the page, which persists the attachment but not its binary data, and is adding it back to
+      // the state. This makes it so they don't need to delete the stale attachment afterwards.
+      const extantAttachment = attachments.find(
+        (a) => a.filename === file.name,
+      );
+      const extantFile = files.find((a) => a.file.name === file.name);
+      if (extantAttachment && !extantFile) {
+        newAttachments = newAttachments.map((a) =>
+          a === extantAttachment ? att : a,
+        );
+      } else {
+        newAttachments.push(att);
+      }
+      addedAttachments.push(att);
     }
     setFiles(newFiles);
+    setAttachments(newAttachments);
+
     event.currentTarget.value = "";
+    // Read all audio files at the same time and push only one additional
+    // state update. We shouldn't really need to process all files every
+    // time, but the difference should be negligible since browsers cache
+    // the `Audio`.
     (async () => {
-      // Read all audio files at the same time and push only one additional
-      // state update. We shouldn't really need to process all files every
-      // time, but the difference should be negligible since browsers cache
-      // the `Audio`.
       const withDurations = await Promise.all(
-        newFiles.map((file) =>
+        addedAttachments.map((attachment) =>
           (async () => {
-            if (!isAudioType(file.file.type) || !file.url) return file;
-            const duration = await getAudioDuration(file.url);
-            if (duration !== null) {
-              file.duration_secs = duration;
+            if (!isAudioType(attachment.content_type) || !attachment.url) {
+              return attachment;
             }
-            return file;
+            const duration = await getAudioDuration(attachment.url);
+            if (duration !== null) attachment.duration_secs = duration;
+            return attachment;
           })(),
         ),
       );
-      console.log(withDurations.map((w) => [w.file.name, w.duration_secs]));
-      setFiles([...withDurations]);
+      setAttachments(
+        newAttachments.map(
+          (att) => withDurations.find((a) => a.id === att.id) ?? att,
+        ),
+      );
     })();
 
     return added;

@@ -1,4 +1,7 @@
+import { json } from "@remix-run/cloudflare";
 import z from "zod/v3";
+import { getBucket } from "~/durable/rate-limits";
+import { FilehostUploadResponse } from "~/util/filehosts";
 import {
   deleteFile as catboxDeleteFiles,
   uploadFile as catboxUploadFile,
@@ -15,7 +18,7 @@ import {
   imgbbCookie,
 } from "./filehosts.$id.config";
 
-export const loader = async ({ request, context, params }: LoaderArgs) => {
+export const loader = async ({ params }: LoaderArgs) => {
   const { id } = zxParseParams(params, {
     id: z.literal("imgbb"),
     // id: z.union([z.literal("imgbb"), z.literal("imgur")]),
@@ -58,10 +61,16 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   }
 };
 
+export type ApiGetFilehostUpload = Awaited<ReturnType<typeof loader>>;
+
 export const action = async ({ request, context, params }: ActionArgs) => {
   const { id } = zxParseParams(params, {
     id: z.union([z.literal("catbox"), z.literal("imgbb")]),
   });
+  if (request.method !== "POST") {
+    throw Response.json({ message: "Method Not Allowed" }, { status: 405 });
+  }
+  const headers = await getBucket(request, context, "filehostsUpload");
 
   const cookieHeader = request.headers.get("Cookie");
   switch (id) {
@@ -73,7 +82,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       if (cookie === null) {
         throw Response.json(
           { message: "Cannot use catbox without first configuring a userhash" },
-          { status: 401 },
+          { status: 401, headers },
         );
       }
       const { userhash } = await decryptEncryptedJwt<{ userhash: string }>(
@@ -94,7 +103,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
       if (data.type === "delete") {
         await catboxDeleteFiles(data.ids, { userhash });
-        return new Response(null, { status: 204 });
+        throw new Response(null, { status: 204, headers });
       }
 
       let source: Blob | string;
@@ -108,12 +117,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           if (!file) {
             throw Response.json(
               { message: "Missing required file when using file upload type" },
-              { status: 400 },
+              { status: 400, headers },
             );
           } else if (!(file instanceof File)) {
             throw Response.json(
               { message: "Provided file parameter was not of type File" },
-              { status: 400 },
+              { status: 400, headers },
             );
           }
           source = file;
@@ -124,19 +133,19 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             {
               message: "Could not determine source to upload from your request",
             },
-            { status: 500 },
+            { status: 500, headers },
           );
       }
 
       const uploaded = await catboxUploadFile(source, { userhash });
-      return uploaded;
+      return json(uploaded, { headers });
     }
     case "imgbb": {
       const cookie = await imgbbCookie.parse(cookieHeader);
       if (cookie === null) {
         throw Response.json(
           { message: "Cannot use ImgBB without first configuring a key" },
-          { status: 401 },
+          { status: 401, headers },
         );
       }
       const { key } = await decryptEncryptedJwt<{ key: string }>(
@@ -169,12 +178,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           if (!file) {
             throw Response.json(
               { message: "Missing required file when using file upload type" },
-              { status: 400 },
+              { status: 400, headers },
             );
           } else if (!(file instanceof File)) {
             throw Response.json(
               { message: "Provided file parameter was not of type File" },
-              { status: 400 },
+              { status: 400, headers },
             );
           }
           source = file;
@@ -185,7 +194,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             {
               message: "Could not determine source to upload from your request",
             },
-            { status: 500 },
+            { status: 500, headers },
           );
       }
 
@@ -193,12 +202,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         key,
         name: data.name,
       });
-      return uploaded;
+      return json(uploaded, { headers });
     }
     default:
       throw Response.json(
         { message: "Unhandled service name" },
-        { status: 404 },
+        { status: 404, headers },
       );
   }
 };
+
+export type ApiPostFilehostUpload = FilehostUploadResponse;

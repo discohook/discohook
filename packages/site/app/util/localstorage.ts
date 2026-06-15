@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { LocaleCode } from "~/i18n";
 
 interface FilehostConfigurationBase {
-  cookie: boolean;
   position?: number;
 }
 
@@ -15,10 +14,18 @@ export interface Settings {
   forceDualPane?: boolean;
   locale?: LocaleCode;
   defaultMessageFlag?: "standard" | "components";
+  autoPickFilehost?: boolean;
   filehosts?: Partial<{
-    catbox: FilehostConfigurationBase;
+    catbox: FilehostConfigurationBase & {
+      cookie: boolean;
+    };
     imgbb: FilehostConfigurationBase & {
-      access_token: string;
+      cookie?: boolean;
+      access_token?: string;
+    };
+    sxcu: FilehostConfigurationBase & {
+      domain?: string;
+      token?: string;
     };
   }>;
 

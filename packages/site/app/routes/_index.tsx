@@ -94,11 +94,12 @@ import {
   convertMessageToComponents,
   DISCORD_API,
   DISCORD_API_V,
+  extractComponentsByType,
   extractInteractiveComponents,
   getWebhook,
 } from "~/util/discord";
 import { useDragManager } from "~/util/drag";
-import { ATTACHMENT_URI_EXTENSIONS, transformFileName } from "~/util/files";
+import { ATTACHMENT_URI_EXTENSIONS } from "~/util/files";
 import { getFluxerWebhook } from "~/util/fluxer";
 import { type LoaderArgs, useApiLoader, useSafeFetcher } from "~/util/loader";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
@@ -145,12 +146,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 export interface DraftFile {
   id: string;
   file: File;
-  description?: string;
   url?: string;
-  embed?: boolean;
-  is_thumbnail?: boolean;
-  spoiler?: boolean;
-  duration_secs?: number;
 }
 
 export interface HistoryItem {
@@ -272,39 +268,73 @@ export default function Index() {
     (_cur: QueryData, d: QueryData) => {
       const newData = d;
 
-      // Update file preview if any are referenced in embeds
-      setFiles(
-        Object.fromEntries(
-          newData.messages.map((d) => [
-            getQdMessageId(d),
-            files[getQdMessageId(d)]?.map((f) => {
-              // https://discord.dev/reference#editing-message-attachments-using-attachments-within-embeds
-              const uri = `attachment://${transformFileName(f.file.name)}`;
-              if (
-                ATTACHMENT_URI_EXTENSIONS.find((ext) =>
-                  f.file.name.toLowerCase().endsWith(ext),
-                ) !== undefined
-              ) {
-                f.embed =
-                  !!d.data.embeds &&
-                  d.data.embeds?.filter(
-                    (e) =>
-                      e.author?.icon_url?.trim() === uri ||
-                      e.image?.url?.trim() === uri ||
-                      e.thumbnail?.url?.trim() === uri ||
-                      e.footer?.icon_url?.trim() === uri,
-                  ).length !== 0;
-                // Being in an embed overrides the thumbnail attribute
-                // TODO: people might think this is a bug; improve communication
-                if (f.embed && f.is_thumbnail) {
-                  f.is_thumbnail = false;
-                }
+      for (const message of newData.messages) {
+        const foundFileIds: string[] = [];
+        const mid = getQdMessageId(message);
+        for (const attachment of message.data.attachments ?? []) {
+          // Clean up files if they are not matched to any attachments
+          const file = files[mid]?.find((f) => f.id === attachment.id);
+          if (file) foundFileIds.push(file.id);
+
+          // count placements
+          const uri = `attachment://${attachment.filename}`;
+          const hasValidExtension =
+            ATTACHMENT_URI_EXTENSIONS.find((ext) =>
+              attachment.filename.toLowerCase().endsWith(ext),
+            ) !== undefined;
+          if (hasValidExtension) {
+            let placements = 0;
+            for (const embed of message.data.embeds ?? []) {
+              if (embed.author?.icon_url?.trim() === uri) placements += 1;
+              if (embed.image?.url?.trim() === uri) placements += 1;
+              if (embed.thumbnail?.url?.trim() === uri) placements += 1;
+              if (embed.footer?.icon_url?.trim() === uri) placements += 1;
+            }
+            for (const tlc of extractComponentsByType(
+              message.data.components ?? [],
+              [
+                ComponentType.File,
+                ComponentType.MediaGallery,
+                ComponentType.Thumbnail,
+              ],
+            )) {
+              switch (tlc.type) {
+                case ComponentType.File:
+                  if (tlc.file.url.trim() === uri) placements += 1;
+                  break;
+                case ComponentType.MediaGallery:
+                  for (const item of tlc.items) {
+                    if (item.media.url.trim() === uri) placements += 1;
+                  }
+                  break;
+                case ComponentType.Thumbnail:
+                  if (tlc.media.url.trim() === uri) placements += 1;
+                  break;
+                default:
+                  break;
               }
-              return f;
-            }) ?? [],
-          ]),
-        ),
-      );
+            }
+
+            // The existence of references overrides the thumbnail attribute
+            // TODO: people might think this is a bug; improve communication
+            if (placements !== 0 && attachment.is_thumbnail) {
+              attachment.is_thumbnail = false;
+            }
+            attachment.placement_count = placements;
+          }
+        }
+        const removedFiles = files[mid]?.filter(
+          (f) => !foundFileIds.includes(f.id),
+        );
+        files[mid] = files[mid]?.filter((f) => foundFileIds.includes(f.id));
+        if (removedFiles) {
+          for (const file of removedFiles) {
+            if (file.url) URL.revokeObjectURL(file.url);
+          }
+        }
+      }
+      setFiles({ ...files });
+
       return newData;
     },
     {
@@ -1549,7 +1579,6 @@ export default function Index() {
                   targets={Object.values(targets)}
                   index={i}
                   data={data}
-                  files={files[mid]}
                   setImageModalData={setImageModalData}
                   messageDisplay={settings.messageDisplay}
                   compactAvatars={settings.compactAvatars}

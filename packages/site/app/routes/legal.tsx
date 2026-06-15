@@ -137,12 +137,13 @@ export default function Legal() {
           <li>
             The user may provide credentials (API tokens) for external filehost
             services. This enables the user to upload unsent binary attachment
-            data and store it long-term within saved messages.
+            data and store URL references thereof within saved messages.
           </li>
           <li>
             These credentials are only stored on the user's browser within an
-            HTTP-only cookie value and may be revoked at any time. The uploaded
-            attachment data is subject then to those services' privacy policies.
+            HTTP-only cookie value and may be revoked by the user at any time.
+            The uploaded attachment data is subject to those services' privacy
+            policies.
           </li>
         </ul>
         <h2 className="font-bold text-lg mt-2">Storage & Handling</h2>
