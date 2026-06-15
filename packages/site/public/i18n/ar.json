@@ -451,7 +451,7 @@
     "add": "إضافة",
     "addPoll": "أضافة تصويت",
     "avatarUrl": "رابط صورة البروفايل",
-    "filesCount": "الملفات ({{ count }}\\10)",
+    "filesCount": "المرفقات ({{ count }}\\10)",
     "addFile": "اضافة ملف",
     "flags": "نوع الرسالة",
     "messageFlagsNoteSuppressNotifications": "التنويهات في الرسالة لن تصل إلى الأعضاء المُنوهين. استخدم قائمة التنويهات المسموحة للمزيد من التحكم.",
@@ -737,7 +737,7 @@
     "linkEmbedTypeStandard": "عادي (بدون تصاميم, مَرِن اكثر)",
     "linkEmbedTypeMastodon": "منشور (امكانية اضافة تصاميم, يحتاج الى كاتب(author) و ذيل(footer))",
     "linkEmbedsVideoUrlDirect": "رابط (مباشر فقط)",
-    "discordRequestBlocked": "من فضلك تأكد من ان متصفحك و اي امتدادات يسمحون بالطلبات ل<bold>discord.com</bold>. اذا لم تسمح بهذا, لن تستطيع ان تُحمل الويبهوك او تُرسل رسائل. <retry>غيرت اعداداتك؟ حاول مجددا</retry>",
+    "discordRequestBlocked": "من فضلك تأكد من ان متصفحك و اي امتدادات يسمحون بالطلبات ل<bold>discord.com</bold> اذا لم تسمح بهذا, لن تستطيع ان تُحمل الويبهوك او تُرسل رسائل. <retry>غيرت اعداداتك؟ حاول مجددا</retry>",
     "gifConvertSuggestion": "<icon/>يبدو ان الرابط الذي وضعته هو GIF! هل ترغب في <button>تحويل الرابط</button> ليمكن عرضه على ديسكورد؟",
     "addText": "اضافة النص",
     "accessory": "اكسسوار",
@@ -914,5 +914,37 @@
     },
     "ignore": "تجاهل",
     "bot": "بوت",
-    "fluxer": "فلاكسر \"Fluxer\""
+    "fluxer": "فلاكسر \"Fluxer\"",
+    "discohookNews": "أخبار ديسكوهوك",
+    "newsSubtitle": "ننشر سجل التغييرات هنا و في <anchor>سيرفر المساعدة</anchor> الخاص بنا.",
+    "defaultPrompt": {
+        "standard": {
+            "name": "تعديل الرسالة الافتراضية",
+            "description": "استكشف ديسكوهوك عن طريق تعديل الرسالة الافتراضية, التي تشمل رسائل مضمنة و أزرار"
+        },
+        "components": {
+            "name": "تعديل كعناصر",
+            "description": "تحويل الرسالة الافتراضية الى رسالة مبنية على العناصر, شكل جديد للرسائل من ديسكورد"
+        },
+        "blank": {
+            "name": "رسالة فارغة جديدة",
+            "description": "مسح المحرر و بدء رسالة جديدة"
+        },
+        "loadBackupTitle": "او قم بتحميل نسخة احتياطية حديثة:",
+        "allBackups": "جميع النسخ الاحتياطية"
+    },
+    "upload": "رفع",
+    "reupload": "اعادة رفع",
+    "referencedNTimes_zero": "مشار اليها {{ count }} مرات في هذه الرسالة",
+    "referencedNTimes_one": "مشار اليها مرة في هذه الرسالة",
+    "referencedNTimes_two": "مشار اليها مرتين في هذه الرسالة",
+    "referencedNTimes_few": "مشار اليها {{ count }} مرات في هذه الرسالة",
+    "referencedNTimes_many": "مشار اليها {{ count }} مرة في هذه الرسالة",
+    "referencedNTimes_other": "مشار اليها {{ count }} مرة في هذه الرسالة",
+    "attachmentFileMissing": "ملف مفقود",
+    "attachmentIsThumbnail": "تعيين كصورة مصغرة لهذا المنشور",
+    "filenameDuplicateWarning": "بعض اسماء الملفات مكررة. قد يسبب هذا في <anchor>مشاكل غير متوقعة</anchor> عند ارسال الرسالة.",
+    "spoiler": "حجب",
+    "componentTextTooLarge": "الرسائل المبنية على العناصر من الممكن ان تحتوي على {{maximum}} حروف كحد أقصى (حاليا {{count}} اكثر من الحد الأقصى)",
+    "charactersCount": "الحروف: <counter>{{current}}\\{{maximum}}</counter>"
 }
