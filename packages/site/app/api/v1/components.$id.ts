@@ -35,7 +35,8 @@ import {
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import type { Env } from "~/types/env";
-import { refineZodDraftFlowMax } from "~/types/flows";
+import { hasGuildOnlyActions, refineZodDraftFlowMax } from "~/types/flows";
+import { APIComponentInMessageActionRow } from "~/types/QueryData";
 import { isComponentsV2, isDiscordError } from "~/util/discord";
 import type { ActionArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
@@ -110,6 +111,39 @@ export const canModifyComponent = async (
     }
   }
   return true;
+};
+
+const checkActionValidity = async ({
+  current,
+  component,
+  onFailure = (message, status = 400) => {
+    throw Error(`${status}: ${message}`);
+  },
+}: {
+  current: { guildId: bigint | null };
+  component: APIComponentInMessageActionRow;
+  onFailure: (message: string, status?: number) => void;
+}) => {
+  if (!current.guildId) {
+    if ("flow" in component && component.flow) {
+      if (hasGuildOnlyActions(component.flow)) {
+        return onFailure(
+          "The component is not part of a server, but it contains server-only flow actions",
+        );
+      }
+    }
+    if ("flows" in component && component.flows) {
+      const optionVals: string[] = [];
+      for (const [val, flow] of Object.entries(component.flows)) {
+        if (hasGuildOnlyActions(flow)) optionVals.push(val);
+      }
+      if (optionVals.length !== 0) {
+        return onFailure(
+          `The component is not part of a server, but its flows contain server-only actions. Affected options: ${optionVals.join(", ")}`,
+        );
+      }
+    }
+  }
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
@@ -264,6 +298,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         if (current.data.type !== component.type) {
           throw respond(json({ message: "Incorrect Type" }, 400));
         }
+        // await checkActionValidity({
+        //   current,
+        //   component,
+        //   onFailure(message, status = 400) {
+        //     throw respond(json({ message }, { status }));
+        //   },
+        // });
 
         const updated = await db.transaction(
           autoRollbackTx(async (tx) => {
