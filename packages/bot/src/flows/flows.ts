@@ -17,7 +17,7 @@ import {
   type RESTPostAPIChannelThreadsJSONBody,
   type RESTPostAPIChannelThreadsResult,
   type RESTPostAPIGuildForumThreadsJSONBody,
-  Routes,
+  Routes
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionsBitField } from "discord-bitflag";
 import { SignJWT } from "jose";
@@ -340,11 +340,13 @@ export const executeFlow = async (options: {
     liveVars.guild &&
     recursion === 0
   ) {
-    // console.log(
-    //   "Resolving responsible user",
-    //   liveVars.guild.id,
-    //   responsibleUserId,
-    // );
+    if (env.ENVIRONMENT === "dev") {
+      console.log(
+        "Resolving responsible user",
+        liveVars.guild.id,
+        responsibleUserId,
+      );
+    }
     responsibleUser = await getResponsibleUser(
       rest,
       liveVars.guild,
@@ -352,13 +354,14 @@ export const executeFlow = async (options: {
       responsibilityReason,
     );
   }
-  // console.log("Responsible:", responsibleUser);
+  if (env.ENVIRONMENT === "dev") console.log("Responsible:", responsibleUser);
 
   const responsibleOwner =
     !!responsibleUser && liveVars.guild?.owner_id === responsibleUser?.id;
   const responsibleGuildPermissions = new PermissionsBitField(
     BigInt(responsibleUser?.guild_permissions ?? 0),
   );
+  let refreshedGuild = false;
   const checkRoleIdManageable = async (roleId: string, quiet = false) => {
     if (!responsibleUser) {
       if (quiet) return false;
@@ -374,11 +377,12 @@ export const executeFlow = async (options: {
       );
     }
     let incoming = liveVars.guild?._roles?.find((r) => r.id === roleId);
-    if (!incoming && liveVars.guild) {
+    if (!incoming && liveVars.guild && !refreshedGuild) {
       // Refresh cache in case it's a new role or there is no roles cache
       try {
         liveVars.guild = await getchTriggerGuild(rest, env, liveVars.guild.id);
         incoming = liveVars.guild._roles?.find((r) => r.id === roleId);
+        refreshedGuild = true;
       } catch {}
     }
     if (!incoming) {
@@ -414,6 +418,23 @@ export const executeFlow = async (options: {
     }
     return true;
   };
+  // const channelCache: Record<string, APIChannel[]> = {};
+  // const checkChannelIdSendable = async (channelId: string, quiet = false) => {
+  //   let cached = channelCache[channelId];
+  //   if (cached) {
+  //   } else {
+  //     const key = `cache-channel-${channelId}`;
+  //     cached = await env.KV.get<ResolvableAPIChannel>(key, "json");
+  //   }
+
+  //   if (!hasRole) {
+  //     if (quiet) return false;
+  //     throw new FlowFailure(
+  //       "The responsible user for this flow may not be able to add or remove this role. Out of safety, it cannot be managed.",
+  //     );
+  //   }
+  //   return true;
+  // };
 
   try {
     if (
@@ -857,7 +878,7 @@ const httpFlowFailure = (e: unknown, message: string) => {
 
 const getReason = (user: ResponsibleUser | undefined) => {
   if (user === undefined) return "Action in a flow";
-  const base = `Flow action, responsibility of ${user.username} (${user.id})`;
+  const base = `Responsibility of ${user.username} (${user.id})`;
   return user.reason ? `${base}: ${user.reason}` : base;
 };
 
