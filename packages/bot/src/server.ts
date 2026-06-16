@@ -52,7 +52,9 @@ import {
 } from "./events.js";
 import {
   executeFlow,
+  getResponsibleUser,
   type LiveVariables,
+  ResponsibleUser,
   resumeFlowFromBouncer,
 } from "./flows/flows.js";
 import { InteractionContext } from "./interactions.js";
@@ -267,6 +269,46 @@ const handleInteraction = async (
         });
       }
 
+      // need to do this before hotComponent logic so that we can resolve responsibleUser
+      let guild: TriggerKVGuild;
+      try {
+        guild = await getchTriggerGuild(rest, env, guildId);
+      } catch (e) {
+        if (isDiscordError(e) && e.code === RESTJSONErrorCodes.UnknownGuild) {
+          return respond(
+            ctx.reply({
+              content:
+                "Discohook Utils needs to be a member of this server in order to use components.",
+              ephemeral: true,
+              components: [
+                {
+                  type: ComponentType.ActionRow,
+                  components: [
+                    {
+                      type: ComponentType.Button,
+                      style: ButtonStyle.Link,
+                      label: "Add Bot",
+                      url: `https://discord.com/oauth2/authorize?${new URLSearchParams(
+                        {
+                          client_id: interaction.application_id,
+                          scope: "bot",
+                          guild_id: guildId,
+                          disable_guild_select: "true",
+                          integration_type: String(
+                            ApplicationIntegrationType.GuildInstall,
+                          ),
+                        },
+                      )}`,
+                    },
+                  ],
+                },
+              ],
+            }),
+          );
+        }
+        throw e;
+      }
+
       const db = getDb(env.HYPERDRIVE);
       // Jan 7 2026: Moving away from durable objects for component storage
       // for a few reasons:
@@ -274,17 +316,15 @@ const handleInteraction = async (
       // - May be introducing data-update latency
       // - Future bot version (non-worker) will not be able to easily access
       //   DOs and I expect it wouldn't benefit much from using them
-      //
-      // However, I'm anticipating some downsides:
-      // - More stress on the DB server
-      // - Potentially more latency (DO KV probably faster than hyperdrive/webdis?)
       const kvKey = `custom-component-${componentId}`;
-      let hotComponent = await env.KV.get<{
+      type HotComponent = {
         data: DraftComponent;
         channelId?: string;
         guildId?: string;
         createdById?: string;
-      }>(kvKey, "json");
+        responsibleUser?: ResponsibleUser;
+      };
+      let hotComponent = await env.KV.get<HotComponent>(kvKey, "json");
       if (!hotComponent) {
         const coldComponentPre =
           await db.query.discordMessageComponents.findFirst({
@@ -292,6 +332,7 @@ const handleInteraction = async (
             columns: { id: true, guildId: true, channelId: true, data: true },
             with: {
               createdBy: { columns: { discordId: true } },
+              updatedBy: { columns: { discordId: true } },
               componentsToFlows: {
                 columns: {},
                 with: {
@@ -312,7 +353,7 @@ const handleInteraction = async (
         }
         const coldComponent = await ensureComponentFlows(coldComponentPre, db);
 
-        const newHotComponent = {
+        const newHotComponent: HotComponent = {
           data: coldComponent.data,
           channelId: coldComponent.channelId?.toString(),
           guildId: coldComponent.guildId?.toString(),
@@ -368,50 +409,30 @@ const handleInteraction = async (
             ephemeral: true,
           });
         }
+        // I need to determine this at this level so that it can be cached,
+        // but unfortunately it adds delay to the defer. Hopefully it's not
+        // ultimately too much.
+        const responsibleUser =
+          coldComponent.updatedBy?.discordId ||
+          coldComponent.createdBy?.discordId
+            ? await getResponsibleUser(
+                rest,
+                guild,
+                String(
+                  coldComponent.updatedBy?.discordId ??
+                    coldComponent.createdBy?.discordId,
+                ),
+                coldComponent.updatedBy?.discordId
+                  ? "most recently edited the component"
+                  : "created the component",
+              )
+            : undefined;
+        newHotComponent.responsibleUser = responsibleUser;
 
         hotComponent = newHotComponent;
         await launchComponentKV(env, { componentId, ...newHotComponent });
       }
       const component = hotComponent;
-
-      let guild: TriggerKVGuild;
-      try {
-        guild = await getchTriggerGuild(rest, env, guildId);
-      } catch (e) {
-        if (isDiscordError(e) && e.code === RESTJSONErrorCodes.UnknownGuild) {
-          return respond(
-            ctx.reply({
-              content:
-                "Discohook Utils needs to be a member of this server in order to use components.",
-              ephemeral: true,
-              components: [
-                {
-                  type: ComponentType.ActionRow,
-                  components: [
-                    {
-                      type: ComponentType.Button,
-                      style: ButtonStyle.Link,
-                      label: "Add Bot",
-                      url: `https://discord.com/oauth2/authorize?${new URLSearchParams(
-                        {
-                          client_id: interaction.application_id,
-                          scope: "bot",
-                          guild_id: guildId,
-                          disable_guild_select: "true",
-                          integration_type: String(
-                            ApplicationIntegrationType.GuildInstall,
-                          ),
-                        },
-                      )}`,
-                    },
-                  ],
-                },
-              ],
-            }),
-          );
-        }
-        throw e;
-      }
 
       const liveVars: LiveVariables = {
         guild,
@@ -532,13 +553,15 @@ const handleInteraction = async (
               setVars: {
                 guildId,
                 channelId: interaction.channel.id,
-                // Possible confusing conflict with Delete Message action
                 messageId: interaction.message.id,
                 userId: ctx.user.id,
               },
               ctx,
               recursion: 0,
               deferred: true,
+              responsibleUser: component.responsibleUser,
+              responsibleUserId: component.createdById,
+              responsibilityReason: "created the component",
             });
             if (env.ENVIRONMENT === "dev") console.log(result);
           }
@@ -592,10 +615,10 @@ const handleInteraction = async (
 
       eCtx.waitUntil(
         (async () => {
-          let inserted: Pick<
+          let inserted: (Pick<
             typeof discordMessageComponents.$inferSelect,
             "id" | "data"
-          >[];
+          > & { createdBy: { discordId: bigint | null } | null })[];
           let rows: APIActionRowComponent<APIComponentInMessageActionRow>[];
           let guild: TriggerKVGuild;
           let oldIdMap: Record<string, string>;
@@ -644,18 +667,13 @@ const handleInteraction = async (
               ctx,
               recursion: 0,
               deferred: true,
+              responsibleUserId: thisButton.createdBy?.discordId?.toString(),
+              responsibilityReason: "created the component",
             });
             if (env.ENVIRONMENT === "dev") console.log(result);
           }
         })(),
       );
-
-      // Discord needs to know whether our eventual response will be ephemeral
-      // const thisOldButton = oldMessageButtons.find((b) => getOldCustomId(b));
-      // const ephemeral = !!(
-      //   thisOldButton &&
-      //   (thisOldButton.roleId || thisOldButton.customEphemeralMessageData)
-      // );
 
       // We might have an ephemeral followup but our first followup is always
       // editOriginalMessage. Luckily this doesn't matter anymore.

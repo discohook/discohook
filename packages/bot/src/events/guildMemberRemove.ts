@@ -79,6 +79,10 @@ export const guildMemberRemoveCallback: GatewayEventCallback = async (
         db,
         liveVars: { user: payload.user, guild },
         deferred,
+        responsibleUserId: trigger.updatedBy
+          ? String(trigger.updatedBy.discordId)
+          : undefined,
+        responsibilityReason: "most recently edited the Member Remove trigger",
       }),
     );
   }

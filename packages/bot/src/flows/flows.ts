@@ -11,6 +11,7 @@ import {
   ChannelType,
   GuildPremiumTier,
   InteractionType,
+  PermissionFlagsBits,
   type RESTError,
   type RESTGetAPIChannelResult,
   type RESTPostAPIChannelThreadsJSONBody,
@@ -18,7 +19,7 @@ import {
   type RESTPostAPIGuildForumThreadsJSONBody,
   Routes,
 } from "discord-api-types/v10";
-import { MessageFlagsBitField } from "discord-bitflag";
+import { MessageFlagsBitField, PermissionsBitField } from "discord-bitflag";
 import { SignJWT } from "jose";
 import {
   type AnonymousVariable,
@@ -36,6 +37,7 @@ import {
   FlowActionSetVariableType,
   type FlowActionToggleRole,
   FlowActionType,
+  getchTriggerGuild,
   getDb,
   makeSnowflake,
   messageLogEntries,
@@ -118,7 +120,27 @@ const TriggerKVGuildScheme: z.ZodType<TriggerKVGuild> = z.object({
   vanity_code: z.string().nullable(),
   emoji_limit: z.number().optional(),
   sticker_limit: z.number().optional(),
+  _roles: z
+    .object({
+      id: z.string(),
+      position: z.number(),
+      permissions: z.string(),
+    })
+    .array()
+    .optional(),
 });
+
+const ResponsibleUser = z.object({
+  id: z.string(),
+  username: z.string(),
+  guild_permissions: z.string(),
+  /** role ids */
+  roles: z.string().array(),
+  /** why the user is considered responsible (usually that they were the latest to edit something) */
+  reason: z.string().optional(),
+});
+
+export type ResponsibleUser = z.infer<typeof ResponsibleUser>;
 
 const BouncerPayloadScheme = z.object({
   liveVars: z.object({
@@ -167,6 +189,7 @@ const BouncerPayloadScheme = z.object({
       })
       .array(),
   }) as z.ZodType<Pick<DraftFlow, "actions">>,
+  responsibleUser: ResponsibleUser.optional(),
 });
 
 export const bounceFlow = async (
@@ -230,7 +253,44 @@ export const resumeFlowFromBouncer = async (
     recursion: payload.recursion,
     lastReturnValue: payload.lastReturnValue,
     sentMessages: payload.sentMessages,
+    responsibleUser: payload.responsibleUser,
   });
+};
+
+export const getResponsibleUser = async (
+  rest: REST,
+  guild: Pick<TriggerKVGuild, "id" | "_roles">,
+  userId: string,
+  reason?: string,
+): Promise<ResponsibleUser | undefined> => {
+  let member: APIGuildMember;
+  try {
+    member = (await rest.get(
+      Routes.guildMember(guild.id, userId),
+    )) as APIGuildMember;
+  } catch {
+    return undefined;
+  }
+  const guildPermissions = new PermissionsBitField();
+  if (guild._roles) {
+    for (const roleId of member.roles) {
+      const role = guild._roles.find((r) => r.id === roleId);
+      if (!role) continue;
+      guildPermissions.add(BigInt(role.permissions));
+    }
+  }
+
+  return {
+    id: member.user.id,
+    username: member.user.username,
+    roles: member.roles.sort((a, b) => {
+      const aRole = guild._roles?.find((r) => r.id === a);
+      const bRole = guild._roles?.find((r) => r.id === b);
+      return (bRole?.position ?? 0) - (aRole?.position ?? 0);
+    }),
+    guild_permissions: String(guildPermissions.value),
+    reason,
+  };
 };
 
 export const executeFlow = async (options: {
@@ -245,6 +305,11 @@ export const executeFlow = async (options: {
   lastReturnValue?: any;
   sentMessages?: SentMessages;
   deferred?: boolean;
+  responsibleUser?: ResponsibleUser;
+  /** WARNING: do not pass to recursive executions. only level 0 should handle this. */
+  responsibleUserId?: string;
+  /** WARNING: do not pass to recursive executions. only level 0 should handle this. */
+  responsibilityReason?: string;
 }): Promise<FlowResult> => {
   const {
     env,
@@ -258,6 +323,9 @@ export const executeFlow = async (options: {
     lastReturnValue: lastReturnValue_,
     sentMessages: sentMessages_,
     deferred = false,
+    responsibleUser: responsibleUser_,
+    responsibleUserId,
+    responsibilityReason,
   } = options;
   if (recursion > 50) {
     return {
@@ -265,6 +333,87 @@ export const executeFlow = async (options: {
       message: `Too much recursion (${recursion} layers)`,
     };
   }
+  let responsibleUser = responsibleUser_;
+  if (
+    !responsibleUser &&
+    responsibleUserId &&
+    liveVars.guild &&
+    recursion === 0
+  ) {
+    // console.log(
+    //   "Resolving responsible user",
+    //   liveVars.guild.id,
+    //   responsibleUserId,
+    // );
+    responsibleUser = await getResponsibleUser(
+      rest,
+      liveVars.guild,
+      responsibleUserId,
+      responsibilityReason,
+    );
+  }
+  // console.log("Responsible:", responsibleUser);
+
+  const responsibleOwner =
+    !!responsibleUser && liveVars.guild?.owner_id === responsibleUser?.id;
+  const responsibleGuildPermissions = new PermissionsBitField(
+    BigInt(responsibleUser?.guild_permissions ?? 0),
+  );
+  const checkRoleIdManageable = async (roleId: string, quiet = false) => {
+    if (!responsibleUser) {
+      if (quiet) return false;
+      throw new FlowFailure(
+        "A responsible user could not be determined for this flow, so out of safety the role cannot be managed.",
+      );
+    }
+    if (liveVars.guild?.owner_id === responsibleUser.id) return true;
+    if (!responsibleGuildPermissions.has(PermissionFlagsBits.ManageRoles)) {
+      if (quiet) return false;
+      throw new FlowFailure(
+        "The responsible user for this flow does not have the Manage Roles permission.",
+      );
+    }
+    let incoming = liveVars.guild?._roles?.find((r) => r.id === roleId);
+    if (!incoming && liveVars.guild) {
+      // Refresh cache in case it's a new role or there is no roles cache
+      try {
+        liveVars.guild = await getchTriggerGuild(rest, env, liveVars.guild.id);
+        incoming = liveVars.guild._roles?.find((r) => r.id === roleId);
+      } catch {}
+    }
+    if (!incoming) {
+      if (quiet) return false;
+      throw new FlowFailure(
+        "The role to be managed could not be found in the server.",
+      );
+    }
+    if (liveVars.guild?._roles) {
+      const responsibleRoles = responsibleUser.roles
+        .map((r) => liveVars.guild?._roles?.find((guildR) => r === guildR.id))
+        .filter((v) => !!v)
+        .sort((a, b) => b.position - a.position);
+      if (responsibleRoles.length === 0) return false;
+
+      const responsibleHighestRole = responsibleRoles[0];
+      const canManage = incoming.position < responsibleHighestRole.position;
+      if (!canManage) {
+        if (quiet) return false;
+        throw new FlowFailure(
+          "The responsible user for this flow has a highest role that is lower or equal to the role to be added or removed. Out of safety, the role cannot be managed.",
+        );
+      }
+      return true;
+    }
+    // At minimum, disallow management of roles the user does not already have
+    const hasRole = responsibleUser.roles.includes(roleId);
+    if (!hasRole) {
+      if (quiet) return false;
+      throw new FlowFailure(
+        "The responsible user for this flow may not be able to add or remove this role. Out of safety, it cannot be managed.",
+      );
+    }
+    return true;
+  };
 
   try {
     if (
@@ -309,6 +458,7 @@ export const executeFlow = async (options: {
           recursion: recursion + 1,
           interaction: ctx?.interaction,
           flow,
+          responsibleUser,
         });
         return {
           status: "success",
@@ -355,6 +505,7 @@ export const executeFlow = async (options: {
     return v.value;
   };
 
+  const reason = getReason(responsibleUser);
   let subActionsCompleted = 0;
   try {
     for (const action of flow.actions) {
@@ -448,6 +599,7 @@ export const executeFlow = async (options: {
               recursion: recursion + 1,
               lastReturnValue,
               sentMessages,
+              responsibleUser,
             });
             if (result.status === "success") {
               subActionsCompleted += action.then?.length ?? 0;
@@ -465,6 +617,7 @@ export const executeFlow = async (options: {
               recursion: recursion + 1,
               lastReturnValue,
               sentMessages,
+              responsibleUser,
             });
             if (result.status === "success") {
               subActionsCompleted += action.else?.length ?? 0;
@@ -529,7 +682,7 @@ export const executeFlow = async (options: {
           }
           const msg = sentMessages[vars.messageId as string];
           if (msg) {
-            await executeDeleteMessage(rest, msg.route);
+            await executeDeleteMessage(rest, msg.route, reason);
           } else {
             if (!vars.channelId) {
               throw new FlowFailure(
@@ -542,6 +695,7 @@ export const executeFlow = async (options: {
                 vars.channelId as string,
                 vars.messageId as string,
               ),
+              reason,
             );
           }
           break;
@@ -552,11 +706,13 @@ export const executeFlow = async (options: {
               "No server was provided to the flow executor.",
             );
           }
+          await checkRoleIdManageable(action.roleId);
           await executeAddRole(
             rest,
             action,
             liveVars.guild.id,
             vars as { userId: string },
+            reason,
           );
           break;
         case FlowActionType.RemoveRole:
@@ -565,11 +721,13 @@ export const executeFlow = async (options: {
               "No server was provided to the flow executor.",
             );
           }
+          await checkRoleIdManageable(action.roleId);
           await executeRemoveRole(
             rest,
             action,
             liveVars.guild.id,
             vars as { userId: string },
+            reason,
           );
           break;
         case FlowActionType.ToggleRole:
@@ -578,25 +736,50 @@ export const executeFlow = async (options: {
               "No server was provided to the flow executor.",
             );
           }
+          await checkRoleIdManageable(action.roleId);
           await executeToggleRole(
             rest,
             action,
             liveVars.guild.id,
             vars as { userId: string },
+            reason,
           );
           break;
-        case FlowActionType.CreateThread:
-          {
-            const channelId =
-              resolveSetVariable(action.channel)?.toString() ?? vars.channelId;
-            lastReturnValue = await executeCreateThread(
-              rest,
-              action,
-              { channelId },
-              liveVars,
-            );
+        case FlowActionType.CreateThread: {
+          if (!responsibleOwner) {
+            if (
+              action.threadType === ChannelType.PrivateThread &&
+              !responsibleGuildPermissions.has(
+                PermissionFlagsBits.CreatePrivateThreads,
+              )
+            ) {
+              throw new FlowFailure(
+                "The responsible user for this flow does not have the Create Private Threads permission.",
+              );
+            }
+            if (
+              !responsibleGuildPermissions.has(
+                PermissionFlagsBits.CreatePublicThreads,
+              )
+            ) {
+              throw new FlowFailure(
+                "The responsible user for this flow does not have the Create Public Threads permission.",
+              );
+            }
           }
+
+          const channelId =
+            resolveSetVariable(action.channel)?.toString() ?? vars.channelId;
+          lastReturnValue = await executeCreateThread(
+            rest,
+            action,
+            { channelId },
+            liveVars,
+            reason,
+            undefined,
+          );
           break;
+        }
         case FlowActionType.Stop:
           if (action.message && !!action.message.content?.trim()) {
             try {
@@ -672,9 +855,13 @@ const httpFlowFailure = (e: unknown, message: string) => {
   return new FlowFailure(message);
 };
 
-const reason = "Action in a flow";
+const getReason = (user: ResponsibleUser | undefined) => {
+  if (user === undefined) return "Action in a flow";
+  const base = `Flow action, responsibility of ${user.username} (${user.id})`;
+  return user.reason ? `${base}: ${user.reason}` : base;
+};
 
-export const executeSendMessage = async (
+const executeSendMessage = async (
   action: FlowActionSendMessage,
   rest: REST,
   db: DBWithSchema,
@@ -730,7 +917,7 @@ export const executeSendMessage = async (
   return message;
 };
 
-export const executeSendWebhookMessage = async (
+const executeSendWebhookMessage = async (
   action: FlowActionSendWebhookMessage,
   rest: REST,
   db: DBWithSchema,
@@ -848,9 +1035,10 @@ export const executeSendWebhookMessage = async (
   };
 };
 
-export const executeDeleteMessage = async (
+const executeDeleteMessage = async (
   rest: REST,
   route: RouteLike,
+  reason: string,
 ): Promise<void> => {
   try {
     await rest.delete(route, { reason });
@@ -859,11 +1047,12 @@ export const executeDeleteMessage = async (
   }
 };
 
-export const executeAddRole = async (
+const executeAddRole = async (
   rest: REST,
   action: FlowActionAddRole,
   guildId: string,
   setVars: { userId: string },
+  reason: string,
 ) => {
   if (!setVars.userId) {
     throw new FlowFailure("No user ID was set.");
@@ -878,11 +1067,12 @@ export const executeAddRole = async (
   }
 };
 
-export const executeRemoveRole = async (
+const executeRemoveRole = async (
   rest: REST,
   action: FlowActionRemoveRole,
   guildId: string,
   setVars: { userId: string },
+  reason: string,
 ) => {
   if (!setVars.userId) {
     throw new FlowFailure("No user ID was set.");
@@ -897,11 +1087,12 @@ export const executeRemoveRole = async (
   }
 };
 
-export const executeToggleRole = async (
+const executeToggleRole = async (
   rest: REST,
   action: FlowActionToggleRole,
   guildId: string,
   setVars: { userId: string },
+  reason: string,
 ) => {
   if (!setVars.userId) {
     throw new FlowFailure("No user ID was set.");
@@ -926,11 +1117,12 @@ export const executeToggleRole = async (
   }
 };
 
-export const executeCreateThread = async (
+const executeCreateThread = async (
   rest: REST,
   action: FlowActionCreateThread,
   setVars: { channelId: string },
   liveVars: LiveVariables,
+  reason: string,
   ctx?: InteractionContext,
 ) => {
   const channelId = setVars.channelId;

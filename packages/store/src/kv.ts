@@ -124,6 +124,11 @@ export const getchTriggerGuild = async (
             : guild.premium_tier === GuildPremiumTier.Tier1
               ? 15
               : 5,
+      _roles: guild.roles.map((role) => ({
+        id: role.id,
+        position: role.position,
+        permissions: role.permissions,
+      })),
     };
     await env.KV.put(key, JSON.stringify(reduced), { expirationTtl: 3600 });
     return reduced;
