@@ -4,12 +4,13 @@ import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { Header } from "~/components/Header";
+import { CoolIcon } from "~/components/icons/CoolIcon";
 import { PreviewActionRow } from "~/components/preview/ActionRow";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Prose } from "~/components/Prose";
 import { getUser } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";
-import type { GuideFileMeta } from "./news.$slug";
+import type { GuideFileMeta } from "./news.$";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
@@ -25,11 +26,19 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 
   return {
     user,
-    posts: index._index.sort((a, b) => {
-      const ad = new Date(a.date).getTime();
-      const bd = new Date(b.date).getTime();
-      return bd - ad;
-    }),
+    posts: Object.entries(index)
+      .flatMap(([key, posts]) =>
+        posts.map((post) => ({
+          ...post,
+          category: post.category ?? (key === "_index" ? undefined : key),
+          path: key === "_index" ? post.file : `${key}/${post.file}`,
+        })),
+      )
+      .sort((a, b) => {
+        const ad = new Date(a.date).getTime();
+        const bd = new Date(b.date).getTime();
+        return bd - ad;
+      }),
   };
 };
 
@@ -116,11 +125,20 @@ export default () => {
                 "bg-gray-50 dark:bg-gray-800 border-[#DFDFE1] dark:border-[#424349] hover:border-[#D2D2D5] dark:hover:border-[#626369]",
                 "hover:bg-white hover:dark:bg-gray-700",
               )}
-              to={`/news/${file.file}`}
+              to={`/news/${file.path}`}
             >
               <p className="font-semibold text-lg">
                 {file.title}
-                <span className="font-medium">: {file.description}</span>
+                {file.description ? (
+                  <span className="font-medium">: {file.description}</span>
+                ) : null}
+                {file.category === "security" ? (
+                  <CoolIcon
+                    icon="Shield_Warning"
+                    // todo: better compatibility for this icon. align-center is FF only
+                    className="text-blurple-400 dark:text-blurple-200 align-[center] ms-1"
+                  />
+                ) : null}
               </p>
               <p>
                 <span className="text-muted dark:text-muted-dark">

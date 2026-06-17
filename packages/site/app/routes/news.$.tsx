@@ -22,12 +22,12 @@ import { relativeTime } from "~/util/time";
 import { zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
-  const { slug } = zxParseParams(params, {
-    slug: z.string().regex(/^[\w-]+$/),
+  const { "*": path } = zxParseParams(params, {
+    "*": z.string().regex(/^[\w/-]+$/),
   });
 
   const fileResponse = await context.env.ASSETS.fetch(
-    `http://localhost/news-files/${slug}.md`,
+    `http://localhost/news-files/${path}.md`,
     { method: "GET" },
   );
   if (!fileResponse.ok) {
@@ -54,9 +54,10 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     );
   }
 
+  const slug = path.replace(/^.+\//, "");
   const file: GuideFile = {
     content: parsed.body,
-    meta: { ...zparsed.data, file: slug },
+    meta: { ...zparsed.data, file: slug, path },
   };
 
   const indexResponse = await context.env.ASSETS.fetch(
@@ -67,7 +68,13 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   if (indexResponse.ok) {
     index = await indexResponse.json();
   }
-  const posts = index._index.sort(
+  const pathDirectories = path.split("/").slice(0, -1);
+  const siblings =
+    pathDirectories.length === 0
+      ? index._index
+      : (index[pathDirectories[0]] ?? []);
+
+  const posts = siblings.sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
   const thisIndex = posts.findIndex((p) => p.file === slug);
@@ -85,6 +92,7 @@ interface GuideFile {
   content: string;
   meta: {
     file: string;
+    path: string;
     title: string;
     date: Date;
     author: string;

@@ -2,7 +2,7 @@ import { Feed } from "feed";
 import z from "zod/v3";
 import type { LoaderArgs } from "~/util/loader";
 import { zxParseQuery } from "~/util/zod";
-import type { GuideFileMeta } from "./news.$slug";
+import type { GuideFileMeta } from "./news.$";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const { format } = zxParseQuery(request, {
