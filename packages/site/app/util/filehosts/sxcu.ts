@@ -79,6 +79,11 @@ export const uploadFile = async (
         text = err.error;
       }
     } catch {}
+    if (text === "HTTP 0") {
+      // I think the preflight sometimes times out which results in a
+      // CORS error
+      text = "Try again.";
+    }
     throw Error(`Failed to upload: ${text}`);
   }
 
