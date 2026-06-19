@@ -361,11 +361,51 @@ const handleInteraction = async (
         };
         if (!coldComponent.guildId) {
           // Allow the component creator to set this data since they can always
-          // access the component's contents
+          // access the component's contents, unless they have insufficient
+          // permissions within the server
           if (
-            coldComponent.createdBy?.discordId &&
-            coldComponent.createdBy.discordId === BigInt(ctx.user.id)
+            coldComponent.createdBy &&
+            String(coldComponent.createdBy.discordId) === ctx.user.id
           ) {
+            // I think this doesn't actually need to be checked, since the
+            // hierarchy is checked later anyway?
+            // if (guild.owner_id !== String(coldComponent.createdBy.discordId)) {
+            //   newHotComponent.responsibleUser = await getResponsibleUser(
+            //     rest,
+            //     guild,
+            //     String(coldComponent.createdBy.discordId),
+            //     "created the component",
+            //   );
+            //   if (!newHotComponent.responsibleUser) {
+            //     return respond(
+            //       ctx.reply({
+            //         content: [
+            //           "This component hasn't been linked with a server, and the",
+            //           "component owner could not be found in the current server.",
+            //           "For security, the component cannot be moved automatically.",
+            //         ].join(" "),
+            //         ephemeral: true,
+            //       }),
+            //     );
+            //   }
+            //   const respPermissions = new PermissionsBitField(
+            //     BigInt(newHotComponent.responsibleUser.guild_permissions),
+            //   );
+            //   if (!respPermissions.has(PermissionFlags.ManageWebhooks)) {
+            //     return respond(
+            //       ctx.reply({
+            //         content: [
+            //           "This component hasn't been linked with a server, and the",
+            //           'component owner does not have the "Manage Webhooks',
+            //           "permission in the current server.",
+            //           "For security, the component cannot be moved automatically.",
+            //         ].join(" "),
+            //         ephemeral: true,
+            //       }),
+            //     );
+            //   }
+            // }
+
             // deprecated - we want to move to "placements" instead, wherein
             // a component can be "shared" between multiple channels or even
             // guilds at once

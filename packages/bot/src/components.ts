@@ -125,6 +125,10 @@ export type ComponentRoutingId =
   | "edit-component-flow-pick"
   | "edit-component-flow-mode"
   | "edit-component-flow-modal-resend"
+  // | "debug-component-flow-ctx"
+  // | "debug-component-flow-pick"
+  // | "debug-component-flow-mode"
+  // | "debug-component-flow-modal-resend"
   | "delete-component-pick-ctx"
   | "delete-component-pick"
   | "delete-component-confirm"
@@ -168,6 +172,10 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "edit-component-flow-pick": editComponentFlowPickCallback,
   "edit-component-flow-mode": editComponentFlowModeCallback,
   "edit-component-flow-modal-resend": editComponentFlowModalResendCallback,
+  // "debug-component-flow-ctx": debugComponentButtonEntry,
+  // "debug-component-flow-pick": debugComponentFlowPickCallback,
+  // "debug-component-flow-mode": debugComponentFlowModeCallback,
+  // "debug-component-flow-modal-resend": debugComponentFlowModalResendCallback,
   "delete-component-pick": deleteComponentFlowPickCallback,
   "delete-component-pick-ctx": deleteComponentButtonEntry,
   "delete-component-confirm": deleteComponentConfirm,
