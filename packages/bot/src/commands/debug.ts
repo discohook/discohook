@@ -1,6 +1,7 @@
-import { EmbedBuilder, messageLink, time } from "@discordjs/builders";
+import { ContainerBuilder, messageLink } from "@discordjs/builders";
 import dedent from "dedent-js";
 import {
+  APIGuildMember,
   type APIGuildTextChannel,
   type APIMessage,
   type APIMessageApplicationCommandGuildInteraction,
@@ -12,11 +13,9 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { desc, eq } from "drizzle-orm";
-import { getDb, getId, messageLogEntries } from "store";
 import type { MessageAppCommandCallback } from "../commands.js";
 import type { InteractionContext } from "../interactions.js";
-import { userAvatarUrl, webhookAvatarUrl } from "../util/cdn.js";
+import { textDisplay } from "../util/components.js";
 import { boolEmoji, color } from "../util/meta.js";
 
 interface LogEntry {
@@ -25,252 +24,164 @@ interface LogEntry {
   user: { discordId: bigint | null } | null;
 }
 
-const getMessageDebugEmbed = async (
+const getMessageDebugContainer = async (
   ctx: InteractionContext<APIMessageApplicationCommandGuildInteraction>,
   message: APIMessage,
 ) => {
-  const db = getDb(ctx.env.HYPERDRIVE);
   let webhook: APIWebhook | undefined;
-  let logEntries: LogEntry[] | undefined;
   if (message.webhook_id) {
     try {
       webhook = (await ctx.rest.get(
         Routes.webhook(message.webhook_id),
       )) as APIWebhook;
     } catch {}
-    logEntries = await db.query.messageLogEntries.findMany({
-      where: eq(messageLogEntries.messageId, message.id),
-      columns: {
-        id: true,
-        type: true,
-      },
-      with: {
-        user: { columns: { discordId: true } },
-      },
-      orderBy: desc(messageLogEntries.id),
-    });
   }
 
   const guildId = ctx.interaction.guild_id;
-  const embed = new EmbedBuilder()
-    .setColor(color)
-    .setAuthor({
-      name: message.author.global_name ?? message.author.username,
-      iconURL: message.webhook_id
-        ? webhookAvatarUrl(message.author, { size: 64 })
-        : userAvatarUrl(message.author, { size: 64 }),
-    })
-    .setTitle(
-      `Message Debug for ${messageLink(
-        message.channel_id,
-        message.id,
-        guildId,
-      )}`,
-    )
-    .setFooter({
-      text: dedent`
-        ID: ${message.id}
-        Flags: ${message.flags?.toString() ?? 0}
-      `,
-    });
-
-  let roles: RESTGetAPIGuildRolesResult | undefined;
-  try {
-    roles = (await ctx.rest.get(
-      Routes.guildRoles(guildId),
-    )) as RESTGetAPIGuildRolesResult;
-  } catch {}
-  const channel = ctx.interaction.channel as APIGuildTextChannel<
-    | ChannelType.GuildText
-    | ChannelType.GuildVoice
-    | ChannelType.GuildAnnouncement
-    | ChannelType.GuildForum
-    | ChannelType.GuildMedia
-  >;
-  const overwrites =
-    ((await ctx.rest.get(Routes.channel(channel.id))) as typeof channel)
-      .permission_overwrites ?? [];
-
-  const permissions = {
-    everyone: {
-      guild: new PermissionsBitField(
-        BigInt(roles?.find((r) => r.id === guildId)?.permissions ?? "0"),
+  const container = new ContainerBuilder()
+    .setAccentColor(color)
+    // .setAuthor({
+    //   name: message.author.global_name ?? message.author.username,
+    //   iconURL: message.webhook_id
+    //     ? webhookAvatarUrl(message.author, { size: 64 })
+    //     : userAvatarUrl(message.author, { size: 64 }),
+    // })
+    .addTextDisplayComponents(
+      textDisplay(
+        `### Message Debug for ${messageLink(
+          message.channel_id,
+          message.id,
+          guildId,
+        )}`,
       ),
-      channel: (() => {
-        const ow = channel.permission_overwrites?.find(
-          (ow) => ow.id === guildId && ow.type === OverwriteType.Role,
-        );
-        if (ow) {
-          return {
-            allow: new PermissionsBitField(BigInt(ow.allow)),
-            deny: new PermissionsBitField(BigInt(ow.deny)),
-          };
-        }
-        return {
-          allow: new PermissionsBitField(),
-          deny: new PermissionsBitField(),
-        };
-      })(),
-    },
-    // reg. message author or app webhook owner
-    user: {
-      guild: new PermissionsBitField(),
-      channel: {
-        allow: new PermissionsBitField(),
-        deny: new PermissionsBitField(),
-      },
-    },
-  };
+    );
 
-  if (message.webhook_id) {
-    if (webhook?.user?.bot && roles) {
+  const [roles, channel] = await Promise.all([
+    (async () => {
       try {
-        // May no longer be a member
-        const member = (await ctx.rest.get(
-          Routes.guildMember(guildId, webhook.user.id),
-        )) as RESTGetAPIGuildMemberResult;
-        permissions.user.guild.add(
-          member.roles.map((rid) =>
-            BigInt(roles.find((role) => role.id === rid)?.permissions ?? "0"),
-          ),
-        );
-        const ows = overwrites.filter(
-          (ow) =>
-            (ow.id === webhook.user?.id && ow.type === OverwriteType.Member) ||
-            (ow.type === OverwriteType.Role && member.roles.includes(ow.id)),
-        );
-        for (const ow of ows) {
-          permissions.user.channel.deny.add(BigInt(ow.deny));
-          permissions.user.channel.allow.add(BigInt(ow.allow));
-        }
+        return (await ctx.rest.get(
+          Routes.guildRoles(guildId),
+        )) as RESTGetAPIGuildRolesResult;
       } catch {}
+    })(),
+    ctx.rest.get(
+      Routes.channel(webhook?.channel_id ?? ctx.interaction.channel.id),
+    ) as Promise<
+      APIGuildTextChannel<
+        | ChannelType.GuildText
+        | ChannelType.GuildVoice
+        | ChannelType.GuildAnnouncement
+        | ChannelType.GuildForum
+        | ChannelType.GuildMedia
+      >
+    >,
+  ]);
+
+  let guildPerm = new PermissionsBitField();
+  let channelPerm = new PermissionsBitField();
+
+  // calculate for user (webhook owner if bot, else direct author)
+  if (webhook?.user?.bot || !message.webhook_id) {
+    const userId = webhook?.user?.bot ? webhook.user.id : message.author.id;
+
+    let member: APIGuildMember | undefined;
+    if (
+      webhook?.user?.bot &&
+      webhook.application_id === ctx.interaction.application_id
+    ) {
+      member = ctx.interaction.member;
+      channelPerm = ctx.appPermissons;
+    } else if (userId === ctx.user.id) {
+      member = ctx.interaction.member;
+      channelPerm = ctx.userPermissons;
     }
-    embed.addFields({
-      name: "Webhook",
-      value: webhook
-        ? dedent`
-          Created by <@${webhook.user?.id}>
-          ID: \`${webhook.id}\`
-        `
-        : `Failed to fetch. The webhook may no longer exist (ID \`${message.webhook_id}\`)`,
-    });
-  } else {
-    try {
-      // May no longer be a member
-      const member =
-        message.author.id === ctx.user.id
-          ? ctx.interaction.member
-          : ((await ctx.rest.get(
-              Routes.guildMember(guildId, message.author.id),
-            )) as RESTGetAPIGuildMemberResult);
-      permissions.user.guild.add(
-        ...(roles
-          ?.filter((role) => member.roles.includes(role.id))
-          .map((role) => BigInt(role.permissions)) ?? []),
-      );
+    if (!member) {
+      // must exist because webhooks are removed if the bot is removed, and
+      // oauth webhooks have the `user` of the user who authorized.
+      // TODO: what permissions do oauth webhooks inherit?
+      member = (await ctx.rest.get(
+        Routes.guildMember(guildId, userId),
+      )) as RESTGetAPIGuildMemberResult;
+    }
+    if (roles) {
+      for (const roleId of member.roles) {
+        const role = roles.find((r) => r.id === roleId);
+        if (!role) continue;
 
-      const ows = overwrites.filter(
-        (ow) =>
-          (ow.id === message.author.id && ow.type === OverwriteType.Member) ||
-          (ow.type === OverwriteType.Role && member.roles.includes(ow.id)),
-      );
-      for (const ow of ows) {
-        permissions.user.channel.deny.add(BigInt(ow.deny));
-        permissions.user.channel.allow.add(BigInt(ow.allow));
+        guildPerm.add(BigInt(role.permissions));
       }
-    } catch {}
-    embed.addFields({
-      name: "Author",
-      value: `${message.author.bot ? "Bot" : "User"} with ID \`${
-        message.author.id
-      }\` (<@${message.author.id}>)`,
-    });
+    }
+    if (channelPerm.value !== 0n) {
+      for (const override of channel.permission_overwrites ?? []) {
+        switch (override.type) {
+          case OverwriteType.Member:
+            if (override.id === userId) {
+              channelPerm.add(BigInt(override.allow));
+              channelPerm.remove(BigInt(override.deny));
+            }
+            break;
+          case OverwriteType.Role:
+            if (member.roles.includes(override.id)) {
+              channelPerm.add(BigInt(override.allow));
+              channelPerm.remove(BigInt(override.deny));
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    }
   }
-
-  const permissionScope = webhook?.user?.bot
-    ? "user"
-    : message.webhook_id
-      ? "everyone"
-      : "user";
-  const guildPerm =
-    permissionScope === "user"
-      ? new PermissionsBitField(
-          permissions.everyone.guild.mask(permissions.user.guild),
-        )
-      : permissions.everyone.guild;
-  const channelPerm =
-    permissionScope === "user"
-      ? // ?  {
-        //       allow: new PermissionsBitField(
-        //         permissions.everyone.channel.allow.mask(
-        //           permissions.user.channel.allow,
-        //         ),
-        //       ),
-        //       deny: new PermissionsBitField(
-        //         permissions.everyone.channel.deny.mask(
-        //           permissions.user.channel.deny,
-        //         ),
-        //       ),
-        //     }
-        permissions.user.channel
-      : permissions.everyone.channel;
-
-  embed.addFields({
-    name: "Emojis",
-    value: dedent`
-      Permissions for this message apply to ${
-        webhook?.user?.bot
-          ? `<@${webhook.user.id}> (the application that owns the webhook)`
-          : message.webhook_id
-            ? `@everyone ${
-                webhook
-                  ? ""
-                  : "or the application that may have owned the webhook"
-              }`
-            : `<@${message.author.id}>`
-      }
-
-      **Server**
-      ${boolEmoji(true)} Use Discord emojis
-      ${boolEmoji(true)} Use this server's emojis
-      ${boolEmoji(guildPerm.has(PermissionFlags.UseExternalEmojis))} Use external emojis
-
-      **Channel**
-      ${boolEmoji(true)} Use Discord emojis
-      ${boolEmoji(true)} Use this server's emojis
-      ${boolEmoji(
-        channelPerm.deny.has(PermissionFlags.UseExternalEmojis)
-          ? false
-          : channelPerm.allow.has(PermissionFlags.UseExternalEmojis)
-            ? true
-            : null,
-      )} Use external emojis
-    `,
-  });
-
+  // calculate for @everyone (if webhook)
   if (message.webhook_id) {
-    embed.addFields({
-      name: "Discohook Logs",
-      value:
-        !logEntries || logEntries.length === 0
-          ? "This message may not have been sent with Discohook."
-          : logEntries
-              .map(
-                (entry) =>
-                  `${time(new Date(getId(entry).timestamp), "d")} ${
-                    entry.type
-                  } - ${
-                    entry.user?.discordId
-                      ? `<@${entry.user.discordId}>`
-                      : "anonymous"
-                  }`,
-              )
-              .join("\n")
-              .slice(0, 1024),
-    });
+    // Disregard the webhook owner in favor of @everyone if they are a human,
+    // but not if they are a bot
+    const everyoneRole = roles?.find((r) => r.id === guildId);
+    if (everyoneRole) {
+      if (webhook?.user?.bot) {
+        guildPerm.add(BigInt(everyoneRole.permissions));
+      } else {
+        guildPerm = new PermissionsBitField(BigInt(everyoneRole.permissions));
+      }
+    }
+    for (const override of channel.permission_overwrites ?? []) {
+      if (override.type === OverwriteType.Role && override.id === guildId) {
+        channelPerm.add(BigInt(override.allow));
+        channelPerm.remove(BigInt(override.deny));
+      }
+    }
   }
+  const hasChannelExtEmoji = channelPerm.has(PermissionFlags.UseExternalEmojis);
 
-  return embed;
+  container
+    .addTextDisplayComponents(
+      textDisplay(dedent`
+        **Emojis**
+        Permissions for this message inherit from ${
+          webhook?.user?.bot
+            ? `<@${webhook.user.id}> and @everyone`
+            : message.webhook_id
+              ? "@everyone"
+              : `<@${message.author.id}>`
+        }`),
+    )
+    .addSeparatorComponents((s) => s.setDivider())
+    .addTextDisplayComponents(
+      textDisplay(dedent`
+        ${boolEmoji(true)} Use this server's emojis
+        ${boolEmoji(guildPerm.has(PermissionFlags.UseExternalEmojis))} Use external emojis (server)
+        ${boolEmoji(hasChannelExtEmoji)} Use external emojis (channel)
+        ${hasChannelExtEmoji ? "Looks good! If you just updated permissions, try sending the message again." : ""}
+      `),
+    )
+    .addSeparatorComponents((s) => s.setDivider());
+
+  container.addTextDisplayComponents(
+    textDisplay(
+      `-# ID: ${message.id}\n-# Flags: ${message.flags?.toString() ?? 0}`,
+    ),
+  );
+  return container;
 };
 
 export const debugMessageCallback: MessageAppCommandCallback<
@@ -278,7 +189,9 @@ export const debugMessageCallback: MessageAppCommandCallback<
 > = async (ctx) => {
   const message = ctx.getMessage();
   return ctx.reply({
-    embeds: [await getMessageDebugEmbed(ctx, message)],
+    components: [await getMessageDebugContainer(ctx, message)],
     ephemeral: true,
+    componentsV2: true,
+    allowedMentions: { parse: [] },
   });
 };
