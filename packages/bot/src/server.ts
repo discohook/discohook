@@ -24,6 +24,7 @@ import i18next from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
+  autoRollbackTx,
   discordMessageComponents,
   type DraftComponent,
   type DraftFlow,
@@ -33,6 +34,7 @@ import {
   getRedis,
   launchComponentKV,
   type TriggerKVGuild,
+  upsertDiscordUser,
 } from "store";
 import { Snowflake } from "tif-snowflake";
 import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
@@ -452,27 +454,65 @@ const handleInteraction = async (
         // I need to determine this at this level so that it can be cached,
         // but unfortunately it adds delay to the defer. Hopefully it's not
         // ultimately too much.
-        const responsibleUser =
-          coldComponent.updatedBy?.discordId ||
-          coldComponent.createdBy?.discordId
+        if (!newHotComponent.responsibleUser) {
+          const responsibleId =
+            coldComponent.updatedBy?.discordId ||
+            coldComponent.createdBy?.discordId;
+          const responsibleUser = responsibleId
             ? await getResponsibleUser(
                 rest,
                 guild,
-                String(
-                  coldComponent.updatedBy?.discordId ??
-                    coldComponent.createdBy?.discordId,
-                ),
+                String(responsibleId),
                 coldComponent.updatedBy?.discordId
                   ? "most recently edited the component"
                   : "created the component",
               )
             : undefined;
-        newHotComponent.responsibleUser = responsibleUser;
+          newHotComponent.responsibleUser = responsibleUser;
+        }
 
         hotComponent = newHotComponent;
-        await launchComponentKV(env, { componentId, ...newHotComponent });
+        eCtx.waitUntil(
+          launchComponentKV(env, { componentId, ...newHotComponent }),
+        );
+      }
+      // Allow the guild owner to automatically take responsibility of unowned components.
+      // This usually happens when they create a component on the site but have not logged in.
+      // It's safe to "transfer" ownership since nobody already owns it, and it's safe to allow
+      // the owner to be responsible because they already own the server.
+      if (!hotComponent.createdById && guild.owner_id === ctx.user.id) {
+        hotComponent.responsibleUser = {
+          guild_permissions: "0",
+          // channel_permissions: ctx.userPermissons.value.toString(),
+          id: ctx.user.id,
+          username: ctx.user.username,
+          roles: ctx.interaction.member?.roles ?? [],
+          reason: "claimed unowned component as server owner",
+        };
+        eCtx.waitUntil(
+          (async () => {
+            launchComponentKV(env, { componentId, ...hotComponent });
+
+            await db.transaction(
+              autoRollbackTx(async (tx) => {
+                let dbUser = await tx.query.users.findFirst({
+                  where: (users, { eq }) =>
+                    eq(users.discordId, BigInt(ctx.user.id)),
+                  columns: { id: true },
+                });
+                if (!dbUser) dbUser = await upsertDiscordUser(tx, ctx.user);
+
+                await tx
+                  .update(discordMessageComponents)
+                  .set({ createdById: dbUser.id, updatedById: dbUser.id })
+                  .where(eq(discordMessageComponents.id, componentId));
+              }),
+            );
+          })(),
+        );
       }
       const component = hotComponent;
+      if (env.ENVIRONMENT === "dev") console.log({ component });
 
       const liveVars: LiveVariables = {
         guild,
