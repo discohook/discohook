@@ -470,7 +470,7 @@ export const executeFlow = async (options: {
       }
 
       // May need to lower or raise this
-      if (cumulativeWait >= 30) {
+      if (cumulativeWait >= 25) {
         // console.log("Bouncing to", env.BOUNCER_ORIGIN);
         await bounceFlow(env, {
           liveVars,
@@ -482,7 +482,7 @@ export const executeFlow = async (options: {
         });
         return {
           status: "success",
-          message: `Flow bounced to another process due to ≤${cumulativeWait}s of waiting time. Unfortunately Discohook is currently unable to give detailed feedback on this flow.`,
+          message: `Flow bounced to another process due to ≥${cumulativeWait}s of waiting time. Unfortunately Discohook is currently unable to give detailed feedback on this flow.`,
           paused: true,
           // TODO: some sort of job ID/a way to, at least, send a message in a channel to give feedback
         };
