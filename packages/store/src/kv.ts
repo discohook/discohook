@@ -11,6 +11,7 @@ import type { DBWithSchema } from "./db.js";
 import type { RedisKV } from "./redis.js";
 import type { DraftComponent } from "./types/components.js";
 import type { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
+import { ResponsibleUser } from "./zod/flows.js";
 
 export type Env = {
   ENVIRONMENT: "dev" | "preview" | "production";
@@ -255,17 +256,21 @@ export interface KVStoredComponent {
   data: DraftComponent;
 }
 
+export interface HotComponent {
+  data: DraftComponent;
+  channelId?: string;
+  guildId?: string;
+  createdById?: string;
+  responsibleUser?: ResponsibleUser;
+}
+
 export const launchComponentKV = async (
   env: Env | Env["KV"],
   options: {
     // messageId: string;
     componentId: string | bigint;
     db?: DBWithSchema;
-    data?: DraftComponent;
-    channelId?: string;
-    guildId?: string;
-    createdById?: string;
-  },
+  } & HotComponent,
 ): Promise<DraftComponent> => {
   const key = `custom-component-${options.componentId}`;
   const data = {
@@ -274,6 +279,7 @@ export const launchComponentKV = async (
     channelId: options.channelId,
     guildId: options.guildId,
     createdById: options.createdById,
+    responsibleUser: options.responsibleUser,
   };
   if (!data.data) {
     if (!options.db) throw Error("Must provide db if not data");

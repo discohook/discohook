@@ -17,7 +17,7 @@ import {
   MessageFlags,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { PermissionFlags } from "discord-bitflag";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isValidRequest, PlatformAlgorithm } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next from "i18next";
@@ -26,12 +26,12 @@ import { jwtVerify } from "jose";
 import {
   autoRollbackTx,
   discordMessageComponents,
-  type DraftComponent,
   type DraftFlow,
   ensureComponentFlows,
   getchTriggerGuild,
   getDb,
   getRedis,
+  type HotComponent,
   launchComponentKV,
   type TriggerKVGuild,
   upsertDiscordUser,
@@ -39,6 +39,7 @@ import {
 import { Snowflake } from "tif-snowflake";
 import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import { migrateLegacyButtons } from "./commands/components/migrate.js";
+import { getFlowDiagnosticEmbed, promiseTimeout } from "./commands/triggers.js";
 import {
   type ComponentCallbackT,
   type ComponentRoutingId,
@@ -54,11 +55,12 @@ import {
 } from "./events.js";
 import {
   executeFlow,
+  FlowResult,
   getResponsibleUser,
   type LiveVariables,
-  ResponsibleUser,
   resumeFlowFromBouncer,
 } from "./flows/flows.js";
+import { FlowLogger } from "./flows/logger.js";
 import { InteractionContext } from "./interactions.js";
 import type { Env } from "./types/env.js";
 import {
@@ -67,8 +69,10 @@ import {
 } from "./types/webhook-events.js";
 import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
+import { color } from "./util/meta.js";
 import { createREST } from "./util/rest.js";
 import { sleep } from "./util/sleep.js";
+import { sortRoles } from "./util/user.js";
 
 // durable objects
 export { EmojiManager } from "./emojis.js";
@@ -207,7 +211,10 @@ const handleInteraction = async (
       return noChoices;
     }
   } else if (interaction.type === InteractionType.MessageComponent) {
-    const { custom_id: customId, component_type: type } = interaction.data;
+    const { custom_id: customId_, component_type: type } = interaction.data;
+    const DEBUG = customId_.startsWith("DBG_");
+    const customId = customId_.replace(/^DBG_/, "");
+
     if (customId.startsWith("t_")) {
       const state = await env.KV.get<MinimumKVComponentState>(
         `component-${type}-${customId}`,
@@ -319,13 +326,6 @@ const handleInteraction = async (
       // - Future bot version (non-worker) will not be able to easily access
       //   DOs and I expect it wouldn't benefit much from using them
       const kvKey = `custom-component-${componentId}`;
-      type HotComponent = {
-        data: DraftComponent;
-        channelId?: string;
-        guildId?: string;
-        createdById?: string;
-        responsibleUser?: ResponsibleUser;
-      };
       let hotComponent = await env.KV.get<HotComponent>(kvKey, "json");
       if (!hotComponent) {
         const coldComponentPre =
@@ -476,23 +476,41 @@ const handleInteraction = async (
           launchComponentKV(env, { componentId, ...newHotComponent }),
         );
       }
-      // Allow the guild owner to automatically take responsibility of unowned components.
+      // Allow the guild owner OR an administrator with the highest guild role
+      // to automatically take responsibility of unowned components.
       // This usually happens when they create a component on the site but have not logged in.
       // It's safe to "transfer" ownership since nobody already owns it, and it's safe to allow
-      // the owner to be responsible because they already own the server.
-      if (!hotComponent.createdById && guild.owner_id === ctx.user.id) {
+      // this person to be responsible due to their already elevated permissions.
+
+      const topRole = guild._roles
+        ? sortRoles([...guild._roles])[0]
+        : undefined;
+      const userGuildPermissions = new PermissionsBitField(
+        ...(ctx.interaction.member?.roles ?? []).map((id) =>
+          BigInt(guild._roles?.find((r) => r.id === id)?.permissions ?? "0"),
+        ),
+      );
+      if (
+        !hotComponent.createdById &&
+        (guild.owner_id === ctx.user.id ||
+          (topRole &&
+            ctx.interaction.member?.roles.includes(topRole.id) &&
+            userGuildPermissions.has(PermissionFlags.Administrator)))
+      ) {
         hotComponent.responsibleUser = {
-          guild_permissions: "0",
+          guild_permissions: userGuildPermissions.value.toString(),
           // channel_permissions: ctx.userPermissons.value.toString(),
           id: ctx.user.id,
           username: ctx.user.username,
           roles: ctx.interaction.member?.roles ?? [],
-          reason: "claimed unowned component as server owner",
+          reason:
+            ctx.user.id === guild.owner_id
+              ? "claimed unowned component as server owner"
+              : "claimed unowned component as server admin + highest role",
         };
         eCtx.waitUntil(
           (async () => {
-            launchComponentKV(env, { componentId, ...hotComponent });
-
+            await launchComponentKV(env, { componentId, ...hotComponent });
             await db.transaction(
               autoRollbackTx(async (tx) => {
                 let dbUser = await tx.query.users.findFirst({
@@ -534,14 +552,6 @@ const handleInteraction = async (
           break;
       }
 
-      // This is what the switch could be reduced to, but I'm not sure I want
-      // to do this yet (+ select key filter)
-      // const allFlows =
-      //   "flow" in component.data
-      //     ? [component.data.flow]
-      //     : "flows" in component.data
-      //       ? Object.entries(component.data.flows)
-      //       : [];
       let flows: DraftFlow[] = [];
       switch (component.data.type) {
         case ComponentType.Button: {
@@ -623,8 +633,9 @@ const handleInteraction = async (
       // from one of the flows instead, especially for modals.
       eCtx.waitUntil(
         (async () => {
-          for (const flow of flows) {
-            const result = await executeFlow({
+          const logger = new FlowLogger();
+          const run = (flow: DraftFlow) => {
+            return executeFlow({
               env,
               flow,
               rest,
@@ -642,8 +653,56 @@ const handleInteraction = async (
               responsibleUser: component.responsibleUser,
               responsibleUserId: component.createdById,
               responsibilityReason: "created the component",
+              log: logger,
+              debug: DEBUG,
             });
-            if (env.ENVIRONMENT === "dev") console.log(result);
+          };
+
+          if (DEBUG) {
+            const processMsg = await ctx.followup.send({
+              embeds: [{ title: "Processing...", color }],
+              ephemeral: true,
+            });
+
+            const started = Date.now();
+            const results = await Promise.race([
+              (async (): Promise<FlowResult[]> => {
+                try {
+                  const flowResults = [];
+                  for (const flow of flows) {
+                    flowResults.push(await run(flow));
+                  }
+                  return flowResults;
+                } catch (e) {
+                  return [
+                    {
+                      status: "failure",
+                      message: `Function failed to complete: ${e}`,
+                    },
+                  ];
+                }
+              })(),
+              // Of course this will never actually happen because the
+              // waitUntil limit is 30 seconds. So perhaps it should be
+              // reduced but I don't like hardcoding the waitUntil timeout
+              // (+ I don't know precisely how much time I have left)
+              promiseTimeout<FlowResult[]>(840_000, [
+                {
+                  status: "failure",
+                  message: "Timeout after 14m",
+                },
+              ]),
+            ]);
+            const ended = Date.now();
+
+            await ctx.followup.editMessage(processMsg.id, {
+              embeds: [getFlowDiagnosticEmbed(results, started, ended, logger)],
+            });
+          } else {
+            for (const flow of flows) {
+              const result = await run(flow);
+              if (env.ENVIRONMENT === "dev") console.log(result);
+            }
           }
         })(),
       );

@@ -1,4 +1,5 @@
 import type {
+  APIGuildInteractionWrapper,
   APIInteractionResponse,
   APIMessageComponentButtonInteraction,
   APIMessageComponentInteraction,
@@ -34,6 +35,11 @@ import {
   addComponentQuickToggleRoleCallback,
   submitButtonQuickStyle,
 } from "./commands/components/quick.js";
+import {
+  debugComponentFlowPickCallback,
+  debugComponentFlowPickerCallback,
+  debugComponentFlowTakeResponsibilityCallback,
+} from "./commands/debug.js";
 import {
   quickEditSelectComponent,
   quickEditSelectContainerElement,
@@ -90,10 +96,18 @@ export type InteractionResponseWithFollowup = [
 export type ComponentCallbackT<T extends APIMessageComponentInteraction> = (
   ctx: InteractionContext<T>,
 ) => Promise<APIInteractionResponse | InteractionResponseWithFollowup>;
-export type ButtonCallback =
-  ComponentCallbackT<APIMessageComponentButtonInteraction>;
-export type SelectMenuCallback =
-  ComponentCallbackT<APIMessageComponentSelectMenuInteraction>;
+export type ButtonCallback<GuildOnly extends boolean = boolean> =
+  ComponentCallbackT<
+    GuildOnly extends true
+      ? APIGuildInteractionWrapper<APIMessageComponentButtonInteraction>
+      : APIMessageComponentButtonInteraction
+  >;
+export type SelectMenuCallback<GuildOnly extends boolean = boolean> =
+  ComponentCallbackT<
+    GuildOnly extends true
+      ? APIGuildInteractionWrapper<APIMessageComponentSelectMenuInteraction>
+      : APIMessageComponentSelectMenuInteraction
+  >;
 export type ModalCallback = (
   ctx: InteractionContext<APIModalSubmitInteraction>,
 ) => Promise<APIInteractionResponse | InteractionResponseWithFollowup>;
@@ -125,10 +139,9 @@ export type ComponentRoutingId =
   | "edit-component-flow-pick"
   | "edit-component-flow-mode"
   | "edit-component-flow-modal-resend"
-  // | "debug-component-flow-ctx"
-  // | "debug-component-flow-pick"
-  // | "debug-component-flow-mode"
-  // | "debug-component-flow-modal-resend"
+  | "debug-component-flow"
+  | "debug-component-flow-pick"
+  | "debug-component-take"
   | "delete-component-pick-ctx"
   | "delete-component-pick"
   | "delete-component-confirm"
@@ -172,10 +185,9 @@ export const componentStore: Record<ComponentRoutingId, StoredComponentData> = {
   "edit-component-flow-pick": editComponentFlowPickCallback,
   "edit-component-flow-mode": editComponentFlowModeCallback,
   "edit-component-flow-modal-resend": editComponentFlowModalResendCallback,
-  // "debug-component-flow-ctx": debugComponentButtonEntry,
-  // "debug-component-flow-pick": debugComponentFlowPickCallback,
-  // "debug-component-flow-mode": debugComponentFlowModeCallback,
-  // "debug-component-flow-modal-resend": debugComponentFlowModalResendCallback,
+  "debug-component-flow": debugComponentFlowPickerCallback,
+  "debug-component-flow-pick": debugComponentFlowPickCallback,
+  "debug-component-take": debugComponentFlowTakeResponsibilityCallback,
   "delete-component-pick": deleteComponentFlowPickCallback,
   "delete-component-pick-ctx": deleteComponentButtonEntry,
   "delete-component-confirm": deleteComponentConfirm,

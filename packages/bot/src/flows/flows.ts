@@ -17,7 +17,7 @@ import {
   type RESTPostAPIChannelThreadsJSONBody,
   type RESTPostAPIChannelThreadsResult,
   type RESTPostAPIGuildForumThreadsJSONBody,
-  Routes
+  Routes,
 } from "discord-api-types/v10";
 import { MessageFlagsBitField, PermissionsBitField } from "discord-bitflag";
 import { SignJWT } from "jose";
@@ -41,6 +41,7 @@ import {
   getDb,
   makeSnowflake,
   messageLogEntries,
+  ResponsibleUser,
   type TriggerKVGuild,
   webhooks,
 } from "store";
@@ -52,11 +53,14 @@ import { isDiscordError } from "../util/error.js";
 import { isThreadMessage } from "../util/messages.js";
 import { createREST } from "../util/rest.js";
 import { sleep } from "../util/sleep.js";
+import { sortRoles } from "../util/user.js";
 import {
   getReplacements,
   insertReplacements,
+  prefixCustomIds,
   processQueryData,
 } from "./backup.js";
+import { FlowLogger, FlowLoggerMessageStatus } from "./logger.js";
 
 export interface LiveVariables {
   member?: APIGuildMember;
@@ -129,18 +133,6 @@ const TriggerKVGuildScheme: z.ZodType<TriggerKVGuild> = z.object({
     .array()
     .optional(),
 });
-
-const ResponsibleUser = z.object({
-  id: z.string(),
-  username: z.string(),
-  guild_permissions: z.string(),
-  /** role ids */
-  roles: z.string().array(),
-  /** why the user is considered responsible (usually that they were the latest to edit something) */
-  reason: z.string().optional(),
-});
-
-export type ResponsibleUser = z.infer<typeof ResponsibleUser>;
 
 const BouncerPayloadScheme = z.object({
   liveVars: z.object({
@@ -310,6 +302,8 @@ export const executeFlow = async (options: {
   responsibleUserId?: string;
   /** WARNING: do not pass to recursive executions. only level 0 should handle this. */
   responsibilityReason?: string;
+  log?: FlowLogger;
+  debug?: boolean;
 }): Promise<FlowResult> => {
   const {
     env,
@@ -326,7 +320,11 @@ export const executeFlow = async (options: {
     responsibleUser: responsibleUser_,
     responsibleUserId,
     responsibilityReason,
+    log: log_,
+    debug: DEBUG = false,
   } = options;
+  const log = log_ ?? new FlowLogger(recursion);
+
   if (recursion > 50) {
     return {
       status: "failure",
@@ -340,6 +338,7 @@ export const executeFlow = async (options: {
     liveVars.guild &&
     recursion === 0
   ) {
+    log.add(`Resolving responsible user (${responsibleUserId})`);
     if (env.ENVIRONMENT === "dev") {
       console.log(
         "Resolving responsible user",
@@ -354,7 +353,20 @@ export const executeFlow = async (options: {
       responsibilityReason,
     );
   }
-  if (env.ENVIRONMENT === "dev") console.log("Responsible:", responsibleUser);
+  if (recursion === 0) {
+    if (env.ENVIRONMENT === "dev") console.log("Responsible:", responsibleUser);
+    if (responsibleUser) {
+      log.add(
+        `Responsible user: <@${responsibleUser.id}> ${responsibleUser.reason ? `(${responsibleUser.reason})` : ""}`.trim(),
+        FlowLoggerMessageStatus.Ok,
+      );
+    } else {
+      log.add(
+        "No responsible user. Permissions limited.",
+        FlowLoggerMessageStatus.Error,
+      );
+    }
+  }
 
   const responsibleOwner =
     !!responsibleUser && liveVars.guild?.owner_id === responsibleUser?.id;
@@ -392,10 +404,11 @@ export const executeFlow = async (options: {
       );
     }
     if (liveVars.guild?._roles) {
-      const responsibleRoles = responsibleUser.roles
-        .map((r) => liveVars.guild?._roles?.find((guildR) => r === guildR.id))
-        .filter((v) => !!v)
-        .sort((a, b) => b.position - a.position);
+      const responsibleRoles = sortRoles(
+        responsibleUser.roles
+          .map((r) => liveVars.guild?._roles?.find((guildR) => r === guildR.id))
+          .filter((v) => !!v),
+      );
       if (responsibleRoles.length === 0) return false;
 
       const responsibleHighestRole = responsibleRoles[0];
@@ -418,23 +431,6 @@ export const executeFlow = async (options: {
     }
     return true;
   };
-  // const channelCache: Record<string, APIChannel[]> = {};
-  // const checkChannelIdSendable = async (channelId: string, quiet = false) => {
-  //   let cached = channelCache[channelId];
-  //   if (cached) {
-  //   } else {
-  //     const key = `cache-channel-${channelId}`;
-  //     cached = await env.KV.get<ResolvableAPIChannel>(key, "json");
-  //   }
-
-  //   if (!hasRole) {
-  //     if (quiet) return false;
-  //     throw new FlowFailure(
-  //       "The responsible user for this flow may not be able to add or remove this role. Out of safety, it cannot be managed.",
-  //     );
-  //   }
-  //   return true;
-  // };
 
   try {
     if (
@@ -469,6 +465,9 @@ export const executeFlow = async (options: {
         cumulativeWait += processWait(action);
       }
       // console.log({ message: "Calculated possible wait", cumulativeWait });
+      if (cumulativeWait !== 0) {
+        log.add(`Potential sleep duration: ${cumulativeWait}s`);
+      }
 
       // May need to lower or raise this
       if (cumulativeWait >= 30) {
@@ -530,6 +529,15 @@ export const executeFlow = async (options: {
   let subActionsCompleted = 0;
   try {
     for (const action of flow.actions) {
+      let actionName: string;
+      try {
+        actionName = FlowActionType[action.type]
+          .replace(/([a-z])([A-Z])/g, "$1 $2")
+          .trim();
+      } catch {
+        actionName = `${action.type}`;
+      }
+      log.add(`Action: ${actionName}`);
       switch (action.type) {
         case FlowActionType.Dud:
           break;
@@ -621,6 +629,8 @@ export const executeFlow = async (options: {
               lastReturnValue,
               sentMessages,
               responsibleUser,
+              log: log.level(recursion + 1),
+              debug: DEBUG,
             });
             if (result.status === "success") {
               subActionsCompleted += action.then?.length ?? 0;
@@ -639,6 +649,8 @@ export const executeFlow = async (options: {
               lastReturnValue,
               sentMessages,
               responsibleUser,
+              log: log.level(recursion + 1),
+              debug: DEBUG,
             });
             if (result.status === "success") {
               subActionsCompleted += action.else?.length ?? 0;
@@ -660,6 +672,11 @@ export const executeFlow = async (options: {
             vars as { channelId: string },
             liveVars,
             ctx,
+            DEBUG,
+          );
+          log.add(
+            `Message sent: ${lastReturnValue.id}`,
+            FlowLoggerMessageStatus.Ok,
           );
           sentMessages[lastReturnValue.id] = {
             // prefer deleting with the interaction credentials
@@ -683,8 +700,13 @@ export const executeFlow = async (options: {
             vars,
             liveVars,
             env,
+            DEBUG,
           );
           lastReturnValue = returned.message;
+          log.add(
+            `Message sent: ${lastReturnValue.id}`,
+            FlowLoggerMessageStatus.Ok,
+          );
           sentMessages[lastReturnValue.id] = {
             // delete with the webhook credentials
             route: Routes.webhookMessage(
@@ -728,12 +750,20 @@ export const executeFlow = async (options: {
             );
           }
           await checkRoleIdManageable(action.roleId);
+          log.add(
+            `<@&${action.roleId}> is manageable`,
+            FlowLoggerMessageStatus.Ok,
+          );
           await executeAddRole(
             rest,
             action,
             liveVars.guild.id,
             vars as { userId: string },
             reason,
+          );
+          log.add(
+            `Added role on <@${vars.userId}>`,
+            FlowLoggerMessageStatus.Ok,
           );
           break;
         case FlowActionType.RemoveRole:
@@ -743,12 +773,20 @@ export const executeFlow = async (options: {
             );
           }
           await checkRoleIdManageable(action.roleId);
+          log.add(
+            `<@&${action.roleId}> is manageable`,
+            FlowLoggerMessageStatus.Ok,
+          );
           await executeRemoveRole(
             rest,
             action,
             liveVars.guild.id,
             vars as { userId: string },
             reason,
+          );
+          log.add(
+            `Removed role on <@${vars.userId}>`,
+            FlowLoggerMessageStatus.Ok,
           );
           break;
         case FlowActionType.ToggleRole:
@@ -758,12 +796,20 @@ export const executeFlow = async (options: {
             );
           }
           await checkRoleIdManageable(action.roleId);
+          log.add(
+            `<@&${action.roleId}> is manageable`,
+            FlowLoggerMessageStatus.Ok,
+          );
           await executeToggleRole(
             rest,
             action,
             liveVars.guild.id,
             vars as { userId: string },
             reason,
+          );
+          log.add(
+            `Toggled role on <@${vars.userId}>`,
+            FlowLoggerMessageStatus.Ok,
           );
           break;
         case FlowActionType.CreateThread: {
@@ -809,6 +855,11 @@ export const executeFlow = async (options: {
                 liveVars,
                 vars,
               );
+              if (DEBUG && body.components) {
+                prefixCustomIds(body.components, "DBG_", (c) =>
+                  c.custom_id.startsWith("p_"),
+                );
+              }
               if (ctx) {
                 await ctx.followup.send(body);
               } else {
@@ -819,6 +870,7 @@ export const executeFlow = async (options: {
                   });
                 }
               }
+              log.add("Message sent", FlowLoggerMessageStatus.Ok);
             } catch (e) {
               console.error(e);
               throw httpFlowFailure(e, "Failed to send the message.");
@@ -891,6 +943,7 @@ const executeSendMessage = async (
   },
   liveVars: LiveVariables,
   ctx?: InteractionContext<APIMessageComponentInteraction>,
+  debug?: boolean,
 ): Promise<APIMessage> => {
   const backup = await db.query.backups.findFirst({
     where: (backups, { eq }) => eq(backups.id, makeSnowflake(action.backupId)),
@@ -918,6 +971,11 @@ const executeSendMessage = async (
     const flags = Number(
       new MessageFlagsBitField(body.flags ?? 0, action.flags ?? 0).value,
     );
+    if (debug && body.components) {
+      prefixCustomIds(body.components, "DBG_", (c) =>
+        c.custom_id.startsWith("p_"),
+      );
+    }
 
     if (
       ctx &&
@@ -945,6 +1003,7 @@ const executeSendWebhookMessage = async (
   vars: SetVariables,
   liveVars: LiveVariables,
   env: Env,
+  debug?: boolean,
 ): Promise<{ webhook: { id: string; token: string }; message: APIMessage }> => {
   let webhook = await db.query.webhooks.findFirst({
     where: (webhooks, { eq, and }) =>
@@ -1024,6 +1083,11 @@ const executeSendWebhookMessage = async (
     const flags = Number(
       new MessageFlagsBitField(body.flags ?? 0, action.flags ?? 0).value,
     );
+    if (debug && body.components) {
+      prefixCustomIds(body.components, "DBG_", (c) =>
+        c.custom_id.startsWith("p_"),
+      );
+    }
 
     message = (await rest.post(Routes.webhook(webhook.id, webhook.token), {
       query,

@@ -27,10 +27,10 @@ import type {
   ChatInputAppCommandCallback,
 } from "../commands.js";
 import type { ButtonCallback } from "../components.js";
-import { emojiToString, getEmojis } from "../emojis.js";
 import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import type { FlowResult } from "../flows/flows.js";
+import { FlowLogger } from "../flows/logger.js";
 import type { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";
@@ -259,13 +259,6 @@ const triggerEventToDispatchEvent: Record<TriggerEvent, GatewayDispatchEvents> =
     [TriggerEvent.MemberRemove]: GatewayDispatchEvents.GuildMemberRemove,
   };
 
-interface EventExecutionResult {
-  event: GatewayDispatchEvents;
-  name?: string;
-  status: "success" | "failure" | "timeout";
-  message?: string;
-}
-
 export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
   const guildId = ctx.interaction.guild_id;
   if (!guildId) throw Error("Guild-only");
@@ -325,86 +318,42 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
     });
   }
 
-  const emojis = await getEmojis(ctx.env);
-  const trueEmoji = emojiToString(emojis.get("true", true));
-  const falseEmoji = emojiToString(emojis.get("false", true));
-
   return [
     ctx.defer({ thinking: true, ephemeral: true }),
     async () => {
-      const started = new Date().getTime();
+      const started = Date.now();
       const results = await Promise.race([
-        (async (): Promise<EventExecutionResult[]> => {
+        (async (): Promise<FlowResult[]> => {
           try {
             const flowResults = <FlowResult[] | undefined>(
               await func(ctx.env, payload, true)
             );
-            if (flowResults) {
-              return flowResults.map((result) => ({
-                event: eventName,
-                status: result.status,
-                message:
-                  result.message +
-                  (result.discordError
-                    ? `\nDiscord error: ${result.discordError.message}${
-                        result.discordError.errors
-                          ? ` | ${result.discordError.errors}`
-                          : ""
-                      }`
-                    : ""),
-              }));
-            }
-            return [];
+            return flowResults ?? [];
           } catch (e) {
             return [
               {
-                event: eventName,
                 status: "failure",
                 message: `Function failed to complete: ${e}`,
               },
             ];
           }
         })(),
-        promiseTimeout<EventExecutionResult[]>(840_000, [
+        promiseTimeout<FlowResult[]>(840_000, [
           {
-            event: eventName,
-            status: "timeout",
+            status: "failure",
             message: "Timeout after 14m",
           },
         ]),
       ]);
-      const ended = new Date().getTime();
+      const ended = Date.now();
       await ctx.followup.editOriginalMessage({
         embeds: [
-          new EmbedBuilder()
-            .setTitle("Results")
-            .setColor(color)
-            .setDescription(
-              results
-                .map(
-                  (r) =>
-                    `${results.length === 1 ? "" : "- "}${
-                      r.status === "success" ? trueEmoji : falseEmoji
-                    } ${r.message ?? "no message"}`,
-                )
-                .join("\n")
-                .slice(0, 4096),
-            )
-            .setFields(
-              {
-                name: "Diagnostic",
-                value: `${results.length} result${
-                  results.length === 1 ? "" : "s"
-                } in ${Math.ceil(ended - started)}ms`,
-                inline: true,
-              },
-              {
-                name: "Management",
-                value:
-                  "View all actions in this trigger with </triggers view:1281305550340096033>",
-                inline: true,
-              },
-            ),
+          getFlowDiagnosticEmbed(results, started, ended).addFields({
+            name: "Management",
+            value:
+              "View all actions in this trigger with </triggers view:1281305550340096033>",
+            inline: true,
+          }),
         ],
       });
     },
@@ -412,7 +361,55 @@ export const triggerTestButtonCallback: ButtonCallback = async (ctx) => {
 };
 
 // https://stackoverflow.com/a/48578424
-const promiseTimeout = <T = any>(ms: number, val: T) =>
+export const promiseTimeout = <T = any>(ms: number, val: T) =>
   new Promise<T>((resolve) => {
     setTimeout(resolve.bind(null, val), ms);
   });
+
+export const getFlowDiagnosticEmbed = (
+  results: FlowResult[],
+  started: number,
+  ended: number,
+  logger?: FlowLogger,
+) => {
+  let description = "";
+  const descFooter = results
+    .map(
+      (r) =>
+        `${results.length === 1 ? "" : "- "}<:_:${
+          r.status === "success"
+            ? "1263857933209571329" // true emoji
+            : "1263857948086505482" // false emoji
+        }> ${r.message ?? "no message"}`,
+    )
+    .join("\n")
+    .slice(0, 4096);
+  for (const message of logger?.messages ?? []) {
+    const full = `${description}\n${message.toString()}`;
+    const part = `${description}\n…`;
+
+    if (`${full}\n${descFooter}`.length > 4096) {
+      if (`${part}\n${descFooter}`.length > 4096) {
+        break;
+      } else {
+        description = part;
+        break;
+      }
+    } else {
+      description = full;
+    }
+  }
+  description += `\n${descFooter}`;
+
+  return new EmbedBuilder()
+    .setTitle("Results")
+    .setColor(color)
+    .setDescription(description.trim())
+    .setFields({
+      name: "Diagnostic",
+      value: `${results.length} result${
+        results.length === 1 ? "" : "s"
+      } in ${Math.ceil(ended - started)}ms`,
+      inline: true,
+    });
+};

@@ -173,17 +173,17 @@ export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
   return ctx.updateMessage(response.data);
 };
 
-function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
+export function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
   emoji: T | undefined,
   emojis: APIEmoji[],
   fallback: T,
 ): T;
-function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
+export function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
   emoji: T | undefined,
   emojis: APIEmoji[],
   fallback?: T | undefined,
 ): T | undefined;
-function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
+export function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
   emoji: T | undefined,
   emojis: APIEmoji[],
   fallback?: T,
