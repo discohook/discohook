@@ -477,8 +477,8 @@ const handleInteraction = async (
           launchComponentKV(env, { componentId, ...newHotComponent }),
         );
       } else if (!hotComponent.responsibleUser) {
-        // Attempt to resolve the user if we have not yet ruled out its
-        // possibility, nor has it already been done
+        // Attempt to resolve the user and re-store the component if it
+        // was stored with IDs but no resolution
         const responsibleId =
           hotComponent.updatedById || hotComponent.createdById;
         if (responsibleId) {
