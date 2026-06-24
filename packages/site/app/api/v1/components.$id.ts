@@ -394,6 +394,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           where: (table, { eq }) => eq(table.id, id),
           columns: {
             createdById: true,
+            updatedById: true,
             guildId: true,
             channelId: true,
             messageId: true,
@@ -443,7 +444,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           update.draft = false;
         }
 
-        if (Object.keys(update).length > 2) {
+        if (
+          Object.keys(update).length > 2 ||
+          // "take responsibility" button with empty patch
+          update.updatedById !== current.updatedById
+        ) {
           await db
             .update(discordMessageComponents)
             .set(update)

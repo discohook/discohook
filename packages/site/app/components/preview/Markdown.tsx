@@ -20,7 +20,6 @@ import {
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
-import { CoolIcon } from "../icons/CoolIcon";
 import {
   BrowseChannelIcon,
   ForumChannelIcon,
@@ -32,6 +31,7 @@ import {
   ThreadChannelIcon,
   VoiceChannelIcon,
 } from "../icons/channel";
+import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 
 type Renderable = string | JSX.Element;
@@ -419,7 +419,7 @@ const escapeRule = defineRule({
 
 export const mentionStyle =
   "rounded-[3px] bg-blurple/[0.15] px-[2px] font-medium text-blurple [unicode-bidi:plaintext] dark:bg-blurple/30 dark:text-blurple-260 transition-colors transition-[50ms]";
-const actionableMentionStyle = twMerge(
+export const actionableMentionStyle = twMerge(
   mentionStyle,
   "cursor-pointer hover:bg-blurple hover:text-white dark:hover:bg-blurple dark:hover:text-white",
 );

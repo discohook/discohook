@@ -44,6 +44,8 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
             columns: {},
             with: { flow: { with: { actions: { columns: { data: true } } } } },
           },
+          updatedBy: { columns: { discordId: true } },
+          createdBy: { columns: { discordId: true } },
         },
       });
       for (const component of components) {

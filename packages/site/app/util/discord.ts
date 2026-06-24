@@ -185,9 +185,9 @@ export const getWebhookMessage = async (
   return data;
 };
 
-const cascadeFileNameChangeEmbeds = (
+export const cascadeFileNameChangeEmbeds = (
   files: { oldName: string; newName: string; newUri?: string }[],
-  embeds: APIEmbed[],
+  embeds: Pick<APIEmbed, "author" | "image" | "thumbnail" | "footer">[],
 ) => {
   if (files.length === 0) return embeds;
 
@@ -218,7 +218,7 @@ const cascadeFileNameChangeEmbeds = (
   return newEmbeds;
 };
 
-const cascadeFileNameChangeComponents = (
+export const cascadeFileNameChangeComponents = (
   files: { oldName: string; newName: string; newUri?: string }[],
   components: APIMessageTopLevelComponent[],
 ) => {

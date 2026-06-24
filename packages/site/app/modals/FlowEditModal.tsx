@@ -78,6 +78,12 @@ export type EditingFlowData = {
   setFlow: (flow: DraftFlow) => void;
 };
 
+interface Membership {
+  guildId: string;
+  topRole: string;
+  permissions: string;
+}
+
 export const FlowEditModal = (
   props: ModalProps &
     Partial<EditingFlowData> & {
@@ -85,6 +91,7 @@ export const FlowEditModal = (
       cache?: CacheManager;
       premium?: boolean;
       parentContext?: FlowParentContext;
+      membership?: Membership;
     },
 ) => {
   const { t } = useTranslation();

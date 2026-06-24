@@ -33,7 +33,7 @@ import {
   UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import { z } from "zod/v3";
@@ -49,13 +49,19 @@ import { PostChannelIcon } from "~/components/icons/channel";
 import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { CrownIcon, PeopleIcon, RoleShield } from "~/components/icons/role";
 import { GenericPreviewComponentInActionRow } from "~/components/preview/ActionRow";
-import { type FeatureConfig, Markdown } from "~/components/preview/Markdown";
+import {
+  actionableMentionStyle,
+  codeStyle,
+  type FeatureConfig,
+  linkClassName,
+  Markdown,
+} from "~/components/preview/Markdown";
 import { UsernameBadge } from "~/components/preview/Message.client";
 import { Prose } from "~/components/Prose";
 import { TabHeader, TabsWindow } from "~/components/tabs";
 import { TextArea } from "~/components/TextArea";
 import { TextInput } from "~/components/TextInput";
-import { useConfirmModal } from "~/modals/ConfirmModal";
+import { type ConfirmModalProps, useConfirmModal } from "~/modals/ConfirmModal";
 import { FlowEditModal } from "~/modals/FlowEditModal";
 import type { Target } from "~/modals/MessageSendModal";
 import { TriggerCreateModal } from "~/modals/TriggerCreateModal";
@@ -64,11 +70,16 @@ import {
   authorizeRequest,
   getGuild,
   getTokenGuildPermissions,
+  User,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
 import type { TFunction } from "~/types/i18next";
 import { TargetType } from "~/types/QueryData-raw";
-import { type CacheManager, useCache } from "~/util/cache/CacheManager";
+import {
+  type CacheManager,
+  ResolvableAPIGuildMember,
+  useCache,
+} from "~/util/cache/CacheManager";
 import {
   cdn,
   cdnImgAttributes,
@@ -77,11 +88,15 @@ import {
   webhookAvatarUrl,
 } from "~/util/discord";
 import { getId } from "~/util/id";
-import { type LoaderArgs, useSafeFetcher } from "~/util/loader";
+import {
+  type LoaderArgs,
+  type SafeFetcher,
+  useSafeFetcher,
+} from "~/util/loader";
 import { copyText } from "~/util/text";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import { zxParseParams } from "~/util/zod";
-import type { action as ApiDeleteComponent } from "../api/v1/components.$id";
+import type { action as ApiComponentAction } from "../api/v1/components.$id";
 import type { loader as ApiGetGuildComponents } from "../api/v1/guilds.$guildId.components";
 import type { loader as ApiGetGuildAuditLog } from "../api/v1/guilds.$guildId.log";
 import type { loader as ApiGetGuildProfile } from "../api/v1/guilds.$guildId.profile";
@@ -92,6 +107,7 @@ import type { action as ApiPatchGuildTrigger } from "../api/v1/guilds.$guildId.t
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { action as ApiPatchGuildWebhook } from "../api/v1/guilds.$guildId.webhooks.$webhookId";
 import { Cell } from "./donate";
+import { buildStorableComponent } from "./edit.component.$id";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { guildId } = zxParseParams(params, {
@@ -479,7 +495,6 @@ export default () => {
   const permissions = new PermissionsBitField(BigInt(member.permissions));
   const has = (...flags: BitFlagResolvable[]) =>
     member.owner ? true : permissions.has(...flags);
-  const navigate = useNavigate();
 
   const cache = useCache(!user);
   // cache should not actually change
@@ -523,7 +538,7 @@ export default () => {
   const componentsFetcher = useSafeFetcher<typeof ApiGetGuildComponents>({
     onError: setError,
   });
-  const componentDeleteFetcher = useSafeFetcher<typeof ApiDeleteComponent>({
+  const componentActioner = useSafeFetcher<typeof ApiComponentAction>({
     onError: setError,
   });
   const triggersFetcher = useSafeFetcher<typeof ApiGetGuildTriggers>({
@@ -648,6 +663,49 @@ export default () => {
       });
     }
   }, [profileFetcher.data]);
+
+  // Pre-resolve responsible users to avoid funkiness that I was encountering
+  // trying to do it as the modal opens. In most sensibly laid out servers this
+  // won't be that many unique users, but it's still not preferable since the
+  // user might not even open a menu.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: limit refreshes
+  useEffect(() => {
+    if (componentsFetcher.data) {
+      // Skip resolution for current user (though we now omit the nickname)
+      const userDiscordId = user.discordUser?.id?.toString();
+      if (
+        user.discordUser &&
+        userDiscordId &&
+        !cache.member.get(userDiscordId, guild.id)
+      ) {
+        cache.member._put(`member:${guild.id}-${userDiscordId}`, {
+          nick: null,
+          user: {
+            id: userDiscordId,
+            username: user.discordUser.name,
+            global_name: user.discordUser.globalName,
+          },
+        });
+      }
+
+      const requests = new Set<string>();
+      for (const component of componentsFetcher.data) {
+        if (requests.size >= 20) {
+          // Save probably-unnecessary requests. The ID is still visible.
+          // TODO: find a way to resolve within the menu so this isn't a problem.
+          break;
+        }
+        if (component.updatedBy?.discordId) {
+          requests.add(`member:${guild.id}-${component.updatedBy.discordId}`);
+        } else if (component.createdBy?.discordId) {
+          requests.add(`member:${guild.id}-${component.createdBy.discordId}`);
+        }
+      }
+      if (requests.size !== 0) {
+        cache.resolveMany(requests);
+      }
+    }
+  }, [componentsFetcher.data]);
 
   // Bulk revoke sessions
   const [selectedSessionIds, setSelectedSessionIds] = useReducer(
@@ -787,7 +845,7 @@ export default () => {
                   </div>
                   <details className="rounded-lg mt-2 bg-gray-200 dark:bg-gray-800 group">
                     <summary className="flex marker:content-none marker-none cursor-pointer py-2 px-3">
-                      <Avatar.Root className="size-10 me-3 my-auto">
+                      <Avatar.Root className="size-10 me-3 my-auto shrink-0">
                         <Avatar.Image
                           {...cdnImgAttributes(64, (size) =>
                             getUserAvatar(user, { size }),
@@ -2129,182 +2187,34 @@ export default () => {
                                           key={`components-message-${messageId}`}
                                           className="flex p-2 text-base text-gray-600 dark:text-gray-400 rounded bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition"
                                         >
-                                          <div className="flex flex-wrap gap-x-1.5 gap-y-0 mt-1 ltr:mr-4 rtl:ml-4">
+                                          <div className="flex flex-wrap gap-x-1.5 gap-y-0 mt-1 me-4">
                                             {components.map((component) => (
-                                              <div
+                                              <PreviewableListedMessageComponent
                                                 key={`component-${component.id}`}
-                                                className={twJoin(
-                                                  getComponentWidth(
-                                                    component.data,
-                                                  ) >= 5
-                                                    ? "block w-full my-1 first:mt-0"
-                                                    : "contents",
-                                                )}
-                                              >
-                                                <GenericPreviewComponentInActionRow
-                                                  // @ts-expect-error the type is close enough for this component
-                                                  // TODO: use `buildStorableComponent` for general completeness
-                                                  data={{
-                                                    ...component.data,
-                                                    // Easier than messing with <Button/> for now
-                                                    ...(component.data.type ===
-                                                    ComponentType.Button
-                                                      ? {
-                                                          url: "",
-                                                          disabled: false,
-                                                        }
-                                                      : {}),
-                                                  }}
-                                                  cache={cache}
-                                                  t={t}
-                                                  onClick={(e) => {
-                                                    if (e.shiftKey) {
-                                                      navigate(
-                                                        `/edit/component/${component.id}`,
-                                                      );
-                                                      return;
-                                                    }
-
-                                                    setConfirm({
-                                                      title:
-                                                        t("messageComponent"),
-                                                      children: (
-                                                        <>
-                                                          <div className="flex w-full">
-                                                            <div className="mx-auto">
-                                                              <GenericPreviewComponentInActionRow
-                                                                // @ts-expect-error
-                                                                data={
-                                                                  component.data
-                                                                }
-                                                                cache={cache}
-                                                                t={t}
-                                                              />
-                                                            </div>
-                                                          </div>
-                                                          <hr className="border border-gray-500/20 mt-4 mb-1" />
-                                                          <p className="text-muted dark:text-muted-dark text-sm font-medium">
-                                                            {t(
-                                                              "componentEditShiftSkipTip",
-                                                            )}
-                                                          </p>
-                                                          <div className="space-x-1.5 rtl:space-x-reverse mt-4">
-                                                            <Link
-                                                              to={`/edit/component/${component.id}`}
-                                                              className="contents"
-                                                            >
-                                                              <Button
-                                                                discordstyle={
-                                                                  ButtonStyle.Link
-                                                                }
-                                                              >
-                                                                {t("edit")}
-                                                              </Button>
-                                                            </Link>
-                                                            <Button
-                                                              discordstyle={
-                                                                ButtonStyle.Danger
-                                                              }
-                                                              onClick={async (
-                                                                e,
-                                                              ) => {
-                                                                const callback =
-                                                                  async () => {
-                                                                    await componentDeleteFetcher.submitAsync(
-                                                                      undefined,
-                                                                      {
-                                                                        method:
-                                                                          "DELETE",
-                                                                        action:
-                                                                          apiUrl(
-                                                                            BRoutes.component(
-                                                                              component.id.toString(),
-                                                                            ),
-                                                                          ),
-                                                                      },
-                                                                    );
-                                                                    await componentsFetcher.loadAsync(
-                                                                      apiUrl(
-                                                                        BRoutes.guildComponents(
-                                                                          guild.id,
-                                                                        ),
-                                                                      ),
-                                                                    );
-                                                                  };
-
-                                                                if (
-                                                                  e.shiftKey
-                                                                ) {
-                                                                  await callback();
-                                                                  return;
-                                                                }
-
-                                                                setConfirm({
-                                                                  title:
-                                                                    t(
-                                                                      "deleteComponent",
-                                                                    ),
-                                                                  children: (
-                                                                    <>
-                                                                      <p>
-                                                                        {t(
-                                                                          "deleteComponentConfirm",
-                                                                          {
-                                                                            replace:
-                                                                              {
-                                                                                type: component
-                                                                                  .data
-                                                                                  .type,
-                                                                              },
-                                                                          },
-                                                                        )}
-                                                                      </p>
-                                                                      <p className="text-muted dark:text-muted-dark text-sm font-medium">
-                                                                        {t(
-                                                                          "shiftSkipTip",
-                                                                        )}
-                                                                      </p>
-                                                                      <Button
-                                                                        className="mt-4"
-                                                                        discordstyle={
-                                                                          ButtonStyle.Danger
-                                                                        }
-                                                                        onClick={async () => {
-                                                                          await callback();
-                                                                          setConfirm(
-                                                                            undefined,
-                                                                          );
-                                                                        }}
-                                                                      >
-                                                                        {t(
-                                                                          "delete",
-                                                                        )}
-                                                                      </Button>
-                                                                    </>
-                                                                  ),
-                                                                });
-                                                              }}
-                                                            >
-                                                              {t("delete")}
-                                                            </Button>
-                                                          </div>
-                                                        </>
-                                                      ),
-                                                    });
-                                                  }}
-                                                />
-                                              </div>
+                                                t={t}
+                                                component={component}
+                                                cache={cache}
+                                                guild={guild}
+                                                user={user}
+                                                setConfirm={setConfirm}
+                                                componentsFetcher={
+                                                  componentsFetcher
+                                                }
+                                                componentActioner={
+                                                  componentActioner
+                                                }
+                                              />
                                             ))}
                                           </div>
                                           {channelId && messageId && (
-                                            <div className="border-l border-l-blurple/30 ltr:ml-auto rtl:mr-auto ltr:pl-4 ltr:pr-1 rtl:pr-4 rtl:pl-1 flex">
+                                            <div className="border-l border-l-blurple/30 ms-auto ps-4 pe-1 flex">
                                               <a
                                                 href={`https://discord.com/channels/${guild.id}/${channelId}/${messageId}`}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="m-auto"
                                               >
-                                                <PostChannelIcon className="h-8 w-8 hover:opacity-80 transition-opacity" />
+                                                <PostChannelIcon className="size-8 hover:opacity-80 transition-opacity" />
                                               </a>
                                             </div>
                                           )}
@@ -2335,5 +2245,298 @@ export default () => {
         </TabsWindow>
       </Prose>
     </div>
+  );
+};
+
+interface PreviewableListedMessageComponentProps {
+  t: TFunction;
+  component: NonNullable<
+    SafeFetcher<typeof ApiGetGuildComponents>["data"]
+  >[number];
+  cache: CacheManager;
+  user: User;
+  guild: {
+    id: string;
+    name: string;
+    icon: string | null;
+  };
+  setConfirm: React.Dispatch<
+    React.SetStateAction<ConfirmModalProps | undefined>
+  >;
+  componentsFetcher: SafeFetcher<typeof ApiGetGuildComponents>;
+  componentActioner: SafeFetcher<typeof ApiComponentAction>;
+}
+
+const PreviewableListedMessageComponent = (
+  props: PreviewableListedMessageComponentProps,
+) => {
+  const { t, component, cache, guild, setConfirm } = props;
+  const navigate = useNavigate();
+
+  const responsibleId =
+    component.data.type === ComponentType.Button &&
+    component.data.style === ButtonStyle.Link
+      ? null
+      : (
+          component.updatedBy?.discordId || component.createdBy?.discordId
+        )?.toString();
+
+  const previewableComponentData = useMemo(() => {
+    const built = buildStorableComponent(
+      // @ts-expect-error close enough; doesn't need flow data
+      component.data,
+      String(component.id),
+    );
+    if (
+      built.type === ComponentType.Button &&
+      built.style === ButtonStyle.Link
+    ) {
+      // components in the list page should be benign
+      built.url = "";
+    }
+
+    return built;
+  }, [component]);
+
+  return (
+    <div
+      className={twJoin(
+        getComponentWidth(component.data) >= 5
+          ? "block w-full my-1 first:mt-0"
+          : "contents",
+      )}
+    >
+      <GenericPreviewComponentInActionRow
+        data={previewableComponentData}
+        cache={cache}
+        t={t}
+        onClick={(e) => {
+          if (e.shiftKey) {
+            navigate(`/edit/component/${component.id}`);
+            return;
+          }
+          const responsibleUser = responsibleId
+            ? cache.member.get(responsibleId, guild.id)
+            : undefined;
+          setConfirm({
+            title: t("messageComponent"),
+            children: (
+              <PreviewableListedMessageComponentConfirmContent
+                {...props}
+                responsibleId={responsibleId}
+                responsibleUser={responsibleUser}
+              />
+            ),
+          });
+        }}
+      />
+    </div>
+  );
+};
+
+const PreviewableListedMessageComponentConfirmContent = ({
+  t,
+  cache,
+  component,
+  guild,
+  user,
+  componentsFetcher,
+  componentActioner,
+  responsibleId: responsibleId_,
+  responsibleUser: responsibleUser_,
+  setConfirm,
+}: PreviewableListedMessageComponentProps & {
+  responsibleId: string | null | undefined;
+  responsibleUser: ResolvableAPIGuildMember | null | undefined;
+}) => {
+  const copyIdButton = (
+    <button
+      type="button"
+      className="inline-block ms-1.5"
+      title={t("copyId")}
+      onClick={(e) => {
+        if (!responsibleId) return;
+
+        copyText(responsibleId);
+        const icon = e.currentTarget.querySelector("i");
+        if (icon) {
+          icon.classList.add("ci-Check");
+          icon.classList.remove("ci-Copy");
+          setTimeout(() => {
+            icon.classList.add("ci-Copy");
+            icon.classList.remove("ci-Check");
+          }, 1500);
+        }
+      }}
+    >
+      <CoolIcon icon="Copy" />
+    </button>
+  );
+
+  const [responsibleId, setResponsibleId] = useState(responsibleId_);
+  const [responsibleUser, setResponsibleUser] = useState(responsibleUser_);
+
+  return (
+    <>
+      <div className="flex w-full gap-4">
+        <div className="m-auto shrink-0">
+          <GenericPreviewComponentInActionRow
+            data={buildStorableComponent(
+              // @ts-expect-error close enough; doesn't need flow data
+              component.data,
+              String(component.id),
+            )}
+            cache={cache}
+            t={t}
+          />
+        </div>
+        {/* This box is not necessary for non-interactive components */}
+        {responsibleId === null ? null : (
+          <div
+            key={`responsible-${responsibleId}`}
+            className={twJoin(
+              "px-3 py-2 max-w-[50%] bg-gray-200 dark:bg-gray-800 rounded-lg",
+              "border border-border-normal dark:border-border-normal-dark",
+            )}
+          >
+            <p className="font-medium text-sm text-muted dark:text-muted-dark">
+              <Trans
+                t={t}
+                i18nKey="responsibleUserLink"
+                components={{
+                  anchor: (
+                    <Link
+                      to="/guide/troubleshooting/responsibility"
+                      className="hover:text-blue-430 dark:hover:text-blue-345 transition-colors"
+                    >
+                      <CoolIcon icon="Circle_Help" />
+                    </Link>
+                  ),
+                }}
+              />
+            </p>
+            {responsibleUser ? (
+              <>
+                <span
+                  className={actionableMentionStyle}
+                  data-mention-id={responsibleId}
+                >
+                  @
+                  {responsibleUser.nick ??
+                    responsibleUser.user.global_name ??
+                    responsibleUser.user.username}
+                </span>
+                {copyIdButton}
+              </>
+            ) : responsibleId ? (
+              <>
+                <span className={codeStyle}>{responsibleId}</span>
+                {copyIdButton}
+              </>
+            ) : (
+              <p className="text-sm leading-tight">{t("indeterminable")}</p>
+            )}
+            <hr className="mt-1 mb-0.5 border-muted-dark dark:border-muted" />
+            <button
+              type="button"
+              className={twJoin(
+                linkClassName,
+                "text-sm data-[submitting]:animate-pulse",
+              )}
+              disabled={componentActioner.state === "submitting"}
+              onClick={async (e) => {
+                const { currentTarget: button } = e;
+                button.dataset.submitting = "";
+                await componentActioner.submitAsync(
+                  {
+                    guildId: guild.id,
+                    channelId: component.channelId?.toString(),
+                    messageId: component.messageId?.toString(),
+                  },
+                  {
+                    method: "PATCH",
+                    action: apiUrl(BRoutes.component(component.id.toString())),
+                  },
+                );
+                delete button.dataset.submitting;
+                if (user.discordUser) {
+                  setResponsibleId(String(user.discordUser.id));
+                  setResponsibleUser({
+                    nick: null,
+                    user: {
+                      id: String(user.discordUser.id),
+                      username: user.discordUser.name,
+                      global_name: user.discordUser.globalName,
+                    },
+                  });
+                }
+
+                await componentsFetcher.loadAsync(
+                  apiUrl(BRoutes.guildComponents(guild.id)),
+                );
+              }}
+            >
+              {t("takeResponsibility")}
+            </button>
+          </div>
+        )}
+      </div>
+      <hr className="border border-gray-500/20 mt-4 mb-1" />
+      <p className="text-muted dark:text-muted-dark text-sm font-medium">
+        {t("componentEditShiftSkipTip")}
+      </p>
+      <div className="space-x-1.5 rtl:space-x-reverse mt-4">
+        <Link to={`/edit/component/${component.id}`} className="contents">
+          <Button discordstyle={ButtonStyle.Link}>{t("edit")}</Button>
+        </Link>
+        <Button
+          discordstyle={ButtonStyle.Danger}
+          onClick={async (e) => {
+            const callback = async () => {
+              await componentActioner.submitAsync(undefined, {
+                method: "DELETE",
+                action: apiUrl(BRoutes.component(component.id.toString())),
+              });
+              await componentsFetcher.loadAsync(
+                apiUrl(BRoutes.guildComponents(guild.id)),
+              );
+            };
+
+            if (e.shiftKey) {
+              await callback();
+              return;
+            }
+
+            setConfirm({
+              title: t("deleteComponent"),
+              children: (
+                <>
+                  <p>
+                    {t("deleteComponentConfirm", {
+                      replace: { type: component.data.type },
+                    })}
+                  </p>
+                  <p className="text-muted dark:text-muted-dark text-sm font-medium">
+                    {t("shiftSkipTip")}
+                  </p>
+                  <Button
+                    className="mt-4"
+                    discordstyle={ButtonStyle.Danger}
+                    onClick={async () => {
+                      await callback();
+                      setConfirm(undefined);
+                    }}
+                  >
+                    {t("delete")}
+                  </Button>
+                </>
+              ),
+            });
+          }}
+        >
+          {t("delete")}
+        </Button>
+      </div>
+    </>
   );
 };

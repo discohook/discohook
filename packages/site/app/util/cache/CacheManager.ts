@@ -391,6 +391,8 @@ export class CacheManager {
     }
 
     // TODO: At some point, bind a guild somewhere and use fetchMany to reduce requests
+    // TOOD: bot-ws should implement Request Guild Members to bulk-resolve members,
+    // because for some reason that is the only way to get a list of members by ID
     for (const [scope, keys] of Object.entries(byScope)) {
       for (const key of keys) {
         // @ts-expect-error
