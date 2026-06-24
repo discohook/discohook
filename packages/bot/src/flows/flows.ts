@@ -635,6 +635,8 @@ export const executeFlow = async (options: {
             if (result.status === "success") {
               subActionsCompleted += action.then?.length ?? 0;
               if (result.stopped) throw new FlowStop();
+            } else if (result.status === "failure") {
+              throw new FlowFailure(result.message, result.discordError);
             }
           } else {
             const result = await executeFlow({
@@ -655,6 +657,8 @@ export const executeFlow = async (options: {
             if (result.status === "success") {
               subActionsCompleted += action.else?.length ?? 0;
               if (result.stopped) throw new FlowStop();
+            } else if (result.status === "failure") {
+              throw new FlowFailure(result.message, result.discordError);
             }
           }
           break;
