@@ -173,21 +173,19 @@ export const editComponentButtonEntry: ButtonCallback = async (ctx) => {
   return ctx.updateMessage(response.data);
 };
 
-export function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
-  emoji: T | undefined,
-  emojis: APIEmoji[],
-  fallback: T,
-): T;
-export function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
+export function ensureValidEmoji<
+  T extends APIMessageComponentEmoji | APIPartialEmoji,
+>(emoji: T | undefined, emojis: APIEmoji[], fallback: T): T;
+export function ensureValidEmoji<
+  T extends APIMessageComponentEmoji | APIPartialEmoji,
+>(
   emoji: T | undefined,
   emojis: APIEmoji[],
   fallback?: T | undefined,
 ): T | undefined;
-export function ensureValidEmoji<T extends APIMessageComponentEmoji | APIPartialEmoji>(
-  emoji: T | undefined,
-  emojis: APIEmoji[],
-  fallback?: T,
-): T | undefined {
+export function ensureValidEmoji<
+  T extends APIMessageComponentEmoji | APIPartialEmoji,
+>(emoji: T | undefined, emojis: APIEmoji[], fallback?: T): T | undefined {
   return emoji?.id
     ? emojis.find((e) => e.id === emoji?.id)
       ? emoji
@@ -902,12 +900,16 @@ export const editComponentFlowModeCallback: SelectMenuCallback = async (
 
 const registerComponentUpdate = async (
   ctx: InteractionContext<APIInteraction>,
-  id: bigint,
-  data: DraftComponent,
+  component: {
+    id: bigint;
+    data: DraftComponent;
+    createdBy: { discordId: bigint | null } | null;
+  },
   webhook: { id: string; token: string; guild_id?: string },
   message: APIMessage,
   path: number[],
 ) => {
+  const { id, data, createdBy } = component;
   const db = getDb(ctx.env.HYPERDRIVE);
   const user = await upsertDiscordUser(db, ctx.user);
 
@@ -968,7 +970,20 @@ const registerComponentUpdate = async (
   );
 
   if (customId !== undefined) {
-    await launchComponentKV(ctx.env, { componentId: id, data });
+    await launchComponentKV(ctx.env, {
+      componentId: id,
+      data,
+      createdById: createdBy?.discordId?.toString() ?? ctx.user.id,
+      updatedById: ctx.user.id,
+      // Wish we could do this but we need guild_permissions and so it
+      // requires an extra request to resolve the roles
+      // responsibleUser: {
+      //   id: ctx.user.id,
+      //   username: ctx.user.username,
+      //   roles: ctx.interaction.member?.roles ?? [],
+      //   reason: "last edited the component",
+      // },
+    });
   }
   return editedMsg;
 };
@@ -1004,6 +1019,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
       channelId: true,
       messageId: true,
     },
+    with: { createdBy: { columns: { discordId: true } } },
   });
   if (
     !component ||
@@ -1137,8 +1153,7 @@ export const editComponentFlowModalCallback: ModalCallback = async (ctx) => {
 
   const edited = await registerComponentUpdate(
     ctx,
-    component.id,
-    data,
+    component,
     {
       id: webhookId,
       token: webhook.token,

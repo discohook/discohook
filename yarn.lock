@@ -10082,7 +10082,7 @@ remix-auth-discord@discohook/remix-auth-discord:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=79470b&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=55fd83&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.38.32"
     discord-snowflake: "npm:^2.0.0"
@@ -10092,7 +10092,7 @@ remix-auth-discord@discohook/remix-auth-discord:
     tif-snowflake: discohook/snowflake
     zod: "npm:^4.1.5"
     zodix: "npm:@coji/zodix@^0.5.0"
-  checksum: 10c0/349b6beb01a29fe145ec78d837f19fd2310d5eac2ce3b72264923e67e4b44178fd4bc5303f7e76c8217dafe6e14c17cbcd2180a027336fd3853736c03ff3b4d5
+  checksum: 10c0/eadd06087928ed547e106b0fb4d02dcbd23617f9c0435264f171622077cbd98f5b205b126119d71d6bfe0b6964ea9d32a11021fc413c15bab920c2df7489cfcd
   languageName: node
   linkType: hard
 

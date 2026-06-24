@@ -354,6 +354,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             columns: {},
             with: { flow: { with: { actions: { columns: { data: true } } } } },
           },
+          createdBy: { columns: { discordId: true } },
+          updatedBy: { columns: { discordId: true } },
         },
       });
       if (!component) {
@@ -605,6 +607,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         await launchComponentKV(context.env, {
           componentId: component.id,
           data: component.data,
+          createdById: component.createdBy?.discordId?.toString(),
+          updatedById: component.updatedBy?.discordId?.toString(),
         });
       }
 

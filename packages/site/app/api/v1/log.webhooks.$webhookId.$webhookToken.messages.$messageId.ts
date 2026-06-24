@@ -12,7 +12,7 @@ import { notInArray } from "drizzle-orm";
 import { Snowflake } from "tif-snowflake";
 import { z } from "zod/v3";
 import { getBucket } from "~/durable/rate-limits";
-import { getUserId } from "~/session.server";
+import { getUser } from "~/session.server";
 import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import {
   extractInteractiveComponents,
@@ -113,7 +113,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
 
   const rest = createREST(context.env);
-  const userId = await getUserId(request, context);
+  const user = await getUser(request, context);
 
   let message: APIMessage | undefined;
   if (type === "delete") {
@@ -260,6 +260,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                       flow: { with: { actions: { columns: { data: true } } } },
                     },
                   },
+                  createdBy: { columns: { discordId: true } },
                 },
               })
             : [];
@@ -360,38 +361,47 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                 type: component.type,
                 data,
                 draft: false,
-                createdById: match?.createdById ?? userId,
-                updatedById: userId,
+                createdById: match?.createdById ?? user?.id,
+                updatedById: user?.id,
                 guildId,
                 messageId: BigInt(message.id),
                 channelId: BigInt(message.channel_id),
               },
             ];
           });
-        return values.length === 0
-          ? []
-          : await tx
-              .insert(discordMessageComponents)
-              .values(values)
-              .onConflictDoUpdate({
-                target: discordMessageComponents.id,
-                set: {
-                  type: sql`excluded.type`,
-                  data: sql`excluded.data`,
-                  draft: sql`excluded.draft`,
-                  createdById: sql`excluded."createdById"`,
-                  updatedById: sql`excluded."updatedById"`,
-                  updatedAt: sql`excluded."updatedAt"`,
-                  guildId: sql`excluded."guildId"`,
-                  channelId: sql`excluded."channelId"`,
-                  messageId: sql`excluded."messageId"`,
-                },
-              })
-              .returning({
-                id: discordMessageComponents.id,
-                messageId: discordMessageComponents.messageId,
-                data: discordMessageComponents.data,
-              });
+        const created =
+          values.length === 0
+            ? []
+            : await tx
+                .insert(discordMessageComponents)
+                .values(values)
+                .onConflictDoUpdate({
+                  target: discordMessageComponents.id,
+                  set: {
+                    type: sql`excluded.type`,
+                    data: sql`excluded.data`,
+                    draft: sql`excluded.draft`,
+                    createdById: sql`excluded."createdById"`,
+                    updatedById: sql`excluded."updatedById"`,
+                    updatedAt: sql`excluded."updatedAt"`,
+                    guildId: sql`excluded."guildId"`,
+                    channelId: sql`excluded."channelId"`,
+                    messageId: sql`excluded."messageId"`,
+                  },
+                })
+                .returning({
+                  id: discordMessageComponents.id,
+                  messageId: discordMessageComponents.messageId,
+                  data: discordMessageComponents.data,
+                });
+        return created.map((c) => {
+          const fromStored = stored.find((comp) => comp.id === c.id);
+          return {
+            ...c,
+            createdBy: fromStored?.createdBy,
+            updatedBy: user,
+          };
+        });
       }),
     );
     // I want to do this in the background (ctx.waitUntil) but I had issues
@@ -409,6 +419,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         await launchComponentKV(context.env, {
           componentId: created.id,
           data: created.data,
+          createdById: created.createdBy?.discordId?.toString(),
+          updatedById: created.updatedBy?.discordId?.toString(),
         });
       }
     }
@@ -440,7 +452,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             messageId: message?.id ?? messageId,
             channelId: message?.channel_id ?? entryWebhook.channelId,
             threadId,
-            userId,
+            userId: user?.id,
             // Not really a reliable check but it doesn't matter.
             // We might want to remove this entirely
             notifiedEveryoneHere: message

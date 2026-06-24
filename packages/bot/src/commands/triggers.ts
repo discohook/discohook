@@ -374,14 +374,17 @@ export const getFlowDiagnosticEmbed = (
 ) => {
   let description = "";
   const descFooter = results
-    .map(
-      (r) =>
-        `${results.length === 1 ? "" : "- "}<:_:${
-          r.status === "success"
-            ? "1263857933209571329" // true emoji
-            : "1263857948086505482" // false emoji
-        }> ${r.message ?? "no message"}`,
-    )
+    .map((r) => {
+      const firstLine = `${results.length === 1 ? "" : "- "}<:_:${
+        r.status === "success"
+          ? "1263857933209571329" // true emoji
+          : "1263857948086505482" // false emoji
+      }> ${r.message ?? "no message"}`;
+      if (r.discordError) {
+        return `${firstLine}\n[${r.discordError.code}] ${r.discordError.message}`;
+      }
+      return firstLine;
+    })
     .join("\n")
     .slice(0, 4096);
   for (const message of logger?.messages ?? []) {

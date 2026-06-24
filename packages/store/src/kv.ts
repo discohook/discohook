@@ -261,6 +261,7 @@ export interface HotComponent {
   channelId?: string;
   guildId?: string;
   createdById?: string;
+  updatedById?: string;
   responsibleUser?: ResponsibleUser;
 }
 
@@ -279,6 +280,7 @@ export const launchComponentKV = async (
     channelId: options.channelId,
     guildId: options.guildId,
     createdById: options.createdById,
+    updatedById: options.updatedById,
     responsibleUser: options.responsibleUser,
   };
   if (!data.data) {
@@ -292,7 +294,10 @@ export const launchComponentKV = async (
           data: true,
           channelId: true,
           guildId: true,
-          createdById: true,
+        },
+        with: {
+          createdBy: { columns: { discordId: true } },
+          updatedBy: { columns: { discordId: true } },
         },
       },
     );
@@ -300,7 +305,8 @@ export const launchComponentKV = async (
     data.data = component.data;
     data.channelId = component.channelId?.toString();
     data.guildId = component.guildId?.toString();
-    data.createdById = component.createdById?.toString();
+    data.createdById = component.createdBy?.discordId?.toString();
+    data.updatedById = component.updatedBy?.discordId?.toString();
   }
 
   const kv = "KV" in env ? env.KV : env;

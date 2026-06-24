@@ -254,13 +254,27 @@ export const getResponsibleUser = async (
   guild: Pick<TriggerKVGuild, "id" | "_roles">,
   userId: string,
   reason?: string,
+  log?: FlowLogger,
 ): Promise<ResponsibleUser | undefined> => {
   let member: APIGuildMember;
   try {
     member = (await rest.get(
       Routes.guildMember(guild.id, userId),
     )) as APIGuildMember;
-  } catch {
+  } catch (e) {
+    if (log) {
+      if (isDiscordError(e)) {
+        log.add(
+          `[${e.code}] ${e.rawError.message}`,
+          FlowLoggerMessageStatus.Error,
+        );
+      } else {
+        log.add(
+          `Failed to get responsible user ${userId}`,
+          FlowLoggerMessageStatus.Error,
+        );
+      }
+    }
     return undefined;
   }
   const guildPermissions = new PermissionsBitField();
@@ -351,6 +365,7 @@ export const executeFlow = async (options: {
       liveVars.guild,
       responsibleUserId,
       responsibilityReason,
+      log,
     );
   }
   if (recursion === 0) {

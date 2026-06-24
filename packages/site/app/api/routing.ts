@@ -96,13 +96,6 @@ export const BRoutes = {
     return `/components/${id}/backups` as const;
   },
 
-  /**
-   * - PATCH /components/bulk
-   */
-  componentsBulk() {
-    return "/components/bulk" as const;
-  },
-
   /** - POST /donate/:type */
   donate(type: z.infer<typeof ZodDonateKeyType>) {
     return `/donate/${type}` as const;

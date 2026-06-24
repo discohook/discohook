@@ -55,7 +55,7 @@ import {
 } from "./events.js";
 import {
   executeFlow,
-  FlowResult,
+  type FlowResult,
   getResponsibleUser,
   type LiveVariables,
   resumeFlowFromBouncer,
@@ -360,6 +360,7 @@ const handleInteraction = async (
           channelId: coldComponent.channelId?.toString(),
           guildId: coldComponent.guildId?.toString(),
           createdById: coldComponent.createdBy?.discordId?.toString(),
+          updatedById: coldComponent.updatedBy?.discordId?.toString(),
         };
         if (!coldComponent.guildId) {
           // Allow the component creator to set this data since they can always
@@ -475,6 +476,25 @@ const handleInteraction = async (
         eCtx.waitUntil(
           launchComponentKV(env, { componentId, ...newHotComponent }),
         );
+      } else if (!hotComponent.responsibleUser) {
+        // Attempt to resolve the user if we have not yet ruled out its
+        // possibility, nor has it already been done
+        const responsibleId =
+          hotComponent.updatedById || hotComponent.createdById;
+        if (responsibleId) {
+          const responsibleUser = await getResponsibleUser(
+            ctx.rest,
+            guild,
+            responsibleId,
+            hotComponent.updatedById
+              ? "most recently edited the component"
+              : "created the component",
+          );
+          hotComponent.responsibleUser = responsibleUser;
+          eCtx.waitUntil(
+            launchComponentKV(env, { componentId, ...hotComponent }),
+          );
+        }
       }
       // Allow the guild owner OR an administrator with the highest guild role
       // to automatically take responsibility of unowned components.
