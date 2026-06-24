@@ -432,6 +432,10 @@ export const executeFlow = async (options: {
     return true;
   };
 
+  const botHasManageRoles = ctx
+    ? ctx.appPermissons.has(PermissionFlagsBits.ManageRoles)
+    : null;
+
   try {
     if (
       recursion === 0 &&
@@ -758,6 +762,14 @@ export const executeFlow = async (options: {
             `<@&${action.roleId}> is manageable`,
             FlowLoggerMessageStatus.Ok,
           );
+          if (botHasManageRoles) {
+            log.add("Bot has **Manage Roles**", FlowLoggerMessageStatus.Ok);
+          } else if (botHasManageRoles === false) {
+            log.add(
+              "Bot does not have **Manage Roles**",
+              FlowLoggerMessageStatus.Error,
+            );
+          }
           await executeAddRole(
             rest,
             action,
@@ -781,6 +793,14 @@ export const executeFlow = async (options: {
             `<@&${action.roleId}> is manageable`,
             FlowLoggerMessageStatus.Ok,
           );
+          if (botHasManageRoles) {
+            log.add("Bot has **Manage Roles**", FlowLoggerMessageStatus.Ok);
+          } else if (botHasManageRoles === false) {
+            log.add(
+              "Bot does not have **Manage Roles**",
+              FlowLoggerMessageStatus.Error,
+            );
+          }
           await executeRemoveRole(
             rest,
             action,
@@ -804,6 +824,14 @@ export const executeFlow = async (options: {
             `<@&${action.roleId}> is manageable`,
             FlowLoggerMessageStatus.Ok,
           );
+          if (botHasManageRoles) {
+            log.add("Bot has **Manage Roles**", FlowLoggerMessageStatus.Ok);
+          } else if (botHasManageRoles === false) {
+            log.add(
+              "Bot does not have **Manage Roles**",
+              FlowLoggerMessageStatus.Error,
+            );
+          }
           await executeToggleRole(
             rest,
             action,
