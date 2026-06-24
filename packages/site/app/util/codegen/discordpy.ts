@@ -124,7 +124,7 @@ const generateSectionCode = (
       lines.push("    accessory=ui.Button(");
       if ("style" in button) {
         lines.push(
-          `        style=discord.ButtonStyle.${ButtonStyle[button.style].toLowerCase()}),`,
+          `        style=discord.ButtonStyle.${ButtonStyle[button.style].toLowerCase()},`,
         );
       }
       if ("url" in button && button.url) {
