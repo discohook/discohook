@@ -10,6 +10,7 @@ import {
   MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
+import { experimentEnabled } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import { Button } from "./Button";
 import { ButtonSelect } from "./ButtonSelect";
@@ -55,6 +56,7 @@ export const FileOrUrlInput: React.FC<{
   allowedExtensions = ATTACHMENT_URI_EXTENSIONS,
 }) => {
   const attachments = message.data.attachments ?? [];
+  const SAVE_ATTACHMENTS = experimentEnabled("SAVE_ATTACHMENTS");
 
   const id = randomString(10);
   const attachment = value?.startsWith("attachment://")
@@ -91,19 +93,21 @@ export const FileOrUrlInput: React.FC<{
         >
           <p className="my-auto truncate">{attachment.filename}</p>
         </div>
-        <button
-          type="button"
-          className={twJoin(
-            "ms-1 rounded-lg h-9 pb-0 pt-0.5 px-2 bg-gray-200 dark:bg-[#333338] shrink-0",
-            "border border-border-normal dark:border-border-normal-dark",
-            "hover:text-blurple-400 active:hover:border-blurple-400 transition",
-          )}
-          onClick={() => {
-            // Automatically upload or prompt to upload based on user prefs
-          }}
-        >
-          <CoolIcon icon="Cloud_Upload" />
-        </button>
+        {SAVE_ATTACHMENTS ? (
+          <button
+            type="button"
+            className={twJoin(
+              "ms-1 rounded-lg h-9 pb-0 pt-0.5 px-2 bg-gray-200 dark:bg-[#333338] shrink-0",
+              "border border-border-normal dark:border-border-normal-dark",
+              "hover:text-blurple-400 active:hover:border-blurple-400 transition",
+            )}
+            onClick={() => {
+              // Automatically upload or prompt to upload based on user prefs
+            }}
+          >
+            <CoolIcon icon="Cloud_Upload" />
+          </button>
+        ) : null}
         {fileClearable !== false ? (
           <button
             type="button"
@@ -232,10 +236,10 @@ export const FileOrUrlInput: React.FC<{
                 : undefined
             }
           />
-          <div className="flex gap-0">
+          <div className="flex gap-0 min-w-0 grow max-w-full">
             <Button
               className={twJoin(
-                "h-9 min-w-0 px-4 grow max-w-full transition-all",
+                "h-9 px-4 grow transition-all",
                 selectableAttachments.length !== 0
                   ? "rounded-e-none border-e-0"
                   : undefined,

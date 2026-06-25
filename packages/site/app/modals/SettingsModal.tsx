@@ -1,6 +1,7 @@
 import { Link } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
@@ -151,6 +152,26 @@ const summarizeAccept = (types: string[]): string => {
     summary.push("program files");
   }
   return new Intl.ListFormat().format(summary);
+};
+
+const FilehostConfigurationModal = ({
+  id,
+  name,
+  children,
+  ...props
+}: ModalProps & {
+  id: string;
+  name: string;
+  children: React.ReactNode;
+}) => {
+  return (
+    <Modal {...props}>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        Link your {name}
+      </PlainModalHeader>
+      {children}
+    </Modal>
+  );
 };
 
 const FilehostConfigurationBase = ({
@@ -772,18 +793,46 @@ const tabs: {
         {settings.experiments?.find((e) => e.id === "SAVE_ATTACHMENTS") ? (
           <div className="mt-8">
             <p className="text-sm font-bold uppercase dark:text-gray-400">
-              {t("saveAttachments")}
+              {t("saveAttachmentsTitle")}
             </p>
             <p className="text-sm">
-              You can upload draft attachments directly to a filesharing service
-              so that they can be used in backups or shared messages.
+              <Trans
+                t={t}
+                i18nKey="saveAttachmentsDescription"
+                components={{
+                  privacy: (
+                    <Link
+                      to="/legal"
+                      target="_blank"
+                      className={linkClassName}
+                    />
+                  ),
+                }}
+              />
             </p>
+            <div className="mt-2 flex flex-row gap-x-1 overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => {}}
+                className={twJoin(
+                  "size-11 flex rounded-lg",
+                  "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-600",
+                  "border border-border-normal/50 dark:border-border-normal-dark/50",
+                )}
+              >
+                <img
+                  src="/logos/imgbb.png"
+                  alt="ImgBB logo"
+                  className="size-7 m-auto object-contain rounded-md"
+                />
+              </button>
+            </div>
             <div className="space-y-2 mt-2">
-              <FilehostConfigurationImgbb
+              {/* <FilehostConfigurationImgbb
                 t={t}
                 settings={settings}
                 updateSettings={updateSettings}
-              />
+              /> */}
               {/*
                 Have not yet received approval from the catbox administrator to
                 publish this feature, so it remains in limbo

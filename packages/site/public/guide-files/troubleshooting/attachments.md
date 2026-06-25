@@ -5,9 +5,7 @@ description: "Troubleshoot common issues when dealing with attachments"
 
 ## Why are my attachments showing "File Missing"? / Why doesn't my welcomer/flow show the files I added?
 
-This happens when you refresh the page or load a backup with attachments in it. When files are added to the message from your computer, they are only stored temporarily within your browser.
-
-If you want to make your attached files persist in backups, share links, or just refreshing the page, you can choose to upload it to a filehosting service. 
+This happens when you refresh the page or load a backup with attachments in it. When files are added to the message from your computer, they are currently only stored temporarily within your browser.
 
 ## How do I fix "Some filenames are used more than once"?
 

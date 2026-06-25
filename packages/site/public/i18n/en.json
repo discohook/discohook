@@ -557,6 +557,8 @@
   "images": "Images",
   "largeImageUrl": "Large Image URL",
   "thumbnailUrl": "Thumbnail URL",
+  "saveAttachmentsTitle": "Set up filehosts",
+  "saveAttachmentsDescription": "You can upload draft attachments directly to a filesharing service so that they can be used in backups or shared messages. All credentials are saved on your device, but they are <privacy>processed</privacy> by Discohook.",
   "upload": "Upload",
   "reupload": "Reupload",
   "galleryImageN": "Gallery Image {{n}}",
@@ -849,7 +851,8 @@
     "deprecated": "Deprecated",
     "recipes": "Recipes",
     "debug": "Debug",
-    "changelogs": "Changelogs"
+    "changelogs": "Changelogs",
+    "troubleshooting": "Troubleshooting"
   },
   "serverProfileDescription": "Here you can customize the user profile for Discohook Utils in your server. You can set a custom avatar and banner by clicking on them in the preview.",
   "bio": "Bio (about me)",

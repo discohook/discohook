@@ -79,3 +79,26 @@ export const EXPERIMENTS = [
 ] as const;
 
 export type EXPERIMENT_ID = (typeof EXPERIMENTS)[number]["id"];
+
+export const experimentEnabled = (
+  experimentId: EXPERIMENT_ID,
+  settings?: Pick<Settings, "experiments">,
+): boolean => {
+  if (settings) {
+    return (
+      settings.experiments?.find((e) => e.id === experimentId) !== undefined
+    );
+  }
+  try {
+    const settings = JSON.parse(
+      localStorage.getItem("discohook_settings") ?? "{}",
+    );
+    return (
+      (settings.experiments as { id: string }[])?.find(
+        (e) => e.id === experimentId,
+      ) !== undefined
+    );
+  } catch {
+    return false;
+  }
+};
