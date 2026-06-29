@@ -5,10 +5,11 @@ import { useEffect } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { TFunction } from "~/types/i18next";
-import type {
-  CacheManager,
-  Resolutions,
-  ResolvableAPIChannelType,
+import {
+  ApplicationType,
+  type CacheManager,
+  type Resolutions,
+  type ResolvableAPIChannelType,
 } from "~/util/cache/CacheManager";
 import { cdn, cdnImgAttributes } from "~/util/discord";
 import { highlightCode } from "~/util/highlighting";
@@ -1069,7 +1070,7 @@ const gameMentionRule = defineRule({
   render(_capture, _render, data, t) {
     if (data.app === undefined) {
       return <span className={actionableMentionStyle}>@game</span>;
-    } else if (!data.app) {
+    } else if (!data.app || data.app.type !== ApplicationType.Game) {
       return (
         <span>
           @<Trans t={t} i18nKey="mention.unknownGame" />

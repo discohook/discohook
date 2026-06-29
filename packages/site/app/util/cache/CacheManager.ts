@@ -124,10 +124,24 @@ export type ResolvableAPIEmoji = {
   available?: false;
 };
 
+/**
+ * @see https://docs.discord.food/resources/application#application-type
+ */
+export enum ApplicationType {
+  DeprecatedGame = 1,
+  /** @deprecated */
+  Music = 2,
+  TicketedEvents = 3,
+  CreatorMonetization = 4,
+  Game = 5,
+}
+
 export type ResolvableAPIApplication = Pick<
   APIApplication,
   "id" | "name" | "icon" | "cover_image"
->;
+> & {
+  type?: ApplicationType | null;
+};
 
 class ChannelResourceManager extends ResourceCacheManagerBase<ResolvableAPIChannel> {
   get(id: string) {
@@ -290,7 +304,8 @@ class ApplicationResourceManager extends ResourceCacheManagerBase<ResolvableAPIA
     const response = await fetch(`${RouteBases.api}/applications/${id}/rpc`, {
       method: "GET",
     });
-    const data = (await response.json()) as APIApplication;
+    const data = (await response.json()) as APIApplication &
+      Pick<ResolvableAPIApplication, "type">;
     if (!response.ok) {
       console.log(`Fetch failed: ${JSON.stringify(data)}`);
       this._put(`app:${id}`, null);
@@ -302,8 +317,7 @@ class ApplicationResourceManager extends ResourceCacheManagerBase<ResolvableAPIA
       icon: data.icon,
       // /app-icons/:id/:cover_image.webp?keep_aspect_ratio=true
       cover_image: data.cover_image,
-      // 5 = game?
-      // type: data.type,
+      type: data.type,
     };
     this._put(`app:${id}`, resource);
     return resource;
@@ -516,18 +530,21 @@ const defaultCache: Resolutions = {
     name: "ROBLOX",
     icon: "f2b60e350a2097289b3b0b877495e55f",
     cover_image: "82f092687242e81976b955927df9cd24",
+    type: ApplicationType.Game,
   },
   "app:1402418491272986635": {
     id: "1402418491272986635",
     name: "Minecraft",
     icon: "166fbad351ecdd02d11a3b464748f66b",
     cover_image: "2975c144dc7e00ecf57018a4af98b1eb",
+    type: ApplicationType.Game,
   },
   "app:1402418714716143646": {
     id: "1402418714716143646",
     name: "Grand Theft Auto V",
     icon: "b77111108195cd5e4dd2011dd39bf67d",
     cover_image: "f5747887acb51da9b2c252e7ec6292ca",
+    type: ApplicationType.Game,
   },
 };
 
