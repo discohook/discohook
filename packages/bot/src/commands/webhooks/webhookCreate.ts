@@ -28,6 +28,7 @@ import { readAttachment } from "../../util/cdn.js";
 import { isDiscordError } from "../../util/error.js";
 import { color } from "../../util/meta.js";
 import { sleep } from "../../util/sleep.js";
+import { getUserTag } from "../../util/user.js";
 import { getWebhookUrlEmbed } from "./webhookInfo.js";
 
 export const extractWebhookableChannel = (
@@ -142,6 +143,7 @@ export const webhookCreateEntry: ChatInputAppCommandCallback<true> = async (
       try {
         webhook = (await ctx.rest.post(Routes.channelWebhooks(channelId), {
           body: { name, avatar: avatarData },
+          reason: `${getUserTag(ctx.user)} (${ctx.user.id}) via /webhook create`,
         })) as APIWebhook;
       } catch (e) {
         if (isDiscordError(e)) {

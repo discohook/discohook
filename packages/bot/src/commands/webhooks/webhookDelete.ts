@@ -9,6 +9,7 @@ import type {
   ButtonCallback,
 } from "../../components.js";
 import { parseAutoComponentId } from "../../util/components.js";
+import { getUserTag } from "../../util/user.js";
 import { getWebhookInfoEmbed } from "./webhookInfo.js";
 
 export const webhookDeleteEntryCallback: ChatInputAppCommandCallback<
@@ -100,7 +101,9 @@ export const webhookDeleteConfirm: ButtonCallback = async (ctx) => {
     });
   }
 
-  await ctx.rest.delete(Routes.webhook(webhookId));
+  await ctx.rest.delete(Routes.webhook(webhookId), {
+    reason: `${getUserTag(ctx.user)} (${ctx.user.id}) via /webhook delete`,
+  });
 
   const db = getDb(ctx.env.HYPERDRIVE);
   await db
