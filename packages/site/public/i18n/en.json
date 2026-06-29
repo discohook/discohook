@@ -762,6 +762,7 @@
     "unknown": "unknown",
     "unknownUser": "unknown-user",
     "deletedRole": "deleted-role",
+    "unknownGame": "unknown-game",
     "guide": "Server Guide",
     "browse": "Browse Channels",
     "customize": "Channels & Roles",

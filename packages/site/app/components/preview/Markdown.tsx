@@ -10,7 +10,7 @@ import type {
   Resolutions,
   ResolvableAPIChannelType,
 } from "~/util/cache/CacheManager";
-import { cdn } from "~/util/discord";
+import { cdn, cdnImgAttributes } from "~/util/discord";
 import { highlightCode } from "~/util/highlighting";
 import { getRelativeDateFormat } from "~/util/markdown/dates";
 import {
@@ -1054,6 +1054,51 @@ const roleMentionRule = defineRule({
   },
 });
 
+const gameMentionRule = defineRule({
+  capture(source) {
+    const match = /^<@\$(\d+)>/.exec(source);
+    if (!match) return;
+    return {
+      size: match[0].length,
+      id: match[1],
+    };
+  },
+  data(capture) {
+    return { app: `app:${capture.id}` };
+  },
+  render(_capture, _render, data, t) {
+    if (data.app === undefined) {
+      return <span className={actionableMentionStyle}>@game</span>;
+    } else if (!data.app) {
+      return (
+        <span>
+          @<Trans t={t} i18nKey="mention.unknownGame" />
+        </span>
+      );
+    }
+
+    const app = data.app;
+    return (
+      <span className={actionableMentionStyle}>
+        {app.icon ? (
+          <img
+            {...cdnImgAttributes(64, (size) =>
+              // biome-ignore lint/style/noNonNullAssertion: assured above
+              cdn.appIcon(app.id, app.icon!, {
+                size,
+                extension: "webp",
+              }),
+            )}
+            alt=""
+            className="size-4 rounded me-[3px] -mt-2 object-contain align-middle inline"
+          />
+        ) : null}
+        {app.name}
+      </span>
+    );
+  },
+});
+
 const commandMentionRule = defineRule({
   capture(source) {
     const match =
@@ -1161,6 +1206,7 @@ type RuleOptionKey =
   | "channelMentions"
   | "memberMentions"
   | "roleMentions"
+  | "gameMentions"
   | "commandMentions"
   | "customEmojis"
   | "unicodeEmojis"
@@ -1199,6 +1245,8 @@ export const ruleOptions: Record<
   channelMentions: { rule: channelMentionRule, title: true, full: true },
   memberMentions: { rule: memberMentionRule, full: true },
   roleMentions: { rule: roleMentionRule, full: true },
+  // currently only works in content, not embeds nor display components
+  gameMentions: { rule: gameMentionRule },
   commandMentions: { rule: commandMentionRule, full: true },
   customEmojis: { rule: customEmojiRule, title: true, full: true },
   unicodeEmojis: { rule: unicodeEmojiRule, title: true, full: true },

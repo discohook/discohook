@@ -353,7 +353,7 @@ export const Message: React.FC<{
               >
                 <Markdown
                   content={message.content}
-                  features="full"
+                  features={{ gameMentions: true, extend: "full" }}
                   cache={cache}
                 />
               </div>
