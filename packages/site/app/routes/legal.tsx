@@ -130,22 +130,6 @@ export default function Legal() {
             guild's audit log page for Moderation.
           </li>
         </ul>
-        <h2 className="font-semibold text-base mt-2">
-          Sharing Filehost Credentials
-        </h2>
-        <ul className="list-disc list-inside my-1 space-y-1">
-          <li>
-            The user may provide credentials (API tokens) for external filehost
-            services. This enables the user to upload unsent binary attachment
-            data and store URL references thereof within saved messages.
-          </li>
-          <li>
-            These credentials are only stored on the user's browser within an
-            HTTP-only cookie value and may be revoked by the user at any time.
-            The uploaded attachment data is subject to those services' privacy
-            policies.
-          </li>
-        </ul>
         <h2 className="font-bold text-lg mt-2">Storage & Handling</h2>
         <ul className="list-disc list-inside my-1 space-y-1">
           <li>
