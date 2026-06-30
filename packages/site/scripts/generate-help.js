@@ -43,6 +43,11 @@ const data = {
         },
       ],
     },
+    threads: {
+      title: "How do I use threads?",
+      description:
+        'In the message editor, there is a section labeled "Thread". If your webhook is in a forum channel, you can create a new thread by writing a name in the "Forum Thread Name" box. You can use an existing thread by pasting its ID into "Thread ID" - but make sure the webhook is in the same channel as the thread!\n\nYou can get a thread ID with the </id channel:1281305550340096032> command or you can [copy it manually](https://support.discord.com/hc/en-us/articles/206346498).',
+    },
     sidebar: {
       title: "How do I remove the sidebar color on an embed?",
       description:
@@ -66,6 +71,35 @@ const data = {
     role: "mention",
     channel: "mention",
     emoji: "mention",
+    "external emojis": {
+      title: "Why don't my emojis work in my message?",
+      description:
+        "It depends on the type of emoji and where it's placed in the message. If the emoji is animated, make sure you've included the animated flag: `<a:name:id>`, not `<:name:id>`",
+      fields: [
+        {
+          name: "External Emojis (from a different server)",
+          value: [
+            "You need to make sure @everyone has the **Use External Emojis** permission. Additionally, if the message's webhook is owned by a bot (like Discohook Utils), you need to make sure the bot also has the **Use External Emojis** permission. You can check this automatically with the debugger:",
+            "1. Right click (or long-press) on the message in Discord",
+            '2. Navigate to "Apps" -> "Discohook Utils" -> "Debug"',
+            "3. Permissions status is shown in the top section",
+          ].join("\n"),
+          inline: false,
+        },
+        {
+          name: "Server Emojis",
+          value:
+            "These can always be used as long as the field supports emoji markdown. If you see the whole formatting, like `<:name:id>`, that means the field does not support emoji markdown. If you just see `:name:`, that might indicate that you used the wrong ID or that the emoji is actually external (see above)",
+          inline: false,
+        },
+        {
+          name: "Discord Emojis (unicode)",
+          value:
+            "These always work everywhere in a message. However, if you are using shortcodes (like :smile\\:), they may not automatically expand in areas that don't support markdown. Instead, paste the actual unicode character (like \\😄).",
+          inline: false,
+        },
+      ],
+    },
     link: {
       title: "How do I create links?",
       description:
@@ -114,7 +148,17 @@ const data = {
     buttons: {
       title: "How do I add buttons to my messages/embeds?",
       description:
-        'Use the `/buttons` command or the "Buttons & Components" message command to add buttons to your messages. Messages must be sent by a webhook that this bot created in order for this to work. To get a webhook like this, use `/webhook create`.\n\n[Here\'s an example of the "Buttons & Components" message command](https://www.youtube.com/watch?v=tGQsZaIGr2A&list=PL2lbsZZaSX2heZ_bGhkJ3WJHm9PijiXWv)',
+        'Use the `/buttons` command or the "Buttons & Components" message command to add buttons to your messages. Messages must be sent by a webhook that this bot created in order for this to work. To get a webhook like this, use `/webhook create`.',
+    },
+    debugger: {
+      title: "Why isn't my button/select working?",
+      description: [
+        "You should inspect your flow to see where the issue lies.",
+        "1. Right click (or long-press) on the message in Discord",
+        '2. Navigate to "Apps" -> "Discohook Utils" -> "Debug"',
+        '3. Choose "Debug Components" and find the component you\'re having trouble with',
+        "4. Test the flow using the provided options",
+      ].join("\n"),
     },
     "reaction role": {
       title: "How do I make reaction roles?",
