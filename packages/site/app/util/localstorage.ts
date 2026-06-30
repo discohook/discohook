@@ -27,6 +27,7 @@ export interface Settings {
       domain?: string;
       token?: string;
     };
+    postimages: FilehostConfigurationBase;
   }>;
 
   developer?: boolean;

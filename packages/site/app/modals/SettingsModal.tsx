@@ -347,6 +347,153 @@ const FilehostConfigurationImgbb = ({
   );
 };
 
+const FilehostConfigurationPostimages = ({
+  t,
+  settings,
+  updateSettings,
+}: {
+  t: TFunction;
+  settings: Settings;
+  updateSettings: (data: Partial<Settings>) => void;
+}) => {
+  const id = "postimages";
+  const fh = settings.filehosts ?? {};
+  return (
+    <FilehostConfigurationBase
+      t={t}
+      id={id}
+      name="Postimages"
+      iconUrl="/logos/postimages.png"
+      clearConfig={async () => {
+        updateSettings({ filehosts: { ...fh, [id]: undefined } });
+      }}
+    >
+      <form
+        className="flex items-end gap-2"
+        onSubmit={async (e) => {
+          const form = e.currentTarget;
+          e.preventDefault();
+          form.reset();
+        }}
+      >
+        <Button
+          type="submit"
+          discordstyle={ButtonStyle.Primary}
+          className="h-9"
+        >
+          {t("save")}
+        </Button>
+      </form>
+    </FilehostConfigurationBase>
+  );
+};
+
+const FilehostConfigurationSxcu = ({
+  t,
+  settings,
+  updateSettings,
+}: {
+  t: TFunction;
+  settings: Settings;
+  updateSettings: (data: Partial<Settings>) => void;
+}) => {
+  const id = "sxcu";
+  const fh = settings.filehosts ?? {};
+  return (
+    <FilehostConfigurationBase
+      t={t}
+      id={id}
+      name="sxcu"
+      iconUrl="/logos/sxcu.png"
+      clearConfig={async () => {
+        updateSettings({ filehosts: { ...fh, [id]: undefined } });
+      }}
+    >
+      <form
+        className="flex items-end gap-2"
+        onSubmit={async (e) => {
+          const form = e.currentTarget;
+          e.preventDefault();
+          form.reset();
+        }}
+      >
+        <TextInput
+          name="domain"
+          labelClassName="grow"
+          label={<p className="flex items-center gap-x-1">Domain</p>}
+          description={
+            <Trans
+              t={t}
+              i18nKey={"domain"}
+              components={{
+                anchor: (
+                  // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+                  <a
+                    href="https://api.imgbb.com"
+                    className={linkClassName}
+                    target="_blank"
+                    rel="noopener"
+                  />
+                ),
+              }}
+            />
+          }
+          className="w-full"
+          value={fh[id]?.domain ?? ""}
+        />
+        <TextInput
+          name="domain_token"
+          labelClassName="grow"
+          label={
+            <p className="flex items-center gap-x-1">
+              Domain Token{" "}
+              {/* {fh[id]?.cookie ? (
+                <CoolIcon
+                  icon="Circle_Check"
+                  className="text-green-400 align-[center]"
+                />
+              ) : (
+                <CoolIcon
+                  icon="Remove_Minus_Circle"
+                  className="text-muted dark:text-muted-dark align-[center]"
+                />
+              )} */}
+            </p>
+          }
+          description={
+            <Trans
+              t={t}
+              i18nKey={"domain token"}
+              components={{
+                anchor: (
+                  // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+                  <a
+                    href="https://api.imgbb.com"
+                    className={linkClassName}
+                    target="_blank"
+                    rel="noopener"
+                  />
+                ),
+              }}
+            />
+          }
+          pattern="^\w+$"
+          type="password"
+          className="w-full"
+          placeholder="1abcd2345e6fg7h8ijk901lmno234p5q"
+        />
+        <Button
+          type="submit"
+          discordstyle={ButtonStyle.Primary}
+          className="h-9"
+        >
+          {t("save")}
+        </Button>
+      </form>
+    </FilehostConfigurationBase>
+  );
+};
+
 // const FilehostConfigurationCatbox = ({
 //   t,
 //   settings,
@@ -563,6 +710,13 @@ const FilehostConfigurationImgbb = ({
 //     </FilehostConfigurationBase>
 //   );
 // };
+
+const serviceToConfigurationBox = {
+  imgbb: FilehostConfigurationImgbb,
+  postimages: FilehostConfigurationPostimages,
+  sxcu: FilehostConfigurationSxcu,
+  // catbox: FilehostConfigurationCatbox,
+};
 
 interface TabContentProps {
   settings: Settings;
@@ -811,48 +965,65 @@ const tabs: {
               />
             </p>
             <div className="mt-2 flex flex-row gap-x-1 overflow-x-auto">
-              <button
-                type="button"
-                onClick={() => {}}
-                className={twJoin(
-                  "size-11 flex rounded-lg",
-                  "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-600",
-                  "border border-border-normal/50 dark:border-border-normal-dark/50",
-                )}
-              >
-                <img
-                  src="/logos/imgbb.png"
-                  alt="ImgBB logo"
-                  className="size-7 m-auto object-contain rounded-md"
-                />
-              </button>
+              {fileHosts
+                .filter((f) => !["discord", "catbox"].includes(f.id))
+                .map((filehost) => (
+                  <button
+                    key={`setup-${filehost.id}`}
+                    type="button"
+                    onClick={() => {
+                      // @ts-expect-error
+                      if (settings.filehosts[filehost.id]) return;
+
+                      const defaultConfig: any = {
+                        position: Object.keys(settings.filehosts ?? {}).length,
+                      };
+                      if (filehost.id === "catbox") {
+                        defaultConfig.cookie = false;
+                      }
+
+                      updateSettings({
+                        filehosts: {
+                          ...settings.filehosts,
+                          [filehost.id]: defaultConfig,
+                        },
+                      });
+                    }}
+                    className={twJoin(
+                      "size-11 flex rounded-lg",
+                      "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-600",
+                      "border border-border-normal/50 dark:border-border-normal-dark/50",
+                    )}
+                  >
+                    <img
+                      src={`/logos/${filehost.id}.png`}
+                      alt={`${filehost.name} logo`}
+                      className="size-7 m-auto object-contain rounded-md"
+                    />
+                  </button>
+                ))}
             </div>
-            <div className="space-y-2 mt-2">
-              {/* <FilehostConfigurationImgbb
-                t={t}
-                settings={settings}
-                updateSettings={updateSettings}
-              /> */}
-              {/*
-                Have not yet received approval from the catbox administrator to
-                publish this feature, so it remains in limbo
-                <FilehostConfigurationCatbox
-                  t={t}
-                  settings={settings}
-                  updateSettings={updateSettings}
-                />
-              */}
-              {/*
-                I didn't want to write another proxy for this service just yet.
-                It returns an appropriate CORS origin header, but not an appropriate
-                allowed methods header. Hopefully this is a mistake and it may allow
-                CORS requests in the future.
-                <FilehostConfigurationSxcu
-                  t={t}
-                  settings={settings}
-                  updateSettings={updateSettings}
-                />
-              */}
+            <div className="space-y-2 mt-1">
+              {(
+                Object.entries(settings.filehosts ?? {}) as [
+                  string,
+                  { position?: number },
+                ][]
+              )
+                .sort(([, a], [, b]) => (a.position ?? 0) - (b.position ?? 0))
+                .filter(
+                  ([serviceId]) =>
+                    !!serviceToConfigurationBox[
+                      serviceId as keyof typeof serviceToConfigurationBox
+                    ],
+                )
+                .map(([serviceId]) => (
+                  <div key={`config-${serviceId}`}>
+                    {serviceToConfigurationBox[
+                      serviceId as keyof typeof serviceToConfigurationBox
+                    ]({ t, settings, updateSettings })}
+                  </div>
+                ))}
             </div>
           </div>
         ) : undefined}

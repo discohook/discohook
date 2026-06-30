@@ -117,6 +117,16 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /filehosts/postimages/images/:id
+   * - GET /filehosts/postimages/images/:id/:hash
+   */
+  filehostsPostimagesDetails(id: string, hash?: string) {
+    return hash
+      ? (`/filehosts/postimages/images/${id}/${hash}` as const)
+      : (`/filehosts/postimages/images/${id}` as const);
+  },
+
+  /**
    * - GET /guilds/:id/attachments
    * - POST /guilds/:id/attachments
    *

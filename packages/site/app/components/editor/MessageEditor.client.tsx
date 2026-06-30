@@ -3,7 +3,7 @@ import { Collapsible } from "@base-ui/react/collapsible";
 import { Select } from "@base-ui/react/select";
 import { Link } from "@remix-run/react";
 import {
-  APITextDisplayComponent,
+  type APITextDisplayComponent,
   ButtonStyle,
   ComponentType,
   MessageFlags,
@@ -52,6 +52,7 @@ import {
 import type { DragManager } from "~/util/drag";
 import type { FilehostUploadResponse } from "~/util/filehosts";
 import { uploadFile as imgbbUpload } from "~/util/filehosts/imgbb";
+import { uploadFile as postimagesUpload } from "~/util/filehosts/postimages";
 import { uploadFile as sxcuUpload } from "~/util/filehosts/sxcu";
 import {
   attachmentFromFile,
@@ -60,7 +61,7 @@ import {
   transformFileName,
 } from "~/util/files";
 import { useSafeFetcher } from "~/util/loader";
-import { useLocalStorage } from "~/util/localstorage";
+import { experimentEnabled, useLocalStorage } from "~/util/localstorage";
 import { getMessageDisplayName } from "~/util/message";
 import { copyText, fileSize, randomString } from "~/util/text";
 import { Button } from "../Button";
@@ -124,7 +125,7 @@ const FilePreview = ({
 const AttachmentEditModal = (
   props: ModalProps & {
     attachment?: APIAttachment;
-    onSave: (attachment: APIAttachment) => void;
+    onSave: (attachment: APIAttachment, oldAttachment?: APIAttachment) => void;
     files: DraftFile[];
     setFiles: SetDraftFile;
     message: QueryData["messages"][number];
@@ -155,21 +156,21 @@ const AttachmentEditModal = (
   }, [attachment]);
 
   const [settings, updateSettings] = useLocalStorage();
-  const SAVE_ATTACHMENTS =
-    settings.experiments?.find((e) => e.id === "SAVE_ATTACHMENTS") !==
-    undefined;
+  const SAVE_ATTACHMENTS = experimentEnabled("SAVE_ATTACHMENTS", settings);
   const filehosts = settings.filehosts ?? {};
 
+  type ServiceId = "imgbb" | "catbox" | "sxcu" | "postimages";
   const hostOptions = useMemo(() => {
     const arr: {
       label: React.ReactNode;
-      value: "imgbb" | "catbox" | "sxcu";
+      value: ServiceId;
     }[] = [
       {
         label: "ImgBB",
         value: "imgbb",
       },
       { label: filehosts.sxcu?.domain ?? "sxcu.net", value: "sxcu" },
+      { label: "Postimages", value: "postimages" },
     ];
     if (filehosts.catbox?.cookie) {
       arr.push({ label: "Catbox", value: "catbox" });
@@ -185,6 +186,177 @@ const AttachmentEditModal = (
   );
   const [progress, setProgress] = useState(-1);
   const loading = uploader.state !== "idle" || (progress > -1 && progress < 1);
+
+  const doUpload = async (serviceId: ServiceId, attachment: APIAttachment) => {
+    let target: Blob | string;
+    if (attachment.url.startsWith("http")) {
+      target = attachment.url;
+    } else {
+      if (!file) {
+        onError({ message: "The attachment has no file data" });
+        return;
+      }
+      target = file.file;
+    }
+
+    const afterUpload = (uploaded: FilehostUploadResponse) => {
+      setTimeout(() => setProgress(-1), 3000);
+      console.log(uploaded.delete_url);
+
+      if (file) {
+        setFiles(files.filter((f) => f !== file));
+      }
+      if (attachment.placement_count) {
+        message.data.attachments = message.data.attachments?.filter(
+          (a) => a.id !== attachment.id,
+        );
+        const renameConfig = [
+          {
+            oldName: attachment.filename,
+            newName: "",
+            newUri: uploaded.url,
+          },
+        ];
+        if (message.data.embeds) {
+          message.data.embeds = cascadeFileNameChangeEmbeds(
+            renameConfig,
+            message.data.embeds,
+          );
+        }
+        if (message.data.components) {
+          message.data.components = cascadeFileNameChangeComponents(
+            renameConfig,
+            message.data.components,
+          );
+        }
+        refreshData();
+      } else {
+        onSave(
+          {
+            ...attachment,
+            url: uploaded.url,
+            proxy_url: uploaded.url,
+            content_type: attachment.content_type ?? uploaded.mime,
+          },
+          attachment,
+        );
+      }
+      restProps.setOpen(false);
+    };
+
+    switch (serviceId) {
+      case "imgbb": {
+        setProgress(0);
+        // Upload to server as proxy for API
+        if (filehosts.imgbb?.cookie) {
+          const form = new FormData();
+          form.set("name", attachment.filename);
+          if (typeof target === "string") {
+            form.set("type", "url");
+            form.set("url", target);
+          } else {
+            form.set("type", "file");
+            form.set("file", target);
+          }
+
+          const uploaded = (await uploader.submitAsync(form, {
+            method: "POST",
+            action: apiUrl(BRoutes.filehostsUpload(serviceId)),
+          })) as ApiPostFilehostUpload;
+          afterUpload(uploaded);
+          break;
+        }
+        // Configure local storage with access token so we can use
+        // the cross-origin endpoint
+        if (!filehosts.imgbb?.access_token) {
+          const data = (await uploader.loadAsync(
+            apiUrl(BRoutes.filehostsUpload(serviceId)),
+          )) as ApiGetFilehostUpload;
+          filehosts.imgbb = {
+            cookie: false,
+            ...filehosts.imgbb,
+            access_token: data.token,
+          };
+          updateSettings({ ...settings });
+        }
+        let uploaded: FilehostUploadResponse;
+        try {
+          uploaded = await imgbbUpload(target, {
+            auth_token: filehosts.imgbb.access_token,
+            filename: attachment.filename,
+            description: attachment.description,
+            onUploadProgress: setProgress,
+            // Upload progress only makes sense when we're uploading from the filesystem.
+            // When we're passing a URL, peg progress to 99% so that the buttons stay visually
+            // loading while the service actually downloads and processes the image.
+            onUploadEnd() {
+              if (typeof target === "string") setProgress(0.99);
+            },
+          });
+        } catch (e) {
+          onError({
+            message: e instanceof Error ? e.message : String(e),
+          });
+          setProgress(-1);
+          return;
+        }
+        afterUpload(uploaded);
+        break;
+      }
+      case "sxcu": {
+        let uploaded: FilehostUploadResponse;
+        setProgress(0);
+        try {
+          if (typeof target === "string") {
+            // Originally I tried to fetch the URL on the client to
+            // reupload it, but sxcu does not return proper CORS headers
+            // for assets to allow this.
+            onError({
+              message: "Service does not support reuploading (URL uploads)",
+            });
+            return;
+          }
+          const blob = target;
+          uploaded = await sxcuUpload(blob, {
+            domain: filehosts.sxcu?.domain,
+            token: filehosts.sxcu?.token,
+            onUploadProgress: setProgress,
+          });
+        } catch (e) {
+          onError({
+            message: e instanceof Error ? e.message : String(e),
+          });
+          setProgress(-1);
+          return;
+        }
+        afterUpload(uploaded);
+        break;
+      }
+      case "postimages": {
+        setProgress(0);
+        let uploaded: FilehostUploadResponse;
+        try {
+          uploaded = await postimagesUpload(target, {
+            filename: attachment.filename,
+            onUploadProgress: setProgress,
+            onUploadEnd() {
+              if (typeof target === "string") setProgress(0.99);
+            },
+          });
+        } catch (e) {
+          onError({
+            message: e instanceof Error ? e.message : String(e),
+          });
+          setProgress(-1);
+          return;
+        }
+        afterUpload(uploaded);
+        break;
+      }
+      default:
+        break;
+    }
+  };
 
   return (
     <Modal {...restProps}>
@@ -268,173 +440,31 @@ const AttachmentEditModal = (
       ) : (
         <div />
       )}
-      <ModalFooter className="flex flex-wrap gap-x-6 gap-y-2 items-center">
+      <ModalFooter className="flex flex-wrap gap-x-6 gap-y-2 items-end">
         {SAVE_ATTACHMENTS ? (
           <div className="flex gap-4 items-center grow">
-            {attachment ? (
-              <ButtonSelect
-                disabled={
-                  (!attachment.url || attachment.url.startsWith("blob:")
-                    ? !file
-                    : false) || loading
-                }
-                discordstyle={ButtonStyle.Secondary}
-                loading={loading}
-                options={hostOptions}
-                onValueChange={async (value) => {
-                  let target: Blob | string;
-                  if (attachment.url.startsWith("http")) {
-                    target = attachment.url;
-                  } else {
-                    if (!file) {
-                      onError({ message: "The attachment has no file data" });
-                      return;
-                    }
-                    target = file.file;
-                  }
-
-                  const afterUpload = (uploaded: FilehostUploadResponse) => {
-                    setTimeout(() => setProgress(-1), 3000);
-                    console.log(uploaded.delete_url);
-
-                    if (file) {
-                      setFiles(files.filter((f) => f !== file));
-                    }
-                    if (attachment.placement_count) {
-                      message.data.attachments =
-                        message.data.attachments?.filter(
-                          (a) => a.id !== attachment.id,
-                        );
-                      const renameConfig = [
-                        {
-                          oldName: attachment.filename,
-                          newName: "",
-                          newUri: uploaded.url,
-                        },
-                      ];
-                      if (message.data.embeds) {
-                        message.data.embeds = cascadeFileNameChangeEmbeds(
-                          renameConfig,
-                          message.data.embeds,
-                        );
-                      }
-                      if (message.data.components) {
-                        message.data.components =
-                          cascadeFileNameChangeComponents(
-                            renameConfig,
-                            message.data.components,
-                          );
-                      }
-                      refreshData();
-                    } else {
-                      onSave({
-                        ...attachment,
-                        url: uploaded.url,
-                        proxy_url: uploaded.url,
-                        content_type: attachment.content_type ?? uploaded.mime,
-                      });
-                    }
-                    restProps.setOpen(false);
-                  };
-
-                  switch (value) {
-                    case "imgbb": {
-                      setProgress(0);
-                      // Upload to server as proxy for API
-                      if (filehosts.imgbb?.cookie) {
-                        const form = new FormData();
-                        form.set("name", attachment.filename);
-                        if (typeof target === "string") {
-                          form.set("type", "url");
-                          form.set("url", target);
-                        } else {
-                          form.set("type", "file");
-                          form.set("file", target);
-                        }
-
-                        const uploaded = (await uploader.submitAsync(form, {
-                          method: "POST",
-                          action: apiUrl(BRoutes.filehostsUpload(value)),
-                        })) as ApiPostFilehostUpload;
-                        afterUpload(uploaded);
-                        break;
-                      }
-                      // Configure local storage with access token so we can use
-                      // the cross-origin endpoint
-                      if (!filehosts.imgbb?.access_token) {
-                        const data = (await uploader.loadAsync(
-                          apiUrl(BRoutes.filehostsUpload(value)),
-                        )) as ApiGetFilehostUpload;
-                        filehosts.imgbb = {
-                          cookie: false,
-                          ...filehosts.imgbb,
-                          access_token: data.token,
-                        };
-                        updateSettings({ ...settings });
-                      }
-                      let uploaded: FilehostUploadResponse;
-                      try {
-                        uploaded = await imgbbUpload(target, {
-                          auth_token: filehosts.imgbb.access_token,
-                          filename: attachment.filename,
-                          description: attachment.description,
-                          onUploadProgress: setProgress,
-                          // Upload progress only makes sense when we're uploading from the filesystem.
-                          // When we're passing a URL, peg progress to 99% so that the buttons stay visually
-                          // loading while the service actually downloads and processes the image.
-                          onUploadEnd() {
-                            if (typeof target === "string") setProgress(0.99);
-                          },
-                        });
-                      } catch (e) {
-                        onError({
-                          message: e instanceof Error ? e.message : String(e),
-                        });
-                        setProgress(-1);
-                        return;
-                      }
-                      afterUpload(uploaded);
-                      break;
-                    }
-                    case "sxcu": {
-                      let uploaded: FilehostUploadResponse;
-                      setProgress(0);
-                      try {
-                        if (typeof target === "string") {
-                          // Originally I tried to fetch the URL on the client to
-                          // reupload it, but sxcu does not return proper CORS headers
-                          // for assets to allow this.
-                          onError({
-                            message:
-                              "Service does not support reuploading (URL uploads)",
-                          });
-                          return;
-                        }
-                        const blob = target;
-                        uploaded = await sxcuUpload(blob, {
-                          domain: filehosts.sxcu?.domain,
-                          token: filehosts.sxcu?.token,
-                          onUploadProgress: setProgress,
-                        });
-                      } catch (e) {
-                        onError({
-                          message: e instanceof Error ? e.message : String(e),
-                        });
-                        setProgress(-1);
-                        return;
-                      }
-                      afterUpload(uploaded);
-                      break;
-                    }
-                    default:
-                      break;
-                  }
-                }}
-              >
-                {!attachment?.url || attachment.url.startsWith("blob:")
-                  ? t("upload")
-                  : t("reupload")}
-              </ButtonSelect>
+            {attachment && settings.filehosts ? (
+              <div>
+                <p>Upload to a filehost</p>
+                <div className="flex flex-row gap-1.5">
+                  {Object.entries(settings.filehosts).map(([serviceId]) => (
+                    <button
+                      type="button"
+                      key={`upload-${serviceId}`}
+                      // onClick={() => setUploaderOpen(serviceId)}
+                    >
+                      <img
+                        src={`/logos/${serviceId}.png`}
+                        alt=""
+                        className={twJoin(
+                          "size-8 object-contain rounded-md",
+                          "border border-border-normal/50 dark:border-border-normal-dark/50",
+                        )}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
             ) : null}
             {progress === -1 ? null : (
               <Progress.Root
@@ -468,7 +498,7 @@ const AttachmentEditModal = (
             onClick={() => {
               props.setOpen(false);
               if (draft) {
-                onSave(draft);
+                onSave(draft, attachment);
                 if (file) {
                   const newFile = {
                     ...file,
@@ -622,10 +652,29 @@ export const MessageEditor: React.FC<MessageEditorProps> = (props) => {
         attachment={editingAttachment}
         files={props.files}
         setFiles={props.setFiles}
-        onSave={(attachment) => {
+        onSave={(attachment, oldAttachment) => {
           message.data.attachments = message.data.attachments?.map((a) =>
             a.id === attachment.id ? attachment : a,
           );
+          // If the attachment was renamed, propagate to references
+          if (oldAttachment && oldAttachment.filename !== attachment.filename) {
+            const renameConfig = [
+              { oldName: oldAttachment.filename, newName: attachment.filename },
+            ];
+            if (message.data.embeds) {
+              message.data.embeds = cascadeFileNameChangeEmbeds(
+                renameConfig,
+                message.data.embeds,
+              );
+            }
+            if (message.data.components) {
+              message.data.components = cascadeFileNameChangeComponents(
+                renameConfig,
+                message.data.components,
+              );
+            }
+          }
+
           props.setData({ ...props.data });
         }}
         message={message}
