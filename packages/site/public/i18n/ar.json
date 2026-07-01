@@ -237,7 +237,8 @@
         "guide": "دليل السيرفر",
         "customize": "التشانل و الرول",
         "browse": "تصفح التشانل",
-        "linked-roles": "الرول المربوط"
+        "linked-roles": "الرول المربوط",
+        "unknownGame": "لعبة-غير-معروفة"
     },
     "labelEmpty": "يحب ان يحتوي على اسم او رمز, او الاثنان",
     "troubleshootMessage": "اذا ضغطت زر الارسال و لم يحدث شئ, من الممكن ان يكون المتصفح الخاص بك يمنع الاتصال بديسكورد, قد يكون السبب هو امتدادات الخصوصية مثل \"Privacy Badger\". جرب ان تطفئ امتدادات الخصوصية او ادخل عن طريق التصفح الخفي.",
@@ -784,7 +785,8 @@
         "debug": "تصحيح الأخطاء",
         "getting-started": "البداية",
         "deprecated": "غير مستخدم",
-        "changelogs": "سِجل التغييرات"
+        "changelogs": "سِجل التغييرات",
+        "troubleshooting": "استكشاف و تصليح الاخطاء"
     },
     "close": "إغلاق",
     "usingDiscohook": "استخدام ديسكوهوك",
@@ -946,5 +948,11 @@
     "filenameDuplicateWarning": "بعض اسماء الملفات مكررة. قد يسبب هذا في <anchor>مشاكل غير متوقعة</anchor> عند ارسال الرسالة.",
     "spoiler": "حجب",
     "componentTextTooLarge": "الرسائل المبنية على العناصر من الممكن ان تحتوي على {{maximum}} حروف كحد أقصى (حاليا {{count}} اكثر من الحد الأقصى)",
-    "charactersCount": "الحروف: <counter>{{current}}\\{{maximum}}</counter>"
+    "charactersCount": "الحروف: <counter>{{current}}\\{{maximum}}</counter>",
+    "copyId": "نسخ الاي دي",
+    "responsibleUserLink": "المستخدم المسؤول <anchor/>",
+    "indeterminable": "غير قابل للتحديد (صلاحيات محدودة)",
+    "takeResponsibility": "تحمل المسؤولية",
+    "saveAttachmentsTitle": "تجهيز مضيف الملفات",
+    "saveAttachmentsDescription": "يمكنك رفع مسودة المرفقات مباشرة الى خدمة مضيف الملفات لاستخدامهم في النسخ الاحتياطية او الرسائل التي تم مشاركتها. جميع الاعتمادات يتم حفظها على جهازك, و لكن يتم <privacy>معالجتها</privacy> عن طريق ديسكوهوك."
 }
