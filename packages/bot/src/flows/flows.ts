@@ -14,6 +14,7 @@ import {
   PermissionFlagsBits,
   type RESTError,
   type RESTGetAPIChannelResult,
+  RESTJSONErrorCodes,
   type RESTPostAPIChannelThreadsJSONBody,
   type RESTPostAPIChannelThreadsResult,
   type RESTPostAPIGuildForumThreadsJSONBody,
@@ -299,6 +300,12 @@ export const getResponsibleUser = async (
   };
 };
 
+interface MinimalAPIGuildChannel {
+  id: string;
+  type: ChannelType;
+  guild_id: string;
+}
+
 export const executeFlow = async (options: {
   env: Env;
   flow: Pick<DraftFlow, "actions">;
@@ -318,6 +325,7 @@ export const executeFlow = async (options: {
   responsibilityReason?: string;
   log?: FlowLogger;
   debug?: boolean;
+  channels?: MinimalAPIGuildChannel[];
 }): Promise<FlowResult> => {
   const {
     env,
@@ -336,6 +344,7 @@ export const executeFlow = async (options: {
     responsibilityReason,
     log: log_,
     debug: DEBUG = false,
+    channels = [],
   } = options;
   const log = log_ ?? new FlowLogger(recursion);
 
@@ -450,6 +459,92 @@ export const executeFlow = async (options: {
   const botHasManageRoles = ctx
     ? ctx.appPermissons.has(PermissionFlagsBits.ManageRoles)
     : null;
+
+  async function getChannel(
+    id: string,
+    quiet?: false,
+  ): Promise<MinimalAPIGuildChannel>;
+  async function getChannel(
+    id: string,
+    quiet: true,
+  ): Promise<MinimalAPIGuildChannel | null>;
+  async function getChannel(
+    id: string,
+    quiet = false,
+  ): Promise<MinimalAPIGuildChannel | null> {
+    if (id === ctx?.interaction.channel.id) {
+      return {
+        id: ctx.interaction.channel.id,
+        type: ctx.interaction.channel.type,
+        // we don't actually check this in any flow logic and we don't need it to know that it's ok to send to
+        guild_id: ctx.interaction.guild_id ?? "",
+      };
+    } else if (
+      liveVars.selected_resolved &&
+      "channels" in liveVars.selected_resolved
+    ) {
+      if (liveVars.selected_resolved.channels?.[id]) {
+        return {
+          id,
+          type: liveVars.selected_resolved.channels[id].type,
+          // as above, we don't actually need this. it's necessarily the same as the current guild
+          guild_id: ctx?.interaction.guild_id ?? "",
+        };
+      }
+    }
+
+    const channel = channels.find((c) => c.id === id);
+    if (channel) {
+      if (channel.guild_id !== liveVars.guild?.id) {
+        if (quiet) return null;
+        throw new FlowFailure(
+          `<#${channel.id}> is not part of the current server`,
+        );
+      }
+      return channel;
+    }
+
+    try {
+      // i would fetch all channels, but that would not return all threads.
+      // i would need to separately list all active threads, but that would exclude
+      // inactive threads. therefore, it's likely faster for most flows to fetch
+      // channels one by one. this is another thing that's going to be better when
+      // we eventually migrate to a persistent gateway based application
+      const channel = (await rest.get(
+        Routes.channel(id),
+      )) as RESTGetAPIChannelResult;
+      if ("guild_id" in channel && channel.guild_id) {
+        const minChannel: MinimalAPIGuildChannel = {
+          id: channel.id,
+          type: channel.type,
+          guild_id: channel.guild_id,
+        };
+        channels.push(minChannel);
+        if (minChannel.guild_id === liveVars.guild?.id) {
+          return minChannel;
+        } else if (!quiet) {
+          throw new FlowFailure(`<#${id}> is not part of the current server`);
+        }
+      } else if (!quiet) {
+        throw new FlowFailure(`<#${id}> is not a server channel`);
+      }
+    } catch (e) {
+      if (e instanceof FlowFailure) throw e;
+      if (isDiscordError(e)) {
+        if (
+          e.code === RESTJSONErrorCodes.MissingAccess ||
+          e.code === RESTJSONErrorCodes.MissingPermissions
+        ) {
+          if (quiet) return null;
+          throw new FlowFailure(`Bot cannot access <#${id}>`, e.rawError);
+        }
+        if (quiet) return null;
+        throw new FlowFailure(`Failed to resolve <#${id}>`, e.rawError);
+      }
+    }
+    if (quiet) return null;
+    throw new FlowFailure(`Could not find <#${id}>`);
+  }
 
   try {
     if (
@@ -650,6 +745,7 @@ export const executeFlow = async (options: {
               responsibleUser,
               log: log.level(recursion + 1),
               debug: DEBUG,
+              channels,
             });
             if (result.status === "success") {
               subActionsCompleted += action.then?.length ?? 0;
@@ -672,6 +768,7 @@ export const executeFlow = async (options: {
               responsibleUser,
               log: log.level(recursion + 1),
               debug: DEBUG,
+              channels,
             });
             if (result.status === "success") {
               subActionsCompleted += action.else?.length ?? 0;
@@ -682,18 +779,20 @@ export const executeFlow = async (options: {
           }
           break;
         }
-        case FlowActionType.SendMessage:
+        case FlowActionType.SendMessage: {
           if (!vars.channelId) {
             throw new FlowFailure(
               "No `channelId` variable was set, so the message could not be sent.",
             );
           }
+          const channel = await getChannel(vars.channelId as string);
           lastReturnValue = await executeSendMessage(
             action,
             rest,
             db,
-            vars as { channelId: string },
+            vars,
             liveVars,
+            channel,
             ctx,
             DEBUG,
           );
@@ -703,18 +802,17 @@ export const executeFlow = async (options: {
           );
           sentMessages[lastReturnValue.id] = {
             // prefer deleting with the interaction credentials
-            route: ctx
-              ? Routes.webhookMessage(
-                  ctx.interaction.application_id,
-                  ctx.interaction.token,
-                  lastReturnValue.id,
-                )
-              : Routes.channelMessage(
-                  vars.channelId as string,
-                  lastReturnValue.id,
-                ),
+            route:
+              ctx?.interaction.channel.id === channel.id
+                ? Routes.webhookMessage(
+                    ctx.interaction.application_id,
+                    ctx.interaction.token,
+                    lastReturnValue.id,
+                  )
+                : Routes.channelMessage(channel.id, lastReturnValue.id),
           };
           break;
+        }
         case FlowActionType.SendWebhookMessage: {
           const returned = await executeSendWebhookMessage(
             action,
@@ -985,10 +1083,9 @@ const executeSendMessage = async (
   action: FlowActionSendMessage,
   rest: REST,
   db: DBWithSchema,
-  setVars: {
-    channelId: string;
-  },
+  setVars: SetVariables,
   liveVars: LiveVariables,
+  channel: MinimalAPIGuildChannel,
   ctx?: InteractionContext<APIMessageComponentInteraction>,
   debug?: boolean,
 ): Promise<APIMessage> => {
@@ -1024,15 +1121,10 @@ const executeSendMessage = async (
       );
     }
 
-    if (
-      ctx &&
-      (!setVars.channelId ||
-        setVars.channelId === ctx.interaction.channel.id) &&
-      !ctx.isExpired()
-    ) {
+    if (ctx && channel.id === ctx.interaction.channel.id && !ctx.isExpired()) {
       message = await ctx.followup.send({ ...body, flags });
     } else {
-      message = (await rest.post(Routes.channelMessages(setVars.channelId), {
+      message = (await rest.post(Routes.channelMessages(channel.id), {
         body: { ...body, flags },
       })) as APIMessage;
     }
@@ -1047,7 +1139,7 @@ const executeSendWebhookMessage = async (
   action: FlowActionSendWebhookMessage,
   rest: REST,
   db: DBWithSchema,
-  vars: SetVariables,
+  setVars: SetVariables,
   liveVars: LiveVariables,
   env: Env,
   debug?: boolean,
@@ -1120,12 +1212,12 @@ const executeSendWebhookMessage = async (
     const { query, body } = await processQueryData(
       backup.data,
       liveVars,
-      vars,
+      setVars,
       action.backupMessageIndex,
     );
     query.set("wait", "true");
-    if (typeof vars.threadId === "string" && vars.threadId) {
-      query.set("thread_id", vars.threadId);
+    if (typeof setVars.threadId === "string" && setVars.threadId) {
+      query.set("thread_id", setVars.threadId);
     }
     const flags = Number(
       new MessageFlagsBitField(body.flags ?? 0, action.flags ?? 0).value,
