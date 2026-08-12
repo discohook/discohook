@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Popover } from "@base-ui/react/popover";
 import type { TFunction } from "~/types/i18next";
 import {
@@ -17,15 +18,32 @@ export const ColorPickerPopoverWithTrigger = ({
   value: number | null | undefined;
   onValueChange: (color: number | undefined) => void;
 }) => {
+  const [localValue, setLocalValue] = useState(value);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setLocalValue(value);
+    }
+  }, [value, isOpen]);
+
   return (
-    <Popover.Root>
+    <Popover.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open && localValue !== value) {
+          onValueChange(localValue ?? undefined);
+        }
+      }}
+    >
       <Popover.Trigger className="flex cursor-pointer text-start">
         <div className="grow">
           <p className="text-sm font-medium">{t("sidebarColor")}</p>
           <p className="rounded-lg border h-9 py-0 px-[14px] bg-white border-border-normal dark:bg-[#333338] dark:border-border-normal-dark">
             <span className="align-middle">
-              {typeof value === "number"
-                ? decimalToHex(value)
+              {typeof localValue === "number"
+                ? decimalToHex(localValue)
                 : t("clickToSet")}
             </span>
           </p>
@@ -34,7 +52,7 @@ export const ColorPickerPopoverWithTrigger = ({
           className="size-9 mt-auto rounded-lg ms-2 bg-gray-500"
           style={{
             backgroundColor:
-              typeof value === "number" ? decimalToHex(value) : undefined,
+              typeof localValue === "number" ? decimalToHex(localValue) : undefined,
           }}
         />
       </Popover.Trigger>
@@ -48,10 +66,14 @@ export const ColorPickerPopoverWithTrigger = ({
             <ColorPicker
               t={t}
               color={
-                typeof value === "number" ? decimalToRgb(value) : undefined
+                typeof localValue === "number" ? decimalToRgb(localValue) : undefined
               }
-              onChange={(color) => onValueChange(rgbToDecimal(color.rgb))}
-              onReset={() => onValueChange(undefined)}
+              onChange={(color) => setLocalValue(rgbToDecimal(color.rgb))}
+              onReset={() => {
+                setLocalValue(undefined);
+                onValueChange(undefined);
+                setIsOpen(false);
+              }}
             />
           </Popover.Popup>
         </Popover.Positioner>
