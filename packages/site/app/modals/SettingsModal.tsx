@@ -18,7 +18,12 @@ import type { i18n, TFunction } from "~/types/i18next";
 import { fileHosts } from "~/util/filehosts";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import { fileSize } from "~/util/text";
-import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+import {
+  Modal,
+  modalCloseButtonClassName,
+  type ModalProps,
+  PlainModalHeader,
+} from "./Modal";
 
 interface LanguageEntry {
   native: string;
@@ -808,15 +813,14 @@ const tabs: {
                 }
               }}
             />
-            {settings.messageDisplay === "compact" ? (
-              <Checkbox
-                label={t("compactAvatars")}
-                checked={settings.compactAvatars === true}
-                onCheckedChange={(checked) =>
-                  updateSettings({ compactAvatars: checked })
-                }
-              />
-            ) : null}
+            <Checkbox
+              label={t("compactAvatars")}
+              checked={settings.compactAvatars === true}
+              disabled={settings.messageDisplay !== "compact"}
+              onCheckedChange={(checked) =>
+                updateSettings({ compactAvatars: checked })
+              }
+            />
           </div>
         </div>
         <div className="mt-8">
@@ -1074,13 +1078,18 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
   }, [tab, props.open]);
 
   return (
-    <Modal {...props} className="min-h-full p-0 flex" parentClassName="h-full">
+    <Modal
+      {...props}
+      size="xl"
+      className="p-0 flex overflow-hidden"
+      parentClassName="md:h-[min(600px,calc(100vh_-_3rem))]"
+    >
       <div
         id="settings-sidebar"
         className={twJoin(
           "relative",
           tab ? "hidden md:flex" : "flex",
-          "w-full md:w-auto md:min-w-1/4 flex-col p-4 shrink-0",
+          "w-full md:w-auto md:min-w-1/4 flex-col p-4 shrink-0 overflow-y-auto",
           "md:border-e-2 border-e-gray-200 dark:border-e-transparent dark:bg-gray-800",
         )}
       >
@@ -1111,7 +1120,7 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
             </button>
           ))}
         </div>
-        <div className="mt-auto sticky bottom-4">
+        <div className="mt-4 md:mt-auto">
           <p className="text-muted dark:text-muted-dark text-xs">
             {t("settingsFooter")}
           </p>
@@ -1120,45 +1129,52 @@ export const SettingsModal = (props: ModalProps & { user?: User | null }) => {
       <div
         id="settings-content"
         className={twJoin(
-          tab ? undefined : "hidden md:block",
-          "grow w-full p-4 md:px-6",
+          tab ? "flex" : "hidden md:flex",
+          "grow flex-col min-w-0",
         )}
       >
-        {tab ? (
-          <div>
-            <button
-              type="button"
-              className={twJoin(
-                "flex md:hidden items-center gap-1.5 px-1.5 py-0.5 text-sm rounded-md",
-                "hover:bg-background-secondary dark:hover:bg-gray-800 transition-colors",
-                "text-muted dark:text-muted-dark",
-              )}
-              onClick={() => setTab(undefined)}
-            >
-              <CoolIcon icon="Chevron_Left" rtl="Chevron_Right" />
-              <p>{t("backToSettings")}</p>
-            </button>
-            <PlainModalHeader onClose={() => props.setOpen(false)}>
-              {t(tab.id)}
-            </PlainModalHeader>
-            <hr className="border-border-normal dark:border-border-normal-dark border rounded mb-4 -mt-1" />
+        <div className="shrink-0 flex items-start gap-3 px-6 pt-6 pb-4">
+          <button
+            type="button"
+            className={twJoin(
+              "flex md:hidden size-8 shrink-0 items-center justify-center rounded-lg",
+              "text-gray-500 hover:bg-black/5 hover:text-black dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white transition",
+            )}
+            onClick={() => setTab(undefined)}
+            aria-label={t("backToSettings")}
+          >
+            <CoolIcon
+              icon="Chevron_Left"
+              rtl="Chevron_Right"
+              className="text-xl"
+            />
+          </button>
+          <p className="min-w-0 grow truncate text-xl font-semibold leading-[1.2]">
+            {tab ? t(tab.id) : t("settings")}
+          </p>
+          <button
+            type="button"
+            className={modalCloseButtonClassName}
+            onClick={() => props.setOpen(false)}
+            aria-label="Close"
+          >
+            <CoolIcon icon="Close_MD" className="text-xl" />
+          </button>
+        </div>
+        <div className="grow min-h-0 p-6 overflow-y-auto">
+          {tab ? (
             <tab.content
               t={t}
               i18n={i18n}
               settings={settings}
               updateSettings={updateSettings}
             />
-          </div>
-        ) : (
-          <div>
-            <PlainModalHeader onClose={() => props.setOpen(false)}>
-              {t("settings")}
-            </PlainModalHeader>
+          ) : (
             <p className="text-muted dark:text-muted-dark">
               Nothing to see here.
             </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </Modal>
   );

@@ -17,21 +17,37 @@ export const DialogBackdrop = () => (
   <Dialog.Backdrop className={dialogBackdropClassName} />
 );
 
+export type ModalSize = "sm" | "md" | "lg" | "xl";
+
+const modalSizeClasses: Record<ModalSize, string> = {
+  sm: "max-w-[400px] max-h-[min(720px,calc(100vh_-_3rem))]",
+  md: "max-w-[480px] max-h-[min(800px,calc(100vh_-_3rem))]",
+  lg: "max-w-[680px] max-h-[calc(100vh_-_3rem)]",
+  xl: "max-w-[min(60rem,calc(100vw_-_3rem))] max-h-[calc(100vh_-_3rem)]",
+};
+
+const modalHeaderClassName = "flex items-start gap-3";
+const modalTitleClassName = "min-w-0 text-xl font-semibold leading-[1.2]";
+export const modalCloseButtonClassName =
+  "flex size-8 shrink-0 items-center justify-center rounded-lg -mt-4 -me-4 text-gray-500 hover:bg-black/5 hover:text-black dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white transition";
+
 export const DialogPortal: React.FC<
   React.PropsWithChildren<{
     title?: React.ReactNode;
     className?: string;
     parentClassName?: string;
+    size?: ModalSize;
   }>
-> = ({ title, children, className, parentClassName }) => (
+> = ({ title, children, className, parentClassName, size = "md" }) => (
   <Dialog.Portal>
     <DialogBackdrop />
     <Dialog.Popup
       className={twMerge(
         // position & size
         "box-border fixed z-[calc(31_-_var(--nested-dialogs))] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-        "w-screen sm:w-[32rem] md:w-3/4 max-w-[100vw] sm:max-w-[calc(100vw_-_3rem)] rounded-xl",
-        "max-h-[calc(100vh_-_8rem)] overflow-y-auto h-fit",
+        // 24px gutter on every side, then the size cap
+        "w-[calc(100vw_-_3rem)] h-fit flex flex-col overflow-hidden rounded-xl",
+        modalSizeClasses[size],
         // colors
         "bg-gray-50 text-black dark:bg-[#37373D] dark:text-gray-50",
         "outline outline-1 outline-border-normal dark:outline-border-normal-dark",
@@ -50,23 +66,28 @@ export const DialogPortal: React.FC<
       )}
     >
       {title ? (
-        <div className="px-5 py-3 bg-gray-200 dark:bg-gray-900 flex rounded-t-xl">
-          <div className="flex w-full">
-            <Dialog.Title className="text-xl font-bold my-auto">
-              {title}
-            </Dialog.Title>
-            <div className="flex justify-end ltr:ml-auto rtl:mr-auto">
-              <Dialog.Close>
-                <CoolIcon
-                  icon="Close_MD"
-                  className="text-2xl text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-gray-300 transition"
-                />
-              </Dialog.Close>
-            </div>
-          </div>
+        <div
+          className={twJoin(modalHeaderClassName, "shrink-0 px-6 pt-6 pb-4")}
+        >
+          <Dialog.Title className={twJoin(modalTitleClassName, "grow")}>
+            {title}
+          </Dialog.Title>
+          <Dialog.Close
+            aria-label="Close"
+            className={modalCloseButtonClassName}
+          >
+            <CoolIcon icon="Close_MD" className="text-xl" />
+          </Dialog.Close>
         </div>
       ) : null}
-      <div className={twMerge("p-5", className)}>{children}</div>
+      <div
+        className={twMerge(
+          "grow min-h-0 p-6 overflow-y-auto overflow-x-hidden",
+          className,
+        )}
+      >
+        {children}
+      </div>
     </Dialog.Popup>
   </Dialog.Portal>
 );
@@ -76,6 +97,7 @@ export const Modal: React.FC<
     title?: React.ReactNode;
     className?: string;
     parentClassName?: string;
+    size?: ModalSize;
   }
 > = (props) => (
   <Dialog.Root open={props.open} onOpenChange={props.setOpen}>
@@ -83,6 +105,7 @@ export const Modal: React.FC<
       title={props.title}
       className={props.className}
       parentClassName={props.parentClassName}
+      size={props.size}
     >
       {props.children}
     </DialogPortal>
@@ -93,15 +116,26 @@ export const PlainModalHeader: React.FC<
   React.PropsWithChildren & { onClose?: () => void }
 > = ({ children, onClose }) => (
   <div
-    className={twJoin("font-medium text-lg mb-2 w-full", "flex items-center")}
+    className={twJoin(
+      modalHeaderClassName,
+      "w-full px-6 pt-6 pb-4",
+      // Pin the header to the top of the modal body when it is the first element
+      "first:sticky first:-top-6 first:z-10 first:-mx-6 first:-mt-6",
+      "first:w-[calc(100%_+_3rem)]",
+      "first:bg-gray-50 dark:first:bg-[#37373D]",
+    )}
   >
-    <div className="flex">{children}</div>
+    <div className={twJoin(modalTitleClassName, "flex grow items-start")}>
+      {children}
+    </div>
     {onClose ? (
-      <button type="button" className="self-baseline ms-auto" onClick={onClose}>
-        <CoolIcon
-          icon="Close_MD"
-          className="text-2xl text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-gray-300 transition"
-        />
+      <button
+        type="button"
+        aria-label="Close"
+        className={modalCloseButtonClassName}
+        onClick={onClose}
+      >
+        <CoolIcon icon="Close_MD" className="text-xl" />
       </button>
     ) : null}
   </div>
@@ -112,7 +146,7 @@ export const ModalFooter: React.FC<
 > = ({ children, className }) => (
   <div
     className={twMerge(
-      "-m-5 mt-4 py-4 px-8 bg-background-secondary dark:bg-background-secondary-dark rounded-b-xl",
+      "sticky -bottom-6 z-10 -mx-6 -mb-6 mt-4 flex flex-wrap items-center justify-end gap-x-2 gap-y-4 px-6 pt-4 pb-6 bg-gray-50 dark:bg-[#37373D]",
       className,
     )}
   >

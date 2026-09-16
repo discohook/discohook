@@ -175,8 +175,10 @@ export const MessageBackupsModal = (
 
   const [editingBackup, setEditingBackup] = useState(false);
   return (
-    <Modal {...props}>
-      <PlainModalHeader>{t("backups")}</PlainModalHeader>
+    <Modal {...props} size="lg">
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("backups")}
+      </PlainModalHeader>
       <BackupEditModal
         open={editingBackup}
         setOpen={setEditingBackup}

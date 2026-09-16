@@ -15,8 +15,13 @@ export const Checkbox = (
     onCheckedChange?: MuiCheckbox.Root.Props["onCheckedChange"];
   },
 ) => (
-  <div>
-    <label className="flex items-center gap-2">
+  <div className={twJoin(props.disabled ? "opacity-50" : undefined)}>
+    <label
+      className={twJoin(
+        "flex items-center gap-2",
+        props.disabled ? "cursor-not-allowed" : "cursor-pointer",
+      )}
+    >
       <MuiCheckbox.Root
         className={(s) =>
           twJoin(
@@ -29,6 +34,7 @@ export const Checkbox = (
             s.focused
               ? "outline-2 outline-blue-430 outline-offset-2"
               : undefined,
+            s.disabled ? "cursor-not-allowed" : undefined,
           )
         }
         name={props.name}

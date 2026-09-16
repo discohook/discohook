@@ -55,7 +55,9 @@ export const MessageShareModal = (
 
   return (
     <Modal {...props}>
-      <PlainModalHeader>{t("shareMessage")}</PlainModalHeader>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("shareMessage")}
+      </PlainModalHeader>
       {error}
       <div className="flex">
         <div className="grow">
@@ -137,7 +139,6 @@ export const MessageShareModal = (
         <Button
           disabled={shareFetcher.state !== "idle" || !shareFetcher.data}
           onClick={shareFetcher.reset}
-          className="ms-2"
           discordstyle={ButtonStyle.Secondary}
         >
           {t("clear")}

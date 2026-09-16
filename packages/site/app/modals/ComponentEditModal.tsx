@@ -650,7 +650,7 @@ const FoundBackupsResolveModal = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Modal {...props}>
+    <Modal {...props} size="lg">
       <PlainModalHeader onClose={() => props.setOpen(false)}>
         {t("componentBackupsFound.modalTitle", {
           replace: { type: component?.type ?? ComponentType.Button },
@@ -761,7 +761,7 @@ export const ComponentEditModal = ({
   const [foundBackupsWarningOpen, setFoundBackupsWarningOpen] = useState(false);
 
   return (
-    <Modal {...props}>
+    <Modal {...props} size="lg">
       <PlainModalHeader onClose={() => props.setOpen(false)}>
         {t("editComponent")}
       </PlainModalHeader>

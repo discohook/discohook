@@ -20,7 +20,9 @@ export const MessageFlagsEditModal = (
 
   return (
     <Modal {...props}>
-      <PlainModalHeader>{t("flags")}</PlainModalHeader>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("flags")}
+      </PlainModalHeader>
       <div className="space-y-2">
         <p>{t("messageFlagsNote")}</p>
         {message

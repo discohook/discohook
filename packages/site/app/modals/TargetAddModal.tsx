@@ -963,8 +963,10 @@ export const TargetAddModal = (
   }, []);
 
   return (
-    <Modal {...props} setOpen={setOpen}>
-      <PlainModalHeader>{t(`addTarget.${targetType}`)}</PlainModalHeader>
+    <Modal {...props} setOpen={setOpen} size="lg">
+      <PlainModalHeader onClose={() => setOpen(false)}>
+        {t(`addTarget.${targetType}`)}
+      </PlainModalHeader>
       <div className="flex flex-col md:flex-row-reverse gap-4">
         {expMoreTargets ? (
           <div

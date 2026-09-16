@@ -93,7 +93,9 @@ export const BackupImportModal = (
 
   return (
     <Modal {...props}>
-      <PlainModalHeader>{t("importBackups")}</PlainModalHeader>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("importBackups")}
+      </PlainModalHeader>
       <InfoBox icon="Info">
         <Trans
           t={t}

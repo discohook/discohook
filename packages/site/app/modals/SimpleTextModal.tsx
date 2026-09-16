@@ -11,8 +11,12 @@ export const SimpleTextModal = (
 ) => {
   const { title, ...restProps } = props;
   return (
-    <Modal {...restProps}>
-      {title ? <PlainModalHeader>{title}</PlainModalHeader> : null}
+    <Modal {...restProps} size="sm">
+      {title ? (
+        <PlainModalHeader onClose={() => restProps.setOpen(false)}>
+          {title}
+        </PlainModalHeader>
+      ) : null}
       {props.children}
       <ModalFooter className="flex">
         <Button
