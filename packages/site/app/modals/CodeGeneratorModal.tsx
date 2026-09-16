@@ -50,8 +50,10 @@ export const CodeGeneratorModal = (props: ModalProps & CodeGeneratorProps) => {
   }, [library, props.data]);
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader>{t("codeGenerator")}</PlainModalHeader>
+    <Modal {...props} size="lg">
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("codeGenerator")}
+      </PlainModalHeader>
       <StringSelect
         label={t("library")}
         options={libraryOptions}

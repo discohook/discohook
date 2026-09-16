@@ -360,7 +360,7 @@ const AttachmentEditModal = (
 
   return (
     <Modal {...restProps}>
-      <PlainModalHeader>
+      <PlainModalHeader onClose={() => restProps.setOpen(false)}>
         {attachment ? transformFileName(attachment.filename) : "File"}
       </PlainModalHeader>
       {error}
@@ -533,7 +533,9 @@ const AttachmentUploadedModal = (
 
   return (
     <Modal {...restProps}>
-      <PlainModalHeader>File Uploaded</PlainModalHeader>
+      <PlainModalHeader onClose={() => restProps.setOpen(false)}>
+        File Uploaded
+      </PlainModalHeader>
       {uploaded ? (
         <p>
           Your message has been updated to use the direct URL to the file rather

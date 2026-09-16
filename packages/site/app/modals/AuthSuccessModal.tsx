@@ -7,7 +7,7 @@ export const AuthSuccessModal = (
   props: ModalProps & { user: User | undefined },
 ) => {
   return (
-    <Modal title="Success" {...props}>
+    <Modal title="Success" {...props} size="sm">
       {props.user && (
         <p>
           You are now logged in as{" "}

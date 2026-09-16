@@ -19,7 +19,7 @@ export const MessageSendModeModal = ({
   const { t } = useTranslation();
 
   return (
-    <Modal {...props}>
+    <Modal {...props} size="sm">
       <PlainModalHeader onClose={() => props.setOpen(false)}>
         {t("switchSendMode")}
       </PlainModalHeader>

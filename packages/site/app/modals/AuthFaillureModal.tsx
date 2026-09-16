@@ -6,7 +6,7 @@ import { Modal, type ModalProps } from "./Modal";
 export const AuthFailureModal = (props: ModalProps & { message?: string }) => {
   const { t } = useTranslation();
   return (
-    <Modal title="Failure" {...props}>
+    <Modal title="Failure" {...props} size="sm">
       <p>
         You have not been logged in. A few things might have happened, but here
         are some of the possibilities:

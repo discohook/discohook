@@ -140,7 +140,9 @@ export const TargetEditModal = (
         }
       }}
     >
-      <PlainModalHeader>{t("editWebhook")}</PlainModalHeader>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("editWebhook")}
+      </PlainModalHeader>
       {error}
       {uploadedAvatarSize !== null &&
       // https://developer.apple.com/forums/thread/701895 cites "500K", but I
@@ -389,7 +391,6 @@ export const TargetEditModal = (
           </Button>
           {computed?.secret ? (
             <Button
-              className="ms-2"
               discordstyle={ButtonStyle.Secondary}
               onClick={(e) =>
                 cycleCopyText(

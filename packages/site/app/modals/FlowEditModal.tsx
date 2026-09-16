@@ -121,7 +121,7 @@ export const FlowEditModal = (
   // by each FlowActionEditor to see if it has any errors pertaining to it
 
   return (
-    <Modal {...props}>
+    <Modal {...props} size="lg">
       <PlainModalHeader onClose={() => props.setOpen(false)}>
         {t("editFlow")}
       </PlainModalHeader>

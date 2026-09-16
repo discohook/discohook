@@ -60,7 +60,7 @@ export const JsonEditorModal = (
   }, [props.data]);
 
   return (
-    <Modal title={t("jsonEditor")} {...props}>
+    <Modal title={t("jsonEditor")} {...props} size="lg">
       {props.data !== undefined && error}
       <TextArea
         label=""

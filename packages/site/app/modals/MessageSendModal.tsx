@@ -443,8 +443,8 @@ export const MessageSendModal = (
   };
 
   return (
-    <Modal {...props} setOpen={setOpen}>
-      <PlainModalHeader>
+    <Modal {...props} setOpen={setOpen} size="lg">
+      <PlainModalHeader onClose={() => setOpen(false)}>
         {t("sendMessageN", { count: data.messages.length })}
       </PlainModalHeader>
       {resultModal ?? null}
@@ -590,8 +590,18 @@ export const MessageSendModal = (
         )}
       </div>
       <ModalFooter className="flex gap-2 flex-wrap">
+        <Dialog.Root>
+          <Dialog.Trigger className="contents">
+            <Button discordstyle={ButtonStyle.Secondary}>
+              {t("havingTrouble")}
+            </Button>
+          </Dialog.Trigger>
+          <DialogPortal>
+            <PlainModalHeader>{t("havingTrouble")}</PlainModalHeader>
+            <Dialog.Description>{t("troubleshootMessage")}</Dialog.Description>
+          </DialogPortal>
+        </Dialog.Root>
         <Button
-          className="me-auto"
           disabled={
             countSelected(selectedTargets) === 0 ||
             enabledMessagesCount === 0 ||
@@ -622,17 +632,6 @@ export const MessageSendModal = (
                     : "submit",
           )}
         </Button>
-        <Dialog.Root>
-          <Dialog.Trigger className="contents">
-            <Button discordstyle={ButtonStyle.Secondary}>
-              {t("havingTrouble")}
-            </Button>
-          </Dialog.Trigger>
-          <DialogPortal>
-            <PlainModalHeader>{t("havingTrouble")}</PlainModalHeader>
-            <Dialog.Description>{t("troubleshootMessage")}</Dialog.Description>
-          </DialogPortal>
-        </Dialog.Root>
       </ModalFooter>
     </Modal>
   );

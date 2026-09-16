@@ -18,7 +18,7 @@ export const BotDeleteConfirmModal = (
   const [matches, setMatches] = useState(false);
 
   return (
-    <Modal title={t("deleteBot.title")} {...props}>
+    <Modal title={t("deleteBot.title")} {...props} size="sm">
       <Form
         action={`/me/bots/${bot?.id}`}
         method="DELETE"

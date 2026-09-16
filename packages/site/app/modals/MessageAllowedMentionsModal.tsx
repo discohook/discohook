@@ -452,7 +452,9 @@ export const MessageAllowedMentionsModal = (
 
   return (
     <Modal {...props}>
-      <PlainModalHeader>{t("allowedMentions")}</PlainModalHeader>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("allowedMentions")}
+      </PlainModalHeader>
       <div className="space-y-2">
         {message && messageIndex !== undefined ? (
           <Inner

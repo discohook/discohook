@@ -9,7 +9,7 @@ export const ShareExpiredModal = (
   const { data } = props;
 
   return (
-    <Modal title={t("shareExpired")} {...props}>
+    <Modal title={t("shareExpired")} {...props} size="sm">
       {data && (
         <div>
           <p>{data.message}</p>

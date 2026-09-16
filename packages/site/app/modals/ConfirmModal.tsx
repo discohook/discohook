@@ -11,8 +11,10 @@ export const ConfirmModal = (
 ) => {
   const { title, children, ...rest } = props;
   return (
-    <Modal {...rest}>
-      <PlainModalHeader>{title}</PlainModalHeader>
+    <Modal {...rest} size="sm">
+      <PlainModalHeader onClose={() => rest.setOpen(false)}>
+        {title}
+      </PlainModalHeader>
       {children}
     </Modal>
   );

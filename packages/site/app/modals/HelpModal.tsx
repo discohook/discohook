@@ -92,7 +92,9 @@ export const HelpModal = (props: ModalProps) => {
 
   return (
     <Modal {...props}>
-      <PlainModalHeader>{t("help")}</PlainModalHeader>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("help")}
+      </PlainModalHeader>
       <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
       <TextInput
         label={t("search")}
