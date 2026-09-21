@@ -14,7 +14,6 @@ export interface Env {
   __STATIC_CONTENT: Fetcher;
   ASSETS: Fetcher;
   VERSION: WorkerVersionMetadata;
-  // __STATIC_CONTENT_MANIFEST: Object;
   SESSION_SECRET: string;
   TOKEN_SECRET: string;
   ENC_SECRET?: string;

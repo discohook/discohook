@@ -1,4 +1,13 @@
 import { Collapsible } from "@base-ui/react/collapsible";
+import {
+  ButtonStyle,
+  ComponentType,
+  RESTJSONErrorCodes,
+} from "discord-api-types/v10";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import { t } from "i18next";
+import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { LinksFunction, MetaFunction } from "react-router";
 import {
   isRouteErrorResponse,
@@ -10,15 +19,6 @@ import {
   useLoaderData,
   useRouteError,
 } from "react-router";
-import {
-  ButtonStyle,
-  ComponentType,
-  RESTJSONErrorCodes,
-} from "discord-api-types/v10";
-import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { t } from "i18next";
-import { useEffect, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next/react";
 import { ClientOnly } from "remix-utils/client-only";
 import { twJoin } from "tailwind-merge";

@@ -1,4 +1,3 @@
-import type { SerializeFrom } from "react-router";
 import {
   RouteBases,
   type APIApplication,
@@ -12,6 +11,7 @@ import {
 import { useReducer } from "react";
 import { apiUrl, BRoutes, type ApiRoute } from "~/api/routing";
 import type { loader as ApiGetGuildCacheable } from "~/api/v1/guilds.$guildId.cacheable";
+import type { SerializeFrom } from "~/util/loader";
 
 export type Resolutions = {
   [key: `channel:${string}`]: ResolvableAPIChannel | undefined | null;

@@ -1,6 +1,11 @@
-import { data as json, type MetaDescriptor, type MetaFunction, redirect, type SerializeFrom } from "react-router";
-import { useLoaderData } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
+import {
+  data as json,
+  type MetaDescriptor,
+  type MetaFunction,
+  redirect,
+  useLoaderData,
+} from "react-router";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { ZodOEmbedData } from "~/api/v1/oembed";
@@ -14,7 +19,7 @@ import {
 } from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
 import { LinkEmbedStrategy, type LinkQueryData } from "~/types/QueryData";
-import type { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs, SerializeFrom } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
 import { linkEmbedToAPIEmbed } from "./link";
