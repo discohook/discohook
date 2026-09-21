@@ -1,4 +1,3 @@
-import { data as json } from "react-router";
 import { z } from "zod/v3";
 import { getGeneric, getSessionManagerStub } from "~/store.server";
 import type { Env } from "~/types/env";
@@ -35,7 +34,7 @@ export class SessionManager implements DurableObject {
         if (expires) {
           await this.state.storage.setAlarm(new Date(expires));
         }
-        return json({}, 201);
+        return Response.json({}, { status: 201 });
       }
       case "PATCH": {
         const { data, expires } = await zxParseJson(request, {
@@ -52,22 +51,25 @@ export class SessionManager implements DurableObject {
         if (expires) {
           await this.state.storage.setAlarm(expires);
         }
-        return json({ data, expires }, 200);
+        return Response.json({ data, expires }, { status: 200 });
       }
       case "GET": {
         const data = await this.state.storage.get("data");
         if (!data) {
-          return json({ message: "No data" }, 404);
+          return Response.json({ message: "No data" }, { status: 404 });
         }
         // const alarm = await this.state.storage.getAlarm();
-        return json({ data });
+        return Response.json({ data });
       }
       case "DELETE": {
         await this.alarm();
         return new Response(null, { status: 204 });
       }
       default:
-        return json({ message: "Method Not Allowed" }, 405);
+        return Response.json(
+          { message: "Method Not Allowed" },
+          { status: 405 },
+        );
     }
   }
 
