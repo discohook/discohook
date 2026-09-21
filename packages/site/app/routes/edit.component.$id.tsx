@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
-import { json, redirect } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useLocation } from "@remix-run/react";
+import { data as json, redirect } from "react-router";
+import { Link, useLoaderData, useLocation } from "react-router";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,
@@ -22,7 +22,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
-import { canModifyComponent } from "~/api/v1/components.$id";
+import { canModifyComponent } from "~/api/v1/util/components.server";
 import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
@@ -41,7 +41,6 @@ import { Message } from "~/components/preview/Message.client";
 import { Prose } from "~/components/Prose";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
-import { submitMessage } from "~/modals/MessageSendModal";
 import {
   authorizeRequest,
   getEditorTokenStorage,
@@ -93,6 +92,7 @@ import {
 } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { isThreadMessage } from "~/util/message";
+import { submitMessage } from "~/util/submitMessage";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
@@ -1260,7 +1260,7 @@ export default () => {
   });
 
   return (
-    <div>
+    (<div>
       <FlowEditModal
         open={!!editingFlow}
         setOpen={() => setEditingFlow(undefined)}
@@ -1377,7 +1377,7 @@ export default () => {
                   };
 
                   return (
-                    <div
+                    (<div
                       key={`component-${row.type}-${i}`}
                       className="space-y-1"
                     >
@@ -1541,7 +1541,7 @@ export default () => {
                                             // Not a fan of this button; it's the
                                             // only "delete" button on the page;
                                             // the rest are trash icons.
-                                            <Button
+                                            (<Button
                                               discordstyle={ButtonStyle.Danger}
                                               onClick={() => {
                                                 row.components.splice(
@@ -1552,7 +1552,7 @@ export default () => {
                                               }}
                                             >
                                               {t("deleteRow")}
-                                            </Button>
+                                            </Button>)
                                           ) : null}
                                         </div>
                                       </div>
@@ -1630,7 +1630,7 @@ export default () => {
                           }}
                         />
                       ) : null}
-                    </div>
+                    </div>)
                   );
                 })}
             {!canAddRows ? (
@@ -1804,6 +1804,6 @@ export default () => {
           </p>
         )}
       </Prose>
-    </div>
+    </div>)
   );
 };

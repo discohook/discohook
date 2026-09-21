@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import {
   type APIGuildMember,
   OverwriteType,
@@ -7,7 +7,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import {
   authorizeRequest,
   getGuild,

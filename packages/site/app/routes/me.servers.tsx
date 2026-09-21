@@ -1,5 +1,5 @@
-import { json } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import { data as json } from "react-router";
+import { Link, useLoaderData, useSubmit } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";

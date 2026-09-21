@@ -1,4 +1,4 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "react-router";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,

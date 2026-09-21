@@ -1,7 +1,7 @@
 import { Avatar } from "@base-ui/react/avatar";
 import { Dialog } from "@base-ui/react/dialog";
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import type { SerializeFrom } from "react-router";
+import { Link, useLoaderData, useSearchParams } from "react-router";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   ButtonStyle,
@@ -387,13 +387,17 @@ export default function Index() {
   const meBackupsFetcher = useSafeFetcher<typeof MeBackupsLoader>({
     onError: setError,
   });
+  // don't enter failure loop
+  const meBackupsRequested = useRef(false);
   useEffect(() => {
     if (
       isLanding &&
       userId !== null &&
+      !meBackupsRequested.current &&
       meBackupsFetcher.state === "idle" &&
       !meBackupsFetcher.data
     ) {
+      meBackupsRequested.current = true;
       meBackupsFetcher.load(
         "/me/backups?_data=routes/me.backups&limit=10&sort=updatedAt.d",
       );
@@ -602,7 +606,10 @@ export default function Index() {
 
   const [targets, updateTargets] = useReducer(
     (d: TargetMap, partialD: Partial<TargetMap>) =>
-      ({ ...d, ...partialD }) as TargetMap,
+      (({
+        ...d,
+        ...partialD
+      }) as TargetMap),
     {},
   );
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");

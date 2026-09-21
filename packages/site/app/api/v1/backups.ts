@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { z } from "zod/v3";
 import { getUser, getUserId } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";

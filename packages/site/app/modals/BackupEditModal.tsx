@@ -1,14 +1,16 @@
-import { Form } from "@remix-run/react";
-import {
-  type CronFields,
-  type DayOfTheMonthRange,
-  type DayOfTheWeekRange,
-  fieldsToExpression,
-  type HourRange,
-  type MonthRange,
-  parseExpression,
-  type SixtyRange,
+import { Form } from "react-router";
+import type {
+  CronFields,
+  DayOfTheMonthRange,
+  DayOfTheWeekRange,
+  HourRange,
+  MonthRange,
+  SixtyRange,
 } from "cron-parser";
+// Default-imported because this CJS package isn't statically analyzable for
+// named exports under Vite's SSR module runner.
+import cronParser from "cron-parser";
+const { fieldsToExpression, parseExpression } = cronParser;
 import moment, { type Moment } from "moment";
 import { useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -94,7 +96,10 @@ const Inner = ({
 
   const [cron, updateCron] = useReducer(
     (d: CronFields, partialD: Partial<CronFields>) =>
-      ({ ...d, ...partialD }) as CronFields,
+      (({
+        ...d,
+        ...partialD
+      }) as CronFields),
     backup.cron
       ? parseExpression(backup.cron, { tz: backup.timezone ?? undefined })
           .fields

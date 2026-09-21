@@ -1,22 +1,15 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import type { SubmitOptions } from "@remix-run/react";
-import type {
-  ActionFunctionArgs as RRActionFunctionArgs,
-  LoaderFunctionArgs as RRLoaderFunctionArgs,
-} from "@remix-run/router";
 import { RESTJSONErrorCodes } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { t } from "i18next";
 import { useEffect, useState } from "react";
+import type {
+  AppLoadContext, ActionFunctionArgs as RRActionFunctionArgs,
+  LoaderFunctionArgs as RRLoaderFunctionArgs, SerializeFrom, SubmitOptions
+} from "react-router";
 import type { ZodError } from "zod";
-import type { Env } from "~/types/env";
 import { isErrorData, type RESTErrorWithContext } from "./discord";
 
-export interface Context {
-  origin: string;
-  env: Env;
-  waitUntil: ExecutionContext["waitUntil"];
-}
+export type Context = AppLoadContext;
 
 // We are specifically using these imports from @remix-run/router because the
 // adapter exports are not generic and we cannot pass Env like this.

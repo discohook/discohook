@@ -1,4 +1,4 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "react-router";
 import { getUserId } from "~/session.server";
 import { getDb } from "~/store.server";
 import type { LoaderArgs } from "~/util/loader";

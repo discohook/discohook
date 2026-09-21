@@ -1,13 +1,13 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import {
   type APIGuildMember,
   RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
+import { data as json } from "react-router";
 import { z } from "zod";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { injectErrorContext, isDiscordError } from "~/util/discord";
 import {

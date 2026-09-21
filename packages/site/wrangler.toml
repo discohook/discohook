@@ -1,9 +1,9 @@
 ##: schema https://github.com/cloudflare/workers-sdk/files/12887590/wrangler.schema.json
 
 name = "discohook-site"
-main = "./build/index.js"
-compatibility_date = "2023-04-20"
-node_compat = true
+main = "./server.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
 minify = true
 
 services = [

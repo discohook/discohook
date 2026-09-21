@@ -1,5 +1,5 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import { Await, Link } from "@remix-run/react";
+import type { SerializeFrom } from "react-router";
+import { Await, Link } from "react-router";
 import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiUrl, BRoutes } from "~/api/routing";

@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
-import { json, type SerializeFrom } from "@remix-run/cloudflare";
-import { Link, useLoaderData } from "@remix-run/react";
+import { data as json, type SerializeFrom } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";

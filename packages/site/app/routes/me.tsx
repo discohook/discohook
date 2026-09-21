@@ -1,10 +1,5 @@
-import type { MetaFunction } from "@remix-run/cloudflare";
-import {
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useNavigate,
-} from "@remix-run/react";
+import type { MetaFunction } from "react-router";
+import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";

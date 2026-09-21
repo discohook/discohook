@@ -1,5 +1,5 @@
 import type { DiscordErrorData } from "@discordjs/rest";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, useActionData } from "react-router";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
@@ -33,7 +33,7 @@ export const BotCreateModal = (props: ModalProps) => {
   }, [actionData, props.setOpen]);
 
   return (
-    <Modal title={t("createBot.title")} {...props}>
+    (<Modal title={t("createBot.title")} {...props}>
       <Form action="/me/bots" method="POST">
         {error}
         <div>
@@ -125,6 +125,6 @@ export const BotCreateModal = (props: ModalProps) => {
           </Button>
         </div>
       </Form>
-    </Modal>
+    </Modal>)
   );
 };

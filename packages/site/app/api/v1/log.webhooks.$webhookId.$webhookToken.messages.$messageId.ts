@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import {
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
@@ -11,7 +11,7 @@ import {
 import { notInArray } from "drizzle-orm";
 import { Snowflake } from "tif-snowflake";
 import { z } from "zod/v3";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import { getUser } from "~/session.server";
 import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import {

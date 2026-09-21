@@ -1,4 +1,4 @@
-import { RemixBrowser } from "@remix-run/react";
+import { HydratedRouter } from "react-router/dom";
 import structuredClone from "@ungap/structured-clone";
 import i18next from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
@@ -32,7 +32,7 @@ async function hydrate() {
       document,
       <I18nextProvider i18n={i18next}>
         <StrictMode>
-          <RemixBrowser />
+          <HydratedRouter />
         </StrictMode>
       </I18nextProvider>,
     );

@@ -1,4 +1,4 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "react-router";
 import { PermissionsBitField } from "discord-bitflag";
 import { z } from "zod/v3";
 import { zx } from "zodix";

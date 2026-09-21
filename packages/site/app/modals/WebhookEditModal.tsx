@@ -1,5 +1,5 @@
 import { calculateUserDefaultAvatarIndex } from "@discordjs/rest";
-import { Form, Link } from "@remix-run/react";
+import { Form, Link } from "react-router";
 import {
   ButtonStyle,
   type RESTError,
@@ -130,7 +130,7 @@ export const TargetEditModal = (
   );
 
   return (
-    <Modal
+    (<Modal
       {...props}
       setOpen={(o) => {
         props.setOpen(o);
@@ -343,7 +343,7 @@ export const TargetEditModal = (
                   />
                 ) : cache ? (
                   // @ts-expect-error
-                  <div style={{ "--font-size": "1rem" }}>
+                  (<div style={{ "--font-size": "1rem" }}>
                     {
                       // Don't resolve the channel unnecessarily
                       props.open && (
@@ -370,7 +370,7 @@ export const TargetEditModal = (
                         ]}
                       />
                     </p>
-                  </div>
+                  </div>)
                 ) : (
                   <p>ID: {target.webhook?.channel_id}</p>
                 )}
@@ -406,6 +406,6 @@ export const TargetEditModal = (
           ) : null}
         </ModalFooter>
       </Form>
-    </Modal>
+    </Modal>)
   );
 };

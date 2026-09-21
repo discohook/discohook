@@ -1,5 +1,5 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import type { SerializeFrom } from "react-router";
+import { Link, useLoaderData, useSearchParams } from "react-router";
 import {
   type APIEmbed,
   type APIEmbedImage,

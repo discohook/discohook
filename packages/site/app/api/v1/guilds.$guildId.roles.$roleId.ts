@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import {
   type APIRole,
   type RESTGetAPIGuildRolesResult,

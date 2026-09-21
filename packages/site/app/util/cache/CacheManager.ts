@@ -1,4 +1,4 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
+import type { SerializeFrom } from "react-router";
 import {
   RouteBases,
   type APIApplication,

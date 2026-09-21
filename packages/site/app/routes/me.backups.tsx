@@ -1,10 +1,5 @@
-import { json, type SerializeFrom } from "@remix-run/cloudflare";
-import {
-  Link,
-  useLoaderData,
-  useNavigation,
-  useSubmit,
-} from "@remix-run/react";
+import { data as json, type SerializeFrom } from "react-router";
+import { Link, useLoaderData, useNavigation, useSubmit } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
