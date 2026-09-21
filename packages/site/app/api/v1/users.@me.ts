@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { getSessionStorage, getUser } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";
 

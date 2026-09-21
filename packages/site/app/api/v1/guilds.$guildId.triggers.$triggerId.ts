@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { PermissionFlags } from "discord-bitflag";
 import { autoRollbackTx, getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";

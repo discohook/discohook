@@ -1,10 +1,5 @@
-import {
-  json,
-  type MetaDescriptor,
-  type MetaFunction,
-  type SerializeFrom,
-} from "@remix-run/cloudflare";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { data as json, type MetaDescriptor, type MetaFunction, type SerializeFrom } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import matter from "front-matter";
 import { z } from "zod/v3";
 import { Header } from "~/components/Header";

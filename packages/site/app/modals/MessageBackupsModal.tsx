@@ -1,5 +1,5 @@
 import { Avatar } from "@base-ui/react/avatar";
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -175,7 +175,7 @@ export const MessageBackupsModal = (
 
   const [editingBackup, setEditingBackup] = useState(false);
   return (
-    <Modal {...props}>
+    (<Modal {...props}>
       <PlainModalHeader>{t("backups")}</PlainModalHeader>
       <BackupEditModal
         open={editingBackup}
@@ -337,7 +337,7 @@ export const MessageBackupsModal = (
                     const key = `backup-${b.id}`;
                     return (
                       // biome-ignore lint/a11y/noStaticElementInteractions: can't wrap all of this in a button
-                      <div
+                      (<div
                         key={key}
                         className={twJoin(
                           "rounded-lg border border-border-normal dark:border-border-normal-dark bg-gray-200 dark:bg-gray-800 p-3 flex transition relative",
@@ -500,7 +500,7 @@ export const MessageBackupsModal = (
                               : "opacity-0 pointer-events-none",
                           )}
                         />
-                      </div>
+                      </div>)
                     );
                   })
               : Array(10)
@@ -526,6 +526,6 @@ export const MessageBackupsModal = (
           {t("logInToSaveBackups")}
         </Link>
       )}
-    </Modal>
+    </Modal>)
   );
 };

@@ -5,7 +5,7 @@
 // non-Mastodon sites (and, I think, https://rcombs.me for implementing the
 // functionality in the first place)
 
-import { json, redirect } from "@remix-run/cloudflare";
+import { data as json, redirect } from "react-router";
 import { getDb } from "~/store.server";
 import { LinkEmbedStrategy } from "~/types/QueryData";
 import type { LoaderArgs } from "~/util/loader";

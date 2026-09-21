@@ -1,4 +1,4 @@
-import { redirect } from "@remix-run/cloudflare";
+import { redirect } from "react-router";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { getDiscordAuth } from "~/auth-discord.server";

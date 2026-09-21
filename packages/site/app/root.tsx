@@ -1,17 +1,15 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import type { LinksFunction, MetaFunction } from "@remix-run/cloudflare";
-import { cssBundleHref } from "@remix-run/css-bundle";
+import type { LinksFunction, MetaFunction } from "react-router";
 import {
   isRouteErrorResponse,
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
   useRouteError,
-} from "@remix-run/react";
+} from "react-router";
 import {
   ButtonStyle,
   ComponentType,
@@ -31,8 +29,8 @@ import { codeStyle } from "./components/preview/Markdown";
 import { Message } from "./components/preview/Message.client";
 import getI18next from "./i18next.server";
 import { Cell } from "./routes/donate";
-import styles from "./styles/app.css";
-import icons from "./styles/coolicons.css";
+import styles from "./styles/app.css?url";
+import icons from "./styles/coolicons.css?url";
 import { isErrorData, type RESTErrorWithContext } from "./util/discord";
 import {
   getZodErrorMessage,
@@ -74,7 +72,6 @@ export const meta: MetaFunction = () => {
 };
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: styles },
   { rel: "stylesheet", href: icons },
   { rel: "manifest", href: "/manifest.json" },
@@ -142,7 +139,6 @@ export default function App() {
         </ClientOnly>
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   );

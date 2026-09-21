@@ -1,5 +1,8 @@
-import { json, type SerializeFrom } from "@remix-run/cloudflare";
-import { parseExpression } from "cron-parser";
+import { data as json, type SerializeFrom } from "react-router";
+// Default-imported because this CJS package isn't statically analyzable for
+// named exports under Vite's SSR module runner.
+import cronParser from "cron-parser";
+const { parseExpression } = cronParser;
 import { eq } from "drizzle-orm";
 import { z } from "zod/v3";
 import { zx } from "zodix";

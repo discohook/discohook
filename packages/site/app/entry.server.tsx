@@ -1,9 +1,5 @@
-import type {
-  ActionFunctionArgs,
-  EntryContext,
-  LoaderFunctionArgs,
-} from "@remix-run/cloudflare";
-import { isRouteErrorResponse, RemixServer } from "@remix-run/react";
+import type { ActionFunctionArgs, EntryContext, LoaderFunctionArgs } from "react-router";
+import { isRouteErrorResponse, ServerRouter } from "react-router";
 import type { Context } from "./util/loader";
 
 // i18n
@@ -18,7 +14,7 @@ export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
+  reactRouterContext: EntryContext,
   loadContext: Context,
 ) {
   const instance = createInstance();
@@ -35,7 +31,7 @@ export default async function handleRequest(
   let status = responseStatusCode;
   const body = await renderToReadableStream(
     <I18nextProvider i18n={instance}>
-      <RemixServer context={remixContext} url={request.url} />
+      <ServerRouter context={reactRouterContext} url={request.url} />
     </I18nextProvider>,
     {
       signal: request.signal,

@@ -3,11 +3,20 @@ import twemoji, {
   type TwemojiOptions,
 } from "@twemoji/api";
 import { memo } from "react";
-import {
-  LazyLoadImage,
-  type LazyLoadImageProps,
-} from "react-lazy-load-image-component";
+import * as LazyLoadImageNS from "react-lazy-load-image-component";
+import type { LazyLoadImageProps } from "react-lazy-load-image-component";
 import { twMerge } from "tailwind-merge";
+
+// This package's CJS module isn't statically analyzable for named exports,
+// so Vite's SSR module runner and client dep-optimizer resolve the interop
+// shape differently (namespace-with-default vs. namespace-with-named-props).
+// Check both instead of relying on either import style alone.
+const LazyLoadImage =
+  (
+    LazyLoadImageNS as unknown as {
+      default?: typeof LazyLoadImageNS;
+    }
+  ).default?.LazyLoadImage ?? LazyLoadImageNS.LazyLoadImage;
 
 const t = twemoji as TTwemoji;
 

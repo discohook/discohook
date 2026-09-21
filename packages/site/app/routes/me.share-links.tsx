@@ -1,5 +1,5 @@
-import { json } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import { data as json } from "react-router";
+import { Link, useLoaderData, useSubmit } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
@@ -12,7 +12,7 @@ import {
   getShareLink,
   getShareLinkExists,
   putShareLink,
-} from "~/durable/share-links";
+} from "~/durable/share-links.server";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import { shareLinks as dShareLinks, eq, getDb, inArray } from "~/store.server";

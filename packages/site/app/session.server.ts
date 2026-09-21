@@ -1,13 +1,5 @@
 import { REST } from "@discordjs/rest";
 import {
-  createCookie,
-  createCookieSessionStorage,
-  json,
-  redirect,
-  type SerializeFrom,
-  type Session,
-} from "@remix-run/cloudflare";
-import {
   type APIGuild,
   type APIGuildChannel,
   type APIGuildMember,
@@ -20,6 +12,15 @@ import {
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { type JWTPayload, jwtVerify, SignJWT } from "jose";
+import {
+  createCookie,
+  createCookieSessionStorage,
+  data as json,
+  redirect,
+  type SerializeFrom,
+  type Session,
+  type UNSAFE_DataWithResponseInit,
+} from "react-router";
 import { z } from "zod";
 import {
   discordMembers,
@@ -362,6 +363,13 @@ export type TokenWithUser = {
   user: User;
 };
 
+type AuthorizeRequestRespond = <
+  T extends Response | UNSAFE_DataWithResponseInit<D>,
+  D = unknown,
+>(
+  response: T,
+) => T;
+
 export async function authorizeRequest(
   request: Request,
   context: Context,
@@ -372,12 +380,7 @@ export async function authorizeRequest(
     // preventing a redirect to /auth/discord when it's not desired
     errorLoggedOut?: boolean;
   },
-): Promise<
-  [
-    token: Jsonify<TokenWithUser>,
-    respond: <T extends Response>(response: T) => T,
-  ]
-> {
+): Promise<[token: Jsonify<TokenWithUser>, respond: AuthorizeRequestRespond]> {
   let auth = request.headers.get("Authorization");
   const storage = getTokenStorage(context);
   const session = await storage.getSession(request.headers.get("Cookie"));
@@ -424,17 +427,25 @@ export async function authorizeRequest(
         user,
       }),
       (response) => {
+        let headers: Headers;
+        if (response instanceof Response) {
+          headers = response.headers;
+        } else {
+          response.init = response.init ?? {};
+          response.init.headers = new Headers(response.init.headers);
+          headers = response.init.headers;
+        }
         if (options?.headers) {
           for (const [k, v] of Object.entries(options.headers)) {
-            response.headers.append(k, v);
+            headers.append(k, v);
           }
         }
-        response.headers.set("Set-Cookie", committed);
+        headers.set("Set-Cookie", committed);
         return response;
       },
     ] satisfies [
       token: Jsonify<TokenWithUser>,
-      respond: <T extends Response>(response: T) => T,
+      respond: AuthorizeRequestRespond,
     ];
   };
 

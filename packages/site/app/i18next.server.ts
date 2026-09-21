@@ -1,4 +1,4 @@
-import { createCookie } from "@remix-run/cloudflare";
+import { createCookie } from "react-router";
 import { RemixI18Next } from "remix-i18next/server";
 import i18n from "~/i18n";
 import type { Context } from "./util/loader";

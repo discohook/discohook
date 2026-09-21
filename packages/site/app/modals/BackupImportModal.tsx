@@ -1,4 +1,4 @@
-import { Await, Link, useSubmit } from "@remix-run/react";
+import { Await, Link, useSubmit } from "react-router";
 import { Suspense, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";

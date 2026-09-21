@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { getDb } from "store";
 import { z } from "zod/v3";
 import { backups, makeSnowflake } from "~/store.server";

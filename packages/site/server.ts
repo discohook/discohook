@@ -1,20 +1,25 @@
-import type { AppLoadContext } from "@remix-run/cloudflare";
-import { createRequestHandler, json, logDevReady } from "@remix-run/cloudflare";
-import * as build from "@remix-run/dev/server-build";
+import { createRequestHandler } from "react-router";
 import { getRedis } from "~/store.server";
 import type { Env } from "~/types/env";
 
+declare module "react-router" {
+  interface AppLoadContext {
+    origin: string;
+    env: Env;
+    waitUntil: ExecutionContext["waitUntil"];
+  }
+}
+
 export { DurableDraftComponentCleaner } from "./app/durable/draft-components";
-export { RateLimiter } from "./app/durable/rate-limits";
+export { RateLimiter } from "./app/durable/rate-limits.server";
 export { DurableScheduler } from "./app/durable/scheduler";
 export { SessionManager } from "./app/durable/sessions";
-export { ShareLinks } from "./app/durable/share-links";
+export { ShareLinks } from "./app/durable/share-links.server";
 
-const handleRemixRequest = createRequestHandler(build, process.env.NODE_ENV);
-
-if (process.env.NODE_ENV === "development") {
-  logDevReady(build);
-}
+const handleRemixRequest = createRequestHandler(
+  () => import("virtual:react-router/server-build"),
+  import.meta.env.MODE,
+);
 
 export default {
   async fetch(
@@ -32,20 +37,18 @@ export default {
 
     try {
       const { origin, pathname } = new URL(request.url);
-      const loadContext: AppLoadContext = {
+      const response = await handleRemixRequest(request, {
         origin,
         env,
-        waitUntil: ctx.waitUntil,
-        // passThroughOnException: ctx.passThroughOnException,
-      };
-      const response = await handleRemixRequest(request, loadContext);
+        waitUntil: ctx.waitUntil.bind(ctx),
+      });
       if (
         pathname.startsWith("/api/") &&
         !response.headers.get("Content-Type")?.startsWith("application/json")
       ) {
         response.headers.delete("Content-Type");
         if (response.status === 404) {
-          return json(
+          return Response.json(
             { message: "Not Found" },
             {
               status: 404,

@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
-import { defer, json, redirect } from "@remix-run/cloudflare";
-import { Form, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import { defer, data as json, redirect } from "react-router";
+import { Form, useLoaderData, useNavigate, useSubmit } from "react-router";
 import {
   type APIApplication,
   type APIGuild,

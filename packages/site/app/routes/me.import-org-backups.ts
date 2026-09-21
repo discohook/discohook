@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/cloudflare";
+import { data as json, redirect } from "react-router";
 import { getUserId } from "~/session.server";
 import type { LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";

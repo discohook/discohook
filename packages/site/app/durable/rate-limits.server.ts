@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import type { BRoutes } from "~/api/routing";
 import { getUserId } from "~/session.server";
 import type { Env } from "~/types/env";

@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { getUser } from "~/session.server";
 import {
   autoRollbackTx,

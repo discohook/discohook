@@ -1,5 +1,5 @@
-import { json } from "@remix-run/cloudflare";
-import type { Params } from "@remix-run/react";
+import { data as json } from "react-router";
+import type { Params } from "react-router";
 import { isSnowflake } from "discord-snowflake";
 import {
   type output,

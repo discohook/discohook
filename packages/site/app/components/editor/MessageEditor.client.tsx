@@ -1,7 +1,7 @@
 import { Progress } from "@base-ui/react";
 import { Collapsible } from "@base-ui/react/collapsible";
 import { Select } from "@base-ui/react/select";
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import {
   type APITextDisplayComponent,
   ButtonStyle,
@@ -1289,7 +1289,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
     imageFiles.find((a) => a.is_thumbnail)?.id ?? null;
 
   return (
-    <Collapsible.Root
+    (<Collapsible.Root
       className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
       defaultOpen
     >
@@ -1741,7 +1741,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
           </div>
         </div>
       </Collapsible.Panel>
-    </Collapsible.Root>
+    </Collapsible.Root>)
   );
 };
 
@@ -1819,7 +1819,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
     channels.filter((c) => ["forum", "media"].includes(c.type)).length === 0;
 
   return (
-    <Collapsible.Root
+    (<Collapsible.Root
       className="group/message my-2 pt-2 pb-2 bg-[#EFEFF0] dark:bg-[#292b2f] border-y border-gray-400 dark:border-[#1E1F22]"
       defaultOpen
     >
@@ -1985,7 +1985,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
             const key = `${mid}-top-${i}`;
             return (
               // biome-ignore lint/a11y/noStaticElementInteractions: we can't nest all this in a button
-              <div
+              (<div
                 key={`top-level-component-${i}`}
                 className="relative"
                 onDragOver={() => drag?.setFocusKey(key)}
@@ -2021,7 +2021,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                     drag?.onDrop?.(mid, { path: [i] });
                   }}
                 />
-              </div>
+              </div>)
             );
           })}
         </div>
@@ -2197,6 +2197,6 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
           </div>
         </div>
       </Collapsible.Panel>
-    </Collapsible.Root>
+    </Collapsible.Root>)
   );
 };

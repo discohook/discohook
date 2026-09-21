@@ -1,4 +1,4 @@
-import { createCookie } from "@remix-run/cloudflare";
+import { createCookie } from "react-router";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import z from "zod/v3";
 import type { ActionArgs, Context } from "~/util/loader";

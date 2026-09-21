@@ -1,8 +1,7 @@
 import { REST } from "@discordjs/rest";
-import { parseExpression } from "cron-parser";
+import cronParser from "cron-parser";
 import { RESTJSONErrorCodes } from "discord-api-types/v10";
 import { z } from "zod/v3";
-import { submitMessage } from "~/modals/MessageSendModal";
 import {
   backups,
   eq,
@@ -15,7 +14,10 @@ import type { Env } from "~/types/env";
 import { TargetType } from "~/types/QueryData-raw";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { isDiscordError } from "~/util/discord";
+import { submitMessage } from "~/util/submitMessage";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";
+
+const { parseExpression } = cronParser;
 
 export class DurableScheduler implements DurableObject {
   constructor(

@@ -1,8 +1,5 @@
 import { REST } from "@discordjs/rest";
-import {
-  createCookie,
-  createCookieSessionStorage,
-} from "@remix-run/cloudflare";
+import { createCookie, createCookieSessionStorage } from "react-router";
 import type {
   APIUser,
   APIWebhook,

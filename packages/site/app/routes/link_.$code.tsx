@@ -1,11 +1,5 @@
-import {
-  json,
-  type MetaDescriptor,
-  type MetaFunction,
-  redirect,
-  type SerializeFrom,
-} from "@remix-run/cloudflare";
-import { useLoaderData } from "@remix-run/react";
+import { data as json, type MetaDescriptor, type MetaFunction, redirect, type SerializeFrom } from "react-router";
+import { useLoaderData } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";

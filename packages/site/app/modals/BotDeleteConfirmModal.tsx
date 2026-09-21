@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
