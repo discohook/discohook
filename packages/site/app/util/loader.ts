@@ -3,18 +3,24 @@ import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { t } from "i18next";
 import { useEffect, useState } from "react";
 import type {
-  AppLoadContext, ActionFunctionArgs as RRActionFunctionArgs,
-  LoaderFunctionArgs as RRLoaderFunctionArgs, SerializeFrom, SubmitOptions
+  AppLoadContext,
+  ActionFunctionArgs as RRActionFunctionArgs,
+  LoaderFunctionArgs as RRLoaderFunctionArgs,
+  SubmitOptions,
+  useLoaderData,
 } from "react-router";
 import type { ZodError } from "zod";
 import { isErrorData, type RESTErrorWithContext } from "./discord";
 
 export type Context = AppLoadContext;
 
-// We are specifically using these imports from @remix-run/router because the
-// adapter exports are not generic and we cannot pass Env like this.
+// Since RR7 move: this is kind of outdated and might warrant replacement.
+// we should be able to do this with a .d.ts module alone
 export type LoaderArgs = RRLoaderFunctionArgs<Context> & { context: Context };
 export type ActionArgs = RRActionFunctionArgs<Context> & { context: Context };
+
+// thanks https://github.com/remix-run/react-router/discussions/12417#discussioncomment-11512424
+export type SerializeFrom<T> = ReturnType<typeof useLoaderData<T>>;
 
 export const getZodErrorMessage = (e: any) => {
   if ("issues" in e) {

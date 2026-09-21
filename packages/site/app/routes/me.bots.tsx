@@ -1,8 +1,7 @@
 import { REST } from "@discordjs/rest";
-import { data as json, type SerializeFrom } from "react-router";
-import { Link, useLoaderData } from "react-router";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { data as json, Link, useLoaderData } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { Button } from "~/components/Button";
@@ -13,7 +12,7 @@ import { getUser, getUserId } from "~/session.server";
 import { customBots, desc, getDb, makeSnowflake } from "~/store.server";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, isDiscordError } from "~/util/discord";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import type { ActionArgs, LoaderArgs, SerializeFrom } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseQuery } from "~/util/zod";
 

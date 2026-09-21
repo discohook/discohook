@@ -1,4 +1,3 @@
-import type { SerializeFrom } from "react-router";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,
@@ -26,7 +25,7 @@ import type {
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MAX_ACTION_ROW_WIDTH } from "~/util/constants";
 import type { DragManager } from "~/util/drag";
-import { getZodErrorMessage } from "~/util/loader";
+import { getZodErrorMessage, type SerializeFrom } from "~/util/loader";
 import { ButtonSelect } from "../ButtonSelect";
 import { type SetErrorFunction, useError } from "../Error";
 import { CoolIcon, type CoolIconsGlyph } from "../icons/CoolIcon";

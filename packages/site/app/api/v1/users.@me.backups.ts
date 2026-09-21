@@ -1,7 +1,6 @@
-import type { SerializeFrom } from "react-router";
 import { getUserId } from "~/session.server";
 import { getDb } from "~/store.server";
-import type { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs, SerializeFrom } from "~/util/loader";
 import { getMessageText } from "~/util/message";
 
 export const loader = async ({ request, context }: LoaderArgs) => {

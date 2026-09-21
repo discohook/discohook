@@ -1,7 +1,6 @@
-import type { SerializeFrom } from "react-router";
-import { Await, Link } from "react-router";
 import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Await, Link } from "react-router";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { loader as ApiGetBackups } from "~/api/v1/backups";
 import { Button } from "~/components/Button";
@@ -12,6 +11,7 @@ import type {
   DiscohookBackup,
   DiscohookBackupExportDataWithBackups,
 } from "~/types/discohook";
+import type { SerializeFrom } from "~/util/loader";
 import { Modal, type ModalProps } from "./Modal";
 
 // https://github.com/discohook/site/blob/main/common/dom/downloadBlob.ts
