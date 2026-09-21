@@ -398,9 +398,7 @@ export default function Index() {
       !meBackupsFetcher.data
     ) {
       meBackupsRequested.current = true;
-      meBackupsFetcher.load(
-        "/me/backups?_data=routes/me.backups&limit=10&sort=updatedAt.d",
-      );
+      meBackupsFetcher.load("/me/backups?limit=10&sort=updatedAt.d");
     }
   }, [isLanding, userId, meBackupsFetcher]);
 
@@ -606,10 +604,10 @@ export default function Index() {
 
   const [targets, updateTargets] = useReducer(
     (d: TargetMap, partialD: Partial<TargetMap>) =>
-      (({
+      ({
         ...d,
-        ...partialD
-      }) as TargetMap),
+        ...partialD,
+      }) as TargetMap,
     {},
   );
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");

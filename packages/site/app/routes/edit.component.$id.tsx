@@ -1,6 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { data as json, redirect } from "react-router";
-import { Link, useLoaderData, useLocation } from "react-router";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,
@@ -19,13 +17,14 @@ import {
 import type { JWTPayload } from "jose";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { data as json, Link, redirect, useLoaderData, useLocation } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
-import { canModifyComponent } from "~/api/v1/util/components.server";
 import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
+import { canModifyComponent } from "~/api/v1/util/components.server";
 import { Button } from "~/components/Button";
 import { submitComponent } from "~/components/editor/ComponentEditor";
 import {
@@ -1171,7 +1170,8 @@ export default () => {
   const cache = useCache(false);
 
   const [submitState, setSubmitState] = useState<"idle" | "submitting">("idle");
-  const actionPath = `/edit/component/${component_.id}?_data=routes/edit.component.$id`;
+  const actionPath = `/edit/component/${component_.id}`;
+  const actionRouteId = "edit.component.$id";
   const fetcher = useSafeFetcher<typeof action>({ onError: setError });
   useEffect(
     () =>
@@ -1260,7 +1260,7 @@ export default () => {
   });
 
   return (
-    (<div>
+    <div>
       <FlowEditModal
         open={!!editingFlow}
         setOpen={() => setEditingFlow(undefined)}
@@ -1377,7 +1377,7 @@ export default () => {
                   };
 
                   return (
-                    (<div
+                    <div
                       key={`component-${row.type}-${i}`}
                       className="space-y-1"
                     >
@@ -1541,7 +1541,7 @@ export default () => {
                                             // Not a fan of this button; it's the
                                             // only "delete" button on the page;
                                             // the rest are trash icons.
-                                            (<Button
+                                            <Button
                                               discordstyle={ButtonStyle.Danger}
                                               onClick={() => {
                                                 row.components.splice(
@@ -1552,7 +1552,7 @@ export default () => {
                                               }}
                                             >
                                               {t("deleteRow")}
-                                            </Button>)
+                                            </Button>
                                           ) : null}
                                         </div>
                                       </div>
@@ -1630,7 +1630,7 @@ export default () => {
                           }}
                         />
                       ) : null}
-                    </div>)
+                    </div>
                   );
                 })}
             {!canAddRows ? (
@@ -1680,7 +1680,14 @@ export default () => {
                   console.error(e);
                 }
                 // Ensure that the component's durable object is up to date
-                fetcher.submit({}, { method: "PATCH", action: actionPath });
+                fetcher.submit(
+                  {},
+                  {
+                    method: "PATCH",
+                    action: actionPath,
+                    routeId: actionRouteId,
+                  },
+                );
               } else {
                 setSubmitState("idle");
               }
@@ -1719,7 +1726,11 @@ export default () => {
                       // path,
                       // initialPath,
                     },
-                    { method: "PATCH", action: actionPath },
+                    {
+                      method: "PATCH",
+                      action: actionPath,
+                      routeId: actionRouteId,
+                    },
                   );
                 }
               }}
@@ -1783,7 +1794,14 @@ export default () => {
                     // Tell the server that something changed and it needs to
                     // either fetch the message or ensure that the component's
                     // durable object is up to date
-                    fetcher.submit({}, { method: "PATCH", action: actionPath });
+                    fetcher.submit(
+                      {},
+                      {
+                        method: "PATCH",
+                        action: actionPath,
+                        routeId: actionRouteId,
+                      },
+                    );
                   } else {
                     setError({
                       message: result.data.message,
@@ -1804,6 +1822,6 @@ export default () => {
           </p>
         )}
       </Prose>
-    </div>)
+    </div>
   );
 };
