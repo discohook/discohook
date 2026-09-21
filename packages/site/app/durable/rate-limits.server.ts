@@ -1,4 +1,3 @@
-import { data as json } from "react-router";
 import type { BRoutes } from "~/api/routing";
 import { getUserId } from "~/session.server";
 import type { Env } from "~/types/env";
@@ -85,9 +84,9 @@ export const getBucket = async (
   const userId = await getUserId(request, context);
   const ip = request.headers.get("CF-Connecting-IP");
   if (!userId && !ip) {
-    throw json(
+    throw Response.json(
       { message: "Could not identify client (unauthorized & undetermined IP)" },
-      400,
+      { status: 400 },
     );
   }
   const idKey = userId ? `id:${userId}` : `ip:${ip}`;
@@ -146,13 +145,13 @@ export const getBucket = async (
     routeHeaders["X-RateLimit-Name"] = bucket;
 
     if (gMs > 0 && gMs > ms) {
-      throw json(body, {
+      throw Response.json(body, {
         status: 429,
         headers: globalHeaders,
       });
     }
     if (ms > 0) {
-      throw json(body, {
+      throw Response.json(body, {
         status: 429,
         headers: routeHeaders,
       });
@@ -169,7 +168,7 @@ export const getBucket = async (
   }
 
   if (gMs > 0) {
-    throw json(body, {
+    throw Response.json(body, {
       status: 429,
       headers: globalHeaders,
     });
@@ -223,7 +222,7 @@ export class RateLimiter implements DurableObject {
         milliseconds_to_next_request = 0;
       }
 
-      return json({
+      return Response.json({
         ms: milliseconds_to_next_request,
         bucket: this.bucket,
         remaining: this.tokens ?? 0,
