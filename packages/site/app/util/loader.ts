@@ -2,12 +2,13 @@ import { RESTJSONErrorCodes } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { t } from "i18next";
 import { useEffect, useState } from "react";
-import type {
-  AppLoadContext,
-  ActionFunctionArgs as RRActionFunctionArgs,
-  LoaderFunctionArgs as RRLoaderFunctionArgs,
-  SubmitOptions,
-  useLoaderData,
+import {
+  UNSAFE_decodeViaTurboStream,
+  type AppLoadContext,
+  type ActionFunctionArgs as RRActionFunctionArgs,
+  type LoaderFunctionArgs as RRLoaderFunctionArgs,
+  type SubmitOptions,
+  type useLoaderData,
 } from "react-router";
 import type { ZodError } from "zod";
 import { isErrorData, type RESTErrorWithContext } from "./discord";
@@ -98,6 +99,36 @@ const returnRawIf = (raw: unknown): string | undefined => {
   return stringified;
 };
 
+const getResponseRaw = async (
+  response: Response,
+  routeId: string | boolean = false,
+) => {
+  if (response.body === null) throw Error("No response body");
+  if (routeId) {
+    // i know this is marked as unsafe, but it's highly desirable in our
+    // workflow. it will be very obvious when it breaks, so such breakage
+    // likely won't make it to production
+    const result = await UNSAFE_decodeViaTurboStream(response.body, window);
+    await result.done;
+    const raw = result.value as Record<string, { data: unknown }>;
+    if (typeof routeId === "string") {
+      const id = routeId === "root" ? routeId : `routes/${routeId}`;
+      return raw[id].data;
+    }
+    const lastKey = Object.keys(raw).slice(-1)[0];
+    return raw[lastKey].data;
+  }
+  return await response.json();
+};
+
+type SafeFetcherSubmitOptions = Pick<SubmitOptions, "action" | "method"> & {
+  /**
+   * if this is an action (not an API route), the route ID to return data for.
+   * if not provided, picks the last keyed item automatically.
+   */
+  routeId?: string;
+};
+
 export const useSafeFetcher = <TData = any>({
   onError,
 }: {
@@ -108,14 +139,22 @@ export const useSafeFetcher = <TData = any>({
   return {
     data,
     state,
-    load: ((href) => {
+    load: ((href, routeId?: string) => {
       setState("loading");
-      // TODO determine appropriate route for `_data` query param
-      // This data is passed to the client by Remix somewhere
-      fetch(href, { method: "GET" })
+
+      const url = new URL(href, origin);
+      const isLoader =
+        routeId !== undefined || !url.pathname.startsWith("/api/");
+      if (isLoader) url.pathname += ".data";
+
+      fetch(url, { method: "GET" })
         .then((response) => {
-          response
-            .json()
+          // not sure what we should do here
+          if (response.body === null) {
+            setState("idle");
+            return;
+          }
+          getResponseRaw(response, routeId || isLoader)
             .then((raw) => {
               if (!response.ok) {
                 if (onError) {
@@ -142,11 +181,16 @@ export const useSafeFetcher = <TData = any>({
           throw e;
         });
     }) as (href: string) => void,
-    loadAsync: (async (href) => {
+    loadAsync: (async (href, routeId?: string) => {
       setState("loading");
       try {
-        const response = await fetch(href, { method: "GET" });
-        const raw = await response.json();
+        const url = new URL(href, origin);
+        const isLoader =
+          routeId !== undefined || !url.pathname.startsWith("/api/");
+        if (isLoader) url.pathname += ".data";
+
+        const response = await fetch(url, { method: "GET" });
+        const raw = await getResponseRaw(response, routeId || isLoader);
         if (!response.ok) {
           if (onError) {
             onError({
@@ -179,9 +223,12 @@ export const useSafeFetcher = <TData = any>({
         headers.set("Content-Type", "application/json");
       }
 
-      // TODO determine appropriate route for `_data` query param
-      // This data is passed to the client by Remix somewhere
-      fetch(options?.action ?? window.location.href, {
+      const url = new URL(options?.action ?? window.location.href, origin);
+      const isLoader =
+        options?.routeId !== undefined || !url.pathname.startsWith("/api/");
+      if (isLoader) url.pathname += ".data";
+
+      fetch(url, {
         method: options?.method ?? "POST",
         body:
           headers.get("Content-Type") === "application/json"
@@ -195,9 +242,11 @@ export const useSafeFetcher = <TData = any>({
             return;
           }
           const contentType = response.headers.get("Content-Type");
-          if (contentType?.trim().startsWith("application/json")) {
-            response
-              .json()
+          if (
+            contentType?.trim().startsWith("application/json") ||
+            (contentType === "text/x-script" && isLoader)
+          ) {
+            getResponseRaw(response, options?.routeId || isLoader)
               .then((raw) => {
                 if (!response.ok) {
                   if (onError) {
@@ -228,7 +277,7 @@ export const useSafeFetcher = <TData = any>({
         });
     }) as (
       target: FormData | URLSearchParams | any,
-      options?: Pick<SubmitOptions, "action" | "method">,
+      options?: SafeFetcherSubmitOptions,
     ) => void,
     submitAsync: (async (target, options) => {
       setState("submitting");
@@ -243,7 +292,12 @@ export const useSafeFetcher = <TData = any>({
       }
 
       try {
-        const response = await fetch(options?.action ?? window.location.href, {
+        const url = new URL(options?.action ?? window.location.href, origin);
+        const isLoader =
+          options?.routeId !== undefined || !url.pathname.startsWith("/api/");
+        if (isLoader) url.pathname += ".data";
+
+        const response = await fetch(url, {
           method: options?.method ?? "POST",
           body:
             headers.get("Content-Type") === "application/json"
@@ -253,7 +307,10 @@ export const useSafeFetcher = <TData = any>({
         });
 
         if (!response.ok) {
-          const raw = await response.json();
+          const raw = await getResponseRaw(
+            response,
+            options?.routeId || isLoader,
+          );
           if (onError) {
             onError({
               status: response.status,
@@ -269,8 +326,14 @@ export const useSafeFetcher = <TData = any>({
           return undefined;
         }
         const resContentType = response.headers.get("Content-Type");
-        if (resContentType?.trim().startsWith("application/json")) {
-          const raw = await response.json();
+        if (
+          resContentType?.trim().startsWith("application/json") ||
+          (resContentType === "text/x-script" && isLoader)
+        ) {
+          const raw = await getResponseRaw(
+            response,
+            options?.routeId || isLoader,
+          );
           const responseData = raw as SerializeFrom<TData>;
           setData(responseData);
           setState("idle");
@@ -283,7 +346,7 @@ export const useSafeFetcher = <TData = any>({
       }
     }) as (
       target: FormData | URLSearchParams | any,
-      options?: Pick<SubmitOptions, "action" | "method">,
+      options?: SafeFetcherSubmitOptions,
     ) => Promise<SerializeFrom<TData>>,
     /**
      * Beware of making it possible to spam concurrent requests
