@@ -10,7 +10,6 @@
     "deploy": "CLOUDFLARE_ENV=production vite build && vite build --ssr server.ts && wrangler deploy",
     "deploy-preview": "CLOUDFLARE_ENV=preview vite build && vite build --ssr server.ts && wrangler deploy",
     "dev": "vite dev",
-    "start": "wrangler dev ./build/server/index.js --ip=0.0.0.0 --port=8788 --persist-to=../../persistence",
     "typecheck": "tsc",
     "generate-help": "node scripts/generate-help.js",
     "generate-emoji": "node scripts/generate-emoji.js",
