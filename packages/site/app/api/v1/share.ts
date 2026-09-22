@@ -6,7 +6,7 @@ import { putShareLink } from "~/durable/share-links.server";
 import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
 import { ZodQueryData } from "~/types/QueryData";
-import type { ActionArgs } from "~/util/loader";
+import { jsonR, type ActionArgs } from "~/util/loader";
 import { zxParseJson } from "~/util/zod";
 
 const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
@@ -14,13 +14,13 @@ const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 export const action = async ({ request, context }: ActionArgs) => {
   const contentLength = Number(request.headers.get("Content-Length"));
   if (!contentLength || Number.isNaN(contentLength)) {
-    throw json({ message: "Must provide Content-Length header." }, 400);
+    throw jsonR({ message: "Must provide Content-Length header." }, 400);
   }
   if (contentLength > 25690112) {
     // Just under 24.5 MiB. This is what it is because the KV limit for values
     // was 25 MiB, but we no longer use KV. In theory we could make this larger
     // but there is little reason to.
-    throw json({ message: "Data is too large (max. ~24 MiB)." });
+    throw jsonR({ message: "Data is too large (max. ~24 MiB)." });
   }
 
   const {

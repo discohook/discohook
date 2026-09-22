@@ -1,7 +1,6 @@
-import { data as json } from "react-router";
 import { z } from "zod/v3";
 import { ZodCryptoAlert } from "~/types/crypto";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
 export const action = async ({ request, params, context }: LoaderArgs) => {
@@ -12,7 +11,7 @@ export const action = async ({ request, params, context }: LoaderArgs) => {
     !context.env.CRYPTO_ALERTS_TOKEN ||
     token !== context.env.CRYPTO_ALERTS_TOKEN
   ) {
-    throw json({ message: "Invalid or missing token" }, 400);
+    throw jsonR({ message: "Invalid or missing token" }, 400);
   }
 
   const data = await request.json();

@@ -4,7 +4,7 @@ import { z } from "zod/v3";
 import { backups, makeSnowflake } from "~/store.server";
 import { ZodDiscohookBackup } from "~/types/discohook";
 import type { Env } from "~/types/env";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
 import { getUserAvatar } from "~/util/users";
 import { findMessagesPreviewImageUrl } from "./backups";
 
@@ -18,11 +18,11 @@ const getCorsHeaders = (origin?: string): Record<string, string> => {
 
 const verifyToken = async (request: Request, kv: Env["KV"]) => {
   const token = request.headers.get("X-Discohook-Pixiedust");
-  if (!token) throw json({ message: "No token provided." }, 401);
+  if (!token) throw jsonR({ message: "No token provided." }, 401);
 
   const data = await kv.get<{ userId: string }>(`magic-token-${token}`, "json");
   if (!data)
-    throw json(
+    throw jsonR(
       {
         message:
           "Invalid or expired session. Go back to the previous page and try again.",
@@ -63,7 +63,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     },
   });
   if (!user) {
-    throw json(
+    throw jsonR(
       { message: "The user associated with this token no longer exists." },
       { status: 404, headers: getCorsHeaders(context.env.LEGACY_ORIGIN) },
     );
@@ -101,7 +101,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     })
     .safeParseAsync(await request.json());
   if (!parsed.success) {
-    throw json(
+    throw jsonR(
       { message: "Bad request", error: parsed.error.format() },
       { status: 400, headers: getCorsHeaders(context.env.LEGACY_ORIGIN) },
     );

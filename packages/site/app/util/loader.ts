@@ -385,3 +385,10 @@ export const useApiLoader = <L = any, T = Awaited<SerializeFrom<L>>>(
 
   return data;
 };
+
+// generic throwable version of `json` (returns an actual response)
+export const jsonR = <D>(
+  data: D,
+  init?: number | ResponseInit | undefined,
+): Response =>
+  Response.json(data, typeof init === "number" ? { status: init } : init);

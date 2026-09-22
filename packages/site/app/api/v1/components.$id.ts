@@ -1,5 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { data as json } from "react-router";
 import {
   type APIMessage,
   ButtonStyle,
@@ -7,7 +6,11 @@ import {
   RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
-import { canModifyComponent, getWebhook } from "~/api/v1/util/components.server";
+import { data as json } from "react-router";
+import {
+  canModifyComponent,
+  getWebhook,
+} from "~/api/v1/util/components.server";
 import {
   getActionRowComponentPath,
   removeEmptyActionRows,
@@ -17,6 +20,7 @@ import {
   authorizeRequest,
   doubleDecode,
   getEditorTokenStorage,
+  type TokenWithUser,
   type User,
   verifyToken,
 } from "~/session.server";
@@ -33,7 +37,7 @@ import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { hasGuildOnlyActions, refineZodDraftFlowMax } from "~/types/flows";
 import { APIComponentInMessageActionRow } from "~/types/QueryData";
 import { isComponentsV2, isDiscordError } from "~/util/discord";
-import type { ActionArgs } from "~/util/loader";
+import { type ActionArgs, jsonR } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
@@ -94,7 +98,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       context.origin,
     );
     if (payload.scp !== "editor") {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     if (!payload.sub) throw e;
     const subject = JSON.parse(payload.sub) as {

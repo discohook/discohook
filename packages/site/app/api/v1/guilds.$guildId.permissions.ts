@@ -1,11 +1,11 @@
 import { REST } from "@discordjs/rest";
-import { data as json } from "react-router";
 import {
   type APIGuildMember,
   RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import { data as json } from "react-router";
 import { getBucket } from "~/durable/rate-limits.server";
 import {
   authorizeRequest,
@@ -14,7 +14,7 @@ import {
   type TokenGuildPermissions,
 } from "~/session.server";
 import { injectErrorContext, isDiscordError } from "~/util/discord";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
@@ -43,7 +43,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       guild = await getGuild(guildId, rest, context.env);
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -54,7 +54,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           e.status,
         );
       }
-      throw json({ message: `Failed to fetch server: ${String(e)}` }, 500);
+      throw jsonR({ message: `Failed to fetch server: ${String(e)}` }, 500);
     }
   }
 
