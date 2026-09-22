@@ -1,4 +1,3 @@
-import { data as json } from "react-router";
 // Default-imported because this CJS package isn't statically analyzable for
 // named exports under Vite's SSR module runner.
 import cronParser from "cron-parser";
@@ -7,9 +6,14 @@ import { z } from "zod/v3";
 import { zx } from "zodix";
 import { doubleDecode, getUserId } from "~/session.server";
 import { backups, getDb } from "~/store.server";
-import { type QueryData, ZodQueryData } from "~/types/QueryData";
+import { ZodQueryData, type QueryData } from "~/types/QueryData";
 import { onlyActionRows } from "~/util/discord";
-import type { ActionArgs, LoaderArgs, SerializeFrom } from "~/util/loader";
+import {
+  jsonR,
+  type ActionArgs,
+  type LoaderArgs,
+  type SerializeFrom,
+} from "~/util/loader";
 import {
   snowflakeAsString,
   zxParseJson,
@@ -45,7 +49,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     },
   });
   if (!backup || backup.ownerId !== userId) {
-    throw json(
+    throw jsonR(
       { message: "No backup with that ID or you do not own it." },
       404,
     );
@@ -147,7 +151,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     },
   });
   if (!backup || backup.ownerId !== userId) {
-    throw json(
+    throw jsonR(
       { message: "No backup with that ID or you do not own it." },
       404,
     );
@@ -160,7 +164,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
 
   const targets = data ? data.targets : backup.data.targets;
   if (isScheduled && (!targets || targets.length === 0)) {
-    throw json(
+    throw jsonR(
       {
         message:
           "This backup does not have any targets, so it cannot be scheduled. Edit the backup and add a webhook.",

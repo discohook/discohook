@@ -1,5 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { data as json } from "react-router";
 import {
   type RESTGetAPIWebhookWithTokenResult,
   RESTJSONErrorCodes,
@@ -8,11 +7,12 @@ import {
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
+import { data as json } from "react-router";
 import { z } from "zod/v3";
 import { and, count, eq, getDb, githubPosts } from "~/store.server";
 import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import { getWebhook, isDiscordError } from "~/util/discord";
-import type { ActionArgs } from "~/util/loader";
+import { type ActionArgs, jsonR } from "~/util/loader";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
 type GitHubType = typeof githubPosts.type._.data;
@@ -46,7 +46,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     } catch (e) {
       if (isDiscordError(e)) {
         if (e.code === RESTJSONErrorCodes.UnknownWebhook) {
-          throw json(e.rawError, 404);
+          throw jsonR(e.rawError, 404);
         }
       }
       throw e;
@@ -62,7 +62,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       .from(githubPosts)
       .where(deleteWhere);
     if (records === 0) {
-      throw json(
+      throw jsonR(
         {
           message:
             "No records to delete. Records are keyed by channel ID, so if you have moved this webhook, its channel ID may no longer be the same one that is stored. If the channel was deleted and you want to remove its records, contact support.",
@@ -76,15 +76,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   }
 
   if (request.method !== "POST") {
-    throw json({ message: "Method not allowed" }, 405);
+    throw jsonR({ message: "Method not allowed" }, 405);
   }
   const ua = request.headers.get("User-Agent");
   if (!ua?.startsWith("GitHub-Hookshot/")) {
-    throw json({ message: "Invalid user agent." }, 400);
+    throw jsonR({ message: "Invalid user agent." }, 400);
   }
   const ct = request.headers.get("Content-Type");
   if (!ct?.startsWith("application/json")) {
-    throw json({ message: "Invalid content type." }, 400);
+    throw jsonR({ message: "Invalid content type." }, 400);
   }
   const eventType = request.headers.get("X-GitHub-Event");
   if (
@@ -103,7 +103,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       // "commit_comment",
     ].includes(eventType)
   ) {
-    throw json({ message: "Unsupported event." }, 400);
+    throw jsonR({ message: "Unsupported event." }, 400);
   }
 
   const { webhookId, webhookToken } = zxParseParams(params, {
@@ -163,7 +163,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       break;
   }
   if (githubId === undefined || !githubType || !repository) {
-    throw json({ message: "Could not resolve resource details" }, 404);
+    throw jsonR({ message: "Could not resolve resource details" }, 404);
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
@@ -241,5 +241,5 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     return response;
   }
 
-  throw json({ message: "No path" }, 400);
+  throw jsonR({ message: "No path" }, 400);
 };

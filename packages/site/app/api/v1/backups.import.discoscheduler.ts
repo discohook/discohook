@@ -1,22 +1,21 @@
-import { data as json } from "react-router";
 import { getUser } from "~/session.server";
 import {
   autoRollbackTx,
   backups,
   getDb,
   inArray,
-  ScheduledRunStatus,
   scheduled_posts,
+  ScheduledRunStatus,
 } from "~/store.server";
 import type { QueryData } from "~/types/QueryData";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs } from "~/util/loader";
 import { findMessagesPreviewImageUrl } from "./backups";
 
 export const action = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context, true);
   const discordId = user.discordId;
   if (discordId === null) {
-    throw json({ message: "You have no linked Discord account" }, 400);
+    throw jsonR({ message: "You have no linked Discord account" }, 400);
   }
 
   const db = getDb(context.env.HYPERDRIVE);

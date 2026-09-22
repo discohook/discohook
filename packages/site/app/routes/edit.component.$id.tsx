@@ -17,7 +17,13 @@ import {
 import type { JWTPayload } from "jose";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { data as json, Link, redirect, useLoaderData, useLocation } from "react-router";
+import {
+  data as json,
+  Link,
+  redirect,
+  useLoaderData,
+  useLocation,
+} from "react-router";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
@@ -86,6 +92,7 @@ import {
 } from "~/util/discord";
 import {
   type ActionArgs,
+  jsonR,
   type LoaderArgs,
   useSafeFetcher,
 } from "~/util/loader";
@@ -206,7 +213,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
   });
   if (!component) {
-    throw json({ message: "Unknown Component" }, 404);
+    throw jsonR({ message: "Unknown Component" }, 404);
   }
   if (needUserAuth && !user) {
     throw redirect(redirectUrl);
@@ -225,7 +232,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         errorLoggedOut: false,
       });
     } catch {
-      throw json(
+      throw jsonR(
         { message: "You do not have edit access to this component." },
         403,
       );
@@ -257,7 +264,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       )) as APIMessage;
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           injectErrorContext(e.rawError, {
             guildId: component.guildId ?? undefined,
             channelId: component.channelId,
@@ -269,7 +276,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         );
       }
       console.error(e);
-      throw json({ message: "Failed to fetch message" }, 500);
+      throw jsonR({ message: "Failed to fetch message" }, 500);
     }
     if (isThreadMessage(msg)) {
       threadId = msg.channel_id;
@@ -312,21 +319,21 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       // This is because users logged in regularly (technically a different
       // sort of flow) are permitted to edit directly from the frontend,
       // saving us a Discord request and storage interaction.
-      throw json({ message: "`components` required when using `token`" }, 400);
+      throw jsonR({ message: "`components` required when using `token`" }, 400);
     }
 
     let payload: JWTPayload;
     try {
       ({ payload } = await verifyToken(token, context.env, context.origin));
     } catch {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     if (payload.scp !== "editor" || !payload.sub) {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     const subject = JSON.parse(payload.sub) as KVComponentEditorState;
     if (!subject.componentId || BigInt(subject.componentId) !== id) {
-      throw json({ message: "Missing access to this component" }, 403);
+      throw jsonR({ message: "Missing access to this component" }, 403);
     }
 
     tokenData = subject;
@@ -358,7 +365,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         },
       });
       if (!component) {
-        throw json({ message: "Unknown Component" }, 404);
+        throw jsonR({ message: "Unknown Component" }, 404);
       }
       if (
         user &&
@@ -374,7 +381,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             errorLoggedOut: false,
           });
         } catch {
-          throw json(
+          throw jsonR(
             { message: "You do not have edit access to this component." },
             403,
           );
@@ -394,7 +401,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
       }
       if (!component.channelId || !component.messageId) {
-        throw json(
+        throw jsonR(
           {
             message: "Cannot use this route to modify a message-less component",
           },
@@ -417,7 +424,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           if (e.code === RESTJSONErrorCodes.UnknownMessage) {
             // TODO: delete records and destroy DO
           }
-          throw json(
+          throw jsonR(
             injectErrorContext(e.rawError, {
               channelId: component.channelId,
               permissions: routePermissions.GET.channelMessage,
@@ -425,7 +432,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             e.status,
           );
         }
-        throw json({ message: "Failed to retrieve the message" }, 400);
+        throw jsonR({ message: "Failed to retrieve the message" }, 400);
       }
       const threadId = isThreadMessage(message)
         ? message.channel_id
@@ -464,7 +471,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           Routes.webhook(message.webhook_id),
         )) as APIWebhook;
         if (!webhook.token) {
-          throw json(
+          throw jsonR(
             {
               message:
                 "Cannot edit the message because the webhook token is inaccessible.",
@@ -566,7 +573,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           }
         } catch (e) {
           if (isDiscordError(e)) {
-            throw json(e.rawError, e.status);
+            throw jsonR(e.rawError, e.status);
           }
           throw e;
         }

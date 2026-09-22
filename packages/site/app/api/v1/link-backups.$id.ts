@@ -1,10 +1,9 @@
-import { data as json } from "react-router";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v3";
 import { getUser, getUserId } from "~/session.server";
 import { getDb, linkBackups } from "~/store.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
 import { requirePremiumOrThrow } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
@@ -26,7 +25,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     },
   });
   if (!backup || backup.ownerId !== userId) {
-    throw json(
+    throw jsonR(
       { message: "No backup with that ID or you do not own it." },
       404,
     );
@@ -52,7 +51,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
     },
   });
   if (!backup || backup.ownerId !== BigInt(user.id)) {
-    throw json(
+    throw jsonR(
       { message: "No backup with that ID or you do not own it." },
       404,
     );

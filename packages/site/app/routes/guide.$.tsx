@@ -1,7 +1,7 @@
 import matter from "front-matter";
 import {
-  data as json,
-  useLoaderData, useNavigate,
+  useLoaderData,
+  useNavigate,
   type MetaDescriptor,
   type MetaFunction,
 } from "react-router";
@@ -12,7 +12,7 @@ import { Markdown } from "~/components/preview/Markdown";
 import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
 import { useCache } from "~/util/cache/CacheManager";
-import type { LoaderArgs, SerializeFrom } from "~/util/loader";
+import { jsonR, type LoaderArgs, type SerializeFrom } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
@@ -33,7 +33,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     { method: "GET" },
   );
   if (!fileResponse.ok) {
-    throw json({ message: fileResponse.statusText }, fileResponse.status);
+    throw jsonR({ message: fileResponse.statusText }, fileResponse.status);
   }
 
   const raw = await fileResponse.text();
@@ -48,7 +48,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     })
     .safeParseAsync(parsed.attributes);
   if (!zparsed.success) {
-    throw json(
+    throw jsonR(
       { message: "Invalid file", issues: zparsed.error.format() },
       500,
     );

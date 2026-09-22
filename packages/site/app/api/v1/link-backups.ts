@@ -1,8 +1,7 @@
-import { data as json } from "react-router";
 import { z } from "zod/v3";
 import { getUser } from "~/session.server";
 import { ZodLinkQueryData } from "~/types/QueryData";
-import type { ActionArgs } from "~/util/loader";
+import { jsonR, type ActionArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 import { requirePremiumOrThrow } from "~/util/users";
 import { zxParseJson } from "~/util/zod";
@@ -25,7 +24,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   let tries = 0;
   while (true) {
     if (tries >= 10) {
-      throw json({
+      throw jsonR({
         message:
           "Failed to generate a unique code for this backup. Try again later.",
       });

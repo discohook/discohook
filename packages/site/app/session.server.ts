@@ -15,7 +15,6 @@ import { type JWTPayload, jwtVerify, SignJWT } from "jose";
 import {
   createCookie,
   createCookieSessionStorage,
-  data as json,
   redirect,
   type Session,
   type UNSAFE_DataWithResponseInit,
@@ -32,7 +31,7 @@ import {
 } from "./store.server";
 import type { Env } from "./types/env";
 import { isDiscordError } from "./util/discord";
-import type { Context, SerializeFrom } from "./util/loader";
+import { type Context, jsonR, type SerializeFrom } from "./util/loader";
 
 export const getSessionStorage = (context: Context) => {
   const sessionStorage = createCookieSessionStorage({
@@ -111,7 +110,7 @@ export async function getUserId(
   const userId = session.get("user")?.id;
   if (!userId || !isSnowflake(String(userId))) {
     if (throwIfNull) {
-      throw json({ message: "Must be logged in." }, 401);
+      throw jsonR({ message: "Must be logged in." }, 401);
     }
     return null;
   }
@@ -169,7 +168,7 @@ export async function getUser(
   const throwFn = () => {
     const { pathname } = new URL(request.url);
     if (pathname.startsWith("/api/")) {
-      throw json({ message: "Must be logged in." }, 401);
+      throw jsonR({ message: "Must be logged in." }, 401);
     }
     throw redirect(
       `/auth/discord?redirect=${encodeURIComponent(
@@ -349,7 +348,7 @@ export const verifyToken = async (token: string, env: Env, origin: string) => {
     // if (!data.payload.uid) throw Error("No uid");
     return data;
   } catch {
-    throw json({ message: "Invalid token" }, 401);
+    throw jsonR({ message: "Invalid token" }, 401);
   }
 };
 
@@ -397,7 +396,7 @@ export async function authorizeRequest(
           : true,
     );
     if (user === null) {
-      throw json({ message: "Must provide proper authorization" }, 401);
+      throw jsonR({ message: "Must provide proper authorization" }, 401);
     }
     const token = await regenerateToken(context.env, context.origin, user.id);
 
@@ -453,13 +452,13 @@ export async function authorizeRequest(
   }
   if (!auth) {
     if (options?.requireToken) {
-      throw json({ message: "Must provide proper authorization" }, 401);
+      throw jsonR({ message: "Must provide proper authorization" }, 401);
     }
     return await serveNewToken();
   } else {
     const [prefix, tokenValue] = auth.split(" ");
     if (!["user", "bot"].includes(prefix.toLowerCase())) {
-      throw json({ message: "Invalid token prefix" }, 401);
+      throw jsonR({ message: "Invalid token prefix" }, 401);
     }
 
     let payload: JWTPayload;
@@ -476,7 +475,7 @@ export async function authorizeRequest(
       throw e;
     }
     if (payload.scp !== prefix.toLowerCase()) {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
@@ -485,7 +484,7 @@ export async function authorizeRequest(
       if (!options?.requireToken) {
         return await serveNewToken();
       }
-      throw json(
+      throw jsonR(
         { message: "User or token data missing, obtain a new token" },
         401,
       );
@@ -519,7 +518,7 @@ export async function authorizeRequest(
       if (!options?.requireToken) {
         return await serveNewToken();
       }
-      throw json(
+      throw jsonR(
         { message: "User or token data missing, obtain a new token" },
         401,
       );
@@ -527,7 +526,7 @@ export async function authorizeRequest(
     // Unsure about this right now
     // const countryCode = request.headers.get("CF-IPCountry");
     // if (token.country && countryCode && countryCode !== token.country) {
-    //   throw json({ message: "Token location mismatch" }, 403);
+    //   throw jsonR({ message: "Token location mismatch" }, 403);
     // }
 
     return [
@@ -573,7 +572,7 @@ export const getTokenGuildPermissions = async (
   } else {
     const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
-      throw json({ message: "User has no linked Discord user" }, 401);
+      throw jsonR({ message: "User has no linked Discord user" }, 401);
     }
 
     const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
@@ -585,7 +584,7 @@ export const getTokenGuildPermissions = async (
       guild = await getGuild(guildId, rest, env);
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -596,7 +595,7 @@ export const getTokenGuildPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     // const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
@@ -608,7 +607,7 @@ export const getTokenGuildPermissions = async (
     } catch (e) {
       if (isDiscordError(e)) {
         // UnknownGuild shouldn't happen because we just fetched this guild above
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -619,7 +618,7 @@ export const getTokenGuildPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     const permissions = new PermissionsBitField(
@@ -685,7 +684,7 @@ export const getTokenGuildChannelPermissions = async (
   } else {
     const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
-      throw json({ message: "User has no linked Discord user" }, 401);
+      throw jsonR({ message: "User has no linked Discord user" }, 401);
     }
 
     const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
@@ -696,7 +695,7 @@ export const getTokenGuildChannelPermissions = async (
       )) as typeof channel;
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -707,7 +706,7 @@ export const getTokenGuildChannelPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
     if (!channel.guild_id) {
       // Could be confusing
@@ -737,7 +736,7 @@ export const getTokenGuildChannelPermissions = async (
     } catch (e) {
       if (isDiscordError(e)) {
         // UnknownGuild shouldn't happen because we just fetched the channel above
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -748,7 +747,7 @@ export const getTokenGuildChannelPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     let guild: APIGuild;
@@ -757,7 +756,7 @@ export const getTokenGuildChannelPermissions = async (
     } catch (e) {
       // This shouldn't fail since we were able to get the channel
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -768,7 +767,7 @@ export const getTokenGuildChannelPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     const guildPermissions = new PermissionsBitField(

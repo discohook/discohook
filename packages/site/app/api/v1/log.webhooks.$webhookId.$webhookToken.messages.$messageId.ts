@@ -1,14 +1,14 @@
-import { data as json } from "react-router";
 import {
+  ButtonStyle,
+  ComponentType,
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
   type APIButtonComponentWithURL,
   type APIMessage,
   type APISelectMenuComponent,
-  ButtonStyle,
-  ComponentType,
 } from "discord-api-types/v10";
 import { notInArray } from "drizzle-orm";
+import { data as json } from "react-router";
 import { Snowflake } from "tif-snowflake";
 import { z } from "zod/v3";
 import { getBucket } from "~/durable/rate-limits.server";
@@ -21,7 +21,7 @@ import {
   hasCustomId,
   isErrorData,
 } from "~/util/discord";
-import type { ActionArgs } from "~/util/loader";
+import { jsonR, type ActionArgs } from "~/util/loader";
 import { createREST } from "~/util/rest";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
@@ -106,7 +106,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       // Don't allow future timestamps
       messageIdSnowflake.timestamp - now.getTime() > 0)
   ) {
-    throw json(
+    throw jsonR(
       { message: "Message is too old or the snowflake is invalid" },
       { status: 400, headers },
     );
@@ -126,7 +126,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       rest,
     );
     if (deleted.id) {
-      throw json({ message: "Message still exists" }, { status: 400, headers });
+      throw jsonR(
+        { message: "Message still exists" },
+        { status: 400, headers },
+      );
     }
   } else {
     message = await getWebhookMessage(
@@ -137,18 +140,18 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       rest,
     );
     if (isErrorData(message)) {
-      throw json(message, { status: 404, headers });
+      throw jsonR(message, { status: 404, headers });
     }
     // if (isComponentsV2(message)) {
     //   // We currently do not support logging these messages out of an abundance of caution
-    //   throw json(
+    //   throw jsonR(
     //     { message: "Message is not loggable" },
     //     { status: 400, headers },
     //   );
     // }
     if (type === "edit") {
       if (!message.edited_timestamp) {
-        throw json(
+        throw jsonR(
           { message: "Message has never been edited" },
           { status: 400, headers },
         );
@@ -160,7 +163,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         // Allow 15 seconds to send the log request
         // This disallows people from logging any old message sent by a webhook
         // they have access to (and reduces our server's API calls in such cases)
-        throw json(
+        throw jsonR(
           { message: "Message was edited too long ago" },
           { status: 400, headers },
         );
@@ -200,7 +203,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   if (!entryWebhook) {
     const webhook = await getWebhook(webhookId, webhookToken, rest);
     if (isErrorData(webhook)) {
-      throw json(webhook, 404);
+      throw jsonR(webhook, 404);
     }
 
     if (webhook.guild_id) {

@@ -1,6 +1,5 @@
 import { ButtonStyle } from "discord-api-types/v10";
 import {
-  data as json,
   type MetaDescriptor,
   type MetaFunction,
   redirect,
@@ -19,7 +18,7 @@ import {
 } from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
 import { LinkEmbedStrategy, type LinkQueryData } from "~/types/QueryData";
-import type { LoaderArgs, SerializeFrom } from "~/util/loader";
+import { jsonR, type LoaderArgs, type SerializeFrom } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
 import { linkEmbedToAPIEmbed } from "./link";
@@ -39,7 +38,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   });
 
   if (!linkBackup) {
-    throw json({ message: "Unknown link embed code." }, 404);
+    throw jsonR({ message: "Unknown link embed code." }, 404);
   }
 
   // Why doesn't the `location` passed to `meta` include data

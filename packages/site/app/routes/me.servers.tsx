@@ -1,8 +1,7 @@
-import { data as json } from "react-router";
-import { Link, useLoaderData, useSubmit } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { Trans, useTranslation } from "react-i18next";
+import { Link, useLoaderData, useSubmit } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
@@ -11,7 +10,7 @@ import { Twemoji } from "~/components/icons/Twemoji";
 import { getUser } from "~/session.server";
 import { and, discordMembers, eq, getDb } from "~/store.server";
 import { cdn, cdnImgAttributes } from "~/util/discord";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseForm } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -34,7 +33,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
 export const action = async ({ request, context }: ActionArgs) => {
   const user = await getUser(request, context, true);
   if (!user.discordId) {
-    throw json(
+    throw jsonR(
       { message: "No Discord account is associated with your user." },
       400,
     );
@@ -62,7 +61,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         });
 
       if (updated.length === 0) {
-        throw json(
+        throw jsonR(
           {
             message:
               "You are not a member of this server. You may need to log in again.",
