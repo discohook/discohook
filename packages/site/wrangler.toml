@@ -2,7 +2,7 @@
 
 name = "discohook-site"
 main = "./server.ts"
-compatibility_date = "2024-09-23"
+compatibility_date = "2026-08-04"
 compatibility_flags = ["nodejs_compat"]
 
 services = [
