@@ -53,4 +53,5 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
+  server: { port: 8788 },
 });
