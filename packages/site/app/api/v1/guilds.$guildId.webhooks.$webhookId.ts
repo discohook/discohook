@@ -69,7 +69,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
         await upsertGuild(
           db,
-          guild ?? (await getGuild(guildId, rest, context.env)),
+          guild ?? (await getGuild(guildId, rest, context.env, context.waitUntil)),
         );
 
         const modified = (await rest.patch(Routes.webhook(String(webhookId)), {

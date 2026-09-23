@@ -8,7 +8,7 @@ import {
   type APIRole,
   type APIUser,
 } from "discord-api-types/v10";
-import { useReducer } from "react";
+import { useMemo, useReducer } from "react";
 import { apiUrl, BRoutes, type ApiRoute } from "~/api/routing";
 import type { loader as ApiGetGuildCacheable } from "~/api/v1/guilds.$guildId.cacheable";
 import type { SerializeFrom } from "~/util/loader";
@@ -555,7 +555,9 @@ export const useCache = <T extends boolean>(
     (d: Resolutions, partialD: Partial<Resolutions>) => ({ ...d, ...partialD }),
     defaultCache,
   );
-  const cache = new CacheManager(state, setState);
+  // `setState` is stable across renders so this only needs to
+  // re-instantiate when `state` itself actually changes
+  const cache = useMemo(() => new CacheManager(state, setState), [state]);
   return (invalid ? undefined : cache) as T extends true
     ? undefined
     : CacheManager;

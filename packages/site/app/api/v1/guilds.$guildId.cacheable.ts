@@ -42,7 +42,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   if (!guild) {
     try {
-      guild = await getGuild(guildId, rest, context.env);
+      guild = await getGuild(guildId, rest, context.env, context.waitUntil);
     } catch (e) {
       if (isDiscordError(e))
         throw respond(

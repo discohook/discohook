@@ -126,6 +126,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         guildId,
         new REST().setToken(context.env.DISCORD_BOT_TOKEN),
         context.env,
+        context.waitUntil,
       );
       owner = guild.owner_id === String(token.user.discordId);
     }

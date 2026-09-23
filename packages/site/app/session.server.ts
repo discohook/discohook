@@ -845,10 +845,11 @@ export const getGuild = async (
   guildId: bigint | string,
   rest: REST,
   env: Env,
+  waitUntil?: ExecutionContext["waitUntil"],
 ) => {
   const guild = (await rest.get(Routes.guild(String(guildId)))) as APIGuild;
-  // TODO: Leads to unnecessary writes
-  await env.KV.put(
+
+  const put = env.KV.put(
     `cache-guild-${guildId}`,
     JSON.stringify({
       id: guild.id,
@@ -857,5 +858,15 @@ export const getGuild = async (
     } satisfies PartialKVGuild),
     { expirationTtl: 3600 },
   );
+  // This cache is also read by `getchGuild` in `store`
+  // Unfortunately, we can't really tell when this needs to be done (without
+  // sending another KV request which defeats the point of trying to reduce them).
+  // Maybe we should just reduce usage of getGuild for paths that only really
+  // need data that's OK to be stale
+  if (waitUntil) {
+    waitUntil(put);
+  } else {
+    await put;
+  }
   return guild;
 };
