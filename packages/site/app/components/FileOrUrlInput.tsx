@@ -177,6 +177,7 @@ export const FileOrUrlInput: React.FC<{
             t={t}
             disabled={attachments.length >= MAX_FILES_PER_MESSAGE}
             className="peer h-9 min-w-0 grow max-w-full px-4"
+            attachments={attachments}
             getChildren={(state) => {
               // normal size
               if (state === "active_mac") return t("pasteCmd");
