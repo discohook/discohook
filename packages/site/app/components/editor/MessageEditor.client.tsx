@@ -57,6 +57,7 @@ import { uploadFile as sxcuUpload } from "~/util/filehosts/sxcu";
 import {
   attachmentFromFile,
   fileInputChangeHandler,
+  isAudioType,
   MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
@@ -71,7 +72,6 @@ import { collapsibleStyles } from "../collapsible";
 import { useError } from "../Error";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
-import { isAudioType } from "../preview/FileAttachment";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { selectStyles, withDefaultItem } from "../StringSelect";
