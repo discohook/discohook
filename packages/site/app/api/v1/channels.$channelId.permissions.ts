@@ -66,7 +66,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   let guild = data.guild;
   if (!guild) {
     try {
-      guild = await getGuild(channel.guild_id, rest, context.env);
+      guild = await getGuild(
+        channel.guild_id,
+        rest,
+        context.env,
+        context.waitUntil,
+      );
     } catch (e) {
       if (isDiscordError(e)) {
         throw jsonR(

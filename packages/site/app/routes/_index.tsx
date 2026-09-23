@@ -610,6 +610,9 @@ export default function Index() {
       }) as TargetMap,
     {},
   );
+  // Stable identity across renders where `targets` itself hasn't changed, so
+  // it doesn't update excessively
+  const targetsList = useMemo(() => Object.values(targets), [targets]);
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
   const {
     sending,
@@ -1581,9 +1584,9 @@ export default function Index() {
                   message={message.data}
                   cache={cache}
                   discordApplicationId={discordApplicationId}
-                  targets={Object.values(targets)}
-                  index={i}
-                  data={data}
+                  targets={targetsList}
+                  previousMessageData={data.messages[i - 1]?.data}
+                  threadId={message.thread_id}
                   setImageModalData={setImageModalData}
                   messageDisplay={settings.messageDisplay}
                   compactAvatars={settings.compactAvatars}

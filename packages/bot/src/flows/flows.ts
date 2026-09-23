@@ -63,6 +63,7 @@ import {
 } from "./backup.js";
 import { FlowLogger, FlowLoggerMessageStatus } from "./logger.js";
 
+// TODO: use KV `cache-guildChannels-{id}` here somehow
 export interface LiveVariables {
   member?: APIGuildMember;
   user?: APIUser;

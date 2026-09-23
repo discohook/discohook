@@ -1,7 +1,7 @@
 // This file is a fork of @maddymeow's work on Discohook (AGPL 3.0) - thank you
 // https://github.com/discohook/site
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { TFunction } from "~/types/i18next";
@@ -1330,8 +1330,13 @@ export const Markdown: React.FC<{
   cache?: CacheManager;
 }> = ({ content, features, cache }) => {
   const { t } = useTranslation();
-  const parse = createMarkdownParser(getRules(features ?? "full"));
-  const result = parse(trimContent(content));
+  const featuresKey =
+    typeof features === "string" ? features : JSON.stringify(features);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: featuresKey = features
+  const result = useMemo(() => {
+    const parse = createMarkdownParser(getRules(features ?? "full"));
+    return parse(trimContent(content));
+  }, [content, featuresKey]);
 
   const resolver = {
     resolved: cache?.state,
