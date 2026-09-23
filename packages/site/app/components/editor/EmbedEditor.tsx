@@ -659,6 +659,8 @@ export const EmbedEditor: React.FC<{
                   disabled={
                     !embed.image?.url ||
                     messageEmbeds.length >= 10 ||
+                    // Technically you can have more than 4 now, but it doesn't always display properly
+                    // https://discord.com/channels/668218342779256857/1487040774536298687
                     galleryEmbeds.length >= 4
                   }
                   onClick={() => {
