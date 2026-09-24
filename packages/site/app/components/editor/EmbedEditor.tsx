@@ -15,7 +15,7 @@ import { FileOrUrlInput } from "../FileOrUrlInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
-import DatePicker from "../pickers/DatePicker";
+import { DatePickerPopoverWithTrigger } from "../pickers/DatePicker";
 import { linkClassName } from "../preview/Markdown";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
@@ -740,12 +740,12 @@ export const EmbedEditor: React.FC<{
                 />
               </div>
               <div className="grid grid-cols-2 gap-2 mt-2">
-                <DatePicker
-                  label={t("date")}
+                <DatePickerPopoverWithTrigger
+                  t={t}
                   value={embed.timestamp ? new Date(embed.timestamp) : null}
-                  onChange={(opt) =>
+                  onValueChange={(val) =>
                     updateEmbed({
-                      timestamp: opt ? opt.date.toISOString() : undefined,
+                      timestamp: val ? val.toISOString() : undefined,
                     })
                   }
                   isClearable
@@ -753,7 +753,8 @@ export const EmbedEditor: React.FC<{
                 <TextInput
                   label={t("timeText")}
                   type="time"
-                  className="w-full"
+                  // BUG: on safari ios, this overflows right and is too short. ??
+                  className="w-full h-8"
                   disabled={!embed.timestamp}
                   step={60}
                   value={

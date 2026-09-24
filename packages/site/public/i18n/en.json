@@ -768,6 +768,8 @@
     "customize": "Channels & Roles",
     "linked-roles": "Linked Roles"
   },
+  "datetime": "Date & Time",
+  "today": "Today",
   "timestamp": {
     "time": "{{ date, h:mm A }}",
     "time_verbose": "{{ date, h:mm:ss A }}",

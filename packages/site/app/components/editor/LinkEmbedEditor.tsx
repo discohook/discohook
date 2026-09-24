@@ -11,7 +11,7 @@ import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
-import DatePicker from "../pickers/DatePicker";
+import { DatePickerPopoverWithTrigger } from "../pickers/DatePicker";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { decimalToHex } from "./ColorPicker";
@@ -515,12 +515,12 @@ export const LinkEmbedEditor: React.FC<{
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <DatePicker
-              label={t("date")}
+            <DatePickerPopoverWithTrigger
+              t={t}
               value={embed.timestamp ? new Date(embed.timestamp) : null}
-              onChange={(opt) =>
+              onValueChange={(date) =>
                 updateEmbed({
-                  timestamp: opt ? opt.date.toISOString() : undefined,
+                  timestamp: date ? date.toISOString() : undefined,
                 })
               }
               isClearable
@@ -528,7 +528,7 @@ export const LinkEmbedEditor: React.FC<{
             <TextInput
               label={t("timeText")}
               type="time"
-              className="w-full"
+              className="w-full h-8"
               disabled={!embed.timestamp}
               step={60}
               value={
