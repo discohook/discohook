@@ -158,7 +158,7 @@
     "addTarget": {
         "1": "Adicionar Webhook",
         "2": "Adicionar Bot",
-        "3": "Adicionar webhook do Fluxer"
+        "3": "Adicionar Webhook do Fluxer"
     },
     "createWebhook": "Criar Webhook",
     "invalidWebhookUrl": "URL de Webhook inválida. Elas começam com https://discord.com/api/webhooks/...",
@@ -607,7 +607,7 @@
     "backToSettings": "Voltar para as configurações",
     "settingsFooter": "Obrigado por usar o Discohook!",
     "settingsCache": {
-        "emojiDescription": "O cache padrão de emojis é atualizado automaticamente a cada 14 dias. Se os emojis tiverem sido atualizados, você pode atualizar o cache agora clicando neste botão.",
+        "emojiDescription": "O cache padrão de emojis é atualizado automaticamente a cada 14 dias. Caso tenha ocorrido alguma atualização de emojis, você pode atualizar instantaneamente clicando neste botão.",
         "emojiButton": "Limpar Cache de Emoji",
         "title": "Cache"
     },
