@@ -5,7 +5,7 @@ import type { TFunction } from "~/types/i18next";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { getRelativeDateFormat } from "~/util/markdown/dates";
 import { CoolIcon } from "../icons/CoolIcon";
-import { DatePickerPopoverWithTrigger } from "../pickers/DatePicker";
+import { DatePickerPopoverWithTrigger } from "../pickers/DatePickerPopover";
 import { timestampFormats } from "../preview/Markdown";
 import { TextInput } from "../TextInput";
 

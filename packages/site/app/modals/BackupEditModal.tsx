@@ -19,7 +19,7 @@ import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { DatePickerPopoverWithTrigger } from "~/components/pickers/DatePicker";
+import { DatePickerPopoverWithTrigger } from "~/components/pickers/DatePickerPopover";
 import { StringSelect } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import type { LoadedBackup } from "~/routes/me.backups";

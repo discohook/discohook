@@ -15,7 +15,7 @@ import { FileOrUrlInput } from "../FileOrUrlInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
-import { DatePickerPopoverWithTrigger } from "../pickers/DatePicker";
+import { DatePickerPopoverWithTrigger } from "../pickers/DatePickerPopover";
 import { linkClassName } from "../preview/Markdown";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
