@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { Popover } from "@base-ui/react/popover";
+import { useEffect, useState } from "react";
 import type { TFunction } from "~/types/i18next";
 import {
   ColorPicker,
@@ -18,6 +18,8 @@ export const ColorPickerPopoverWithTrigger = ({
   value: number | null | undefined;
   onValueChange: (color: number | undefined) => void;
 }) => {
+  // prevent excessive state updates by only changing a local value while
+  // the popover is open
   const [localValue, setLocalValue] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
 
