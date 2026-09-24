@@ -139,6 +139,10 @@ export const loader = async ({ request, context }: LoaderArgs) => {
       environment: context.env.ENVIRONMENT,
       version: context.env.VERSION,
       authFailure,
+      // #100: felt less dirty than just passing the country code by itself,
+      // since we only need to know whether it's spain.
+      // TODO: does this happen in any other countries?
+      spain: request.headers.get("CF-IPCountry") === "ES",
     },
   };
 };
@@ -243,6 +247,54 @@ const getNewMessageData = (settings: Settings): QueryDataMessageDataRaw => {
   return data;
 };
 
+const SpainBlockageWarning = ({
+  updateSettings,
+}: {
+  updateSettings: (data: Partial<Settings>) => void;
+}) => (
+  <InfoBox open severity="yellow">
+      🇪🇸 Parece que te encuentras en España. Ten en cuenta que, durante los
+      partidos de La Liga, tu proveedor de servicios de Internet podría bloquear
+      esta página web y otros millones que dependen de Cloudflare.
+    <div className="mt-0.5">
+      <Link
+        to="https://x.com/eastdakota/status/1924969551478804543"
+        target="_blank"
+        className={twMerge(linkClassName, "text-red-400 dark:text-red-500")}
+      >
+        Declaración del director ejecutivo de Cloudflare
+      </Link>{" "}
+      •{" "}
+      <Link
+        to="https://blog.cloudflare.com/es-es/consequences-of-ip-blocking/"
+        target="_blank"
+        className={twMerge(linkClassName, "text-red-400 dark:text-red-500")}
+      >
+        Por qué esto no tiene sentido
+      </Link>{" "}
+      •{" "}
+      <Link
+        to="https://hayahora.futbol/"
+        target="_blank"
+        className={twMerge(linkClassName, "text-red-400 dark:text-red-500")}
+      >
+        Rastreador de interrupciones del servicio
+      </Link>{" "}
+      •{" "}
+      <button
+        type="button"
+        className={twMerge(
+          linkClassName,
+          "contents text-red-400 dark:text-red-500",
+        )}
+        onClick={() => updateSettings({ hideBlockageWarning: true })}
+      >
+        No volver a mostrar este mensaje
+      </button>
+    </div>
+  </InfoBox>
+);
+
 export default function Index() {
   const { t } = useTranslation();
   const user = useApiLoader<ApiGetCurrentUser>(BRoutes.currentUser());
@@ -250,7 +302,7 @@ export default function Index() {
     useLoaderData<typeof loader>();
 
   const isPremium = user ? userIsPremium(user) : false;
-  const [settings] = useLocalStorage();
+  const [settings, updateSettings] = useLocalStorage();
   const cache = useCache(!userId);
   const [error, setError] = useError(t);
 
@@ -943,6 +995,9 @@ export default function Index() {
                 {t("editingBackupNote")}
               </InfoBox>
             )}
+            {debug.spain && !settings.hideBlockageWarning ? (
+              <SpainBlockageWarning updateSettings={updateSettings} />
+            ) : null}
             <div className="flex">
               <div
                 className={twJoin(

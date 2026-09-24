@@ -54,7 +54,9 @@ export const ColorPickerPopoverWithTrigger = ({
           className="size-9 mt-auto rounded-lg ms-2 bg-gray-500"
           style={{
             backgroundColor:
-              typeof localValue === "number" ? decimalToHex(localValue) : undefined,
+              typeof localValue === "number"
+                ? decimalToHex(localValue)
+                : undefined,
           }}
         />
       </Popover.Trigger>
@@ -68,7 +70,9 @@ export const ColorPickerPopoverWithTrigger = ({
             <ColorPicker
               t={t}
               color={
-                typeof localValue === "number" ? decimalToRgb(localValue) : undefined
+                typeof localValue === "number"
+                  ? decimalToRgb(localValue)
+                  : undefined
               }
               onChange={(color) => setLocalValue(rgbToDecimal(color.rgb))}
               onReset={() => {

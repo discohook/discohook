@@ -29,6 +29,9 @@ export interface Settings {
     };
     postimages: FilehostConfigurationBase;
   }>;
+  // for spanish users whose ISP decides they shouldn't be able to access part
+  // of the internet because soccer is on - https://hayahora.futbol
+  hideBlockageWarning?: boolean;
 
   developer?: boolean;
   experiments?: (typeof EXPERIMENTS)[number][];
