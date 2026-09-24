@@ -1,7 +1,7 @@
 import { getUserId } from "~/session.server";
 import { getDb, sql } from "~/store.server";
 import { extractInteractiveComponents } from "~/util/discord";
-import { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 export interface ComponentFoundBackup {

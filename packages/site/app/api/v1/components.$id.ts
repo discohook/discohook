@@ -1,15 +1,16 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import {
   type APIMessage,
-  type APIWebhook,
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
   Routes,
-  WebhookType,
 } from "discord-api-types/v10";
-import { PermissionFlags } from "discord-bitflag";
+import { data as json } from "react-router";
+import {
+  canModifyComponent,
+  getWebhook,
+} from "~/api/v1/util/components.server";
 import {
   getActionRowComponentPath,
   removeEmptyActionRows,
@@ -19,7 +20,6 @@ import {
   authorizeRequest,
   doubleDecode,
   getEditorTokenStorage,
-  getTokenGuildChannelPermissions,
   type TokenWithUser,
   type User,
   verifyToken,
@@ -34,82 +34,44 @@ import {
   makeSnowflake,
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
-import type { Env } from "~/types/env";
-import { refineZodDraftFlowMax } from "~/types/flows";
+import { hasGuildOnlyActions, refineZodDraftFlowMax } from "~/types/flows";
+import { APIComponentInMessageActionRow } from "~/types/QueryData";
 import { isComponentsV2, isDiscordError } from "~/util/discord";
-import type { ActionArgs } from "~/util/loader";
+import { type ActionArgs, jsonR } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
-// TODO: RPC function in discohook-bot to use stored tokens
-export const getWebhook = async (
-  webhookId: string,
-  env: Env,
-): Promise<APIWebhook> => {
-  const db = getDb(env.HYPERDRIVE);
-  const dbWebhook = await db.query.webhooks.findFirst({
-    where: (webhooks, { eq, and }) =>
-      and(eq(webhooks.platform, "discord"), eq(webhooks.id, webhookId)),
-    columns: {
-      id: true,
-      name: true,
-      avatar: true,
-      channelId: true,
-      token: true,
-      applicationId: true,
-      discordGuildId: true,
-    },
-  });
-  if (dbWebhook) {
-    return {
-      type: WebhookType.Incoming, // hopefully we are not storing non-incoming webhooks
-      id: dbWebhook.id,
-      name: dbWebhook.name,
-      channel_id: dbWebhook.channelId,
-      avatar: dbWebhook.avatar,
-      token: dbWebhook.token ?? undefined,
-      guild_id: dbWebhook.discordGuildId?.toString(),
-      application_id: dbWebhook.applicationId,
-    } satisfies APIWebhook;
-  }
-
-  const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
-  const webhook = (await rest.get(Routes.webhook(webhookId))) as APIWebhook;
-  return webhook;
-};
-
-export const canModifyComponent = async (
-  env: Env,
-  component: {
-    channelId: bigint | null;
-    createdById: bigint | null;
+const checkActionValidity = async ({
+  current,
+  component,
+  onFailure = (message, status = 400) => {
+    throw Error(`${status}: ${message}`);
   },
-  token: TokenWithUser,
-): Promise<boolean> => {
-  if (
-    component.createdById !== null &&
-    component.createdById === BigInt(token.user.id)
-  ) {
-    return true;
-  }
-  if (component.channelId) {
-    const permissions = await getTokenGuildChannelPermissions(
-      token,
-      component.channelId,
-      env,
-    );
-    if (
-      !permissions.owner &&
-      !permissions.permissions.has(
-        PermissionFlags.ViewChannel,
-        PermissionFlags.ManageMessages,
-        PermissionFlags.ManageWebhooks,
-      )
-    ) {
-      return false;
+}: {
+  current: { guildId: bigint | null };
+  component: APIComponentInMessageActionRow;
+  onFailure: (message: string, status?: number) => void;
+}) => {
+  if (!current.guildId) {
+    if ("flow" in component && component.flow) {
+      if (hasGuildOnlyActions(component.flow)) {
+        return onFailure(
+          "The component is not part of a server, but it contains server-only flow actions",
+        );
+      }
+    }
+    if ("flows" in component && component.flows) {
+      const optionVals: string[] = [];
+      for (const [val, flow] of Object.entries(component.flows)) {
+        if (hasGuildOnlyActions(flow)) optionVals.push(val);
+      }
+      if (optionVals.length !== 0) {
+        return onFailure(
+          `The component is not part of a server, but its flows contain server-only actions. Affected options: ${optionVals.join(", ")}`,
+        );
+      }
     }
   }
-  return true;
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
@@ -136,7 +98,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       context.origin,
     );
     if (payload.scp !== "editor") {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     if (!payload.sub) throw e;
     const subject = JSON.parse(payload.sub) as {
@@ -264,6 +226,13 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         if (current.data.type !== component.type) {
           throw respond(json({ message: "Incorrect Type" }, 400));
         }
+        // await checkActionValidity({
+        //   current,
+        //   component,
+        //   onFailure(message, status = 400) {
+        //     throw respond(json({ message }, { status }));
+        //   },
+        // });
 
         const updated = await db.transaction(
           autoRollbackTx(async (tx) => {
@@ -353,6 +322,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           where: (table, { eq }) => eq(table.id, id),
           columns: {
             createdById: true,
+            updatedById: true,
             guildId: true,
             channelId: true,
             messageId: true,
@@ -402,7 +372,11 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           update.draft = false;
         }
 
-        if (Object.keys(update).length > 2) {
+        if (
+          Object.keys(update).length > 2 ||
+          // "take responsibility" button with empty patch
+          update.updatedById !== current.updatedById
+        ) {
           await db
             .update(discordMessageComponents)
             .set(update)

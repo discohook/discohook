@@ -1,21 +1,24 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import type {
-  APIChannel,
-  APIGuild,
-  APIGuildForumTag,
-  APIGuildMember,
-  APIRole,
-  APIUser,
+import {
+  RouteBases,
+  type APIApplication,
+  type APIChannel,
+  type APIGuild,
+  type APIGuildForumTag,
+  type APIGuildMember,
+  type APIRole,
+  type APIUser,
 } from "discord-api-types/v10";
-import { useReducer } from "react";
-import { type ApiRoute, apiUrl, BRoutes } from "~/api/routing";
+import { useMemo, useReducer } from "react";
+import { apiUrl, BRoutes, type ApiRoute } from "~/api/routing";
 import type { loader as ApiGetGuildCacheable } from "~/api/v1/guilds.$guildId.cacheable";
+import type { SerializeFrom } from "~/util/loader";
 
 export type Resolutions = {
   [key: `channel:${string}`]: ResolvableAPIChannel | undefined | null;
   [key: `member:${string}`]: ResolvableAPIGuildMember | undefined | null;
   [key: `role:${string}`]: ResolvableAPIRole | undefined | null;
   [key: `emoji:${string}`]: ResolvableAPIEmoji | undefined | null;
+  [key: `app:${string}`]: ResolvableAPIApplication | undefined | null;
 };
 
 export type ResolutionKey = keyof Resolutions;
@@ -24,7 +27,8 @@ type Resolvable =
   | ResolvableAPIChannel
   | ResolvableAPIGuildMember
   | ResolvableAPIRole
-  | ResolvableAPIEmoji;
+  | ResolvableAPIEmoji
+  | ResolvableAPIApplication;
 
 class ResourceCacheManagerBase<T extends Resolvable> {
   constructor(public manager: CacheManager) {}
@@ -118,6 +122,25 @@ export type ResolvableAPIEmoji = {
   name: string;
   animated?: boolean;
   available?: false;
+};
+
+/**
+ * @see https://docs.discord.food/resources/application#application-type
+ */
+export enum ApplicationType {
+  DeprecatedGame = 1,
+  /** @deprecated */
+  Music = 2,
+  TicketedEvents = 3,
+  CreatorMonetization = 4,
+  Game = 5,
+}
+
+export type ResolvableAPIApplication = Pick<
+  APIApplication,
+  "id" | "name" | "icon" | "cover_image"
+> & {
+  type?: ApplicationType | null;
 };
 
 class ChannelResourceManager extends ResourceCacheManagerBase<ResolvableAPIChannel> {
@@ -266,7 +289,60 @@ class EmojiResourceManager extends ResourceCacheManagerBase<ResolvableAPIEmoji> 
   // }
 }
 
-export type ResolutionScope = "channel" | "member" | "role" | "emoji";
+class ApplicationResourceManager extends ResourceCacheManagerBase<ResolvableAPIApplication> {
+  get(id: string) {
+    return this._get(`app:${id}`);
+  }
+
+  getAll(filter?: (instance: ResolvableAPIApplication) => boolean) {
+    return this._getAll("app:", filter);
+  }
+
+  async fetch(id: string) {
+    // Technically not documented but used by many applications. If it stops
+    // working, it should be benign - these objects will just stop resolving
+    const response = await fetch(`${RouteBases.api}/applications/${id}/rpc`, {
+      method: "GET",
+    });
+    const data = (await response.json()) as APIApplication &
+      Pick<ResolvableAPIApplication, "type">;
+    if (!response.ok) {
+      console.log(`Fetch failed: ${JSON.stringify(data)}`);
+      this._put(`app:${id}`, null);
+      return null;
+    }
+    const resource: ResolvableAPIApplication = {
+      id: data.id,
+      name: data.name,
+      icon: data.icon,
+      // /app-icons/:id/:cover_image.webp?keep_aspect_ratio=true
+      cover_image: data.cover_image,
+      type: data.type,
+    };
+    this._put(`app:${id}`, resource);
+    return resource;
+  }
+
+  async fetchMany(guildId: string) {
+    const resource = await this._fetch<ResolvableAPIApplication[]>(
+      BRoutes.guildChannels(guildId),
+    );
+    if (!resource) return [];
+
+    this.manager.fill(
+      ...resource.map(
+        (r) =>
+          [`channel:${r.id}`, r] satisfies [
+            ResolutionKey,
+            ResolvableAPIApplication,
+          ],
+      ),
+    );
+    return resource;
+  }
+}
+
+export type ResolutionScope = "channel" | "member" | "role" | "emoji" | "app";
 
 // There's also weird behavior when mentioning webhooks that I'm
 // not sure how to emulate so I'm leaving it out for now.
@@ -280,6 +356,7 @@ export class CacheManager {
   public member: MemberResourceManager;
   public role: RoleResourceManager;
   public emoji: EmojiResourceManager;
+  public application: ApplicationResourceManager;
 
   constructor(
     state: Resolutions,
@@ -294,6 +371,7 @@ export class CacheManager {
     this.member = new MemberResourceManager(this);
     this.role = new RoleResourceManager(this);
     this.emoji = new EmojiResourceManager(this);
+    this.application = new ApplicationResourceManager(this);
   }
 
   /**
@@ -321,6 +399,10 @@ export class CacheManager {
     key: string;
   }): ResolvableAPIEmoji | null | undefined;
   resolve(request: {
+    scope: "app";
+    key: string;
+  }): ResolvableAPIApplication | null | undefined;
+  resolve(request: {
     scope: ResolutionScope;
     key: string;
   }):
@@ -328,6 +410,7 @@ export class CacheManager {
     | ResolvableAPIGuildMember
     | ResolvableAPIRole
     | ResolvableAPIEmoji
+    | ResolvableAPIApplication
     | null
     | undefined {
     const key = `${request.scope}:${request.key}` as const;
@@ -373,6 +456,10 @@ export class CacheManager {
         unqueue();
         break;
       }
+      case "app": {
+        this.application.fetch(request.key).then(unqueue);
+        break;
+      }
       default:
         break;
     }
@@ -384,6 +471,7 @@ export class CacheManager {
       member: [],
       role: [],
       emoji: [],
+      app: [],
     };
     for (const request of requests) {
       const [scope, key] = request.split(":");
@@ -391,6 +479,8 @@ export class CacheManager {
     }
 
     // TODO: At some point, bind a guild somewhere and use fetchMany to reduce requests
+    // TOOD: bot-ws should implement Request Guild Members to bulk-resolve members,
+    // because for some reason that is the only way to get a list of members by ID
     for (const [scope, keys] of Object.entries(byScope)) {
       for (const key of keys) {
         // @ts-expect-error
@@ -435,6 +525,27 @@ const defaultCache: Resolutions = {
       global_name: null,
     },
   },
+  "app:363445589247131668": {
+    id: "363445589247131668",
+    name: "ROBLOX",
+    icon: "f2b60e350a2097289b3b0b877495e55f",
+    cover_image: "82f092687242e81976b955927df9cd24",
+    type: ApplicationType.Game,
+  },
+  "app:1402418491272986635": {
+    id: "1402418491272986635",
+    name: "Minecraft",
+    icon: "166fbad351ecdd02d11a3b464748f66b",
+    cover_image: "2975c144dc7e00ecf57018a4af98b1eb",
+    type: ApplicationType.Game,
+  },
+  "app:1402418714716143646": {
+    id: "1402418714716143646",
+    name: "Grand Theft Auto V",
+    icon: "b77111108195cd5e4dd2011dd39bf67d",
+    cover_image: "f5747887acb51da9b2c252e7ec6292ca",
+    type: ApplicationType.Game,
+  },
 };
 
 export const useCache = <T extends boolean>(
@@ -444,7 +555,9 @@ export const useCache = <T extends boolean>(
     (d: Resolutions, partialD: Partial<Resolutions>) => ({ ...d, ...partialD }),
     defaultCache,
   );
-  const cache = new CacheManager(state, setState);
+  // `setState` is stable across renders so this only needs to
+  // re-instantiate when `state` itself actually changes
+  const cache = useMemo(() => new CacheManager(state, setState), [state]);
   return (invalid ? undefined : cache) as T extends true
     ? undefined
     : CacheManager;

@@ -46,11 +46,15 @@ export const RadioishBox = ({
   onSelect,
   name,
   description,
+  className,
+  children,
 }: {
   isSelected: boolean;
   onSelect: () => void;
   name: React.ReactNode;
   description: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
 }) => (
   <button
     type="button"
@@ -63,11 +67,13 @@ export const RadioishBox = ({
       isSelected
         ? "bg-blurple-100 dark:bg-blurple-600 border-blurple"
         : "border-border-normal dark:border-border-normal-dark",
+      className,
     )}
   >
     <p className="font-medium">{name}</p>
     <p className="text-muted dark:text-muted-dark dark:group-data-[selected]:text-primary-230 text-sm transition-colors">
       {description}
     </p>
+    {children}
   </button>
 );

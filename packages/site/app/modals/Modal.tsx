@@ -1,4 +1,4 @@
-import { Dialog } from "@base-ui-components/react/dialog";
+import { Dialog } from "@base-ui/react/dialog";
 import { twJoin, twMerge } from "tailwind-merge";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 

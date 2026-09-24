@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "react-router";
 import type { APIWebhook } from "discord-api-types/v10";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";

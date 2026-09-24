@@ -1,11 +1,14 @@
 import { channelLink, time } from "@discordjs/formatters";
 import {
+  APIButtonComponentWithCustomId,
   type APIComponentInMessageActionRow,
   type APIEmbed,
   type APIGuildMember,
   type APIInteractionDataResolvedChannel,
   type APIInteractionDataResolvedGuildMember,
+  APIMessageTopLevelComponent,
   type APIRole,
+  APISelectMenuComponent,
   type APIUser,
   ButtonStyle,
   ComponentType,
@@ -337,4 +340,43 @@ export const processQueryData = async (
   };
   const parsed = insertReplacements(data, { liveVars, setVars });
   return { body: parsed, query };
+};
+
+export const prefixCustomIds = async (
+  components: APIMessageTopLevelComponent[],
+  prefix: string,
+  filter?: (
+    component: APIButtonComponentWithCustomId | APISelectMenuComponent,
+  ) => boolean,
+) => {
+  for (const topLevel of components) {
+    switch (topLevel.type) {
+      case ComponentType.ActionRow:
+        for (const child of topLevel.components) {
+          if ("custom_id" in child && (filter ? filter(child) : true)) {
+            const customId = `${prefix}${child.custom_id}`;
+            if (customId.length <= 100) {
+              child.custom_id = customId;
+            }
+          }
+        }
+        break;
+      case ComponentType.Section: {
+        const accessory = topLevel.accessory;
+        if ("custom_id" in accessory && (filter ? filter(accessory) : true)) {
+          const customId = `${prefix}${accessory.custom_id}`;
+          if (customId.length <= 100) {
+            accessory.custom_id = customId;
+          }
+        }
+        break;
+      }
+      case ComponentType.Container:
+        prefixCustomIds(topLevel.components, prefix);
+        break;
+      default:
+        break;
+    }
+  }
+  return components;
 };

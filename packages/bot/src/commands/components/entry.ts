@@ -210,6 +210,12 @@ export const addComponentMessageEntry: MessageAppCommandCallback = (ctx) => {
       )
       .setLabel("Edit mode")
       .setStyle(ButtonStyle.Secondary),
+    // new ButtonBuilder()
+    //   .setCustomId(
+    //     `a_debug-component-flow-ctx_${message.webhook_id}:${message.id}:${threadId}` satisfies AutoComponentCustomId,
+    //   )
+    //   .setLabel("Debug")
+    //   .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setLabel("View all")
       .setStyle(ButtonStyle.Link)

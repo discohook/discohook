@@ -15,6 +15,7 @@ import type {
   APITextDisplayComponent,
   ButtonStyle,
 } from "discord-api-types/v10";
+import React from "react";
 import { z } from "zod/v3";
 import type { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";
@@ -25,10 +26,10 @@ import {
   queryDataMessageDataTransform,
   type QueryDataTarget,
   type QueryDataVersion,
-  TargetBot,
-  TargetFluxerWebhook,
+  type TargetBot,
+  type TargetFluxerWebhook,
   TargetType,
-  TargetWebhook,
+  type TargetWebhook,
   ZodQueryDataMessageDataBase,
 } from "./QueryData-raw";
 
@@ -124,6 +125,8 @@ export interface QueryData {
   }[];
   targets?: QueryDataTarget[];
 }
+
+export type SetQueryData = React.Dispatch<QueryData>;
 
 export const ZodQueryDataMessage = z.object({
   _id: z.string().default(() => randomString(10)),

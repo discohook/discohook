@@ -1,7 +1,7 @@
 import { REST } from "@discordjs/rest";
 import {
   type APIApplication,
-  APIUser,
+  type APIUser,
   Routes,
   TeamMemberMembershipState,
   TeamMemberRole,
@@ -10,7 +10,7 @@ import {
 import { UserFlagsBitField } from "discord-bitflag";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import z from "zod/v3";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import { getUser } from "~/session.server";
 import type { Env } from "~/types/env";
 import { DISCORD_BOT_TOKEN_RE, isDiscordError } from "~/util/discord";

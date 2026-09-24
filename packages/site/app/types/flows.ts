@@ -291,3 +291,13 @@ export const refineZodDraftFlowMax = (premium: boolean) =>
       }
     }),
   });
+
+export const hasGuildOnlyActions = (flow: DraftFlow) => {
+  const types = flow.actions.map((a) => a.type);
+  return (
+    types.includes(FlowActionType.AddRole) ||
+    types.includes(FlowActionType.RemoveRole) ||
+    types.includes(FlowActionType.ToggleRole) ||
+    types.includes(FlowActionType.SendWebhookMessage)
+  );
+};

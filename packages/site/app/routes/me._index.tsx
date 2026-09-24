@@ -1,7 +1,7 @@
-import { Avatar } from "@base-ui-components/react/avatar";
+import { Avatar } from "@base-ui/react/avatar";
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import { data as json } from "react-router";
+import { Link, useLoaderData, useSubmit } from "react-router";
 import { type APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
@@ -10,7 +10,7 @@ import { getDiscordUserOAuth } from "~/auth-discord.server";
 import { Button } from "~/components/Button";
 import { linkClassName } from "~/components/preview/Markdown";
 import { TabHeader } from "~/components/tabs";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import { getSessionStorage, getUser } from "~/session.server";
 import {
   autoRollbackTx,

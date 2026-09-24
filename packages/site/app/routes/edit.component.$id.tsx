@@ -1,6 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { json, redirect } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useLocation } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   type APIActionRowComponent,
@@ -11,6 +9,7 @@ import {
   type APIWebhook,
   ButtonStyle,
   ComponentType,
+  PermissionFlagsBits,
   RESTJSONErrorCodes,
   type RESTPatchAPIWebhookWithTokenMessageJSONBody,
   Routes,
@@ -18,13 +17,20 @@ import {
 import type { JWTPayload } from "jose";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import {
+  data as json,
+  Link,
+  redirect,
+  useLoaderData,
+  useLocation,
+} from "react-router";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
-import { canModifyComponent } from "~/api/v1/components.$id";
 import type { loader as ApiGetGuildWebhookToken } from "~/api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import type { action as ApiAuditLogAction } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
+import { canModifyComponent } from "~/api/v1/util/components.server";
 import { Button } from "~/components/Button";
 import { submitComponent } from "~/components/editor/ComponentEditor";
 import {
@@ -40,7 +46,6 @@ import { Message } from "~/components/preview/Message.client";
 import { Prose } from "~/components/Prose";
 import { ComponentEditForm } from "~/modals/ComponentEditModal";
 import { type EditingFlowData, FlowEditModal } from "~/modals/FlowEditModal";
-import { submitMessage } from "~/modals/MessageSendModal";
 import {
   authorizeRequest,
   getEditorTokenStorage,
@@ -76,20 +81,24 @@ import {
 import {
   cdnImgAttributes,
   getRemainingComponentsCount,
+  injectErrorContext,
   isActionRow,
   isComponentHousable,
   isComponentsV2,
   isDiscordError,
   isStorableComponent,
   onlyActionRows,
+  routePermissions,
 } from "~/util/discord";
 import {
   type ActionArgs,
+  jsonR,
   type LoaderArgs,
   useSafeFetcher,
 } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import { isThreadMessage } from "~/util/message";
+import { submitMessage } from "~/util/submitMessage";
 import { getUserAvatar, userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
@@ -204,7 +213,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
   });
   if (!component) {
-    throw json({ message: "Unknown Component" }, 404);
+    throw jsonR({ message: "Unknown Component" }, 404);
   }
   if (needUserAuth && !user) {
     throw redirect(redirectUrl);
@@ -223,7 +232,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         errorLoggedOut: false,
       });
     } catch {
-      throw json(
+      throw jsonR(
         { message: "You do not have edit access to this component." },
         403,
       );
@@ -255,10 +264,19 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       )) as APIMessage;
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(e.rawError, 500);
+        throw jsonR(
+          injectErrorContext(e.rawError, {
+            guildId: component.guildId ?? undefined,
+            channelId: component.channelId,
+            permissions:
+              PermissionFlagsBits.ViewChannel |
+              PermissionFlagsBits.ReadMessageHistory,
+          }),
+          400,
+        );
       }
       console.error(e);
-      throw json({ message: "Failed to fetch message" }, 500);
+      throw jsonR({ message: "Failed to fetch message" }, 500);
     }
     if (isThreadMessage(msg)) {
       threadId = msg.channel_id;
@@ -301,21 +319,21 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       // This is because users logged in regularly (technically a different
       // sort of flow) are permitted to edit directly from the frontend,
       // saving us a Discord request and storage interaction.
-      throw json({ message: "`components` required when using `token`" }, 400);
+      throw jsonR({ message: "`components` required when using `token`" }, 400);
     }
 
     let payload: JWTPayload;
     try {
       ({ payload } = await verifyToken(token, context.env, context.origin));
     } catch {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     if (payload.scp !== "editor" || !payload.sub) {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     const subject = JSON.parse(payload.sub) as KVComponentEditorState;
     if (!subject.componentId || BigInt(subject.componentId) !== id) {
-      throw json({ message: "Missing access to this component" }, 403);
+      throw jsonR({ message: "Missing access to this component" }, 403);
     }
 
     tokenData = subject;
@@ -342,10 +360,12 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             columns: {},
             with: { flow: { with: { actions: { columns: { data: true } } } } },
           },
+          createdBy: { columns: { discordId: true } },
+          updatedBy: { columns: { discordId: true } },
         },
       });
       if (!component) {
-        throw json({ message: "Unknown Component" }, 404);
+        throw jsonR({ message: "Unknown Component" }, 404);
       }
       if (
         user &&
@@ -361,7 +381,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             errorLoggedOut: false,
           });
         } catch {
-          throw json(
+          throw jsonR(
             { message: "You do not have edit access to this component." },
             403,
           );
@@ -381,7 +401,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
       }
       if (!component.channelId || !component.messageId) {
-        throw json(
+        throw jsonR(
           {
             message: "Cannot use this route to modify a message-less component",
           },
@@ -404,9 +424,15 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           if (e.code === RESTJSONErrorCodes.UnknownMessage) {
             // TODO: delete records and destroy DO
           }
-          throw json(e, 500);
+          throw jsonR(
+            injectErrorContext(e.rawError, {
+              channelId: component.channelId,
+              permissions: routePermissions.GET.channelMessage,
+            }),
+            e.status,
+          );
         }
-        throw json({ message: "Failed to retrieve the message" }, 400);
+        throw jsonR({ message: "Failed to retrieve the message" }, 400);
       }
       const threadId = isThreadMessage(message)
         ? message.channel_id
@@ -445,7 +471,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           Routes.webhook(message.webhook_id),
         )) as APIWebhook;
         if (!webhook.token) {
-          throw json(
+          throw jsonR(
             {
               message:
                 "Cannot edit the message because the webhook token is inaccessible.",
@@ -547,7 +573,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           }
         } catch (e) {
           if (isDiscordError(e)) {
-            throw json(e.rawError, e.status);
+            throw jsonR(e.rawError, e.status);
           }
           throw e;
         }
@@ -587,6 +613,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         await launchComponentKV(context.env, {
           componentId: component.id,
           data: component.data,
+          createdById: component.createdBy?.discordId?.toString(),
+          updatedById: component.updatedBy?.discordId?.toString(),
         });
       }
 
@@ -1149,7 +1177,8 @@ export default () => {
   const cache = useCache(false);
 
   const [submitState, setSubmitState] = useState<"idle" | "submitting">("idle");
-  const actionPath = `/edit/component/${component_.id}?_data=routes/edit.component.$id`;
+  const actionPath = `/edit/component/${component_.id}`;
+  const actionRouteId = "edit.component.$id";
   const fetcher = useSafeFetcher<typeof action>({ onError: setError });
   useEffect(
     () =>
@@ -1658,7 +1687,14 @@ export default () => {
                   console.error(e);
                 }
                 // Ensure that the component's durable object is up to date
-                fetcher.submit({}, { method: "PATCH", action: actionPath });
+                fetcher.submit(
+                  {},
+                  {
+                    method: "PATCH",
+                    action: actionPath,
+                    routeId: actionRouteId,
+                  },
+                );
               } else {
                 setSubmitState("idle");
               }
@@ -1697,7 +1733,11 @@ export default () => {
                       // path,
                       // initialPath,
                     },
-                    { method: "PATCH", action: actionPath },
+                    {
+                      method: "PATCH",
+                      action: actionPath,
+                      routeId: actionRouteId,
+                    },
                   );
                 }
               }}
@@ -1761,7 +1801,14 @@ export default () => {
                     // Tell the server that something changed and it needs to
                     // either fetch the message or ensure that the component's
                     // durable object is up to date
-                    fetcher.submit({}, { method: "PATCH", action: actionPath });
+                    fetcher.submit(
+                      {},
+                      {
+                        method: "PATCH",
+                        action: actionPath,
+                        routeId: actionRouteId,
+                      },
+                    );
                   } else {
                     setError({
                       message: result.data.message,

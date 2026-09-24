@@ -22,10 +22,10 @@ permissions.set(PermissionFlags.AttachFiles, true);
 permissions.set(PermissionFlags.CreatePublicThreads, true);
 permissions.set(PermissionFlags.CreatePrivateThreads, true);
 permissions.set(PermissionFlags.SendMessagesInThreads, true);
-// Profile customization
-permissions.set(PermissionFlags.ChangeNickname, true);
 // Flows
 // permissions.set(PermissionFlags.ModerateMembers, true);
+// Profile (nickname)
+permissions.set(PermissionFlags.ChangeNickname, true);
 
 const url = new URL(
   `https://discord.com/oauth2/authorize?${new URLSearchParams({

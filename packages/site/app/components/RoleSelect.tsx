@@ -1,4 +1,4 @@
-import { Select } from "@base-ui-components/react/select";
+import { Select } from "@base-ui/react/select";
 import { twJoin } from "tailwind-merge";
 import type { TFunction } from "~/types/i18next";
 import type { ResolvableAPIRole } from "~/util/cache/CacheManager";

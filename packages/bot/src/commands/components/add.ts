@@ -299,7 +299,11 @@ const registerComponent = async (
       )) as APIMessage;
 
       if (customId !== undefined) {
-        await launchComponentKV(ctx.env, { componentId: id, data });
+        await launchComponentKV(ctx.env, {
+          componentId: id,
+          data,
+          createdById: ctx.user.id,
+        });
       }
       return editedMsg;
     }),

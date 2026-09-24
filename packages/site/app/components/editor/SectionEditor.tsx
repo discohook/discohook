@@ -20,10 +20,8 @@ import { FileOrUrlInput } from "../FileOrUrlInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
-import {
-  getSetEditingComponentProps,
-  IndividualComponentEditor,
-} from "./ComponentEditor";
+import { getSetEditingComponentProps } from "./ActionRowEditor";
+import { IndividualComponentEditor } from "./ComponentEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const SectionEditor: React.FC<{
@@ -231,7 +229,7 @@ export const SectionEditor: React.FC<{
             </div>
           ) : accessory.type === ComponentType.Thumbnail ? (
             <div className="space-y-1">
-              <div className="w-full">
+              <div className="w-full truncate">
                 <FileOrUrlInput
                   t={t}
                   value={accessory.media.url}
@@ -239,6 +237,8 @@ export const SectionEditor: React.FC<{
                     accessory.media = { url: value };
                     setData({ ...data });
                   }}
+                  message={message}
+                  refreshData={() => setData({ ...data })}
                   files={files}
                   setFiles={setFiles}
                   required

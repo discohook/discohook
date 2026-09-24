@@ -1,7 +1,6 @@
-import { json } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
+import { data as json, Link, useLoaderData, useSubmit } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { zx } from "zodix";
@@ -12,12 +11,12 @@ import {
   getShareLink,
   getShareLinkExists,
   putShareLink,
-} from "~/durable/share-links";
+} from "~/durable/share-links.server";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { getUser, getUserId } from "~/session.server";
 import { shareLinks as dShareLinks, eq, getDb, inArray } from "~/store.server";
 import { getId } from "~/util/id";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
 import { relativeTime } from "~/util/time";
 import { userIsPremium } from "~/util/users";
 import {
@@ -62,7 +61,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
       const user = await getUser(request, context);
       if (!user || !userIsPremium(user)) {
-        throw json(
+        throw jsonR(
           { message: "Must be a Deluxe member to perform this action" },
           403,
         );
@@ -77,12 +76,12 @@ export const action = async ({ request, context }: ActionArgs) => {
         },
       });
       if (!share || share.userId !== userId) {
-        throw json({ message: "Unknown Share Link" }, 404);
+        throw jsonR({ message: "Unknown Share Link" }, 404);
       }
 
       const exists = await getShareLinkExists(context.env, share.shareId);
       if (!exists) {
-        throw json({ message: "Share link is already expired" }, 400);
+        throw jsonR({ message: "Share link is already expired" }, 400);
       }
 
       const { data: current } = await getShareLink(context.env, share.shareId);

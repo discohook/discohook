@@ -1,12 +1,10 @@
+import { ButtonStyle } from "discord-api-types/v10";
 import {
-  json,
   type MetaDescriptor,
   type MetaFunction,
   redirect,
-  type SerializeFrom,
-} from "@remix-run/cloudflare";
-import { useLoaderData } from "@remix-run/react";
-import { ButtonStyle } from "discord-api-types/v10";
+  useLoaderData,
+} from "react-router";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { ZodOEmbedData } from "~/api/v1/oembed";
@@ -20,7 +18,7 @@ import {
 } from "~/components/preview/Gallery";
 import { getDb } from "~/store.server";
 import { LinkEmbedStrategy, type LinkQueryData } from "~/types/QueryData";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs, type SerializeFrom } from "~/util/loader";
 import { copyText } from "~/util/text";
 import { zxParseParams } from "~/util/zod";
 import { linkEmbedToAPIEmbed } from "./link";
@@ -40,7 +38,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   });
 
   if (!linkBackup) {
-    throw json({ message: "Unknown link embed code." }, 404);
+    throw jsonR({ message: "Unknown link embed code." }, 404);
   }
 
   // Why doesn't the `location` passed to `meta` include data

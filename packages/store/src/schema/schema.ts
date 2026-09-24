@@ -519,12 +519,14 @@ export const discordMessageComponents = pgTable("DiscordMessageComponent", {
   messageId: snowflake("messageId"),
   createdById: snowflake("createdById"),
   updatedById: snowflake("updatedById"),
-  updatedAt: date("updatedAt")
-    .$defaultFn(() => new Date())
-    .$onUpdateFn(() => new Date()),
+  updatedAt: date("updatedAt").$onUpdateFn(() => new Date()),
   type: integer("type").notNull().$type<ComponentType>(),
   data: json("data").notNull().$type<DraftComponent>(),
   draft: boolean("draft").notNull().default(false),
+  // overrideResponsibility: boolean("overrideResponsibility")
+  //   .notNull()
+  //   // Require reapproval whenever the component is edited
+  //   .$onUpdateFn(() => false),
 });
 
 export const discordMessageComponentsRelations = relations(

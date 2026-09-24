@@ -1,4 +1,4 @@
-import { redirect } from "@remix-run/cloudflare";
+import { redirect } from "react-router";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import type { LoaderArgs } from "~/util/loader";
 
@@ -23,6 +23,8 @@ permissions.set(PermissionFlags.CreatePrivateThreads, true);
 permissions.set(PermissionFlags.SendMessagesInThreads, true);
 // Flows
 permissions.set(PermissionFlags.ModerateMembers, true);
+// Profile (nickname)
+permissions.set(PermissionFlags.ChangeNickname, true);
 
 export const loader = ({ request, context }: LoaderArgs) =>
   redirect(

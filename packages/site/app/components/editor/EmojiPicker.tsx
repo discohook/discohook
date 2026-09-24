@@ -1,4 +1,4 @@
-import { Popover } from "@base-ui-components/react/popover";
+import { Popover } from "@base-ui/react/popover";
 import type { Category, Emoji, Skin } from "@emoji-mart/data";
 import {
   type APIMessageComponentEmoji,

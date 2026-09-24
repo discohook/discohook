@@ -230,6 +230,8 @@
   "noServers": "You don't appear to share any servers with Discohook Utils.",
   "usingDiscohook": "Using Discohook",
   "guides": "Guides",
+  "discohookNews": "Discohook News",
+  "newsSubtitle": "We publish full changelogs here and on our <anchor>support server</anchor>.",
   "inviteBot": "Invite Bot",
   "addToServer": "Add to Server",
   "favorite": "Favorite",
@@ -483,6 +485,22 @@
     "json": "Parsed JSON (formatted)",
     "loadAnyway": "Load Anyway"
   },
+  "defaultPrompt": {
+    "standard": {
+      "name": "Edit default message",
+      "description": "Play around in the editor by editing Discohook's default message, which includes embeds and buttons"
+    },
+    "components": {
+      "name": "Edit as components",
+      "description": "Convert the default message to components-based, a new message format from Discord"
+    },
+    "blank": {
+      "name": "New blank message",
+      "description": "Clear the editor and start writing a new message"
+    },
+    "loadBackupTitle": "Or load a recent backup:",
+    "allBackups": "All Backups"
+  },
   "componentN": {
     "1": "Row {{n}}",
     "2": "Button {{n}}",
@@ -514,6 +532,10 @@
   "componentEditShiftSkipTip": "TIP: Hold down shift next time to go straight to the edit page.",
   "deleteComponent": "Delete Component",
   "deleteComponentConfirm": "Are you sure you want to delete this $t(component.{{type}}, lowercase)?",
+  "copyId": "Copy ID",
+  "responsibleUserLink": "Responsible User <anchor/>",
+  "indeterminable": "Indeterminable (limited permissions)",
+  "takeResponsibility": "Take Responsibility",
   "embed": "Embed",
   "embedN": "Embed {{n}}",
   "embedNText": "Embed {{n}} - {{text}}",
@@ -533,8 +555,12 @@
   "titleUrlManaged": "This is set automatically by the main embed in the gallery. Only change this if you want to change which gallery this image belongs to.",
   "redirectUrl": "Redirect URL",
   "images": "Images",
-  "largeImage": "Large Image",
-  "thumbnail": "Thumbnail",
+  "largeImageUrl": "Large Image URL",
+  "thumbnailUrl": "Thumbnail URL",
+  "saveAttachmentsTitle": "Set up filehosts",
+  "saveAttachmentsDescription": "You can upload draft attachments directly to a filesharing service so that they can be used in backups or shared messages. All credentials are saved on your device, but they are <privacy>processed</privacy> by Discohook.",
+  "upload": "Upload",
+  "reupload": "Reupload",
   "galleryImageN": "Gallery Image {{n}}",
   "useLargeImages": "Use large images",
   "addImage": "Add Image",
@@ -639,8 +665,13 @@
   "contentOptional": "Content (optional)",
   "avatarUrl": "Avatar URL",
   "profileImmutable": "Profile info cannot be changed for existing messages.",
-  "filesCount": "Files ({{ count }}/10)",
+  "filesCount": "Attachments ({{ count }}/10)",
   "filesComponentsOnly": "There's nothing here. Files can be added by clicking the upload or paste buttons in a media gallery item, thumbnail, or file component.",
+  "referencedNTimes_one": "Referenced one time in this message",
+  "referencedNTimes_other": "Referenced {{ count }} times in this message",
+  "attachmentFileMissing": "File Missing",
+  "attachmentIsThumbnail": "Set as the thumbnail for this thread",
+  "filenameDuplicateWarning": "Some filenames are used more than once. This may cause <anchor>unexpected issues</anchor> when sending.",
   "addFile": "Add File",
   "replaceFile": "Replace File",
   "pasteFile": "Paste File",
@@ -651,6 +682,7 @@
   "fileDescription": "Description (alt text)",
   "fileDescriptionPlaceholder": "Add a description",
   "markSpoiler": "Mark as spoiler",
+  "spoiler": "Spoiler",
   "flags": "Flags",
   "flagsOptional": "Flags (optional)",
   "messageFlagsNote": "Flags are optional message features that can be enabled or disabled.",
@@ -687,6 +719,8 @@
   "optionsEmpty": "Must contain at least one select option",
   "embedEmpty": "Must contain text or an image",
   "embedsTooLarge": "Embeds must contain at most 6000 characters total (currently {{count}} too many)",
+  "componentTextTooLarge": "Components-based messages must contain at most {{maximum}} characters total (currently {{count}} too many)",
+  "charactersCount": "Characters: <counter>{{current}}/{{maximum}}</counter>",
   "embedsHidden": "You have the \"Hide embeds\" flag enabled, so all embeds will be hidden.",
   "usernameForbiddenSubstring": "Username cannot contain \"{{ substring }}\"",
   "usernameForbiddenString": "Username cannot be \"{{ substring }}\"",
@@ -728,11 +762,16 @@
     "unknown": "unknown",
     "unknownUser": "unknown-user",
     "deletedRole": "deleted-role",
+    "unknownGame": "unknown-game",
     "guide": "Server Guide",
     "browse": "Browse Channels",
     "customize": "Channels & Roles",
     "linked-roles": "Linked Roles"
   },
+  "datetime": "Date & Time",
+  "today": "Today",
+  "tooFarPast": "Too far in the past (min. {{ date, M/D/YYYY }})",
+  "tooFarFuture": "Too far in the future (max. {{ date, M/D/YYYY }})",
   "timestamp": {
     "time": "{{ date, h:mm A }}",
     "time_verbose": "{{ date, h:mm:ss A }}",
@@ -817,7 +856,8 @@
     "deprecated": "Deprecated",
     "recipes": "Recipes",
     "debug": "Debug",
-    "changelogs": "Changelogs"
+    "changelogs": "Changelogs",
+    "troubleshooting": "Troubleshooting"
   },
   "serverProfileDescription": "Here you can customize the user profile for Discohook Utils in your server. You can set a custom avatar and banner by clicking on them in the preview.",
   "bio": "Bio (about me)",

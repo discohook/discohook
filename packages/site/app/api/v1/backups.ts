@@ -1,8 +1,7 @@
-import { json } from "@remix-run/cloudflare";
 import { z } from "zod/v3";
 import { getUser, getUserId } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
 import { zxParseJson, zxParseQuery } from "~/util/zod";
 import {
   backups,
@@ -44,7 +43,7 @@ export const loader = async ({ request, context }: LoaderArgs) => {
     results.length < ids.length ||
     results.filter((r) => r.ownerId !== userId).length !== 0
   ) {
-    throw json(
+    throw jsonR(
       { message: "Some IDs were not found or are not owned by you." },
       404,
     );
@@ -104,7 +103,7 @@ export const findMessagesPreviewImageUrl = (
 export const action = async ({ request, context }: ActionArgs) => {
   const contentLength = Number(request.headers.get("Content-Length"));
   if (!contentLength || Number.isNaN(contentLength)) {
-    throw json({ message: "Must provide Content-Length header." }, 400);
+    throw jsonR({ message: "Must provide Content-Length header." }, 400);
   }
 
   const { name, data } = await zxParseJson(request, {
@@ -116,7 +115,7 @@ export const action = async ({ request, context }: ActionArgs) => {
   // 100 MiB per message
   const byteLimit = data.messages.length * 104_857_600;
   if (contentLength > byteLimit) {
-    throw json({
+    throw jsonR({
       message: "Data is too large (max. (100 * message_count) MiB).",
     });
   }
@@ -174,6 +173,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         importedFromOrg: backups.importedFromOrg,
         scheduled: backups.scheduled,
         nextRunAt: backups.nextRunAt,
+        updatedAt: backups.updatedAt,
         cron: backups.cron,
         timezone: backups.timezone,
       })

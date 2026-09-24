@@ -4,12 +4,14 @@ import { ButtonStyle } from "discord-api-types/v10";
 import mime from "mime";
 import { useRef, useState } from "react";
 import type { TFunction } from "~/types/i18next";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import { Button } from "../Button";
 
 export type PasteFileButtonProps = {
   t: TFunction;
   className?: string;
   onChange: (files: File[]) => void;
+  attachments: APIAttachment[];
   disabled?: boolean;
   multiple?: boolean;
   getChildren?(state: "idle" | "active" | "active_mac"): React.ReactNode;
@@ -92,9 +94,22 @@ export function PasteFileButton(props: PasteFileButtonProps) {
               // only one type in the array anyway.
               const blob = await item.getType(type ?? item.types[0]);
               const ext = mime.getExtension(blob.type);
+
+              // #93: append index to new unknown files if there is already a
+              // conflictingly named "unknown.png" for example
+              let unknownCount = 0;
+              for (const predecessor of props.attachments) {
+                if (
+                  /^unknown(\d+)?\.?/.test(predecessor.filename) &&
+                  (ext ? predecessor.filename.endsWith(`.${ext}`) : true)
+                ) {
+                  unknownCount += 1;
+                }
+              }
+              const suffix = unknownCount || "";
               const file = new File(
                 [blob],
-                ext ? `unknown.${ext}` : "unknown",
+                ext ? `unknown${suffix}.${ext}` : `unknown${suffix}`,
                 // For some reason this is not inferred from `blob.type`
                 { type: blob.type },
               );

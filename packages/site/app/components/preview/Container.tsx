@@ -4,8 +4,8 @@ import {
 } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
 import type { SetImageModalData } from "~/modals/ImageModal";
-import type { DraftFile } from "~/routes/_index";
 import type { APIMessageTopLevelComponent } from "~/types/QueryData";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { decimalToHex } from "../editor/ColorPicker";
 import { PreviewActionRow } from "./ActionRow";
@@ -17,7 +17,7 @@ import { PreviewTextDisplay } from "./TextDisplay";
 
 export interface TopLevelComponentPreviewProps {
   component: APIMessageTopLevelComponent;
-  files?: DraftFile[];
+  attachments?: APIAttachment[];
   cache: CacheManager | undefined;
   setImageModalData?: SetImageModalData;
   cdn?: string;
@@ -49,7 +49,7 @@ export const AutoTopLevelComponentPreview = (
 
 export const PreviewContainer: React.FC<{
   component: APIContainerComponent;
-  files?: DraftFile[];
+  attachments?: APIAttachment[];
   cache: CacheManager | undefined;
   setImageModalData?: SetImageModalData;
   cdn?: string;

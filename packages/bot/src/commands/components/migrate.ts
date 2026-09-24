@@ -261,6 +261,7 @@ export const migrateLegacyButtons = async (
           draft: false,
           type: ComponentType.Button,
           data,
+          createdById: ownerUser.id,
         });
       }
 
@@ -273,7 +274,7 @@ export const migrateLegacyButtons = async (
           id: discordMessageComponents.id,
           data: discordMessageComponents.data,
         });
-      return inserted;
+      return inserted.map((val) => ({ ...val, createdBy: ownerUser }));
     }),
   );
 

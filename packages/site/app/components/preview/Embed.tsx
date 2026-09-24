@@ -23,36 +23,41 @@ const getI18nTimestampFooterKey = (date: Moment) => {
   return "other";
 };
 
-export const resolveAttachmentUri = (
+export const resolveAttachmentUri = <T extends DraftFile | APIAttachment>(
   uri: string,
-  files?: DraftFile[] | undefined,
+  files?: T[] | undefined,
   allow?: boolean | readonly string[],
-) => {
+): T | undefined => {
   if (uri.startsWith("attachment://")) {
     const filename = uri.replace(/^attachment:\/\//, "");
-    return files?.find(
-      (file) =>
-        transformFileName(file.file.name) === filename &&
+    return files?.find((file) => {
+      const sourceFilename = transformFileName(
+        //                   Attachment      DraftFile
+        "filename" in file ? file.filename : file.file.name,
+      );
+      return (
+        sourceFilename === filename &&
         (allow === true
           ? true
           : (!allow ? ATTACHMENT_URI_EXTENSIONS : allow).find((ext) =>
-              file.file.name.toLowerCase().endsWith(ext),
-            ) !== undefined),
-    );
+              sourceFilename.toLowerCase().endsWith(ext),
+            ) !== undefined)
+      );
+    });
   }
 };
 
 export const getImageUri = (
   uri: string,
-  files?: DraftFile[] | undefined,
+  attachments?: APIAttachment[] | undefined,
 ): string => {
-  const file = resolveAttachmentUri(
+  const attachment = resolveAttachmentUri(
     uri.trim(),
-    files,
+    attachments,
     ATTACHMENT_URI_EXTENSIONS,
   );
-  if (file) {
-    return file.url ?? "";
+  if (attachment) {
+    return attachment.url ?? "";
   } else if (!uri.startsWith("https://") && !uri.startsWith("http://")) {
     return "";
   }
@@ -65,7 +70,7 @@ type PreviewPlatform = "desktop" | "mobile";
 export const Embed: React.FC<{
   embed: APIEmbed;
   extraImages?: APIEmbedImage[];
-  files?: DraftFile[];
+  attachments?: APIAttachment[];
   cache?: CacheManager;
   setImageModalData?: SetImageModalData;
   isLinkEmbed?: boolean;
@@ -74,7 +79,7 @@ export const Embed: React.FC<{
 }> = ({
   embed,
   extraImages,
-  files,
+  attachments,
   cache,
   setImageModalData,
   isLinkEmbed,
@@ -176,7 +181,7 @@ export const Embed: React.FC<{
               ) : (
                 <img
                   className="h-6 w-6 mr-2 object-contain rounded-full"
-                  src={getImageUri(embed.author.icon_url, files)}
+                  src={getImageUri(embed.author.icon_url, attachments)}
                   alt="Author"
                 />
               ))}
@@ -322,7 +327,7 @@ export const Embed: React.FC<{
                     content_type: image.url.endsWith(".gif")
                       ? "image/gif"
                       : "image/png",
-                    url: getImageUri(image.url, files),
+                    url: getImageUri(image.url, attachments),
                   }) as APIAttachment,
               )}
               setImageModalData={setImageModalData}
@@ -352,7 +357,7 @@ export const Embed: React.FC<{
               if (setImageModalData) {
                 setImageModalData({
                   images: [
-                    { url: getImageUri(embed.thumbnail?.url ?? "", files) },
+                    { url: getImageUri(embed.thumbnail?.url ?? "", attachments) },
                   ],
                   startIndex: 0,
                 });
@@ -369,7 +374,7 @@ export const Embed: React.FC<{
               />
             ) : (
               <img
-                src={getImageUri(embed.thumbnail.url, files)}
+                src={getImageUri(embed.thumbnail.url, attachments)}
                 className="rounded max-w-[80px] max-h-20"
                 alt="Thumbnail"
               />
@@ -394,7 +399,7 @@ export const Embed: React.FC<{
                   ) : (
                     <img
                       className="h-5 w-5 mr-2 object-contain rounded-full"
-                      src={getImageUri(footer.icon_url, files)}
+                      src={getImageUri(footer.icon_url, attachments)}
                       alt="Footer"
                     />
                   ))}

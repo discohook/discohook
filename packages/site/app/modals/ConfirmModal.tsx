@@ -7,7 +7,7 @@ export interface ConfirmModalProps {
 }
 
 export const ConfirmModal = (
-  props: ModalProps & Partial<ConfirmModalProps>,
+  props: Omit<ModalProps, "children"> & Partial<ConfirmModalProps>,
 ) => {
   const { title, children, ...rest } = props;
   return (
@@ -22,6 +22,7 @@ export const useConfirmModal = () => {
   const [props, setProps] = useState<ConfirmModalProps>();
   return [
     <ConfirmModal
+      key="0"
       open={!!props}
       setOpen={() => setProps(undefined)}
       {...props}

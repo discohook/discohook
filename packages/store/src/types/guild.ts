@@ -12,4 +12,9 @@ export type TriggerKVGuild = PartialKVGuild & {
   vanity_code: string | null;
   emoji_limit?: number;
   sticker_limit?: number;
+  _roles?: {
+    id: string;
+    position: number;
+    permissions: string;
+  }[];
 };

@@ -17,26 +17,29 @@ import {
   MessageFlags,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { PermissionFlags } from "discord-bitflag";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isValidRequest, PlatformAlgorithm } from "discord-verify";
 import { eq } from "drizzle-orm";
 import i18next from "i18next";
 import { type IRequest, Router } from "itty-router";
 import { jwtVerify } from "jose";
 import {
+  autoRollbackTx,
   discordMessageComponents,
-  type DraftComponent,
   type DraftFlow,
   ensureComponentFlows,
   getchTriggerGuild,
   getDb,
   getRedis,
+  type HotComponent,
   launchComponentKV,
   type TriggerKVGuild,
+  upsertDiscordUser,
 } from "store";
 import { Snowflake } from "tif-snowflake";
 import { type AppCommandCallbackT, appCommands, respond } from "./commands.js";
 import { migrateLegacyButtons } from "./commands/components/migrate.js";
+import { getFlowDiagnosticEmbed, promiseTimeout } from "./commands/triggers.js";
 import {
   type ComponentCallbackT,
   type ComponentRoutingId,
@@ -52,9 +55,12 @@ import {
 } from "./events.js";
 import {
   executeFlow,
+  type FlowResult,
+  getResponsibleUser,
   type LiveVariables,
   resumeFlowFromBouncer,
 } from "./flows/flows.js";
+import { FlowLogger } from "./flows/logger.js";
 import { InteractionContext } from "./interactions.js";
 import type { Env } from "./types/env.js";
 import {
@@ -63,8 +69,10 @@ import {
 } from "./types/webhook-events.js";
 import { getComponentId, parseAutoComponentId } from "./util/components.js";
 import { isDiscordError } from "./util/error.js";
+import { color } from "./util/meta.js";
 import { createREST } from "./util/rest.js";
 import { sleep } from "./util/sleep.js";
+import { sortRoles } from "./util/user.js";
 
 // durable objects
 export { EmojiManager } from "./emojis.js";
@@ -203,7 +211,10 @@ const handleInteraction = async (
       return noChoices;
     }
   } else if (interaction.type === InteractionType.MessageComponent) {
-    const { custom_id: customId, component_type: type } = interaction.data;
+    const { custom_id: customId_, component_type: type } = interaction.data;
+    const DEBUG = customId_.startsWith("DBG_");
+    const customId = customId_.replace(/^DBG_/, "");
+
     if (customId.startsWith("t_")) {
       const state = await env.KV.get<MinimumKVComponentState>(
         `component-${type}-${customId}`,
@@ -267,6 +278,46 @@ const handleInteraction = async (
         });
       }
 
+      // need to do this before hotComponent logic so that we can resolve responsibleUser
+      let guild: TriggerKVGuild;
+      try {
+        guild = await getchTriggerGuild(rest, env, guildId);
+      } catch (e) {
+        if (isDiscordError(e) && e.code === RESTJSONErrorCodes.UnknownGuild) {
+          return respond(
+            ctx.reply({
+              content:
+                "Discohook Utils needs to be a member of this server in order to use components.",
+              ephemeral: true,
+              components: [
+                {
+                  type: ComponentType.ActionRow,
+                  components: [
+                    {
+                      type: ComponentType.Button,
+                      style: ButtonStyle.Link,
+                      label: "Add Bot",
+                      url: `https://discord.com/oauth2/authorize?${new URLSearchParams(
+                        {
+                          client_id: interaction.application_id,
+                          scope: "bot",
+                          guild_id: guildId,
+                          disable_guild_select: "true",
+                          integration_type: String(
+                            ApplicationIntegrationType.GuildInstall,
+                          ),
+                        },
+                      )}`,
+                    },
+                  ],
+                },
+              ],
+            }),
+          );
+        }
+        throw e;
+      }
+
       const db = getDb(env.HYPERDRIVE);
       // Jan 7 2026: Moving away from durable objects for component storage
       // for a few reasons:
@@ -274,17 +325,8 @@ const handleInteraction = async (
       // - May be introducing data-update latency
       // - Future bot version (non-worker) will not be able to easily access
       //   DOs and I expect it wouldn't benefit much from using them
-      //
-      // However, I'm anticipating some downsides:
-      // - More stress on the DB server
-      // - Potentially more latency (DO KV probably faster than hyperdrive/webdis?)
       const kvKey = `custom-component-${componentId}`;
-      let hotComponent = await env.KV.get<{
-        data: DraftComponent;
-        channelId?: string;
-        guildId?: string;
-        createdById?: string;
-      }>(kvKey, "json");
+      let hotComponent = await env.KV.get<HotComponent>(kvKey, "json");
       if (!hotComponent) {
         const coldComponentPre =
           await db.query.discordMessageComponents.findFirst({
@@ -292,6 +334,7 @@ const handleInteraction = async (
             columns: { id: true, guildId: true, channelId: true, data: true },
             with: {
               createdBy: { columns: { discordId: true } },
+              updatedBy: { columns: { discordId: true } },
               componentsToFlows: {
                 columns: {},
                 with: {
@@ -312,19 +355,60 @@ const handleInteraction = async (
         }
         const coldComponent = await ensureComponentFlows(coldComponentPre, db);
 
-        const newHotComponent = {
+        const newHotComponent: HotComponent = {
           data: coldComponent.data,
           channelId: coldComponent.channelId?.toString(),
           guildId: coldComponent.guildId?.toString(),
           createdById: coldComponent.createdBy?.discordId?.toString(),
+          updatedById: coldComponent.updatedBy?.discordId?.toString(),
         };
         if (!coldComponent.guildId) {
           // Allow the component creator to set this data since they can always
-          // access the component's contents
+          // access the component's contents, unless they have insufficient
+          // permissions within the server
           if (
-            coldComponent.createdBy?.discordId &&
-            coldComponent.createdBy.discordId === BigInt(ctx.user.id)
+            coldComponent.createdBy &&
+            String(coldComponent.createdBy.discordId) === ctx.user.id
           ) {
+            // I think this doesn't actually need to be checked, since the
+            // hierarchy is checked later anyway?
+            // if (guild.owner_id !== String(coldComponent.createdBy.discordId)) {
+            //   newHotComponent.responsibleUser = await getResponsibleUser(
+            //     rest,
+            //     guild,
+            //     String(coldComponent.createdBy.discordId),
+            //     "created the component",
+            //   );
+            //   if (!newHotComponent.responsibleUser) {
+            //     return respond(
+            //       ctx.reply({
+            //         content: [
+            //           "This component hasn't been linked with a server, and the",
+            //           "component owner could not be found in the current server.",
+            //           "For security, the component cannot be moved automatically.",
+            //         ].join(" "),
+            //         ephemeral: true,
+            //       }),
+            //     );
+            //   }
+            //   const respPermissions = new PermissionsBitField(
+            //     BigInt(newHotComponent.responsibleUser.guild_permissions),
+            //   );
+            //   if (!respPermissions.has(PermissionFlags.ManageWebhooks)) {
+            //     return respond(
+            //       ctx.reply({
+            //         content: [
+            //           "This component hasn't been linked with a server, and the",
+            //           'component owner does not have the "Manage Webhooks',
+            //           "permission in the current server.",
+            //           "For security, the component cannot be moved automatically.",
+            //         ].join(" "),
+            //         ephemeral: true,
+            //       }),
+            //     );
+            //   }
+            // }
+
             // deprecated - we want to move to "placements" instead, wherein
             // a component can be "shared" between multiple channels or even
             // guilds at once
@@ -368,50 +452,105 @@ const handleInteraction = async (
             ephemeral: true,
           });
         }
+        // I need to determine this at this level so that it can be cached,
+        // but unfortunately it adds delay to the defer. Hopefully it's not
+        // ultimately too much.
+        if (!newHotComponent.responsibleUser) {
+          const responsibleId =
+            coldComponent.updatedBy?.discordId ||
+            coldComponent.createdBy?.discordId;
+          const responsibleUser = responsibleId
+            ? await getResponsibleUser(
+                rest,
+                guild,
+                String(responsibleId),
+                coldComponent.updatedBy?.discordId
+                  ? "most recently edited the component"
+                  : "created the component",
+              )
+            : undefined;
+          newHotComponent.responsibleUser = responsibleUser;
+        }
 
         hotComponent = newHotComponent;
-        await launchComponentKV(env, { componentId, ...newHotComponent });
-      }
-      const component = hotComponent;
-
-      let guild: TriggerKVGuild;
-      try {
-        guild = await getchTriggerGuild(rest, env, guildId);
-      } catch (e) {
-        if (isDiscordError(e) && e.code === RESTJSONErrorCodes.UnknownGuild) {
-          return respond(
-            ctx.reply({
-              content:
-                "Discohook Utils needs to be a member of this server in order to use components.",
-              ephemeral: true,
-              components: [
-                {
-                  type: ComponentType.ActionRow,
-                  components: [
-                    {
-                      type: ComponentType.Button,
-                      style: ButtonStyle.Link,
-                      label: "Add Bot",
-                      url: `https://discord.com/oauth2/authorize?${new URLSearchParams(
-                        {
-                          client_id: interaction.application_id,
-                          scope: "bot",
-                          guild_id: guildId,
-                          disable_guild_select: "true",
-                          integration_type: String(
-                            ApplicationIntegrationType.GuildInstall,
-                          ),
-                        },
-                      )}`,
-                    },
-                  ],
-                },
-              ],
-            }),
+        eCtx.waitUntil(
+          launchComponentKV(env, { componentId, ...newHotComponent }),
+        );
+      } else if (!hotComponent.responsibleUser) {
+        // Attempt to resolve the user and re-store the component if it
+        // was stored with IDs but no resolution
+        const responsibleId =
+          hotComponent.updatedById || hotComponent.createdById;
+        if (responsibleId) {
+          const responsibleUser = await getResponsibleUser(
+            ctx.rest,
+            guild,
+            responsibleId,
+            hotComponent.updatedById
+              ? "most recently edited the component"
+              : "created the component",
+          );
+          hotComponent.responsibleUser = responsibleUser;
+          eCtx.waitUntil(
+            launchComponentKV(env, { componentId, ...hotComponent }),
           );
         }
-        throw e;
       }
+      // Allow the guild owner OR an administrator with the highest guild role
+      // to automatically take responsibility of unowned components.
+      // This usually happens when they create a component on the site but have not logged in.
+      // It's safe to "transfer" ownership since nobody already owns it, and it's safe to allow
+      // this person to be responsible due to their already elevated permissions.
+
+      const topRole = guild._roles
+        ? sortRoles([...guild._roles])[0]
+        : undefined;
+      const userGuildPermissions = new PermissionsBitField(
+        ...(ctx.interaction.member?.roles ?? []).map((id) =>
+          BigInt(guild._roles?.find((r) => r.id === id)?.permissions ?? "0"),
+        ),
+      );
+      if (
+        !hotComponent.createdById &&
+        (guild.owner_id === ctx.user.id ||
+          (topRole &&
+            ctx.interaction.member?.roles.includes(topRole.id) &&
+            userGuildPermissions.has(PermissionFlags.Administrator)))
+      ) {
+        hotComponent.responsibleUser = {
+          guild_permissions: userGuildPermissions.value.toString(),
+          // channel_permissions: ctx.userPermissons.value.toString(),
+          id: ctx.user.id,
+          username: ctx.user.username,
+          roles: ctx.interaction.member?.roles ?? [],
+          reason:
+            ctx.user.id === guild.owner_id
+              ? "claimed unowned component as server owner"
+              : "claimed unowned component as server admin + highest role",
+        };
+        eCtx.waitUntil(
+          (async () => {
+            await launchComponentKV(env, { componentId, ...hotComponent });
+            await db.transaction(
+              autoRollbackTx(async (tx) => {
+                let dbUser = await tx.query.users.findFirst({
+                  where: (users, { eq }) =>
+                    eq(users.discordId, BigInt(ctx.user.id)),
+                  columns: { id: true },
+                });
+                if (!dbUser) dbUser = await upsertDiscordUser(tx, ctx.user);
+
+                await tx
+                  .update(discordMessageComponents)
+                  .set({ createdById: dbUser.id, updatedById: dbUser.id })
+                  .where(eq(discordMessageComponents.id, componentId));
+              }),
+            );
+          })(),
+        );
+      }
+      const component = hotComponent;
+      if (env.ENVIRONMENT === "dev") console.log({ component });
 
       const liveVars: LiveVariables = {
         guild,
@@ -433,14 +572,6 @@ const handleInteraction = async (
           break;
       }
 
-      // This is what the switch could be reduced to, but I'm not sure I want
-      // to do this yet (+ select key filter)
-      // const allFlows =
-      //   "flow" in component.data
-      //     ? [component.data.flow]
-      //     : "flows" in component.data
-      //       ? Object.entries(component.data.flows)
-      //       : [];
       let flows: DraftFlow[] = [];
       switch (component.data.type) {
         case ComponentType.Button: {
@@ -522,8 +653,9 @@ const handleInteraction = async (
       // from one of the flows instead, especially for modals.
       eCtx.waitUntil(
         (async () => {
-          for (const flow of flows) {
-            const result = await executeFlow({
+          const logger = new FlowLogger();
+          const run = (flow: DraftFlow) => {
+            return executeFlow({
               env,
               flow,
               rest,
@@ -532,15 +664,65 @@ const handleInteraction = async (
               setVars: {
                 guildId,
                 channelId: interaction.channel.id,
-                // Possible confusing conflict with Delete Message action
                 messageId: interaction.message.id,
                 userId: ctx.user.id,
               },
               ctx,
               recursion: 0,
               deferred: true,
+              responsibleUser: component.responsibleUser,
+              responsibleUserId: component.createdById,
+              responsibilityReason: "created the component",
+              log: logger,
+              debug: DEBUG,
             });
-            if (env.ENVIRONMENT === "dev") console.log(result);
+          };
+
+          if (DEBUG) {
+            const processMsg = await ctx.followup.send({
+              embeds: [{ title: "Processing...", color }],
+              ephemeral: true,
+            });
+
+            const started = Date.now();
+            const results = await Promise.race([
+              (async (): Promise<FlowResult[]> => {
+                try {
+                  const flowResults = [];
+                  for (const flow of flows) {
+                    flowResults.push(await run(flow));
+                  }
+                  return flowResults;
+                } catch (e) {
+                  return [
+                    {
+                      status: "failure",
+                      message: `Function failed to complete: ${e}`,
+                    },
+                  ];
+                }
+              })(),
+              // Of course this will never actually happen because the
+              // waitUntil limit is 30 seconds. So perhaps it should be
+              // reduced but I don't like hardcoding the waitUntil timeout
+              // (+ I don't know precisely how much time I have left)
+              promiseTimeout<FlowResult[]>(840_000, [
+                {
+                  status: "failure",
+                  message: "Timeout after 14m",
+                },
+              ]),
+            ]);
+            const ended = Date.now();
+
+            await ctx.followup.editMessage(processMsg.id, {
+              embeds: [getFlowDiagnosticEmbed(results, started, ended, logger)],
+            });
+          } else {
+            for (const flow of flows) {
+              const result = await run(flow);
+              if (env.ENVIRONMENT === "dev") console.log(result);
+            }
           }
         })(),
       );
@@ -592,10 +774,10 @@ const handleInteraction = async (
 
       eCtx.waitUntil(
         (async () => {
-          let inserted: Pick<
+          let inserted: (Pick<
             typeof discordMessageComponents.$inferSelect,
             "id" | "data"
-          >[];
+          > & { createdBy: { discordId: bigint | null } | null })[];
           let rows: APIActionRowComponent<APIComponentInMessageActionRow>[];
           let guild: TriggerKVGuild;
           let oldIdMap: Record<string, string>;
@@ -644,18 +826,13 @@ const handleInteraction = async (
               ctx,
               recursion: 0,
               deferred: true,
+              responsibleUserId: thisButton.createdBy?.discordId?.toString(),
+              responsibilityReason: "created the component",
             });
             if (env.ENVIRONMENT === "dev") console.log(result);
           }
         })(),
       );
-
-      // Discord needs to know whether our eventual response will be ephemeral
-      // const thisOldButton = oldMessageButtons.find((b) => getOldCustomId(b));
-      // const ephemeral = !!(
-      //   thisOldButton &&
-      //   (thisOldButton.roleId || thisOldButton.customEphemeralMessageData)
-      // );
 
       // We might have an ephemeral followup but our first followup is always
       // editOriginalMessage. Luckily this doesn't matter anymore.

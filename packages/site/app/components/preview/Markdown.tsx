@@ -1,16 +1,17 @@
 // This file is a fork of @maddymeow's work on Discohook (AGPL 3.0) - thank you
 // https://github.com/discohook/site
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { TFunction } from "~/types/i18next";
-import type {
-  CacheManager,
-  Resolutions,
-  ResolvableAPIChannelType,
+import {
+  ApplicationType,
+  type CacheManager,
+  type Resolutions,
+  type ResolvableAPIChannelType,
 } from "~/util/cache/CacheManager";
-import { cdn } from "~/util/discord";
+import { cdn, cdnImgAttributes } from "~/util/discord";
 import { highlightCode } from "~/util/highlighting";
 import { getRelativeDateFormat } from "~/util/markdown/dates";
 import {
@@ -20,7 +21,6 @@ import {
   trimToNearestNonSymbolEmoji,
 } from "~/util/markdown/emoji";
 import { getRgbComponents } from "~/util/text";
-import { CoolIcon } from "../icons/CoolIcon";
 import {
   BrowseChannelIcon,
   ForumChannelIcon,
@@ -32,6 +32,7 @@ import {
   ThreadChannelIcon,
   VoiceChannelIcon,
 } from "../icons/channel";
+import { CoolIcon } from "../icons/CoolIcon";
 import { Twemoji } from "../icons/Twemoji";
 
 type Renderable = string | JSX.Element;
@@ -419,7 +420,7 @@ const escapeRule = defineRule({
 
 export const mentionStyle =
   "rounded-[3px] bg-blurple/[0.15] px-[2px] font-medium text-blurple [unicode-bidi:plaintext] dark:bg-blurple/30 dark:text-blurple-260 transition-colors transition-[50ms]";
-const actionableMentionStyle = twMerge(
+export const actionableMentionStyle = twMerge(
   mentionStyle,
   "cursor-pointer hover:bg-blurple hover:text-white dark:hover:bg-blurple dark:hover:text-white",
 );
@@ -1054,6 +1055,51 @@ const roleMentionRule = defineRule({
   },
 });
 
+const gameMentionRule = defineRule({
+  capture(source) {
+    const match = /^<@\$(\d+)>/.exec(source);
+    if (!match) return;
+    return {
+      size: match[0].length,
+      id: match[1],
+    };
+  },
+  data(capture) {
+    return { app: `app:${capture.id}` };
+  },
+  render(_capture, _render, data, t) {
+    if (data.app === undefined) {
+      return <span className={actionableMentionStyle}>@game</span>;
+    } else if (!data.app || data.app.type !== ApplicationType.Game) {
+      return (
+        <span>
+          @<Trans t={t} i18nKey="mention.unknownGame" />
+        </span>
+      );
+    }
+
+    const app = data.app;
+    return (
+      <span className={actionableMentionStyle}>
+        {app.icon ? (
+          <img
+            {...cdnImgAttributes(64, (size) =>
+              // biome-ignore lint/style/noNonNullAssertion: assured above
+              cdn.appIcon(app.id, app.icon!, {
+                size,
+                extension: "webp",
+              }),
+            )}
+            alt=""
+            className="size-4 rounded me-[3px] -mt-2 object-contain align-middle inline"
+          />
+        ) : null}
+        {app.name}
+      </span>
+    );
+  },
+});
+
 const commandMentionRule = defineRule({
   capture(source) {
     const match =
@@ -1161,6 +1207,7 @@ type RuleOptionKey =
   | "channelMentions"
   | "memberMentions"
   | "roleMentions"
+  | "gameMentions"
   | "commandMentions"
   | "customEmojis"
   | "unicodeEmojis"
@@ -1199,6 +1246,8 @@ export const ruleOptions: Record<
   channelMentions: { rule: channelMentionRule, title: true, full: true },
   memberMentions: { rule: memberMentionRule, full: true },
   roleMentions: { rule: roleMentionRule, full: true },
+  // currently only works in content, not embeds nor display components
+  gameMentions: { rule: gameMentionRule },
   commandMentions: { rule: commandMentionRule, full: true },
   customEmojis: { rule: customEmojiRule, title: true, full: true },
   unicodeEmojis: { rule: unicodeEmojiRule, title: true, full: true },
@@ -1281,8 +1330,13 @@ export const Markdown: React.FC<{
   cache?: CacheManager;
 }> = ({ content, features, cache }) => {
   const { t } = useTranslation();
-  const parse = createMarkdownParser(getRules(features ?? "full"));
-  const result = parse(trimContent(content));
+  const featuresKey =
+    typeof features === "string" ? features : JSON.stringify(features);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: featuresKey = features
+  const result = useMemo(() => {
+    const parse = createMarkdownParser(getRules(features ?? "full"));
+    return parse(trimContent(content));
+  }, [content, featuresKey]);
 
   const resolver = {
     resolved: cache?.state,

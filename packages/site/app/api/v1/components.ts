@@ -45,6 +45,9 @@ export const loader = async ({ request, context }: LoaderArgs) => {
             columns: {},
             with: { flow: { with: { actions: { columns: { data: true } } } } },
           },
+          // Not sure yet how we can efficiently show this in the editor without
+          // outdated state causing confusion down the line
+          // updatedBy: { columns: { discordId: true } },
         },
       });
       for (const component of components) {

@@ -1,11 +1,10 @@
+import matter from "front-matter";
 import {
-  json,
+  useLoaderData,
+  useNavigate,
   type MetaDescriptor,
   type MetaFunction,
-  type SerializeFrom,
-} from "@remix-run/cloudflare";
-import { useLoaderData, useNavigate } from "@remix-run/react";
-import matter from "front-matter";
+} from "react-router";
 import { z } from "zod/v3";
 import { Header } from "~/components/Header";
 import { Prose } from "~/components/Prose";
@@ -13,20 +12,28 @@ import { Markdown } from "~/components/preview/Markdown";
 import { TabsWindow } from "~/components/tabs";
 import { getUser } from "~/session.server";
 import { useCache } from "~/util/cache/CacheManager";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs, type SerializeFrom } from "~/util/loader";
 import { zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
   const { "*": path } = zxParseParams(params, {
     "*": z.string().regex(/^[\w/-]+$/),
   });
+  // We used to host changelogs in the guides section, but have now moved them
+  // to their own "news" route
+  if (path.startsWith("changelogs/")) {
+    throw new Response(null, {
+      status: 301,
+      headers: { Location: `/${path.replace(/^changelogs/, "news")}` },
+    });
+  }
 
   const fileResponse = await context.env.ASSETS.fetch(
     `http://localhost/guide-files/${path}.md`,
     { method: "GET" },
   );
   if (!fileResponse.ok) {
-    throw json({ message: fileResponse.statusText }, fileResponse.status);
+    throw jsonR({ message: fileResponse.statusText }, fileResponse.status);
   }
 
   const raw = await fileResponse.text();
@@ -41,7 +48,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     })
     .safeParseAsync(parsed.attributes);
   if (!zparsed.success) {
-    throw json(
+    throw jsonR(
       { message: "Invalid file", issues: zparsed.error.format() },
       500,
     );

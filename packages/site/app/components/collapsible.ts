@@ -1,4 +1,4 @@
-import { twJoin } from "tailwind-merge";
+import { twJoin, twMerge } from "tailwind-merge";
 
 // generic styles used for allowed mentions modal, panel also used in editor
 export const collapsibleStyles = {
@@ -13,7 +13,7 @@ export const collapsibleStyles = {
   editorPanel: "",
 };
 
-collapsibleStyles.editorPanel = twJoin(
+collapsibleStyles.editorPanel = twMerge(
   collapsibleStyles.panel,
   "space-y-0 duration-300",
 );

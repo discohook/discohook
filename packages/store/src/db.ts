@@ -7,8 +7,8 @@ import { eq, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { JSONParse, JSONStringify } from "json-with-bigint";
 import postgres from "postgres";
-import * as schema from "./schema/schema.js";
 import * as schemaV1 from "./schema/schema-v1.js";
+import * as schema from "./schema/schema.js";
 import type { DraftFlow } from "./types/components.js";
 import type { PartialKVGuild } from "./types/guild.js";
 
@@ -85,7 +85,7 @@ export const upsertGuild = async (db: DBWithSchema, guild: PartialKVGuild) => {
 };
 
 export const upsertDiscordUser = async (
-  db: DBWithSchema,
+  db: DBWithSchema | DBTransaction,
   user: APIUser,
   oauth?: {
     accessToken: string;

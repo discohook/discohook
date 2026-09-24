@@ -1,10 +1,9 @@
 ##: schema https://github.com/cloudflare/workers-sdk/files/12887590/wrangler.schema.json
 
 name = "discohook-site"
-main = "./build/index.js"
-compatibility_date = "2023-04-20"
-node_compat = true
-minify = true
+main = "./server.ts"
+compatibility_date = "2026-08-04"
+compatibility_flags = ["nodejs_compat"]
 
 services = [
   { binding = "CDN", service = "discohook-cdn", entrypoint = "UploaderService" },
@@ -50,9 +49,6 @@ deleted_classes = ["DurableComponentState"]
 [assets]
 directory = "./public"
 binding = "ASSETS"
-
-[build]
-command = "npm run build"
 
 [vars]
 ENVIRONMENT = "dev"

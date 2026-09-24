@@ -1,11 +1,8 @@
 import type { APIAttachment } from "~/types/QueryData-raw";
+import { isAudioType } from "~/util/files";
 import { fileSize } from "~/util/text";
 import { CoolIcon } from "../icons/CoolIcon";
 import { VoiceMemo } from "./VoiceMemo";
-
-export const isAudioType = (type: string | undefined): boolean =>
-  type !== undefined &&
-  (type.startsWith("audio/") || ["application/ogg"].includes(type));
 
 const GenericFileAttachment = ({
   attachment,

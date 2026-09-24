@@ -104,17 +104,21 @@ export const TextInput = (
         }}
         className={twMerge(textInputStyles.input, props.className)}
       />
-      {props.errors
-        ?.filter((e) => e !== undefined)
-        .map((error, i) => (
-          <p
-            key={`${props.id ?? label}-error-${i}`}
-            className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
-          >
-            <CoolIcon icon="Circle_Warning" className="me-1.5" />
-            {error}
-          </p>
-        ))}
+      {props.errors?.length ? (
+        <div className="break-words">
+          {props.errors
+            ?.filter((e) => e !== undefined)
+            .map((error, i) => (
+              <p
+                key={`${props.id ?? label}-error-${i}`}
+                className="text-rose-500 dark:text-rose-300 font-medium mt-1 text-sm"
+              >
+                <CoolIcon icon="Circle_Warning" className="me-1.5" />
+                {error}
+              </p>
+            ))}
+        </div>
+      ) : null}
     </label>
   );
 };

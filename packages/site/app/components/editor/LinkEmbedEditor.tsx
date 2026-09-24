@@ -11,7 +11,7 @@ import { Checkbox } from "../Checkbox";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
-import DatePicker from "../pickers/DatePicker";
+import { DatePickerPopoverWithTrigger } from "../pickers/DatePickerPopover";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { decimalToHex } from "./ColorPicker";
@@ -346,6 +346,7 @@ export const LinkEmbedEditor: React.FC<{
                     <TextInput
                       label={i === 0 ? t("url") : ""}
                       type="url"
+                      placeholder="https://..."
                       className="w-full"
                       value={img.url ?? ""}
                       disabled={!img.url && !!embed.video?.url}
@@ -360,7 +361,9 @@ export const LinkEmbedEditor: React.FC<{
                   <button
                     type="button"
                     className={twJoin(
-                      "ml-1 rounded border min-h-[36px] max-h-9 pb-0 pt-0.5 px-2 bg-gray-300 border-gray-200 dark:border-transparent dark:bg-[#292b2f] hover:text-red-400 transition",
+                      "ms-1 rounded-lg h-9 pb-0 pt-0.5 px-2 bg-gray-200 dark:bg-[#333338]",
+                      "border border-border-normal dark:border-border-normal-dark",
+                      "hover:text-red-400 active:hover:border-red-400 transition",
                       i === 0 ? "mt-5" : "",
                     )}
                     onClick={() => {
@@ -512,12 +515,12 @@ export const LinkEmbedEditor: React.FC<{
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <DatePicker
-              label={t("date")}
+            <DatePickerPopoverWithTrigger
+              t={t}
               value={embed.timestamp ? new Date(embed.timestamp) : null}
-              onChange={(opt) =>
+              onValueChange={(date) =>
                 updateEmbed({
-                  timestamp: opt ? opt.date.toISOString() : undefined,
+                  timestamp: date ? date.toISOString() : undefined,
                 })
               }
               isClearable
@@ -525,7 +528,7 @@ export const LinkEmbedEditor: React.FC<{
             <TextInput
               label={t("timeText")}
               type="time"
-              className="w-full"
+              className="w-full h-8"
               disabled={!embed.timestamp}
               step={60}
               value={

@@ -1,5 +1,5 @@
-import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
+import { data as json } from "react-router";
 import {
   autoRollbackTx,
   triggers as dTriggers,
@@ -11,7 +11,7 @@ import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { TriggerEvent } from "~/store.server";
 import { refineZodDraftFlowMax } from "~/types/flows";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import {
   snowflakeAsString,
@@ -80,7 +80,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   if (request.method !== "POST") {
-    throw json({ message: "Method Not Allowed" }, 405);
+    throw jsonR({ message: "Method Not Allowed" }, 405);
   }
   const { guildId } = zxParseParams(params, {
     guildId: snowflakeAsString(),

@@ -3,28 +3,33 @@ import mime from "mime";
 import { useMemo } from "react";
 import type { SetImageModalData } from "~/modals/ImageModal";
 import type { DraftFile } from "~/routes/_index";
-import {
-  isDiscordAttachmentUrl,
-  parseAttachmentUrl
-} from "~/util/discord";
+import type { APIAttachment } from "~/types/QueryData-raw";
+import { isDiscordAttachmentUrl, parseAttachmentUrl } from "~/util/discord";
 import { getImageUri } from "./Embed";
 import { Gallery } from "./Gallery";
 
 export const PreviewMediaGallery: React.FC<{
   component: APIMediaGalleryComponent;
-  files?: DraftFile[];
+  attachments?: APIAttachment[];
   setImageModalData?: SetImageModalData;
   cdn?: string;
-}> = ({ component: gallery, files, setImageModalData, cdn }) => {
+}> = ({ component: gallery, attachments, setImageModalData, cdn }) => {
   const origin = useMemo(() => {
     try {
       return window.origin;
     } catch {
-      return "http://localhost";
+      return "http://localhost:8788";
     }
   }, []);
   return (
     <div>
+      {/* .visualMediaItemContainer .isInAppComponentsV2 */}
+      {/*
+        BUG: some gallery sizes (6, 8, 9, prev. 2) do not auto-fill to 600px when
+        there is no other content in the message. this is a minor issue but
+        can cause confusion
+      */}
+      {/* <div className="max-w-[600px] h-full w-full overflow-hidden rounded-lg"> */}
       <Gallery
         cdn={cdn}
         setImageModalData={setImageModalData}
@@ -32,8 +37,8 @@ export const PreviewMediaGallery: React.FC<{
           let url = item.media.url;
           let file: DraftFile | undefined;
 
-          if (url.startsWith("attachment://") && files) {
-            const fileUrl = getImageUri(url, files);
+          if (url.startsWith("attachment://") && attachments) {
+            const fileUrl = getImageUri(url, attachments);
             if (fileUrl) url = fileUrl;
           }
           // Allow server to refresh (proxy) attachments if they
@@ -70,6 +75,7 @@ export const PreviewMediaGallery: React.FC<{
           };
         })}
       />
+      {/* </div> */}
     </div>
   );
 };

@@ -1,10 +1,16 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
-import { type APIWebhook, Routes, WebhookType } from "discord-api-types/v10";
+import { data as json } from "react-router";
+import {
+  type APIWebhook,
+  RESTJSONErrorCodes,
+  Routes,
+  WebhookType,
+} from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
+import { isDiscordError } from "~/util/discord";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
@@ -27,7 +33,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const db = getDb(context.env.HYPERDRIVE);
   const dbWebhook = await db.query.webhooks.findFirst({
     where: (webhooks, { and, eq }) =>
-      and(eq(webhooks.platform, "discord"), eq(webhooks.id, String(webhookId))),
+      and(
+        eq(webhooks.platform, "discord"),
+        eq(webhooks.id, String(webhookId)),
+        eq(webhooks.discordGuildId, guildId),
+      ),
     columns: {
       token: true,
       applicationId: true,
@@ -62,12 +72,45 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   let webhook: APIWebhook;
   try {
+    // this endpoint requires fewer permissions than Get Guild Webhooks
+    // (manage_webhooks not required if webhook is app-owned)
     webhook = (await rest.get(Routes.webhook(String(webhookId)))) as APIWebhook;
-  } catch {
-    throw respond(
-      json({ message: "No such webhook or it is inaccesible." }, 404),
-    );
+  } catch (e) {
+    if (isDiscordError(e)) {
+      switch (e.code) {
+        case RESTJSONErrorCodes.MissingAccess:
+        case RESTJSONErrorCodes.MissingPermissions:
+          throw respond(
+            json(
+              {
+                code: e.code,
+                message:
+                  "Cannot fetch webhooks in this server. Discohook Utils needs the Manage Webhooks permission in the channel.",
+                context: {
+                  guild: { id: String(guildId) },
+                  required_permissions: String(PermissionFlags.ManageWebhooks),
+                },
+              },
+              e.status,
+            ),
+          );
+        case RESTJSONErrorCodes.UnknownWebhook:
+          throw respond(
+            json({ code: e.code, message: `${e.rawError.message}` }, e.status),
+          );
+        default:
+          throw respond(
+            json(
+              { code: e.code, message: `[${e.code}] ${e.rawError.message}` },
+              e.status,
+            ),
+          );
+      }
+    }
+    console.error(e);
+    throw respond(json({ message: "Failed to fetch the webhook." }, 500));
   }
+
   if (webhook.type !== WebhookType.Incoming) {
     throw respond(
       json(
@@ -85,7 +128,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     .values({
       platform: "discord",
       id: webhook.id,
-      discordGuildId: guildId,
+      discordGuildId: webhook.guild_id ? BigInt(webhook.guild_id) : undefined,
       channelId: webhook.channel_id,
       name: webhook.name ?? "",
       avatar: webhook.avatar,
@@ -107,6 +150,11 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   if (!webhook.token) {
     throw respond(
       json({ message: "Discohook cannot access this webhook's token." }, 404),
+    );
+  }
+  if (webhook.guild_id !== String(guildId)) {
+    throw respond(
+      json({ message: "Incorrect server ID passed for the webhook." }, 403),
     );
   }
 

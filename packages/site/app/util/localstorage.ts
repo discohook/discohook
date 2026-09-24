@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import type { LocaleCode } from "~/i18n";
 
+interface FilehostConfigurationBase {
+  position?: number;
+}
+
 export interface Settings {
   theme?: "light" | "dark" | "sync";
   messageDisplay?: "cozy" | "compact";
@@ -10,8 +14,24 @@ export interface Settings {
   forceDualPane?: boolean;
   locale?: LocaleCode;
   defaultMessageFlag?: "standard" | "components";
+  autoPickFilehost?: boolean;
+  filehosts?: Partial<{
+    catbox: FilehostConfigurationBase & {
+      cookie: boolean;
+    };
+    imgbb: FilehostConfigurationBase & {
+      cookie?: boolean;
+      access_token?: string;
+    };
+    sxcu: FilehostConfigurationBase & {
+      domain?: string;
+      token?: string;
+    };
+    postimages: FilehostConfigurationBase;
+  }>;
+
   developer?: boolean;
-  experiments?: { id: string }[];
+  experiments?: (typeof EXPERIMENTS)[number][];
 }
 
 export const useLocalStorage = <T = Settings>(
@@ -57,4 +77,29 @@ export const EXPERIMENTS = [
     description:
       "Upload attachments to a media channel and re-use them in backups",
   },
-];
+] as const;
+
+export type EXPERIMENT_ID = (typeof EXPERIMENTS)[number]["id"];
+
+export const experimentEnabled = (
+  experimentId: EXPERIMENT_ID,
+  settings?: Pick<Settings, "experiments">,
+): boolean => {
+  if (settings) {
+    return (
+      settings.experiments?.find((e) => e.id === experimentId) !== undefined
+    );
+  }
+  try {
+    const settings = JSON.parse(
+      localStorage.getItem("discohook_settings") ?? "{}",
+    );
+    return (
+      (settings.experiments as { id: string }[])?.find(
+        (e) => e.id === experimentId,
+      ) !== undefined
+    );
+  } catch {
+    return false;
+  }
+};

@@ -20,7 +20,7 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
     content: [
       "Hey, welcome to <:discohook:736648398081622016> **Discohook**! The easiest way to personalize your Discord server.",
       "",
-      "There's more info below if you want to read it. When you're ready, press **Clear All** at the top of the editor to delete what's written here.",
+      "There's more info below if you want to read it. When you're ready, create a new message in the editor (on the left), or you can play around with the default message.",
       "",
       "_ _",
     ].join("\n"),
@@ -62,10 +62,6 @@ export const INDEX_MESSAGE: QueryData["messages"][number] = {
         color: 0x58b9ff,
       },
     ],
-    // This kind of goes against our philosophy to only show components that
-    // exist on the server. Conversely, this sort of thing is inevitable due
-    // to the way query data works, so I'm allowing it for now. I think it's
-    // something that we'll want the server to deal with.
     components: [
       {
         type: ComponentType.ActionRow,

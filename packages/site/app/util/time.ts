@@ -60,10 +60,7 @@ export const timeDiff = (earlier: Date, later: Date, short = false) => {
   return { text: diffText, future: later.getTime() < earlier.getTime() };
 };
 
-export const relativeTime = (
-  date: Date,
-  t: TFunction<"translation", undefined>,
-): string => {
+export const relativeTime = (date: Date, t: TFunction): string => {
   const [relativeFormat, n] = getRelativeDateFormat(date);
   return t(`timestamp.relative.${relativeFormat}`, { count: n });
 };

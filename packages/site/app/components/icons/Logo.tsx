@@ -1,5 +1,5 @@
 import { twJoin } from "tailwind-merge";
-import { IconFC, Svg } from "./Svg";
+import { type IconFC, Svg } from "./Svg";
 
 export const Logo = (props: { pink?: boolean }) => (
   <Svg width={32} height={32} viewBox="8 8 16 16">

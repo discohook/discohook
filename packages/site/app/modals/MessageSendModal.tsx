@@ -1,29 +1,21 @@
-import { Dialog } from "@base-ui-components/react/dialog";
-import type { DiscordErrorData, REST } from "@discordjs/rest";
+import { Dialog } from "@base-ui/react/dialog";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
-  type APIEmbed,
-  type APIMessage,
   type APIWebhook,
   ButtonStyle,
   ComponentType,
-  MessageFlags,
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
-import { BitField, MessageFlagsBitField } from "discord-bitflag";
 import { useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
-import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
+import { getSetEditingComponentProps } from "~/components/editor/ActionRowEditor";
 import type { SetErrorFunction } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
-import type {
-  FluxerAPIWebhook,
-  FluxerAPIWebhookWithoutUser,
-} from "~/types/fluxer";
+import type { FluxerAPIWebhookWithoutUser } from "~/types/fluxer";
 import type { TFunction } from "~/types/i18next";
 import type {
   APIComponentInMessageActionRow,
@@ -31,24 +23,17 @@ import type {
   QueryData,
 } from "~/types/QueryData";
 import {
-  QueryDataTarget,
+  type QueryDataTarget,
   type TargetBot,
   type TargetFluxerWebhook,
   TargetType,
 } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
-import {
-  executeWebhook,
-  hasCustomId,
-  isActionRow,
-  isComponentsV2,
-  onlyActionRows,
-  updateWebhookMessage,
-} from "~/util/discord";
-import { executeFluxerWebhook } from "~/util/fluxer";
+import { isActionRow } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageDisplayName } from "~/util/message";
+import { submitMessage, type SubmitMessageResult } from "~/util/submitMessage";
 import type { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import {

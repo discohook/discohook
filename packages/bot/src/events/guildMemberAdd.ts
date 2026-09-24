@@ -43,6 +43,7 @@ export const getWelcomerConfigurations = async (
       flow: true,
       flowId: true,
     },
+    with: { updatedBy: { columns: { discordId: true } } },
     where: and(
       eq(triggers.platform, "discord"),
       eq(triggers.discordGuildId, makeSnowflake(guild.id)),
@@ -224,7 +225,14 @@ export const getWelcomerConfigurations = async (
           id: triggers.id,
           disabled: triggers.disabled,
         });
-      configs = [{ ...protoConfigs[0], flow, flowId: null }];
+      configs = [
+        {
+          ...protoConfigs[0],
+          flow,
+          flowId: null,
+          updatedBy: { discordId: BigInt(dUserId) },
+        },
+      ];
       await db.delete(oldTable).where(eq(oldTable.id, oldConfiguration[0].id));
     }
   } else {
@@ -276,6 +284,10 @@ export const guildMemberAddCallback: GatewayEventCallback = async (
         db,
         liveVars: { member: payload, user: payload.user, guild },
         deferred,
+        responsibleUserId: trigger.updatedBy
+          ? String(trigger.updatedBy.discordId)
+          : undefined,
+        responsibilityReason: "most recently edited the Member Join trigger",
       }),
     );
   }

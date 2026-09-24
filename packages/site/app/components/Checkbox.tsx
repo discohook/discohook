@@ -1,4 +1,4 @@
-import { Checkbox as MuiCheckbox } from "@base-ui-components/react/checkbox";
+import { Checkbox as MuiCheckbox } from "@base-ui/react/checkbox";
 import { twJoin } from "tailwind-merge";
 import { CoolIcon } from "./icons/CoolIcon";
 

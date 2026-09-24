@@ -1,18 +1,23 @@
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
-import { CoolIcon, CoolIconsGlyph } from "~/components/icons/CoolIcon";
+import { CoolIcon, type CoolIconsGlyph } from "~/components/icons/CoolIcon";
 import { Twemoji } from "~/components/icons/Twemoji";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Radio } from "~/components/Radio";
+import { TextInput } from "~/components/TextInput";
 import type { LocaleCode } from "~/i18n";
 import type { User } from "~/session.server";
-import type { TFunction, i18n } from "~/types/i18next";
+import type { i18n, TFunction } from "~/types/i18next";
+import { fileHosts } from "~/util/filehosts";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
+import { fileSize } from "~/util/text";
 import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
 
 interface LanguageEntry {
@@ -77,6 +82,641 @@ const LocaleRadio = ({
     }}
   />
 );
+
+const summarizeAccept = (types: string[]): string => {
+  const summary: string[] = [];
+  if (types.includes("image/*")) {
+    summary.push("images");
+  } else {
+    const exts = types
+      .filter(
+        (t) =>
+          t.startsWith("image/") ||
+          // biome-ignore format: long
+          [".png",".jpg",".jpeg",".webp",".heic",".heif",".avif",".bmp",".tif",".tiff",".gif",".hdr",".pic",".pict",".raw",".tga",".svg",".psd"].includes(t),
+      )
+      .map((t) => t.replace(/^image\/|^\./, ""));
+    if (
+      // I consider this "baseline" image support; what most people would
+      // expect to be able to upload to a service that "accepts images"
+      exts.includes("png") &&
+      (exts.includes("jpg") || exts.includes("jpeg")) &&
+      exts.includes("gif") &&
+      exts.includes("webp")
+    ) {
+      summary.push("images");
+    } else {
+      const formatted = exts
+        .map((ext) => {
+          const cased = { webp: "WebP", jpeg: "JPG" }[ext] ?? ext.toUpperCase();
+          return `${cased}s`;
+        })
+        // remove duplicates (jpeg and jpg both come out to "JPGs")
+        .filter((v, i, a) => a.indexOf(v) === i);
+      summary.push(...formatted);
+    }
+  }
+  if (types.includes("video/*")) {
+    summary.push("videos");
+  } else {
+    const exts = types
+      .filter(
+        (t) =>
+          t.startsWith("video/") ||
+          // biome-ignore format: long
+          [".mp4",".avi",".divx",".wmv",".mov",".mov",".mkv",".mpeg",".mpg"].includes(t),
+      )
+      .map((t) => {
+        const stripped = t.replace(/^video\/|^\./, "");
+        const formatted = { divx: "DivX" }[stripped] ?? stripped.toUpperCase();
+        return `${formatted}s`;
+      });
+    summary.push(...exts);
+  }
+  if (
+    types.includes(".pdf") ||
+    types.includes(".doc") ||
+    types.includes(".docx") ||
+    types.includes(".xls") ||
+    types.includes(".xlsx")
+  ) {
+    summary.push("documents");
+  }
+  if (
+    types.includes(".exe") ||
+    types.includes(".bin") ||
+    types.includes(".dylib") ||
+    types.includes(".dll") ||
+    types.includes(".jar")
+  ) {
+    summary.push("program files");
+  }
+  return new Intl.ListFormat().format(summary);
+};
+
+const FilehostConfigurationModal = ({
+  id,
+  name,
+  children,
+  ...props
+}: ModalProps & {
+  id: string;
+  name: string;
+  children: React.ReactNode;
+}) => {
+  return (
+    <Modal {...props}>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        Link your {name}
+      </PlainModalHeader>
+      {children}
+    </Modal>
+  );
+};
+
+const FilehostConfigurationBase = ({
+  id,
+  name,
+  iconUrl,
+  clearConfig,
+  children,
+}: React.PropsWithChildren<{
+  t: TFunction;
+  id: string;
+  name: string;
+  iconUrl: string;
+  hasConfig?: boolean;
+  clearConfig?: () => void;
+}>) => {
+  const info = fileHosts.find((f) => f.id === id);
+  return (
+    <div
+      className={twJoin(
+        "rounded-lg bg-gray-100 dark:bg-gray-700",
+        "border border-border-normal dark:border-border-normal-dark",
+      )}
+    >
+      <div className="flex items-center p-4 pb-0">
+        <img
+          src={iconUrl}
+          alt={`${name} logo`}
+          className="size-8 me-3 rounded"
+        />
+        <div>
+          <p className="font-medium text-lg">{name}</p>
+          {info ? (
+            <p className="text-sm text-muted dark:text-muted-dark leading-tight">
+              {fileSize(info.maxSize)} per file
+              {info.accept ? (
+                <>
+                  ,{" "}
+                  <span title={info.accept.join(", ")}>
+                    accepts {summarizeAccept(info.accept)}
+                  </span>
+                </>
+              ) : (
+                ""
+              )}
+            </p>
+          ) : null}
+        </div>
+        {clearConfig ? (
+          <button
+            type="button"
+            onClick={clearConfig}
+            className="ms-auto self-start opacity-50 hover:opacity-100 transition-opacity"
+          >
+            <CoolIcon
+              icon="Close_MD"
+              className="text-muted dark:text-muted-dark"
+            />
+          </button>
+        ) : null}
+      </div>
+      <div className="p-4 pt-2">{children}</div>
+    </div>
+  );
+};
+
+const FilehostConfigurationImgbb = ({
+  t,
+  settings,
+  updateSettings,
+}: {
+  t: TFunction;
+  settings: Settings;
+  updateSettings: (data: Partial<Settings>) => void;
+}) => {
+  const id = "imgbb";
+  const fh = settings.filehosts ?? {};
+  return (
+    (<FilehostConfigurationBase
+      t={t}
+      id={id}
+      name="ImgBB"
+      iconUrl="/logos/imgbb.png"
+      clearConfig={async () => {
+        const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+          method: "POST",
+          body: JSON.stringify({ key: null }),
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.ok) {
+          updateSettings({ filehosts: { ...fh, [id]: undefined } });
+        }
+      }}
+    >
+      <form
+        className="flex items-end gap-2"
+        onSubmit={async (e) => {
+          const form = e.currentTarget;
+          e.preventDefault();
+          const key = new FormData(form).get("key");
+          if (!key) return;
+
+          const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+            method: "POST",
+            body: JSON.stringify({ key }),
+            headers: { "Content-Type": "application/json" },
+          });
+          if (res.ok) {
+            updateSettings({
+              filehosts: {
+                ...fh,
+                [id]: { ...fh[id], cookie: true },
+              },
+            });
+            form.reset();
+          }
+        }}
+      >
+        <TextInput
+          name="key"
+          labelClassName="grow"
+          label={
+            <p className="flex items-center gap-x-1">
+              Key{" "}
+              {fh[id]?.cookie ? (
+                <CoolIcon
+                  icon="Circle_Check"
+                  className="text-green-400 align-[center]"
+                />
+              ) : (
+                <CoolIcon
+                  icon="Remove_Minus_Circle"
+                  className="text-muted dark:text-muted-dark align-[center]"
+                />
+              )}
+            </p>
+          }
+          description={
+            <Trans
+              t={t}
+              i18nKey={
+                fh[id]?.cookie
+                  ? "Your API key is set, but not shown here for security. Visit <anchor>imgbb.com</anchor> to view or delete it."
+                  : "Your <anchor>API key</anchor> is a private string that Discohook can use to upload on your behalf. Without it, images may still be uploaded anonymously."
+              }
+              components={{
+                anchor: (
+                  // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+                  (<a
+                    href="https://api.imgbb.com"
+                    className={linkClassName}
+                    target="_blank"
+                    rel="noopener"
+                  />)
+                ),
+              }}
+            />
+          }
+          pattern="^\w+$"
+          type="password"
+          className="w-full"
+          placeholder="1abcd2345e6fg7h8ijk901lmno234p5q"
+        />
+        <Button
+          type="submit"
+          discordstyle={ButtonStyle.Primary}
+          className="h-9"
+        >
+          {t("save")}
+        </Button>
+      </form>
+    </FilehostConfigurationBase>)
+  );
+};
+
+const FilehostConfigurationPostimages = ({
+  t,
+  settings,
+  updateSettings,
+}: {
+  t: TFunction;
+  settings: Settings;
+  updateSettings: (data: Partial<Settings>) => void;
+}) => {
+  const id = "postimages";
+  const fh = settings.filehosts ?? {};
+  return (
+    <FilehostConfigurationBase
+      t={t}
+      id={id}
+      name="Postimages"
+      iconUrl="/logos/postimages.png"
+      clearConfig={async () => {
+        updateSettings({ filehosts: { ...fh, [id]: undefined } });
+      }}
+    >
+      <form
+        className="flex items-end gap-2"
+        onSubmit={async (e) => {
+          const form = e.currentTarget;
+          e.preventDefault();
+          form.reset();
+        }}
+      >
+        <Button
+          type="submit"
+          discordstyle={ButtonStyle.Primary}
+          className="h-9"
+        >
+          {t("save")}
+        </Button>
+      </form>
+    </FilehostConfigurationBase>
+  );
+};
+
+const FilehostConfigurationSxcu = ({
+  t,
+  settings,
+  updateSettings,
+}: {
+  t: TFunction;
+  settings: Settings;
+  updateSettings: (data: Partial<Settings>) => void;
+}) => {
+  const id = "sxcu";
+  const fh = settings.filehosts ?? {};
+  return (
+    (<FilehostConfigurationBase
+      t={t}
+      id={id}
+      name="sxcu"
+      iconUrl="/logos/sxcu.png"
+      clearConfig={async () => {
+        updateSettings({ filehosts: { ...fh, [id]: undefined } });
+      }}
+    >
+      <form
+        className="flex items-end gap-2"
+        onSubmit={async (e) => {
+          const form = e.currentTarget;
+          e.preventDefault();
+          form.reset();
+        }}
+      >
+        <TextInput
+          name="domain"
+          labelClassName="grow"
+          label={<p className="flex items-center gap-x-1">Domain</p>}
+          description={
+            <Trans
+              t={t}
+              i18nKey={"domain"}
+              components={{
+                anchor: (
+                  // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+                  (<a
+                    href="https://api.imgbb.com"
+                    className={linkClassName}
+                    target="_blank"
+                    rel="noopener"
+                  />)
+                ),
+              }}
+            />
+          }
+          className="w-full"
+          value={fh[id]?.domain ?? ""}
+        />
+        <TextInput
+          name="domain_token"
+          labelClassName="grow"
+          label={
+            <p className="flex items-center gap-x-1">
+              Domain Token{" "}
+              {/* {fh[id]?.cookie ? (
+                <CoolIcon
+                  icon="Circle_Check"
+                  className="text-green-400 align-[center]"
+                />
+              ) : (
+                <CoolIcon
+                  icon="Remove_Minus_Circle"
+                  className="text-muted dark:text-muted-dark align-[center]"
+                />
+              )} */}
+            </p>
+          }
+          description={
+            <Trans
+              t={t}
+              i18nKey={"domain token"}
+              components={{
+                anchor: (
+                  // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+                  (<a
+                    href="https://api.imgbb.com"
+                    className={linkClassName}
+                    target="_blank"
+                    rel="noopener"
+                  />)
+                ),
+              }}
+            />
+          }
+          pattern="^\w+$"
+          type="password"
+          className="w-full"
+          placeholder="1abcd2345e6fg7h8ijk901lmno234p5q"
+        />
+        <Button
+          type="submit"
+          discordstyle={ButtonStyle.Primary}
+          className="h-9"
+        >
+          {t("save")}
+        </Button>
+      </form>
+    </FilehostConfigurationBase>)
+  );
+};
+
+// const FilehostConfigurationCatbox = ({
+//   t,
+//   settings,
+//   updateSettings,
+// }: {
+//   t: TFunction;
+//   settings: Settings;
+//   updateSettings: (data: Partial<Settings>) => void;
+// }) => {
+//   const fh = settings.filehosts ?? {};
+//   return (
+//     <FilehostConfigurationBase
+//       t={t}
+//       id="catbox"
+//       name="Catbox"
+//       iconUrl="/logos/catbox.png"
+//       clearConfig={async () => {
+//         const res = await fetch(apiUrl(BRoutes.filehostsConfig("catbox")), {
+//           method: "POST",
+//           body: JSON.stringify({ userhash: null }),
+//           headers: { "Content-Type": "application/json" },
+//         });
+//         if (res.ok) {
+//           updateSettings({ filehosts: { ...fh, catbox: undefined } });
+//         }
+//       }}
+//     >
+//       <form
+//         className="flex items-end gap-2"
+//         onSubmit={async (e) => {
+//           const form = e.currentTarget;
+//           e.preventDefault();
+//           const userhash = new FormData(form).get("userhash");
+//           if (!userhash) return;
+
+//           const res = await fetch(apiUrl(BRoutes.filehostsConfig("catbox")), {
+//             method: "POST",
+//             body: JSON.stringify({ userhash }),
+//             headers: { "Content-Type": "application/json" },
+//           });
+//           if (res.ok) {
+//             updateSettings({
+//               filehosts: {
+//                 ...fh,
+//                 catbox: { ...fh.catbox, cookie: true },
+//               },
+//             });
+//             form.reset();
+//           }
+//         }}
+//       >
+//         <TextInput
+//           name="userhash"
+//           labelClassName="grow"
+//           label={
+//             <p className="flex items-center gap-x-1">
+//               Userhash{" "}
+//               {fh.catbox?.cookie ? (
+//                 <CoolIcon
+//                   icon="Circle_Check"
+//                   className="text-green-400 align-[center]"
+//                 />
+//               ) : (
+//                 <CoolIcon
+//                   icon="Remove_Minus_Circle"
+//                   className="text-muted dark:text-muted-dark align-[center]"
+//                 />
+//               )}
+//             </p>
+//           }
+//           description={
+//             <Trans
+//               t={t}
+//               i18nKey={
+//                 fh.catbox?.cookie
+//                   ? "Your userhash is set, but not shown here for security. Visit <anchor>catbox.moe</anchor> to view or regenerate it."
+//                   : "Your <anchor>userhash</anchor> is a private string that can be used to manage your Catbox account. Discohook will use it to upload on your behalf."
+//               }
+//               components={{
+//                 anchor: (
+//                   // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+//                   <a
+//                     href="https://catbox.moe/user/"
+//                     className={linkClassName}
+//                     target="_blank"
+//                     rel="noopener"
+//                   />
+//                 ),
+//               }}
+//             />
+//           }
+//           pattern="^\w+$"
+//           type="password"
+//           className="w-full"
+//           placeholder="abcdefghijklmnopqrstuvwxyz" // --Big Bird, 1970
+//         />
+//         <Button
+//           type="submit"
+//           discordstyle={ButtonStyle.Primary}
+//           className="h-9"
+//         >
+//           {t("save")}
+//         </Button>
+//       </form>
+//     </FilehostConfigurationBase>
+//   );
+// };
+
+// const FilehostConfigurationSxcu = ({
+//   t,
+//   settings,
+//   updateSettings,
+// }: {
+//   t: TFunction;
+//   settings: Settings;
+//   updateSettings: (data: Partial<Settings>) => void;
+// }) => {
+//   const id = "sxcu";
+//   const fh = settings.filehosts ?? {};
+//   return (
+//     <FilehostConfigurationBase
+//       t={t}
+//       id={id}
+//       name="sxcu.net"
+//       iconUrl="/logos/sxcu.png"
+//       clearConfig={async () => {
+//         const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+//           method: "POST",
+//           body: JSON.stringify({ key: null }),
+//           headers: { "Content-Type": "application/json" },
+//         });
+//         if (res.ok) {
+//           updateSettings({ filehosts: { ...fh, [id]: undefined } });
+//         }
+//       }}
+//     >
+//       <form
+//         className="flex items-end gap-2"
+//         onSubmit={async (e) => {
+//           const form = e.currentTarget;
+//           e.preventDefault();
+//           const key = new FormData(form).get("key");
+//           if (!key) return;
+
+//           const res = await fetch(apiUrl(BRoutes.filehostsConfig(id)), {
+//             method: "POST",
+//             body: JSON.stringify({ key }),
+//             headers: { "Content-Type": "application/json" },
+//           });
+//           if (res.ok) {
+//             updateSettings({
+//               filehosts: {
+//                 ...fh,
+//                 [id]: { ...fh[id], cookie: true },
+//               },
+//             });
+//             form.reset();
+//           }
+//         }}
+//       >
+//         <TextInput
+//           name="key"
+//           labelClassName="grow"
+//           label={
+//             <p className="flex items-center gap-x-1">
+//               Key{" "}
+//               {fh[id]?.cookie ? (
+//                 <CoolIcon
+//                   icon="Circle_Check"
+//                   className="text-green-400 align-[center]"
+//                 />
+//               ) : (
+//                 <CoolIcon
+//                   icon="Remove_Minus_Circle"
+//                   className="text-muted dark:text-muted-dark align-[center]"
+//                 />
+//               )}
+//             </p>
+//           }
+//           description={
+//             <Trans
+//               t={t}
+//               i18nKey={
+//                 fh[id]?.cookie
+//                   ? "Your API key is set, but not shown here for security. Visit <anchor>imgbb.com</anchor> to view or delete it."
+//                   : "Your <anchor>API key</anchor> is a private string that Discohook can use to upload on your behalf. Without it, images may still be uploaded anonymously."
+//               }
+//               components={{
+//                 anchor: (
+//                   // biome-ignore lint/a11y/useAnchorContent: Added by i18n
+//                   <a
+//                     href="https://api.imgbb.com"
+//                     className={linkClassName}
+//                     target="_blank"
+//                     rel="noopener"
+//                   />
+//                 ),
+//               }}
+//             />
+//           }
+//           pattern="^\w+$"
+//           type="password"
+//           className="w-full"
+//           placeholder="1abcd2345e6fg7h8ijk901lmno234p5q"
+//         />
+//         <Button
+//           type="submit"
+//           discordstyle={ButtonStyle.Primary}
+//           className="h-9"
+//         >
+//           {t("save")}
+//         </Button>
+//       </form>
+//     </FilehostConfigurationBase>
+//   );
+// };
+
+const serviceToConfigurationBox = {
+  imgbb: FilehostConfigurationImgbb,
+  postimages: FilehostConfigurationPostimages,
+  sxcu: FilehostConfigurationSxcu,
+  // catbox: FilehostConfigurationCatbox,
+};
 
 interface TabContentProps {
   settings: Settings;
@@ -304,6 +944,89 @@ const tabs: {
             />
           </div>
         </div>
+        {settings.experiments?.find((e) => e.id === "SAVE_ATTACHMENTS") ? (
+          <div className="mt-8">
+            <p className="text-sm font-bold uppercase dark:text-gray-400">
+              {t("saveAttachmentsTitle")}
+            </p>
+            <p className="text-sm">
+              <Trans
+                t={t}
+                i18nKey="saveAttachmentsDescription"
+                components={{
+                  privacy: (
+                    <Link
+                      to="/legal"
+                      target="_blank"
+                      className={linkClassName}
+                    />
+                  ),
+                }}
+              />
+            </p>
+            <div className="mt-2 flex flex-row gap-x-1 overflow-x-auto">
+              {fileHosts
+                .filter((f) => !["discord", "catbox"].includes(f.id))
+                .map((filehost) => (
+                  <button
+                    key={`setup-${filehost.id}`}
+                    type="button"
+                    onClick={() => {
+                      // @ts-expect-error
+                      if (settings.filehosts[filehost.id]) return;
+
+                      const defaultConfig: any = {
+                        position: Object.keys(settings.filehosts ?? {}).length,
+                      };
+                      if (filehost.id === "catbox") {
+                        defaultConfig.cookie = false;
+                      }
+
+                      updateSettings({
+                        filehosts: {
+                          ...settings.filehosts,
+                          [filehost.id]: defaultConfig,
+                        },
+                      });
+                    }}
+                    className={twJoin(
+                      "size-11 flex rounded-lg",
+                      "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-600",
+                      "border border-border-normal/50 dark:border-border-normal-dark/50",
+                    )}
+                  >
+                    <img
+                      src={`/logos/${filehost.id}.png`}
+                      alt={`${filehost.name} logo`}
+                      className="size-7 m-auto object-contain rounded-md"
+                    />
+                  </button>
+                ))}
+            </div>
+            <div className="space-y-2 mt-1">
+              {(
+                Object.entries(settings.filehosts ?? {}) as [
+                  string,
+                  { position?: number },
+                ][]
+              )
+                .sort(([, a], [, b]) => (a.position ?? 0) - (b.position ?? 0))
+                .filter(
+                  ([serviceId]) =>
+                    !!serviceToConfigurationBox[
+                      serviceId as keyof typeof serviceToConfigurationBox
+                    ],
+                )
+                .map(([serviceId]) => (
+                  <div key={`config-${serviceId}`}>
+                    {serviceToConfigurationBox[
+                      serviceId as keyof typeof serviceToConfigurationBox
+                    ]({ t, settings, updateSettings })}
+                  </div>
+                ))}
+            </div>
+          </div>
+        ) : undefined}
       </>
     ),
   },

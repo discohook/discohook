@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import {
   type APIThreadOnlyChannel,
   ChannelType,
@@ -19,7 +19,7 @@ import {
   type ResolvableAPIRole,
   tagToResolvableTag,
 } from "~/util/cache/CacheManager";
-import { isDiscordError } from "~/util/discord";
+import { injectErrorContext, isDiscordError } from "~/util/discord";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 import { getChannelIconType } from "./channels.$channelId";
@@ -42,9 +42,12 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
   if (!guild) {
     try {
-      guild = await getGuild(guildId, rest, context.env);
+      guild = await getGuild(guildId, rest, context.env, context.waitUntil);
     } catch (e) {
-      if (isDiscordError(e)) throw respond(json(e.rawError, e.status));
+      if (isDiscordError(e))
+        throw respond(
+          json(injectErrorContext(e.rawError, { guildId }), e.status),
+        );
       throw e;
     }
     // owner = guild.owner_id === String(token.user.discordUser?.id);

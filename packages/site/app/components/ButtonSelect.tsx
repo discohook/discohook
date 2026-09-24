@@ -1,4 +1,4 @@
-import { Select } from "@base-ui-components/react/select";
+import { Select } from "@base-ui/react/select";
 import type { ButtonStyle } from "discord-api-types/v10";
 import { twJoin, twMerge } from "tailwind-merge";
 import { Button } from "./Button";
@@ -19,6 +19,7 @@ export function ButtonSelect<T>(
     required?: boolean;
     disabled?: boolean;
     readOnly?: boolean;
+    loading?: boolean;
     /** Applied to the trigger (Button) */
     className?: string;
     discordstyle?: ButtonStyle;
@@ -45,6 +46,7 @@ export function ButtonSelect<T>(
         <Button
           className={props.className}
           disabled={props.disabled}
+          loading={props.loading}
           discordstyle={props.discordstyle}
         >
           {props.children}

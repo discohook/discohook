@@ -1,7 +1,7 @@
 // Inspired by @mui/joy/drawer - but no code reused. Instead we re-implement
 // with base-ui's `Dialog`. Not as featureful as joy's drawer.
 
-import { Dialog } from "@base-ui-components/react/dialog";
+import { Dialog } from "@base-ui/react/dialog";
 import { twJoin } from "tailwind-merge";
 import { DialogBackdrop } from "~/modals/Modal";
 

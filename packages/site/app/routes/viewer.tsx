@@ -1,5 +1,5 @@
-import type { MetaFunction } from "@remix-run/cloudflare";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import type { MetaFunction } from "react-router";
+import { useLoaderData, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
 import type { SafeParseError, SafeParseReturnType, ZodError } from "zod/v3";
 import { Header } from "~/components/Header";
@@ -78,8 +78,8 @@ export default () => {
               // cache={cache}
               discordApplicationId={discordApplicationId}
               // webhooks={Object.values(targets)}
-              index={i}
-              data={data}
+              previousMessageData={data.messages[i - 1]?.data}
+              threadId={message.thread_id}
               // files={files[id]}
               // setImageModalData={setImageModalData}
               messageDisplay={settings.messageDisplay}

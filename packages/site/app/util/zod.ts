@@ -1,16 +1,16 @@
-import { json } from "@remix-run/cloudflare";
-import type { Params } from "@remix-run/react";
 import { isSnowflake } from "discord-snowflake";
+import type { Params } from "react-router";
 import {
   type output,
   type SafeParseReturnType,
+  z,
   ZodError,
   type ZodObject,
   type ZodRawShape,
   type ZodTypeAny,
-  z,
 } from "zod/v3";
 import { zx } from "zodix";
+import { jsonR } from "./loader";
 
 export const jsonAsString = <T extends z.ZodTypeAny>(schema?: T) =>
   z
@@ -68,7 +68,7 @@ export const zxParseParams = <T extends ZodRawShape | ZodTypeAny>(
 ): ParsedData<T> => {
   const parsed = zx.parseParamsSafe(params, schema);
   if (!parsed.success) {
-    throw json(
+    throw jsonR(
       {
         message: options?.message ?? "Bad Request",
         issues: parsed.error.issues,
@@ -86,7 +86,7 @@ export const zxParseQuery = <T extends ZodRawShape | ZodTypeAny>(
 ): ParsedData<T> => {
   const parsed = zx.parseQuerySafe(request, schema);
   if (!parsed.success) {
-    throw json(
+    throw jsonR(
       {
         message: options?.message ?? "Bad Request",
         issues: parsed.error.issues,
@@ -104,7 +104,7 @@ export const zxParseForm = async <T extends ZodRawShape | ZodTypeAny>(
 ): Promise<ParsedData<T>> => {
   const parsed = await zx.parseFormSafe(request, schema);
   if (!parsed.success) {
-    throw json(
+    throw jsonR(
       {
         message: options?.message ?? "Bad Request",
         issues: parsed.error.issues,
@@ -139,7 +139,7 @@ export const zxParseJson = async <T extends ZodRawShape | ZodTypeAny>(
     // @ts-expect-error
     return await finalSchema.parseAsync(data);
   } catch (error) {
-    throw json(
+    throw jsonR(
       {
         message: options?.message ?? "Bad Request",
         issues: error instanceof ZodError ? error.format() : undefined,

@@ -53,3 +53,21 @@ export const getUserPremiumDetails = (
 
 export const userIsPremium = (user: PUser) =>
   getUserPremiumDetails(user).active;
+
+export const sortRoles = <T extends { position: number; id: string }>(
+  roles: T[],
+  highestFirst = true,
+) => {
+  const sorted = roles.sort((a, b) => {
+    const lower = highestFirst ? b : a;
+    const higher = highestFirst ? a : b;
+
+    // > roles with the same position are sorted by id
+    // https://discord.dev/topics/permissions#role-object
+    if (higher.position === lower.position) {
+      return Number(BigInt(lower.id) - BigInt(higher.id));
+    }
+    return lower.position - higher.position;
+  });
+  return sorted;
+};

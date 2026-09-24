@@ -67,7 +67,7 @@ export const MediaGalleryEditor: React.FC<{
             <EmbedEditorSection
               name={t("mediaItemN", { replace: { n: itemI + 1 } })}
               open={open}
-              className="pl-0 -my-2 open:pb-4"
+              className="px-0"
               actionsBar={{
                 up: {
                   hidden: itemI === 0,
@@ -102,45 +102,45 @@ export const MediaGalleryEditor: React.FC<{
                 },
               }}
             >
-              <div className="space-y-1 -mt-2">
-                <div className="w-full">
-                  <FileOrUrlInput
-                    t={t}
-                    files={files}
-                    setFiles={setFiles}
-                    value={item.media.url}
-                    onChange={(url) => {
-                      item.media.url = url;
+              <div className="w-full truncate">
+                <FileOrUrlInput
+                  t={t}
+                  message={message}
+                  refreshData={() => setData({ ...data })}
+                  files={files}
+                  setFiles={setFiles}
+                  value={item.media.url}
+                  onChange={(url) => {
+                    item.media.url = url;
+                    setData({ ...data });
+                  }}
+                  allowedExtensions="*"
+                  cdn={cdn}
+                  gifPrompt
+                />
+              </div>
+              {item.media.url ? (
+                <>
+                  <TextInput
+                    label={t("description")}
+                    className="w-full"
+                    value={item.description ?? ""}
+                    maxLength={1024}
+                    onChange={({ currentTarget }) => {
+                      item.description = currentTarget.value || null;
                       setData({ ...data });
                     }}
-                    allowedExtensions="*"
-                    cdn={cdn}
-                    gifPrompt
                   />
-                </div>
-                {item.media.url ? (
-                  <>
-                    <TextInput
-                      label={t("description")}
-                      className="w-full"
-                      value={item.description ?? ""}
-                      maxLength={1024}
-                      onChange={({ currentTarget }) => {
-                        item.description = currentTarget.value || null;
-                        setData({ ...data });
-                      }}
-                    />
-                    <Checkbox
-                      label={t("markSpoiler")}
-                      checked={item.spoiler ?? false}
-                      onCheckedChange={(checked) => {
-                        item.spoiler = checked;
-                        setData({ ...data });
-                      }}
-                    />
-                  </>
-                ) : null}
-              </div>
+                  <Checkbox
+                    label={t("markSpoiler")}
+                    checked={item.spoiler ?? false}
+                    onCheckedChange={(checked) => {
+                      item.spoiler = checked;
+                      setData({ ...data });
+                    }}
+                  />
+                </>
+              ) : null}
             </EmbedEditorSection>
             {itemI < gallery.items.length - 1 ? (
               <hr className="border border-gray-500/20" />

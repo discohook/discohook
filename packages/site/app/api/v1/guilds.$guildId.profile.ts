@@ -1,18 +1,19 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import {
   type APIGuildMember,
   RESTJSONErrorCodes,
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
+import { data as json } from "react-router";
 import { z } from "zod";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
-import { isDiscordError } from "~/util/discord";
+import { injectErrorContext, isDiscordError } from "~/util/discord";
 import {
   type ActionArgs,
   getZodErrorMessage,
+  jsonR,
   type LoaderArgs,
 } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
@@ -97,14 +98,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
 
   const size = request.headers.get("Content-Length");
   if (!size || Number.isNaN(Number(size)))
-    throw json(
+    throw jsonR(
       { message: "Missing or invalid Content-Length" },
       { status: 400, headers },
     );
   // TODO: 100mb should be plenty, but I'm not actually sure what the
   // limit is for the avatar/banner
   if (Number(size) > 100_000_000) {
-    throw json({ message: "Files are too large" }, { status: 400, headers });
+    throw jsonR({ message: "Files are too large" }, { status: 400, headers });
   }
 
   // parse
@@ -151,7 +152,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     })
     .spa(body);
   if (!safeParsed.success) {
-    throw json(
+    throw jsonR(
       {
         message: getZodErrorMessage(safeParsed.error),
         error: safeParsed.error.format(),
@@ -163,7 +164,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   const avatar_ = formData.get("avatar");
   if (avatar_ && avatar_ instanceof File) {
     if (!avatar_.type.startsWith("image/")) {
-      throw json(
+      throw jsonR(
         { message: "Avatar must be an image file" },
         { status: 400, headers },
       );
@@ -176,7 +177,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   const banner_ = formData.get("banner");
   if (banner_ && banner_ instanceof File) {
     if (!banner_.type.startsWith("image/")) {
-      throw json(
+      throw jsonR(
         { message: "Banner must be an image file" },
         { status: 400, headers },
       );
@@ -209,7 +210,16 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     })) as APIGuildMember;
   } catch (e) {
     if (isDiscordError(e)) {
-      throw respond(json(e.rawError, e.status));
+      throw respond(
+        json(
+          injectErrorContext(e.rawError, {
+            guildId,
+            permissions:
+              body.nick !== undefined ? PermissionFlags.ChangeNickname : "0",
+          }),
+          e.status,
+        ),
+      );
     }
     throw e;
   }

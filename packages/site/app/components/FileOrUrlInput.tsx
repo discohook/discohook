@@ -1,15 +1,19 @@
 import { ButtonStyle } from "discord-api-types/v10";
 import { twJoin } from "tailwind-merge";
-import type { DraftFile } from "~/routes/_index";
+import type { DraftFile, SetDraftFile } from "~/modals/UploadFileModal";
 import type { TFunction } from "~/types/i18next";
+import type { QueryData } from "~/types/QueryData";
 import {
   ATTACHMENT_URI_EXTENSIONS,
+  attachmentFromFile,
   fileInputChangeHandler,
   MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
+import { experimentEnabled } from "~/util/localstorage";
 import { randomString } from "~/util/text";
 import { Button } from "./Button";
+import { ButtonSelect } from "./ButtonSelect";
 import { DetectGifUrlFooter } from "./editor/EmbedEditor";
 import { PasteFileButton } from "./editor/PasteFileButton";
 import { CoolIcon } from "./icons/CoolIcon";
@@ -22,8 +26,10 @@ export const FileOrUrlInput: React.FC<{
   value: string | undefined;
   /** Empty string when the user deletes the URL or the file is cleared */
   onChange: (url: string) => void;
+  message: QueryData["messages"][number];
+  refreshData: () => void;
   files: DraftFile[];
-  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  setFiles: SetDraftFile;
   /** Defaults to true */
   fileClearable?: boolean;
   className?: string;
@@ -37,6 +43,8 @@ export const FileOrUrlInput: React.FC<{
   key_: key,
   value,
   onChange,
+  message,
+  refreshData,
   files,
   setFiles,
   fileClearable,
@@ -47,47 +55,85 @@ export const FileOrUrlInput: React.FC<{
   gifPrompt,
   allowedExtensions = ATTACHMENT_URI_EXTENSIONS,
 }) => {
+  const attachments = message.data.attachments ?? [];
+  const SAVE_ATTACHMENTS = experimentEnabled("SAVE_ATTACHMENTS");
+
   const id = randomString(10);
-  const file = value?.startsWith("attachment://")
+  const attachment = value?.startsWith("attachment://")
     ? resolveAttachmentUri(
         value,
-        files,
+        attachments,
         allowedExtensions === "*" ? true : allowedExtensions,
       )
     : undefined;
+  const selectableAttachments = attachments.filter((a) =>
+    allowedExtensions === "*"
+      ? true
+      : !!allowedExtensions.find((e) => a.filename.toLowerCase().endsWith(e)),
+  );
 
-  return file ? (
+  return attachment ? (
     <div>
       <p className="font-medium text-sm cursor-default">
         <span>{t(labelKey ?? "attachment")}</span>
-        {file.file.type.startsWith("image/") ? (
-          <CoolIcon icon="Image_01" className="ltr:ml-1 rtl:mr-1" />
-        ) : file.file.type.startsWith("video/") ? (
-          <CoolIcon icon="Monitor_Play" className="ltr:ml-1 rtl:mr-1" />
+        {attachment.content_type?.startsWith("image/") ? (
+          <CoolIcon icon="Image_01" className="ms-1" />
+        ) : attachment.content_type?.startsWith("video/") ? (
+          <CoolIcon icon="Monitor_Play" className="ms-1" />
         ) : null}
       </p>
-      <div className="flex gap-2 w-full">
+      <div className="flex w-full items-center">
         <div
           className={twJoin(
-            "my-auto rounded-lg truncate",
-            "border h-9 px-[14px] bg-white border-border-normal dark:border-border-normal-dark dark:bg-[#333338] flex w-full",
+            "rounded-lg truncate flex w-full h-9 px-[14px]",
+            "border border-border-normal dark:border-border-normal-dark",
+            "bg-white dark:bg-[#333338]",
             className,
           )}
         >
-          <p className="my-auto truncate">{file.file.name}</p>
+          <p className="my-auto truncate">{attachment.filename}</p>
         </div>
-        {fileClearable !== false ? (
-          // TODO: we should determine whether the file is used elsewhere
-          // and remove it from the state if not
+        {SAVE_ATTACHMENTS ? (
           <button
             type="button"
             className={twJoin(
-              "my-auto rounded-lg flex shrink-0",
-              "border h-9 aspect-square bg-white border-border-normal dark:border-border-normal-dark dark:bg-[#333338]",
+              "ms-1 rounded-lg h-9 pb-0 pt-0.5 px-2 bg-gray-200 dark:bg-[#333338] shrink-0",
+              "border border-border-normal dark:border-border-normal-dark",
+              "hover:text-blurple-400 active:hover:border-blurple-400 transition",
             )}
-            onClick={() => onChange("")}
+            onClick={() => {
+              // Automatically upload or prompt to upload based on user prefs
+            }}
           >
-            <CoolIcon icon="Close_MD" className="m-auto" />
+            <CoolIcon icon="Cloud_Upload" />
+          </button>
+        ) : null}
+        {fileClearable !== false ? (
+          <button
+            type="button"
+            className={twJoin(
+              "ms-1 rounded-lg h-9 pb-0 pt-0.5 px-2 bg-gray-200 dark:bg-[#333338] shrink-0",
+              "border border-border-normal dark:border-border-normal-dark",
+              "hover:text-red-400 active:hover:border-red-400 transition",
+            )}
+            onClick={() => {
+              // If we have calculated the placement count as 0 or 1 (this is
+              // the last placement), we should be safe to remove it entirely
+              // from the message
+              if (
+                attachment.placement_count !== undefined &&
+                attachment.placement_count <= 1
+              ) {
+                message.data.attachments = attachments.filter(
+                  (a) => a !== attachment,
+                );
+              }
+
+              // calls setData upstream
+              onChange("");
+            }}
+          >
+            <CoolIcon icon="Trash_Full" />
           </button>
         ) : null}
       </div>
@@ -105,6 +151,7 @@ export const FileOrUrlInput: React.FC<{
           label={t(labelKey ?? "url")}
           required={required}
           type="url"
+          placeholder="https://..."
           className="w-full"
           value={value ?? ""}
           onChange={({ currentTarget }) => onChange(currentTarget.value)}
@@ -124,12 +171,13 @@ export const FileOrUrlInput: React.FC<{
           value ? "max-w-[6.75rem]" : "max-w-[50%] w-full",
         )}
       >
-        <p className="text-sm font-medium cursor-default">{t("file")}</p>
+        <p className="text-sm font-medium cursor-default">{t("upload")}</p>
         <div className="flex flex-row-reverse grid-cols-2 gap-1">
           <PasteFileButton
             t={t}
-            disabled={files.length >= MAX_FILES_PER_MESSAGE}
+            disabled={attachments.length >= MAX_FILES_PER_MESSAGE}
             className="peer h-9 min-w-0 grow max-w-full px-4"
+            attachments={attachments}
             getChildren={(state) => {
               // normal size
               if (state === "active_mac") return t("pasteCmd");
@@ -145,27 +193,19 @@ export const FileOrUrlInput: React.FC<{
               );
             }}
             onChange={async (list) => {
-              if (files.length >= MAX_FILES_PER_MESSAGE) return;
+              if (attachments.length >= MAX_FILES_PER_MESSAGE) return;
 
               const file = list[0];
-              // if (
-              //   allowedExtensions !== "*" &&
-              //   allowedExtensions.find((e) =>
-              //     file.name.toLowerCase().endsWith(e),
-              //   ) !== undefined
-              // ) {
-              //   // the file cannot be used with attachment://
-              //   // TODO: visible feedback
-              //   return;
-              // }
-
-              const newFiles = [...files];
-              newFiles.push({
-                id: randomString(10),
+              const newFile: DraftFile = {
+                id: randomString(15, true),
                 file,
                 url: URL.createObjectURL(file),
-              });
-              setFiles(newFiles);
+              };
+              setFiles([...files, newFile]);
+
+              attachments.push(attachmentFromFile(newFile));
+              message.data.attachments = attachments;
+
               onChange(`attachment://${transformFileName(file.name)}`);
             }}
           />
@@ -177,6 +217,11 @@ export const FileOrUrlInput: React.FC<{
               const handler = fileInputChangeHandler(
                 files,
                 setFiles,
+                attachments,
+                (newAttachments) => {
+                  message.data.attachments = newAttachments;
+                  refreshData();
+                },
                 allowedExtensions !== "*" ? allowedExtensions : undefined,
               );
               const draftFiles = await handler(e);
@@ -192,27 +237,51 @@ export const FileOrUrlInput: React.FC<{
                 : undefined
             }
           />
-          <Button
-            className={twJoin(
-              "h-9 min-w-0 px-4 grow max-w-full transition-all",
-            )}
-            title={t("addFile")}
-            onClick={() => {
-              const input = document.querySelector<HTMLInputElement>(
-                `input#files-${id}`,
-              );
-              // Shouldn't happen
-              if (!input) return;
-              input.click();
-            }}
-            disabled={files.length >= MAX_FILES_PER_MESSAGE}
-            discordstyle={ButtonStyle.Primary}
-          >
-            <CoolIcon icon="File_Upload" className={value ? "" : "lg:hidden"} />
-            {value ? null : (
-              <span className="hidden lg:block">{t("addFile")}</span>
-            )}
-          </Button>
+          <div className="flex gap-0 min-w-0 grow max-w-full">
+            <Button
+              className={twJoin(
+                "h-9 px-4 grow transition-all",
+                selectableAttachments.length !== 0
+                  ? "rounded-e-none border-e-0"
+                  : undefined,
+              )}
+              title={t("addFile")}
+              onClick={() => {
+                const input = document.querySelector<HTMLInputElement>(
+                  `input#files-${id}`,
+                );
+                // Shouldn't happen
+                if (!input) return;
+                input.click();
+              }}
+              disabled={files.length >= MAX_FILES_PER_MESSAGE}
+              discordstyle={ButtonStyle.Primary}
+            >
+              <CoolIcon
+                icon="File_Upload"
+                className={value ? "" : "lg:hidden"}
+              />
+              {value ? null : (
+                <span className="hidden lg:block">{t("addFile")}</span>
+              )}
+            </Button>
+            <ButtonSelect
+              className={twJoin(
+                "h-9 w-7 min-w-0 px-0 rounded-s-none",
+                selectableAttachments.length === 0 ? "hidden" : "undefined",
+              )}
+              iconClassName="ms-0"
+              options={selectableAttachments.map((attachment) => ({
+                value: attachment,
+                label: attachment.filename,
+              }))}
+              onValueChange={(attachment) => {
+                onChange(
+                  `attachment://${transformFileName(attachment.filename)}`,
+                );
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

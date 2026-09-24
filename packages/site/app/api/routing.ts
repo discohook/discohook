@@ -43,6 +43,15 @@ export const BRoutes = {
   },
 
   /**
+   * - GET /channels/:channelId/permissions
+   *
+   * Accepts token auth.
+   */
+  channelPermissions(channelId: string) {
+    return `/channels/${channelId}/permissions` as const;
+  },
+
+  /**
    * - GET /users/@me
    */
   currentUser() {
@@ -87,16 +96,34 @@ export const BRoutes = {
     return `/components/${id}/backups` as const;
   },
 
-  /**
-   * - PATCH /components/bulk
-   */
-  componentsBulk() {
-    return "/components/bulk" as const;
-  },
-
   /** - POST /donate/:type */
   donate(type: z.infer<typeof ZodDonateKeyType>) {
     return `/donate/${type}` as const;
+  },
+
+  /**
+   * - POST /filehosts/:id/config
+   */
+  filehostsConfig(id: string) {
+    return `/filehosts/${id}/config` as const;
+  },
+
+  /**
+   * - GET /filehosts/:id/upload
+   * - POST /filehosts/:id/upload
+   */
+  filehostsUpload(id: string) {
+    return `/filehosts/${id}/upload` as const;
+  },
+
+  /**
+   * - GET /filehosts/postimages/images/:id
+   * - GET /filehosts/postimages/images/:id/:hash
+   */
+  filehostsPostimagesDetails(id: string, hash?: string) {
+    return hash
+      ? (`/filehosts/postimages/images/${id}/${hash}` as const)
+      : (`/filehosts/postimages/images/${id}` as const);
   },
 
   /**
@@ -152,6 +179,15 @@ export const BRoutes = {
    */
   guildMember(guildId: string, userId: string) {
     return `/guilds/${guildId}/members/${userId}` as const;
+  },
+
+  /**
+   * - GET /guilds/:guildId/permissions
+   *
+   * Accepts token auth.
+   */
+  guildPermissions(guildId: string) {
+    return `/guilds/${guildId}/permissions` as const;
   },
 
   /**

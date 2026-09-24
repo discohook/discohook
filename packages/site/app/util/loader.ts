@@ -1,23 +1,27 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import type { SubmitOptions } from "@remix-run/react";
-import type {
-  ActionFunctionArgs as RRActionFunctionArgs,
-  LoaderFunctionArgs as RRLoaderFunctionArgs,
-} from "@remix-run/router";
+import { RESTJSONErrorCodes } from "discord-api-types/v10";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
+import { t } from "i18next";
 import { useEffect, useState } from "react";
+import {
+  UNSAFE_decodeViaTurboStream,
+  type AppLoadContext,
+  type ActionFunctionArgs as RRActionFunctionArgs,
+  type LoaderFunctionArgs as RRLoaderFunctionArgs,
+  type SubmitOptions,
+  type useLoaderData,
+} from "react-router";
 import type { ZodError } from "zod";
-import type { Env } from "~/types/env";
+import { isErrorData, type RESTErrorWithContext } from "./discord";
 
-export interface Context {
-  origin: string;
-  env: Env;
-  waitUntil: ExecutionContext["waitUntil"];
-}
+export type Context = AppLoadContext;
 
-// We are specifically using these imports from @remix-run/router because the
-// adapter exports are not generic and we cannot pass Env like this.
+// Since RR7 move: this is kind of outdated and might warrant replacement.
+// we should be able to do this with a .d.ts module alone
 export type LoaderArgs = RRLoaderFunctionArgs<Context> & { context: Context };
 export type ActionArgs = RRActionFunctionArgs<Context> & { context: Context };
+
+// thanks https://github.com/remix-run/react-router/discussions/12417#discussioncomment-11512424
+export type SerializeFrom<T> = ReturnType<typeof useLoaderData<T>>;
 
 export const getZodErrorMessage = (e: any) => {
   if ("issues" in e) {
@@ -49,6 +53,30 @@ export const getZodErrorMessage = (e: any) => {
   return String(e);
 };
 
+const getDiscordOrZodErrorMessage = (e: any) => {
+  if (isErrorData(e)) {
+    if ("context" in e) {
+      const data = e as RESTErrorWithContext;
+      if (
+        (data.code === RESTJSONErrorCodes.MissingAccess ||
+          data.code === RESTJSONErrorCodes.MissingPermissions) &&
+        data.context?.required_permissions !== undefined
+      ) {
+        const required = new PermissionsBitField(
+          BigInt(data.context.required_permissions),
+        );
+        const str = Object.entries(PermissionFlags)
+          .filter(([_, val]) => required.has(val))
+          .map(([flag]) => t(`permission.${flag}`, { lng: "en" }))
+          .join(", ");
+        return `Ensure Discohook Utils has all of the following permissions in the ${data.context.channel ? "channel" : "server"}: ${str}.`;
+      }
+    }
+    return e.message;
+  }
+  return getZodErrorMessage(e);
+};
+
 const returnRawIf = (raw: unknown): string | undefined => {
   try {
     JSON.parse(JSON.stringify(raw));
@@ -61,11 +89,44 @@ const returnRawIf = (raw: unknown): string | undefined => {
   const keys = Object.keys(data).length;
   if (data.message) {
     if ("code" in data) {
+      if ("context" in data) {
+        return keys === 3 ? undefined : stringified;
+      }
       return keys === 2 ? undefined : stringified;
     }
     return keys === 1 ? undefined : stringified;
   }
   return stringified;
+};
+
+const getResponseRaw = async (
+  response: Response,
+  routeId: string | boolean = false,
+) => {
+  if (response.body === null) throw Error("No response body");
+  if (routeId) {
+    // i know this is marked as unsafe, but it's highly desirable in our
+    // workflow. it will be very obvious when it breaks, so such breakage
+    // likely won't make it to production
+    const result = await UNSAFE_decodeViaTurboStream(response.body, window);
+    await result.done;
+    const raw = result.value as Record<string, { data: unknown }>;
+    if (typeof routeId === "string") {
+      const id = routeId === "root" ? routeId : `routes/${routeId}`;
+      return raw[id].data;
+    }
+    const lastKey = Object.keys(raw).slice(-1)[0];
+    return raw[lastKey].data;
+  }
+  return await response.json();
+};
+
+type SafeFetcherSubmitOptions = Pick<SubmitOptions, "action" | "method"> & {
+  /**
+   * if this is an action (not an API route), the route ID to return data for.
+   * if not provided, picks the last keyed item automatically.
+   */
+  routeId?: string;
 };
 
 export const useSafeFetcher = <TData = any>({
@@ -78,20 +139,28 @@ export const useSafeFetcher = <TData = any>({
   return {
     data,
     state,
-    load: ((href) => {
+    load: ((href, routeId?: string) => {
       setState("loading");
-      // TODO determine appropriate route for `_data` query param
-      // This data is passed to the client by Remix somewhere
-      fetch(href, { method: "GET" })
+
+      const url = new URL(href, origin);
+      const isLoader =
+        routeId !== undefined || !url.pathname.startsWith("/api/");
+      if (isLoader) url.pathname += ".data";
+
+      fetch(url, { method: "GET" })
         .then((response) => {
-          response
-            .json()
+          // not sure what we should do here
+          if (response.body === null) {
+            setState("idle");
+            return;
+          }
+          getResponseRaw(response, routeId || isLoader)
             .then((raw) => {
               if (!response.ok) {
                 if (onError) {
                   onError({
                     status: response.status,
-                    message: getZodErrorMessage(raw),
+                    message: getDiscordOrZodErrorMessage(raw),
                     raw: returnRawIf(raw),
                   });
                 }
@@ -112,16 +181,21 @@ export const useSafeFetcher = <TData = any>({
           throw e;
         });
     }) as (href: string) => void,
-    loadAsync: (async (href) => {
+    loadAsync: (async (href, routeId?: string) => {
       setState("loading");
       try {
-        const response = await fetch(href, { method: "GET" });
-        const raw = await response.json();
+        const url = new URL(href, origin);
+        const isLoader =
+          routeId !== undefined || !url.pathname.startsWith("/api/");
+        if (isLoader) url.pathname += ".data";
+
+        const response = await fetch(url, { method: "GET" });
+        const raw = await getResponseRaw(response, routeId || isLoader);
         if (!response.ok) {
           if (onError) {
             onError({
               status: response.status,
-              message: getZodErrorMessage(raw),
+              message: getDiscordOrZodErrorMessage(raw),
               raw: returnRawIf(raw),
             });
           }
@@ -149,9 +223,12 @@ export const useSafeFetcher = <TData = any>({
         headers.set("Content-Type", "application/json");
       }
 
-      // TODO determine appropriate route for `_data` query param
-      // This data is passed to the client by Remix somewhere
-      fetch(options?.action ?? window.location.href, {
+      const url = new URL(options?.action ?? window.location.href, origin);
+      const isLoader =
+        options?.routeId !== undefined || !url.pathname.startsWith("/api/");
+      if (isLoader) url.pathname += ".data";
+
+      fetch(url, {
         method: options?.method ?? "POST",
         body:
           headers.get("Content-Type") === "application/json"
@@ -165,15 +242,17 @@ export const useSafeFetcher = <TData = any>({
             return;
           }
           const contentType = response.headers.get("Content-Type");
-          if (contentType?.trim().startsWith("application/json")) {
-            response
-              .json()
+          if (
+            contentType?.trim().startsWith("application/json") ||
+            (contentType === "text/x-script" && isLoader)
+          ) {
+            getResponseRaw(response, options?.routeId || isLoader)
               .then((raw) => {
                 if (!response.ok) {
                   if (onError) {
                     onError({
                       status: response.status,
-                      message: getZodErrorMessage(raw),
+                      message: getDiscordOrZodErrorMessage(raw),
                       raw: returnRawIf(raw),
                     });
                   }
@@ -188,8 +267,9 @@ export const useSafeFetcher = <TData = any>({
                 setState("idle");
                 throw e;
               });
+          } else {
+            throw Error(`Unhandled content type: ${contentType}`);
           }
-          throw Error(`Unhandled content type: ${contentType}`);
         })
         .catch((e) => {
           setState("idle");
@@ -197,7 +277,7 @@ export const useSafeFetcher = <TData = any>({
         });
     }) as (
       target: FormData | URLSearchParams | any,
-      options?: Pick<SubmitOptions, "action" | "method">,
+      options?: SafeFetcherSubmitOptions,
     ) => void,
     submitAsync: (async (target, options) => {
       setState("submitting");
@@ -212,7 +292,12 @@ export const useSafeFetcher = <TData = any>({
       }
 
       try {
-        const response = await fetch(options?.action ?? window.location.href, {
+        const url = new URL(options?.action ?? window.location.href, origin);
+        const isLoader =
+          options?.routeId !== undefined || !url.pathname.startsWith("/api/");
+        if (isLoader) url.pathname += ".data";
+
+        const response = await fetch(url, {
           method: options?.method ?? "POST",
           body:
             headers.get("Content-Type") === "application/json"
@@ -222,11 +307,14 @@ export const useSafeFetcher = <TData = any>({
         });
 
         if (!response.ok) {
-          const raw = await response.json();
+          const raw = await getResponseRaw(
+            response,
+            options?.routeId || isLoader,
+          );
           if (onError) {
             onError({
               status: response.status,
-              message: getZodErrorMessage(raw),
+              message: getDiscordOrZodErrorMessage(raw),
               raw: returnRawIf(raw),
             });
           }
@@ -238,8 +326,14 @@ export const useSafeFetcher = <TData = any>({
           return undefined;
         }
         const resContentType = response.headers.get("Content-Type");
-        if (resContentType?.trim().startsWith("application/json")) {
-          const raw = await response.json();
+        if (
+          resContentType?.trim().startsWith("application/json") ||
+          (resContentType === "text/x-script" && isLoader)
+        ) {
+          const raw = await getResponseRaw(
+            response,
+            options?.routeId || isLoader,
+          );
           const responseData = raw as SerializeFrom<TData>;
           setData(responseData);
           setState("idle");
@@ -252,7 +346,7 @@ export const useSafeFetcher = <TData = any>({
       }
     }) as (
       target: FormData | URLSearchParams | any,
-      options?: Pick<SubmitOptions, "action" | "method">,
+      options?: SafeFetcherSubmitOptions,
     ) => Promise<SerializeFrom<TData>>,
     /**
      * Beware of making it possible to spam concurrent requests
@@ -291,3 +385,10 @@ export const useApiLoader = <L = any, T = Awaited<SerializeFrom<L>>>(
 
   return data;
 };
+
+// generic throwable version of `json` (returns an actual response)
+export const jsonR = <D>(
+  data: D,
+  init?: number | ResponseInit | undefined,
+): Response =>
+  Response.json(data, typeof init === "number" ? { status: init } : init);

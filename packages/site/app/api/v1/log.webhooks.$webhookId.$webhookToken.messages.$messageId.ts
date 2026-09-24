@@ -1,18 +1,18 @@
-import { json } from "@remix-run/cloudflare";
 import {
+  ButtonStyle,
+  ComponentType,
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithSKUId,
   type APIButtonComponentWithURL,
   type APIMessage,
   type APISelectMenuComponent,
-  ButtonStyle,
-  ComponentType,
 } from "discord-api-types/v10";
 import { notInArray } from "drizzle-orm";
+import { data as json } from "react-router";
 import { Snowflake } from "tif-snowflake";
 import { z } from "zod/v3";
-import { getBucket } from "~/durable/rate-limits";
-import { getUserId } from "~/session.server";
+import { getBucket } from "~/durable/rate-limits.server";
+import { getUser } from "~/session.server";
 import { WEBHOOK_TOKEN_RE } from "~/util/constants";
 import {
   extractInteractiveComponents,
@@ -21,7 +21,7 @@ import {
   hasCustomId,
   isErrorData,
 } from "~/util/discord";
-import type { ActionArgs } from "~/util/loader";
+import { jsonR, type ActionArgs } from "~/util/loader";
 import { createREST } from "~/util/rest";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 import {
@@ -106,14 +106,14 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       // Don't allow future timestamps
       messageIdSnowflake.timestamp - now.getTime() > 0)
   ) {
-    throw json(
+    throw jsonR(
       { message: "Message is too old or the snowflake is invalid" },
       { status: 400, headers },
     );
   }
 
   const rest = createREST(context.env);
-  const userId = await getUserId(request, context);
+  const user = await getUser(request, context);
 
   let message: APIMessage | undefined;
   if (type === "delete") {
@@ -126,7 +126,10 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       rest,
     );
     if (deleted.id) {
-      throw json({ message: "Message still exists" }, { status: 400, headers });
+      throw jsonR(
+        { message: "Message still exists" },
+        { status: 400, headers },
+      );
     }
   } else {
     message = await getWebhookMessage(
@@ -137,18 +140,18 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       rest,
     );
     if (isErrorData(message)) {
-      throw json(message, { status: 404, headers });
+      throw jsonR(message, { status: 404, headers });
     }
     // if (isComponentsV2(message)) {
     //   // We currently do not support logging these messages out of an abundance of caution
-    //   throw json(
+    //   throw jsonR(
     //     { message: "Message is not loggable" },
     //     { status: 400, headers },
     //   );
     // }
     if (type === "edit") {
       if (!message.edited_timestamp) {
-        throw json(
+        throw jsonR(
           { message: "Message has never been edited" },
           { status: 400, headers },
         );
@@ -160,7 +163,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         // Allow 15 seconds to send the log request
         // This disallows people from logging any old message sent by a webhook
         // they have access to (and reduces our server's API calls in such cases)
-        throw json(
+        throw jsonR(
           { message: "Message was edited too long ago" },
           { status: 400, headers },
         );
@@ -200,7 +203,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
   if (!entryWebhook) {
     const webhook = await getWebhook(webhookId, webhookToken, rest);
     if (isErrorData(webhook)) {
-      throw json(webhook, 404);
+      throw jsonR(webhook, 404);
     }
 
     if (webhook.guild_id) {
@@ -260,6 +263,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                       flow: { with: { actions: { columns: { data: true } } } },
                     },
                   },
+                  createdBy: { columns: { discordId: true } },
                 },
               })
             : [];
@@ -360,38 +364,47 @@ export const action = async ({ request, context, params }: ActionArgs) => {
                 type: component.type,
                 data,
                 draft: false,
-                createdById: match?.createdById ?? userId,
-                updatedById: userId,
+                createdById: match?.createdById ?? user?.id,
+                updatedById: user?.id,
                 guildId,
                 messageId: BigInt(message.id),
                 channelId: BigInt(message.channel_id),
               },
             ];
           });
-        return values.length === 0
-          ? []
-          : await tx
-              .insert(discordMessageComponents)
-              .values(values)
-              .onConflictDoUpdate({
-                target: discordMessageComponents.id,
-                set: {
-                  type: sql`excluded.type`,
-                  data: sql`excluded.data`,
-                  draft: sql`excluded.draft`,
-                  createdById: sql`excluded."createdById"`,
-                  updatedById: sql`excluded."updatedById"`,
-                  updatedAt: sql`excluded."updatedAt"`,
-                  guildId: sql`excluded."guildId"`,
-                  channelId: sql`excluded."channelId"`,
-                  messageId: sql`excluded."messageId"`,
-                },
-              })
-              .returning({
-                id: discordMessageComponents.id,
-                messageId: discordMessageComponents.messageId,
-                data: discordMessageComponents.data,
-              });
+        const created =
+          values.length === 0
+            ? []
+            : await tx
+                .insert(discordMessageComponents)
+                .values(values)
+                .onConflictDoUpdate({
+                  target: discordMessageComponents.id,
+                  set: {
+                    type: sql`excluded.type`,
+                    data: sql`excluded.data`,
+                    draft: sql`excluded.draft`,
+                    createdById: sql`excluded."createdById"`,
+                    updatedById: sql`excluded."updatedById"`,
+                    updatedAt: sql`excluded."updatedAt"`,
+                    guildId: sql`excluded."guildId"`,
+                    channelId: sql`excluded."channelId"`,
+                    messageId: sql`excluded."messageId"`,
+                  },
+                })
+                .returning({
+                  id: discordMessageComponents.id,
+                  messageId: discordMessageComponents.messageId,
+                  data: discordMessageComponents.data,
+                });
+        return created.map((c) => {
+          const fromStored = stored.find((comp) => comp.id === c.id);
+          return {
+            ...c,
+            createdBy: fromStored?.createdBy,
+            updatedBy: user,
+          };
+        });
       }),
     );
     // I want to do this in the background (ctx.waitUntil) but I had issues
@@ -409,6 +422,8 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         await launchComponentKV(context.env, {
           componentId: created.id,
           data: created.data,
+          createdById: created.createdBy?.discordId?.toString(),
+          updatedById: created.updatedBy?.discordId?.toString(),
         });
       }
     }
@@ -440,7 +455,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             messageId: message?.id ?? messageId,
             channelId: message?.channel_id ?? entryWebhook.channelId,
             threadId,
-            userId,
+            userId: user?.id,
             // Not really a reliable check but it doesn't matter.
             // We might want to remove this entirely
             notifiedEveryoneHere: message
