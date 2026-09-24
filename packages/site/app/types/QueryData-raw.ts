@@ -6,6 +6,8 @@ import {
   type APIEmbedField,
   type APIMessageTopLevelComponent,
   type MessageFlags,
+  PollLayoutType,
+  type RESTAPIPoll,
   type UserFlags,
 } from "discord-api-types/v10";
 import { z } from "zod/v3";
@@ -149,6 +151,7 @@ export interface QueryDataMessageDataRaw {
   content?: string | null;
   embeds?: APIEmbed[] | null;
   attachments?: APIAttachment[];
+  poll?: RESTAPIPoll;
   components?: APIMessageTopLevelComponent[];
   webhook_id?: string;
   flags?: MessageFlags;
@@ -163,6 +166,25 @@ export const ZodAPIAllowedMentions = z.object({
   // not relevant; discard data
   // replied_user: z.oboolean(),
 }) satisfies z.ZodType<APIAllowedMentions>;
+
+export const ZodAPIPollMedia = z.object({
+  text: z.ostring(),
+  emoji: z
+    .object({
+      id: z.ostring(),
+      name: z.ostring(),
+      animated: z.oboolean(),
+    })
+    .optional(),
+});
+
+export const ZodRESTAPIPoll = z.object({
+  question: ZodAPIPollMedia,
+  answers: z.object({ poll_media: ZodAPIPollMedia }).array(),
+  duration: z.onumber(),
+  allow_multiselect: z.oboolean(),
+  layout_type: z.nativeEnum(PollLayoutType).optional(),
+}) satisfies z.ZodType<RESTAPIPoll>;
 
 export const queryDataMessageDataTransform = (
   value: QueryDataMessageDataRaw,
@@ -205,6 +227,7 @@ export const ZodQueryDataMessageDataBase = z.object({
     })
     .array()
     .optional(),
+  poll: ZodRESTAPIPoll.optional(),
   webhook_id: z.ostring(),
   components: ZodAPITopLevelComponentRaw.array().optional(),
   flags: ZodMessageFlags.optional(),
