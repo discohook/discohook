@@ -505,5 +505,7 @@
     "linkEmbedTypeMastodon": "Post (markdown, vereist auteur en voettekst)",
     "webhookInput": "Webhook Invoer",
     "linkEmbedTypeStandard": "Standaard (geen markdown, flexibeler)",
-    "messageTooLong": "Je berichtgegevens zijn te groot om in de pagina-URL te worden weergegeven. Als je deze pagina wilt delen, gebruik dan de knop ‘$t(share)’."
+    "messageTooLong": "Je berichtgegevens zijn te groot om in de pagina-URL te worden weergegeven. Als je deze pagina wilt delen, gebruik dan de knop ‘$t(share)’.",
+    "backToSettings": "Terug naar Instellingen",
+    "searchOrCreateBackup": "Zoek of maak een backup"
 }
