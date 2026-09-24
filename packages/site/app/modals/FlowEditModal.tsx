@@ -649,7 +649,7 @@ const FlowActionEditor: React.FC<{
   // Decided on a stateful value because I didn't want to fiddle with nested group classes
   const [isOpen, setOpen] = useState(true);
   return (
-    (<div>
+    <div>
       {prevAction ? (
         <div className="mb-1 flex">
           <div
@@ -1000,188 +1000,193 @@ const FlowActionEditor: React.FC<{
                     (w) => w.id === action.webhookId,
                   );
 
-                  return (<>
-                    <p className="text-sm">
-                      <Trans
-                        t={t}
-                        i18nKey="messageActionGuideNote"
-                        components={[
-                          <Link
-                            key="0"
-                            to="/guide/recipes/message-buttons"
-                            target="_blank"
-                            className={linkClassName}
-                          />,
-                        ]}
-                      />
-                    </p>
-                    <div>
-                      <p className="text-sm select-none">{t("webhook")}</p>
-                      <div className="flex">
-                        {(() => {
-                          if (
-                            !webhooksFetcher.data &&
-                            webhooksFetcher.state === "idle" &&
-                            guildId
-                          ) {
-                            webhooksFetcher.load(
-                              apiUrl(BRoutes.guildWebhooks(guildId)),
-                            );
-                          }
-                          return (
-                            (<SimpleCombobox
-                              t={t}
-                              clearable={false}
-                              label={t("webhook")}
-                              disabled={
-                                !guildId || webhooksFetcher.state !== "idle"
-                              }
-                              name="webhookId"
-                              required
-                              value={selectedWebhook?.id || null}
-                              options={
-                                webhooksFetcher.data
-                                  ? webhooksFetcher.data.map(
-                                      getWebhookSelectOption,
-                                    )
-                                  : []
-                              }
-                              filter={(option, query) => {
-                                if (!option) return false;
-                                const { webhook } =
-                                  option as unknown as ReturnType<
-                                    typeof getWebhookSelectOption
-                                  >;
-
-                                const q = query.toLowerCase();
-                                const nameContains = (webhook.name ?? "")
-                                  .toLowerCase()
-                                  .includes(q);
-
-                                // stricter from-start channel name match + fuzzy
-                                // webhook name match (a webhook name could start
-                                // with #)
-                                if (query.startsWith("#")) {
-                                  return (nameContains || (webhook.channel?.name ?? "")
-                                    .toLowerCase()
-                                    .startsWith(q.replace(/^#/, "")));
-                                  // I think a user search might be feasible so I
-                                  // didn't want to take up the @ prefix for a
-                                  // webhook name
-                                } else if (query.startsWith("^")) {
-                                  return (webhook.name ?? "")
-                                    .toLowerCase()
-                                    .startsWith(q.replace(/^\^/, ""));
-                                }
-
-                                return (
-                                  webhook.id === query ||
-                                  webhook.channelId === query ||
-                                  nameContains ||
-                                  (webhook.channel?.name ?? "")
-                                    .toLowerCase()
-                                    .includes(q)
-                                );
-                              }}
-                              className="grow"
-                              onChange={(webhookId) => {
-                                if (webhookId) {
-                                  action.webhookId = webhookId;
-                                  update();
-                                }
-                              }}
-                            />)
-                          );
-                        })()}
-                        <Button
-                          className="ms-2 my-auto h-9"
-                          onClick={() => {
-                            if (!guildId) return;
-                            webhooksFetcher.load(
-                              apiUrl(BRoutes.guildWebhooks(guildId)),
-                            );
-                          }}
-                          disabled={
-                            !guildId || webhooksFetcher.state !== "idle"
-                          }
-                          discordstyle={ButtonStyle.Secondary}
-                        >
-                          <CoolIcon icon="Redo" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm select-none">
-                        {t("backup")}
-                        {selected && (
-                          <>
-                            {" "}
-                            (
+                  return (
+                    <>
+                      <p className="text-sm">
+                        <Trans
+                          t={t}
+                          i18nKey="messageActionGuideNote"
+                          components={[
                             <Link
-                              to={`/?backup=${selected.id}`}
+                              key="0"
+                              to="/guide/recipes/message-buttons"
                               target="_blank"
                               className={linkClassName}
-                            >
-                              {t("edit")}
-                            </Link>
-                            )
-                          </>
-                        )}
+                            />,
+                          ]}
+                        />
                       </p>
-                      <div className="flex">
-                        <BackupSelect
-                          t={t}
-                          fetcher={backupsFetcher}
-                          value={backupsFetcher.data?.find(
-                            (b) => b.id === action.backupId,
-                          )}
-                          onChange={(backup) => {
-                            action.backupId = backup.id;
-                            update();
-                          }}
-                        />
-                        <Button
-                          className="ltr:ml-2 rtl:mr-2 my-auto h-9"
-                          onClick={() =>
-                            backupsFetcher.load(
-                              apiUrl(BRoutes.currentUserBackups()),
-                            )
-                          }
-                          disabled={backupsFetcher.state !== "idle"}
-                          discordstyle={ButtonStyle.Secondary}
-                        >
-                          <CoolIcon icon="Redo" />
-                        </Button>
+                      <div>
+                        <p className="text-sm select-none">{t("webhook")}</p>
+                        <div className="flex">
+                          {(() => {
+                            if (
+                              !webhooksFetcher.data &&
+                              webhooksFetcher.state === "idle" &&
+                              guildId
+                            ) {
+                              webhooksFetcher.load(
+                                apiUrl(BRoutes.guildWebhooks(guildId)),
+                              );
+                            }
+                            return (
+                              <SimpleCombobox
+                                t={t}
+                                clearable={false}
+                                label={t("webhook")}
+                                disabled={
+                                  !guildId || webhooksFetcher.state !== "idle"
+                                }
+                                name="webhookId"
+                                required
+                                value={selectedWebhook?.id || null}
+                                options={
+                                  webhooksFetcher.data
+                                    ? webhooksFetcher.data.map(
+                                        getWebhookSelectOption,
+                                      )
+                                    : []
+                                }
+                                filter={(option, query) => {
+                                  if (!option) return false;
+                                  const { webhook } =
+                                    option as unknown as ReturnType<
+                                      typeof getWebhookSelectOption
+                                    >;
+
+                                  const q = query.toLowerCase();
+                                  const nameContains = (webhook.name ?? "")
+                                    .toLowerCase()
+                                    .includes(q);
+
+                                  // stricter from-start channel name match + fuzzy
+                                  // webhook name match (a webhook name could start
+                                  // with #)
+                                  if (query.startsWith("#")) {
+                                    return (
+                                      nameContains ||
+                                      (webhook.channel?.name ?? "")
+                                        .toLowerCase()
+                                        .startsWith(q.replace(/^#/, ""))
+                                    );
+                                    // I think a user search might be feasible so I
+                                    // didn't want to take up the @ prefix for a
+                                    // webhook name
+                                  } else if (query.startsWith("^")) {
+                                    return (webhook.name ?? "")
+                                      .toLowerCase()
+                                      .startsWith(q.replace(/^\^/, ""));
+                                  }
+
+                                  return (
+                                    webhook.id === query ||
+                                    webhook.channelId === query ||
+                                    nameContains ||
+                                    (webhook.channel?.name ?? "")
+                                      .toLowerCase()
+                                      .includes(q)
+                                  );
+                                }}
+                                className="grow"
+                                onChange={(webhookId) => {
+                                  if (webhookId) {
+                                    action.webhookId = webhookId;
+                                    update();
+                                  }
+                                }}
+                              />
+                            );
+                          })()}
+                          <Button
+                            className="ms-2 my-auto h-9"
+                            onClick={() => {
+                              if (!guildId) return;
+                              webhooksFetcher.load(
+                                apiUrl(BRoutes.guildWebhooks(guildId)),
+                              );
+                            }}
+                            disabled={
+                              !guildId || webhooksFetcher.state !== "idle"
+                            }
+                            discordstyle={ButtonStyle.Secondary}
+                          >
+                            <CoolIcon icon="Redo" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    {
-                      // incl. the random option
-                      messageOptions.length > 2 && (
-                        <SimpleStringSelect
-                          t={t}
-                          name="backupMessageIndex"
-                          label={t("message")}
-                          value={
-                            (action.backupMessageIndex === null
-                              ? "null"
-                              : (action.backupMessageIndex ?? 0)) as
-                              | number
-                              | "null"
-                          }
-                          options={messageOptions}
-                          onChange={(value) => {
-                            action.backupMessageIndex =
-                              value === "null" ? null : value;
-                            update();
-                          }}
-                          required
-                          disabled={
-                            !selected || selected.data.messages.length <= 1
-                          }
-                        />
-                      )
-                    }
-                  </>);
+                      <div>
+                        <p className="text-sm select-none">
+                          {t("backup")}
+                          {selected && (
+                            <>
+                              {" "}
+                              (
+                              <Link
+                                to={`/?backup=${selected.id}`}
+                                target="_blank"
+                                className={linkClassName}
+                              >
+                                {t("edit")}
+                              </Link>
+                              )
+                            </>
+                          )}
+                        </p>
+                        <div className="flex">
+                          <BackupSelect
+                            t={t}
+                            fetcher={backupsFetcher}
+                            value={backupsFetcher.data?.find(
+                              (b) => b.id === action.backupId,
+                            )}
+                            onChange={(backup) => {
+                              action.backupId = backup.id;
+                              update();
+                            }}
+                          />
+                          <Button
+                            className="ltr:ml-2 rtl:mr-2 my-auto h-9"
+                            onClick={() =>
+                              backupsFetcher.load(
+                                apiUrl(BRoutes.currentUserBackups()),
+                              )
+                            }
+                            disabled={backupsFetcher.state !== "idle"}
+                            discordstyle={ButtonStyle.Secondary}
+                          >
+                            <CoolIcon icon="Redo" />
+                          </Button>
+                        </div>
+                      </div>
+                      {
+                        // incl. the random option
+                        messageOptions.length > 2 && (
+                          <SimpleStringSelect
+                            t={t}
+                            name="backupMessageIndex"
+                            label={t("message")}
+                            value={
+                              (action.backupMessageIndex === null
+                                ? "null"
+                                : (action.backupMessageIndex ?? 0)) as
+                                | number
+                                | "null"
+                            }
+                            options={messageOptions}
+                            onChange={(value) => {
+                              action.backupMessageIndex =
+                                value === "null" ? null : value;
+                              update();
+                            }}
+                            required
+                            disabled={
+                              !selected || selected.data.messages.length <= 1
+                            }
+                          />
+                        )
+                      }
+                    </>
+                  );
                 })()
               ) : action.type === FlowActionType.CreateThread ? (
                 (() => {
@@ -1433,7 +1438,7 @@ const FlowActionEditor: React.FC<{
           ) : null}
         </Collapsible.Panel>
       </Collapsible.Root>
-    </div>)
+    </div>
   );
 };
 

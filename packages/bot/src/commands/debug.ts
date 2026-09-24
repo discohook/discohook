@@ -33,7 +33,7 @@ import {
   launchComponentKV,
   makeSnowflake,
   type StorableButtonWithUrl,
-  TriggerKVGuild,
+  type TriggerKVGuild,
   upsertDiscordUser,
 } from "store";
 import type { MessageAppCommandCallback } from "../commands.js";

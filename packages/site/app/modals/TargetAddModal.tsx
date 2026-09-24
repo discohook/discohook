@@ -461,12 +461,12 @@ const AddWebhookTarget = ({
                         components={{
                           open: (
                             // biome-ignore lint/a11y/useAnchorContent: supplied by <Trans/>
-                            (<a
+                            <a
                               className="hover:underline"
                               href={`https://discord.com/channels/${webhook.guild_id}/${threadId}`}
                               target="_blank"
                               rel="noreferrer"
-                            />)
+                            />
                           ),
                           toggle: (
                             <button

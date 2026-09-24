@@ -35,7 +35,7 @@ import {
 } from "~/store.server";
 import { ZodAPIMessageActionRowComponent } from "~/types/components";
 import { hasGuildOnlyActions, refineZodDraftFlowMax } from "~/types/flows";
-import { APIComponentInMessageActionRow } from "~/types/QueryData";
+import type { APIComponentInMessageActionRow } from "~/types/QueryData";
 import { isComponentsV2, isDiscordError } from "~/util/discord";
 import { type ActionArgs, jsonR } from "~/util/loader";
 import { userIsPremium } from "~/util/users";

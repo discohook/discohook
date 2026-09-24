@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, EntryContext, LoaderFunctionArgs } from "react-router";
+import type {
+  ActionFunctionArgs,
+  EntryContext,
+  LoaderFunctionArgs,
+} from "react-router";
 import { isRouteErrorResponse, ServerRouter } from "react-router";
 import type { Context } from "./util/loader";
 

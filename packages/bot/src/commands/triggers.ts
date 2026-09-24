@@ -30,7 +30,7 @@ import type { ButtonCallback } from "../components.js";
 import { gatewayEventNameToCallback } from "../events.js";
 import { getWelcomerConfigurations } from "../events/guildMemberAdd.js";
 import type { FlowResult } from "../flows/flows.js";
-import { FlowLogger } from "../flows/logger.js";
+import type { FlowLogger } from "../flows/logger.js";
 import type { InteractionContext } from "../interactions.js";
 import type { Env } from "../types/env.js";
 import { parseAutoComponentId } from "../util/components.js";

@@ -1,14 +1,14 @@
 import { channelLink, time } from "@discordjs/formatters";
 import {
-  APIButtonComponentWithCustomId,
+  type APIButtonComponentWithCustomId,
   type APIComponentInMessageActionRow,
   type APIEmbed,
   type APIGuildMember,
   type APIInteractionDataResolvedChannel,
   type APIInteractionDataResolvedGuildMember,
-  APIMessageTopLevelComponent,
+  type APIMessageTopLevelComponent,
   type APIRole,
-  APISelectMenuComponent,
+  type APISelectMenuComponent,
   type APIUser,
   ButtonStyle,
   ComponentType,

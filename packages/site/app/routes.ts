@@ -25,8 +25,6 @@ const getRouteFilenames = async (dir: string) => {
 const filesV1 = await getRouteFilenames("./app/api/v1");
 
 export default [
-  ...filesV1.map((file) =>
-    route(`/api/v1/${pathify(file)}`, `api/v1/${file}`),
-  ),
+  ...filesV1.map((file) => route(`/api/v1/${pathify(file)}`, `api/v1/${file}`)),
   ...(await flatRoutes({ ignoredRouteFiles: ["**/.*", "api/v1/**"] })),
 ] satisfies RouteConfig;

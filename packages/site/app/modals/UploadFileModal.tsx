@@ -1,4 +1,3 @@
-
 export interface DraftFile {
   id: string;
   file: File;
