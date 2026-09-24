@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord-api-types/v10";
+import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -141,12 +142,31 @@ export const DatePicker: React.FC<{
   value?: Date | null;
   onChange: (date: Date) => void;
   onReset?: () => void;
+  onClose?: () => void;
   withTimePicker?: boolean;
   minDate?: Date;
   maxDate?: Date;
-}> = ({ t, value, onChange, onReset, withTimePicker, minDate, maxDate }) => {
+  allowInput?: boolean;
+}> = ({
+  t,
+  value,
+  onChange,
+  onReset,
+  onClose,
+  withTimePicker,
+  minDate,
+  maxDate,
+  allowInput,
+}) => {
   const { i18n } = useTranslation();
   const locale = i18n.language;
+
+  const [inputWarning, setInputWarning] = useState<string>();
+  // this input must be controlled so that we can update its
+  // value remotely (after clicking a day)
+  const [inputDraft, setInputDraft] = useState(
+    value ? value.toLocaleDateString() : "",
+  );
 
   const [level, setLevel] = useState<ZoomLevel>("day");
   const [viewYear, setViewYear] = useState(() =>
@@ -190,10 +210,28 @@ export const DatePicker: React.FC<{
 
   const decadeStart = getDecadeStart(viewYear);
 
+  const setDayAndView = (date: Date, ignoreClamps = false) => {
+    if (!ignoreClamps) {
+      if (minDate && date.getTime() < minDate.getTime()) {
+        setInputWarning(t("tooFarPast", { replace: { date: minDate } }));
+        return;
+      }
+      if (maxDate && date.getTime() > maxDate.getTime()) {
+        setInputWarning(t("tooFarFuture", { replace: { date: maxDate } }));
+        return;
+      }
+    }
+
+    onChange(date);
+    setViewMonth(date.getMonth());
+    setViewYear(date.getFullYear());
+    setLevel("day");
+  };
+
   return (
     <div className="w-fit rounded-lg border border-border-normal bg-gray-50 dark:border-border-normal-dark dark:bg-gray-700 dark:text-primary-230 shadow-md">
       <div className={twJoin("flex flex-col", withTimePicker && "sm:flex-row")}>
-        <div className={twJoin(!withTimePicker && "!w-72")}>
+        <div className={twJoin(!withTimePicker && "w-72 mx-auto")}>
           {level === "day" && (
             <>
               <div className="flex items-center justify-between px-2 pt-2">
@@ -274,7 +312,10 @@ export const DatePicker: React.FC<{
                           type="button"
                           key={date.getTime()}
                           disabled={disabled}
-                          onClick={() => selectDay(date)}
+                          onClick={() => {
+                            selectDay(date);
+                            setInputDraft(date.toLocaleDateString());
+                          }}
                           className={twMerge(
                             cellClassName({ disabled, selected }),
                             "min-w-7",
@@ -432,20 +473,56 @@ export const DatePicker: React.FC<{
 
       <div className="p-2 pt-0">
         <div className="flex gap-2 ms-auto w-fit">
+          {allowInput ? (
+            <TextInput
+              className="min-h-0 h-8 w-full"
+              labelClassName="max-w-48"
+              autoFocus
+              errors={inputWarning ? [inputWarning] : []}
+              value={inputDraft}
+              onChange={(e) => {
+                const val = e.currentTarget.value;
+                setInputDraft(val);
+                setInputWarning(undefined);
+                // we might be able to just use Date with some clever re-parsing
+                const trimmed = val.trim();
+                const m = moment(trimmed);
+                if (m.isValid()) {
+                  setDayAndView(m.toDate());
+                } else if (/^tomo?r?r?o?w?$/i.test(trimmed)) {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  setDayAndView(tomorrow);
+                } else if (/^yeste?r?d?a?y?$/i.test(trimmed)) {
+                  const yesterday = new Date();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  setDayAndView(yesterday);
+                } else if (/^toda?y?$/i.test(trimmed)) {
+                  setDayAndView(new Date());
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.code === "Enter" || e.code === "NumpadEnter") onClose?.();
+              }}
+            />
+          ) : null}
           <Button
             onClick={() => {
               const date = new Date();
-              onChange(date);
-              // take view back to today
-              setViewMonth(date.getMonth());
-              setViewYear(date.getFullYear());
-              setLevel("day");
+              setDayAndView(date);
+              setInputDraft(date.toLocaleDateString());
             }}
           >
             {t("today")}
           </Button>
           {!!onReset && (
-            <Button onClick={onReset} discordstyle={ButtonStyle.Secondary}>
+            <Button
+              onClick={() => {
+                onReset();
+                setInputDraft("");
+              }}
+              discordstyle={ButtonStyle.Secondary}
+            >
               {t("reset")}
             </Button>
           )}

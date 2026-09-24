@@ -1,4 +1,5 @@
-import { Popover } from "@base-ui/react/popover";
+import { Popover, PopoverRootActions } from "@base-ui/react/popover";
+import { useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import type { TFunction } from "~/types/i18next";
 import { DatePicker } from "../editor/DatePicker";
@@ -18,6 +19,7 @@ export const DatePickerPopoverWithTrigger = ({
   isDisabled,
   isRequired,
   className,
+  allowInput = true,
 }: {
   t: TFunction;
   labelKey?: string;
@@ -31,11 +33,14 @@ export const DatePickerPopoverWithTrigger = ({
   isDisabled?: boolean;
   isRequired?: boolean;
   className?: string;
+  allowInput?: boolean;
 }) => {
   // don't know if i'm going to do this, it's awkward
   const withTimePicker = false;
+  const actionsRef = useRef<PopoverRootActions>(null);
+
   return (
-    <Popover.Root>
+    <Popover.Root actionsRef={actionsRef}>
       <Popover.Trigger
         className={twMerge(
           "flex cursor-pointer text-start",
@@ -45,16 +50,6 @@ export const DatePickerPopoverWithTrigger = ({
         aria-disabled={isDisabled}
         aria-required={isRequired}
       >
-        {name ? (
-          <input
-            name={name}
-            type="datetime-local"
-            value={value ? value.toISOString().split("Z")[0] : ""}
-            hidden
-            readOnly
-            disabled={isDisabled}
-          />
-        ) : null}
         <div className="grow max-w-full">
           <p className="text-sm font-medium">
             {t(labelKey ?? (withTimePicker ? "datetime" : "date"))}
@@ -70,6 +65,17 @@ export const DatePickerPopoverWithTrigger = ({
               className,
             )}
           >
+            {name ? (
+              <input
+                name={name}
+                type="datetime-local"
+                value={value ? value.toISOString().split("Z")[0] : ""}
+                hidden
+                readOnly
+                disabled={isDisabled}
+                required={isRequired}
+              />
+            ) : null}
             <p className="truncate">
               {value instanceof Date
                 ? value.toLocaleString(undefined, {
@@ -105,9 +111,11 @@ export const DatePickerPopoverWithTrigger = ({
               value={value}
               onChange={(value) => onValueChange(value)}
               onReset={isClearable ? () => onValueChange(undefined) : undefined}
+              onClose={() => actionsRef.current?.close()}
               withTimePicker={withTimePicker}
               minDate={minDate}
               maxDate={maxDate}
+              allowInput={allowInput}
             />
           </Popover.Popup>
         </Popover.Positioner>
