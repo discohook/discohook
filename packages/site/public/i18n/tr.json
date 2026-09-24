@@ -10,7 +10,9 @@
     "invalidWebhookUrl": "Geçersiz webhook URL. Başının şöyle olması lazım: https://discord.com/api/webhooks/...",
     "backToServerSelection": "Sunucu seçimine geri dön",
     "createdAtBy": "{{ createdAt, MMM D, YYYY }} tarihinde {{username}} tarafından oluşturuldu",
-    "addTarget": { "1": "Webhook Ekle" },
+    "addTarget": {
+        "1": "Webhook Ekle"
+    },
     "createWebhook": "Webhook Oluştur",
     "editWebhook": "Webhook'u Düzenle",
     "copyWebhookUrl": "URL'yi Kopyala (gelişmiş)",
@@ -81,7 +83,7 @@
     "componentsMessageDescription": "Metin, medya, dosya ve kapsayıcıları (tıpkı gömülü içerikler gibi) istediğin sırada görüntüleyebilirsin! Standart bir mesajdan daha da özelleştirilebilir, ancak *inline* (satıriçi) gömülü içerik alanları gibi bazı özelliklerden yoksundur.",
     "codeNote": "Hiçbir bilgisayarın asla sana adam akıllı kod yazmasını bekleme. Bilgi almak istiyorsan <docs>dokümentasyona göz at</docs>. Eğer {{ library }} kullanımında yardıma ihtiyacın varsa, o libraryin dokümentasyonda yer alan destek sunucusuna gir.",
     "settings": "Ayarlar",
-    "help": "Yardım",
+    "help": "Yardıs",
     "search": "Ara",
     "helpSearchPlaceholder": "Nasıl …",
     "logIn": "Giriş Yap",
@@ -151,5 +153,6 @@
     "compact": "Sıkışık",
     "compactAvatars": "Avatarları göster",
     "wordWrap": "Kelimeleri Kaydır",
-    "linkEmbedType": "Gömülü Türü (<0>bune ya?</0>)"
+    "linkEmbedType": "Gömülü Türü (<0>bune ya?</0>)",
+    "backToSettings": "Ayarlara Geri Dön"
 }
