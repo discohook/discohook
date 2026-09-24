@@ -22,12 +22,7 @@ import type { CodeGeneratorProps } from "~/modals/CodeGeneratorModal";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import type { JsonEditorProps } from "~/modals/JsonEditorModal";
 import type { Target } from "~/modals/MessageSendModal";
-import {
-  Modal,
-  ModalFooter,
-  type ModalProps,
-  PlainModalHeader,
-} from "~/modals/Modal";
+import { Modal, ModalFooter, type ModalProps } from "~/modals/Modal";
 import type { SetDraftFile } from "~/modals/UploadFileModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
@@ -359,10 +354,10 @@ const AttachmentEditModal = (
   };
 
   return (
-    <Modal {...restProps}>
-      <PlainModalHeader onClose={() => restProps.setOpen(false)}>
-        {attachment ? transformFileName(attachment.filename) : "File"}
-      </PlainModalHeader>
+    <Modal
+      title={attachment ? transformFileName(attachment.filename) : "File"}
+      {...restProps}
+    >
       {error}
       {draft ? (
         <div className="flex flex-wrap-reverse md:flex-nowrap">
@@ -532,10 +527,7 @@ const AttachmentUploadedModal = (
   useEffect(() => setDraft(name), [name]);
 
   return (
-    <Modal {...restProps}>
-      <PlainModalHeader onClose={() => restProps.setOpen(false)}>
-        File Uploaded
-      </PlainModalHeader>
+    <Modal title="File Uploaded" {...restProps}>
       {uploaded ? (
         <p>
           Your message has been updated to use the direct URL to the file rather

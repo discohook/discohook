@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import {
   type APIWebhook,
   ButtonStyle,
@@ -8,6 +7,7 @@ import {
 import { getDate } from "discord-snowflake";
 import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { ApiGetCurrentUserMemberships } from "~/api/v1/users.@me.memberships";
@@ -43,7 +43,7 @@ import type { loader as ApiGetGuildChannels } from "../api/v1/guilds.$guildId.ch
 import type { loader as ApiGetGuildWebhooks } from "../api/v1/guilds.$guildId.webhooks";
 import type { loader as ApiGetGuildWebhookToken } from "../api/v1/guilds.$guildId.webhooks.$webhookId.token";
 import { getTargetKey, type Target, type TargetMap } from "./MessageSendModal";
-import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 interface GenericListedTargetInfo {
   name: string;
@@ -963,10 +963,12 @@ export const TargetAddModal = (
   }, []);
 
   return (
-    <Modal {...props} setOpen={setOpen} size="lg">
-      <PlainModalHeader onClose={() => setOpen(false)}>
-        {t(`addTarget.${targetType}`)}
-      </PlainModalHeader>
+    <Modal
+      title={t(`addTarget.${targetType}`)}
+      {...props}
+      setOpen={setOpen}
+      size="lg"
+    >
       <div className="flex flex-col md:flex-row-reverse gap-4">
         {expMoreTargets ? (
           <div

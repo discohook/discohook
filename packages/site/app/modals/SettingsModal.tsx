@@ -1,8 +1,8 @@
-import { Link } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
@@ -18,12 +18,7 @@ import type { i18n, TFunction } from "~/types/i18next";
 import { fileHosts } from "~/util/filehosts";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import { fileSize } from "~/util/text";
-import {
-  Modal,
-  modalCloseButtonClassName,
-  type ModalProps,
-  PlainModalHeader,
-} from "./Modal";
+import { Modal, modalCloseButtonClassName, type ModalProps } from "./Modal";
 
 interface LanguageEntry {
   native: string;
@@ -170,10 +165,7 @@ const FilehostConfigurationModal = ({
   children: React.ReactNode;
 }) => {
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        Link your {name}
-      </PlainModalHeader>
+    <Modal title={`Link your ${name}`} {...props}>
       {children}
     </Modal>
   );

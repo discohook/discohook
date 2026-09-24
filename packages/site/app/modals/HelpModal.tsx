@@ -11,7 +11,7 @@ import { Message } from "~/components/preview/Message.client";
 import { TextInput } from "~/components/TextInput";
 import type { GuideFileMeta } from "~/routes/guide.$";
 import { ExampleModal } from "./ExampleModal";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 
 export const HelpModal = (props: ModalProps) => {
   const { t } = useTranslation();
@@ -91,10 +91,7 @@ export const HelpModal = (props: ModalProps) => {
     : [];
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("help")}
-      </PlainModalHeader>
+    <Modal title={t("help")} {...props}>
       <ExampleModal open={exampleOpen} setOpen={setExampleOpen} />
       <TextInput
         label={t("search")}

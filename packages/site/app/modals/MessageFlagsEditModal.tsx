@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "~/components/Button";
 import { BigCheckbox } from "~/components/Checkbox";
 import type { QueryData } from "~/types/QueryData";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 
 export const MessageFlagsEditModal = (
   props: ModalProps & {
@@ -19,10 +19,7 @@ export const MessageFlagsEditModal = (
     messageIndex !== undefined ? data.messages[messageIndex] : undefined;
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("flags")}
-      </PlainModalHeader>
+    <Modal title={t("flags")} {...props}>
       <div className="space-y-2">
         <p>{t("messageFlagsNote")}</p>
         {message

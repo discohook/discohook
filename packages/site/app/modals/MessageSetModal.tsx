@@ -16,7 +16,7 @@ import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { getWebhookMessage } from "~/util/discord";
 import type { DraftTargetWebhook, TargetMap } from "./MessageSendModal";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 import { ListTarget } from "./TargetAddModal";
 
 export const MessageSetModal = (
@@ -88,10 +88,7 @@ export const MessageSetModal = (
   }, [message]);
 
   return (
-    <Modal {...props} setOpen={setOpen}>
-      <PlainModalHeader onClose={() => setOpen(false)}>
-        {t("setMessageLink")}
-      </PlainModalHeader>
+    <Modal title={t("setMessageLink")} {...props} setOpen={setOpen}>
       <InfoBox severity="blue" icon="Info" collapsible open={false}>
         <Trans t={t} i18nKey="setMessageLinkNote" components={{ br: <br /> }} />
       </InfoBox>

@@ -1,5 +1,4 @@
 import { calculateUserDefaultAvatarIndex } from "@discordjs/rest";
-import { Form, Link } from "react-router";
 import {
   ButtonStyle,
   type RESTError,
@@ -9,6 +8,7 @@ import {
 } from "discord-api-types/v10";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Form, Link } from "react-router";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { Button } from "~/components/Button";
@@ -40,7 +40,7 @@ import type {
   TargetKey,
   TargetMap,
 } from "./MessageSendModal";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 
 export const TargetEditModal = (
   props: ModalProps & {
@@ -131,6 +131,7 @@ export const TargetEditModal = (
 
   return (
     <Modal
+      title={t("editWebhook")}
       {...props}
       setOpen={(o) => {
         props.setOpen(o);
@@ -140,9 +141,6 @@ export const TargetEditModal = (
         }
       }}
     >
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("editWebhook")}
-      </PlainModalHeader>
       {error}
       {uploadedAvatarSize !== null &&
       // https://developer.apple.com/forums/thread/701895 cites "500K", but I

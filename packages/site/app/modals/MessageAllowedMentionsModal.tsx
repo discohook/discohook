@@ -18,7 +18,7 @@ import { getQdMessageId } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 
 interface MessageAllowedMentionsModalProps {
   data: QueryData;
@@ -451,10 +451,7 @@ export const MessageAllowedMentionsModal = (
     messageIndex !== undefined ? data.messages[messageIndex] : undefined;
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("allowedMentions")}
-      </PlainModalHeader>
+    <Modal title={t("allowedMentions")} {...props}>
       <div className="space-y-2">
         {message && messageIndex !== undefined ? (
           <Inner

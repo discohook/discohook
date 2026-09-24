@@ -35,7 +35,7 @@ import {
   getTimezone,
 } from "~/util/time";
 import type { action as ApiBackupsIdAction } from "../api/v1/backups.$id";
-import { Modal, PlainModalHeader, type ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 const { fieldsToExpression, parseExpression } = cronParser;
 
 const isSameCalendarDay = (a: Moment, b: Moment) =>
@@ -440,10 +440,7 @@ export const BackupEditModal = (
   const { backup } = props;
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("editBackupTitle")}
-      </PlainModalHeader>
+    <Modal title={t("editBackupTitle")} {...props}>
       {backup && <Inner t={t} backup={backup} onSave={props.onSave} />}
     </Modal>
   );

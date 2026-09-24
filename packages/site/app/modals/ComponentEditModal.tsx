@@ -1,5 +1,4 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { Link } from "react-router";
 import {
   type APISelectMenuOption,
   type APIStringSelectComponent,
@@ -10,6 +9,7 @@ import {
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { twJoin, twMerge } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type {
@@ -37,7 +37,7 @@ import { linkClassName } from "../components/preview/Markdown";
 import { StringSelect } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
 import { type EditingFlowData, FlowEditModal } from "./FlowEditModal";
-import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export type EditingComponentData = {
   component: APIComponentInMessageActionRow;
@@ -650,12 +650,13 @@ const FoundBackupsResolveModal = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Modal {...props} size="lg">
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("componentBackupsFound.modalTitle", {
-          replace: { type: component?.type ?? ComponentType.Button },
-        })}
-      </PlainModalHeader>
+    <Modal
+      title={t("componentBackupsFound.modalTitle", {
+        replace: { type: component?.type ?? ComponentType.Button },
+      })}
+      {...props}
+      size="lg"
+    >
       <p>{t("componentBackupsFound.modalDescription")}</p>
       <Collapsible.Root className={twJoin(collapsibleStyles.root, "mt-2")}>
         <Collapsible.Trigger className={collapsibleStyles.trigger}>
@@ -761,10 +762,7 @@ export const ComponentEditModal = ({
   const [foundBackupsWarningOpen, setFoundBackupsWarningOpen] = useState(false);
 
   return (
-    <Modal {...props} size="lg">
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("editComponent")}
-      </PlainModalHeader>
+    <Modal title={t("editComponent")} {...props} size="lg">
       {error}
       {!submit && !cache && (
         <InfoBox icon="User_02" collapsible>

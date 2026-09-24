@@ -34,7 +34,7 @@ import {
   type TargetKey,
   type TargetMap,
 } from "./MessageSendModal";
-import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 // Reset existing targets and add from the backup (if any)
 export const setTargets = async (
@@ -175,10 +175,7 @@ export const MessageBackupsModal = (
 
   const [editingBackup, setEditingBackup] = useState(false);
   return (
-    <Modal {...props} size="lg">
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("backups")}
-      </PlainModalHeader>
+    <Modal title={t("backups")} {...props} size="lg">
       <BackupEditModal
         open={editingBackup}
         setOpen={setEditingBackup}
