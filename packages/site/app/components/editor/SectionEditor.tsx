@@ -20,10 +20,8 @@ import { FileOrUrlInput } from "../FileOrUrlInput";
 import { CoolIcon } from "../icons/CoolIcon";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
-import {
-  getSetEditingComponentProps,
-  IndividualComponentEditor,
-} from "./ComponentEditor";
+import { getSetEditingComponentProps } from "./ActionRowEditor";
+import { IndividualComponentEditor } from "./ComponentEditor";
 import { TopLevelComponentEditorContainer } from "./TopLevelComponentEditor";
 
 export const SectionEditor: React.FC<{

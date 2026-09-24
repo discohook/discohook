@@ -77,7 +77,7 @@ import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { selectStyles, withDefaultItem } from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
-import { ActionRowEditor } from "./ComponentEditor";
+import { ActionRowEditor } from "./ActionRowEditor";
 import { AutoTopLevelComponentEditor } from "./ContainerEditor";
 import { DragArea } from "./DragArea";
 import {

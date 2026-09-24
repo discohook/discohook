@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
-import { getSetEditingComponentProps } from "~/components/editor/ComponentEditor";
+import { getSetEditingComponentProps } from "~/components/editor/ActionRowEditor";
 import type { SetErrorFunction } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
@@ -33,6 +33,7 @@ import { MESSAGE_REF_RE } from "~/util/constants";
 import { isActionRow } from "~/util/discord";
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageDisplayName } from "~/util/message";
+import { submitMessage, type SubmitMessageResult } from "~/util/submitMessage";
 import type { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import {
@@ -43,7 +44,6 @@ import {
   PlainModalHeader,
 } from "./Modal";
 import { ListTarget } from "./TargetAddModal";
-import { type SubmitMessageResult, submitMessage } from "~/util/submitMessage";
 
 const countSelected = (data: Record<string, boolean>) =>
   Object.values(data).filter((v) => v).length;
