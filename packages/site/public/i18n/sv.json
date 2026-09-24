@@ -1,3 +1,9 @@
 {
-  "defaultPlaceholder": "Gör ett val"
+    "defaultPlaceholder": "Gör ett val",
+    "settings": "Inställningar",
+    "search": "Sök",
+    "helpSearchPlaceholder": "Hur gör jag …",
+    "logIn": "Logga in",
+    "logOut": "Logga ut",
+    "name": "Namn"
 }
