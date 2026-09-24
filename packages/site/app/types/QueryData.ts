@@ -15,7 +15,7 @@ import type {
   APITextDisplayComponent,
   ButtonStyle,
 } from "discord-api-types/v10";
-import React from "react";
+import type React from "react";
 import { z } from "zod/v3";
 import type { DraftFlow } from "~/store.server";
 import { randomString } from "~/util/text";

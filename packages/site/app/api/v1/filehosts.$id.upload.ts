@@ -1,7 +1,7 @@
 import { data as json } from "react-router";
 import z from "zod/v3";
 import { getBucket } from "~/durable/rate-limits.server";
-import { FilehostUploadResponse } from "~/util/filehosts";
+import type { FilehostUploadResponse } from "~/util/filehosts";
 import {
   deleteFile as catboxDeleteFiles,
   uploadFile as catboxUploadFile,

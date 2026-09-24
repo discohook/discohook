@@ -7,7 +7,7 @@ import type {
   FluxerRESTPostAPIWebhookWithTokenJSONBody,
   FluxerRESTPostAPIWebhookWithTokenWaitResult,
 } from "~/types/fluxer";
-import { APIAttachment } from "~/types/QueryData-raw";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import { createFakeWaveform } from "./discord";
 import { sleep } from "./time";
 

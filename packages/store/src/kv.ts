@@ -11,7 +11,7 @@ import type { DBWithSchema } from "./db.js";
 import type { RedisKV } from "./redis.js";
 import type { DraftComponent } from "./types/components.js";
 import type { PartialKVGuild, TriggerKVGuild } from "./types/guild.js";
-import { ResponsibleUser } from "./zod/flows.js";
+import type { ResponsibleUser } from "./zod/flows.js";
 
 export type Env = {
   ENVIRONMENT: "dev" | "preview" | "production";

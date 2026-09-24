@@ -1,4 +1,4 @@
-import { Popover, PopoverRootActions } from "@base-ui/react/popover";
+import { Popover, type PopoverRootActions } from "@base-ui/react/popover";
 import { useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import type { TFunction } from "~/types/i18next";

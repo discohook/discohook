@@ -357,7 +357,9 @@ export const Embed: React.FC<{
               if (setImageModalData) {
                 setImageModalData({
                   images: [
-                    { url: getImageUri(embed.thumbnail?.url ?? "", attachments) },
+                    {
+                      url: getImageUri(embed.thumbnail?.url ?? "", attachments),
+                    },
                   ],
                   startIndex: 0,
                 });

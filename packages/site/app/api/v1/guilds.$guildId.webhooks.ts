@@ -15,7 +15,7 @@ import { zx } from "zodix";
 import { getBucket } from "~/durable/rate-limits.server";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
-  ResolvableAPIChannel,
+  type ResolvableAPIChannel,
   tagToResolvableTag,
 } from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";

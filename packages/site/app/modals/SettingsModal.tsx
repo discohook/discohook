@@ -255,7 +255,7 @@ const FilehostConfigurationImgbb = ({
   const id = "imgbb";
   const fh = settings.filehosts ?? {};
   return (
-    (<FilehostConfigurationBase
+    <FilehostConfigurationBase
       t={t}
       id={id}
       name="ImgBB"
@@ -325,12 +325,12 @@ const FilehostConfigurationImgbb = ({
               components={{
                 anchor: (
                   // biome-ignore lint/a11y/useAnchorContent: Added by i18n
-                  (<a
+                  <a
                     href="https://api.imgbb.com"
                     className={linkClassName}
                     target="_blank"
                     rel="noopener"
-                  />)
+                  />
                 ),
               }}
             />
@@ -348,7 +348,7 @@ const FilehostConfigurationImgbb = ({
           {t("save")}
         </Button>
       </form>
-    </FilehostConfigurationBase>)
+    </FilehostConfigurationBase>
   );
 };
 
@@ -405,7 +405,7 @@ const FilehostConfigurationSxcu = ({
   const id = "sxcu";
   const fh = settings.filehosts ?? {};
   return (
-    (<FilehostConfigurationBase
+    <FilehostConfigurationBase
       t={t}
       id={id}
       name="sxcu"
@@ -433,12 +433,12 @@ const FilehostConfigurationSxcu = ({
               components={{
                 anchor: (
                   // biome-ignore lint/a11y/useAnchorContent: Added by i18n
-                  (<a
+                  <a
                     href="https://api.imgbb.com"
                     className={linkClassName}
                     target="_blank"
                     rel="noopener"
-                  />)
+                  />
                 ),
               }}
             />
@@ -472,12 +472,12 @@ const FilehostConfigurationSxcu = ({
               components={{
                 anchor: (
                   // biome-ignore lint/a11y/useAnchorContent: Added by i18n
-                  (<a
+                  <a
                     href="https://api.imgbb.com"
                     className={linkClassName}
                     target="_blank"
                     rel="noopener"
-                  />)
+                  />
                 ),
               }}
             />
@@ -495,7 +495,7 @@ const FilehostConfigurationSxcu = ({
           {t("save")}
         </Button>
       </form>
-    </FilehostConfigurationBase>)
+    </FilehostConfigurationBase>
   );
 };
 

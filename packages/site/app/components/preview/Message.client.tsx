@@ -227,8 +227,7 @@ export const Message: React.FC<{
         // Show forum header when there is a thread name OR there is a
         // thread ID and post thumbnail file (thus editing the starter
         // message)
-        message.thread_name ||
-        (!!threadId && !!threadThumbnailFile) ? (
+        message.thread_name || (!!threadId && !!threadThumbnailFile) ? (
           <div>
             <div className="flex">
               <div className="shrink-0">

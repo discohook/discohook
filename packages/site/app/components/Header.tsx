@@ -1,7 +1,12 @@
 import { Avatar } from "@base-ui/react/avatar";
 import { Dialog } from "@base-ui/react/dialog";
 import { Tooltip } from "@base-ui/react/tooltip";
-import { Link, useLocation, useNavigation, useSearchParams } from "react-router";
+import {
+  Link,
+  useLocation,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

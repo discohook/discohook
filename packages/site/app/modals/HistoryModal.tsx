@@ -4,7 +4,7 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message.client";
 import type { HistoryItem } from "~/routes/_index";
-import { type LinkHistoryItem, linkEmbedToAPIEmbed } from "~/routes/link";
+import { linkEmbedToAPIEmbed, type LinkHistoryItem } from "~/routes/link";
 import type { LinkQueryData, QueryData } from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, type ModalProps } from "./Modal";

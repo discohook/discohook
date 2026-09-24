@@ -1,4 +1,4 @@
-import { FilehostUploadResponse } from ".";
+import type { FilehostUploadResponse } from ".";
 
 export const BASE = "https://imgbb.com";
 const BASE_API = "https://api.imgbb.com/1";

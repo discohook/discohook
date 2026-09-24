@@ -1,7 +1,7 @@
 import type { DiscordErrorData } from "@discordjs/rest";
-import { Form, useActionData } from "react-router";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Form, useActionData } from "react-router";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { linkClassName } from "~/components/preview/Markdown";
@@ -125,6 +125,6 @@ export const BotCreateModal = (props: ModalProps) => {
           </Button>
         </div>
       </Form>
-    </Modal>)
+    </Modal>
   );
 };
