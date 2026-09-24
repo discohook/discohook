@@ -582,5 +582,42 @@
     "emojis": "Emojis",
     "emojiPickerCustom": {
         "find": "Como encontrar isso"
-    }
+    },
+    "backToSettings": "Voltar para Configurações",
+    "settingsFooter": "Obrigado por usar Discohook!",
+    "settingsCache": {
+        "emojiDescription": "O cache padrão de emojis é atualizado automaticamente a cada 14 dias. Se houver uma atualização de emoji, você pode atualizar instantaneamente clicando neste botão.",
+        "emojiButton": "Limpar o Cache de Emoji"
+    },
+    "discohookNews": "Notícias Discohook",
+    "invalidData": {
+        "title": "Dados de mensagens inválidos",
+        "message": "Os dados com os quais você carregou esta página parecem conter erros. Na maioria das vezes, isso significa apenas que algumas partes deles não estão completas.",
+        "loadable": "Você pode tentar carregar os dados de qualquer maneira, mas pode não funcionar."
+    },
+    "defaultPrompt": {
+        "standard": {
+            "name": "Editar mensagem padrão",
+            "description": "Divirta-se no editor editando a mensagem padrão do Discohook, que inclui incorporações (embeds) e botões."
+        },
+        "components": {
+            "name": "Editar como componente",
+            "description": "Converta a mensagem padrão para baseada em componentes, um novo formato de mensagem do Discord"
+        },
+        "blank": {
+            "name": "Nova mensagem em branco",
+            "description": "Limpe o editor e comece a escrever uma nova mensagem"
+        },
+        "loadBackupTitle": "Ou carregue um backup recente",
+        "allBackups": "Todos os backups"
+    },
+    "copyId": "Copiar ID",
+    "indeterminable": "Indeterminável (permissões limitadas)",
+    "takeResponsibility": "Tenha responsabilidade",
+    "titleUrlManaged": "Isso é definido automaticamente pelo embed principal na galeria. Só altere isso se você quiser mudar a qual galeria esta imagem pertence.",
+    "thumbnailUrl": "URL da Miniatura",
+    "upload": "Enviar",
+    "reupload": "Reenviar",
+    "addAnother": "Adicionar outro",
+    "checkSelectedMemberDescription": "Se ativado, a verificação considera o membro escolhido no menu de seleção, e não o usuário que causou a interação."
 }
