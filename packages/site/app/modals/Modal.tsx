@@ -65,27 +65,13 @@ export const DialogPortal: React.FC<
         parentClassName,
       )}
     >
-      {title ? (
-        <div
-          className={twJoin(modalHeaderClassName, "shrink-0 px-6 pt-6 pb-4")}
-        >
-          <Dialog.Title className={twJoin(modalTitleClassName, "grow")}>
-            {title}
-          </Dialog.Title>
-          <Dialog.Close
-            aria-label="Close"
-            className={modalCloseButtonClassName}
-          >
-            <CoolIcon icon="Close_MD" className="text-xl" />
-          </Dialog.Close>
-        </div>
-      ) : null}
       <div
         className={twMerge(
           "grow min-h-0 p-6 overflow-y-auto overflow-x-hidden",
           className,
         )}
       >
+        {title ? <DialogHeader>{title}</DialogHeader> : null}
         {children}
       </div>
     </Dialog.Popup>
@@ -112,9 +98,9 @@ export const Modal: React.FC<
   </Dialog.Root>
 );
 
-export const PlainModalHeader: React.FC<
-  React.PropsWithChildren & { onClose?: () => void }
-> = ({ children, onClose }) => (
+export const DialogHeader: React.FC<
+  React.PropsWithChildren & { showCloseButton?: boolean }
+> = ({ children, showCloseButton = true }) => (
   <div
     className={twJoin(
       modalHeaderClassName,
@@ -125,18 +111,15 @@ export const PlainModalHeader: React.FC<
       "first:bg-gray-50 dark:first:bg-[#37373D]",
     )}
   >
-    <div className={twJoin(modalTitleClassName, "flex grow items-start")}>
+    <Dialog.Title
+      className={twJoin(modalTitleClassName, "flex grow items-start")}
+    >
       {children}
-    </div>
-    {onClose ? (
-      <button
-        type="button"
-        aria-label="Close"
-        className={modalCloseButtonClassName}
-        onClick={onClose}
-      >
+    </Dialog.Title>
+    {showCloseButton ? (
+      <Dialog.Close aria-label="Close" className={modalCloseButtonClassName}>
         <CoolIcon icon="Close_MD" className="text-xl" />
-      </button>
+      </Dialog.Close>
     ) : null}
   </div>
 );

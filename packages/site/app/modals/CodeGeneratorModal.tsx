@@ -7,7 +7,7 @@ import { Checkbox } from "~/components/Checkbox";
 import { codeBlockStyle, linkClassName } from "~/components/preview/Markdown";
 import { StringSelect } from "~/components/StringSelect";
 import { cycleCopyText } from "~/util/text";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 
 import type { CodeGeneratorData, CodeGeneratorFn } from "~/util/codegen/common";
 import djs14 from "~/util/codegen/discordjs";
@@ -50,10 +50,7 @@ export const CodeGeneratorModal = (props: ModalProps & CodeGeneratorProps) => {
   }, [library, props.data]);
 
   return (
-    <Modal {...props} size="lg">
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("codeGenerator")}
-      </PlainModalHeader>
+    <Modal title={t("codeGenerator")} {...props} size="lg">
       <StringSelect
         label={t("library")}
         options={libraryOptions}

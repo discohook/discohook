@@ -11,7 +11,7 @@ import { useSafeFetcher } from "~/util/loader";
 import { cycleCopyText } from "~/util/text";
 import type { action as ApiPostShare } from "../api/v1/share";
 import { draftTargetToQueryTarget, type TargetMap } from "./MessageSendModal";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 
 export const MessageShareModal = (
   props: ModalProps & {
@@ -54,10 +54,7 @@ export const MessageShareModal = (
   );
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("shareMessage")}
-      </PlainModalHeader>
+    <Modal title={t("shareMessage")} {...props}>
       {error}
       <div className="flex">
         <div className="grow">

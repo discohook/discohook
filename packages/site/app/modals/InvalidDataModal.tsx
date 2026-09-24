@@ -6,7 +6,7 @@ import { Button } from "~/components/Button";
 import { ButtonSelect } from "~/components/ButtonSelect";
 import type { QueryData } from "~/types/QueryData";
 import { base64Decode, copyText } from "~/util/text";
-import { Modal, PlainModalHeader, type ModalProps } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export interface InvalidDataModalProps {
   raw: string;
@@ -38,10 +38,7 @@ export const InvalidDataModal = ({
   }, [raw]);
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("invalidData.title")}
-      </PlainModalHeader>
+    <Modal title={t("invalidData.title")} {...props}>
       <p>{t("invalidData.message")}</p>
       <p className="mt-1.5">
         {t(

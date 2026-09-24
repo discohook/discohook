@@ -1,7 +1,6 @@
 import { Collapsible } from "@base-ui/react/collapsible";
 import { NumberField } from "@base-ui/react/number-field";
 import { Switch } from "@base-ui/react/switch";
-import { Link } from "react-router";
 import {
   type APIWebhook,
   ButtonStyle,
@@ -13,6 +12,7 @@ import { MessageFlagsBitField } from "discord-bitflag";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { ButtonSelect } from "~/components/ButtonSelect";
@@ -67,7 +67,7 @@ import {
   StringSelect,
 } from "../components/StringSelect";
 import { TextInput } from "../components/TextInput";
-import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 type FlowWithPartials = DraftFlow & {
   actions: (Partial<FlowAction> & Pick<FlowAction, "type">)[];
@@ -121,10 +121,7 @@ export const FlowEditModal = (
   // by each FlowActionEditor to see if it has any errors pertaining to it
 
   return (
-    <Modal {...props} size="lg">
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("editFlow")}
-      </PlainModalHeader>
+    <Modal title={t("editFlow")} {...props} size="lg">
       {!parsed.success && flow && flow.actions.length !== 0 && (
         <div className="-mx-2">
           <InfoBox severity="yellow" icon="Info" collapsible open>

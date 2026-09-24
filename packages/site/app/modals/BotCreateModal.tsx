@@ -33,7 +33,7 @@ export const BotCreateModal = (props: ModalProps) => {
   }, [actionData, props.setOpen]);
 
   return (
-    (<Modal title={t("createBot.title")} {...props}>
+    <Modal title={t("createBot.title")} {...props}>
       <Form action="/me/bots" method="POST">
         {error}
         <div>

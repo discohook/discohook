@@ -37,11 +37,11 @@ import { submitMessage, type SubmitMessageResult } from "~/util/submitMessage";
 import type { action as ApiAuditLogAction } from "../api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import { MessageSendResultModal } from "./MessageSendResultModal";
 import {
+  DialogHeader,
   DialogPortal,
   Modal,
   ModalFooter,
   type ModalProps,
-  PlainModalHeader,
 } from "./Modal";
 import { ListTarget } from "./TargetAddModal";
 
@@ -443,10 +443,12 @@ export const MessageSendModal = (
   };
 
   return (
-    <Modal {...props} setOpen={setOpen} size="lg">
-      <PlainModalHeader onClose={() => setOpen(false)}>
-        {t("sendMessageN", { count: data.messages.length })}
-      </PlainModalHeader>
+    <Modal
+      title={t("sendMessageN", { count: data.messages.length })}
+      {...props}
+      setOpen={setOpen}
+      size="lg"
+    >
       {resultModal ?? null}
       <p className="text-sm font-medium">{t("messages")}</p>
       <div className="space-y-1">
@@ -597,7 +599,7 @@ export const MessageSendModal = (
             </Button>
           </Dialog.Trigger>
           <DialogPortal>
-            <PlainModalHeader>{t("havingTrouble")}</PlainModalHeader>
+            <DialogHeader>{t("havingTrouble")}</DialogHeader>
             <Dialog.Description>{t("troubleshootMessage")}</Dialog.Description>
           </DialogPortal>
         </Dialog.Root>

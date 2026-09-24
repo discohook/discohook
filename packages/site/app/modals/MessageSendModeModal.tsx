@@ -4,7 +4,7 @@ import { CoolIcon } from "~/components/icons/CoolIcon";
 import { getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import { getMessageDisplayName } from "~/util/message";
-import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export const MessageSendModeModal = ({
   data,
@@ -19,10 +19,7 @@ export const MessageSendModeModal = ({
   const { t } = useTranslation();
 
   return (
-    <Modal {...props} size="sm">
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("switchSendMode")}
-      </PlainModalHeader>
+    <Modal title={t("switchSendMode")} {...props} size="sm">
       <p className="-mt-2">{t("switchSendModeBody")}</p>
       <div className="space-y-1 mt-2">
         {data.messages.length > 0 ? (

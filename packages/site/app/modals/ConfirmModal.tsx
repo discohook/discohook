@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 
 export interface ConfirmModalProps {
   title: string;
@@ -11,10 +11,7 @@ export const ConfirmModal = (
 ) => {
   const { title, children, ...rest } = props;
   return (
-    <Modal {...rest} size="sm">
-      <PlainModalHeader onClose={() => rest.setOpen(false)}>
-        {title}
-      </PlainModalHeader>
+    <Modal title={title} {...rest} size="sm">
       {children}
     </Modal>
   );

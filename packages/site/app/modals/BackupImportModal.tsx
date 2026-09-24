@@ -1,11 +1,11 @@
-import { Await, Link, useSubmit } from "react-router";
 import { Suspense, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Await, Link, useSubmit } from "react-router";
 import { twMerge } from "tailwind-merge";
 import { Button } from "~/components/Button";
 import { FileInput } from "~/components/FileInput";
-import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
 import type {
   DiscohookBackup,
@@ -14,7 +14,7 @@ import type {
 } from "~/types/discohook";
 import type { QueryData } from "~/types/QueryData";
 import { base64UrlEncode, toSnakeCase } from "~/util/text";
-import { Modal, ModalFooter, type ModalProps, PlainModalHeader } from "./Modal";
+import { Modal, ModalFooter, type ModalProps } from "./Modal";
 
 export const backupDataAsNewest = (
   data: DiscohookBackupExportData,
@@ -92,10 +92,7 @@ export const BackupImportModal = (
   const backups = data ? backupDataAsNewest(data) : undefined;
 
   return (
-    <Modal {...props}>
-      <PlainModalHeader onClose={() => props.setOpen(false)}>
-        {t("importBackups")}
-      </PlainModalHeader>
+    <Modal title={t("importBackups")} {...props}>
       <InfoBox icon="Info">
         <Trans
           t={t}
