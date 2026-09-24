@@ -14,7 +14,7 @@ import type { QueryData } from "~/types/QueryData";
 import { TargetType } from "~/types/QueryData-raw";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import {
-  DraftRawFile,
+  type DraftRawFile,
   executeWebhook,
   hasCustomId,
   isActionRow,
