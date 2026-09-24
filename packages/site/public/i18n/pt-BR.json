@@ -708,7 +708,8 @@
         "footer": {
             "today": "Hoje às {{ date, HH:mm }}",
             "tomorrow": "Amanhã às {{ date, HH:mm }}",
-            "other": "{{ date, DD/MM/YYYY [às] HH:mm }}"
+            "other": "{{ date, DD/MM/YYYY [às] HH:mm }}",
+            "yesterday": "Ontem às {{ date, HH:mm }}"
         },
         "time": "{{ date, h:mm A }}",
         "relative": {
@@ -744,7 +745,12 @@
             "months_past_one": "há um mês",
             "months_past_many": "há {{count}} meses",
             "months_past_other": "há {{count}} meses"
-        }
+        },
+        "time_verbose": "{{ date, h:mm A }}",
+        "full": "{{ date, D [de] MMMM [de] YYYY [às] HH:mm }}",
+        "full_verbose": "{{ date, dddd, D [de] MMMM [de] YYYY [às] HH:mm:ss }}",
+        "date": "{{ date, DD/MM/YYYY }}",
+        "date_verbose": "{{ date, D [de] MMMM [de] YYYY }}"
     },
     "option": "Opção",
     "howToFormat": "Como formatar suas mensagens",
@@ -866,5 +872,9 @@
     "behavior": "Comportamento",
     "advanced": "Avançado",
     "attachmentFileMissing": "Arquivo faltando",
-    "spoiler": "Revelação"
+    "spoiler": "Revelação",
+    "nEmbed_one": "{{count}} embed",
+    "nEmbed_many": "{{count}} embeds",
+    "nEmbed_other": "{{count}} embeds",
+    "todayAt": "{{ date, HH:mm }}"
 }
