@@ -5,5 +5,7 @@
     "helpSearchPlaceholder": "Hur gör jag …",
     "logIn": "Logga in",
     "logOut": "Logga ut",
-    "name": "Namn"
+    "name": "Namn",
+    "backToSettings": "Tillbaka till inställningar",
+    "help": "Hjälp"
 }
