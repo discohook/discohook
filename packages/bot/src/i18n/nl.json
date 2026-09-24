@@ -147,7 +147,8 @@
                         }
                     }
                 }
-            }
+            },
+            "name": "webhook"
         },
         "help": {
             "description": "Krijg hulp met verschillende onderwerpen",
@@ -224,7 +225,8 @@
                     "description": "Voeg een nieuwe trigger toe",
                     "options": {
                         "name": {
-                            "description": "De naam van de trigger"
+                            "description": "De naam van de trigger",
+                            "name": "naam"
                         },
                         "event": {
                             "description": "De gebeurtenis die de trigger zou activeren",
@@ -233,13 +235,15 @@
                                 "1": "Iemand verlaat de server"
                             }
                         }
-                    }
+                    },
+                    "name": "voeg toe"
                 },
                 "view": {
                     "description": "Bekijk en beheer een trigger",
                     "options": {
                         "name": {
-                            "description": "De naam van de trigger"
+                            "description": "De naam van de trigger",
+                            "name": "naam"
                         }
                     }
                 }
