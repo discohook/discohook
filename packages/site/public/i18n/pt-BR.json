@@ -860,5 +860,8 @@
     "nMessage_many": "{{count}} mensagens",
     "nMessage_other": "{{count}} mensagens",
     "defaultPlaceholder": "Faça uma seleção",
-    "formatOptionsNone": "Passe o mouse sobre uma opção acima para ver um exemplo."
+    "formatOptionsNone": "Passe o mouse sobre uma opção acima para ver um exemplo.",
+    "appearance": "Aparência",
+    "behavior": "Comportamento",
+    "advanced": "Avançado"
 }
