@@ -619,5 +619,6 @@
     "upload": "Enviar",
     "reupload": "Reenviar",
     "addAnother": "Adicionar outro",
-    "checkSelectedMemberDescription": "Se ativado, a verificação considera o membro escolhido no menu de seleção, e não o usuário que causou a interação."
+    "checkSelectedMemberDescription": "Se ativado, a verificação considera o membro escolhido no menu de seleção, e não o usuário que causou a interação.",
+    "switchSendMode": "Alterar Modo de Envio"
 }
