@@ -62,7 +62,17 @@ for (const emoji of await getEmojiBlob()) {
   data.push([templates.length === 1 ? templates[0] : templates, ...names]);
 }
 
+const serialized = JSON.stringify(data);
+
+// Served as a static asset for client-side fetching (~/util/emojis.ts)
 await writeFile(
   new URL("../public/emoji.json", import.meta.url).pathname,
-  JSON.stringify(data),
+  serialized,
+);
+// Imported directly as module data (~/util/markdown/emoji.ts). I don't
+// like this but Vite disallows importing modules from the public directory
+// and we need a copy in the public directory so it can be a worker asset
+await writeFile(
+  new URL("../app/util/markdown/emoji.json", import.meta.url).pathname,
+  serialized,
 );

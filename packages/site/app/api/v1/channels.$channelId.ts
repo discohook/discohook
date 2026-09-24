@@ -1,10 +1,10 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import {
   ChannelType,
   type RESTGetAPIChannelResult,
   Routes,
 } from "discord-api-types/v10";
+import { data as json } from "react-router";
 import { authorizeRequest } from "~/session.server";
 import {
   type ResolvableAPIChannel,
@@ -80,7 +80,9 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   const stringified = JSON.stringify(channel);
   // Was experiencing strange behavior where empty strings were being set
   if (stringified) {
-    await context.env.KV.put(key, stringified, { expirationTtl: 60 * 30 });
+    context.waitUntil(
+      context.env.KV.put(key, stringified, { expirationTtl: 60 * 30 }),
+    );
   }
   return respond(json(channel));
 };

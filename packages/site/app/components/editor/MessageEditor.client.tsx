@@ -1,7 +1,6 @@
 import { Progress } from "@base-ui/react";
 import { Collapsible } from "@base-ui/react/collapsible";
 import { Select } from "@base-ui/react/select";
-import { Link } from "@remix-run/react";
 import {
   type APITextDisplayComponent,
   ButtonStyle,
@@ -11,6 +10,7 @@ import {
 import { MessageFlagsBitField } from "discord-bitflag";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { twJoin, twMerge } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
@@ -57,6 +57,7 @@ import { uploadFile as sxcuUpload } from "~/util/filehosts/sxcu";
 import {
   attachmentFromFile,
   fileInputChangeHandler,
+  isAudioType,
   MAX_FILES_PER_MESSAGE,
   transformFileName,
 } from "~/util/files";
@@ -71,13 +72,12 @@ import { collapsibleStyles } from "../collapsible";
 import { useError } from "../Error";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
-import { isAudioType } from "../preview/FileAttachment";
 import { linkClassName } from "../preview/Markdown";
 import { AuthorType, getAuthorType } from "../preview/Message.client";
 import { selectStyles, withDefaultItem } from "../StringSelect";
 import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
-import { ActionRowEditor } from "./ComponentEditor";
+import { ActionRowEditor } from "./ActionRowEditor";
 import { AutoTopLevelComponentEditor } from "./ContainerEditor";
 import { DragArea } from "./DragArea";
 import {
@@ -1197,6 +1197,7 @@ const MessageAttachmentsSection = ({
             <PasteFileButton
               t={t}
               disabled={files.length >= MAX_FILES_PER_MESSAGE}
+              attachments={attachments}
               onChange={async (list) => {
                 const newFiles = [...files];
                 for (const file of Array.from(list).slice(

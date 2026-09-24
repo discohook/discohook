@@ -1,4 +1,4 @@
-import type { SessionStorage } from "@remix-run/cloudflare";
+import type { SessionStorage } from "react-router";
 import {
   type APIUser,
   type RESTPostOAuth2AccessTokenResult,

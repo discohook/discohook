@@ -3,20 +3,6 @@ import { Collapsible } from "@base-ui/react/collapsible";
 import { Field } from "@base-ui/react/field";
 import { REST } from "@discordjs/rest";
 import {
-  json,
-  type MetaFunction,
-  redirect,
-  type SerializeFrom,
-} from "@remix-run/cloudflare";
-import {
-  Form,
-  Link,
-  useFetcher,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from "@remix-run/react";
-import {
   type APIGuild,
   type APIGuildMember,
   type APIUser,
@@ -33,8 +19,19 @@ import {
   UserFlagsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import {
+  Form,
+  data as json,
+  Link,
+  type MetaFunction,
+  redirect,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 import { twJoin, twMerge } from "tailwind-merge";
 import { z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
@@ -70,14 +67,14 @@ import {
   authorizeRequest,
   getGuild,
   getTokenGuildPermissions,
-  User,
+  type User,
 } from "~/session.server";
 import type { DraftFlow } from "~/store.server";
 import type { TFunction } from "~/types/i18next";
 import { TargetType } from "~/types/QueryData-raw";
 import {
   type CacheManager,
-  ResolvableAPIGuildMember,
+  type ResolvableAPIGuildMember,
   useCache,
 } from "~/util/cache/CacheManager";
 import {
@@ -91,6 +88,7 @@ import { getId } from "~/util/id";
 import {
   type LoaderArgs,
   type SafeFetcher,
+  type SerializeFrom,
   useSafeFetcher,
 } from "~/util/loader";
 import { copyText } from "~/util/text";
@@ -128,6 +126,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         guildId,
         new REST().setToken(context.env.DISCORD_BOT_TOKEN),
         context.env,
+        context.waitUntil,
       );
       owner = guild.owner_id === String(token.user.discordId);
     }
@@ -520,6 +519,10 @@ export default () => {
   const [creatingTrigger, setCreatingTrigger] = useState(false);
   const [confirmModal, setConfirm] = useConfirmModal();
 
+  // prevent failure loop on a per tab-fetcher pair basis while still
+  // allowing a fresh attempt if the user navigates to a different guild
+  const attemptedTabFetches = useRef<Partial<Record<Tab, string>>>({});
+
   const auditLogFetcher = useFetcher<typeof ApiGetGuildAuditLog>();
   const webhooksFetcher = useSafeFetcher<typeof ApiGetGuildWebhooks>({
     onError: setError,
@@ -572,13 +575,23 @@ export default () => {
   useEffect(() => {
     switch (tab) {
       case "auditLog": {
-        if (!auditLogFetcher.data && auditLogFetcher.state === "idle") {
+        if (
+          !auditLogFetcher.data &&
+          auditLogFetcher.state === "idle" &&
+          attemptedTabFetches.current.auditLog !== guild.id
+        ) {
+          attemptedTabFetches.current.auditLog = guild.id;
           auditLogFetcher.load(apiUrl(BRoutes.guildLog(guild.id)));
         }
         break;
       }
       case "webhooks": {
-        if (!webhooksFetcher.data && webhooksFetcher.state === "idle") {
+        if (
+          !webhooksFetcher.data &&
+          webhooksFetcher.state === "idle" &&
+          attemptedTabFetches.current.webhooks !== guild.id
+        ) {
+          attemptedTabFetches.current.webhooks = guild.id;
           webhooksFetcher.load(
             `${apiUrl(BRoutes.guildWebhooks(guild.id))}?withInaccessible=true`,
           );
@@ -586,25 +599,45 @@ export default () => {
         break;
       }
       case "sessions": {
-        if (!sessionsFetcher.data && sessionsFetcher.state === "idle") {
+        if (
+          !sessionsFetcher.data &&
+          sessionsFetcher.state === "idle" &&
+          attemptedTabFetches.current.sessions !== guild.id
+        ) {
+          attemptedTabFetches.current.sessions = guild.id;
           sessionsFetcher.load(apiUrl(BRoutes.guildSessions(guild.id)));
         }
         break;
       }
       case "triggers": {
-        if (!triggersFetcher.data && triggersFetcher.state === "idle") {
+        if (
+          !triggersFetcher.data &&
+          triggersFetcher.state === "idle" &&
+          attemptedTabFetches.current.triggers !== guild.id
+        ) {
+          attemptedTabFetches.current.triggers = guild.id;
           triggersFetcher.load(apiUrl(BRoutes.guildTriggers(guild.id)));
         }
         break;
       }
       case "components": {
-        if (!componentsFetcher.data && componentsFetcher.state === "idle") {
+        if (
+          !componentsFetcher.data &&
+          componentsFetcher.state === "idle" &&
+          attemptedTabFetches.current.components !== guild.id
+        ) {
+          attemptedTabFetches.current.components = guild.id;
           componentsFetcher.load(apiUrl(BRoutes.guildComponents(guild.id)));
         }
         break;
       }
       case "profile": {
-        if (!profileFetcher.data && profileFetcher.state === "idle") {
+        if (
+          !profileFetcher.data &&
+          profileFetcher.state === "idle" &&
+          attemptedTabFetches.current.profile !== guild.id
+        ) {
+          attemptedTabFetches.current.profile = guild.id;
           profileFetcher.load(apiUrl(BRoutes.guildProfile(guild.id)));
         }
         break;

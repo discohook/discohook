@@ -1,7 +1,5 @@
 import { Avatar } from "@base-ui/react/avatar";
 import { Dialog } from "@base-ui/react/dialog";
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { isLinkButton } from "discord-api-types/utils/v10";
 import {
   ButtonStyle,
@@ -11,6 +9,7 @@ import {
 import type React from "react";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link, useLoaderData, useSearchParams } from "react-router";
 import { twJoin, twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
 import type { SafeParseError, SafeParseReturnType, ZodError } from "zod/v3";
@@ -101,6 +100,7 @@ import {
 import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS } from "~/util/files";
 import { getFluxerWebhook } from "~/util/fluxer";
+import type { SerializeFrom } from "~/util/loader";
 import { type LoaderArgs, useApiLoader, useSafeFetcher } from "~/util/loader";
 import { type Settings, useLocalStorage } from "~/util/localstorage";
 import {
@@ -387,16 +387,18 @@ export default function Index() {
   const meBackupsFetcher = useSafeFetcher<typeof MeBackupsLoader>({
     onError: setError,
   });
+  // don't enter failure loop
+  const meBackupsRequested = useRef(false);
   useEffect(() => {
     if (
       isLanding &&
       userId !== null &&
+      !meBackupsRequested.current &&
       meBackupsFetcher.state === "idle" &&
       !meBackupsFetcher.data
     ) {
-      meBackupsFetcher.load(
-        "/me/backups?_data=routes/me.backups&limit=10&sort=updatedAt.d",
-      );
+      meBackupsRequested.current = true;
+      meBackupsFetcher.load("/me/backups?limit=10&sort=updatedAt.d");
     }
   }, [isLanding, userId, meBackupsFetcher]);
 
@@ -602,9 +604,15 @@ export default function Index() {
 
   const [targets, updateTargets] = useReducer(
     (d: TargetMap, partialD: Partial<TargetMap>) =>
-      ({ ...d, ...partialD }) as TargetMap,
+      ({
+        ...d,
+        ...partialD,
+      }) as TargetMap,
     {},
   );
+  // Stable identity across renders where `targets` itself hasn't changed, so
+  // it doesn't update excessively
+  const targetsList = useMemo(() => Object.values(targets), [targets]);
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
   const {
     sending,
@@ -1576,9 +1584,9 @@ export default function Index() {
                   message={message.data}
                   cache={cache}
                   discordApplicationId={discordApplicationId}
-                  targets={Object.values(targets)}
-                  index={i}
-                  data={data}
+                  targets={targetsList}
+                  previousMessageData={data.messages[i - 1]?.data}
+                  threadId={message.thread_id}
                   setImageModalData={setImageModalData}
                   messageDisplay={settings.messageDisplay}
                   compactAvatars={settings.compactAvatars}

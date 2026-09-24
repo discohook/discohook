@@ -1,14 +1,15 @@
-import { Form } from "@remix-run/react";
-import {
-  type CronFields,
-  type DayOfTheMonthRange,
-  type DayOfTheWeekRange,
-  fieldsToExpression,
-  type HourRange,
-  type MonthRange,
-  parseExpression,
-  type SixtyRange,
+import type {
+  CronFields,
+  DayOfTheMonthRange,
+  DayOfTheWeekRange,
+  HourRange,
+  MonthRange,
+  SixtyRange,
 } from "cron-parser";
+import { Form } from "react-router";
+// Default-imported because this CJS package isn't statically analyzable for
+// named exports under Vite's SSR module runner.
+import cronParser from "cron-parser";
 import moment, { type Moment } from "moment";
 import { useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -18,7 +19,7 @@ import { Button } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import DatePicker, { generateDateRange } from "~/components/pickers/DatePicker";
+import { DatePickerPopoverWithTrigger } from "~/components/pickers/DatePickerPopover";
 import { StringSelect } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import type { LoadedBackup } from "~/routes/me.backups";
@@ -34,7 +35,8 @@ import {
   getTimezone,
 } from "~/util/time";
 import type { action as ApiBackupsIdAction } from "../api/v1/backups.$id";
-import { Modal, type ModalProps } from "./Modal";
+import { Modal, PlainModalHeader, type ModalProps } from "./Modal";
+const { fieldsToExpression, parseExpression } = cronParser;
 
 const isSameCalendarDay = (a: Moment, b: Moment) =>
   a.date() === b.date() && a.month() === b.month() && a.year() === b.year();
@@ -94,7 +96,10 @@ const Inner = ({
 
   const [cron, updateCron] = useReducer(
     (d: CronFields, partialD: Partial<CronFields>) =>
-      ({ ...d, ...partialD }) as CronFields,
+      ({
+        ...d,
+        ...partialD,
+      }) as CronFields,
     backup.cron
       ? parseExpression(backup.cron, { tz: backup.timezone ?? undefined })
           .fields
@@ -343,32 +348,37 @@ const Inner = ({
             </>
           ) : (
             <>
-              <DatePicker
-                label={t("day")}
+              <DatePickerPopoverWithTrigger
+                t={t}
+                labelKey="day"
                 name="day"
-                range={generateDateRange(
-                  now,
-                  new Date(new Date(now).setFullYear(now.getFullYear() + 2)),
-                )}
-                value={scheduleDate ?? null}
-                onChange={(o) => {
-                  if (o) {
-                    const newDate = o.date.clone();
+                minDate={now}
+                maxDate={
+                  new Date(new Date(now).setFullYear(now.getFullYear() + 2))
+                }
+                value={scheduleDate ? scheduleDate.toDate() : null}
+                onValueChange={(date) => {
+                  if (date) {
+                    const newDate = moment(date);
                     if (scheduleDate) {
-                      // Preserve time since date picker will reset it
+                      // Preserve time since date picker will reset it otherwise
                       newDate.hour(scheduleDate.hour());
                       newDate.minute(scheduleDate.minute());
                       newDate.second(scheduleDate.second());
                     }
                     setScheduleDate(newDate);
+                  } else {
+                    setScheduleDate(undefined);
                   }
                 }}
                 isDisabled={!scheduled || repeating}
-                required={scheduled}
+                isRequired={scheduled}
+                isClearable={!scheduled}
               />
               <TextInput
                 type="time"
                 name="time"
+                t={t}
                 label={t("time", {
                   replace: { timezone: getTimezone("longGeneric") },
                 })}
@@ -430,7 +440,10 @@ export const BackupEditModal = (
   const { backup } = props;
 
   return (
-    <Modal title={t("editBackupTitle")} {...props}>
+    <Modal {...props}>
+      <PlainModalHeader onClose={() => props.setOpen(false)}>
+        {t("editBackupTitle")}
+      </PlainModalHeader>
       {backup && <Inner t={t} backup={backup} onSave={props.onSave} />}
     </Modal>
   );

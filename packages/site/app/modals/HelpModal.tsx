@@ -106,16 +106,10 @@ export const HelpModal = (props: ModalProps) => {
       <div className="overflow-y-auto max-h-[32rem] flex flex-col">
         <div className="me-auto space-y-4" dir="ltr">
           {tagEmbeds.length !== 0 ? (
-            <Message
-              index={0}
-              message={{ username: "FAQs", embeds: tagEmbeds }}
-            />
+            <Message message={{ username: "FAQs", embeds: tagEmbeds }} />
           ) : null}
           {guideEmbeds.length !== 0 ? (
-            <Message
-              index={0}
-              message={{ username: "Guides", embeds: guideEmbeds }}
-            />
+            <Message message={{ username: "Guides", embeds: guideEmbeds }} />
           ) : null}
         </div>
       </div>

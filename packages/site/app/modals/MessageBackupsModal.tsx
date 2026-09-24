@@ -1,9 +1,9 @@
 import { Avatar } from "@base-ui/react/avatar";
-import { Link } from "@remix-run/react";
 import { ButtonStyle } from "discord-api-types/v10";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
@@ -169,7 +169,7 @@ export const MessageBackupsModal = (
   // biome-ignore lint/correctness/useExhaustiveDependencies: only update on open change
   useEffect(() => {
     if (props.open && user && !backups && meBackupsFetcher.state === "idle") {
-      meBackupsFetcher.load("/me/backups?_data=routes/me.backups");
+      meBackupsFetcher.load("/me/backups");
     }
   }, [props.open]);
 

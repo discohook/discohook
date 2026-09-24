@@ -1,6 +1,6 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import z from "zod/v3";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import { FilehostUploadResponse } from "~/util/filehosts";
 import {
   deleteFile as catboxDeleteFiles,

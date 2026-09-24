@@ -5,10 +5,10 @@
 // non-Mastodon sites (and, I think, https://rcombs.me for implementing the
 // functionality in the first place)
 
-import { json, redirect } from "@remix-run/cloudflare";
+import { redirect } from "react-router";
 import { getDb } from "~/store.server";
 import { LinkEmbedStrategy } from "~/types/QueryData";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
@@ -25,10 +25,10 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     columns: { id: true, code: true, data: true },
   });
   if (!backup) {
-    throw json({ message: "No backup with that ID" }, 404);
+    throw jsonR({ message: "No backup with that ID" }, 404);
   }
   if (backup.data.embed.data.strategy !== LinkEmbedStrategy.Mastodon) {
-    throw json(
+    throw jsonR(
       { message: "This backup does not use this embed strategy" },
       400,
     );

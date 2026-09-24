@@ -1,7 +1,7 @@
 // See /api/v1/statuses.$id
 // This route file is probably not necessary, and it's not particularly useful
 
-import { redirect } from "@remix-run/cloudflare";
+import { redirect } from "react-router";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 

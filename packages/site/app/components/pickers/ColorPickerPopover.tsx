@@ -31,7 +31,7 @@ export const ColorPickerPopoverWithTrigger = ({
           </p>
         </div>
         <div
-          className="h-9 w-9 mt-auto rounded-lg ltr:ml-2 rtl:mr-2 bg-gray-500"
+          className="size-9 mt-auto rounded-lg ms-2 bg-gray-500"
           style={{
             backgroundColor:
               typeof value === "number" ? decimalToHex(value) : undefined,

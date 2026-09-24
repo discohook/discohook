@@ -17,7 +17,7 @@ import type {
   QueryData,
 } from "~/types/QueryData";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
-import { isActionRow, isComponentsV2 } from "~/util/discord";
+import { isComponentsV2 } from "~/util/discord";
 import type { DragManager } from "~/util/drag";
 import { collapsibleStyles } from "../collapsible";
 import { CoolIcon } from "../icons/CoolIcon";
@@ -377,11 +377,21 @@ export const TopLevelComponentEditorContainerSummary = ({
           }
           onClick={() => {
             const cloned = structuredClone(component);
-            if (isActionRow(cloned)) {
+            // strip all custom IDs, which must be unique per message
+            if ("components" in cloned) {
               for (const child of cloned.components) {
-                child.custom_id = "";
+                if ("components" in child) {
+                  for (const childChild of child.components) {
+                    if ("custom_id" in childChild) {
+                      childChild.custom_id = "";
+                    }
+                  }
+                } else if ("custom_id" in child) {
+                  child.custom_id = "";
+                }
               }
             }
+
             siblings.splice(i + 1, 0, cloned);
             setData({ ...data });
           }}

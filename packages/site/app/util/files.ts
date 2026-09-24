@@ -1,7 +1,10 @@
-import { isAudioType } from "~/components/preview/FileAttachment";
 import type { DraftFile } from "~/routes/_index";
-import { APIAttachment } from "~/types/QueryData-raw";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import { randomString } from "./text";
+
+export const isAudioType = (type: string | undefined): boolean =>
+  type !== undefined &&
+  (type.startsWith("audio/") || ["application/ogg"].includes(type));
 
 export const MAX_FILES_PER_MESSAGE = 10;
 // export const MAX_DEFAULT_FILE_SIZE = 10_000_000; // 10mb

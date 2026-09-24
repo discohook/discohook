@@ -1,6 +1,6 @@
 import type { DiscordErrorData } from "@discordjs/rest";
-import { redirect } from "@remix-run/cloudflare";
-import { useLoaderData } from "@remix-run/react";
+import { redirect } from "react-router";
+import { useLoaderData } from "react-router";
 import {
   ButtonStyle,
   RouteBases,
@@ -69,7 +69,7 @@ export default function DiscordPage() {
   }, [invite, code, setError]);
 
   return (
-    <div>
+    (<div>
       <Header user={user} />
       <Prose>
         {error}
@@ -125,12 +125,12 @@ export default function DiscordPage() {
                     bold: <span className="font-bold" />,
                     anchor: (
                       // biome-ignore lint/a11y/useAnchorContent: Filled by i18next
-                      <a
+                      (<a
                         className={linkClassName}
                         href="https://www.deepl.com/translator"
                         target="_blank"
                         rel="noreferrer"
-                      />
+                      />)
                     ),
                   }}
                 />
@@ -150,6 +150,6 @@ export default function DiscordPage() {
           </a>
         </div>
       </Prose>
-    </div>
+    </div>)
   );
 }

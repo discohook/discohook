@@ -1,4 +1,4 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { PermissionFlags } from "discord-bitflag";
 import z from "zod/v3";
 import { zx } from "zodix";

@@ -70,8 +70,10 @@ export const HistoryModal = <
                             key={`history-${item.id}-message-${i}`}
                             message={message.data}
                             date={item.createdAt}
-                            index={i}
-                            data={item.data as QueryData}
+                            previousMessageData={
+                              item.data.messages[i - 1]?.data
+                            }
+                            threadId={message.thread_id}
                             messageDisplay={settings.messageDisplay}
                             compactAvatars={settings.compactAvatars}
                           />

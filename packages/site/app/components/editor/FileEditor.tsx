@@ -69,6 +69,7 @@ export const FileEditor: React.FC<{
               t={t}
               disabled={files.length >= MAX_FILES_PER_MESSAGE}
               className="peer h-9 min-w-0 grow max-w-full px-4"
+              attachments={attachments}
               onChange={async (list) => {
                 if (files.length >= MAX_FILES_PER_MESSAGE) return;
                 const draftFile = list[0];

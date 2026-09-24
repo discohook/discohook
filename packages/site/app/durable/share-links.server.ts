@@ -1,4 +1,3 @@
-import { json } from "@remix-run/cloudflare";
 import { z } from "zod/v3";
 import { getRedis } from "~/store.server";
 import type { Env } from "~/types/env";
@@ -80,7 +79,7 @@ export class ShareLinks implements DurableObject {
             });
           if (shortened) {
             const { expiresAt } = metadata as { expiresAt?: string };
-            return json({
+            return Response.json({
               data: JSON.parse(shortened.data) as QueryData,
               alarm: expiresAt
                 ? new Date(expiresAt).getTime()
@@ -90,16 +89,16 @@ export class ShareLinks implements DurableObject {
           }
 
           const expiredAt = await this.state.storage.get<string>("expiresAt");
-          return json(
+          return Response.json(
             {
               message: "No shortened data with that ID. It may have expired.",
               expiredAt,
             },
-            404,
+            { status: 404 },
           );
         }
         const alarm = await this.state.storage.getAlarm();
-        return json({ data, alarm, origin });
+        return Response.json({ data, alarm, origin });
       }
       case "DELETE": {
         await this.alarm();

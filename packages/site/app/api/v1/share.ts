@@ -1,48 +1,26 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { z } from "zod/v3";
-import { getBucket } from "~/durable/rate-limits";
-import { getShareLinkExists, putShareLink } from "~/durable/share-links";
+import { generateUniqueShortenKey } from "~/api/v1/util/share.server";
+import { getBucket } from "~/durable/rate-limits.server";
+import { putShareLink } from "~/durable/share-links.server";
 import { getUserId } from "~/session.server";
 import { getDb, shareLinks } from "~/store.server";
-import type { Env } from "~/types/env";
 import { ZodQueryData } from "~/types/QueryData";
-import type { ActionArgs } from "~/util/loader";
-import { randomString } from "~/util/text";
+import { jsonR, type ActionArgs } from "~/util/loader";
 import { zxParseJson } from "~/util/zod";
 
 const ALLOWED_EXTERNAL_ORIGINS = ["https://discohook.org"] as const;
 
-export interface ShortenedData {
-  data: string;
-  origin?: string;
-  userId?: string;
-}
-
-export const generateUniqueShortenKey = async (
-  env: Env,
-  length: number,
-  tries = 10,
-): Promise<string> => {
-  for (const _ of Array(tries)) {
-    const shareId = randomString(length);
-    const exists = await getShareLinkExists(env, shareId);
-    if (!exists) {
-      return shareId;
-    }
-  }
-  return await generateUniqueShortenKey(env, length + 1, tries);
-};
-
 export const action = async ({ request, context }: ActionArgs) => {
   const contentLength = Number(request.headers.get("Content-Length"));
   if (!contentLength || Number.isNaN(contentLength)) {
-    throw json({ message: "Must provide Content-Length header." }, 400);
+    throw jsonR({ message: "Must provide Content-Length header." }, 400);
   }
   if (contentLength > 25690112) {
     // Just under 24.5 MiB. This is what it is because the KV limit for values
     // was 25 MiB, but we no longer use KV. In theory we could make this larger
     // but there is little reason to.
-    throw json({ message: "Data is too large (max. ~24 MiB)." });
+    throw jsonR({ message: "Data is too large (max. ~24 MiB)." });
   }
 
   const {

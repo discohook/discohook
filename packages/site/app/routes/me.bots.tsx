@@ -1,8 +1,7 @@
 import { REST } from "@discordjs/rest";
-import { json, type SerializeFrom } from "@remix-run/cloudflare";
-import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link, useLoaderData } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { Button } from "~/components/Button";
@@ -13,7 +12,12 @@ import { getUser, getUserId } from "~/session.server";
 import { customBots, desc, getDb, makeSnowflake } from "~/store.server";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
 import { botAppAvatar, isDiscordError } from "~/util/discord";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import {
+  jsonR,
+  type ActionArgs,
+  type LoaderArgs,
+  type SerializeFrom,
+} from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseQuery } from "~/util/zod";
 
@@ -65,11 +69,11 @@ export const action = async ({ request, context }: ActionArgs) => {
   });
 
   if (String(applicationId) === context.env.DISCORD_CLIENT_ID) {
-    throw json({ message: "Cannot create a bot with a blacklisted ID" }, 400);
+    throw jsonR({ message: "Cannot create a bot with a blacklisted ID" }, 400);
   }
   const user = await getUser(request, context);
   if (!user || !userIsPremium(user)) {
-    throw json(
+    throw jsonR(
       { message: "Must be a Deluxe member to perform this action" },
       403,
     );
@@ -83,7 +87,7 @@ export const action = async ({ request, context }: ActionArgs) => {
     )) as RESTGetAPIApplicationRpcResult;
   } catch (e) {
     if (isDiscordError(e)) {
-      throw json(e.rawError, e.status);
+      throw jsonR(e.rawError, e.status);
     }
     throw e;
   }
@@ -116,7 +120,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         })
     )[0];
   } catch {
-    throw json(
+    throw jsonR(
       {
         message:
           "Failed to create the bot. It may already exist. If this is the case, contact support to have it transferred to your account.",
