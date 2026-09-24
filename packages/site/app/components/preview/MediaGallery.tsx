@@ -18,11 +18,18 @@ export const PreviewMediaGallery: React.FC<{
     try {
       return window.origin;
     } catch {
-      return "http://localhost";
+      return "http://localhost:8788";
     }
   }, []);
   return (
     <div>
+      {/* .visualMediaItemContainer .isInAppComponentsV2 */}
+      {/*
+        BUG: some gallery sizes (6, 8, 9, prev. 2) do not auto-fill to 600px when
+        there is no other content in the message. this is a minor issue but
+        can cause confusion
+      */}
+      {/* <div className="max-w-[600px] h-full w-full overflow-hidden rounded-lg"> */}
       <Gallery
         cdn={cdn}
         setImageModalData={setImageModalData}
@@ -68,6 +75,7 @@ export const PreviewMediaGallery: React.FC<{
           };
         })}
       />
+      {/* </div> */}
     </div>
   );
 };

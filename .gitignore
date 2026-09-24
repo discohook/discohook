@@ -6,6 +6,7 @@ coverage
 yarn-error.log
 build/
 .cache/
+.react-router/
 yarn-error.log
 .DS_Store
 persistence/

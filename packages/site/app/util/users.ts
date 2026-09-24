@@ -1,7 +1,7 @@
 import type { ImageURLOptions } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import type { User } from "~/session.server";
 import { cdn } from "./discord";
+import { jsonR } from "./loader";
 
 export const getUserPremiumDetails = (
   user: User,
@@ -36,7 +36,7 @@ export const userIsPremium = (user: User) => getUserPremiumDetails(user).active;
 export const requirePremiumOrThrow = (user: User | null) => {
   const details = user ? getUserPremiumDetails(user) : undefined;
   if (!details || !details.active)
-    throw json(
+    throw jsonR(
       { message: "A Deluxe subscription is required to do that." },
       403,
     );

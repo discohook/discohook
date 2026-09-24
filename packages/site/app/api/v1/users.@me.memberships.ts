@@ -1,4 +1,3 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
 import { PermissionsBitField } from "discord-bitflag";
 import { z } from "zod/v3";
 import { zx } from "zodix";
@@ -10,7 +9,7 @@ import {
   getDb,
   users,
 } from "~/store.server";
-import type { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs, SerializeFrom } from "~/util/loader";
 import { zxParseQuery } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {

@@ -233,15 +233,17 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
     </div>
   ),
   2: (d) => (
-    <div className="w-full grid grid-cols-2 gap-1 max-w-full max-h-[350px] overflow-hidden rounded-lg">
+    // this one has to be flex or else it doesn't self-size
+    // properly on CV2 messages with no other content
+    <div className="w-full flex flex-row gap-1 max-w-full max-h-[350px] overflow-hidden rounded-lg">
       <GalleryItem
-        className="rounded-l-lg rounded-r h-full object-center"
+        className="rounded-l-lg rounded-r h-full object-center flex-1"
         itemClassName="rounded-l-lg rounded-r h-full"
         {...d}
         index={0}
       />
       <GalleryItem
-        className="rounded-r-lg rounded-l h-full object-center"
+        className="rounded-r-lg rounded-l h-full object-center flex-1"
         itemClassName="rounded-r-lg rounded-l h-full"
         {...d}
         index={1}
@@ -355,7 +357,7 @@ export const galleriesBySize: Record<number, typeof Gallery> = {
           <GalleryItem
             key={`gallery-attachment-${i}`}
             className={`rounded ${largeRound} h-full object-center aspect-square`}
-            itemClassName={`rounded ${largeRound}`}
+            itemClassName={`rounded ${largeRound} w-full`}
             {...d}
             index={i}
           />

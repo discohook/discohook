@@ -1,4 +1,4 @@
-import { redirect } from "@remix-run/cloudflare";
+import { redirect } from "react-router";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import type { LoaderArgs } from "~/util/loader";
 

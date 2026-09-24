@@ -1,4 +1,4 @@
-import { type MetaFunction, useLoaderData } from "@remix-run/react";
+import { type MetaFunction, useLoaderData } from "react-router";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Header } from "~/components/Header";

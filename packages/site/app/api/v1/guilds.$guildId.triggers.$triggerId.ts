@@ -1,5 +1,5 @@
-import { json } from "@remix-run/cloudflare";
 import { PermissionFlags } from "discord-bitflag";
+import { data as json } from "react-router";
 import { autoRollbackTx, getDb } from "store";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import {
@@ -11,7 +11,7 @@ import {
 } from "~/store.server";
 import type { Env } from "~/types/env";
 import { refineZodDraftFlowMax } from "~/types/flows";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { type ActionArgs, jsonR, type LoaderArgs } from "~/util/loader";
 import { userIsPremium } from "~/util/users";
 import { snowflakeAsString, zxParseJson, zxParseParams } from "~/util/zod";
 
@@ -44,7 +44,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     },
   });
   if (!trigger || trigger.discordGuildId !== guildId) {
-    throw json({ message: "Unknown Trigger" }, 404);
+    throw jsonR({ message: "Unknown Trigger" }, 404);
   }
 
   await ensureTriggerFlow(trigger, db);
@@ -93,7 +93,7 @@ const updateKvTriggers = async (
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   if (request.method !== "PATCH" && request.method !== "DELETE") {
-    throw json({ message: "Method Not Allowed" }, 405);
+    throw jsonR({ message: "Method Not Allowed" }, 405);
   }
   const { guildId, triggerId } = zxParseParams(params, {
     guildId: snowflakeAsString(),
@@ -118,7 +118,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       columns: { discordGuildId: true, event: true },
     });
     if (!trigger || trigger.discordGuildId !== guildId) {
-      throw json({ message: "Unknown Trigger" }, 404);
+      throw jsonR({ message: "Unknown Trigger" }, 404);
     }
 
     await db.delete(triggers).where(eq(triggers.id, triggerId));
@@ -141,7 +141,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     columns: { discordGuildId: true, event: true },
   });
   if (!trigger || trigger.discordGuildId !== guildId) {
-    throw json({ message: "Unknown Trigger" }, 404);
+    throw jsonR({ message: "Unknown Trigger" }, 404);
   }
 
   await db.update(triggers).set({ flow }).where(eq(triggers.id, triggerId));

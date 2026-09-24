@@ -1,4 +1,3 @@
-import { json } from "@remix-run/cloudflare";
 import {
   type APIEmbed,
   type APIEmbedImage,
@@ -6,9 +5,10 @@ import {
   EmbedType,
 } from "discord-api-types/v10";
 import he from "he";
+import { data as json } from "react-router";
 import { z } from "zod/v3";
 import { getYoutubeVideoParameters } from "~/components/preview/Gallery";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs } from "~/util/loader";
 import Scraper from "~/util/scraper";
 import { jsonAsString, zxParseQuery } from "~/util/zod";
 import { ZodOEmbedData } from "./oembed";
@@ -144,7 +144,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   // if (robotsResponse.ok) {
   //   const robots = robotsParser(robotsUrl, await robotsResponse.text());
   //   if (robots.isDisallowed(url_, userAgent)) {
-  //     throw json(
+  //     throw jsonR(
   //       { message: "Discohook is forbidden by this site's robots.txt" },
   //       400,
   //     );
@@ -154,7 +154,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   //   // if (delay && delay <= 15) {
   //   //   await sleep(delay * 1000);
   //   // } else if (delay) {
-  //   //   throw json(
+  //   //   throw jsonR(
   //   //     {
   //   //       message:
   //   //         "The delay requested by this site's robots.txt was too large.",
@@ -175,7 +175,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   const url = response.url;
 
   if (!response.ok) {
-    throw json({ message: "Received a bad response from the URL" }, 400);
+    throw jsonR({ message: "Received a bad response from the URL" }, 400);
   }
   const contentType = response.headers.get("Content-Type")?.split(";")[0];
   switch (contentType) {
@@ -195,7 +195,7 @@ export const loader = async ({ request }: LoaderArgs) => {
     case "text/html":
       break;
     default:
-      throw json(
+      throw jsonR(
         { message: `\"${contentType}\" is not a supported content type.` },
         400,
       );

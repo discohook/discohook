@@ -1,5 +1,3 @@
-import type { SerializeFrom } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   type APIEmbed,
   type APIEmbedImage,
@@ -7,14 +5,15 @@ import {
 } from "discord-api-types/v10";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { Link, useLoaderData, useSearchParams } from "react-router";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { SafeParseReturnType, z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
 import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { Header } from "~/components/Header";
-import { InfoBox } from "~/components/InfoBox";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { InfoBox } from "~/components/InfoBox";
 import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
@@ -31,7 +30,7 @@ import {
   ZodLinkQueryData,
 } from "~/types/QueryData";
 import { LINK_INDEX_EMBED, LINK_INDEX_FAILURE_EMBED } from "~/util/constants";
-import type { LoaderArgs } from "~/util/loader";
+import type { LoaderArgs, SerializeFrom } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
 import {
   base64Decode,

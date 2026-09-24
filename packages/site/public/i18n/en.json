@@ -768,6 +768,10 @@
     "customize": "Channels & Roles",
     "linked-roles": "Linked Roles"
   },
+  "datetime": "Date & Time",
+  "today": "Today",
+  "tooFarPast": "Too far in the past (min. {{ date, M/D/YYYY }})",
+  "tooFarFuture": "Too far in the future (max. {{ date, M/D/YYYY }})",
   "timestamp": {
     "time": "{{ date, h:mm A }}",
     "time_verbose": "{{ date, h:mm:ss A }}",

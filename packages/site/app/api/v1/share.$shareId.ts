@@ -1,8 +1,8 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import { z } from "zod/v3";
 import { zx } from "zodix";
-import { getBucket } from "~/durable/rate-limits";
-import { getShareLink } from "~/durable/share-links";
+import { getBucket } from "~/durable/rate-limits.server";
+import { getShareLink } from "~/durable/share-links.server";
 import type { QueryData } from "~/types/QueryData";
 import { retrofitQueryData } from "~/types/QueryData-raw";
 import type { LoaderArgs } from "~/util/loader";

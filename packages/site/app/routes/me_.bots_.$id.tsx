@@ -1,6 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { defer, json, redirect } from "@remix-run/cloudflare";
-import { Form, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import {
   type APIApplication,
   type APIGuild,
@@ -17,6 +15,7 @@ import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isNotNull, type SQL } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { defer, Form, redirect, useLoaderData, useNavigate, useSubmit } from "react-router";
 import { z } from "zod/v3";
 import {
   AsyncGuildSelect,
@@ -84,7 +83,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
       .limit(1)
   )[0];
   if (!bot || String(bot.ownerId) !== String(user.id)) {
-    throw json({ message: "Unknown Bot" }, 404);
+    throw jsonR({ message: "Unknown Bot" }, 404);
   }
 
   const memberships = (async () =>
@@ -138,7 +137,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       },
     });
     if (!bot || bot.ownerId !== BigInt(user.id)) {
-      throw json({ message: "Unknown Bot" }, 404);
+      throw jsonR({ message: "Unknown Bot" }, 404);
     }
 
     const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
@@ -180,7 +179,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
             token,
             user.discordUser,
           );
-          throw json(
+          throw jsonR(
             {
               message: isReset
                 ? "You do not own this token. It has been reset and the owner has been notified"
@@ -190,7 +189,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
           );
         }
         if (application.id !== String(bot.applicationId)) {
-          throw json({ message: "Token does not match application" }, 400);
+          throw jsonR({ message: "Token does not match application" }, 400);
         }
       } else if (clientSecret) {
         const grantData = (await rest.post(Routes.oauth2TokenExchange(), {
@@ -225,7 +224,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       }
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(e.rawError, e.status);
+        throw jsonR(e.rawError, e.status);
       }
       throw e;
     }
@@ -243,9 +242,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         })) as APIGuild;
       } catch (e) {
         if (isDiscordError(e)) {
-          throw json(e.rawError);
+          throw jsonR(e.rawError);
         }
-        throw json({ message: String(e) });
+        throw jsonR({ message: String(e) });
       }
       let me: APIGuildMember | undefined;
       let botIsNotMember = false;
@@ -332,7 +331,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       },
     });
     if (!bot || bot.ownerId !== BigInt(user.id)) {
-      throw json({ message: "Unknown Bot" }, 404);
+      throw jsonR({ message: "Unknown Bot" }, 404);
     }
     try {
       await context.env.KV.delete(`custom-bot-${botId}`);

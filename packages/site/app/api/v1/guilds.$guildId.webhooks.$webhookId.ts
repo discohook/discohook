@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import {
   type APIWebhook,
   RESTJSONErrorCodes,
@@ -69,7 +69,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
         }
         await upsertGuild(
           db,
-          guild ?? (await getGuild(guildId, rest, context.env)),
+          guild ?? (await getGuild(guildId, rest, context.env, context.waitUntil)),
         );
 
         const modified = (await rest.patch(Routes.webhook(String(webhookId)), {

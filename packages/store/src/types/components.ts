@@ -3,9 +3,11 @@ import type {
   APISelectMenuDefaultValue,
   APISelectMenuOption,
   ButtonStyle,
+  ChannelFlags,
   ChannelType,
   ComponentType,
   MessageFlags,
+  OverwriteType,
   RESTPostAPIChannelMessageJSONBody,
   SelectMenuDefaultValueType,
   ThreadAutoArchiveDuration,
@@ -147,10 +149,20 @@ export enum FlowActionType {
   SendRawMessage = 12,
   /** Create a new thread */
   CreateThread = 8,
+  /** Add a user to a thread without sending a message */
+  AddThreadMember = 13,
+  /** Remove a user from a thread */
+  RemoveThreadMember = 14,
   /** Delete a message with ID `messageId` */
   DeleteMessage = 10,
   // /** Show a custom modal to the user */
   // SendModal,
+  /** Create a regular guild channel */
+  CreateChannel = 15,
+  /** Edit guild channel details */
+  // ModifyChannel = 16,
+  // DeleteChannel = 17, // very dangerous!
+  EditChannelPermissions = 18,
 }
 
 export interface FlowActionBase {
@@ -299,6 +311,56 @@ export interface FlowActionCreateThread extends FlowActionBase {
   appliedTags?: string[];
 }
 
+export interface FlowActionAddThreadMember extends FlowActionBase {
+  type: FlowActionType.AddThreadMember;
+  thread: AnonymousVariable;
+  users: AnonymousVariable[];
+}
+
+export interface FlowActionRemoveThreadMember extends FlowActionBase {
+  type: FlowActionType.RemoveThreadMember;
+  thread: AnonymousVariable;
+  users: AnonymousVariable[];
+}
+
+export interface FlowActionCreateChannel extends FlowActionBase {
+  type: FlowActionType.CreateChannel;
+  channel_type:
+    | ChannelType.GuildText
+    | ChannelType.GuildVoice
+    | ChannelType.GuildStageVoice
+    | ChannelType.GuildForum
+    | ChannelType.GuildMedia
+    | ChannelType.GuildAnnouncement;
+  name: string;
+  /** Text, Announcement, Forum, Media */
+  topic?: string;
+
+  /** Text, Voice, Stage, Forum, Media */
+  rate_limit_per_user?: number;
+  // Forum, Media
+  // available_tags, default_reaction_emoji, default_sort_order
+  // i want a good, versatile/automatic picker system for this; user can enter
+  // a static position *or* they can say "1 place below #general" for example
+  // position?: number;
+  /** Text, Voice, Announcement, Stage, Forum, Media */
+  parent_id?: AnonymousVariable;
+  /** Text, Voice, Announcement, Stage, Forum */
+  nsfw?: boolean;
+  /** Text, Voice, Announcement, Forum, Media */
+  flags?: ChannelFlags;
+}
+
+export interface FlowActionEditChannelPermissions extends FlowActionBase {
+  type: FlowActionType.EditChannelPermissions;
+  channel: AnonymousVariable;
+  overwrite_id: AnonymousVariable;
+  overwrite_type?: OverwriteType;
+
+  allow?: string;
+  deny?: string;
+}
+
 export interface FlowActionDeleteMessage extends FlowActionBase {
   type: FlowActionType.DeleteMessage;
 }
@@ -320,5 +382,9 @@ export type FlowAction =
   | FlowActionSendWebhookMessage
   | FlowActionSendRawMessage
   | FlowActionCreateThread
+  | FlowActionAddThreadMember
+  | FlowActionRemoveThreadMember
+  | FlowActionCreateChannel
+  | FlowActionEditChannelPermissions
   | FlowActionDeleteMessage
   | FlowActionStop;

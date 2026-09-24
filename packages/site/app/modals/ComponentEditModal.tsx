@@ -1,5 +1,5 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import {
   type APISelectMenuOption,
   type APIStringSelectComponent,

@@ -1,5 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import {
   type APIGuildMember,
   OverwriteType,
@@ -7,14 +6,15 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
-import { getBucket } from "~/durable/rate-limits";
+import { data as json } from "react-router";
+import { getBucket } from "~/durable/rate-limits.server";
 import {
   authorizeRequest,
   getGuild,
   getTokenGuildChannelPermissions,
 } from "~/session.server";
 import { injectErrorContext, isDiscordError } from "~/util/discord";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 // Like /guilds/:id/permissions for situations in which guild ID is yet unknown
@@ -66,10 +66,15 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
   let guild = data.guild;
   if (!guild) {
     try {
-      guild = await getGuild(channel.guild_id, rest, context.env);
+      guild = await getGuild(
+        channel.guild_id,
+        rest,
+        context.env,
+        context.waitUntil,
+      );
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -80,7 +85,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
           e.status,
         );
       }
-      throw json({ message: `Failed to fetch server: ${String(e)}` }, 500);
+      throw jsonR({ message: `Failed to fetch server: ${String(e)}` }, 500);
     }
   }
 

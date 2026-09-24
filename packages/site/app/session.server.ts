@@ -1,13 +1,5 @@
 import { REST } from "@discordjs/rest";
 import {
-  createCookie,
-  createCookieSessionStorage,
-  json,
-  redirect,
-  type SerializeFrom,
-  type Session,
-} from "@remix-run/cloudflare";
-import {
   type APIGuild,
   type APIGuildChannel,
   type APIGuildMember,
@@ -20,6 +12,13 @@ import {
 import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { isSnowflake } from "discord-snowflake";
 import { type JWTPayload, jwtVerify, SignJWT } from "jose";
+import {
+  createCookie,
+  createCookieSessionStorage,
+  redirect,
+  type Session,
+  type UNSAFE_DataWithResponseInit,
+} from "react-router";
 import { z } from "zod";
 import {
   discordMembers,
@@ -32,7 +31,7 @@ import {
 } from "./store.server";
 import type { Env } from "./types/env";
 import { isDiscordError } from "./util/discord";
-import type { Context } from "./util/loader";
+import { type Context, jsonR, type SerializeFrom } from "./util/loader";
 
 export const getSessionStorage = (context: Context) => {
   const sessionStorage = createCookieSessionStorage({
@@ -111,7 +110,7 @@ export async function getUserId(
   const userId = session.get("user")?.id;
   if (!userId || !isSnowflake(String(userId))) {
     if (throwIfNull) {
-      throw json({ message: "Must be logged in." }, 401);
+      throw jsonR({ message: "Must be logged in." }, 401);
     }
     return null;
   }
@@ -169,7 +168,7 @@ export async function getUser(
   const throwFn = () => {
     const { pathname } = new URL(request.url);
     if (pathname.startsWith("/api/")) {
-      throw json({ message: "Must be logged in." }, 401);
+      throw jsonR({ message: "Must be logged in." }, 401);
     }
     throw redirect(
       `/auth/discord?redirect=${encodeURIComponent(
@@ -349,7 +348,7 @@ export const verifyToken = async (token: string, env: Env, origin: string) => {
     // if (!data.payload.uid) throw Error("No uid");
     return data;
   } catch {
-    throw json({ message: "Invalid token" }, 401);
+    throw jsonR({ message: "Invalid token" }, 401);
   }
 };
 
@@ -362,6 +361,13 @@ export type TokenWithUser = {
   user: User;
 };
 
+type AuthorizeRequestRespond = <
+  T extends Response | UNSAFE_DataWithResponseInit<D>,
+  D = unknown,
+>(
+  response: T,
+) => T;
+
 export async function authorizeRequest(
   request: Request,
   context: Context,
@@ -372,12 +378,7 @@ export async function authorizeRequest(
     // preventing a redirect to /auth/discord when it's not desired
     errorLoggedOut?: boolean;
   },
-): Promise<
-  [
-    token: Jsonify<TokenWithUser>,
-    respond: <T extends Response>(response: T) => T,
-  ]
-> {
+): Promise<[token: Jsonify<TokenWithUser>, respond: AuthorizeRequestRespond]> {
   let auth = request.headers.get("Authorization");
   const storage = getTokenStorage(context);
   const session = await storage.getSession(request.headers.get("Cookie"));
@@ -395,7 +396,7 @@ export async function authorizeRequest(
           : true,
     );
     if (user === null) {
-      throw json({ message: "Must provide proper authorization" }, 401);
+      throw jsonR({ message: "Must provide proper authorization" }, 401);
     }
     const token = await regenerateToken(context.env, context.origin, user.id);
 
@@ -424,17 +425,25 @@ export async function authorizeRequest(
         user,
       }),
       (response) => {
+        let headers: Headers;
+        if (response instanceof Response) {
+          headers = response.headers;
+        } else {
+          response.init = response.init ?? {};
+          response.init.headers = new Headers(response.init.headers);
+          headers = response.init.headers;
+        }
         if (options?.headers) {
           for (const [k, v] of Object.entries(options.headers)) {
-            response.headers.append(k, v);
+            headers.append(k, v);
           }
         }
-        response.headers.set("Set-Cookie", committed);
+        headers.set("Set-Cookie", committed);
         return response;
       },
     ] satisfies [
       token: Jsonify<TokenWithUser>,
-      respond: <T extends Response>(response: T) => T,
+      respond: AuthorizeRequestRespond,
     ];
   };
 
@@ -443,13 +452,13 @@ export async function authorizeRequest(
   }
   if (!auth) {
     if (options?.requireToken) {
-      throw json({ message: "Must provide proper authorization" }, 401);
+      throw jsonR({ message: "Must provide proper authorization" }, 401);
     }
     return await serveNewToken();
   } else {
     const [prefix, tokenValue] = auth.split(" ");
     if (!["user", "bot"].includes(prefix.toLowerCase())) {
-      throw json({ message: "Invalid token prefix" }, 401);
+      throw jsonR({ message: "Invalid token prefix" }, 401);
     }
 
     let payload: JWTPayload;
@@ -466,7 +475,7 @@ export async function authorizeRequest(
       throw e;
     }
     if (payload.scp !== prefix.toLowerCase()) {
-      throw json({ message: "Invalid token" }, 401);
+      throw jsonR({ message: "Invalid token" }, 401);
     }
     // biome-ignore lint/style/noNonNullAssertion: Checked in verifyToken
     const tokenId = payload.jti!;
@@ -475,7 +484,7 @@ export async function authorizeRequest(
       if (!options?.requireToken) {
         return await serveNewToken();
       }
-      throw json(
+      throw jsonR(
         { message: "User or token data missing, obtain a new token" },
         401,
       );
@@ -509,7 +518,7 @@ export async function authorizeRequest(
       if (!options?.requireToken) {
         return await serveNewToken();
       }
-      throw json(
+      throw jsonR(
         { message: "User or token data missing, obtain a new token" },
         401,
       );
@@ -517,7 +526,7 @@ export async function authorizeRequest(
     // Unsure about this right now
     // const countryCode = request.headers.get("CF-IPCountry");
     // if (token.country && countryCode && countryCode !== token.country) {
-    //   throw json({ message: "Token location mismatch" }, 403);
+    //   throw jsonR({ message: "Token location mismatch" }, 403);
     // }
 
     return [
@@ -563,7 +572,7 @@ export const getTokenGuildPermissions = async (
   } else {
     const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
-      throw json({ message: "User has no linked Discord user" }, 401);
+      throw jsonR({ message: "User has no linked Discord user" }, 401);
     }
 
     const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
@@ -575,7 +584,7 @@ export const getTokenGuildPermissions = async (
       guild = await getGuild(guildId, rest, env);
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -586,7 +595,7 @@ export const getTokenGuildPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     // const oauth = await getDiscordUserOAuth(db, env, token.user.discordId);
@@ -598,7 +607,7 @@ export const getTokenGuildPermissions = async (
     } catch (e) {
       if (isDiscordError(e)) {
         // UnknownGuild shouldn't happen because we just fetched this guild above
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -609,7 +618,7 @@ export const getTokenGuildPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     const permissions = new PermissionsBitField(
@@ -675,7 +684,7 @@ export const getTokenGuildChannelPermissions = async (
   } else {
     const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
-      throw json({ message: "User has no linked Discord user" }, 401);
+      throw jsonR({ message: "User has no linked Discord user" }, 401);
     }
 
     const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
@@ -686,7 +695,7 @@ export const getTokenGuildChannelPermissions = async (
       )) as typeof channel;
     } catch (e) {
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -697,7 +706,7 @@ export const getTokenGuildChannelPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
     if (!channel.guild_id) {
       // Could be confusing
@@ -727,7 +736,7 @@ export const getTokenGuildChannelPermissions = async (
     } catch (e) {
       if (isDiscordError(e)) {
         // UnknownGuild shouldn't happen because we just fetched the channel above
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -738,7 +747,7 @@ export const getTokenGuildChannelPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     let guild: APIGuild;
@@ -747,7 +756,7 @@ export const getTokenGuildChannelPermissions = async (
     } catch (e) {
       // This shouldn't fail since we were able to get the channel
       if (isDiscordError(e)) {
-        throw json(
+        throw jsonR(
           {
             ...e.rawError,
             message:
@@ -758,7 +767,7 @@ export const getTokenGuildChannelPermissions = async (
           e.status,
         );
       }
-      throw json({ message: String(e) }, 500);
+      throw jsonR({ message: String(e) }, 500);
     }
 
     const guildPermissions = new PermissionsBitField(
@@ -836,10 +845,11 @@ export const getGuild = async (
   guildId: bigint | string,
   rest: REST,
   env: Env,
+  waitUntil?: ExecutionContext["waitUntil"],
 ) => {
   const guild = (await rest.get(Routes.guild(String(guildId)))) as APIGuild;
-  // TODO: Leads to unnecessary writes
-  await env.KV.put(
+
+  const put = env.KV.put(
     `cache-guild-${guildId}`,
     JSON.stringify({
       id: guild.id,
@@ -848,5 +858,15 @@ export const getGuild = async (
     } satisfies PartialKVGuild),
     { expirationTtl: 3600 },
   );
+  // This cache is also read by `getchGuild` in `store`
+  // Unfortunately, we can't really tell when this needs to be done (without
+  // sending another KV request which defeats the point of trying to reduce them).
+  // Maybe we should just reduce usage of getGuild for paths that only really
+  // need data that's OK to be stale
+  if (waitUntil) {
+    waitUntil(put);
+  } else {
+    await put;
+  }
   return guild;
 };

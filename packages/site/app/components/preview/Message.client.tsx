@@ -98,8 +98,14 @@ export const Message: React.FC<{
   message: QueryData["messages"][number]["data"];
   discordApplicationId?: string;
   cache?: CacheManager;
-  index?: number;
-  data?: QueryData;
+  /**
+   * The `.data` of the message immediately before this one in the draft,
+   * for author-grouping display logic. Passed instead of the whole draft +
+   * index so that unrelated edits elsewhere in the draft don't update state
+   */
+  previousMessageData?: QueryData["messages"][number]["data"];
+  /** This message's thread id (not part of .data) */
+  threadId?: string;
   targets?: Target[];
   messageDisplay?: Settings["messageDisplay"];
   compactAvatars?: boolean;
@@ -114,8 +120,8 @@ export const Message: React.FC<{
   message,
   discordApplicationId,
   cache,
-  index,
-  data,
+  previousMessageData,
+  threadId,
   targets,
   messageDisplay,
   compactAvatars,
@@ -168,13 +174,11 @@ export const Message: React.FC<{
     new UserFlagsBitField(message.author.flags).has(UserFlags.VerifiedBot);
   const flags = new MessageFlagsBitField(BigInt(message.flags ?? 0));
 
-  const lastMessage =
-    data && index !== undefined ? data.messages[index - 1] : undefined;
   const showProfile =
     !!forceSeparateAuthor ||
-    (lastMessage
-      ? lastMessage.data.username !== message.username ||
-        lastMessage.data.avatar_url !== message.avatar_url
+    (previousMessageData
+      ? previousMessageData.username !== message.username ||
+        previousMessageData.avatar_url !== message.avatar_url
       : true) ||
     !!message.thread_name;
   // To save time, display components if the user has no webhooks
@@ -224,10 +228,7 @@ export const Message: React.FC<{
         // thread ID and post thumbnail file (thus editing the starter
         // message)
         message.thread_name ||
-        (!!data &&
-          index !== undefined &&
-          !!data.messages[index]?.thread_id &&
-          !!threadThumbnailFile) ? (
+        (!!threadId && !!threadThumbnailFile) ? (
           <div>
             <div className="flex">
               <div className="shrink-0">
@@ -258,7 +259,9 @@ export const Message: React.FC<{
       <div
         className={twJoin(
           "flex",
-          showProfile && !forceSeparateAuthor && lastMessage ? "mt-4" : "",
+          showProfile && !forceSeparateAuthor && previousMessageData
+            ? "mt-4"
+            : "",
         )}
       >
         {messageDisplay !== "compact" && (

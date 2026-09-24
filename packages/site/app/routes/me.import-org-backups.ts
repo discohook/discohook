@@ -1,12 +1,12 @@
-import { json, redirect } from "@remix-run/cloudflare";
+import { redirect } from "react-router";
 import { getUserId } from "~/session.server";
-import type { LoaderArgs } from "~/util/loader";
+import { jsonR, type LoaderArgs } from "~/util/loader";
 import { randomString } from "~/util/text";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const legacyOrigin = context.env.LEGACY_ORIGIN;
   if (!legacyOrigin) {
-    throw json(
+    throw jsonR(
       { message: "No legacy origin is configured for this instance." },
       500,
     );

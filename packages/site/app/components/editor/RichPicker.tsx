@@ -22,7 +22,7 @@ export interface PopoutRichPickerState {
 
 export const PopoutRichPicker: React.FC<
   React.PropsWithChildren<{
-    t?: TFunction;
+    t: TFunction;
     insertText: (text: string) => void;
     cache?: CacheManager;
     mentionsTab?: boolean;
@@ -85,7 +85,7 @@ export const PopoutRichPicker: React.FC<
                     )}
                     onClick={() => setTab("mentions")}
                   >
-                    {t?.("mentions") ?? "Mentions"}
+                    {t("mentions")}
                   </button>
                 )}
                 {timeTab !== false && (
@@ -99,7 +99,7 @@ export const PopoutRichPicker: React.FC<
                     )}
                     onClick={() => setTab("time")}
                   >
-                    {t?.("timeText") ?? "Time"}
+                    {t("timeText")}
                   </button>
                 )}
                 {emojiTab !== false && (
@@ -113,7 +113,7 @@ export const PopoutRichPicker: React.FC<
                     )}
                     onClick={() => setTab("emoji")}
                   >
-                    {t?.("emojis") ?? "Emojis"}
+                    {t("emojis")}
                   </button>
                 )}
               </div>
@@ -145,13 +145,14 @@ export const PopoutRichPicker: React.FC<
                 />
               ) : tab === "time" && timeTab !== false ? (
                 <TimePicker
+                  t={t}
                   id={id}
                   className="border-none shadow-none w-full"
                   // I'm not sure this one needs to be shift-clickable
                   // but we might patch that in later for consistency
                   onTimeClick={(timestamp) => {
                     insertText(
-                      `<t:${timestamp.date.unix()}${
+                      `<t:${Math.floor(timestamp.date.getTime() / 1000)}${
                         timestamp.style ? `:${timestamp.style}` : ""
                       }>`,
                     );

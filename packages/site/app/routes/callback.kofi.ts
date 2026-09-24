@@ -1,9 +1,9 @@
-import { json } from "@remix-run/cloudflare";
+import { data as json } from "react-router";
 import {
   ZodKofiDonationPayload,
   ZodKofiGetSupporterDetails,
 } from "~/types/kofi";
-import type { ActionArgs } from "~/util/loader";
+import { jsonR, type ActionArgs } from "~/util/loader";
 import Scraper from "~/util/scraper";
 import { zxParseForm, zxParseJson } from "~/util/zod";
 
@@ -24,7 +24,7 @@ export const action = async ({ request, context }: ActionArgs) => {
 
   const { data } = await zxParseForm(request, ZodKofiDonationPayload);
   if (data.verification_token !== verificationToken) {
-    throw json({ message: "Invalid verification token." }, 403);
+    throw jsonR({ message: "Invalid verification token." }, 403);
   }
 
   if (!data.email) {

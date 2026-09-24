@@ -1,5 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import {
   type APIGuildMember,
   GatewayDispatchEvents,
@@ -8,12 +7,13 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
+import { data as json } from "react-router";
 import { getDb } from "store";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
 import { TriggerEvent } from "~/store.server";
-import type { ActionArgs } from "~/util/loader";
+import { type ActionArgs, jsonR } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 
 const triggerEventToDispatchEvent: Record<TriggerEvent, GatewayDispatchEvents> =
@@ -24,7 +24,7 @@ const triggerEventToDispatchEvent: Record<TriggerEvent, GatewayDispatchEvents> =
 
 export const action = async ({ request, context, params }: ActionArgs) => {
   if (request.method !== "PUT") {
-    throw json({ message: "Method Not Allowed" }, 405);
+    throw jsonR({ message: "Method Not Allowed" }, 405);
   }
 
   const { guildId, event } = zxParseParams(params, {
@@ -58,7 +58,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     columns: { id: true },
   });
   if (triggers.length === 0) {
-    throw json({ message: "No triggers with that event" }, 404);
+    throw jsonR({ message: "No triggers with that event" }, 404);
   }
 
   const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
@@ -85,7 +85,7 @@ export const action = async ({ request, context, params }: ActionArgs) => {
       break;
     }
     default:
-      throw json(
+      throw jsonR(
         { message: "No dispatch data could be formed for the event" },
         500,
       );

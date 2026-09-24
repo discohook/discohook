@@ -1,3 +1,4 @@
+import i18next from "i18next";
 import insertTextAtCursor from "insert-text-at-cursor";
 import { type ReactNode, useRef, useState } from "react";
 import { twJoin } from "tailwind-merge";
@@ -34,9 +35,11 @@ export const TextArea = (
     freeLength,
     markdown,
     cache,
-    t,
+    t: t_,
     ...newProps
   } = props;
+  const t = t_ ?? i18next.t;
+
   const ref = useRef<HTMLTextAreaElement>(null);
   const length = ref.current ? ref.current.value.length : 0;
 
@@ -54,19 +57,14 @@ export const TextArea = (
       <p className="text-sm font-medium">
         {label}
         {newProps.required && (
-          <span
-            className={twJoin(
-              "align-baseline",
-              t ? "ltr:ml-2 rtl:mr-2 text-xs italic" : "text-rose-400",
-            )}
-          >
-            {t ? t("required") : "*"}
+          <span className="align-baseline ms-2 text-xs italic">
+            {t("required")}
           </span>
         )}
         {props.maxLength && (
           <span
             className={twJoin(
-              "ltr:ml-2 rtl:mr-2 italic text-xs align-baseline",
+              "ms-2 italic text-xs align-baseline",
               length >= props.maxLength
                 ? "text-red-300"
                 : length / (props.maxLength || 1) >= 0.9

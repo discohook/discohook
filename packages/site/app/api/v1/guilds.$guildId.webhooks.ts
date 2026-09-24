@@ -1,5 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { json } from "@remix-run/cloudflare";
 import {
   type APIChannel,
   type APIWebhook,
@@ -10,13 +9,19 @@ import {
 } from "discord-api-types/v10";
 import { PermissionFlags } from "discord-bitflag";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { data as json } from "react-router";
 import { autoRollbackTx, type DBWithSchema, getDb, webhooks } from "store";
 import { zx } from "zodix";
-import { getBucket } from "~/durable/rate-limits";
+import { getBucket } from "~/durable/rate-limits.server";
 import { authorizeRequest, getTokenGuildPermissions } from "~/session.server";
+import {
+  ResolvableAPIChannel,
+  tagToResolvableTag,
+} from "~/util/cache/CacheManager";
 import { isDiscordError } from "~/util/discord";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams, zxParseQuery } from "~/util/zod";
+import { getChannelIconType } from "./channels.$channelId";
 
 const hasToken = () =>
   sql<boolean>`${webhooks.token} IS NOT NULL`.as("has_token");
@@ -240,13 +245,33 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
     throw e;
   }
 
-  let channels: APIChannel[];
-  try {
-    channels = (await rest.get(
-      Routes.guildChannels(String(guildId)),
-    )) as APIChannel[];
-  } catch {
-    channels = [];
+  const channelsCacheKey = `cache-guildChannels-${guildId}`;
+  let channels = await context.env.KV.get<ResolvableAPIChannel[]>(
+    channelsCacheKey,
+    "json",
+  );
+  if (!channels) {
+    try {
+      channels = (
+        (await rest.get(Routes.guildChannels(String(guildId)))) as APIChannel[]
+      ).map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: getChannelIconType(c),
+        tags:
+          "available_tags" in c
+            ? c.available_tags.map(tagToResolvableTag)
+            : undefined,
+      }));
+
+      context.waitUntil(
+        context.env.KV.put(channelsCacheKey, JSON.stringify(channels), {
+          expirationTtl: 60 * 30,
+        }),
+      );
+    } catch {
+      channels = [];
+    }
   }
 
   return respond(
@@ -259,12 +284,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
             ? true
             : gw.applicationId === context.env.DISCORD_CLIENT_ID ||
               !gw.applicationId,
-          channel: channel
-            ? {
-                name: channel.name,
-                // type: channel.type,
-              }
-            : undefined,
+          channel: channel ? { name: channel.name } : undefined,
         };
       }),
     ),
