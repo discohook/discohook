@@ -647,7 +647,7 @@
     "reupload": "Reenviar",
     "addAnother": "Adicionar outra",
     "checkSelectedMemberDescription": "Se ativado, a verificação considera o membro escolhido no menu de seleção, e não o usuário que causou a interação.",
-    "switchSendMode": "Mudar modo de envio",
+    "switchSendMode": "Mudar Modo de Envio",
     "switchSendModeBody": "Selecione uma das suas mensagens para definir ou remover o link da mensagem, o que determinará se o Discohook editará a mensagem existente.",
     "bot": "Bot",
     "fluxer": "Fluxer",
