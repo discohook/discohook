@@ -157,7 +157,8 @@
     "webhookUrl": "URL do Webhook",
     "addTarget": {
         "1": "Adicionar Webhook",
-        "2": "Adicionar Bot"
+        "2": "Adicionar Bot",
+        "3": "Adicionar Webhook Fluxer"
     },
     "createWebhook": "Criar Webhook",
     "invalidWebhookUrl": "URL de Webhook inválida. Elas começam com https://discord.com/api/webhooks/...",
@@ -620,5 +621,6 @@
     "reupload": "Reenviar",
     "addAnother": "Adicionar outro",
     "checkSelectedMemberDescription": "Se ativado, a verificação considera o membro escolhido no menu de seleção, e não o usuário que causou a interação.",
-    "switchSendMode": "Alterar Modo de Envio"
+    "switchSendMode": "Alterar Modo de Envio",
+    "switchSendModeBody": "Selecione uma de suas mensagens para definir ou remover o link da mensagem, isso determinará se o Discohook edita a mensagem existente."
 }
