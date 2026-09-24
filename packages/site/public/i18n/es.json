@@ -594,5 +594,9 @@
     "beta": "BETA",
     "linkEmbedTypeStandard": "Estándar (sin markdown, más flexible)",
     "linkEmbedTypeMastodon": "Publicación (markdown, autor y pie necesarios)",
-    "safariAvatarTooLarge": "Atención: en Safari y navegadores de iOS, es posible que tengas problemas al subir avatares grandes. Si no puedes guardar, prueba subiendo a través de la app de Discord o comprimiendo la imagen antes."
+    "safariAvatarTooLarge": "Atención: en Safari y navegadores de iOS, es posible que tengas problemas al subir avatares grandes. Si no puedes guardar, prueba subiendo a través de la app de Discord o comprimiendo la imagen antes.",
+    "backToSettings": "Volver a Ajustes",
+    "switchSendMode": "Cambiar Modo de Envío",
+    "switchSendModeBody": "Selecciona uno de tus mensajes para añadir o remover su enlace de mensaje, el cual cambiará cuando Discohook edite el mensaje existente.",
+    "appearance": "Apariencia"
 }
