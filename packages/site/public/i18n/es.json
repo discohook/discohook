@@ -598,5 +598,14 @@
     "backToSettings": "Volver a Ajustes",
     "switchSendMode": "Cambiar Modo de Envío",
     "switchSendModeBody": "Selecciona uno de tus mensajes para añadir o remover su enlace de mensaje, el cual cambiará cuando Discohook edite el mensaje existente.",
-    "appearance": "Apariencia"
+    "appearance": "Apariencia",
+    "behavior": "Comportamiento",
+    "advanced": "Avanzado",
+    "settingsFooter": "¡Gracias por usar Discohook!",
+    "settingsCache": {
+        "title": "Caché",
+        "emojiButton": "Limpiar Caché de Emoji"
+    },
+    "bot": "Bot",
+    "botTargetChannelPrompt": "Introduce un ID de un canal o un enlace que te gustaría usar para enviar tu mensajes con {{name}}"
 }
