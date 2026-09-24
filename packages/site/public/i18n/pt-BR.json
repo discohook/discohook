@@ -531,7 +531,7 @@
         "3": "Adicionar cargo",
         "4": "Remover cargo",
         "5": "Alternar cargo",
-        "7": "Enviar mensagem do webhook",
+        "7": "Enviar mensagem de webhook",
         "8": "Criar tópico"
     },
     "actionTypeUnsupported": "Parece que este tipo de ação não é suportado. Tente atualizar a página.",
@@ -608,7 +608,7 @@
     "settingsFooter": "Obrigado por usar o Discohook!",
     "settingsCache": {
         "emojiDescription": "O cache padrão de emojis é atualizado automaticamente a cada 14 dias. Se os emojis tiverem sido atualizados, você pode atualizar o cache agora clicando neste botão.",
-        "emojiButton": "Limpar o Cache de Emoji",
+        "emojiButton": "Limpar Cache de Emoji",
         "title": "Cache"
     },
     "discohookNews": "Notícias Discohook",
@@ -648,7 +648,7 @@
     "addAnother": "Adicionar outra",
     "checkSelectedMemberDescription": "Se ativado, a verificação considera o membro escolhido no menu de seleção, e não o usuário que causou a interação.",
     "switchSendMode": "Mudar Modo de Envio",
-    "switchSendModeBody": "Selecione uma das suas mensagens para definir ou remover o link da mensagem, o que determinará se o Discohook editará a mensagem existente.",
+    "switchSendModeBody": "Selecione uma de suas mensagens para definir ou remover o link dela, o que mudará se o Discohook editará a mensagem existente.",
     "bot": "Bot",
     "fluxer": "Fluxer",
     "nResults_one": "{{count}} resultado. <reset>Limpar</reset>",
@@ -758,7 +758,8 @@
         "unknownUser": "usuário-desconhecido",
         "deletedRole": "cargo-excluído",
         "guide": "Guia do servidor",
-        "linked-roles": "Cargos vinculados"
+        "linked-roles": "Cargos vinculados",
+        "unknownGame": "jogo-desconhecido"
     },
     "miscellaneous": "Diversos",
     "formatOptionDescription": {
@@ -863,5 +864,7 @@
     "formatOptionsNone": "Passe o mouse sobre uma opção acima para ver um exemplo.",
     "appearance": "Aparência",
     "behavior": "Comportamento",
-    "advanced": "Avançado"
+    "advanced": "Avançado",
+    "attachmentFileMissing": "Arquivo faltando",
+    "spoiler": "Revelação"
 }
