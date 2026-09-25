@@ -171,7 +171,8 @@ export const apiAttachmentsToFluxerAttachments = (
     id: i,
     description: attachment.description,
     filename: attachment.filename,
-    flags: attachment.spoiler ? 8 : 0,
+    // IS_SPOILER and IS_ANIMATED are mirrored on both platforms
+    flags: attachment.flags,
     // Voice messages
     ...(attachment.duration_secs !== undefined
       ? {

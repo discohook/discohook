@@ -7,7 +7,11 @@ import {
   ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
-import { MessageFlagsBitField } from "discord-bitflag";
+import {
+  AttachmentFlags,
+  AttachmentFlagsBitField,
+  MessageFlagsBitField,
+} from "discord-bitflag";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -394,9 +398,19 @@ const AttachmentEditModal = (
               <Checkbox
                 label={t("markSpoiler")}
                 onCheckedChange={(checked) => {
-                  setDraft({ ...draft, spoiler: checked });
+                  const flags = new AttachmentFlagsBitField(
+                    BigInt(draft.flags ?? 0),
+                  );
+                  flags.set(AttachmentFlags.IsSpoiler, checked);
+                  setDraft({ ...draft, flags: Number(flags.value) });
                 }}
-                checked={!!draft.spoiler}
+                checked={
+                  draft.flags
+                    ? new AttachmentFlagsBitField(draft.flags).has(
+                        AttachmentFlags.IsSpoiler,
+                      )
+                    : false
+                }
               />
             </div>
           </div>
@@ -405,6 +419,9 @@ const AttachmentEditModal = (
               file={draft}
               className="max-h-32 sm:max-h-60 w-max mx-auto object-contain"
             />
+            <p className="text-sm text-muted dark:text-muted-dark text-end">
+              {fileSize(draft.size, 1)}
+            </p>
             {/* couldn't get this looking how i wanted */}
             {/* {draft.url && !draft.url.startsWith("blob:") ? (
               <button
@@ -874,7 +891,7 @@ const MessageAttachmentsSection = ({
   allowNewFiles?: boolean;
   noFilesMessage?: string;
 }) => {
-  const flags = new MessageFlagsBitField(BigInt(message.data.flags ?? "0"));
+  const mFlags = new MessageFlagsBitField(BigInt(message.data.flags ?? "0"));
   const attachments = message.data.attachments ?? [];
   const withMissingFiles = attachments.filter(
     (a) =>
@@ -925,6 +942,11 @@ const MessageAttachmentsSection = ({
           )}
         >
           {attachments.map((attachment, i) => {
+            const aFlags = new AttachmentFlagsBitField(
+              BigInt(attachment.flags ?? 0),
+            );
+            const isSpoiler = aFlags.has(AttachmentFlags.IsSpoiler);
+
             const isPreviewable =
               !!attachment.url &&
               !!attachment.content_type &&
@@ -995,7 +1017,7 @@ const MessageAttachmentsSection = ({
                       />
                     </div>
                   )}
-                  {attachment.spoiler ? (
+                  {isSpoiler ? (
                     <div className="absolute inset-0 w-full flex backdrop-blur-2xl rounded-lg">
                       <div className="rounded-full px-3 py-0.5 bg-black/60 m-auto">
                         <p className="whitespace-nowrap uppercase font-semibold text-sm">
@@ -1066,7 +1088,7 @@ const MessageAttachmentsSection = ({
                       className="text-muted dark:text-muted-dark"
                       title={t("attachmentIsThumbnail")}
                     />
-                  ) : flags.has(MessageFlags.IsVoiceMessage) &&
+                  ) : mFlags.has(MessageFlags.IsVoiceMessage) &&
                     isAudioType(attachment.content_type) ? (
                     <CoolIcon
                       icon="Phone"
@@ -1120,11 +1142,12 @@ const MessageAttachmentsSection = ({
                       missingFile ? "hidden" : undefined,
                     )}
                     onClick={() => {
-                      attachment.spoiler = !attachment.spoiler;
+                      aFlags.set(AttachmentFlags.IsSpoiler, !isSpoiler);
+                      attachment.flags = Number(aFlags.value);
                       setData({ ...data });
                     }}
                   >
-                    <CoolIcon icon={attachment.spoiler ? "Hide" : "Show"} />
+                    <CoolIcon icon={isSpoiler ? "Hide" : "Show"} />
                   </button>
                   <button
                     type="button"

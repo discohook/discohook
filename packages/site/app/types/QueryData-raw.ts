@@ -28,8 +28,6 @@ export type APIAttachment = _APIAttachment & {
    * know when it's appropriate to remove it
    */
   placement_count?: number;
-  /** allows us to wait until execution to prepend SPOILER_ */
-  spoiler?: boolean;
 };
 
 export const ZodAPIEmbed: z.ZodType<APIEmbed> = z.object({

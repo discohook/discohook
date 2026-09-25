@@ -15,13 +15,18 @@ import {
   type APIComponentInContainer,
   type APIContainerComponent,
   type APIEmbed,
+  type APIEmbedImage,
+  type APIEmbedVideo,
   type APIMediaGalleryItem,
   type APIMessage,
   type APIMessageComponent,
   type APISectionComponent,
   type APISelectMenuComponent,
+  type APIUnfurledMediaItem,
+  AttachmentFlags,
   ButtonStyle,
   ComponentType,
+  EmbedMediaFlags,
   MessageFlags,
   type RESTError,
   type RESTGetAPICurrentUserGuildsResult,
@@ -34,6 +39,7 @@ import {
   type RESTPostAPIWebhookWithTokenJSONBody,
   type RESTPostAPIWebhookWithTokenWaitResult,
   Routes,
+  UnfurledMediaItemFlags,
 } from "discord-api-types/v10";
 import {
   MessageFlagsBitField,
@@ -277,12 +283,14 @@ const apiAttachmentsToPayloadAttachments = (
 ): NonNullable<RESTPostAPIWebhookWithTokenJSONBody["attachments"]> =>
   attachments.map((attachment) => ({
     id: attachment.id,
-    // id: String(i),
-    filename: attachment.spoiler
-      ? `SPOILER_${attachment.filename}`
-      : attachment.filename,
+    filename: attachment.filename,
     description: attachment.description,
     flags: attachment.flags,
+    // For some reason, is_spoiler must be used to mark an outgoing attachment
+    // as a spoiler. `flags` is ignored.
+    is_spoiler:
+      ((attachment.flags ?? 0) & AttachmentFlags.IsSpoiler) ===
+      AttachmentFlags.IsSpoiler,
     // This is undocumented! Therefore we are taking precautions:
     // Only provide any value when it is true and the user is creating a
     // thread; narrows erroneous behavior if is_thumbnail suddenly gets
@@ -334,12 +342,13 @@ export const executeWebhook = async (
     attachments?.filter((a) => !a.url || a.url.startsWith("blob:")) ?? [];
   if (attachments) {
     const renameConfig = attachments.map(
-      ({ filename, url, spoiler, placement_count, is_thumbnail }) => {
-        if (!url || url.startsWith("blob:")) {
-          if (spoiler) {
-            return { oldName: filename, newName: `SPOILER_${filename}` };
-          }
-        } else if (placement_count && !is_thumbnail) {
+      ({ filename, url, placement_count, is_thumbnail }) => {
+        if (
+          url &&
+          !url.startsWith("blob:") &&
+          placement_count &&
+          !is_thumbnail
+        ) {
           // This is a remote attachment which is only used as a reference within embeds/display
           // components. We have no reason to download and reupload it as an attachment. With CV2,
           // this should be somewhat rare, since it would only happen if someone manually pasted an
@@ -370,11 +379,10 @@ export const executeWebhook = async (
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {
-      for (const { id, file, key } of files) {
-        const spoiler = localAttachments.find((a) => a.id === id)?.spoiler;
+      for (const { file, key } of files) {
         rawFiles.push({
           key,
-          name: spoiler ? `SPOILER_${file.name}` : file.name,
+          name: file.name,
           contentType: file.type,
           data: Buffer.from(await file.arrayBuffer()),
         });
@@ -431,16 +439,15 @@ export const updateWebhookMessage = async (
     query.set("with_components", String(withComponents));
   }
 
-  const localAttachments =
-    attachments?.filter((a) => !a.url || a.url.startsWith("blob:")) ?? [];
   if (attachments) {
     const renameConfig = attachments.map(
-      ({ filename, url, spoiler, placement_count, is_thumbnail }) => {
-        if (!url || url.startsWith("blob:")) {
-          if (spoiler) {
-            return { oldName: filename, newName: `SPOILER_${filename}` };
-          }
-        } else if (placement_count && !is_thumbnail) {
+      ({ filename, url, placement_count, is_thumbnail }) => {
+        if (
+          url &&
+          !url.startsWith("blob:") &&
+          placement_count &&
+          !is_thumbnail
+        ) {
           // See comment in executeWebhook
           return { oldName: filename, newName: filename, newUri: url };
         }
@@ -460,7 +467,15 @@ export const updateWebhookMessage = async (
       );
     }
     payload.attachments = apiAttachmentsToPayloadAttachments(
-      localAttachments,
+      attachments.filter((a) =>
+        // don't try to reference remote attachments, but pass through existing
+        // discord attachments. not sure how this will work if/when we implement
+        // discord-backed remote attachments
+        a.url
+          ? a.url.startsWith("blob:") ||
+            (!!a.proxy_url && isDiscordAttachmentUrl(a.proxy_url))
+          : true,
+      ),
       threadId !== undefined,
     );
   }
@@ -468,11 +483,10 @@ export const updateWebhookMessage = async (
   if (rest) {
     const rawFiles: RawFile[] = [];
     if (files) {
-      for (const { id, file, key } of files) {
-        const spoiler = localAttachments.find((a) => a.id === id)?.spoiler;
+      for (const { file, key } of files) {
         rawFiles.push({
           key,
-          name: spoiler ? `SPOILER_${file.name}` : file.name,
+          name: file.name,
           contentType: file.type,
           data: Buffer.from(await file.arrayBuffer()),
         });
@@ -956,6 +970,28 @@ export const getRemainingComponentsCount = (
     : MAX_V1_ROWS - components.length;
 };
 
+const embedMediaToUnfurledMediaItem = (
+  original: APIEmbedImage | APIEmbedVideo,
+): APIUnfurledMediaItem => {
+  const originalFlags = original.flags ?? 0;
+  let flags = 0 as UnfurledMediaItemFlags;
+  // easier to do bitmath here since we dont have BitFields for either of these
+  if (
+    (originalFlags & EmbedMediaFlags.IsAnimated) ===
+    EmbedMediaFlags.IsAnimated
+  ) {
+    flags |= UnfurledMediaItemFlags.IsAnimated;
+  }
+  return {
+    url: original.url ?? "http://localhost#embedMediaToUnfurledMediaItem",
+    proxy_url: original.proxy_url,
+    content_type: original.content_type,
+    flags,
+    width: original.width,
+    height: original.height,
+  };
+};
+
 // not in love with this function name
 /**
  * Returns true if the component may house storable components, either
@@ -1040,14 +1076,12 @@ export const convertMessageToComponents = (
     };
 
     if (embed.thumbnail) {
-      const filename = embed.thumbnail.url.split("/").slice(-1)[0];
       container.components.push({
         type: ComponentType.Section,
         components: addBody([]),
         accessory: {
           type: ComponentType.Thumbnail,
-          media: embed.thumbnail,
-          spoiler: filename.startsWith("SPOILER_"),
+          media: embedMediaToUnfurledMediaItem(embed.thumbnail),
         },
       });
     } else {
@@ -1055,10 +1089,8 @@ export const convertMessageToComponents = (
     }
 
     if (embed.image) {
-      const filename = embed.image.url.split("/").slice(-1)[0];
       const item: APIMediaGalleryItem = {
-        media: embed.image,
-        spoiler: filename.startsWith("SPOILER_"),
+        media: embedMediaToUnfurledMediaItem(embed.image),
       };
       const extantGallery = container.components.find(
         (c) => c.type === ComponentType.MediaGallery,
@@ -1075,7 +1107,7 @@ export const convertMessageToComponents = (
     if (embed.video?.url) {
       container.components.push({
         type: ComponentType.MediaGallery,
-        items: [{ media: { ...embed.video, url: embed.video.url } }],
+        items: [{ media: embedMediaToUnfurledMediaItem(embed.video) }],
       });
     }
 
