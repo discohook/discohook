@@ -17,6 +17,7 @@ import {
   type APIEmbed,
   type APIEmbedImage,
   type APIEmbedVideo,
+  type APIGuild,
   type APIMediaGalleryItem,
   type APIMessage,
   type APIMessageComponent,
@@ -27,6 +28,7 @@ import {
   ButtonStyle,
   ComponentType,
   EmbedMediaFlags,
+  GuildPremiumTier,
   MessageFlags,
   type RESTError,
   type RESTGetAPICurrentUserGuildsResult,
@@ -60,7 +62,13 @@ import type {
   APIAttachment,
   QueryDataMessageDataRaw,
 } from "~/types/QueryData-raw";
-import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "./constants";
+import {
+  MAX_FILE_SIZE_DEFAULT,
+  MAX_FILE_SIZE_TIER_2,
+  MAX_FILE_SIZE_TIER_3,
+  MAX_TOTAL_COMPONENTS,
+  MAX_V1_ROWS,
+} from "./constants";
 import { transformFileName } from "./files";
 import { sleep } from "./time";
 
@@ -1171,4 +1179,17 @@ export const isDiscordAttachmentUrl = (url: string | URL): boolean => {
     ["media.discordapp.net", "cdn.discordapp.com"].includes(u.hostname) &&
     u.pathname.startsWith("/attachments")
   );
+};
+
+export const calculateMaxFileSize = (
+  guild: Pick<APIGuild, "premium_tier" | "features">,
+): number => {
+  switch (guild.premium_tier) {
+    case GuildPremiumTier.Tier3:
+      return MAX_FILE_SIZE_TIER_3;
+    case GuildPremiumTier.Tier2:
+      return MAX_FILE_SIZE_TIER_2;
+    default:
+      return MAX_FILE_SIZE_DEFAULT;
+  }
 };

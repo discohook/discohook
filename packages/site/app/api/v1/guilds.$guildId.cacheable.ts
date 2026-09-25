@@ -1,5 +1,4 @@
 import { REST } from "@discordjs/rest";
-import { data as json } from "react-router";
 import {
   type APIThreadOnlyChannel,
   ChannelType,
@@ -7,6 +6,7 @@ import {
   Routes,
 } from "discord-api-types/v10";
 import { sql } from "drizzle-orm";
+import { data as json } from "react-router";
 import {
   authorizeRequest,
   getGuild,
@@ -19,7 +19,11 @@ import {
   type ResolvableAPIRole,
   tagToResolvableTag,
 } from "~/util/cache/CacheManager";
-import { injectErrorContext, isDiscordError } from "~/util/discord";
+import {
+  calculateMaxFileSize,
+  injectErrorContext,
+  isDiscordError,
+} from "~/util/discord";
 import type { LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseParams } from "~/util/zod";
 import { getChannelIconType } from "./channels.$channelId";
@@ -151,6 +155,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         animated: emoji.animated ? emoji.animated : undefined,
         available: !emoji.available ? emoji.available : undefined,
       })) satisfies ResolvableAPIEmoji[] as ResolvableAPIEmoji[],
+      attachment_size_limit: calculateMaxFileSize(guild),
     }),
   );
 };

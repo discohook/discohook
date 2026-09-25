@@ -119,3 +119,13 @@ export const MAX_ACTION_ROW_WIDTH = 5;
 export const MAX_GALLERY_ITEMS = 10;
 export const MAX_TOTAL_COMPONENTS = 40;
 export const MAX_TOTAL_COMPONENTS_CHARACTERS = 4000;
+
+// Attachments
+// as of september 3 2026
+// https://docs.discord.com/developers/change-log#default-file-upload-limit-increase
+export const MAX_FILE_SIZE_DEFAULT = 20 * 1024 * 1024;
+// export const MAX_FILE_SIZE_TIER_1 = MAX_FILE_SIZE_DEFAULT;
+export const MAX_FILE_SIZE_TIER_2 = 50 * 1024 * 1024;
+export const MAX_FILE_SIZE_TIER_3 = 100 * 1024 * 1024;
+// doesn't properly exist yet
+// export const MAX_FILE_SIZE_PURCHASED = 250 * 1024 * 1024;
