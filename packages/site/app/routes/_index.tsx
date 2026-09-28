@@ -253,9 +253,9 @@ const SpainBlockageWarning = ({
   updateSettings: (data: Partial<Settings>) => void;
 }) => (
   <InfoBox open severity="yellow">
-      🇪🇸 Parece que te encuentras en España. Ten en cuenta que, durante los
-      partidos de La Liga, tu proveedor de servicios de Internet podría bloquear
-      esta página web y otros millones que dependen de Cloudflare.
+    🇪🇸 Parece que te encuentras en España. Ten en cuenta que, durante los
+    partidos de La Liga, tu proveedor de servicios de Internet podría bloquear
+    esta página web y otros millones que dependen de Cloudflare.
     <div className="mt-0.5">
       <Link
         to="https://x.com/eastdakota/status/1924969551478804543"
@@ -783,7 +783,7 @@ export default function Index() {
         // confusing
         guildId={
           Object.values(targets).find((t) => t.type === TargetType.Webhook)
-            ?.webhook.guild_id
+            ?.webhook.guild_id || undefined
         }
         isPremium={isPremium}
       />

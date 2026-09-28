@@ -180,6 +180,18 @@ export const MessageBackupsModal = (
         open={editingBackup}
         setOpen={setEditingBackup}
         backup={backup}
+        onSave={(updated) => {
+          if (backup) {
+            backup.name = updated.name;
+            backup.nextRunAt = updated.nextRunAt;
+            backup.previewImageUrl = updated.previewImageUrl;
+            backup.scheduled = updated.scheduled;
+            backup.updatedAt = updated.updatedAt;
+            // update state without re-fetching
+            setBackups([...(backups ?? [])]);
+          }
+          setEditingBackup(false);
+        }}
       />
       {error}
       {user ? (

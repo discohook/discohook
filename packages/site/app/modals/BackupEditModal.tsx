@@ -24,7 +24,7 @@ import { StringSelect } from "~/components/StringSelect";
 import { TextInput } from "~/components/TextInput";
 import type { LoadedBackup } from "~/routes/me.backups";
 import type { TFunction } from "~/types/i18next";
-import { useSafeFetcher } from "~/util/loader";
+import { type SerializeFrom, useSafeFetcher } from "~/util/loader";
 import {
   cronDaysOfMonth,
   cronDaysOfWeek,
@@ -41,6 +41,8 @@ const { fieldsToExpression, parseExpression } = cronParser;
 const isSameCalendarDay = (a: Moment, b: Moment) =>
   a.date() === b.date() && a.month() === b.month() && a.year() === b.year();
 
+type APIPatchBackupResult = SerializeFrom<typeof ApiBackupsIdAction>;
+
 const Inner = ({
   t,
   backup,
@@ -48,7 +50,7 @@ const Inner = ({
 }: {
   t: TFunction;
   backup: LoadedBackup;
-  onSave?: () => void;
+  onSave?: (backup: APIPatchBackupResult) => void;
 }) => {
   const [error, setError] = useError(t);
   const fetcher = useSafeFetcher<typeof ApiBackupsIdAction>({
@@ -143,7 +145,7 @@ const Inner = ({
           action: apiUrl(BRoutes.backups(backup.id)),
           method: "PATCH",
         });
-        if (onSave && updated) onSave();
+        if (onSave && updated) onSave(updated);
       }}
     >
       {error}
@@ -434,7 +436,10 @@ const Inner = ({
 };
 
 export const BackupEditModal = (
-  props: ModalProps & { backup?: LoadedBackup; onSave?: () => void },
+  props: ModalProps & {
+    backup?: LoadedBackup;
+    onSave?: (backup: APIPatchBackupResult) => void;
+  },
 ) => {
   const { t } = useTranslation();
   const { backup } = props;
