@@ -237,7 +237,7 @@ export default () => {
                     onClick={(e) => {
                       const callback = () =>
                         submit(
-                          { ids: JSON.stringify([link.id]) },
+                          { ids: JSON.stringify([String(link.id)]) },
                           { method: "DELETE", replace: true },
                         );
 
