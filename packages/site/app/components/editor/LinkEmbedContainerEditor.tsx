@@ -1,6 +1,6 @@
 import { ComponentType } from "discord-api-types/v10";
+import type React from "react";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import type z from "zod/v3";
 import {
   ComponentEditForm,
@@ -10,8 +10,10 @@ import { Modal, type ModalProps } from "~/modals/Modal";
 import type { TFunction } from "~/types/i18next";
 import type {
   LinkQueryData,
+  QueryData,
   ZodLinkEmbedContainerComponent,
 } from "~/types/QueryData";
+import { randomString } from "~/util/text";
 import { useError } from "../Error";
 import { ContainerEditor } from "./ContainerEditor";
 
@@ -21,7 +23,7 @@ const DEFAULT_CONTAINER: z.infer<typeof ZodLinkEmbedContainerComponent> = {
 };
 
 // fork of ComponentEditModal with less complicated needs
-const LinkButtonEditModal = ({
+export const LinkButtonEditModal = ({
   t,
   component,
   setComponent,
@@ -52,43 +54,50 @@ export const LinkEmbedContainerEditor: React.FC<{
   data: LinkQueryData;
   setData: React.Dispatch<React.SetStateAction<LinkQueryData>>;
   open?: boolean;
-}> = ({ data, setData, open: defaultOpen }) => {
-  const { t } = useTranslation();
-  const [editingComponent, setEditingComponent] =
-    useState<EditingComponentData>();
-  const container = data.embed.data.components?.[0] ?? DEFAULT_CONTAINER;
-  const message = { data: { components: [container] } };
+  setEditingComponent: React.Dispatch<
+    React.SetStateAction<EditingComponentData | undefined>
+  >;
+}> = ({ data, setData, open: defaultOpen, setEditingComponent }) => {
+  const sourceContainer = data.embed.data.components?.[0];
+  // emulate real querydata to satisfy ContainerEditor's expected behavior
+  // this seems silly but it makes things much easier
+  const [queryData, setQueryData] = useState<QueryData>({
+    backup_id: data.backup_id,
+    messages: [
+      {
+        _id: randomString(10),
+        data: { components: [sourceContainer ?? DEFAULT_CONTAINER] },
+      },
+    ],
+  });
 
   return (
-    <div>
-      <LinkButtonEditModal
-        t={t}
-        open={!!editingComponent}
-        setOpen={() => setEditingComponent(undefined)}
-        {...editingComponent}
-      />
-      <ContainerEditor
-        open={defaultOpen}
-        message={message}
-        component={container}
-        data={{ messages: [message] }}
-        index={0}
-        setData={(newData) => {
-          const newContainer = newData.messages[0]?.data?.components?.[0];
-          if (newContainer?.type === ComponentType.Container) {
-            data.embed.data.components = [
-              newContainer as typeof DEFAULT_CONTAINER,
-            ];
-            setData({ ...data });
-          }
-        }}
-        interactiveComponents={false}
-        setEditingComponent={setEditingComponent}
-        componentFoundBackupsHook={[{}, () => {}]}
-        parent={undefined}
-        cache={undefined}
-        files={[]}
-      />
-    </div>
+    <ContainerEditor
+      open={defaultOpen}
+      message={queryData.messages[0]}
+      component={sourceContainer ?? DEFAULT_CONTAINER}
+      data={queryData}
+      index={0}
+      setData={(newData) => {
+        const newMessage = newData.messages[0];
+        const newContainer = newMessage?.data.components?.[0];
+        if (newContainer?.type === ComponentType.Container) {
+          setQueryData({
+            ...queryData,
+            messages: [{ ...newMessage, data: { components: [newContainer] } }],
+          });
+          data.embed.data.components = [
+            newContainer as typeof DEFAULT_CONTAINER,
+          ];
+          setData({ ...data });
+        }
+      }}
+      interactiveComponents={false}
+      setEditingComponent={setEditingComponent}
+      componentFoundBackupsHook={[{}, () => {}]}
+      parent={undefined}
+      cache={undefined}
+      files={[]}
+    />
   );
 };

@@ -10,7 +10,10 @@ import { twJoin, twMerge } from "tailwind-merge";
 import type { SafeParseReturnType, z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
-import { LinkEmbedContainerEditor } from "~/components/editor/LinkEmbedContainerEditor";
+import {
+  LinkButtonEditModal,
+  LinkEmbedContainerEditor,
+} from "~/components/editor/LinkEmbedContainerEditor";
 import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
@@ -20,6 +23,7 @@ import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { TextInput } from "~/components/TextInput";
+import { EditingComponentData } from "~/modals/ComponentEditModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";
@@ -257,6 +261,8 @@ export default () => {
   const [imageModalData, setImageModalData] = useState<ImageModalProps>();
   // const [sharing, setSharing] = useState(dm === "share-create");
   const [showHistory, setShowHistory] = useState(dm === "history");
+  const [editingComponent, setEditingComponent] =
+    useState<EditingComponentData>();
 
   const [tab, setTab] = useState<"editor" | "preview">("editor");
 
@@ -272,6 +278,12 @@ export default () => {
       <ImageModal
         clear={() => setImageModalData(undefined)}
         {...imageModalData}
+      />
+      <LinkButtonEditModal
+        t={t}
+        open={!!editingComponent}
+        setOpen={() => setEditingComponent(undefined)}
+        {...editingComponent}
       />
       {confirm}
       <Header user={user} setShowHistoryModal={setShowHistory} />
@@ -561,7 +573,12 @@ export default () => {
           />
           <div className="mt-1">
             {data.embed.data.strategy === LinkEmbedStrategy.Components ? (
-              <LinkEmbedContainerEditor data={data} setData={setData} open />
+              <LinkEmbedContainerEditor
+                data={data}
+                setData={setData}
+                open
+                setEditingComponent={setEditingComponent}
+              />
             ) : (
               <LinkEmbedEditor
                 embed={data.embed}
