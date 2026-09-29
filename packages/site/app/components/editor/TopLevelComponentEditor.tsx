@@ -220,6 +220,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   errors,
   drag,
   groupNestLevel = 1,
+  actionsBar,
 }: {
   t: TFunction;
   message: QueryData["messages"][number];
@@ -238,6 +239,9 @@ export const TopLevelComponentEditorContainerSummary = ({
   // Our solution is to create two (for now) arbitrary "levels" to use when
   // rendering this component.
   groupNestLevel?: 1 | 2;
+  actionsBar?: Partial<
+    Record<"up" | "down" | "copy" | "delete", (() => void) | null>
+  >;
 }) => {
   // const mid = getQdMessageId(message);
   const previewText = getComponentText(component);
@@ -344,66 +348,81 @@ export const TopLevelComponentEditorContainerSummary = ({
       <div className="ms-auto text-xl space-x-2.5 rtl:space-x-reverse shrink-0">
         <button
           type="button"
-          className={i === 0 ? "hidden" : ""}
-          onClick={() => {
-            siblings.splice(i, 1);
-            siblings.splice(i - 1, 0, component);
-            setData({ ...data });
-          }}
+          className={i === 0 || actionsBar?.up === null ? "hidden" : ""}
+          onClick={
+            actionsBar?.up ??
+            (() => {
+              siblings.splice(i, 1);
+              siblings.splice(i - 1, 0, component);
+              setData({ ...data });
+            })
+          }
         >
           <CoolIcon icon="Chevron_Up" />
         </button>
         <button
           type="button"
-          className={i === siblings.length - 1 ? "hidden" : ""}
-          onClick={() => {
-            siblings.splice(i, 1);
-            siblings.splice(i + 1, 0, component);
-            setData({ ...data });
-          }}
+          className={
+            i === siblings.length - 1 || actionsBar?.down === null
+              ? "hidden"
+              : ""
+          }
+          onClick={
+            actionsBar?.down ??
+            (() => {
+              siblings.splice(i, 1);
+              siblings.splice(i + 1, 0, component);
+              setData({ ...data });
+            })
+          }
         >
           <CoolIcon icon="Chevron_Down" />
         </button>
         <button
           type="button"
           className={
-            (
-              isComponentsV2(message.data)
-                ? allComponentsCount >= MAX_TOTAL_COMPONENTS
-                : siblings.length >= MAX_V1_ROWS
-            )
+            (isComponentsV2(message.data)
+              ? allComponentsCount >= MAX_TOTAL_COMPONENTS
+              : siblings.length >= MAX_V1_ROWS) || actionsBar?.copy === null
               ? "hidden"
               : ""
           }
-          onClick={() => {
-            const cloned = structuredClone(component);
-            // strip all custom IDs, which must be unique per message
-            if ("components" in cloned) {
-              for (const child of cloned.components) {
-                if ("components" in child) {
-                  for (const childChild of child.components) {
-                    if ("custom_id" in childChild) {
-                      childChild.custom_id = "";
+          onClick={
+            actionsBar?.copy ??
+            (() => {
+              const cloned = structuredClone(component);
+              // strip all custom IDs, which must be unique per message
+              if ("components" in cloned) {
+                for (const child of cloned.components) {
+                  if ("components" in child) {
+                    for (const childChild of child.components) {
+                      if ("custom_id" in childChild) {
+                        childChild.custom_id = "";
+                      }
                     }
+                  } else if ("custom_id" in child) {
+                    child.custom_id = "";
                   }
-                } else if ("custom_id" in child) {
-                  child.custom_id = "";
                 }
               }
-            }
 
-            siblings.splice(i + 1, 0, cloned);
-            setData({ ...data });
-          }}
+              siblings.splice(i + 1, 0, cloned);
+              setData({ ...data });
+            })
+          }
         >
           <CoolIcon icon="Copy" />
         </button>
         <button
           type="button"
-          onClick={() => {
-            siblings.splice(i, 1);
-            setData({ ...data });
-          }}
+          className={actionsBar?.delete === null ? "hidden" : ""}
+          onClick={
+            actionsBar?.delete ??
+            (() => {
+              siblings.splice(i, 1);
+              setData({ ...data });
+            })
+          }
         >
           <CoolIcon icon="Trash_Full" />
         </button>

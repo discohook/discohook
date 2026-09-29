@@ -125,6 +125,9 @@ export const ContainerEditor: React.FC<{
   setFiles?: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   drag?: DragManager;
   interactiveComponents?: boolean;
+  actionsBar?: Partial<
+    Record<"up" | "down" | "copy" | "delete", (() => void) | null>
+  >;
 }> = (props) => {
   const {
     message,
@@ -136,6 +139,7 @@ export const ContainerEditor: React.FC<{
     drag,
     open,
     interactiveComponents,
+    actionsBar,
   } = props;
 
   const { t } = useTranslation();
@@ -181,6 +185,7 @@ export const ContainerEditor: React.FC<{
         triggerClassName="p-2 ps-4"
         drag={drag}
         groupNestLevel={2}
+        actionsBar={actionsBar}
       />
       <Collapsible.Panel className={collapsibleStyles.editorPanel}>
         {errors.length > 0 && (

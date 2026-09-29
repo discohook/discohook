@@ -93,6 +93,7 @@ export const LinkEmbedContainerEditor: React.FC<{
         }
       }}
       interactiveComponents={false}
+      actionsBar={{ up: null, down: null, copy: null, delete: null }}
       setEditingComponent={setEditingComponent}
       componentFoundBackupsHook={[{}, () => {}]}
       parent={undefined}
