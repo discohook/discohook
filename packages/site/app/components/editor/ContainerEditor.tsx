@@ -16,7 +16,7 @@ import type { DragManager } from "~/util/drag";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
-import { CoolIconsGlyph } from "../icons/CoolIcon";
+import type { CoolIconsGlyph } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import { ActionRowEditor } from "./ActionRowEditor";

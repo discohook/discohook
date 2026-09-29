@@ -23,7 +23,7 @@ import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
 import { TextInput } from "~/components/TextInput";
-import { EditingComponentData } from "~/modals/ComponentEditModal";
+import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { useConfirmModal } from "~/modals/ConfirmModal";
 import { HistoryModal } from "~/modals/HistoryModal";
 import { ImageModal, type ImageModalProps } from "~/modals/ImageModal";

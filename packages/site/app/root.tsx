@@ -145,6 +145,7 @@ export default function App() {
   useChangeLanguage(locale);
 
   // load link preview data for custom containers. should only activate on /link/:code
+  // TODO: genericize for use with other non-user pages on the site
   const matches = useMatches();
   const linkCodeMatch = matches.find((m) => m.id === "routes/link_.$code");
   const linkCodeData = linkCodeMatch?.loaderData as
