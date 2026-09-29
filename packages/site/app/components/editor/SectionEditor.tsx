@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
+import type { SetDraftFile } from "~/modals/UploadFileModal";
 import type { DraftFile } from "~/routes/_index";
 import type { APIButtonComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
@@ -39,7 +40,7 @@ export const SectionEditor: React.FC<{
   >;
   componentFoundBackupsHook: ComponentFoundBackupHook;
   files: DraftFile[];
-  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  setFiles?: SetDraftFile;
   drag?: DragManager;
 }> = ({
   message,
@@ -176,7 +177,7 @@ export const SectionEditor: React.FC<{
             <button
               type="button"
               onClick={removeAccessory}
-              className="ltr:ml-auto rtl:mr-auto my-auto text-base"
+              className="ms-auto my-auto text-base"
             >
               <CoolIcon icon="Trash_Full" />
             </button>

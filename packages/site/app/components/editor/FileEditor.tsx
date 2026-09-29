@@ -5,6 +5,7 @@ import {
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
+import type { SetDraftFile } from "~/modals/UploadFileModal";
 import type { DraftFile } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import {
@@ -29,7 +30,7 @@ export const FileEditor: React.FC<{
   setData: React.Dispatch<QueryData>;
   open?: boolean;
   files: DraftFile[];
-  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  setFiles: SetDraftFile;
 }> = ({
   message,
   component,
@@ -159,6 +160,36 @@ export const FileEditor: React.FC<{
             }}
           />
         ) : null}
+      </div>
+    </TopLevelComponentEditorContainer>
+  );
+};
+
+export const FileEditorDud: React.FC<{
+  message: QueryData["messages"][number];
+  component: APIFileComponent;
+  parent: APIContainerComponent | undefined;
+  index: number;
+  data: QueryData;
+  setData: React.Dispatch<QueryData>;
+  open?: boolean;
+  files: DraftFile[];
+}> = ({ message, component, parent, index: i, data, setData, open, files }) => {
+  const { t } = useTranslation();
+  return (
+    <TopLevelComponentEditorContainer
+      t={t}
+      message={message}
+      component={component}
+      parent={parent}
+      index={i}
+      data={data}
+      setData={setData}
+      open={open}
+      files={files}
+    >
+      <div className="space-y-2">
+        <p>The file component cannot be used in this context.</p>
       </div>
     </TopLevelComponentEditorContainer>
   );

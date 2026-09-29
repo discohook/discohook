@@ -109,6 +109,7 @@ export const ActionRowEditor: React.FC<{
   drag?: DragManager;
   cache?: CacheManager;
   open?: boolean;
+  interactiveComponents?: boolean;
 }> = ({
   message,
   component: row,
@@ -121,6 +122,7 @@ export const ActionRowEditor: React.FC<{
   drag,
   // cache,
   open,
+  interactiveComponents = true,
 }) => {
   const { t } = useTranslation();
   const mid = getQdMessageId(message);
@@ -181,43 +183,53 @@ export const ActionRowEditor: React.FC<{
       </div>
       <ButtonSelect<ComponentType | "linkButton">
         name="component-type"
-        options={[
-          {
-            label: t("component.2"),
-            value: ComponentType.Button,
-            disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
-          },
-          {
-            label: t("linkButton"),
-            value: "linkButton",
-            disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
-          },
-          {
-            label: t("component.3"),
-            value: ComponentType.StringSelect,
-            disabled: getRowWidth(row) > 0,
-          },
-          {
-            label: t("component.5"),
-            value: ComponentType.UserSelect,
-            disabled: getRowWidth(row) > 0,
-          },
-          {
-            label: t("component.6"),
-            value: ComponentType.RoleSelect,
-            disabled: getRowWidth(row) > 0,
-          },
-          {
-            label: t("component.7"),
-            value: ComponentType.MentionableSelect,
-            disabled: getRowWidth(row) > 0,
-          },
-          {
-            label: t("component.8"),
-            value: ComponentType.ChannelSelect,
-            disabled: getRowWidth(row) > 0,
-          },
-        ]}
+        options={
+          interactiveComponents
+            ? [
+                {
+                  label: t("component.2"),
+                  value: ComponentType.Button,
+                  disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
+                },
+                {
+                  label: t("linkButton"),
+                  value: "linkButton",
+                  disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
+                },
+                {
+                  label: t("component.3"),
+                  value: ComponentType.StringSelect,
+                  disabled: getRowWidth(row) > 0,
+                },
+                {
+                  label: t("component.5"),
+                  value: ComponentType.UserSelect,
+                  disabled: getRowWidth(row) > 0,
+                },
+                {
+                  label: t("component.6"),
+                  value: ComponentType.RoleSelect,
+                  disabled: getRowWidth(row) > 0,
+                },
+                {
+                  label: t("component.7"),
+                  value: ComponentType.MentionableSelect,
+                  disabled: getRowWidth(row) > 0,
+                },
+                {
+                  label: t("component.8"),
+                  value: ComponentType.ChannelSelect,
+                  disabled: getRowWidth(row) > 0,
+                },
+              ]
+            : [
+                {
+                  label: t("linkButton"),
+                  value: "linkButton",
+                  disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
+                },
+              ]
+        }
         disabled={getRowWidth(row) >= MAX_ACTION_ROW_WIDTH}
         onValueChange={async (type) => {
           let submitData:
@@ -261,7 +273,7 @@ export const ActionRowEditor: React.FC<{
             default:
               break;
           }
-          if (submitData) {
+          if (submitData && interactiveComponents) {
             const i =
               row.components.push({
                 ...submitData,
@@ -275,6 +287,9 @@ export const ActionRowEditor: React.FC<{
               row.components.splice(i, 1, component);
               // TODO: remove `_state` so user can edit unsaved component?
             }
+            setData({ ...data });
+          } else if (submitData) {
+            row.components.push(submitData);
             setData({ ...data });
           }
         }}

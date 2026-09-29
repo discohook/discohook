@@ -17,6 +17,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useMatches,
   useRouteError,
 } from "react-router";
 import { useChangeLanguage } from "remix-i18next/react";
@@ -29,6 +30,7 @@ import { codeStyle } from "./components/preview/Markdown";
 import { Message } from "./components/preview/Message.client";
 import getI18next from "./i18next.server";
 import { Cell } from "./routes/donate";
+import type { loader as linkCodeLoader } from "./routes/link_.$code";
 import styles from "./styles/app.css?url";
 import icons from "./styles/coolicons.css?url";
 import { isErrorData, type RESTErrorWithContext } from "./util/discord";
@@ -36,7 +38,25 @@ import {
   getZodErrorMessage,
   useSafeFetcher,
   type LoaderArgs,
+  type SerializeFrom,
 } from "./util/loader";
+
+// ensure weird user text doesn't break the inline script
+const lineSeparator = String.fromCharCode(0x2028);
+const paragraphSeparator = String.fromCharCode(0x2029);
+const SCRIPT_ESCAPE_LOOKUP: Record<string, string> = {
+  "&": "\\u0026",
+  ">": "\\u003e",
+  "<": "\\u003c",
+  [lineSeparator]: "\\u2028",
+  [paragraphSeparator]: "\\u2029",
+};
+const SCRIPT_ESCAPE_REGEX = new RegExp(
+  `[&><${lineSeparator}${paragraphSeparator}]`,
+  "g",
+);
+const escapeScriptJson = (jsonData: string) =>
+  jsonData.replace(SCRIPT_ESCAPE_REGEX, (match) => SCRIPT_ESCAPE_LOOKUP[match]);
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const locale = await getI18next(context).getLocale(request);
@@ -124,6 +144,16 @@ export default function App() {
   const { i18n } = useTranslation();
   useChangeLanguage(locale);
 
+  // load link preview data for custom containers. should only activate on /link/:code
+  const matches = useMatches();
+  const linkCodeMatch = matches.find((m) => m.id === "routes/link_.$code");
+  const linkCodeData = linkCodeMatch?.loaderData as
+    | SerializeFrom<typeof linkCodeLoader>
+    | undefined;
+  const componentEmbed = linkCodeData?.is_crawler
+    ? linkCodeData.data.data.components?.[0]
+    : undefined;
+
   return (
     <html lang={locale} className="dark" dir={i18n.dir()}>
       <head>
@@ -132,6 +162,19 @@ export default function App() {
         <Meta />
         <Links />
         <TailwindThemeScript />
+        {componentEmbed && (
+          <script
+            id="discord:component-embed"
+            type="application/json"
+            // escaped JSON. hopefully safe, and if not, only renders for discordbot anyway
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: ^
+            dangerouslySetInnerHTML={{
+              __html: escapeScriptJson(
+                JSON.stringify({ component: componentEmbed }),
+              ),
+            }}
+          />
+        )}
       </head>
       <body className="bg-white text-black dark:bg-primary-600 dark:text-primary-230 isolate">
         <ClientOnly fallback={<FullscreenThrobber />}>

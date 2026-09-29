@@ -29,7 +29,7 @@ export const FileOrUrlInput: React.FC<{
   message: QueryData["messages"][number];
   refreshData: () => void;
   files: DraftFile[];
-  setFiles: SetDraftFile;
+  setFiles?: SetDraftFile;
   /** Defaults to true */
   fileClearable?: boolean;
   className?: string;
@@ -143,7 +143,7 @@ export const FileOrUrlInput: React.FC<{
       <div
         className={twJoin(
           "w-full transition-[max-width]",
-          value ? "max-w-full" : "max-w-[50%]",
+          value || !setFiles ? "max-w-full" : "max-w-[50%]",
         )}
       >
         <TextInput
@@ -165,125 +165,133 @@ export const FileOrUrlInput: React.FC<{
           />
         ) : null}
       </div>
-      <div
-        className={twJoin(
-          "transition-all min-w-[6.75rem]",
-          value ? "max-w-[6.75rem]" : "max-w-[50%] w-full",
-        )}
-      >
-        <p className="text-sm font-medium cursor-default">{t("upload")}</p>
-        <div className="flex flex-row-reverse grid-cols-2 gap-1">
-          <PasteFileButton
-            t={t}
-            disabled={attachments.length >= MAX_FILES_PER_MESSAGE}
-            className="peer h-9 min-w-0 grow max-w-full px-4"
-            attachments={attachments}
-            getChildren={(state) => {
-              // normal size
-              if (state === "active_mac") return t("pasteCmd");
-              if (state === "active") return t("pasteCtrl");
-              // conditionally small
-              return value ? (
-                <CoolIcon icon="Archive" />
-              ) : (
-                <>
-                  <CoolIcon icon="Archive" className="lg:hidden" />
-                  <span className="hidden lg:block">{t("pasteFile")}</span>
-                </>
-              );
-            }}
-            onChange={async (list) => {
-              if (attachments.length >= MAX_FILES_PER_MESSAGE) return;
-
-              const file = list[0];
-              const newFile: DraftFile = {
-                id: randomString(15, true),
-                file,
-                url: URL.createObjectURL(file),
-              };
-              setFiles([...files, newFile]);
-
-              attachments.push(attachmentFromFile(newFile));
-              message.data.attachments = attachments;
-
-              onChange(`attachment://${transformFileName(file.name)}`);
-            }}
-          />
-          <input
-            id={`files-${id}`}
-            type="file"
-            hidden
-            onChange={async (e) => {
-              const handler = fileInputChangeHandler(
-                files,
-                setFiles,
-                attachments,
-                (newAttachments) => {
-                  message.data.attachments = newAttachments;
-                  refreshData();
-                },
-                allowedExtensions !== "*" ? allowedExtensions : undefined,
-              );
-              const draftFiles = await handler(e);
-              if (!draftFiles) return;
-
-              onChange(
-                `attachment://${transformFileName(draftFiles[0].file.name)}`,
-              );
-            }}
-            accept={
-              allowedExtensions !== "*"
-                ? allowedExtensions.join(",")
-                : undefined
-            }
-          />
-          <div className="flex gap-0 min-w-0 grow max-w-full">
-            <Button
-              className={twJoin(
-                "h-9 px-4 grow transition-all",
-                selectableAttachments.length !== 0
-                  ? "rounded-e-none border-e-0"
-                  : undefined,
-              )}
-              title={t("addFile")}
-              onClick={() => {
-                const input = document.querySelector<HTMLInputElement>(
-                  `input#files-${id}`,
+      {/*
+        Allow using this component for convenience but without actual file
+        upload support (e.g. link preview editor). In the future, we might
+        re-allow this but just in some kind of scheme where remote upload
+        is required.
+      */}
+      {setFiles ? (
+        <div
+          className={twJoin(
+            "transition-all min-w-[6.75rem]",
+            value ? "max-w-[6.75rem]" : "max-w-[50%] w-full",
+          )}
+        >
+          <p className="text-sm font-medium cursor-default">{t("upload")}</p>
+          <div className="flex flex-row-reverse grid-cols-2 gap-1">
+            <PasteFileButton
+              t={t}
+              disabled={attachments.length >= MAX_FILES_PER_MESSAGE}
+              className="peer h-9 min-w-0 grow max-w-full px-4"
+              attachments={attachments}
+              getChildren={(state) => {
+                // normal size
+                if (state === "active_mac") return t("pasteCmd");
+                if (state === "active") return t("pasteCtrl");
+                // conditionally small
+                return value ? (
+                  <CoolIcon icon="Archive" />
+                ) : (
+                  <>
+                    <CoolIcon icon="Archive" className="lg:hidden" />
+                    <span className="hidden lg:block">{t("pasteFile")}</span>
+                  </>
                 );
-                // Shouldn't happen
-                if (!input) return;
-                input.click();
               }}
-              disabled={files.length >= MAX_FILES_PER_MESSAGE}
-              discordstyle={ButtonStyle.Primary}
-            >
-              <CoolIcon
-                icon="File_Upload"
-                className={value ? "" : "lg:hidden"}
-              />
-              {value ? null : (
-                <span className="hidden lg:block">{t("addFile")}</span>
-              )}
-            </Button>
-            <ButtonSelect
-              className={twJoin(
-                "h-9 w-7 min-w-0 px-0 rounded-s-none",
-                selectableAttachments.length === 0 ? "hidden" : "undefined",
-              )}
-              iconClassName="ms-0"
-              options={selectableAttachments.map((attachment) => ({
-                value: attachment,
-                label: attachment.filename,
-              }))}
-              onValueChange={(attachment) => {
-                onChange(
-                  `attachment://${transformFileName(attachment.filename)}`,
-                );
+              onChange={async (list) => {
+                if (attachments.length >= MAX_FILES_PER_MESSAGE) return;
+
+                const file = list[0];
+                const newFile: DraftFile = {
+                  id: randomString(15, true),
+                  file,
+                  url: URL.createObjectURL(file),
+                };
+                setFiles([...files, newFile]);
+
+                attachments.push(attachmentFromFile(newFile));
+                message.data.attachments = attachments;
+
+                onChange(`attachment://${transformFileName(file.name)}`);
               }}
             />
+            <input
+              id={`files-${id}`}
+              type="file"
+              hidden
+              onChange={async (e) => {
+                const handler = fileInputChangeHandler(
+                  files,
+                  setFiles,
+                  attachments,
+                  (newAttachments) => {
+                    message.data.attachments = newAttachments;
+                    refreshData();
+                  },
+                  allowedExtensions !== "*" ? allowedExtensions : undefined,
+                );
+                const draftFiles = await handler(e);
+                if (!draftFiles) return;
+
+                onChange(
+                  `attachment://${transformFileName(draftFiles[0].file.name)}`,
+                );
+              }}
+              accept={
+                allowedExtensions !== "*"
+                  ? allowedExtensions.join(",")
+                  : undefined
+              }
+            />
+            <div className="flex gap-0 min-w-0 grow max-w-full">
+              <Button
+                className={twJoin(
+                  "h-9 px-4 grow transition-all",
+                  selectableAttachments.length !== 0
+                    ? "rounded-e-none border-e-0"
+                    : undefined,
+                )}
+                title={t("addFile")}
+                onClick={() => {
+                  const input = document.querySelector<HTMLInputElement>(
+                    `input#files-${id}`,
+                  );
+                  // Shouldn't happen
+                  if (!input) return;
+                  input.click();
+                }}
+                disabled={files.length >= MAX_FILES_PER_MESSAGE}
+                discordstyle={ButtonStyle.Primary}
+              >
+                <CoolIcon
+                  icon="File_Upload"
+                  className={value ? "" : "lg:hidden"}
+                />
+                {value ? null : (
+                  <span className="hidden lg:block">{t("addFile")}</span>
+                )}
+              </Button>
+              <ButtonSelect
+                className={twJoin(
+                  "h-9 w-7 min-w-0 px-0 rounded-s-none",
+                  selectableAttachments.length === 0 ? "hidden" : "undefined",
+                )}
+                iconClassName="ms-0"
+                options={selectableAttachments.map((attachment) => ({
+                  value: attachment,
+                  label: attachment.filename,
+                }))}
+                onValueChange={(attachment) => {
+                  onChange(
+                    `attachment://${transformFileName(attachment.filename)}`,
+                  );
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 };

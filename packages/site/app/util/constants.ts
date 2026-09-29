@@ -1,5 +1,9 @@
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import type { LinkQueryData, QueryData } from "~/types/QueryData";
+import {
+  LinkEmbedStrategy,
+  type LinkQueryData,
+  type QueryData,
+} from "~/types/QueryData";
 
 export const WEBHOOK_TOKEN_RE = /^[\w-]+$/;
 
@@ -93,13 +97,14 @@ export const INDEX_FAILURE_MESSAGE: QueryData["messages"][number] = {
 
 export const LINK_INDEX_EMBED: LinkQueryData["embed"] = {
   data: {
+    strategy: LinkEmbedStrategy.Link,
     provider: {
       name: "For Deluxe Eyes Only",
       url: "https://discohook.app/donate",
     },
     title: "Where am I?",
     description: [
-      "Welcome to the super special Discohook link embed editor! Deluxe members are able to leverage this page to create beautiful embeds that they can use anywhere on Discord. These embeds can even include videos!",
+      "Welcome to the super special Discohook link preview editor! Deluxe members are able to leverage this page to create beautiful embeds that they can use anywhere on Discord. These embeds can even include videos!",
       "",
       "To save your embed and get posting, type a name in the box on the left, then click Save. Copy your link with the Copy Link button.",
     ].join("\n"),

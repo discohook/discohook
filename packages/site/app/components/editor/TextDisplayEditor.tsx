@@ -26,6 +26,7 @@ export const TextDisplayEditor: React.FC<{
   cache?: CacheManager;
   drag?: DragManager;
   open?: boolean;
+  interactiveComponents?: boolean;
 }> = ({
   message,
   component,
@@ -36,6 +37,7 @@ export const TextDisplayEditor: React.FC<{
   cache,
   drag,
   open,
+  interactiveComponents = true,
 }) => {
   const { t } = useTranslation();
   const [error, setError] = useError(t);
@@ -73,7 +75,15 @@ export const TextDisplayEditor: React.FC<{
           <p className="text-sm font-medium cursor-default">{t("accessory")}</p>
           <ButtonSelect<"button" | "linkButton" | "thumbnail">
             options={[
-              { label: t("component.2"), icon: "Mouse", value: "button" },
+              ...(interactiveComponents
+                ? [
+                    {
+                      label: t("component.2"),
+                      icon: "Mouse",
+                      value: "button",
+                    } as const,
+                  ]
+                : []),
               {
                 label: t("linkButton"),
                 icon: "External_Link",
@@ -132,7 +142,10 @@ export const TextDisplayEditor: React.FC<{
               };
 
               if (accessory) {
-                if (accessory.type === ComponentType.Button) {
+                if (
+                  accessory.type === ComponentType.Button &&
+                  interactiveComponents
+                ) {
                   // loading indicator
                   setAccessory({ ...accessory, _state: "submitting" });
 

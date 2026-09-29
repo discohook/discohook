@@ -1283,7 +1283,7 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
   );
   const channels = cache
     ? webhookTargets
-        .map((w) => cache.channel.get(w.webhook.channel_id))
+        .map((w) => cache.channel.get(w.webhook.channel_id ?? ""))
         .filter((c): c is ResolvableAPIChannel => !!c)
     : [];
 
@@ -1820,7 +1820,7 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
   // );
   const channels = cache
     ? webhookTargets
-        .map((w) => cache.channel.get(w.webhook.channel_id))
+        .map((w) => cache.channel.get(w.webhook.channel_id ?? ""))
         .filter((c): c is ResolvableAPIChannel => !!c)
     : [];
 

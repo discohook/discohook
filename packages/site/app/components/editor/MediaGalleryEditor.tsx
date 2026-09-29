@@ -4,6 +4,7 @@ import {
   ButtonStyle,
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
+import type { SetDraftFile } from "~/modals/UploadFileModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
@@ -26,7 +27,7 @@ export const MediaGalleryEditor: React.FC<{
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   files: DraftFile[];
-  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  setFiles?: SetDraftFile;
   drag?: DragManager;
   cache?: CacheManager;
   open?: boolean;

@@ -10,10 +10,12 @@ import { twJoin, twMerge } from "tailwind-merge";
 import type { SafeParseReturnType, z } from "zod/v3";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
+import { LinkEmbedContainerEditor } from "~/components/editor/LinkEmbedContainerEditor";
 import { LinkEmbedEditor } from "~/components/editor/LinkEmbedEditor";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { InfoBox } from "~/components/InfoBox";
+import { OptionSlider } from "~/components/OptionSlider";
 import { Embed } from "~/components/preview/Embed";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
@@ -542,12 +544,33 @@ export default () => {
             </div>
           </div>
           */}
-          <LinkEmbedEditor
-            embed={data.embed}
-            data={data}
-            setData={setData}
-            open
+          <OptionSlider
+            value={
+              data.embed.data.strategy === LinkEmbedStrategy.Components
+                ? LinkEmbedStrategy.Components
+                : LinkEmbedStrategy.Link
+            }
+            onSelect={(val) => {
+              data.embed.data.strategy = val;
+              setData({ ...data });
+            }}
+            options={[
+              { id: LinkEmbedStrategy.Link, label: "Embed" },
+              { id: LinkEmbedStrategy.Components, label: "Container" },
+            ]}
           />
+          <div className="mt-1">
+            {data.embed.data.strategy === LinkEmbedStrategy.Components ? (
+              <LinkEmbedContainerEditor data={data} setData={setData} open />
+            ) : (
+              <LinkEmbedEditor
+                embed={data.embed}
+                data={data}
+                setData={setData}
+                open
+              />
+            )}
+          </div>
         </div>
         <div
           className={twJoin(
@@ -580,23 +603,30 @@ export default () => {
                     loc && backupInfo
                       ? linkEmbedUrl(backupInfo.code, linkOrigin)
                       : undefined,
-                  embeds: [
-                    linkEmbedToAPIEmbed(
-                      data.embed.data,
-                      backupInfo?.code,
-                      linkOrigin,
-                    ).embed,
-                    ...linkEmbedToAPIEmbed(
-                      data.embed.data,
-                      backupInfo?.code,
-                      linkOrigin,
-                    ).extraImages.map((image) => ({
-                      url: backupInfo
-                        ? linkEmbedUrl(backupInfo.code, linkOrigin)
-                        : "#",
-                      image,
-                    })),
-                  ],
+                  embeds:
+                    data.embed.data.strategy === LinkEmbedStrategy.Components
+                      ? undefined
+                      : [
+                          linkEmbedToAPIEmbed(
+                            data.embed.data,
+                            backupInfo?.code,
+                            linkOrigin,
+                          ).embed,
+                          ...linkEmbedToAPIEmbed(
+                            data.embed.data,
+                            backupInfo?.code,
+                            linkOrigin,
+                          ).extraImages.map((image) => ({
+                            url: backupInfo
+                              ? linkEmbedUrl(backupInfo.code, linkOrigin)
+                              : "#",
+                            image,
+                          })),
+                        ],
+                  components:
+                    data.embed.data.strategy === LinkEmbedStrategy.Components
+                      ? data.embed.data.components
+                      : undefined,
                 }}
                 messageDisplay={settings.messageDisplay}
                 compactAvatars={settings.compactAvatars}

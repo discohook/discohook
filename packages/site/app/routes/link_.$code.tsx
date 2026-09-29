@@ -1,4 +1,4 @@
-import { ButtonStyle } from "discord-api-types/v10";
+import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import {
   type MetaDescriptor,
   type MetaFunction,
@@ -11,6 +11,7 @@ import type { ZodOEmbedData } from "~/api/v1/oembed";
 import { Button } from "~/components/Button";
 import { decimalToHex } from "~/components/editor/ColorPicker";
 import { getEmbedText } from "~/components/editor/LinkEmbedEditor";
+import { PreviewContainer } from "~/components/preview/Container";
 import { Embed } from "~/components/preview/Embed";
 import {
   getVimeoVideoParameters,
@@ -45,11 +46,11 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   // for the entire URL? I've never understood this
   const origin = new URL(request.url).origin;
 
+  const isDiscordbot =
+    request.headers.get("User-Agent")?.includes("Discordbot") ?? false;
+
   const data: LinkQueryData = linkBackup.data;
-  if (
-    data.embed.redirect_url &&
-    !request.headers.get("User-Agent")?.includes("Discordbot")
-  ) {
+  if (data.embed.redirect_url && !isDiscordbot) {
     return redirect(data.embed.redirect_url);
   }
   return {
@@ -60,6 +61,10 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
         : undefined,
     origin,
     code,
+    // I decided to only render the <script/> when the UA is a crawler because
+    // I was afraid there might be some clever script injection possible, so I
+    // wanted to avoid that
+    is_crawler: isDiscordbot,
   };
 };
 
@@ -225,7 +230,15 @@ export default function LinkCodePage() {
   return (
     <div className="flex h-screen">
       <div className="max-w-4xl m-auto p-4 text-lg">
-        <Embed {...linkEmbedToAPIEmbed(data.data)} />
+        {data.data.strategy === LinkEmbedStrategy.Components &&
+        data.data.components?.[0].type === ComponentType.Container ? (
+          <PreviewContainer
+            component={data.data.components[0]}
+            cache={undefined}
+          />
+        ) : (
+          <Embed {...linkEmbedToAPIEmbed(data.data)} />
+        )}
         <Button
           className="mt-1"
           discordstyle={ButtonStyle.Secondary}

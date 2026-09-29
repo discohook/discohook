@@ -5977,8 +5977,8 @@ cron-parser@discohook/cron-parser:
     c8: "npm:^8.0.0"
     chai: "npm:^4.3.7"
     dedent-js: "npm:^1.0.1"
-    discord-api-types: "npm:^0.38.32"
-    discord-bitflag: "npm:^1.0.2"
+    discord-api-types: "npm:^0.38.55"
+    discord-bitflag: "npm:^1.0.3"
     discord-verify: "npm:^1.2.0"
     dotenv: "npm:^16.0.3"
     i18next: "npm:^23.11.5"
@@ -6107,15 +6107,6 @@ cron-parser@discohook/cron-parser:
   version: 0.38.55
   resolution: "discord-api-types@npm:0.38.55"
   checksum: 10c0/a3e1e1e3f76da4087e9e4abceab943d249d6dd681c60798ff2b38df812b41af00cd86e9aa10d3e2bd2cb558e3d417ac470b3536088bb9ecb07030d9dfbb342d3
-  languageName: node
-  linkType: hard
-
-"discord-bitflag@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "discord-bitflag@npm:1.0.2"
-  dependencies:
-    bitflag-js: "npm:^1.0.0"
-  checksum: 10c0/d66cd9d35f420344d9e1f15e573849bb26599d59b85e71f50d40ec8bdb2060b410064e1f537b97442121ba547fbd01710639135b403b67da8ee3906f73589ee0
   languageName: node
   linkType: hard
 
@@ -11926,7 +11917,7 @@ remix-auth-discord@discohook/remix-auth-discord:
 
 "store@file:../store::locator=discohook-bot%40workspace%3Apackages%2Fbot":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=d4fa22&locator=discohook-bot%40workspace%3Apackages%2Fbot"
+  resolution: "store@file:../store#../store::hash=9463dd&locator=discohook-bot%40workspace%3Apackages%2Fbot"
   dependencies:
     discord-api-types: "npm:^0.38.32"
     discord-snowflake: "npm:^2.0.0"
@@ -11936,7 +11927,7 @@ remix-auth-discord@discohook/remix-auth-discord:
     tif-snowflake: discohook/snowflake
     zod: "npm:^4.1.5"
     zodix: "npm:@coji/zodix@^0.5.0"
-  checksum: 10c0/0fb317629890ed4c3ac2987fe242f00f66c38bedf24841b2a04f3d6d3ffe48672d22d69dd5ad31050465d5e78e089fa508f43ca5e81fceb2feaf23b80e18cc2c
+  checksum: 10c0/e10622509e8b70182fe8a754a9f8526da852bbffc4c59e9ee91e59d4fdc98e16fcb964493dffe1cbd40413f67f65af632b053ce25ebfe1459b7e2d7c77082049
   languageName: node
   linkType: hard
 

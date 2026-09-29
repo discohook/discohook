@@ -1,3 +1,10 @@
+import {
+  type APIComponentInActionRow,
+  type APIContainerComponent,
+  type APISectionAccessoryComponent,
+  ButtonStyle,
+  ComponentType,
+} from "discord-api-types/v10";
 import { z } from "zod/v3";
 import type { APIEmbed, QueryData } from "../types/backups.js";
 import { randomString } from "../util/text.js";
@@ -85,9 +92,79 @@ export const ZodQueryDataMessage = z.object({
 
 export const ZodLinkQueryDataVersion = z.literal(1);
 
+export const LinkEmbedComponentType = z.union([
+  z.literal(ComponentType.ActionRow), // link buttons only
+  z.literal(ComponentType.Button), // link buttons only
+  z.literal(ComponentType.Section),
+  z.literal(ComponentType.TextDisplay),
+  z.literal(ComponentType.Thumbnail),
+  z.literal(ComponentType.MediaGallery),
+  z.literal(ComponentType.Separator),
+]);
+
+export type LinkEmbedComponentType = z.infer<typeof LinkEmbedComponentType>;
+
+export const ZodLinkEmbedContainerComponent = z.object({
+  type: z.literal(ComponentType.Container),
+  accent_color: z.number().int().nullable().optional(),
+  spoiler: z.boolean().optional(),
+  components: z
+    .object({
+      id: z.number().optional(),
+      type: z
+        .number()
+        .int()
+        // we're using refine instead of a union because otherwise the type
+        // guard for Container gets mad and i don't want to override it
+        .refine(
+          (type) =>
+            [
+              ComponentType.ActionRow, // link buttons only
+              ComponentType.Button, // link buttons only
+              ComponentType.Section,
+              ComponentType.TextDisplay,
+              ComponentType.Thumbnail,
+              ComponentType.MediaGallery,
+              ComponentType.Separator,
+            ].includes(type),
+          "Must be type ActionRow, Button, Section, TextDisplay, Thumbnail, MediaGallery, or Separator",
+        ),
+    })
+    .passthrough()
+    .refine((child) => {
+      switch (child.type) {
+        case ComponentType.Button:
+          return child.style === ButtonStyle.Link;
+        case ComponentType.ActionRow:
+          for (const componentChild of (child.components ??
+            []) as APIComponentInActionRow[]) {
+            if (
+              componentChild.type !== ComponentType.Button ||
+              componentChild.style !== ButtonStyle.Link
+            ) {
+              return false;
+            }
+          }
+          break;
+        case ComponentType.Section: {
+          const accessory = child.accessory as APISectionAccessoryComponent;
+          return (
+            accessory.type !== ComponentType.Button ||
+            accessory.style === ButtonStyle.Link
+          );
+        }
+        default:
+          break;
+      }
+      return true;
+    }, "Interactive components cannot be used in link previews")
+    .array(),
+}) satisfies z.ZodType<APIContainerComponent>;
+
 export enum LinkEmbedStrategy {
   Link = "link",
   Mastodon = "mastodon",
+  Components = "components",
 }
 
 export const ZodLinkEmbedStrategy = z.nativeEnum(LinkEmbedStrategy);
@@ -120,13 +197,15 @@ export const ZodLinkEmbed = z.object({
   large_images: z.boolean().optional(),
   video: z
     .object({
-      /** Direct video file or YouTube video */
+      /** Direct video file or supported iframe src */
       url: z.string(),
       height: z.number().optional(),
       width: z.number().optional(),
     })
     .optional(),
   color: z.number().optional(),
+  // only strategy:components
+  components: ZodLinkEmbedContainerComponent.array().length(1).optional(),
 }) satisfies z.ZodType<APIEmbed>;
 
 export const ZodLinkQueryData = z.object({

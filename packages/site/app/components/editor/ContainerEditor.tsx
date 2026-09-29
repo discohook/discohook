@@ -20,7 +20,7 @@ import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import { ActionRowEditor } from "./ActionRowEditor";
 import { decimalToHex } from "./ColorPicker";
 import { DragArea } from "./DragArea";
-import { FileEditor } from "./FileEditor";
+import { FileEditor, FileEditorDud } from "./FileEditor";
 import { MediaGalleryEditor } from "./MediaGalleryEditor";
 import { SectionEditor } from "./SectionEditor";
 import { SeparatorEditor } from "./SeparatorEditor";
@@ -38,11 +38,12 @@ export const AutoTopLevelComponentEditor = (
       React.SetStateAction<EditingComponentData | undefined>
     >;
     files: DraftFile[];
-    setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+    setFiles?: React.Dispatch<React.SetStateAction<DraftFile[]>>;
     componentFoundBackupsHook: ComponentFoundBackupHook;
     cache: CacheManager | undefined;
     drag?: DragManager;
     cdn?: string;
+    interactiveComponents?: boolean;
   },
 ) => {
   const { component, setEditingComponent, files, setFiles, cdn, ...rest } =
@@ -90,13 +91,15 @@ export const AutoTopLevelComponentEditor = (
     case ComponentType.Separator:
       return <SeparatorEditor {...rest} component={component} />;
     case ComponentType.File:
-      return (
+      return setFiles ? (
         <FileEditor
           {...rest}
           component={component}
           files={files}
           setFiles={setFiles}
         />
+      ) : (
+        <FileEditorDud {...rest} component={component} files={files} />
       );
     default:
       // always return an Element for type consistency
@@ -119,8 +122,9 @@ export const ContainerEditor: React.FC<{
   >;
   componentFoundBackupsHook: ComponentFoundBackupHook;
   files: DraftFile[];
-  setFiles: React.Dispatch<React.SetStateAction<DraftFile[]>>;
+  setFiles?: React.Dispatch<React.SetStateAction<DraftFile[]>>;
   drag?: DragManager;
+  interactiveComponents?: boolean;
 }> = (props) => {
   const {
     message,
@@ -131,6 +135,7 @@ export const ContainerEditor: React.FC<{
     setData,
     drag,
     open,
+    interactiveComponents,
   } = props;
 
   const { t } = useTranslation();
@@ -219,6 +224,7 @@ export const ContainerEditor: React.FC<{
                   parent={container}
                   index={ci}
                   component={child}
+                  interactiveComponents={interactiveComponents}
                 />
                 <DragArea
                   visible={drag?.isFocused(key) ?? false}
