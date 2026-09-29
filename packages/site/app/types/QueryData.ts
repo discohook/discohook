@@ -193,6 +193,16 @@ export const LinkEmbedComponentType = z.union([
   z.literal(ComponentType.Separator),
 ]);
 
+export const linkEmbedComponentTypes = [
+  ComponentType.ActionRow, // link buttons only
+  ComponentType.Button, // link buttons only
+  ComponentType.Section,
+  ComponentType.TextDisplay,
+  ComponentType.Thumbnail,
+  ComponentType.MediaGallery,
+  ComponentType.Separator,
+];
+
 export type LinkEmbedComponentType = z.infer<typeof LinkEmbedComponentType>;
 
 export const ZodLinkEmbedContainerComponent = z.object({
@@ -208,16 +218,7 @@ export const ZodLinkEmbedContainerComponent = z.object({
         // we're using refine instead of a union because otherwise the type
         // guard for Container gets mad and i don't want to override it
         .refine(
-          (type) =>
-            [
-              ComponentType.ActionRow, // link buttons only
-              ComponentType.Button, // link buttons only
-              ComponentType.Section,
-              ComponentType.TextDisplay,
-              ComponentType.Thumbnail,
-              ComponentType.MediaGallery,
-              ComponentType.Separator,
-            ].includes(type),
+          (type) => linkEmbedComponentTypes.includes(type),
           "Must be type ActionRow, Button, Section, TextDisplay, Thumbnail, MediaGallery, or Separator",
         ),
     })

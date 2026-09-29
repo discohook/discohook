@@ -3,6 +3,7 @@ import {
   type APIContainerComponent,
   ComponentType,
 } from "discord-api-types/v10";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
@@ -15,6 +16,7 @@ import type { DragManager } from "~/util/drag";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
+import { CoolIconsGlyph } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import { ActionRowEditor } from "./ActionRowEditor";
@@ -128,6 +130,7 @@ export const ContainerEditor: React.FC<{
   actionsBar?: Partial<
     Record<"up" | "down" | "copy" | "delete", (() => void) | null>
   >;
+  allowedChildrenTypes?: ComponentType[];
 }> = (props) => {
   const {
     message,
@@ -140,6 +143,7 @@ export const ContainerEditor: React.FC<{
     open,
     interactiveComponents,
     actionsBar,
+    allowedChildrenTypes,
   } = props;
 
   const { t } = useTranslation();
@@ -150,6 +154,48 @@ export const ContainerEditor: React.FC<{
     message.data.components
       ?.map((c) => 1 + ("components" in c ? c.components.length : 0))
       .reduce((a, b) => a + b, 0) ?? 0;
+
+  const addChildOptions = useMemo(() => {
+    const options: {
+      label: string;
+      icon: CoolIconsGlyph;
+      value: ComponentType;
+    }[] = [
+      {
+        label: t("content"),
+        icon: "Text",
+        value: ComponentType.TextDisplay,
+      },
+      {
+        label: t("component.12"),
+        icon: "Image_01",
+        value: ComponentType.MediaGallery,
+      },
+      {
+        label: t("file"),
+        icon: "File_Blank",
+        value: ComponentType.File,
+      },
+      {
+        label: t("component.14"),
+        icon: "Line_L",
+        value: ComponentType.Separator,
+      },
+      {
+        label: t("component.1"),
+        icon: "Rows",
+        value: ComponentType.ActionRow,
+      },
+    ];
+    const types = allowedChildrenTypes ?? [
+      ComponentType.TextDisplay,
+      ComponentType.MediaGallery,
+      ComponentType.File,
+      ComponentType.Separator,
+      ComponentType.ActionRow,
+    ];
+    return options.filter((o) => types.includes(o.value));
+  }, [allowedChildrenTypes, t]);
 
   return (
     <Collapsible.Root
@@ -252,34 +298,7 @@ export const ContainerEditor: React.FC<{
             <div>
               <ButtonSelect
                 disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
-                options={[
-                  {
-                    label: t("content"),
-                    icon: "Text",
-                    value: ComponentType.TextDisplay,
-                  },
-                  {
-                    label: t("component.12"),
-                    icon: "Image_01",
-                    value: ComponentType.MediaGallery,
-                  },
-                  {
-                    // Any single file
-                    label: t("file"),
-                    icon: "File_Blank",
-                    value: ComponentType.File,
-                  },
-                  {
-                    label: t("component.14"),
-                    icon: "Line_L",
-                    value: ComponentType.Separator,
-                  },
-                  {
-                    label: t("component.1"),
-                    icon: "Rows",
-                    value: ComponentType.ActionRow,
-                  },
-                ]}
+                options={addChildOptions}
                 onValueChange={(value) => {
                   switch (value) {
                     case ComponentType.TextDisplay: {

@@ -8,10 +8,11 @@ import {
 } from "~/modals/ComponentEditModal";
 import { Modal, type ModalProps } from "~/modals/Modal";
 import type { TFunction } from "~/types/i18next";
-import type {
-  LinkQueryData,
-  QueryData,
-  ZodLinkEmbedContainerComponent,
+import {
+  linkEmbedComponentTypes,
+  type LinkQueryData,
+  type QueryData,
+  type ZodLinkEmbedContainerComponent,
 } from "~/types/QueryData";
 import { randomString } from "~/util/text";
 import { useError } from "../Error";
@@ -92,13 +93,15 @@ export const LinkEmbedContainerEditor: React.FC<{
           setData({ ...data });
         }
       }}
-      interactiveComponents={false}
-      actionsBar={{ up: null, down: null, copy: null, delete: null }}
       setEditingComponent={setEditingComponent}
       componentFoundBackupsHook={[{}, () => {}]}
       parent={undefined}
       cache={undefined}
       files={[]}
+      // link preview editor options
+      interactiveComponents={false}
+      actionsBar={{ up: null, down: null, copy: null, delete: null }}
+      allowedChildrenTypes={linkEmbedComponentTypes}
     />
   );
 };
