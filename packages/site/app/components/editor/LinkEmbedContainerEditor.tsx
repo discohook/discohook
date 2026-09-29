@@ -1,6 +1,6 @@
 import { ComponentType } from "discord-api-types/v10";
 import type React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type z from "zod/v3";
 import {
   ComponentEditForm,
@@ -60,14 +60,17 @@ export const LinkEmbedContainerEditor: React.FC<{
   >;
 }> = ({ data, setData, open: defaultOpen, setEditingComponent }) => {
   const sourceContainer = data.embed.data.components?.[0];
+  const qdContainer = { ...(sourceContainer ?? DEFAULT_CONTAINER) };
+
+  const messageId = useMemo(() => randomString(10), []);
   // emulate real querydata to satisfy ContainerEditor's expected behavior
   // this seems silly but it makes things much easier
   const [queryData, setQueryData] = useState<QueryData>({
     backup_id: data.backup_id,
     messages: [
       {
-        _id: randomString(10),
-        data: { components: [sourceContainer ?? DEFAULT_CONTAINER] },
+        _id: messageId,
+        data: { components: [qdContainer] },
       },
     ],
   });
@@ -76,7 +79,15 @@ export const LinkEmbedContainerEditor: React.FC<{
     <ContainerEditor
       open={defaultOpen}
       message={queryData.messages[0]}
-      component={sourceContainer ?? DEFAULT_CONTAINER}
+      component={
+        // for identity stablity on first render, prefer a derivation of querydata.
+        // if we don't do this, the object present in message.data is not the same
+        // as the one we pass to `component`, causing the first edit to be ignored
+        // and the counter to show "0" initially.
+        (queryData.messages?.[0].data.components?.[0] ??
+          // this should always be present, but fallback to qdContainer for type safety
+          qdContainer) as typeof qdContainer
+      }
       data={queryData}
       index={0}
       setData={(newData) => {
@@ -85,7 +96,9 @@ export const LinkEmbedContainerEditor: React.FC<{
         if (newContainer?.type === ComponentType.Container) {
           setQueryData({
             ...queryData,
-            messages: [{ ...newMessage, data: { components: [newContainer] } }],
+            messages: [
+              { _id: messageId, data: { components: [newContainer] } },
+            ],
           });
           data.embed.data.components = [
             newContainer as typeof DEFAULT_CONTAINER,
