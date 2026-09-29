@@ -1,6 +1,6 @@
 # discohook/link
 
-This worker is hosted on `discohook.link` and is used for linking custom link embeds created by users.
+This worker is hosted on `discohook.link` and is used for linking custom link previews created by users.
 
 ## Development
 

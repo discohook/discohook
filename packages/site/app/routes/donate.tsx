@@ -1,7 +1,7 @@
-import type { MetaFunction } from "react-router";
-import { Link, useLoaderData } from "react-router";
 import type React from "react";
 import { useState } from "react";
+import type { MetaFunction } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { Header } from "~/components/Header";
 import { Twemoji } from "~/components/icons/Twemoji";
@@ -136,18 +136,18 @@ const features: Record<string, SimpleTextModalProps> = {
   //   ),
   // },
   "link-embeds": {
-    title: "Globally usable embeds (+ embedded videos)",
+    title: "Globally usable embeds, containers, and embedded videos",
     children: (
       <>
-        Why limit yourself to the functionality of webhook embeds? Deluxe
-        members can create custom embeds that can be posted anywhere on Discord,
-        even without access to a webhook. These embeds can even contain videos
-        and up to 4 images.
+        Deluxe members can create custom embeds and containers that can be
+        posted anywhere on Discord by pasting a link, even without access to a
+        webhook. Link embeds can contain videos and up to 4 images, while link
+        containers work very similarly to regular webhook containers.
         <br />
         <br />
         Head to the{" "}
         <Link to="/link" className={linkClassName}>
-          link embed editor
+          link preview editor
         </Link>{" "}
         to see what's possible, or{" "}
         <Link to="/guide/getting-started/link-embeds" className={linkClassName}>

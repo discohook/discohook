@@ -39,7 +39,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   });
 
   if (!linkBackup) {
-    throw jsonR({ message: "Unknown link embed code." }, 404);
+    throw jsonR({ message: "Unknown link preview code." }, 404);
   }
 
   // Why doesn't the `location` passed to `meta` include data
@@ -79,7 +79,7 @@ export const meta: MetaFunction = ({ data }) => {
     const strategy = embed.strategy ?? LinkEmbedStrategy.Link;
 
     const tags: MetaDescriptor[] = [
-      { title: `${getEmbedText(embed) || "Custom link embed"} - Discohook` },
+      { title: `${getEmbedText(embed) || "Custom link preview"} - Discohook` },
       {
         tagName: "link",
         rel: "canonical",

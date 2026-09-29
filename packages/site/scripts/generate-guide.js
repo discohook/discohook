@@ -15,14 +15,15 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
     if (dirent.isFile()) {
       if (!dirent.name.endsWith(".md")) continue;
 
-      const path = `${dirent.path}/${dirent.name}`;
+      const path = `${dirent.parentPath}/${dirent.name}`;
       const file = await readFile(path, {
         encoding: "utf8",
       });
       const data = matter(file).attributes;
 
       const key =
-        dirent.path.replace(root, "").replace(/^\//, "").trim() || "_index";
+        dirent.parentPath.replace(root, "").replace(/^\//, "").trim() ||
+        "_index";
       folders[key] = folders[key] ?? [];
       folders[key].push({ ...data, file: dirent.name.replace(/\.md$/, "") });
     }
@@ -50,14 +51,15 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
     if (dirent.isFile()) {
       if (!dirent.name.endsWith(".md")) continue;
 
-      const path = `${dirent.path}/${dirent.name}`;
+      const path = `${dirent.parentPath}/${dirent.name}`;
       const file = await readFile(path, {
         encoding: "utf8",
       });
       const data = matter(file).attributes;
 
       const key =
-        dirent.path.replace(root, "").replace(/^\//, "").trim() || "_index";
+        dirent.parentPath.replace(root, "").replace(/^\//, "").trim() ||
+        "_index";
       folders[key] = folders[key] ?? [];
       folders[key].push({ ...data, file: dirent.name.replace(/\.md$/, "") });
     }
