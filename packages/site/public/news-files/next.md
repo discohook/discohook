@@ -7,6 +7,8 @@ author: shay
 
 ## New
 
+- You can now edit the bot's per-server bio with the </profile:1> command (use Shift+Enter for multiple lines on desktop/web)
+  - You can still use the web portal as well, which provides a better preview experience
 - Added a new date picker which should be much less janky! Pick or type the date you want with ease.
 - File size is now shown in the popup menu for each attachment
 - <:pinkhook:1356993126513901599> **Deluxe:** The link preview editor can now create custom components-based containers which will show up when you paste links in chat! [Read more here](discohook://guide/getting-started/link-embeds)
@@ -21,3 +23,4 @@ author: shay
 ## Updates
 - Improved handling/passthrough of existing attachments while editing messages
 - Added a warning for Spanish users to explain [why](<https://techlapse.com/news/cloudflare-blocks-disrupt-internet-in-spain/>) the site may sometimes be inaccessible
+- Improved style & consistency of popup menus throughout the site ([#102](<https://github.com/discohook/discohook/pull/102>))
