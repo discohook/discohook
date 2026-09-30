@@ -608,22 +608,28 @@ const main = async () => {
         .setContexts(InteractionContextType.Guild)
         .setDefaultMemberPermissions(PermissionFlags.ManageNicknames)
         .setDescription("...")
-        .addSubcommand(
-          (o) =>
-            o
-              .setName("set")
-              .setDescription("...")
-              .addStringOption((o) =>
-                o.setName("name").setDescription("...").setMaxLength(32),
-              )
-              .addAttachmentOption((o) =>
-                o.setName("avatar").setDescription("..."),
-              )
-              .addAttachmentOption((o) =>
-                o.setName("banner").setDescription("..."),
-              ),
-          // Not sure about an interface for this yet
-          // .addStringOption((o) => o.setName("bio").setDescription("...")),
+        .addSubcommand((o) =>
+          o
+            .setName("set")
+            .setDescription("...")
+            .addStringOption((o) =>
+              o.setName("name").setDescription("...").setMaxLength(32),
+            )
+            .addAttachmentOption((o) =>
+              o
+                .setName("avatar")
+                // .addFileTypes("image") - not in stable yet
+                .setDescription("..."),
+            )
+            .addAttachmentOption((o) =>
+              o
+                .setName("banner")
+                // .addFileTypes("image") - not in stable yet
+                .setDescription("..."),
+            )
+            .addStringOption((o) =>
+              o.setName("bio").setDescription("...").setMaxLength(190),
+            ),
         )
         .addSubcommand((o) =>
           o
@@ -654,6 +660,13 @@ const main = async () => {
                       "profile.options.set.options.banner.name",
                     ),
                     value: "banner",
+                  },
+                  {
+                    name: getEnglish("profile.options.set.options.bio.name"),
+                    name_localizations: localize(
+                      "profile.options.set.options.bio.name",
+                    ),
+                    value: "bio",
                   },
                 ]),
             ),

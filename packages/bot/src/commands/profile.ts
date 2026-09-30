@@ -84,7 +84,7 @@ export const profileSetCallback: ChatInputAppCommandCallback<true> = async (
   const nickField = ctx.getStringOption("name")?.value?.trim() || undefined;
   const bannerField = ctx.getAttachmentOption("banner");
   const avatarField = ctx.getAttachmentOption("avatar");
-  // const bioField = ctx.getStringOption("bio")?.value;
+  const bioField = ctx.getStringOption("bio")?.value?.trim() || undefined;
 
   // as far as i know the other fields are not permission-restricted right now
   if (nickField && !ctx.appPermissons.has(PermissionFlagsBits.ChangeNickname)) {
@@ -95,7 +95,7 @@ export const profileSetCallback: ChatInputAppCommandCallback<true> = async (
     });
   }
 
-  if (!nickField && !bannerField && !avatarField) {
+  if (!nickField && !bannerField && !avatarField && !bioField) {
     let member: APIGuildMember;
     try {
       // empty PATCH to get own bio
@@ -137,7 +137,7 @@ export const profileSetCallback: ChatInputAppCommandCallback<true> = async (
   return [
     ctx.defer({ componentsV2: false, ephemeral: true }),
     async () => {
-      const body: ModifyCurrentMemberBody = { nick: nickField };
+      const body: ModifyCurrentMemberBody = { nick: nickField, bio: bioField };
 
       if (avatarField) {
         const avatar = await readAttachment(avatarField.url);
@@ -174,6 +174,7 @@ export const profileClearCallback: ChatInputAppCommandCallback<true> = async (
     | "name"
     | "avatar"
     | "banner"
+    | "bio"
     | undefined;
 
   return [

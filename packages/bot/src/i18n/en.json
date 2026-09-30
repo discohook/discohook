@@ -254,6 +254,10 @@
             "banner": {
               "name": "banner",
               "description": "The bot's banner"
+            },
+            "bio": {
+              "name": "bio",
+              "description": "The bot's bio. On desktop, use Shift + Enter for multiple lines"
             }
           }
         },

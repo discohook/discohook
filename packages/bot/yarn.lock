@@ -81,18 +81,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@discordjs/builders@npm:^1.13.0":
-  version: 1.13.0
-  resolution: "@discordjs/builders@npm:1.13.0"
+"@discordjs/builders@npm:^1.14.1":
+  version: 1.14.1
+  resolution: "@discordjs/builders@npm:1.14.1"
   dependencies:
-    "@discordjs/formatters": "npm:^0.6.1"
-    "@discordjs/util": "npm:^1.1.1"
+    "@discordjs/formatters": "npm:^0.6.2"
+    "@discordjs/util": "npm:^1.2.0"
     "@sapphire/shapeshift": "npm:^4.0.0"
-    discord-api-types: "npm:^0.38.31"
+    discord-api-types: "npm:^0.38.40"
     fast-deep-equal: "npm:^3.1.3"
     ts-mixer: "npm:^6.0.4"
     tslib: "npm:^2.6.3"
-  checksum: 10c0/e035e2f38db2021eec4338daa352b085e24210049a2149be77ae588b31fd8d324a8719c04dedd26af0f435effa82c24945d0d70cf8476ae90e024a5b4d80c8f7
+  checksum: 10c0/bcabcb1877778e189e5844179035996c253c79f866279b811086c218b26615efcbda451e561cd7320567f5311501572f61f7f5704ea39cdd9f9d31fa56909b88
   languageName: node
   linkType: hard
 
@@ -109,6 +109,15 @@ __metadata:
   dependencies:
     discord-api-types: "npm:^0.38.1"
   checksum: 10c0/463759a10be7af9c82862f17f611aa1c737aa8dbd31816c89e9ce14c79eef0f86f57a18c3a64e180c03f9a482aa790427a4c7584dc09e76482b328da012561c2
+  languageName: node
+  linkType: hard
+
+"@discordjs/formatters@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "@discordjs/formatters@npm:0.6.2"
+  dependencies:
+    discord-api-types: "npm:^0.38.33"
+  checksum: 10c0/42ffa6e1d4f825bfbd023e8a3bad488a0c93db53f2cfdc361aeccb917863b2411a1e2954653710f711e9f4be215d39dfd34f6e5329302ca78c759a8f03690901
   languageName: node
   linkType: hard
 
@@ -133,6 +142,15 @@ __metadata:
   version: 1.1.1
   resolution: "@discordjs/util@npm:1.1.1"
   checksum: 10c0/a374648aae0dd98345996f41891add0523388297a6f6b99c7a37c83de4d832d91a464195502126967fac0f071e5ecb80f776ee42a887fffa9c5c0f4612381b98
+  languageName: node
+  linkType: hard
+
+"@discordjs/util@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@discordjs/util@npm:1.2.0"
+  dependencies:
+    discord-api-types: "npm:^0.38.33"
+  checksum: 10c0/a58ee25a241beeb91a519f116fc89391b3a158a7e75dacdce0ffa915695b321ac2eb6ffe3ce49ce1093b0cbd7243033da86d450b9022c2faac668ca0a4d2efa0
   languageName: node
   linkType: hard
 
@@ -1222,7 +1240,7 @@ __metadata:
   resolution: "discohook-bot@workspace:."
   dependencies:
     "@cloudflare/workers-types": "npm:^4.20240405.0"
-    "@discordjs/builders": "npm:^1.13.0"
+    "@discordjs/builders": "npm:^1.14.1"
     "@discordjs/formatters": "npm:^0.6.1"
     "@discordjs/rest": "npm:^2.6.0"
     "@tsconfig/node18": "npm:^18.2.2"
@@ -1253,10 +1271,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"discord-api-types@npm:^0.38.16, discord-api-types@npm:^0.38.31, discord-api-types@npm:^0.38.32":
+"discord-api-types@npm:^0.38.16, discord-api-types@npm:^0.38.32":
   version: 0.38.33
   resolution: "discord-api-types@npm:0.38.33"
   checksum: 10c0/3a844d1d07ad88c1cb477d9aeb6719627f564f3ee0996ea8c6d2c21b8d2a53b2f9ee6e99884df4b2ec8483fa7a4d6edc2d7d4b0a104e8960f249a5954327158e
+  languageName: node
+  linkType: hard
+
+"discord-api-types@npm:^0.38.33, discord-api-types@npm:^0.38.40":
+  version: 0.38.56
+  resolution: "discord-api-types@npm:0.38.56"
+  checksum: 10c0/90e3ec1a94f86fb0a4db10ecd0f449b72d5454908e5bba54ef41bd51a77475d0117dd29906de32c537f56567a236413df432d04050cd32ad0a0f01abff034864
   languageName: node
   linkType: hard
 
@@ -2903,7 +2928,7 @@ __metadata:
 
 "store@file:../store::locator=discohook-bot%40workspace%3A.":
   version: 0.0.0
-  resolution: "store@file:../store#../store::hash=9463dd&locator=discohook-bot%40workspace%3A."
+  resolution: "store@file:../store#../store::hash=f2e6bf&locator=discohook-bot%40workspace%3A."
   dependencies:
     discord-api-types: "npm:^0.38.32"
     discord-snowflake: "npm:^2.0.0"
@@ -2913,7 +2938,7 @@ __metadata:
     tif-snowflake: discohook/snowflake
     zod: "npm:^4.1.5"
     zodix: "npm:@coji/zodix@^0.5.0"
-  checksum: 10c0/e10622509e8b70182fe8a754a9f8526da852bbffc4c59e9ee91e59d4fdc98e16fcb964493dffe1cbd40413f67f65af632b053ce25ebfe1459b7e2d7c77082049
+  checksum: 10c0/ba894a09bee7486e71c623281797c92dbb5bd9cc89c88956ce9d3814e7f4c6251045bcc4e27c0d931951a5fb9149fadbc97af42f0cd470b122e2f729c313f522
   languageName: node
   linkType: hard
 
