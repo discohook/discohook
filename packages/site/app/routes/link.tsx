@@ -35,6 +35,7 @@ import {
   type ZodLinkEmbed,
   ZodLinkQueryData,
 } from "~/types/QueryData";
+import { useCache } from "~/util/cache/CacheManager";
 import { LINK_INDEX_EMBED, LINK_INDEX_FAILURE_EMBED } from "~/util/constants";
 import type { LoaderArgs, SerializeFrom } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
@@ -51,7 +52,11 @@ import { safePushState } from "./_index";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
   const user = await getUser(request, context);
-  return { user, linkOrigin: context.env.LINK_ORIGIN };
+  return {
+    user,
+    linkOrigin: context.env.LINK_ORIGIN,
+    cdn: context.env.CDN_ORIGIN,
+  };
 };
 
 export const linkEmbedUrl = (code: string, linkOrigin?: string) => {
@@ -112,8 +117,9 @@ export interface LinkHistoryItem {
 
 export default () => {
   const { t } = useTranslation();
-  const { user, linkOrigin } = useLoaderData<typeof loader>();
+  const { user, linkOrigin, cdn } = useLoaderData<typeof loader>();
   const isPremium = user ? userIsPremium(user) : false;
+  const cache = useCache(!user);
 
   const [settings] = useLocalStorage();
   const [loc, setLoc] = useState<Location>();
@@ -578,6 +584,8 @@ export default () => {
                 setData={setData}
                 open
                 setEditingComponent={setEditingComponent}
+                cache={cache}
+                cdn={cdn}
               />
             ) : (
               <LinkEmbedEditor

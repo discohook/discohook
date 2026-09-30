@@ -1,4 +1,7 @@
-import { APIMediaGalleryComponent, ComponentType } from "discord-api-types/v10";
+import {
+  type APIMediaGalleryComponent,
+  ComponentType,
+} from "discord-api-types/v10";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,6 +18,7 @@ import {
   type QueryData,
   type ZodLinkEmbedContainerComponent,
 } from "~/types/QueryData";
+import type { CacheManager } from "~/util/cache/CacheManager";
 import { randomString } from "~/util/text";
 import { useError } from "../Error";
 import { InfoBox } from "../InfoBox";
@@ -63,7 +67,16 @@ export const LinkEmbedContainerEditor: React.FC<{
   setEditingComponent: React.Dispatch<
     React.SetStateAction<EditingComponentData | undefined>
   >;
-}> = ({ data, setData, open: defaultOpen, setEditingComponent }) => {
+  cache?: CacheManager;
+  cdn?: string;
+}> = ({
+  data,
+  setData,
+  open: defaultOpen,
+  setEditingComponent,
+  cache,
+  cdn,
+}) => {
   const { t } = useTranslation();
   const sourceContainer = data.embed.data.components?.[0];
   const qdContainer = { ...(sourceContainer ?? DEFAULT_CONTAINER) };
@@ -155,7 +168,8 @@ export const LinkEmbedContainerEditor: React.FC<{
         setEditingComponent={setEditingComponent}
         componentFoundBackupsHook={[{}, () => {}]}
         parent={undefined}
-        cache={undefined}
+        cache={cache}
+        cdn={cdn}
         files={[]}
         // link preview editor options
         interactiveComponents={false}
