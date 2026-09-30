@@ -46,8 +46,10 @@ export const Cell: React.FC<
   return (
     <div
       className={twJoin(
-        "table-cell text-center p-1 border border-border-normal dark:border-border-normal-dark",
-        premium ? "bg-sky-200 dark:bg-sky-800/30" : undefined,
+        "table-cell text-center p-1 border",
+        premium
+          ? "bg-brand-pink/20 border-brand-pink/30 dark:bg-brand-pink/10 dark:border-brand-pink/20"
+          : "border-border-normal dark:border-border-normal-dark",
         e.includes("tl") ? "rounded-ss-lg" : undefined,
         e.includes("tr") ? "rounded-se-lg" : undefined,
         e.includes("tl") || e.includes("t") || e.includes("tr")
