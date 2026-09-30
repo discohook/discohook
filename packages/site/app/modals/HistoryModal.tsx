@@ -1,11 +1,16 @@
 import type React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { PreviewContainer } from "~/components/preview/Container";
 import { Embed } from "~/components/preview/Embed";
 import { Message } from "~/components/preview/Message.client";
 import type { HistoryItem } from "~/routes/_index";
 import { linkEmbedToAPIEmbed, type LinkHistoryItem } from "~/routes/link";
-import type { LinkQueryData, QueryData } from "~/types/QueryData";
+import {
+  LinkEmbedStrategy,
+  type LinkQueryData,
+  type QueryData,
+} from "~/types/QueryData";
 import { useLocalStorage } from "~/util/localstorage";
 import { Modal, type ModalProps } from "./Modal";
 
@@ -65,14 +70,12 @@ export const HistoryModal = <
                     </summary>
                     <div className="flex w-full">
                       <div className="bg-white dark:bg-primary-600 border border-gray-300 dark:border-transparent shadow rounded p-2 grow">
-                        {item.data.messages.map((message, i) => (
+                        {item.data.messages.map((message, i, arr) => (
                           <Message
                             key={`history-${item.id}-message-${i}`}
                             message={message.data}
                             date={item.createdAt}
-                            previousMessageData={
-                              item.data.messages[i - 1]?.data
-                            }
+                            previousMessageData={arr[i - 1]?.data}
                             threadId={message.thread_id}
                             messageDisplay={settings.messageDisplay}
                             compactAvatars={settings.compactAvatars}
@@ -133,7 +136,18 @@ export const HistoryModal = <
                     </summary>
                     <div className="flex w-full">
                       <div className="bg-white dark:bg-primary-600 border border-gray-300 dark:border-transparent shadow rounded p-2 grow">
-                        <Embed {...linkEmbedToAPIEmbed(item.data.embed.data)} />
+                        {item.data.embed.data.strategy ===
+                          LinkEmbedStrategy.Components &&
+                        item.data.embed.data.components?.[0] ? (
+                          <PreviewContainer
+                            component={item.data.embed.data.components[0]}
+                            cache={undefined}
+                          />
+                        ) : (
+                          <Embed
+                            {...linkEmbedToAPIEmbed(item.data.embed.data)}
+                          />
+                        )}
                       </div>
                       <div className="space-y-1 ml-2 text-xl">
                         <button
