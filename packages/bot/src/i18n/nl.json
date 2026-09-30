@@ -236,7 +236,7 @@
                             }
                         }
                     },
-                    "name": "voeg toe"
+                    "name": "voeg-toe"
                 },
                 "view": {
                     "description": "Bekijk en beheer een trigger",
