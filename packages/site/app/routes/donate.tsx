@@ -48,22 +48,22 @@ export const Cell: React.FC<
       className={twJoin(
         "table-cell text-center p-1 border border-border-normal dark:border-border-normal-dark",
         premium ? "bg-sky-200 dark:bg-sky-800/30" : undefined,
-        e.includes("tl") ? "rounded-tl-lg" : undefined,
-        e.includes("tr") ? "rounded-tr-lg" : undefined,
+        e.includes("tl") ? "rounded-ss-lg" : undefined,
+        e.includes("tr") ? "rounded-se-lg" : undefined,
         e.includes("tl") || e.includes("t") || e.includes("tr")
           ? "border-t-2"
           : undefined,
         e.includes("tl") || e.includes("l") || e.includes("bl")
-          ? "border-l-2"
+          ? "border-s-2"
           : undefined,
         e.includes("tr") || e.includes("r") || e.includes("br")
-          ? "border-r-2"
+          ? "border-e-2"
           : undefined,
         e.includes("bl") || e.includes("b") || e.includes("br")
           ? "border-b-2"
           : undefined,
-        e.includes("bl") ? "rounded-bl-lg" : undefined,
-        e.includes("br") ? "rounded-br-lg" : undefined,
+        e.includes("bl") ? "rounded-es-lg" : undefined,
+        e.includes("br") ? "rounded-ee-lg" : undefined,
         className,
       )}
     >
