@@ -135,14 +135,14 @@ const features: Record<string, SimpleTextModalProps> = {
   //     </>
   //   ),
   // },
-  "link-embeds": {
+  "link-previews": {
     title: "Globally usable embeds, containers, and embedded videos",
     children: (
       <>
         Deluxe members can create custom embeds and containers that can be
         posted anywhere on Discord by pasting a link, even without access to a
         webhook. Link embeds can contain videos and up to 4 images, while link
-        containers work very similarly to regular webhook containers.
+        containers are similar to regular webhook containers.
         <br />
         <br />
         Head to the{" "}
@@ -264,9 +264,9 @@ export default function DonatePage() {
             <div className="table-row">
               <Cell
                 edges="bl"
-                onClick={() => setFeatProps(features["link-embeds"])}
+                onClick={() => setFeatProps(features["link-previews"])}
               >
-                Use-anywhere embeds (+ embedded videos)
+                Custom link previews
               </Cell>
               <Cell edges="b">-</Cell>
               <Cell edges="br" premium>

@@ -18,7 +18,7 @@ Visit the [link preview editor](discohook://link) to get started. You will see a
 - (Embed) Images: Up to four large images can be in a link embed, or one small thumbnail. The last 3 large images may not display on mobile devices.
 - (Embed) Video: You can embed a YouTube, Vimeo, or plain (e.g. mp4) video in your link embeds just by pasting the link. This cannot be used simultaneously with images.
 
-### Using Containers
+## Using Containers
 
 If you've used the components-based editor on the main Discohook page, this is much the same. The only limitations are:
 
