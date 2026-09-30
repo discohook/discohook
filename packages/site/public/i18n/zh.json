@@ -38,7 +38,9 @@
     "invalidWebhookUrl": "无效的 Webhook 链接。它们以 https://discord.com/api/webhooks/... 开头。",
     "createdAtBy": "由 {{username}} 于 {{ createdAt, MMM D, YYYY }} 创建",
     "someone": "某人",
-    "addTarget": { "1": "添加 Webhook" },
+    "addTarget": {
+        "1": "添加 Webhook"
+    },
     "editor": "编辑器",
     "preview": "预览",
     "channel": "频道",
