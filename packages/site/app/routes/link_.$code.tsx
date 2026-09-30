@@ -53,6 +53,11 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   if (data.embed.redirect_url && !isDiscordbot) {
     return redirect(data.embed.redirect_url);
   }
+  // remove superfluous data sent to client/root
+  if (data.embed.data.strategy !== LinkEmbedStrategy.Components) {
+    data.embed.data.components = undefined;
+  }
+
   return {
     data: data.embed,
     backup_id:
