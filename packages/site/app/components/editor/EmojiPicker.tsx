@@ -577,13 +577,26 @@ export const PopoutEmojiPicker: React.FC<{
   emojis?: APIMessageComponentEmoji[];
   isClearable?: boolean;
   cache?: CacheManager;
-}> = ({ emoji, setEmoji, emojis, cache }) => {
+  disabled?: boolean;
+}> = ({ emoji, setEmoji, emojis, cache, disabled }) => {
   const id = randomString(10);
   const [open, setOpen] = useState(false);
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger className="flex cursor-pointer marker:hidden marker-none">
+    <Popover.Root
+      open={disabled ? false : open}
+      onOpenChange={(nextOpen) => {
+        if (disabled) return;
+        setOpen(nextOpen);
+      }}
+    >
+      <Popover.Trigger
+        disabled={disabled}
+        className={twJoin(
+          "flex marker:hidden marker-none",
+          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+        )}
+      >
         <div className="h-9 w-9 rounded-lg flex bg-gray-300 dark:bg-[#292b2f]">
           <div className="m-auto">
             {emoji ? (

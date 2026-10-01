@@ -86,6 +86,7 @@ import {
   getEmbedLength,
 } from "./EmbedEditor";
 import { PasteFileButton } from "./PasteFileButton";
+import { createEmptyPoll, PollEditor } from "./PollEditor";
 
 const FilePreview = ({
   file,
@@ -1526,6 +1527,15 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             setFiles={setFiles}
           />
         </div>
+        {!!message.data.poll && (
+          <PollEditor
+            poll={message.data.poll}
+            message={message}
+            data={data}
+            setData={setData}
+            cache={cache}
+          />
+        )}
         {message.data.embeds && message.data.embeds.length > 0 && (
           <div className="mt-1 space-y-1">
             {embedsLength > 6000 && (
@@ -1640,11 +1650,12 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                     !!message.data.components &&
                     message.data.components.length >= MAX_V1_ROWS,
                 },
-                // {
-                //   label: t("addPoll"),
-                //   value: "poll",
-                //   disabled: !!message.data.poll,
-                // },
+                {
+                  label: t("addPoll"),
+                  icon: "Chart_Bar_Horizontal_01",
+                  value: "poll",
+                  disabled: !!message.data.poll,
+                },
               ]}
               onValueChange={(value) => {
                 switch (value) {
@@ -1660,6 +1671,11 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
                     message.data.components = message.data.components
                       ? [...message.data.components, emptyRow]
                       : [emptyRow];
+                    setData({ ...data });
+                    break;
+                  }
+                  case "poll": {
+                    message.data.poll = createEmptyPoll();
                     setData({ ...data });
                     break;
                   }
