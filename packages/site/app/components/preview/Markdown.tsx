@@ -557,6 +557,8 @@ const linkRule = defineRule({
   },
 });
 
+export const AUTOLINK_RE = /(?:discohook|https?):\/\/[^\s<]+[^\s"',.:;<\]]/;
+
 const autoLinkRule = defineRule({
   capture(source) {
     const match = /^(?:discohook|https?):\/\/[^\s<]+[^\s"',.:;<\]]/.exec(
@@ -565,17 +567,16 @@ const autoLinkRule = defineRule({
     if (!match) return;
 
     let url = match[0];
-    let searchLeft = 0;
-    let searchRight = url.length - 1;
+    let openCount = 0;
+    let closeCount = 0;
+    for (const char of url) {
+      if (char === "(") openCount += 1;
+      else if (char === ")") closeCount += 1;
+    }
 
-    while (url[searchRight] === ")") {
-      const index = url.indexOf("(", searchLeft);
-      if (index === -1) {
-        url = url.slice(0, -1);
-        break;
-      }
-      searchLeft = index + 1;
-      searchRight -= 1;
+    while (url.endsWith(")") && closeCount > openCount) {
+      url = url.slice(0, -1);
+      closeCount -= 1;
     }
 
     try {
@@ -1170,7 +1171,21 @@ const textRule = defineRule({
       };
     }
 
-    const content = trimToNearestNonSymbolEmoji(match[0]);
+    let content = trimToNearestNonSymbolEmoji(match[0]);
+    if (!content) {
+      return {
+        size: 1,
+        content: source[0],
+      };
+    }
+
+    const urlMatch = AUTOLINK_RE.exec(source);
+    if (urlMatch && urlMatch.index > 0 && urlMatch.index < content.length) {
+      if (autoLinkRule.capture(source.slice(urlMatch.index))) {
+        content = content.slice(0, urlMatch.index);
+      }
+    }
+
     return {
       size: content.length,
       content,
