@@ -73,7 +73,8 @@
                             "name": "message"
                         }
                     },
-                    "description": "Ajouter un composant"
+                    "description": "Ajouter un composant",
+                    "name": "Ajouter"
                 },
                 "edit": {
                     "description": "Modifier un composant",
