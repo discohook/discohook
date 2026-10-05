@@ -1,7 +1,7 @@
-import { redirect } from "@remix-run/cloudflare";
-import type { LoaderArgs } from "./migrate";
+import type { LoaderFunctionArgs } from "react-router";
+import { redirect } from "react-router";
 
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const origin = new URL(context.env.DISCOHOOK_ORIGIN);
   url.protocol = origin.protocol;

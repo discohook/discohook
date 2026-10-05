@@ -1,7 +1,10 @@
-import { type MetaFunction, redirect } from "@remix-run/cloudflare";
-import { useLoaderData } from "@remix-run/react";
-import type { LoaderFunctionArgs as RRLoaderFunctionArgs } from "@remix-run/router";
 import { useEffect, useReducer, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+  useLoaderData,
+} from "react-router";
 import { Button, ButtonStyle } from "~/components/Button";
 import { Checkbox } from "~/components/Checkbox";
 import { DatabaseManager } from "~/database/DatabaseManager";
@@ -23,12 +26,6 @@ const getAllBackups = async (manager: DatabaseManager) => {
   return backups;
 };
 
-export interface Context {
-  env: {
-    DISCOHOOK_ORIGIN: string;
-  };
-}
-
 // Just for debug, call this manually to store a backup
 // biome-ignore lint/correctness/noUnusedVariables: ^
 const saveBackup = async (manager: DatabaseManager) => {
@@ -46,7 +43,7 @@ const saveBackup = async (manager: DatabaseManager) => {
             embeds: [
               {
                 thumbnail: {
-                  url: "https://cdn.discordapp.com/avatars/633565743103082527/fa47564fcd19857e833e97c6c0208966.webp",
+                  url: "https://discohook.app/logos/discohook_144w.png",
                 },
               },
             ],
@@ -57,9 +54,7 @@ const saveBackup = async (manager: DatabaseManager) => {
     });
 };
 
-export type LoaderArgs = RRLoaderFunctionArgs<Context> & { context: Context };
-
-export const loader = async ({ request, context }: LoaderArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const params = new URL(request.url).searchParams;
   const token = params.get("token");
   if (!token) {
@@ -142,7 +137,7 @@ export default function Index() {
               <div className="flex">
                 <img
                   src={user.avatarUrl}
-                  className="rounded-full my-auto h-8 mr-2"
+                  className="rounded-full my-auto h-8 me-2"
                   alt={user.name}
                 />
                 <p className="my-auto text-lg font-medium">
@@ -201,7 +196,7 @@ export default function Index() {
             </div>
             <div className="mt-2 grid grid-cols-3">
               <div className="flex">
-                <a className="mr-auto" href={`${origin}/me/backups`}>
+                <a className="me-auto" href={`${origin}/me/backups`}>
                   <Button discordStyle={ButtonStyle.Secondary}>
                     <span className="m-auto">
                       <i className="ci-Chevron_Left" /> Back
@@ -255,7 +250,7 @@ export default function Index() {
               </div>
               <div className="flex">
                 <Button
-                  className="ml-auto"
+                  className="ms-auto"
                   discordStyle={ButtonStyle.Secondary}
                   disabled={backups.length === 0}
                   onClick={() => {

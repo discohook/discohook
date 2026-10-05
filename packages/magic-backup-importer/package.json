@@ -7,33 +7,34 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "build": "remix build",
-    "deploy": "wrangler deploy",
-    "deploy-preview": "wrangler deploy --env=preview",
-    "dev": "remix dev --manual -c \"npm start\"",
-    "start": "wrangler dev ./build/index.js --port=8789 --persist-to=../../persistence",
-    "typecheck": "tsc"
+    "build": "vite build",
+    "deploy": "CLOUDFLARE_ENV=production vite build && wrangler deploy",
+    "deploy-preview": "CLOUDFLARE_ENV=preview vite build && wrangler deploy",
+    "dev": "vite dev",
+    "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
-    "@cloudflare/kv-asset-handler": "^0.1.3",
-    "@remix-run/cloudflare": "^2.8.1",
-    "@remix-run/css-bundle": "^2.8.1",
-    "@remix-run/react": "^2.8.1",
+    "@react-router/cloudflare": "^7.0.0",
     "idb": "^8.0.0",
     "isbot": "^4.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router": "^7.0.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230518.0",
-    "@remix-run/dev": "^2.8.1",
+    "@cloudflare/vite-plugin": "^1.56.0",
+    "@cloudflare/workers-types": "^4.20240405.0",
+    "@react-router/dev": "^7.0.0",
+    "@react-router/fs-routes": "^7.0.0",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.1.6",
-    "wrangler": "^3.24.0"
+    "vite": "^6.4.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "wrangler": "^4.135.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=24.0.0"
   }
 }
