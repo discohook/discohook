@@ -222,5 +222,12 @@
     "expiresIn": "Expire dans {{0}}",
     "sendNoWebhooks": "Vous n'avez aucun webhook vers lequel envoyer.",
     "switchSendMode": "Changer le mode d'envoi",
-    "switchSendModeBody": "Sélectionnez l'un de vos messages pour définir ou supprimer son lien de message, ce qui déterminera si Discohook modifie le message existant."
+    "switchSendModeBody": "Sélectionnez l'un de vos messages pour définir ou supprimer son lien de message, ce qui déterminera si Discohook modifie le message existant.",
+    "backToSettings": "Retours au paramètres",
+    "unlink": "Délier",
+    "submitToAll": "Envoyer à tous",
+    "submitAll": "Envoyer tout",
+    "threadWebhookApplyPrompt": "<open>ID du fil de discussion</open> indiqué dans l'URL. <toggle>Appliquer aux messages</toggle>",
+    "threadWebhookApplyConfirm": "Le fil de discussion sera appliqué à tous les messages. <toggle>Annuler</toggle>",
+    "webhookInput": "Entrée du webhook"
 }
