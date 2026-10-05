@@ -168,7 +168,9 @@
     "refreshShareLink": "Actualiser le lien de partage pour 2 semaines supplémentaires (fonctionnalité Deluxe !)",
     "inviteBot": "Inviter le Bot",
     "addTarget": {
-        "1": "Ajouter un Webhook"
+        "1": "Ajouter un Webhook",
+        "3": "Ajouter Webhook Fluxer",
+        "2": "Ajouter le Bot"
     },
     "deleteShareLinkConfirm": "Êtes-vous sûr de vouloir supprimer ce lien de partage ? Cette action est irréversible.",
     "addMessage": "Ajouter un Message",
@@ -217,17 +219,47 @@
     "nextPage": "Page Suivante <0/>",
     "previousPage": "<0/> Page Précédente",
     "close": "Fermer",
-    "searchOrCreateBackup": "Chercher ou créer une sauvegarde",
+    "searchOrCreateBackup": "Chercher or créer une sauvegarde",
     "messageTooLong": "Les données de votre message sont trop volumineuses pour être affichées dans l’URL de la page. Si vous souhaitez partager cette page, utilisez le bouton \"$t(share)\".",
     "expiresIn": "Expire dans {{0}}",
-    "sendNoWebhooks": "Vous n'avez aucun webhook vers lequel envoyer.",
-    "switchSendMode": "Changer le mode d'envoi",
-    "switchSendModeBody": "Sélectionnez l'un de vos messages pour définir ou supprimer son lien de message, ce qui déterminera si Discohook modifie le message existant.",
+    "sendNoWebhooks": "Tu n'as pas de webhook pour envoyer les messages.",
+    "switchSendMode": "Change le mode d'envoi",
+    "switchSendModeBody": "Sélectionne un de tes messages pour changer son lien de message, pour que Discohook modifie son contenu.",
     "backToSettings": "Retours au paramètres",
     "unlink": "Délier",
     "submitToAll": "Envoyer à tous",
     "submitAll": "Envoyer tout",
     "threadWebhookApplyPrompt": "<open>ID du fil de discussion</open> indiqué dans l'URL. <toggle>Appliquer aux messages</toggle>",
     "threadWebhookApplyConfirm": "Le fil de discussion sera appliqué à tous les messages. <toggle>Annuler</toggle>",
-    "webhookInput": "Entrée du webhook"
+    "webhookInput": "Champ Webhook",
+    "cozy": "Cozy",
+    "editorPanes": "Panneaux d'édition",
+    "forceDualPane": "Toujours utiliser l'éditeur double panneaux",
+    "appearance": "Apparence",
+    "behavior": "Comportement",
+    "advanced": "Avancé",
+    "settingsFooter": "Merci d'utiliser Discohook !",
+    "settingsCache": {
+        "emojiDescription": "Le cache des emojis standards est automatiquement mis à jour tous les 14 jours. Si il y a eu une mise à jour récemment, tu peux rafraîchir la liste en cliquant sur ce bouton.",
+        "emojiButton": "Vider le cache emoji",
+        "title": "Cache"
+    },
+    "createdByDiscohook": "Cette webhook appartient à Discohook",
+    "previewAll": "Aperçu Global",
+    "new": "NOUVEAU",
+    "standardMessageDescription": "Peut contenir du texte, puis des images, puis des embeds. Si tu n'es pas sûr, choisi cette option. Maintiens la touche Shift en cliquant sur Ajouter un Message pour utiliser cette option automatiquement, ou change le défaut dans les paramètres.",
+    "componentsMessage": "Message basé sur les composants",
+    "jsonPrettify": "Embelli le JSON",
+    "download": "Télécharger",
+    "jsonDownload": {
+        "backup": "En tant que sauvegarde",
+        "plain": "JSON Brut"
+    },
+    "beta": "BETA",
+    "defaultMessageCreationChoice": "Type de Message Par Défaut",
+    "standardMessage": "Message Standard",
+    "componentsMessageDescription": "Peut contenir du text, des images, des fichiers, et des containers (similaires aux embeds) dans n'importe quel ordre. C'est plus customisable que les messages traditionnels, mais certaines options comme les champs des embeds ne sont pas disponibles.",
+    "copyQueryData": "Copier les données de query",
+    "library": "Librairie",
+    "code": "Code"
 }
