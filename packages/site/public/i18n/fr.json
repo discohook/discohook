@@ -217,5 +217,10 @@
     "nextPage": "Page Suivante <0/>",
     "previousPage": "<0/> Page Précédente",
     "close": "Fermer",
-    "searchOrCreateBackup": "Chercher ou créer une sauvegarde"
+    "searchOrCreateBackup": "Chercher ou créer une sauvegarde",
+    "messageTooLong": "Les données de votre message sont trop volumineuses pour être affichées dans l’URL de la page. Si vous souhaitez partager cette page, utilisez le bouton \"$t(share)\".",
+    "expiresIn": "Expire dans {{0}}",
+    "sendNoWebhooks": "Vous n'avez aucun webhook vers lequel envoyer.",
+    "switchSendMode": "Changer le mode d'envoi",
+    "switchSendModeBody": "Sélectionnez l'un de vos messages pour définir ou supprimer son lien de message, ce qui déterminera si Discohook modifie le message existant."
 }
