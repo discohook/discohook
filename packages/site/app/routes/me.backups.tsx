@@ -435,7 +435,7 @@ export default () => {
                     onClick={(e) => {
                       const callback = () =>
                         submit(
-                          { ids: JSON.stringify([backup.id]) },
+                          { ids: JSON.stringify([backup.id.toString()]) },
                           { method: "DELETE", replace: true },
                         );
 
