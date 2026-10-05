@@ -1162,7 +1162,7 @@ const unicodeEmojiRule = defineRule({
 });
 
 const textRule = defineRule({
-  capture(source) {
+  capture(source, state, parse) {
     const match = /^(?:[\p{L}\p{M}\p{N}\p{Z}]+|¯\\_\(ツ\)_\/¯)/su.exec(source);
     if (!match) {
       return {
@@ -1181,7 +1181,7 @@ const textRule = defineRule({
 
     const urlMatch = AUTOLINK_RE.exec(source);
     if (urlMatch && urlMatch.index > 0 && urlMatch.index < content.length) {
-      if (autoLinkRule.capture(source.slice(urlMatch.index))) {
+      if (autoLinkRule.capture(source.slice(urlMatch.index), state, parse)) {
         content = content.slice(0, urlMatch.index);
       }
     }
