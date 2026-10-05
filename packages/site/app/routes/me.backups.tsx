@@ -372,10 +372,10 @@ export default () => {
                     style={{
                       backgroundImage: `url(${backup.previewImageUrl})`,
                     }}
-                    className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square ltr:mr-2 rtl:ml-2 hidden sm:block"
+                    className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square me-2 hidden sm:block"
                   />
                 ) : (
-                  <div className="w-10 h-10 my-auto ltr:mr-2 rtl:ml-2 rounded-lg bg-blurple hidden sm:flex">
+                  <div className="w-10 h-10 my-auto me-2 rounded-lg bg-blurple hidden sm:flex">
                     <CoolIcon
                       icon="File_Document"
                       className="m-auto text-2xl text-gray-50"
@@ -404,7 +404,7 @@ export default () => {
                           <Twemoji
                             key="0"
                             emoji="🕑"
-                            className="grayscale ltr:mr-1 rtl:ml-1"
+                            className="grayscale me-1"
                           />,
                         ]}
                         values={{
@@ -424,7 +424,7 @@ export default () => {
                     )}
                   </p>
                 </div>
-                <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2">
+                <div className="ms-auto ps-2 my-auto flex gap-2">
                   <Link to={`/?backup=${backup.id}`} target="_blank">
                     <Button discordstyle={ButtonStyle.Secondary}>
                       <CoolIcon icon="External_Link" />
@@ -518,7 +518,7 @@ export default () => {
           />
         </Button>
         <Button
-          className="ltr:ml-auto rtl:mr-auto"
+          className="ms-auto"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => submit({ page: page + 1 })}
           disabled={backups.length < 50}

@@ -86,7 +86,7 @@ export const BotCreateModal = (props: ModalProps) => {
           {application ? (
             <>
               <img
-                className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
+                className="rounded-full my-auto size-8 me-3"
                 src={botAppAvatar(
                   {
                     applicationId: application.id,
@@ -112,7 +112,7 @@ export const BotCreateModal = (props: ModalProps) => {
             </>
           ) : (
             <>
-              <div className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3 bg-gray-400 dark:bg-gray-600" />
+              <div className="rounded-full my-auto size-8 me-3 bg-gray-400 dark:bg-gray-600" />
               <div className="my-auto">
                 <div className="rounded-full truncate bg-gray-400 dark:bg-gray-600 w-36 h-4" />
               </div>

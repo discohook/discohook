@@ -12,7 +12,8 @@ export const Button = (
   const { discordStyle, ...rest } = props;
   let color = "bg-blurple-500 hover:bg-blurple-600 active:bg-blurple-700";
   if (discordStyle === ButtonStyle.Secondary) {
-    color = "bg-[#97979f29] hover:bg-[#97979f47] dark:bg-[#97979f1f] hover:dark:bg-[#97979f33] active:bg-[#83838b14] active:dark:bg-[#50505a4d] text-[#0c0c0e] dark:text-[#ebebed] border-[#97979f33] dark:border-[#97979f0a]";
+    color =
+      "bg-[#97979f29] hover:bg-[#97979f47] dark:bg-[#97979f1f] hover:dark:bg-[#97979f33] active:bg-[#83838b14] active:dark:bg-[#50505a4d] text-[#0c0c0e] dark:text-[#ebebed] border-[#97979f33] dark:border-[#97979f0a]";
   }
 
   return (

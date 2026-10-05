@@ -744,7 +744,7 @@ const IndividualActionRowComponentChild = ({
       )}
     >
       <div className="flex p-2 h-full w-full my-auto truncate disabled:animate-pulse">
-        <div className="ltr:mr-2 rtl:ml-2 my-auto w-6 h-6 shrink-0">
+        <div className="me-2 my-auto w-6 h-6 shrink-0">
           {child.type === ComponentType.Button ? (
             <div
               className={twJoin(
@@ -787,7 +787,7 @@ const IndividualActionRowComponentChild = ({
           {previewText || t(`component.${child.type}`)}
         </p>
       </div>
-      <div className="ltr:ml-auto rtl:mr-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
+      <div className="ms-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0 p-2 pl-0">
         <button
           type="button"
           className={!isLiveComponent || actionsBar.up === null ? "hidden" : ""}
@@ -1300,7 +1300,7 @@ export default () => {
                 ),
               )}
               alt={editingMeta.user.name}
-              className="rounded-full my-auto ltr:mr-2 rtl:ml-2 h-10 w-10"
+              className="rounded-full my-auto me-2 size-10"
             />
             <div className="my-auto">
               <p className="text-gray-500 font-medium text-sm">
@@ -1408,7 +1408,7 @@ export default () => {
                           <summary className="group-open/top:mb-2 transition-[margin] marker:content-none marker-none flex text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none px-4">
                             <CoolIcon
                               icon="Chevron_Right"
-                              className="group-open/top:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+                              className="group-open/top:rotate-90 me-2 my-auto transition-transform"
                             />
                             <span className="my-auto">
                               {t(`componentN.${row.type}`, {
@@ -1419,7 +1419,7 @@ export default () => {
                             {isActionRow(row) && row.components.length === 0 ? (
                               <button
                                 type="button"
-                                className="ltr:ml-auto rtl:mr-auto my-auto"
+                                className="ms-auto my-auto"
                                 onClick={() => {
                                   data.components.splice(i, 1);
                                   setData({});

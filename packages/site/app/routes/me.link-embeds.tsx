@@ -1,7 +1,6 @@
-import { data as json } from "react-router";
-import { Link, useLoaderData, useSubmit } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { Trans, useTranslation } from "react-i18next";
+import { data as json, Link, useLoaderData, useSubmit } from "react-router";
 import { twJoin } from "tailwind-merge";
 import { z } from "zod/v3";
 import { Button } from "~/components/Button";
@@ -126,7 +125,7 @@ export default () => {
                     style={{
                       backgroundImage: `url(${backup.previewImageUrl})`,
                     }}
-                    className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square ltr:mr-2 rtl:ml-2 hidden sm:block"
+                    className="bg-cover bg-center w-10 my-auto rounded-lg aspect-square me-2 hidden sm:block"
                   />
                 )}
                 <div className="truncate my-auto">
@@ -143,7 +142,7 @@ export default () => {
                     {t("id", { replace: { id: backup.code } })}
                   </p>
                 </div>
-                <div className="ltr:ml-auto rtl:mr-auto pl-2 my-auto flex gap-2">
+                <div className="ms-auto pl-2 my-auto flex gap-2">
                   <Link
                     to={linkEmbedUrl(backup.code, linkOrigin)}
                     target="_blank"

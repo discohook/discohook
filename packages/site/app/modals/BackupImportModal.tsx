@@ -233,7 +233,7 @@ export const BackupImportModal = (
             );
             props.setOpen(false);
           }}
-          className="ltr:ml-auto rtl:mr-auto"
+          className="ms-auto"
           disabled={selectedBackups.length === 0}
         >
           {t("importCount", { count: selectedBackups.length })}

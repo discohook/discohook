@@ -88,7 +88,7 @@ const BigConditionalBox: React.FC<{ check?: boolean; className?: string }> = ({
   <CoolIcon
     icon={check ? "Checkbox_Check" : "Checkbox_Unchecked"}
     className={twJoin(
-      "text-2xl my-auto ltr:mr-2 rtl:ml-2",
+      "text-2xl my-auto me-2",
       check
         ? "hidden peer-checked:inline-flex"
         : "inline-flex peer-checked:hidden",

@@ -1,15 +1,15 @@
 import { Avatar } from "@base-ui/react/avatar";
 import { Dialog } from "@base-ui/react/dialog";
 import { Tooltip } from "@base-ui/react/tooltip";
+import { ButtonStyle } from "discord-api-types/v10";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Link,
   useLocation,
   useNavigation,
   useSearchParams,
 } from "react-router";
-import { ButtonStyle } from "discord-api-types/v10";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import type { Membership } from "~/api/v1/users.@me.memberships";
 import { HelpModal } from "~/modals/HelpModal";
@@ -43,7 +43,7 @@ export const Header: React.FC<{
 
   const premiumDetails = user ? getUserPremiumDetails(user) : undefined;
   const logo = (
-    <div className="h-8 w-8 my-auto mr-4">
+    <div className="size-8 my-auto me-4">
       <Logo pink={premiumDetails?.active} />
     </div>
   );
@@ -204,7 +204,7 @@ export const Header: React.FC<{
                                 {guild.name}
                               </p>
                               {favorite ? (
-                                <Twemoji emoji="⭐️" className="h-4 w-4" />
+                                <Twemoji emoji="⭐️" className="size-4" />
                               ) : null}
                             </div>
                           </Tooltip.Popup>
@@ -306,14 +306,14 @@ export const Header: React.FC<{
           <Avatar.Root>
             <Avatar.Image
               {...cdnImgAttributes(64, (size) => getUserAvatar(user, { size }))}
-              className="rounded-full h-7 w-7"
+              className="rounded-full size-7"
               alt={user.name}
             />
             <Avatar.Fallback>
               <img
                 // default avatars are always the same size (256) so specifying it is unnecessary
                 src={getUserAvatar(user, { forceDefault: true })}
-                className="rounded-full h-7 w-7"
+                className="rounded-full size-7"
                 alt={user.name}
               />
             </Avatar.Fallback>

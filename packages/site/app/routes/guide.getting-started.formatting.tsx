@@ -1,8 +1,8 @@
-import type { MetaFunction } from "react-router";
-import { useLoaderData, useNavigate } from "react-router";
 import type React from "react";
 import { useEffect, useReducer, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import type { MetaFunction } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { Header } from "~/components/Header";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { codeStyle } from "~/components/preview/Markdown";
@@ -59,7 +59,7 @@ const FormatCategoryHeader: React.FC<React.PropsWithChildren> = ({
       <CoolIcon
         icon="Chevron_Right"
         rtl="Chevron_Left"
-        className="ltr:ml-auto rtl:mr-auto my-auto ltr:group-open:rotate-90 rtl:group-open:-rotate-90 transition-transform"
+        className="ms-auto my-auto ltr:group-open:rotate-90 rtl:group-open:-rotate-90 transition-transform"
       />
     </div>
   </summary>
@@ -221,17 +221,17 @@ export default function FormattingPage() {
           <details className="group mt-4">
             <FormatCategoryHeader>
               <img
-                className="rounded-full my-auto size-6 ml-1 border border-gray-200 dark:border-primary-700"
+                className="rounded-full my-auto size-6 ms-1 border border-gray-200 dark:border-primary-700"
                 src={getCharacterAvatarUrl(characterAvatars[1])}
                 alt=""
               />
               <img
-                className="rounded-full my-auto size-6 -ml-2 border border-gray-200 dark:border-primary-700"
+                className="rounded-full my-auto size-6 -ms-2 border border-gray-200 dark:border-primary-700"
                 src={getCharacterAvatarUrl(characterAvatars[6])}
                 alt=""
               />
               <img
-                className="rounded-full my-auto size-6 -ml-2 border border-gray-200 dark:border-primary-700"
+                className="rounded-full my-auto size-6 -ms-2 border border-gray-200 dark:border-primary-700"
                 src={getCharacterAvatarUrl(characterAvatars[4])}
                 alt=""
               />
@@ -252,11 +252,11 @@ export default function FormattingPage() {
           <details className="group mt-4">
             <FormatCategoryHeader>
               <img
-                className="rounded-full my-auto h-6 w-6 ltr:ml-1 rtl:mr-1 border border-transparent"
+                className="rounded-full my-auto size-6 ms-1 border border-transparent"
                 src={placeholders["server.icon_url"] as string}
                 alt=""
               />
-              <p className="font-bold ltr:ml-2 rtl:mr-2">{t("server_one")}</p>
+              <p className="font-bold ms-2">{t("server_one")}</p>
             </FormatCategoryHeader>
             <p>{t("formatServerDescription")}</p>
             <hr className="border-gray-200/20 my-4" />

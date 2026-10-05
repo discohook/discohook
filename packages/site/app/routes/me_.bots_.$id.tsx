@@ -16,8 +16,8 @@ import { isNotNull, type SQL } from "drizzle-orm";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import {
-  defer,
   Form,
+  data as json,
   redirect,
   useLoaderData,
   useNavigate,
@@ -54,7 +54,7 @@ import {
   isDiscordError,
 } from "~/util/discord";
 import { uploadTokenGist } from "~/util/github";
-import type { ActionArgs, LoaderArgs } from "~/util/loader";
+import { type ActionArgs, jsonR, type LoaderArgs } from "~/util/loader";
 import { base64Encode, cycleCopyText } from "~/util/text";
 import { getUserTag } from "~/util/users";
 import { snowflakeAsString, zxParseForm, zxParseParams } from "~/util/zod";
@@ -102,7 +102,7 @@ export const loader = async ({ request, context, params }: LoaderArgs) => {
         })
       : [])();
 
-  return defer({ user, bot, memberships });
+  return json({ user, bot, memberships });
 };
 
 export const action = async ({ request, context, params }: ActionArgs) => {
@@ -433,7 +433,7 @@ export default function CustomBot() {
                 {error}
                 <div className="mb-4 rounded-lg p-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex">
                   <img
-                    className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
+                    className="rounded-full my-auto size-8 me-3"
                     src={botAppAvatar(bot, { size: 64 })}
                     alt={bot.name}
                   />
@@ -445,7 +445,7 @@ export default function CustomBot() {
                     </div>
                   </div>
                   <a
-                    className="block ltr:ml-auto rtl:mr-auto my-auto"
+                    className="block ms-auto my-auto"
                     href={`https://discord.com/developers/applications/${bot.applicationId}/information`}
                     target="_blank"
                     rel="noreferrer"

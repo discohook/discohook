@@ -964,7 +964,7 @@ const EmbedFieldEditorSection: React.FC<
   //       <CoolIcon
   //         icon="Chevron_Right"
   //         rtl="Chevron_Left"
-  //         className="ltr:group-open/field:rotate-90 rtl:group-open/field:-rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+  //         className="ltr:group-open/field:rotate-90 rtl:group-open/field:-rotate-90 me-2 my-auto transition-transform"
   //       />
   //       <span className="truncate">{}</span>
   //       <div className="ml-auto text-lg space-x-2.5 rtl:space-x-reverse my-auto shrink-0">

@@ -87,7 +87,7 @@ export default () => {
         <p className="text-xl font-semibold dark:text-gray-100 my-auto">
           {t("server_other")}
         </p>
-        <Link to="/bot" className="ltr:ml-auto rtl:mr-auto my-auto">
+        <Link to="/bot" className="ms-auto my-auto">
           <Button discordstyle={ButtonStyle.Link}>{t("inviteBot")}</Button>
         </Link>
       </div>
@@ -141,7 +141,7 @@ export default () => {
                           })
                         : cdn.defaultAvatar(5),
                     )}
-                    className="w-10 my-auto rounded-lg aspect-square ltr:mr-2 rtl:ml-2 hidden sm:block"
+                    className="w-10 my-auto rounded-lg aspect-square me-2 hidden sm:block"
                     alt={guild.name}
                   />
                   <div className="truncate my-auto">
@@ -149,7 +149,7 @@ export default () => {
                       <p className="font-medium truncate">{guild.name}</p>
                     </div>
                   </div>
-                  <div className="ltr:ml-auto rtl:mr-auto pl-2 my-auto flex gap-2">
+                  <div className="ms-auto pl-2 my-auto flex gap-2">
                     <button
                       type="button"
                       title={t(favorite ? "unfavorite" : "favorite")}
@@ -167,7 +167,7 @@ export default () => {
                       }}
                     >
                       {favorite ? (
-                        <Twemoji emoji="⭐️" className="h-5 w-5" />
+                        <Twemoji emoji="⭐️" className="size-5" />
                       ) : (
                         <CoolIcon icon="Star" />
                       )}

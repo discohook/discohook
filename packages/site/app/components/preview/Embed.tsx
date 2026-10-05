@@ -173,14 +173,14 @@ export const Embed: React.FC<{
               (cdnGifVideoUrl(embed.author.icon_url) ? (
                 <video
                   src={cdnGifVideoUrl(embed.author.icon_url)}
-                  className="h-6 w-6 mr-2 object-contain rounded-full"
+                  className="size-6 mr-2 object-contain rounded-full"
                   autoPlay
                   muted
                   loop
                 />
               ) : (
                 <img
-                  className="h-6 w-6 mr-2 object-contain rounded-full"
+                  className="size-6 mr-2 object-contain rounded-full"
                   src={getImageUri(embed.author.icon_url, attachments)}
                   alt="Author"
                 />
@@ -393,14 +393,14 @@ export const Embed: React.FC<{
                   (cdnGifVideoUrl(footer.icon_url) ? (
                     <video
                       src={cdnGifVideoUrl(footer.icon_url)}
-                      className="h-5 w-5 mr-2 object-contain rounded-full"
+                      className="size-5 mr-2 object-contain rounded-full"
                       autoPlay
                       muted
                       loop
                     />
                   ) : (
                     <img
-                      className="h-5 w-5 mr-2 object-contain rounded-full"
+                      className="size-5 mr-2 object-contain rounded-full"
                       src={getImageUri(footer.icon_url, attachments)}
                       alt="Footer"
                     />

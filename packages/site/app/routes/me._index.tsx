@@ -1,9 +1,8 @@
 import { Avatar } from "@base-ui/react/avatar";
 import { REST } from "@discordjs/rest";
-import { data as json } from "react-router";
-import { Link, useLoaderData, useSubmit } from "react-router";
 import { type APIUser, ButtonStyle, Routes } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
+import { data as json, Link, useLoaderData, useSubmit } from "react-router";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod/v3";
 import { getDiscordUserOAuth } from "~/auth-discord.server";
@@ -125,7 +124,7 @@ export default () => {
       <TabHeader>{t("profile")}</TabHeader>
       <div className="w-full rounded-lg bg-gray-200 dark:bg-gray-900 shadow-md p-4">
         <div className="flex">
-          <Avatar.Root className="ltr:mr-4 rtl:ml-4 h-[4.5rem] w-[4.5rem] my-auto">
+          <Avatar.Root className="me-4 size-[4.5rem] my-auto">
             <Avatar.Image
               className="rounded-full"
               src={getUserAvatar(user, { size: 128 })}
@@ -147,7 +146,7 @@ export default () => {
               {getUserTag(user)}
             </span>
           </div>
-          <div className="ltr:ml-auto rtl:mr-auto grid mb-auto gap-2 w-fit">
+          <div className="ms-auto grid mb-auto gap-2 w-fit">
             <Link to="/auth/logout" className="block">
               <Button discordstyle={ButtonStyle.Secondary}>
                 {t("logOut")}

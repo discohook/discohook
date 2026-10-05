@@ -289,7 +289,7 @@ const getBackupSelectOption = (backup: PartialBackupsWithMessages[number]) => ({
     <div className="flex">
       {backup.previewImageUrl && (
         <div
-          className="rounded-lg h-6 w-6 me-1.5 block bg-contain bg-center my-auto"
+          className="rounded-lg size-6 me-1.5 block bg-contain bg-center my-auto"
           style={{
             backgroundImage: `url(${backup.previewImageUrl})`,
           }}
@@ -914,7 +914,7 @@ const FlowActionEditor: React.FC<{
                             }}
                           />
                           <Button
-                            className="ltr:ml-2 rtl:mr-2 my-auto h-9"
+                            className="ms-2 my-auto h-9"
                             onClick={() =>
                               backupsFetcher.load(
                                 apiUrl(BRoutes.currentUserBackups()),
@@ -1142,7 +1142,7 @@ const FlowActionEditor: React.FC<{
                             }}
                           />
                           <Button
-                            className="ltr:ml-2 rtl:mr-2 my-auto h-9"
+                            className="ms-2 my-auto h-9"
                             onClick={() =>
                               backupsFetcher.load(
                                 apiUrl(BRoutes.currentUserBackups()),
@@ -1599,7 +1599,7 @@ const CheckFunctionEditor: React.FC<{
     <>
       {level > 0 && (
         <div className="flex -mb-5">
-          <div className="ltr:ml-auto rtl:mr-auto text-base space-x-2.5 rtl:space-x-reverse">
+          <div className="ms-auto text-base space-x-2.5 rtl:space-x-reverse">
             <button
               type="button"
               onClick={() => {

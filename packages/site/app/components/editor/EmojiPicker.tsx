@@ -109,7 +109,7 @@ const GridEmoji: React.FC<{
 }> = ({ emoji, onEmojiClick, setHoverEmoji }) => (
   <button
     type="button"
-    className="rounded p-1 h-11 w-11 hover:bg-black/10 hover:dark:bg-white/10 transition"
+    className="rounded p-1 size-11 hover:bg-black/10 hover:dark:bg-white/10 transition"
     onClick={(ev) => onEmojiClick(emoji, ev)}
     onMouseOver={() => setHoverEmoji(emoji)}
     onFocus={() => setHoverEmoji(emoji)}
@@ -463,7 +463,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                             className="uppercase text-xs font-semibold pt-1 mb-1 ml-1 flex"
                           >
                             {categoryToIcon[category.id]({
-                              className: "my-auto ltr:mr-1.5 rtl:ml-1.5",
+                              className: "my-auto me-1.5",
                             })}
                             <p className="my-auto">{category.id}</p>
                           </div>
@@ -471,7 +471,7 @@ const EmojiPicker_: React.FC<PickerProps> = ({
                             {cache && category.id === "custom" && (
                               <button
                                 type="button"
-                                className="rounded p-1 h-11 w-11 hover:bg-white/10 hover:text-gray-200 transition flex"
+                                className="rounded p-1 size-11 hover:bg-white/10 hover:text-gray-200 transition flex"
                                 title="Add custom emoji by ID"
                                 onClick={() => setInputtingCustom(true)}
                                 // onMouseOver={() => setHoverEmoji(emoji)}
@@ -584,7 +584,7 @@ export const PopoutEmojiPicker: React.FC<{
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger className="flex cursor-pointer marker:hidden marker-none">
-        <div className="h-9 w-9 rounded-lg flex bg-gray-300 dark:bg-[#292b2f]">
+        <div className="size-9 rounded-lg flex bg-gray-300 dark:bg-[#292b2f]">
           <div className="m-auto">
             {emoji ? (
               emoji.id ? (

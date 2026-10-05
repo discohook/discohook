@@ -196,7 +196,7 @@ export const MessageSetModal = (
         </Button>
         <Button
           disabled={!messageLink || !webhook}
-          className="my-auto ltr:ml-2 rtl:mr-2"
+          className="my-auto ms-2"
           discordstyle={ButtonStyle.Secondary}
           onClick={async () => {
             setError(undefined);

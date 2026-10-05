@@ -1035,7 +1035,7 @@ export default () => {
                 </p>
                 <Button
                   discordstyle={ButtonStyle.Secondary}
-                  className="mb-auto ltr:ml-auto rtl:mr-auto"
+                  className="mb-auto ms-auto"
                   disabled={webhooksForced || webhooksFetcher.state !== "idle"}
                   onClick={() =>
                     webhooksFetcher
@@ -1069,7 +1069,7 @@ export default () => {
                               {...cdnImgAttributes(64, (size) =>
                                 webhookAvatarUrl(webhook, { size }),
                               )}
-                              className="rounded-full my-auto w-10 h-10 ltr:mr-4 rtl:ml-4"
+                              className="rounded-full my-auto size-10 me-4"
                               alt={webhook.name}
                             />
                             <div className="truncate my-auto">
@@ -1081,7 +1081,7 @@ export default () => {
                                   {webhook.applicationId ===
                                     discordApplicationId && (
                                     <span
-                                      className="ltr:ml-1 rtl:mr-1 inline-block"
+                                      className="ms-1 inline-block"
                                       title={t("createdByDiscohook")}
                                     >
                                       <CoolIcon
@@ -1102,7 +1102,7 @@ export default () => {
                                 })}
                               </p>
                             </div>
-                            <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2 text-xl">
+                            <div className="ms-auto ps-2 my-auto flex gap-2 text-xl">
                               <CoolIcon
                                 icon={open ? "Chevron_Down" : "Chevron_Right"}
                                 rtl={open ? "Chevron_Down" : "Chevron_Left"}
@@ -1121,7 +1121,7 @@ export default () => {
                           // Not sure if I like the fading look more than the uniform pulse
                           // style={{ opacity: 1 - i / a.length }}
                         >
-                          <div className="bg-gray-400 dark:bg-gray-500 rounded-full my-auto w-10 h-10 ltr:mr-4 rtl:ml-4" />
+                          <div className="bg-gray-400 dark:bg-gray-500 rounded-full my-auto size-10 me-4" />
                           <div className="my-auto">
                             <div className="bg-gray-400 dark:bg-gray-500 rounded-full h-4 w-20" />
                             <div className="bg-gray-400 dark:bg-gray-500 rounded-full h-3 w-28 mt-0.5" />
@@ -1154,7 +1154,7 @@ export default () => {
                   />
                 </Button>
                 <Button
-                  className="ltr:ml-auto rtl:mr-auto"
+                  className="ms-auto"
                   discordstyle={ButtonStyle.Secondary}
                   onClick={() => {
                     const p = page + 1;
@@ -1996,7 +1996,7 @@ export default () => {
                   <span>{t(`triggerEvent.${openTrigger.event}`)}</span>
                 </div>
                 <div className="rounded-lg p-4 border border-black/10 dark:border-[#44454B] flex">
-                  <div className="grow ltr:mr-2 rtl:ml-2">
+                  <div className="grow me-2">
                     <p className="font-normal text-base mb-1">
                       {t("createTrigger.when")}
                     </p>
@@ -2130,7 +2130,7 @@ export default () => {
                   </p>
                   <Button
                     onClick={() => setCreatingTrigger(true)}
-                    className="mb-auto ltr:ml-auto rtl:mr-auto"
+                    className="mb-auto ms-auto"
                   >
                     {t("newTrigger")}
                   </Button>

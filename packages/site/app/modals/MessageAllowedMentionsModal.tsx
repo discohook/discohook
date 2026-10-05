@@ -463,10 +463,7 @@ export const MessageAllowedMentionsModal = (
           />
         ) : null}
         <ModalFooter className="flex gap-2 flex-wrap">
-          <Button
-            className="ltr:ml-auto rtl:mr-auto"
-            onClick={() => props.setOpen(false)}
-          >
+          <Button className="ms-auto" onClick={() => props.setOpen(false)}>
             {t("ok")}
           </Button>
         </ModalFooter>

@@ -79,7 +79,7 @@ export const RoleSelect = (props: {
                           role.color === 0 ? 0x9ca9b4 : role.color,
                         ),
                       }}
-                      className="ltr:mr-1.5 rtl:ml-1.5"
+                      className="me-1.5"
                     />
                     {role.name}
                   </Select.ItemText>

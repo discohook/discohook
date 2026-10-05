@@ -7,8 +7,8 @@ import type {
   ResolvableAPIGuildMember,
   ResolvableAPIRole,
 } from "~/util/cache/CacheManager";
-import { CoolIcon } from "../icons/CoolIcon";
 import { TextChannelIcon } from "../icons/channel";
+import { CoolIcon } from "../icons/CoolIcon";
 import { Svg } from "../icons/Svg";
 import { channelIcons } from "../preview/Markdown";
 
@@ -110,15 +110,13 @@ export const MentionsPicker: React.FC<{
               >
                 <div
                   id={`${id}-${categoryId}`}
-                  className="uppercase text-xs font-semibold pt-1 mb-1 ltr:ml-1 rtl:mr-1 flex"
+                  className="uppercase text-xs font-semibold pt-1 mb-1 ms-1 flex"
                 >
                   <p className="my-auto">{t(`${categoryId}s`)}</p>
                 </div>
                 <div className="flex flex-col gap-px">
                   {state[categoryId].length === 0 && (
-                    <p className="text-sm ltr:ml-1 rtl:mr-1">
-                      {t("noCacheNote")}
-                    </p>
+                    <p className="text-sm ms-1">{t("noCacheNote")}</p>
                   )}
                   {state[categoryId as keyof typeof state].map((resource) => {
                     let mentionId: string | undefined;
@@ -134,7 +132,10 @@ export const MentionsPicker: React.FC<{
                         scope = "special";
                       }
                       icon = channelIcons[channel.type]?.({
-                        className: "ltr:ml-1 rtl:mr-1 -mr-0.5 h-5 w-5",
+                        // doing this instead of -me-0.5 because tailwind
+                        // wouldn't compute it since this isn't a real
+                        // classname. TODO fix
+                        className: "ms-1 [margin-inline-end:-0.125rem] size-5",
                       });
                     } else if (categoryId === "member") {
                       const member = resource as ResolvableAPIGuildMember;
@@ -147,10 +148,7 @@ export const MentionsPicker: React.FC<{
                         sublabel = member.user.username;
                       }
                       icon = (
-                        <CoolIcon
-                          icon="Mention"
-                          className="text-xl ltr:ml-1 rtl:mr-1"
-                        />
+                        <CoolIcon icon="Mention" className="text-xl ms-1" />
                       );
                     } else if (categoryId === "role") {
                       const role = resource as ResolvableAPIRole;
@@ -179,10 +177,10 @@ export const MentionsPicker: React.FC<{
                         }}
                         className="rounded-lg p-0.5 flex hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                       >
-                        <div className="ltr:mr-1.5 rtl:ml-1.5">{icon}</div>
+                        <div className="me-1.5">{icon}</div>
                         <p className="my-auto truncate">{label}</p>
                         {sublabel && (
-                          <p className="my-auto ltr:ml-auto ltr:mr-1 rtl:mr-auto rtl:ml-1 text-sm truncate text-primary-400 dark:text-gray-500">
+                          <p className="my-auto ms-auto me-1 text-sm truncate text-primary-400 dark:text-gray-500">
                             {sublabel}
                           </p>
                         )}

@@ -321,7 +321,7 @@ export default () => {
             )
           )}
           <div className="flex">
-            <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 ltr:mr-2 rtl:ml-2">
+            <div className="flex mb-2 flex-wrap gap-x-2 gap-y-1 me-2">
               <Button
                 discordstyle={ButtonStyle.Secondary}
                 disabled={!backupInfo?.code}
@@ -358,7 +358,7 @@ export default () => {
                         </p>
                         <ModalFooter className="flex gap-2">
                           <Button
-                            className="ltr:ml-auto rtl:mr-auto"
+                            className="ms-auto"
                             onClick={() => {
                               setData({ embed: { data: {} } });
                               setConfirm(undefined);
@@ -385,7 +385,7 @@ export default () => {
             </div>
             <Button
               className={twJoin(
-                "ltr:ml-auto rtl:mr-auto",
+                "ms-auto",
                 settings.forceDualPane ? "hidden" : "md:hidden",
               )}
               onClick={() => setTab("preview")}
@@ -407,7 +407,7 @@ export default () => {
               />
             </div>
             <Button
-              className="ltr:ml-2 rtl:mr-2 mt-5 h-9"
+              className="ms-2 mt-5 h-9"
               disabled={!isPremium}
               onClick={async () => {
                 // Try to save an API request if someone removes the disabled prop
@@ -507,9 +507,9 @@ export default () => {
                 >
                   <Select.Value
                     placeholder={t("defaultPlaceholder")}
-                    className="my-auto truncate ltr:mr-2 rtl:ml-2"
+                    className="my-auto truncate me-2"
                   />
-                  <Select.Icon className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                  <Select.Icon className="ms-auto my-auto text-lg">
                     <CoolIcon icon="Chevron_Down" />
                   </Select.Icon>
                 </Select.Trigger>
@@ -532,10 +532,10 @@ export default () => {
                           "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
                         )}
                       >
-                        <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                        <Select.ItemText className="my-auto me-2">
                           {t("linkEmbedTypeStandard")}
                         </Select.ItemText>
-                        <Select.ItemIndicator className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                        <Select.ItemIndicator className="ms-auto my-auto text-lg">
                           <CoolIcon icon="Check" />
                         </Select.ItemIndicator>
                       </Select.Item>
@@ -546,11 +546,11 @@ export default () => {
                           "hover:bg-blurple/40 dark:hover:bg-blurple dark:hover:text-primary-200 text-base text-inherit font-medium",
                         )}
                       >
-                        <Select.ItemText className="my-auto ltr:mr-2 rtl:ml-2">
+                        <Select.ItemText className="my-auto me-2">
                           {t("linkEmbedTypeMastodon")}
                         </Select.ItemText>
                         <Select.ItemIndicator
-                          className="ltr:ml-auto rtl:mr-auto my-auto text-lg">
+                          className="ms-auto my-auto text-lg">
                           <CoolIcon icon="Check" />
                         </Select.ItemIndicator>
                       </Select.Item>

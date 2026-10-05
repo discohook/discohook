@@ -273,7 +273,7 @@ export const Message: React.FC<{
             {showProfile ? (
               <Avatar.Root className="block mr-3 cursor-pointer active:translate-y-px">
                 <Avatar.Image
-                  className="rounded-full h-10 w-10 hover:shadow-lg"
+                  className="rounded-full size-10 hover:shadow-lg"
                   src={avatarUrl}
                   alt={username}
                 />
@@ -320,13 +320,13 @@ export const Message: React.FC<{
                 {compactAvatars && (
                   <Avatar.Root className="contents">
                     <Avatar.Image
-                      className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
+                      className="inline-block rounded-full size-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
                       src={avatarUrl}
                       alt={username}
                     />
                     <Avatar.Fallback>
                       <img
-                        className="inline-block rounded-full h-4 w-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
+                        className="inline-block rounded-full size-4 mr-1 -mt-1 ml-[0.1em] cursor-pointer active:translate-y-px"
                         src={cdn.defaultAvatar(0)}
                         alt={username}
                       />

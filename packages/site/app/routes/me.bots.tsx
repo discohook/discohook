@@ -155,7 +155,7 @@ export default () => {
         </p>
         <Button
           onClick={() => setCreateBotOpen(true)}
-          className="mb-auto ltr:ml-auto rtl:mr-auto"
+          className="mb-auto ms-auto"
           disabled={!userIsPremium(user)}
         >
           {t("newBot")}
@@ -187,7 +187,7 @@ export default () => {
               <img
                 src={botAppAvatar(bot, { size: 128 })}
                 alt={bot.name}
-                className="rounded-lg h-24 w-24"
+                className="rounded-lg size-24"
               />
               <p className="text-center font-medium truncate text-sm mt-1">
                 {bot.name}

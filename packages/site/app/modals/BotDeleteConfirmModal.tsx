@@ -1,7 +1,7 @@
-import { Form } from "react-router";
 import { ButtonStyle } from "discord-api-types/v10";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Form } from "react-router";
 import { Button } from "~/components/Button";
 import { TextInput } from "~/components/TextInput";
 import type { LoadedBot } from "~/routes/me";
@@ -35,7 +35,7 @@ export const BotDeleteConfirmModal = (
           {bot ? (
             <>
               <img
-                className="rounded-full my-auto w-8 h-8 ltr:mr-3 rtl:ml-3"
+                className="rounded-full my-auto size-8 me-3"
                 src={botAppAvatar(bot, { size: 64 })}
                 alt={bot.name}
               />

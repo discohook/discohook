@@ -294,7 +294,7 @@ export const ContainerEditor: React.FC<{
               </div>
             );
           })}
-          <div className="flex ltr:ml-2 rtl:mr-2">
+          <div className="flex ms-2">
             <div>
               <ButtonSelect
                 disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}

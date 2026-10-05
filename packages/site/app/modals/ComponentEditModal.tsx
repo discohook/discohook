@@ -80,7 +80,7 @@ export const SelectMenuOptionsSection: React.FC<
       <summary className="group-open/select-option:mb-2 transition-[margin] marker:content-none marker-none flex text-base text-gray-600 dark:text-gray-400 font-semibold cursor-default select-none">
         <CoolIcon
           icon="Chevron_Right"
-          className="group-open/select-option:rotate-90 ltr:mr-2 rtl:ml-2 my-auto transition-transform"
+          className="group-open/select-option:rotate-90 me-2 my-auto transition-transform"
         />
         <span className="shrink-0">Option {index + 1}</span>
         {previewText && <span className="truncate ml-1">- {previewText}</span>}
@@ -511,7 +511,7 @@ export const ComponentEditForm = ({
                           </div>
                           {component.type ===
                             ComponentType.MentionableSelect && (
-                            <div className="ltr:ml-2 rtl:mr-2 mt-auto">
+                            <div className="ms-2 mt-auto">
                               <StringSelect
                                 label={t("type")}
                                 // className="shrink-0"
@@ -542,7 +542,7 @@ export const ComponentEditForm = ({
                               />
                             </div>
                           )}
-                          <div className="ltr:ml-2 rtl:mr-2 mt-auto">
+                          <div className="ms-2 mt-auto">
                             <Button
                               discordstyle={ButtonStyle.Danger}
                               className="h-9"

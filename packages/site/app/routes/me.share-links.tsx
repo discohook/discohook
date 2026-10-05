@@ -209,7 +209,7 @@ export default () => {
                   </p>
                 </div>
                 <hr className="sm:hidden my-1" />
-                <div className="ltr:ml-auto rtl:mr-auto ltr:pl-2 rtl:pr-2 my-auto flex gap-2">
+                <div className="ms-auto ps-2 my-auto flex gap-2">
                   {expires > now && (
                     <>
                       <Link to={`/?share=${link.shareId}`} target="_blank">
@@ -329,7 +329,7 @@ export default () => {
           />
         </Button>
         <Button
-          className="ltr:ml-auto rtl:mr-auto"
+          className="ms-auto"
           discordstyle={ButtonStyle.Secondary}
           onClick={() => submit({ page: page + 1 })}
           disabled={links.length < 100}
