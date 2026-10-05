@@ -216,5 +216,6 @@
     "selectWebhookGuildNote": "Sélectionnez un serveur où Discohook Utils est présent pour afficher ses webhooks, ou créez un nouveau webhook dans l'un de vos serveurs en cliquant sur le bouton ci-dessous.",
     "nextPage": "Page Suivante <0/>",
     "previousPage": "<0/> Page Précédente",
-    "close": "Fermer"
+    "close": "Fermer",
+    "searchOrCreateBackup": "Chercher ou créer une sauvegarde"
 }
