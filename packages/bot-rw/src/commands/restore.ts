@@ -330,7 +330,17 @@ export const restoreMessageEntry: MessageAppCommandCallback<
   const user = await upsertDiscordUser(ctx.client.getDb(), ctx.user);
   const message = ctx.getMessage();
 
-  if (!isMessageWebhookEditable(message)) {
+  const canIncludeEditOptions =
+    Boolean(message.webhook_id) &&
+    isMessageWebhookEditable(message) &&
+    ctx.userPermissons.has(PermissionFlagsBits.ManageWebhooks) &&
+    (ctx.appPermissons.has(PermissionFlagsBits.ManageWebhooks) ||
+      Boolean(
+        message.application_id &&
+          Object.keys(parseApplicationsValue()).includes(message.application_id),
+      ));
+
+  if (!canIncludeEditOptions) {
     const data = messageToQueryData(message);
     const share = await createShareLink(ctx.client, data, { userId: user.id });
     await ctx.reply({
@@ -354,20 +364,12 @@ export const restoreMessageEntry: MessageAppCommandCallback<
         .setDescription("The share link won't show the message's webhook URL")
         .setValue("none")
         .setEmoji({ name: "💬" }),
-    );
-
-  if (
-    message.webhook_id &&
-    ctx.userPermissons.has(PermissionFlagsBits.ManageWebhooks)
-  ) {
-    select.addOptions(
       new SelectMenuOptionBuilder()
         .setLabel("Include edit options")
         .setDescription("The share link will show the message's webhook URL")
         .setValue("edit")
         .setEmoji({ name: "🔗" }),
     );
-  }
 
   // if (message.embeds && message.embeds.length !== 0) {
   //   select.addOptions(

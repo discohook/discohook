@@ -296,8 +296,33 @@ const createShareLink = async (
     } catch {}
   }
 
-  // In development / local testing or when share link backend is not available,
-  // return direct data URL so that https://discohook.org displays the restored message immediately!
+  // In development / local testing, create a real short share link via the public Discohook API!
+  try {
+    const res = await fetch(`${origin}/api/v1/share`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data,
+        ttl: Math.floor(ttl / 1000),
+      }),
+    });
+    if (res.ok) {
+      const result = (await res.json()) as {
+        id: string;
+        origin?: string;
+        url?: string;
+        expires: string;
+      };
+      return {
+        id: result.id,
+        origin: result.origin ?? origin,
+        url: result.url ?? `${origin}/?share=${result.id}`,
+        expires: new Date(result.expires),
+      };
+    }
+  } catch {}
+
+  // Fallback to direct data URL if API is offline or unreachable
   return {
     id: "data",
     origin,
@@ -353,7 +378,17 @@ export const restoreMessageEntry: MessageAppCommandCallback<
   }
   const message = ctx.getMessage();
 
-  if (!isMessageWebhookEditable(ctx.env, message)) {
+  const canIncludeEditOptions =
+    Boolean(message.webhook_id) &&
+    isMessageWebhookEditable(ctx.env, message) &&
+    ctx.userPermissons.has(PermissionFlagsBits.ManageWebhooks) &&
+    (ctx.appPermissons.has(PermissionFlagsBits.ManageWebhooks) ||
+      Boolean(
+        message.application_id &&
+          Object.keys(ctx.env.APPLICATIONS).includes(message.application_id),
+      ));
+
+  if (!canIncludeEditOptions) {
     const data = messageToQueryData(message);
     const share = await createShareLink(ctx.env, data, { userId });
     return ctx.reply({
@@ -376,20 +411,12 @@ export const restoreMessageEntry: MessageAppCommandCallback<
         .setDescription("The share link won't show the message's webhook URL")
         .setValue("none")
         .setEmoji({ name: "💬" }),
-    );
-
-  if (
-    message.webhook_id &&
-    ctx.userPermissons.has(PermissionFlagsBits.ManageWebhooks)
-  ) {
-    select.addOptions(
       new SelectMenuOptionBuilder()
         .setLabel("Include edit options")
         .setDescription("The share link will show the message's webhook URL")
         .setValue("edit")
         .setEmoji({ name: "🔗" }),
     );
-  }
 
   // if (message.embeds && message.embeds.length !== 0) {
   //   select.addOptions(
