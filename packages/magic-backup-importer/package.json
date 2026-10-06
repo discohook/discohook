@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "vite build",
-    "deploy": "CLOUDFLARE_ENV=production vite build && wrangler deploy",
+    "deploy": "vite build && wrangler deploy",
     "deploy-preview": "CLOUDFLARE_ENV=preview vite build && wrangler deploy",
     "dev": "vite dev",
     "typecheck": "react-router typegen && tsc"
