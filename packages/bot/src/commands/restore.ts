@@ -270,35 +270,40 @@ const createShareLink = async (
   const expires = new Date(new Date().getTime() + ttl);
 
   delete data.backup_id;
-  const shareId = await generateUniqueShortenKey(env, 8);
-  try {
-    await putShareLink(env, shareId, data, expires, options?.origin);
-    if (userId && env.HYPERDRIVE?.connectionString) {
-      try {
-        const db = getDb(env.HYPERDRIVE);
-        await db.insert(shareLinks).values({
-          userId,
-          shareId,
-          expiresAt: expires,
-          origin: options?.origin,
-        });
-      } catch {}
-    }
 
-    return {
-      id: shareId,
-      origin,
-      url: `${origin}/?share=${shareId}`,
-      expires,
-    };
-  } catch {
-    return {
-      id: shareId,
-      origin,
-      url: createLongDiscohookUrl(origin, data),
-      expires,
-    };
+  if (env.ENVIRONMENT === "production") {
+    try {
+      const shareId = await generateUniqueShortenKey(env, 8);
+      await putShareLink(env, shareId, data, expires, options?.origin);
+      if (userId && env.HYPERDRIVE?.connectionString) {
+        try {
+          const db = getDb(env.HYPERDRIVE);
+          await db.insert(shareLinks).values({
+            userId,
+            shareId,
+            expiresAt: expires,
+            origin: options?.origin,
+          });
+        } catch {}
+      }
+
+      return {
+        id: shareId,
+        origin,
+        url: `${origin}/?share=${shareId}`,
+        expires,
+      };
+    } catch {}
   }
+
+  // In development / local testing or when share link backend is not available,
+  // return direct data URL so that https://discohook.org displays the restored message immediately!
+  return {
+    id: "data",
+    origin,
+    url: createLongDiscohookUrl(origin, data),
+    expires,
+  };
 };
 
 /**
@@ -360,7 +365,7 @@ export const restoreMessageEntry: MessageAppCommandCallback<
 
   const select = new StringSelectMenuBuilder()
     .setCustomId(
-      `a_select-restore-options_${user.id}:${message.id}:${
+      `a_select-restore-options_${userId ?? ctx.user.id}:${message.id}:${
         message.webhook_id ?? ""
       }` satisfies AutoComponentCustomId,
     )
@@ -414,8 +419,8 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
     ChannelType.PublicThread,
     ChannelType.PrivateThread,
     ChannelType.AnnouncementThread,
-  ].includes(ctx.interaction.channel.type)
-    ? ctx.interaction.channel.id
+  ].includes(ctx.interaction.channel?.type as ChannelType)
+    ? (ctx.interaction.channel?.id ?? ctx.interaction.channel_id)
     : undefined;
 
   let message: APIMessage | undefined;
@@ -441,8 +446,17 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
   }
   if (!message) {
     try {
+      const channelId =
+        ctx.interaction.channel?.id ?? ctx.interaction.channel_id;
+      if (!channelId) {
+        return ctx.reply({
+          content:
+            "Could not fetch the message. Channel ID was not found.",
+          ephemeral: true,
+        });
+      }
       message = (await ctx.rest.get(
-        Routes.channelMessage(ctx.interaction.channel.id, messageId),
+        Routes.channelMessage(channelId, messageId),
       )) as APIMessage;
     } catch (e) {
       if (isDiscordError(e)) {
@@ -476,7 +490,7 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
       const data = messageToQueryData(message);
       // url.searchParams.set("data", base64UrlEncode(JSON.stringify(data)))
       const share = await createShareLink(ctx.env, data, {
-        userId: BigInt(userId),
+        userId: userId && /^\d+$/.test(userId) ? BigInt(userId) : undefined,
       });
       return ctx.updateMessage({
         embeds: [getShareEmbed(share, true)],
@@ -557,7 +571,7 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
         },
       ];
       const share = await createShareLink(ctx.env, data, {
-        userId: BigInt(userId),
+        userId: userId && /^\d+$/.test(userId) ? BigInt(userId) : undefined,
       });
       return ctx.updateMessage({
         embeds: [getShareEmbed(share, false)],
@@ -593,7 +607,16 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
     | "edit"
     | "link";
 
-  const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
+  let userId: bigint | undefined;
+  if (ctx.env.HYPERDRIVE?.connectionString) {
+    try {
+      const user = await upsertDiscordUser(
+        getDb(ctx.env.HYPERDRIVE),
+        ctx.user,
+      );
+      userId = user.id;
+    } catch {}
+  }
   // if (!userIsPremium(user) && mode === "link") {}
   if (
     mode === "edit" &&
@@ -609,7 +632,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
   const data = messageToQueryData(message);
 
   if (!message.webhook_id || message.interaction_metadata) {
-    const share = await createShareLink(ctx.env, data, { userId: user.id });
+    const share = await createShareLink(ctx.env, data, { userId });
     return ctx.reply({
       embeds: [getShareEmbed(share, true)],
       ephemeral: true,
@@ -620,9 +643,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
     case "none": {
       const data = messageToQueryData(message);
       // url.searchParams.set("data", base64UrlEncode(JSON.stringify(data)))
-      const share = await createShareLink(ctx.env, data, {
-        userId: BigInt(user.id),
-      });
+      const share = await createShareLink(ctx.env, data, { userId });
       return ctx.reply({
         embeds: [getShareEmbed(share, true)],
         ephemeral: true,
@@ -691,7 +712,7 @@ export const restoreMessageChatInputCallback: ChatInputAppCommandCallback<
         },
       ];
       const share = await createShareLink(ctx.env, data, {
-        userId: user.id,
+        userId,
       });
       return ctx.reply({
         embeds: [getShareEmbed(share, false)],

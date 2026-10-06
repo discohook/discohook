@@ -1,4 +1,5 @@
 import type { APIEmbed } from "discord-api-types/v10";
+import defaultTags from "../help-en.json";
 import type {
   AppCommandAutocompleteCallback,
   ChatInputAppCommandCallback,
@@ -9,10 +10,15 @@ import { color } from "../util/meta.js";
 type HelpTags = Record<string, APIEmbed | string>;
 
 const fetchTags = async (env: Env) => {
-  const response = await env.SITE.fetch("http://localhost/help/en.json", {
-    method: "GET",
-  });
-  return (await response.json()) as HelpTags;
+  try {
+    const response = await env.SITE?.fetch("http://localhost/help/en.json", {
+      method: "GET",
+    });
+    if (response?.ok) {
+      return (await response.json()) as HelpTags;
+    }
+  } catch {}
+  return defaultTags as HelpTags;
 };
 
 const findEmbed = (
@@ -83,7 +89,7 @@ export const helpAutocomplete: AppCommandAutocompleteCallback = async (ctx) => {
           v[1].title.toLowerCase().includes(query.value.toLowerCase().trim()),
       );
 
-    return entries.map((entry) => ({
+    return entries.slice(0, 25).map((entry) => ({
       // biome-ignore lint/style/noNonNullAssertion: Undefined titles filtered above
       name: entry[1].title!,
       value: entry[0],

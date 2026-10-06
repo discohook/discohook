@@ -12,7 +12,7 @@ export const randomString = (length: number) => {
 export const base64Decode = (urlSafeBase64: string) => {
   const base64 = urlSafeBase64.replace(/-/g, "+").replace(/_/g, "/");
 
-  if (typeof window === "undefined") {
+  if (typeof Buffer !== "undefined") {
     return Buffer.from(base64, "base64").toString("utf8");
   }
 
@@ -30,7 +30,7 @@ export const base64Decode = (urlSafeBase64: string) => {
 };
 
 export const base64Encode = (utf8: string) => {
-  if (typeof window === "undefined") {
+  if (typeof Buffer !== "undefined") {
     return Buffer.from(utf8, "utf8").toString("base64");
   }
 

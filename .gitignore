@@ -18,3 +18,5 @@ persistence/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+cloudflared.exe

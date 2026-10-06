@@ -173,7 +173,7 @@ export class InteractionContext<
 
   get userPermissons() {
     return new PermissionsBitField(
-      this.interaction.member
+      this.interaction.member?.permissions
         ? BigInt(this.interaction.member.permissions)
         : PermissionFlags.ViewChannel |
             PermissionFlags.ReadMessageHistory |
