@@ -1,1 +1,51 @@
-{}
+{
+    "commands": {
+        "_options": {
+            "webhook": {
+                "name": "webhook",
+                "description": "webhook-ul target"
+            },
+            "filter-channel": {
+                "name": "filtru-canal",
+                "description": "Canalul pentru filtrarea rezultatelor autocompletate"
+            }
+        },
+        "buttons": {
+            "name": "butoane",
+            "description": "Adaugă, scoate, și gestionează componente (butoane/selectări)",
+            "options": {
+                "add": {
+                    "name": "Adaugă",
+                    "description": "Adaugă un component",
+                    "options": {
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Adaugă un component la acest mesaj. Se mai aceptă si un link de mesaj aici"
+                        },
+                        "channel": {
+                            "name": "canal",
+                            "description": "Canalul în care este mesajul, pentru rezultate autocompletate"
+                        }
+                    }
+                },
+                "edit": {
+                    "name": "Modifică",
+                    "description": "Editează o componentă",
+                    "options": {
+                        "message": {
+                            "name": "Mesaj",
+                            "description": "Editează un component la acest mesaj. Se mai aceptă si un link de mesaj aici"
+                        },
+                        "channel": {
+                            "name": "canal",
+                            "description": "Canalul in care mesajul este, pentru rezultate autocompletate"
+                        }
+                    }
+                },
+                "delete": {
+                    "name": "Șterge"
+                }
+            }
+        }
+    }
+}
