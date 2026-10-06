@@ -60,5 +60,6 @@
     "messageDetails": "Szczegóły wiadomości",
     "messageId": "Identyfikator Wiadomości: <0/>",
     "channelId": "Identyfikator kanału: <0/>",
-    "guildId": "Identyfikator Serwera: <0/>"
+    "guildId": "Identyfikator Serwera: <0/>",
+    "backToSettings": "Powrót do ustawień"
 }
