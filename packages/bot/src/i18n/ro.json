@@ -58,9 +58,50 @@
                 "migrate": {
                     "options": {
                         "channel": {
-                            "name": "Canal"
+                            "name": "Canal",
+                            "description": "Canalul in care este mesajul, pentru rezultate autocompletate"
                         }
                     }
+                }
+            }
+        },
+        "deluxe": {
+            "name": "deluxe",
+            "description": "Sincronizeaza-ti subscripția Deluxe",
+            "options": {
+                "info": {
+                    "name": "informație",
+                    "description": "Informații despre Discohook Deluxe, opțiunea noastră de subscripție premium"
+                },
+                "sync": {
+                    "name": "sincronizează",
+                    "description": "Asigură-te că site-ul Discohook este actualizat cu abonamentul tău Deluxe"
+                }
+            }
+        },
+        "triggers": {
+            "description": "Setează triggere ca să raspundă la evenimente în serverul tau",
+            "options": {
+                "add": {
+                    "name": "adaugă",
+                    "description": "Adaugă un nou trigger",
+                    "options": {
+                        "name": {
+                            "name": "nume",
+                            "description": "Numele trigger-ului"
+                        },
+                        "event": {
+                            "name": "eveniment",
+                            "description": "Evenimentul care va detona trigger-ul",
+                            "choices": {
+                                "0": "Intrare Membru",
+                                "1": "Membru Ieșire"
+                            }
+                        }
+                    }
+                },
+                "view": {
+                    "name": "Vizualizează"
                 }
             }
         }
