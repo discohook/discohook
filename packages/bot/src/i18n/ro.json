@@ -101,7 +101,13 @@
                     }
                 },
                 "view": {
-                    "name": "Vizualizează"
+                    "name": "Vizualizează",
+                    "description": "Vizualizează și gestionează un trigger",
+                    "options": {
+                        "name": {
+                            "name": "Nume"
+                        }
+                    }
                 }
             }
         }
