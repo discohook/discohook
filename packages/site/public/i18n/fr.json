@@ -169,7 +169,7 @@
     "inviteBot": "Inviter le Bot",
     "addTarget": {
         "1": "Ajouter un Webhook",
-        "3": "Ajouter Webhook Fluxer",
+        "3": "Ajouter un webhook Fluxer",
         "2": "Ajouter le Bot"
     },
     "deleteShareLinkConfirm": "Êtes-vous sûr de vouloir supprimer ce lien de partage ? Cette action est irréversible.",
@@ -224,7 +224,7 @@
     "expiresIn": "Expire dans {{0}}",
     "sendNoWebhooks": "Tu n'as pas de webhook pour envoyer les messages.",
     "switchSendMode": "Change le mode d'envoi",
-    "switchSendModeBody": "Sélectionne un de tes messages pour changer son lien de message, pour que Discohook modifie son contenu.",
+    "switchSendModeBody": "Sélectionnez l'un de vos messages pour ajouter ou supprimer son lien, ce qui déterminera si Discohook modifie le message existant.",
     "backToSettings": "Retours au paramètres",
     "unlink": "Délier",
     "submitToAll": "Envoyer à tous",
@@ -244,11 +244,11 @@
         "emojiButton": "Vider le cache emoji",
         "title": "Cache"
     },
-    "createdByDiscohook": "Cette webhook appartient à Discohook",
-    "previewAll": "Aperçu Global",
+    "createdByDiscohook": "Ce webhook est possédé par Discohook",
+    "previewAll": "Tout prévisualiser",
     "new": "NOUVEAU",
-    "standardMessageDescription": "Peut contenir du texte, puis des images, puis des embeds. Si tu n'es pas sûr, choisi cette option. Maintiens la touche Shift en cliquant sur Ajouter un Message pour utiliser cette option automatiquement, ou change le défaut dans les paramètres.",
-    "componentsMessage": "Message basé sur les composants",
+    "standardMessageDescription": "Permet d'afficher d'abord le texte, puis les pièces jointes, puis les éléments intégrés. En cas de doute, choisissez cette option. Maintenez la touche Maj enfoncée lorsque vous cliquez sur « Ajouter un message » pour l'utiliser automatiquement (ou modifiez le paramètre par défaut dans vos préférences).",
+    "componentsMessage": "Message basé sur des composants",
     "jsonPrettify": "Embelli le JSON",
     "download": "Télécharger",
     "jsonDownload": {
@@ -259,7 +259,10 @@
     "defaultMessageCreationChoice": "Type de Message Par Défaut",
     "standardMessage": "Message Standard",
     "componentsMessageDescription": "Peut contenir du text, des images, des fichiers, et des containers (similaires aux embeds) dans n'importe quel ordre. C'est plus customisable que les messages traditionnels, mais certaines options comme les champs des embeds ne sont pas disponibles.",
-    "copyQueryData": "Copier les données de query",
+    "copyQueryData": "Copier les données de la requête",
     "library": "Librairie",
-    "code": "Code"
+    "code": "Code",
+    "botTargetChannelPrompt": "Entrer l'id du channel ou le lien que vous voulez utiliser pour envoyer vos messages avec {{name}}.",
+    "previewInfo": "Informations de l'aperçu",
+    "linkEmbedType": "Type d'intégration (<0>Qu'est-ce que c'est ?</0>)"
 }
