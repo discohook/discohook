@@ -684,5 +684,16 @@
     "beta": "BETA",
     "separatorLine": "Trennlinie",
     "deleteRow": "Lösche Reihe",
-    "messageTooLong": "Die Nachrichtendaten sind zu groß, um in der Seiten-URL angezeigt zu werden. Wenn du diese Seite teilen möchtest, verwende die Schaltfläche „$t(share)“."
+    "messageTooLong": "Die Nachrichtendaten sind zu groß, um in der Seiten-URL angezeigt zu werden. Wenn du diese Seite teilen möchtest, verwende die Schaltfläche „$t(share)“.",
+    "backToSettings": "Zurück zu den Einstellungen",
+    "searchOrCreateBackup": "Eine Sicherung suchen oder erstellen",
+    "unlink": "Verknüpfung aufheben",
+    "switchSendMode": "Sendemodus ändern",
+    "switchSendModeBody": "Wähle eine deiner Nachrichten aus, um den Nachrichtenlink hinzuzufügen oder zu entfernen. Dadurch ändert sich, ob Discohook die vorhandene Nachricht bearbeitet.",
+    "threadWebhookApplyPrompt": "<open>Thema-ID</open>, die in der URL angegeben ist. <toggle>Auf Nachrichten anwenden</toggle>",
+    "threadWebhookApplyConfirm": "Die Thema-Zuordnung gilt für alle Nachrichten. <toggle>Rückgängig machen</toggle>",
+    "appearance": "Aussehen",
+    "behavior": "Verhalten",
+    "advanced": "Fortgeschritten",
+    "settingsFooter": "Vielen Dank, dass du Discohook nutzt!"
 }
