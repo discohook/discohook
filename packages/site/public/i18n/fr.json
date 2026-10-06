@@ -266,5 +266,8 @@
     "previewInfo": "Informations de l'aperçu",
     "linkEmbedType": "Type d'intégration (<0>Qu'est-ce que c'est ?</0>)",
     "linkEmbedTypeStandard": "Standard (sans markdown, plus flexible)",
-    "linkEmbedTypeMastodon": "Post (markdown, auteur requis & footer)"
+    "linkEmbedTypeMastodon": "Post (markdown, auteur requis & footer)",
+    "bot": "Bot",
+    "fluxer": "Fluxer",
+    "imports": "Imports"
 }
