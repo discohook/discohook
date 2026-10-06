@@ -12,6 +12,8 @@ import {
   type APIAllowedMentions,
   type APIGuildChannel,
   type APIMessage,
+  type APIMessageApplicationCommandDMInteraction,
+  type APIMessageApplicationCommandGuildInteraction,
   type APIMessageTopLevelComponent,
   type APIWebhook,
   ChannelType,
@@ -319,7 +321,10 @@ export const isMessageWebhookEditable = (
   return false;
 };
 
-export const restoreMessageEntry: MessageAppCommandCallback = async (ctx) => {
+export const restoreMessageEntry: MessageAppCommandCallback<
+  | APIMessageApplicationCommandDMInteraction
+  | APIMessageApplicationCommandGuildInteraction
+> = async (ctx) => {
   const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
   const message = ctx.getMessage();
 
@@ -415,9 +420,20 @@ export const selectRestoreOptionsCallback: SelectMenuCallback = async (ctx) => {
     }
   }
   if (!message) {
-    message = (await ctx.rest.get(
-      Routes.channelMessage(ctx.interaction.channel.id, messageId),
-    )) as APIMessage;
+    try {
+      message = (await ctx.rest.get(
+        Routes.channelMessage(ctx.interaction.channel.id, messageId),
+      )) as APIMessage;
+    } catch (e) {
+      if (isDiscordError(e)) {
+        return ctx.reply({
+          content:
+            "Could not fetch the message. If the bot is not in this server, messages can only be restored without edit options.",
+          ephemeral: true,
+        });
+      }
+      throw e;
+    }
   }
 
   const value = (

@@ -12,6 +12,7 @@ import {
   type APIApplicationCommandOptionChoice,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  ApplicationIntegrationType,
   ChannelType,
   InteractionContextType,
   type Locale,
@@ -330,6 +331,10 @@ const main = async () => {
       new SlashCommandBuilder()
         .setName("deluxe")
         .setDescription("...")
+        .setIntegrationTypes(
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        )
         .setContexts(
           InteractionContextType.Guild,
           InteractionContextType.BotDM,
@@ -342,6 +347,10 @@ const main = async () => {
       new SlashCommandBuilder()
         .setName("format")
         .setDescription("...")
+        .setIntegrationTypes(
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        )
         .setContexts(
           InteractionContextType.Guild,
           InteractionContextType.BotDM,
@@ -390,6 +399,10 @@ const main = async () => {
       new SlashCommandBuilder()
         .setName("id")
         .setDescription("...")
+        .setIntegrationTypes(
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        )
         .setContexts(
           InteractionContextType.Guild,
           InteractionContextType.BotDM,
@@ -424,6 +437,10 @@ const main = async () => {
       new SlashCommandBuilder()
         .setName("invite")
         .setDescription("...")
+        .setIntegrationTypes(
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        )
         .setContexts(
           InteractionContextType.Guild,
           InteractionContextType.BotDM,
@@ -675,6 +692,10 @@ const main = async () => {
     addLocalizations(
       new SlashCommandBuilder()
         .setName("help")
+        .setIntegrationTypes(
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        )
         .setContexts(
           InteractionContextType.Guild,
           InteractionContextType.BotDM,
@@ -824,7 +845,15 @@ const main = async () => {
       .setType(ApplicationCommandType.Message)
       .setName(getEnglish("_ctx.restore.name"))
       .setNameLocalizations(localize("_ctx.restore.name"))
-      .setContexts(InteractionContextType.Guild)
+      .setIntegrationTypes(
+        ApplicationIntegrationType.GuildInstall,
+        ApplicationIntegrationType.UserInstall,
+      )
+      .setContexts(
+        InteractionContextType.Guild,
+        InteractionContextType.BotDM,
+        InteractionContextType.PrivateChannel,
+      )
       .setDefaultMemberPermissions(PermissionFlags.ViewChannel),
     new ContextMenuCommandBuilder()
       .setType(ApplicationCommandType.Message)

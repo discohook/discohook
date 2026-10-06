@@ -104,7 +104,7 @@ export type AppCommandAutocompleteCallback = (
 
 export type AppCommandCallback =
   | ChatInputAppCommandCallback<boolean>
-  | MessageAppCommandCallback
+  | MessageAppCommandCallback<any>
   | UserAppCommandCallback;
 
 export type AppCommandHandlers = {

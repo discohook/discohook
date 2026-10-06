@@ -26,14 +26,33 @@ permissions.set(PermissionFlags.ModerateMembers, true);
 // Profile (nickname)
 permissions.set(PermissionFlags.ChangeNickname, true);
 
-export const loader = ({ request, context }: LoaderArgs) =>
-  redirect(
+export const loader = ({ request, context }: LoaderArgs) => {
+  const url = new URL(request.url);
+  const isUserInstall =
+    url.searchParams.get("type") === "user" ||
+    url.searchParams.get("user") === "true" ||
+    url.searchParams.get("integration_type") === "1";
+
+  if (isUserInstall) {
+    return redirect(
+      new URL(
+        `https://discord.com/oauth2/authorize?${new URLSearchParams({
+          client_id: context.env.DISCORD_CLIENT_ID,
+          scope: "applications.commands",
+          integration_type: "1",
+        })}`,
+      ).href,
+    );
+  }
+
+  return redirect(
     new URL(
       `https://discord.com/oauth2/authorize?${new URLSearchParams({
         client_id: context.env.DISCORD_CLIENT_ID,
         scope: "bot applications.commands",
         permissions: permissions.toString(),
-        guild_id: new URL(request.url).searchParams.get("guildId") ?? "",
+        guild_id: url.searchParams.get("guildId") ?? "",
       })}`,
     ).href,
   );
+};
