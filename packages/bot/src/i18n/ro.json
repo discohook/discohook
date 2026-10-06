@@ -105,9 +105,19 @@
                     "description": "Vizualizează și gestionează un trigger",
                     "options": {
                         "name": {
-                            "name": "nume"
+                            "name": "nume",
+                            "description": "Numele trigger-ului"
                         }
                     }
+                }
+            }
+        },
+        "webhook": {
+            "name": "webhook",
+            "description": "Gestionează webhooks",
+            "options": {
+                "create": {
+                    "name": "creare"
                 }
             }
         }
