@@ -43,7 +43,24 @@
                     }
                 },
                 "delete": {
-                    "name": "Șterge"
+                    "name": "Șterge",
+                    "description": "Șterge o componentă",
+                    "options": {
+                        "message": {
+                            "name": "mesaj",
+                            "description": "Șterge o componentă din acest mesaj. Un link pentru mesaj este acceptat și aici"
+                        },
+                        "channel": {
+                            "name": "canal"
+                        }
+                    }
+                },
+                "migrate": {
+                    "options": {
+                        "channel": {
+                            "name": "Canal"
+                        }
+                    }
                 }
             }
         }
