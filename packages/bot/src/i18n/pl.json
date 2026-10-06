@@ -4,6 +4,13 @@
             "webhook": {
                 "name": "webhook"
             }
+        },
+        "buttons": {
+            "options": {
+                "add": {
+                    "name": "Dodaj"
+                }
+            }
         }
     }
 }
