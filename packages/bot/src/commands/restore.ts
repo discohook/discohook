@@ -271,23 +271,34 @@ const createShareLink = async (
 
   delete data.backup_id;
   const shareId = await generateUniqueShortenKey(env, 8);
-  await putShareLink(env, shareId, data, expires, options?.origin);
-  if (userId) {
-    const db = getDb(env.HYPERDRIVE);
-    await db.insert(shareLinks).values({
-      userId,
-      shareId,
-      expiresAt: expires,
-      origin: options?.origin,
-    });
-  }
+  try {
+    await putShareLink(env, shareId, data, expires, options?.origin);
+    if (userId && env.HYPERDRIVE?.connectionString) {
+      try {
+        const db = getDb(env.HYPERDRIVE);
+        await db.insert(shareLinks).values({
+          userId,
+          shareId,
+          expiresAt: expires,
+          origin: options?.origin,
+        });
+      } catch {}
+    }
 
-  return {
-    id: shareId,
-    origin,
-    url: `${origin}/?share=${shareId}`,
-    expires,
-  };
+    return {
+      id: shareId,
+      origin,
+      url: `${origin}/?share=${shareId}`,
+      expires,
+    };
+  } catch {
+    return {
+      id: shareId,
+      origin,
+      url: createLongDiscohookUrl(origin, data),
+      expires,
+    };
+  }
 };
 
 /**
@@ -325,12 +336,21 @@ export const restoreMessageEntry: MessageAppCommandCallback<
   | APIMessageApplicationCommandDMInteraction
   | APIMessageApplicationCommandGuildInteraction
 > = async (ctx) => {
-  const user = await upsertDiscordUser(getDb(ctx.env.HYPERDRIVE), ctx.user);
+  let userId: bigint | undefined;
+  if (ctx.env.HYPERDRIVE?.connectionString) {
+    try {
+      const user = await upsertDiscordUser(
+        getDb(ctx.env.HYPERDRIVE),
+        ctx.user,
+      );
+      userId = user.id;
+    } catch {}
+  }
   const message = ctx.getMessage();
 
   if (!isMessageWebhookEditable(ctx.env, message)) {
     const data = messageToQueryData(message);
-    const share = await createShareLink(ctx.env, data, { userId: user.id });
+    const share = await createShareLink(ctx.env, data, { userId });
     return ctx.reply({
       embeds: [getShareEmbed(share, true)],
       components: [],
