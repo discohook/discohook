@@ -20,9 +20,11 @@
                             "name": "kanał"
                         },
                         "message": {
-                            "name": "wiadomość"
+                            "name": "wiadomość",
+                            "description": "Dodaj komponent do tej wiadomości. Link wiadomości zostanie zaakceptowany tutaj"
                         }
-                    }
+                    },
+                    "description": "Dodaj komponent"
                 },
                 "edit": {
                     "name": "edytuj",
