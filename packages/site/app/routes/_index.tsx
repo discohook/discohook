@@ -6,8 +6,14 @@ import {
   ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
-import type React from "react";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link, useLoaderData, useSearchParams } from "react-router";
 import { twJoin, twMerge } from "tailwind-merge";
@@ -435,28 +441,30 @@ export default function Index() {
       backupIdParsed.data === undefined &&
       searchParams.get("data") === null,
   );
-  // Get 10 most recently edited backups on the landing page if logged in
-  const meBackupsFetcher = useSafeFetcher<typeof MeBackupsLoader>({
-    onError: setError,
-  });
-  // don't enter failure loop
-  const meBackupsRequested = useRef(false);
-  useEffect(() => {
-    if (
-      isLanding &&
-      userId !== null &&
-      !meBackupsRequested.current &&
-      meBackupsFetcher.state === "idle" &&
-      !meBackupsFetcher.data
-    ) {
-      meBackupsRequested.current = true;
-      meBackupsFetcher.load("/me/backups?limit=10&sort=updatedAt.d");
-    }
-  }, [isLanding, userId, meBackupsFetcher]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
-  useEffect(() => {
-    const loadInitialTargets = async (targets: QueryDataTarget[]) => {
+  const [targets, updateTargets] = useReducer(
+    (d: TargetMap, partialD: Partial<TargetMap>) =>
+      ({
+        ...d,
+        ...partialD,
+      }) as TargetMap,
+    {},
+  );
+  // Stable identity across renders where `targets` itself hasn't changed, so
+  // it doesn't update excessively
+  const targetsList = useMemo(() => Object.values(targets), [targets]);
+
+  const [tab, setTab] = useState<"editor" | "preview">(
+    // opened a blank page and not logged in: likely new user.
+    // otherwise, probably wants to jump right into editing.
+    isLanding && userId === null ? "preview" : "editor",
+  );
+
+  const historyNavDataRef = useRef<QueryData | null>(null);
+  const lastDataParamRef = useRef<string | null>(searchParams.get("data"));
+
+  const loadInitialTargets = useCallback(
+    async (targets: QueryDataTarget[]) => {
       const cachingGuildIds: string[] = [];
       for (const target of targets) {
         switch (target.type) {
@@ -506,8 +514,80 @@ export default function Index() {
             break;
         }
       }
-    };
+    },
+    [cache],
+  );
 
+  const loadDataFromParam = useCallback(
+    (dataParam: string | null) => {
+      let parsed:
+        | SafeParseReturnType<QueryData, QueryData>
+        | SafeParseError<QueryData>;
+      try {
+        if (dataParam) {
+          parsed = ZodQueryData.safeParse(
+            JSON.parse(base64Decode(dataParam) ?? "{}"),
+          );
+        } else {
+          parsed = ZodQueryData.safeParse({ messages: [INDEX_MESSAGE] });
+        }
+      } catch (e) {
+        parsed = {
+          success: false,
+          error: { issues: [e] } as ZodError<QueryData>,
+        };
+      }
+
+      if (parsed.success) {
+        if (parsed.data?.backup_id !== undefined) {
+          setBackupId(BigInt(parsed.data.backup_id));
+        } else {
+          setBackupId(undefined);
+        }
+        const newData: QueryData = { version: "d2", ...parsed.data };
+        historyNavDataRef.current = newData;
+        setData(newData);
+        setBadLoadData(undefined);
+        setUrlTooLong(false);
+        loadInitialTargets(parsed.data.targets ?? []);
+        loadMessageComponents(parsed.data, setData);
+      } else {
+        console.log("QueryData failed parsing:", parsed.error.format());
+        const newData: QueryData = {
+          version: "d2",
+          messages: [INDEX_FAILURE_MESSAGE],
+        };
+        historyNavDataRef.current = newData;
+        setData(newData);
+        setTab("preview");
+        if (dataParam) {
+          setBadLoadData({ raw: dataParam, zodError: parsed.error });
+        }
+      }
+    },
+    [loadInitialTargets],
+  );
+  // Get 10 most recently edited backups on the landing page if logged in
+  const meBackupsFetcher = useSafeFetcher<typeof MeBackupsLoader>({
+    onError: setError,
+  });
+  // don't enter failure loop
+  const meBackupsRequested = useRef(false);
+  useEffect(() => {
+    if (
+      isLanding &&
+      userId !== null &&
+      !meBackupsRequested.current &&
+      meBackupsFetcher.state === "idle" &&
+      !meBackupsFetcher.data
+    ) {
+      meBackupsRequested.current = true;
+      meBackupsFetcher.load("/me/backups?limit=10&sort=updatedAt.d");
+    }
+  }, [isLanding, userId, meBackupsFetcher]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
+  useEffect(() => {
     if (shareId) {
       fetch(`${apiUrl(BRoutes.share(shareId))}?with_new_targets=true`, {
         method: "GET",
@@ -519,6 +599,7 @@ export default function Index() {
               // This shouldn't happen but it could if something was saved wrong
               qd.messages = [];
             }
+            historyNavDataRef.current = qd;
             setData(qd);
             loadInitialTargets(qd.targets ?? []);
             loadMessageComponents(qd, setData);
@@ -546,6 +627,7 @@ export default function Index() {
               ...raw.data,
               backup_id: backupIdParsed.data.toString(),
             };
+            historyNavDataRef.current = newData;
             setData(newData);
             loadInitialTargets(newData.targets ?? []);
             loadMessageComponents(newData, setData);
@@ -553,42 +635,24 @@ export default function Index() {
         }
       });
     } else {
-      let parsed:
-        | SafeParseReturnType<QueryData, QueryData>
-        | SafeParseError<QueryData>;
-      const dataParam = searchParams.get("data");
-      try {
-        if (dataParam) {
-          parsed = ZodQueryData.safeParse(
-            JSON.parse(base64Decode(dataParam) ?? "{}"),
-          );
-        } else {
-          parsed = ZodQueryData.safeParse({ messages: [INDEX_MESSAGE] });
-        }
-      } catch (e) {
-        parsed = {
-          success: false,
-          error: { issues: [e] } as ZodError<QueryData>,
-        };
-      }
-
-      if (parsed.success) {
-        if (parsed.data?.backup_id !== undefined) {
-          setBackupId(BigInt(parsed.data.backup_id));
-        }
-        setData({ version: "d2", ...parsed.data });
-        loadInitialTargets(parsed.data.targets ?? []);
-        loadMessageComponents(parsed.data, setData);
-      } else {
-        console.log("QueryData failed parsing:", parsed.error.format());
-        setData({ version: "d2", messages: [INDEX_FAILURE_MESSAGE] });
-        setTab("preview");
-        if (dataParam) {
-          setBadLoadData({ raw: dataParam, zodError: parsed.error });
-        }
-      }
+      loadDataFromParam(searchParams.get("data"));
     }
   }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextDataParam = new URLSearchParams(location.search).get("data");
+      if (nextDataParam !== lastDataParamRef.current) {
+        lastDataParamRef.current = nextDataParam;
+        loadDataFromParam(nextDataParam);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [loadDataFromParam]);
 
   const [localHistory, setLocalHistory] = useState<HistoryItem[]>([]);
   const [updateCount, setUpdateCount] = useState(-1);
@@ -616,7 +680,7 @@ export default function Index() {
           );
         }
         setUpdateCount(updateCount + 1);
-        if (backupId !== undefined) {
+        if (historyNavDataRef.current !== data && backupId !== undefined) {
           console.log("Saving backup", backupId);
           fetch(apiUrl(BRoutes.backups(backupId)), {
             method: "PATCH",
@@ -636,16 +700,27 @@ export default function Index() {
       const fullUrl = new URL(`${pathUrl}?data=${encoded}`);
       if (fullUrl.toString().length >= 16000) {
         setUrlTooLong(true);
-        if (searchParams.get("data")) {
+        if (lastDataParamRef.current !== null) {
+          lastDataParamRef.current = null;
           safePushState({ path: pathUrl }, pathUrl);
         }
       } else {
         setUrlTooLong(false);
+        if (
+          historyNavDataRef.current === data ||
+          encoded === lastDataParamRef.current
+        ) {
+          return;
+        }
+        lastDataParamRef.current = encoded;
         safePushState({ path: fullUrl.toString() }, fullUrl.toString());
       }
     } else {
       // Make sure it stays there, we also want to wipe any other params
       setUrlTooLong(false);
+      if (historyNavDataRef.current === data) {
+        return;
+      }
       const fullUrl = `${pathUrl}?backup=${backupId}`;
       safePushState({ path: fullUrl.toString() }, fullUrl.toString());
     }
@@ -654,17 +729,6 @@ export default function Index() {
     (m) => !!m.reference,
   ).length;
 
-  const [targets, updateTargets] = useReducer(
-    (d: TargetMap, partialD: Partial<TargetMap>) =>
-      ({
-        ...d,
-        ...partialD,
-      }) as TargetMap,
-    {},
-  );
-  // Stable identity across renders where `targets` itself hasn't changed, so
-  // it doesn't update excessively
-  const targetsList = useMemo(() => Object.values(targets), [targets]);
   const [addingTarget, setAddingTarget] = useState(dm === "add-target");
   const {
     sending,
@@ -695,11 +759,6 @@ export default function Index() {
   const [showSendModeModal, setShowModeModal] = useState(dm === "send-mode");
   const [confirm, setConfirm] = useConfirmModal();
 
-  const [tab, setTab] = useState<"editor" | "preview">(
-    // opened a blank page and not logged in: likely new user.
-    // otherwise, probably wants to jump right into editing.
-    isLanding && userId === null ? "preview" : "editor",
-  );
   // Using refs here instead of dividing the viewport width by 2 because I
   // want to allow changing the size of each pane independently
   const editorRef = useRef<HTMLDivElement>(null);
