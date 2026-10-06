@@ -43,7 +43,7 @@
                     }
                 },
                 "delete": {
-                    "name": "Șterge",
+                    "name": "şterge",
                     "description": "Șterge o componentă",
                     "options": {
                         "message": {
@@ -58,7 +58,7 @@
                 "migrate": {
                     "options": {
                         "channel": {
-                            "name": "Canal",
+                            "name": "canal",
                             "description": "Canalul in care este mesajul, pentru rezultate autocompletate"
                         }
                     }
@@ -101,11 +101,11 @@
                     }
                 },
                 "view": {
-                    "name": "Vizualizează",
+                    "name": "vizualizează",
                     "description": "Vizualizează și gestionează un trigger",
                     "options": {
                         "name": {
-                            "name": "Nume"
+                            "name": "nume"
                         }
                     }
                 }
