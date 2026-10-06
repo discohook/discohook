@@ -6,16 +6,21 @@
                 "description": "Docelowy webhook"
             },
             "filter-channel": {
-                "description": "Kanał służący do filtrowania wyników autouzupełniania"
+                "description": "Kanał służący do filtrowania wyników autouzupełniania",
+                "name": "kanał-filtrowania"
             }
         },
         "buttons": {
             "options": {
                 "add": {
-                    "name": "Dodaj",
+                    "name": "dodaj",
                     "options": {
                         "channel": {
-                            "description": "Kanał, w którym znajduje się wiadomość, dla wyników autouzupełniania."
+                            "description": "Kanał, w którym znajduje się wiadomość, dla wyników autouzupełniania.",
+                            "name": "kanał"
+                        },
+                        "message": {
+                            "name": "wiadomość"
                         }
                     }
                 },
@@ -29,7 +34,8 @@
                     }
                 }
             },
-            "name": "guziki"
+            "name": "guziki",
+            "description": "Dodaj, usuń i zarządzaj komponentami (przyciski/listy)"
         }
     }
 }
