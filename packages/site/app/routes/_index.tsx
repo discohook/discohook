@@ -462,6 +462,7 @@ export default function Index() {
 
   const historyNavDataRef = useRef<QueryData | null>(null);
   const lastDataParamRef = useRef<string | null>(searchParams.get("data"));
+  const lastBackupParamRef = useRef<string | null>(searchParams.get("backup"));
 
   const loadInitialTargets = useCallback(
     async (targets: QueryDataTarget[]) => {
@@ -520,6 +521,7 @@ export default function Index() {
 
   const loadDataFromParam = useCallback(
     (dataParam: string | null) => {
+      console.log("Loading data from param");
       let parsed:
         | SafeParseReturnType<QueryData, QueryData>
         | SafeParseError<QueryData>;
@@ -538,6 +540,7 @@ export default function Index() {
         };
       }
 
+      document.title = "Discohook";
       if (parsed.success) {
         if (parsed.data?.backup_id !== undefined) {
           setBackupId(BigInt(parsed.data.backup_id));
@@ -567,6 +570,36 @@ export default function Index() {
     },
     [loadInitialTargets],
   );
+
+  const loadDataFromBackupId = useCallback(
+    async (backupId: bigint) => {
+      console.log(`Loading backup ${backupId}`);
+      const res = await fetch(
+        `${apiUrl(BRoutes.backups(backupId))}?data=true`,
+        { method: "GET" },
+      );
+      if (res.status === 200) {
+        setBackupId(backupId);
+
+        const raw = (await res.json()) as ApiGetBackupWithData;
+        document.title = `${raw.name} - Discohook`;
+        if (!raw.data.messages) {
+          // This shouldn't happen but it could if something was saved wrong
+          raw.data.messages = [];
+        }
+        const newData = {
+          ...raw.data,
+          backup_id: backupId.toString(),
+        };
+        historyNavDataRef.current = newData;
+        setData(newData);
+        loadInitialTargets(newData.targets ?? []);
+        loadMessageComponents(newData, setData);
+      }
+    },
+    [loadInitialTargets],
+  );
+
   // Get 10 most recently edited backups on the landing page if logged in
   const meBackupsFetcher = useSafeFetcher<typeof MeBackupsLoader>({
     onError: setError,
@@ -611,29 +644,7 @@ export default function Index() {
         }
       });
     } else if (backupIdParsed.success) {
-      fetch(`${apiUrl(BRoutes.backups(backupIdParsed.data))}?data=true`, {
-        method: "GET",
-      }).then((r) => {
-        if (r.status === 200) {
-          setBackupId(backupIdParsed.data);
-          r.json().then((d: unknown) => {
-            const raw = d as ApiGetBackupWithData;
-            document.title = `${raw.name} - Discohook`;
-            if (!raw.data.messages) {
-              // This shouldn't happen but it could if something was saved wrong
-              raw.data.messages = [];
-            }
-            const newData = {
-              ...raw.data,
-              backup_id: backupIdParsed.data.toString(),
-            };
-            historyNavDataRef.current = newData;
-            setData(newData);
-            loadInitialTargets(newData.targets ?? []);
-            loadMessageComponents(newData, setData);
-          });
-        }
-      });
+      loadDataFromBackupId(backupIdParsed.data);
     } else {
       loadDataFromParam(searchParams.get("data"));
     }
@@ -641,9 +652,26 @@ export default function Index() {
 
   useEffect(() => {
     const handlePopState = () => {
-      const nextDataParam = new URLSearchParams(location.search).get("data");
+      const params = new URLSearchParams(location.search);
+      const nextDataParam = params.get("data");
+      const nextBackupParam = params.get("backup");
+      // set refs before doing anything with the data
+      let backupChanged = false;
+      let dataChanged = false;
+      if (nextBackupParam !== lastBackupParamRef.current) {
+        lastBackupParamRef.current = nextBackupParam;
+        backupChanged = true;
+      }
       if (nextDataParam !== lastDataParamRef.current) {
         lastDataParamRef.current = nextDataParam;
+        dataChanged = true;
+      }
+
+      // prefer backup param (but there shouldn't be any real scenarios where both are present)
+      const nextBackupIdParsed = snowflakeAsString().safeParse(nextBackupParam);
+      if (nextBackupIdParsed.success && backupChanged) {
+        loadDataFromBackupId(nextBackupIdParsed.data);
+      } else if (dataChanged) {
         loadDataFromParam(nextDataParam);
       }
     };
@@ -652,12 +680,12 @@ export default function Index() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [loadDataFromParam]);
+  }, [loadDataFromParam, loadDataFromBackupId]);
 
   const [localHistory, setLocalHistory] = useState<HistoryItem[]>([]);
   const [updateCount, setUpdateCount] = useState(-1);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to run this when `data` changes
-  useEffect(() => setUpdateCount(updateCount + 1), [data]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to run this when `data` changes
+  useEffect(() => setUpdateCount((c) => c + 1), [data]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: only update when I want
   useEffect(() => {
