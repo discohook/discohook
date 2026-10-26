@@ -775,7 +775,11 @@ const RESTErrorSchema: z.ZodType<RESTError> = z.object({
 });
 
 export const isDiscordError = (error: any): error is DiscordError => {
-  return "code" in error && "rawError" in error;
+  try {
+    return "code" in error && "rawError" in error;
+  } catch {
+    return false;
+  }
 };
 
 export const isErrorData = (data: any): data is RESTError =>

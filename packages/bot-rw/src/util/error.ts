@@ -6,5 +6,9 @@ interface DiscordError {
 }
 
 export const isDiscordError = (error: any): error is DiscordError => {
-  return "code" in error && "rawError" in error;
+  try {
+    return "code" in error && "rawError" in error;
+  } catch {
+    return false;
+  }
 };
