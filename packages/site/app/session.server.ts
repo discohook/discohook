@@ -556,6 +556,12 @@ export interface TokenGuildChannelPermissions extends TokenGuildPermissions {
   channel?: APIGuildChannel<GuildChannelType>;
 }
 
+// Was going to replace/supplant this with a method that uses Get Guild Member Permissions:
+// https://docs.discord.com/developers/resources/guild#get-guild-member-permissions
+// But I abandoned that because I can't meaningfully reduce the number of requests,
+// since I need to store `owner`, and that requires fetching the guild for its owner_id.
+// In the future, we should probably handle all of this passively via the gateway
+
 export const getTokenGuildPermissions = async (
   token: TokenWithUser,
   guildId: bigint | string,
@@ -570,7 +576,6 @@ export const getTokenGuildPermissions = async (
       permissions: new PermissionsBitField(BigInt(cached.permissions)),
     };
   } else {
-    const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
       throw jsonR({ message: "User has no linked Discord user" }, 401);
     }
@@ -648,6 +653,7 @@ export const getTokenGuildPermissions = async (
       guild,
     };
 
+    const db = getDb(env.HYPERDRIVE);
     await db
       .insert(discordMembers)
       .values({
@@ -682,7 +688,6 @@ export const getTokenGuildChannelPermissions = async (
       permissions: new PermissionsBitField(BigInt(cached.permissions)),
     };
   } else {
-    const db = getDb(env.HYPERDRIVE);
     if (!token.user.discordId) {
       throw jsonR({ message: "User has no linked Discord user" }, 401);
     }
@@ -821,18 +826,19 @@ export const getTokenGuildChannelPermissions = async (
       channel,
     };
 
+    const db = getDb(env.HYPERDRIVE);
     await db
       .insert(discordMembers)
       .values({
         guildId: makeSnowflake(guild.id),
         userId: token.user.discordId,
-        permissions: permissions.toString(),
+        permissions: guildPermissions.toString(),
         owner: data.owner,
       })
       .onConflictDoUpdate({
         target: [discordMembers.userId, discordMembers.guildId],
         set: {
-          permissions: permissions.toString(),
+          permissions: guildPermissions.toString(),
           owner: data.owner,
         },
       });
