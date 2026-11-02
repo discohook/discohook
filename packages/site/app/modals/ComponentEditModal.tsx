@@ -765,7 +765,7 @@ export const ComponentEditModal = ({
     <Modal title={t("editComponent")} {...props} size="lg">
       {error}
       {!submit && !cache && (
-        <InfoBox icon="User_02" collapsible>
+        <InfoBox icon="User_02" collapsible className="mb-2">
           {t("componentsNotLoggedIn")}
         </InfoBox>
       )}
@@ -802,7 +802,7 @@ export const ComponentEditModal = ({
         }}
       />
       {component && setComponent && (
-        <div className="-mt-2">
+        <div>
           <ComponentEditForm
             t={t}
             component={component}
