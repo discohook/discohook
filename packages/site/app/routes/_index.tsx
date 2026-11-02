@@ -912,6 +912,7 @@ export default function Index() {
         targets={targets}
         sending={sending}
         data={data}
+        setData={setData}
         cache={cache}
         messages={restSubmission.messages}
         updateMessages={restSubmission.updateMessages}

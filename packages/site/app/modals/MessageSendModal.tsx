@@ -14,13 +14,16 @@ import { Button } from "~/components/Button";
 import { getSetEditingComponentProps } from "~/components/editor/ActionRowEditor";
 import type { SetErrorFunction } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
+import { Twemoji } from "~/components/icons/Twemoji";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { FluxerAPIWebhookWithoutUser } from "~/types/fluxer";
 import type { TFunction } from "~/types/i18next";
 import type {
+  APIButtonComponentWithURL,
   APIComponentInMessageActionRow,
   APIMessageTopLevelComponent,
   QueryData,
+  SetQueryData,
 } from "~/types/QueryData";
 import {
   type QueryDataTarget,
@@ -363,11 +366,112 @@ export const draftTargetToQueryTarget = (target: Target): QueryDataTarget => {
   throw Error("Unknown draft target type; cannot convert to query data target");
 };
 
+interface ButtonIssues {
+  missingUrls?: APIButtonComponentWithURL[];
+  defaultUrls?: APIButtonComponentWithURL[];
+  removeSupportButton?: () => void;
+  removeBotButton?: () => void;
+}
+
+const findButtonIssues = (
+  message: QueryData["messages"][0]["data"],
+): ButtonIssues => {
+  if (!message.components) return {};
+
+  const missingUrls: APIButtonComponentWithURL[] = [];
+  const defaultUrls: APIButtonComponentWithURL[] = [];
+  let removeSupportButton: (() => void) | undefined;
+  let removeBotButton: (() => void) | undefined;
+
+  const categorizeButton = (
+    button: APIComponentInMessageActionRow,
+    removeCallback: () => void,
+  ) => {
+    if (
+      button.type !== ComponentType.Button ||
+      button.style !== ButtonStyle.Link
+    ) {
+      return;
+    }
+    if (
+      // Not sure how strict I want to be with this
+      // button.label === "Support Server" &&
+      button.url === "https://discohook.app/discord"
+    ) {
+      removeSupportButton = removeCallback;
+    } else if (
+      // button.label === "Invite Bot" &&
+      button.url === "https://discohook.app/bot"
+    ) {
+      removeBotButton = removeCallback;
+    } else if (button.url === "https://discohook.app") {
+      defaultUrls.push(button);
+    } else if (!button.url) {
+      missingUrls.push(button);
+    }
+  };
+
+  // This is so confusing lol. I should do something simpler
+  let firstI = -1;
+  const messageComponents = message.components;
+  for (const firstLevel of messageComponents) {
+    firstI += 1;
+
+    if (firstLevel.type === ComponentType.Container) {
+      const firstRemoveIfEmpty = () => {
+        if (firstLevel.components.length === 0) {
+          messageComponents.splice(firstI, 1);
+        }
+      };
+
+      let secondI = -1;
+      for (const secondLevel of firstLevel.components) {
+        secondI += 1;
+        if (secondLevel.type === ComponentType.ActionRow) {
+          const secondRemoveIfEmpty = () => {
+            if (secondLevel.components.length === 0) {
+              firstLevel.components.splice(secondI, 1);
+              firstRemoveIfEmpty();
+            }
+          };
+
+          for (const child of secondLevel.components) {
+            categorizeButton(child, () => {
+              secondLevel.components = secondLevel.components.filter(
+                (c) => c !== child,
+              );
+              secondRemoveIfEmpty();
+            });
+          }
+        }
+      }
+    } else if (firstLevel.type === ComponentType.ActionRow) {
+      const firstRemoveIfEmpty = () => {
+        if (firstLevel.components.length === 0) {
+          messageComponents.splice(firstI, 1);
+        }
+      };
+
+      for (const child of firstLevel.components) {
+        categorizeButton(child, () => {
+          firstLevel.components = firstLevel.components.filter(
+            (c) => c !== child,
+          );
+          firstRemoveIfEmpty();
+        });
+      }
+    }
+  }
+
+  return { missingUrls, defaultUrls, removeSupportButton, removeBotButton };
+};
+
 export const MessageSendModal = (
   props: ModalProps & {
     targets: TargetMap;
     setAddingTarget: (open: boolean) => void;
     data: QueryData;
+    setData: SetQueryData;
     cache?: CacheManager;
     sending: boolean;
     messages: SubmissionManager["messages"];
@@ -388,6 +492,7 @@ export const MessageSendModal = (
     submitMessages,
     resultModal,
     data,
+    setData,
     cache,
   } = props;
 
@@ -455,87 +560,160 @@ export const MessageSendModal = (
         {data.messages.length > 0 ? (
           data.messages.map((message, i) => {
             const id = getQdMessageId(message);
+            let buttonIssues: ButtonIssues = {};
+            try {
+              buttonIssues = findButtonIssues(message.data);
+            } catch {}
             return (
-              <div key={`message-send-${id}`} className="flex">
-                {messages[id]?.result && (
-                  <button
-                    type="button"
-                    className={twJoin(
-                      "flex me-1 px-3 rounded-lg transition border border-transparent",
-                      messages[id].result.status === "error"
-                        ? "bg-rose-400/20 hover:bg-rose-400/30 text-rose-500 dark:text-rose-400 hover:dark:text-rose-100 dark:border-[#362D30]"
-                        : "bg-blurple/20 hover:bg-blurple/30 text-blurple dark:text-blurple-400 hover:dark:text-blurple-100 dark:border-[#222]",
-                    )}
-                    onClick={() => setShowingResult(messages[id].result)}
-                  >
-                    <CoolIcon
-                      icon={
+              <div key={`message-send-${id}`} className="">
+                <div className="flex">
+                  {messages[id]?.result && (
+                    <button
+                      type="button"
+                      className={twJoin(
+                        "flex me-1 px-3 rounded-lg transition border border-transparent",
                         messages[id].result.status === "error"
-                          ? "Octagon_Warning"
-                          : "Info"
-                      }
-                      className="m-auto text-3xl"
-                    />
-                  </button>
-                )}
-                <label
-                  className={twJoin(
-                    "rounded-lg py-2 px-3 bg-gray-100 dark:bg-[#1E1F22]/30 border border-transparent dark:border-[#1E1F22] flex",
-                    "grow w-full cursor-pointer overflow-hidden",
-                  )}
-                >
-                  <div className="my-auto grow text-left me-2 truncate">
-                    <p className="font-semibold text-base truncate">
-                      {getMessageDisplayName(t, i, message)}
-                    </p>
-                    {messages[id]?.result?.status === "error" && (
-                      <p className="text-rose-400 text-sm leading-none">
-                        {(() => {
-                          const { result } = messages[id];
-                          switch (result.data.code) {
-                            case RESTJSONErrorCodes.UnknownMessage:
-                              return "Message link does not match webhook. Did you forget to provide a thread ID?";
-                            case RESTJSONErrorCodes.UnknownChannel:
-                              return "Unknown thread ID. The webhook should be in the thread's parent channel.";
-                            case RESTJSONErrorCodes.InvalidFormBodyOrContentType:
-                              return "Invalid data. Click the error icon for more info.";
-                            default:
-                              return result.data.message;
-                          }
-                        })()}
-                      </p>
-                    )}
-                  </div>
-                  <input
-                    type="checkbox"
-                    name="message"
-                    checked={!messages[id] ? true : messages[id].enabled}
-                    onChange={(e) =>
-                      updateMessages({
-                        [id]: {
-                          ...messages[id],
-                          enabled: e.currentTarget.checked,
-                        },
-                      })
-                    }
-                    hidden
-                  />
-                  <div className="ms-auto my-auto space-x-2 rtl:space-x-reverse text-2xl text-blurple dark:text-blurple-400">
-                    {message.reference && (
+                          ? "bg-rose-400/20 hover:bg-rose-400/30 text-rose-500 dark:text-rose-400 hover:dark:text-rose-100 dark:border-[#362D30]"
+                          : "bg-blurple/20 hover:bg-blurple/30 text-blurple dark:text-blurple-400 hover:dark:text-blurple-100 dark:border-[#222]",
+                      )}
+                      onClick={() => setShowingResult(messages[id].result)}
+                    >
                       <CoolIcon
-                        title={t("willBeEdited")}
-                        icon="Edit_Pencil_01"
+                        icon={
+                          messages[id].result.status === "error"
+                            ? "Octagon_Warning"
+                            : "Info"
+                        }
+                        className="m-auto text-3xl"
                       />
+                    </button>
+                  )}
+                  <div
+                    className={twJoin(
+                      "rounded-lg bg-gray-100 dark:bg-[#292A2E] border border-transparent dark:border-[#1E1F22]",
+                      "grow w-full overflow-hidden",
                     )}
-                    <CoolIcon
-                      icon={
-                        !messages[id] || messages[id].enabled
-                          ? "Checkbox_Check"
-                          : "Checkbox_Unchecked"
-                      }
-                    />
+                  >
+                    <label className="cursor-pointer px-3 py-2 flex grow w-full overflow-hidden">
+                      <div className="my-auto grow text-left me-2 truncate">
+                        <p className="font-semibold text-base truncate">
+                          {getMessageDisplayName(t, i, message)}
+                        </p>
+                        {messages[id]?.result?.status === "error" && (
+                          <p className="text-rose-400 text-sm leading-none">
+                            {(() => {
+                              const { result } = messages[id];
+                              switch (result.data.code) {
+                                case RESTJSONErrorCodes.UnknownMessage:
+                                  return "Message link does not match webhook. Did you forget to provide a thread ID?";
+                                case RESTJSONErrorCodes.UnknownChannel:
+                                  return "Unknown thread ID. The webhook should be in the thread's parent channel.";
+                                case RESTJSONErrorCodes.InvalidFormBodyOrContentType:
+                                  return "Invalid data. Click the error icon for more info.";
+                                default:
+                                  return result.data.message;
+                              }
+                            })()}
+                          </p>
+                        )}
+                      </div>
+                      <input
+                        type="checkbox"
+                        name="message"
+                        checked={!messages[id] ? true : messages[id].enabled}
+                        onChange={(e) =>
+                          updateMessages({
+                            [id]: {
+                              ...messages[id],
+                              enabled: e.currentTarget.checked,
+                            },
+                          })
+                        }
+                        hidden
+                      />
+                      <div className="ms-auto my-auto space-x-2 rtl:space-x-reverse text-2xl text-blurple dark:text-blurple-400">
+                        {message.reference && (
+                          <CoolIcon
+                            title={t("willBeEdited")}
+                            icon="Edit_Pencil_01"
+                          />
+                        )}
+                        <CoolIcon
+                          icon={
+                            !messages[id] || messages[id].enabled
+                              ? "Checkbox_Check"
+                              : "Checkbox_Unchecked"
+                          }
+                        />
+                      </div>
+                    </label>
+                    {!!buttonIssues.removeBotButton ||
+                    !!buttonIssues.removeSupportButton ? (
+                      <div
+                        className={twJoin(
+                          "py-2 px-3 w-full",
+                          "border-t border-border-normal dark:border-border-normal-dark",
+                        )}
+                      >
+                        <div>
+                          <p className="text-sm font-medium">
+                            <Twemoji emoji="🔧" className="align-sub" />{" "}
+                            <span className="font-semibold">Hey!</span> It looks
+                            like you didn't remove the default buttons. This
+                            might confuse your server members.
+                          </p>
+                          {!!buttonIssues.removeBotButton &&
+                          !!buttonIssues.removeSupportButton ? (
+                            <div className="mt-1">
+                              <Button
+                                discordstyle={ButtonStyle.Success}
+                                className="text-sm"
+                                onClick={() => {
+                                  buttonIssues.removeSupportButton?.();
+                                  buttonIssues.removeBotButton?.();
+                                  setData({ ...data });
+                                }}
+                              >
+                                Fix: Remove 2 Buttons
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap mt-1 gap-2">
+                              <Button
+                                discordstyle={ButtonStyle.Success}
+                                className={twJoin(
+                                  buttonIssues.removeSupportButton
+                                    ? ""
+                                    : "hidden",
+                                  "text-sm",
+                                )}
+                                onClick={() => {
+                                  buttonIssues.removeSupportButton?.();
+                                  setData({ ...data });
+                                }}
+                              >
+                                Fix: Remove Support Link
+                              </Button>
+                              <Button
+                                discordstyle={ButtonStyle.Success}
+                                className={twJoin(
+                                  buttonIssues.removeBotButton ? "" : "hidden",
+                                  "text-sm",
+                                )}
+                                onClick={() => {
+                                  buttonIssues.removeBotButton?.();
+                                  setData({ ...data });
+                                }}
+                              >
+                                Fix: Remove Bot Link
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
-                </label>
+                </div>
               </div>
             );
           })
@@ -565,7 +743,8 @@ export const MessageSendModal = (
                 t={t}
                 target={target}
                 channel={
-                  target.type === TargetType.Webhook
+                  target.type === TargetType.Webhook &&
+                  target.webhook.channel_id
                     ? cache?.channel.get(target.webhook.channel_id)
                     : undefined
                 }
