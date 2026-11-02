@@ -205,6 +205,9 @@ export const action = async ({ request, context, params }: ActionArgs) => {
     if (isErrorData(webhook)) {
       throw jsonR(webhook, 404);
     }
+    if (!webhook.channel_id) {
+      throw jsonR({ message: "Webhook has no channel_id" }, 400);
+    }
 
     if (webhook.guild_id) {
       guildId = BigInt(webhook.guild_id);

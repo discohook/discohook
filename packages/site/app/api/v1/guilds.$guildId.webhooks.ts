@@ -64,19 +64,27 @@ const upsertGuildWebhooks = async (
         const upserted = await tx
           .insert(webhooks)
           .values(
-            incoming.map((webhook) => {
-              const extant = residual.find((w) => w.id === webhook.id);
-              return {
-                platform: "discord" as const,
-                id: webhook.id,
-                name: webhook.name ?? "",
-                avatar: webhook.avatar,
-                channelId: webhook.channel_id,
-                discordGuildId: guildId,
-                token: webhook.token ?? extant?.token ?? undefined,
-                applicationId: webhook.application_id,
-              } satisfies typeof webhooks.$inferInsert;
-            }),
+            incoming
+              .filter(
+                (
+                  w,
+                ): w is typeof w & {
+                  channel_id: NonNullable<(typeof w)["channel_id"]>;
+                } => w.channel_id !== null,
+              )
+              .map((webhook) => {
+                const extant = residual.find((w) => w.id === webhook.id);
+                return {
+                  platform: "discord" as const,
+                  id: webhook.id,
+                  name: webhook.name ?? "",
+                  avatar: webhook.avatar,
+                  channelId: webhook.channel_id,
+                  discordGuildId: guildId,
+                  token: webhook.token ?? extant?.token ?? undefined,
+                  applicationId: webhook.application_id,
+                } satisfies typeof webhooks.$inferInsert;
+              }),
           )
           .onConflictDoUpdate({
             target: [webhooks.platform, webhooks.id],

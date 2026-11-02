@@ -461,6 +461,8 @@ export const executeFlow = async (options: {
     ? ctx.appPermissons.has(PermissionFlagsBits.ManageRoles)
     : null;
 
+  // TODO: check responsible user permissions in the channel ID instead of fetching it?
+  // https://discord.dev/resources/channel#get-channel-member-permissions
   async function getChannel(
     id: string,
     quiet?: false,
@@ -1163,15 +1165,17 @@ const executeSendWebhookMessage = async (
         env,
         webhook?.applicationId ?? undefined,
       );
-      webhook = {
-        id: retryWebhook.id,
-        token: retryWebhook.token ?? null,
-        discordGuildId: retryWebhook.guild_id
-          ? BigInt(retryWebhook.guild_id)
-          : null,
-        channelId: retryWebhook.channel_id,
-        applicationId: retryWebhook.application_id,
-      };
+      if (retryWebhook.channel_id) {
+        webhook = {
+          id: retryWebhook.id,
+          token: retryWebhook.token ?? null,
+          discordGuildId: retryWebhook.guild_id
+            ? BigInt(retryWebhook.guild_id)
+            : null,
+          channelId: retryWebhook.channel_id,
+          applicationId: retryWebhook.application_id,
+        };
+      }
       if (webhook?.token) {
         await db
           .insert(webhooks)

@@ -45,6 +45,7 @@ export const BotCreateModal = (props: ModalProps) => {
                 components={[
                   // biome-ignore lint/a11y/useAnchorContent: Content provided in render
                   <a
+                    key="0"
                     href="https://discord.com/developers/applications"
                     className={linkClassName}
                     target="_blank"
