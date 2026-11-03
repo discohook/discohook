@@ -7,7 +7,7 @@ import {
   RESTJSONErrorCodes,
 } from "discord-api-types/v10";
 import { useEffect, useReducer, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { twJoin } from "tailwind-merge";
 import { apiUrl, BRoutes } from "~/api/routing";
 import { Button } from "~/components/Button";
@@ -658,9 +658,13 @@ export const MessageSendModal = (
                         <div>
                           <p className="text-sm font-medium">
                             <Twemoji emoji="🔧" className="align-sub" />{" "}
-                            <span className="font-semibold">Hey!</span> It looks
-                            like you didn't remove the default buttons. This
-                            might confuse your server members.
+                            <Trans
+                              t={t}
+                              i18nKey="defaultButtonsWarning"
+                              components={{
+                                bold: <span className="font-semibold" />,
+                              }}
+                            />
                           </p>
                           {!!buttonIssues.removeBotButton &&
                           !!buttonIssues.removeSupportButton ? (
@@ -674,7 +678,7 @@ export const MessageSendModal = (
                                   setData({ ...data });
                                 }}
                               >
-                                Fix: Remove 2 Buttons
+                                {t("defaultButtonsRemoveAll")}
                               </Button>
                             </div>
                           ) : (
@@ -692,7 +696,7 @@ export const MessageSendModal = (
                                   setData({ ...data });
                                 }}
                               >
-                                Fix: Remove Support Link
+                                {t("defaultButtonsRemoveSupport")}
                               </Button>
                               <Button
                                 discordstyle={ButtonStyle.Success}
@@ -705,7 +709,7 @@ export const MessageSendModal = (
                                   setData({ ...data });
                                 }}
                               >
-                                Fix: Remove Bot Link
+                                {t("defaultButtonsRemoveBot")}
                               </Button>
                             </div>
                           )}
@@ -718,7 +722,7 @@ export const MessageSendModal = (
             );
           })
         ) : (
-          <p>{t("noMessages")}</p>
+          <p>{t("sendNoMessages")}</p>
         )}
       </div>
       <hr className="border border-gray-400 dark:border-gray-600 my-4" />
