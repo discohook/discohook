@@ -32,6 +32,9 @@ export type QueryDataVersion = "d2";
 
 export enum TargetType {
   Webhook = 1,
+  WebhookProxy = 4,
+  Bot = 2,
+  FluxerWebhook = 3,
 }
 
 export interface QueryData {

@@ -41,6 +41,11 @@ export type MinimalTarget =
       webhook: Pick<APIWebhook, "id" | "token" | "application_id">;
     }
   | {
+      type: TargetType.WebhookProxy;
+      origin: string;
+      webhook: Pick<APIWebhook, "id" | "token" | "application_id">;
+    }
+  | {
       type: TargetType.FluxerWebhook;
       webhook: Pick<FluxerAPIWebhook, "id" | "token">;
     };
@@ -138,8 +143,11 @@ export const submitMessage = async (
   );
 
   switch (target.type) {
+    case TargetType.WebhookProxy:
     case TargetType.Webhook: {
       const { webhook } = target;
+      const origin =
+        target.type === TargetType.WebhookProxy ? target.origin : undefined;
       // `with_components` is `true` when:
       // - the webhook is not owned by an application, and
       // - there are components, and
@@ -238,6 +246,7 @@ export const submitMessage = async (
             threadId: message.thread_id ?? orThreadId,
             rest,
             withComponents,
+            origin,
           },
         );
       } else {
@@ -268,6 +277,7 @@ export const submitMessage = async (
               : (message.thread_id ?? orThreadId),
             rest,
             withComponents,
+            origin,
           },
         );
       }

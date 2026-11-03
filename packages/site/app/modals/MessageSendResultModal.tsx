@@ -5,7 +5,7 @@ import { twJoin } from "tailwind-merge";
 import { collapsibleStyles } from "~/components/collapsible";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { getSnowflakeDate } from "~/util/discord";
-import type { SubmitMessageResult } from "./MessageSendModal";
+import type { SubmitMessageResult } from "~/util/submitMessage";
 import { Modal, type ModalProps } from "./Modal";
 
 const ordinal = (num: number) => {

@@ -7,6 +7,9 @@ import {
 
 export const WEBHOOK_TOKEN_RE = /^[\w-]+$/;
 
+export const WEBHOOK_PATH_RE =
+  /^\/api(?:\/v\d+)?\/webhooks\/(\d+)\/([\w-]+)(?:\?thread_id=(\d+))?$/;
+
 export const WEBHOOK_URL_RE =
   /^https?:\/\/(?:www\.|ptb\.|canary\.)?discord(?:app)?\.com\/api(?:\/v\d+)?\/webhooks\/(\d+)\/([\w-]+)(?:\?thread_id=(\d+))?$/;
 

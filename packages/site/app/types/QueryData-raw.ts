@@ -94,6 +94,7 @@ export type QueryDataVersion = "d2";
 
 export enum TargetType {
   Webhook = 1,
+  WebhookProxy = 4,
   Bot = 2,
   FluxerWebhook = 3,
 }
@@ -101,6 +102,13 @@ export enum TargetType {
 export interface TargetWebhook {
   type?: TargetType.Webhook;
   url: string;
+}
+
+export interface TargetWebhookProxy {
+  type: TargetType.WebhookProxy;
+  origin: string;
+  id: string;
+  token: string;
 }
 
 // Token intentionally omitted because we do not store them on the server.
@@ -118,7 +126,11 @@ export interface TargetFluxerWebhook {
   token: string;
 }
 
-export type QueryDataTarget = TargetWebhook | TargetBot | TargetFluxerWebhook;
+export type QueryDataTarget =
+  | TargetWebhook
+  | TargetWebhookProxy
+  | TargetBot
+  | TargetFluxerWebhook;
 
 export interface QueryDataRaw {
   version?: QueryDataVersion;

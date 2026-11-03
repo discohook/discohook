@@ -62,6 +62,7 @@ import { MessageFlagsEditModal } from "~/modals/MessageFlagsEditModal";
 import {
   type DraftTargetFluxerWebhook,
   type DraftTargetWebhook,
+  DraftTargetWebhookProxy,
   getTargetKey,
   MessageSendModal,
   type TargetKey,
@@ -103,6 +104,10 @@ import {
   extractInteractiveComponents,
   getWebhook,
 } from "~/util/discord";
+import {
+  DiscordWebhookProxySchema,
+  getAlternateHostConfiguration,
+} from "~/util/discord/alt-hosts";
 import { useDragManager } from "~/util/drag";
 import { ATTACHMENT_URI_EXTENSIONS } from "~/util/files";
 import { getFluxerWebhook } from "~/util/fluxer";
@@ -478,6 +483,46 @@ export default function Index() {
             if (webhook.id) {
               const target: DraftTargetWebhook = {
                 type: TargetType.Webhook,
+                webhook,
+              };
+              updateTargets({ [getTargetKey(target)]: target });
+            }
+            if (
+              webhook.guild_id &&
+              !cachingGuildIds.includes(webhook.guild_id) &&
+              cache
+            ) {
+              cachingGuildIds.push(webhook.guild_id);
+              cache
+                .fetchGuildCacheable(webhook.guild_id)
+                .then(() =>
+                  console.log(
+                    `Cached cacheables for ${webhook.guild_id} (webhook ID ${webhook.id})`,
+                  ),
+                );
+            }
+            break;
+          }
+          case TargetType.WebhookProxy: {
+            let config: DiscordWebhookProxySchema | null | undefined;
+            try {
+              config = await getAlternateHostConfiguration(target.origin);
+            } catch (e) {
+              console.error(e);
+            }
+            if (!config) break;
+
+            const webhook = await getWebhook(
+              target.id,
+              target.token,
+              undefined,
+              target.origin,
+            );
+            if (webhook.id) {
+              const target: DraftTargetWebhookProxy = {
+                type: TargetType.WebhookProxy,
+                origin,
+                config,
                 webhook,
               };
               updateTargets({ [getTargetKey(target)]: target });
@@ -1220,6 +1265,13 @@ export default function Index() {
                       type="button"
                       title={t("editResource", { replace: [info.name] })}
                       onClick={() => setEditingTarget(targetKey as TargetKey)}
+                      className={
+                        target.type === TargetType.WebhookProxy &&
+                        !target.config.endpoints.modify_webhook_with_token
+                          ?.allowed
+                          ? "hidden"
+                          : ""
+                      }
                     >
                       <CoolIcon icon="Edit_Pencil_01" />
                     </button>

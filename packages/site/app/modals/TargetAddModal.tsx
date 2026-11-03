@@ -24,13 +24,17 @@ import type { FluxerAPIWebhookWithoutUser } from "~/types/fluxer";
 import type { TFunction } from "~/types/i18next";
 import { TargetType } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
-import { FLUXER_WEBHOOK_URL_RE, WEBHOOK_URL_RE } from "~/util/constants";
+import { FLUXER_WEBHOOK_URL_RE, WEBHOOK_PATH_RE } from "~/util/constants";
 import {
   cdnImgAttributes,
   DISCORD_BOT_TOKEN_RE,
   getWebhook,
   webhookAvatarUrl,
 } from "~/util/discord";
+import {
+  type DiscordWebhookProxySchema,
+  getAlternateHostConfiguration,
+} from "~/util/discord/alt-hosts";
 import { fluxerWebhookAvatarUrl, getFluxerWebhook } from "~/util/fluxer";
 import { useApiLoader, useSafeFetcher } from "~/util/loader";
 import { useLocalStorage } from "~/util/localstorage";
@@ -171,6 +175,11 @@ const AddWebhookTarget = ({
   discordApplicationId?: string;
 }) => {
   const [webhook, setWebhook] = useState<APIWebhook>();
+  const [proxy, setProxy] = useState<{
+    origin: string;
+    config: DiscordWebhookProxySchema;
+  }>();
+
   const [urlError, setUrlError] = useState<ReactNode>();
   const [manualWebhook, setManualWebhook] = useState(!hasAuthentication);
 
@@ -193,13 +202,22 @@ const AddWebhookTarget = ({
       guildWebhookTokenFetcher.state === "idle"
     ) {
       if (webhook) {
-        const target: Target = { type: TargetType.Webhook, webhook };
+        const target: Target = proxy
+          ? {
+              type: TargetType.WebhookProxy,
+              origin: proxy.origin,
+              config: proxy.config,
+              webhook,
+            }
+          : { type: TargetType.Webhook, webhook };
         updateTargets({ [getTargetKey(target)]: target });
         setOpen(false);
       } else {
         getWebhook(
           guildWebhookTokenFetcher.data.id,
           guildWebhookTokenFetcher.data.token,
+          undefined,
+          proxy?.origin,
         ).then((webhook) => {
           if (webhook.id) {
             setWebhook(webhook);
@@ -400,13 +418,45 @@ const AddWebhookTarget = ({
               setWebhook(undefined);
               if (!e.currentTarget.value) return;
 
-              const match = e.currentTarget.value.match(WEBHOOK_URL_RE);
+              let url: URL;
+              try {
+                url = new URL(e.currentTarget.value);
+              } catch {
+                setUrlError(t("invalidWebhookUrl"));
+                return;
+              }
+              const match = url.pathname.match(WEBHOOK_PATH_RE);
               if (!match) {
                 setUrlError(t("invalidWebhookUrl"));
                 return;
               }
+              let origin: string | undefined;
+              if (url.origin !== "https://discord.com") {
+                try {
+                  const config = await getAlternateHostConfiguration(
+                    url.origin,
+                  );
+                  if (config === null) {
+                    setUrlError(t("unsupportedWebhookProxy"));
+                    return;
+                  }
+                  origin = url.origin;
+                  setProxy({ origin, config });
+                } catch (e) {
+                  console.error(e);
+                  setUrlError(t("invalidWebhookProxyConfiguration"));
+                  return;
+                }
+              } else {
+                setProxy(undefined);
+              }
 
-              const webhook = await getWebhook(match[1], match[2]);
+              const webhook = await getWebhook(
+                match[1],
+                match[2],
+                undefined,
+                origin,
+              );
               if (webhook.id) {
                 setWebhook(webhook);
                 setThreadId(match[3] || undefined);
@@ -415,6 +465,7 @@ const AddWebhookTarget = ({
                 setUrlError(webhook.message as string);
                 setThreadId(undefined);
                 setWillApplyThread(false);
+                setProxy(undefined);
               }
             }}
           />

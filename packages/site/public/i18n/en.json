@@ -96,6 +96,8 @@
   "chooseServer": "Choose a server",
   "webhookUrl": "Webhook URL",
   "invalidWebhookUrl": "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
+  "unsupportedWebhookProxy": "This alternate host is not supported.",
+  "invalidWebhookProxyConfiguration": "This alternate host is configured improperly.",
   "backToServerSelection": "Back to server selection",
   "createdAtBy": "Created on {{ createdAt, MMM D, YYYY }} by {{username}}",
   "someone": "someone",

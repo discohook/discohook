@@ -14,7 +14,8 @@ import {
   type RESTPatchAPIWebhookWithTokenResult,
   type RESTPostAPIWebhookWithTokenJSONBody,
   type RESTPostAPIWebhookWithTokenWaitResult,
-  Routes
+  RouteBases,
+  Routes,
 } from "discord-api-types/v10";
 import {
   MessageFlagsBitField,
@@ -26,12 +27,8 @@ import { z } from "zod";
 import type { TimestampStyle } from "~/components/editor/TimePicker";
 import type { DraftFile } from "~/routes/_index";
 import type { RESTGetAPIApplicationRpcResult } from "~/types/discord";
-import type {
-  APIMessageTopLevelComponent
-} from "~/types/QueryData";
-import type {
-  APIAttachment
-} from "~/types/QueryData-raw";
+import type { APIMessageTopLevelComponent } from "~/types/QueryData";
+import type { APIAttachment } from "~/types/QueryData-raw";
 import { transformFileName } from "../files";
 import { sleep } from "../time";
 import { extractComponentsByType, isDiscordAttachmentUrl } from "./messages";
@@ -55,6 +52,7 @@ export const discordRequest = async <T>(
     files?: DraftRawFile[];
     init?: Omit<RequestInit, "method">;
     rest?: REST;
+    origin?: string;
   },
 ): Promise<T> => {
   const search = options?.query ? `?${options.query.toString()}` : "";
@@ -74,6 +72,8 @@ export const discordRequest = async <T>(
       }
     }
 
+    // Since we can't override `api` here, we have to remember at a REST()
+    // instantiation level to specify the proxy origin, if it differs
     const response = await options.rest.request({
       method,
       fullRoute: route,
@@ -109,13 +109,17 @@ export const discordRequest = async <T>(
     body = init.body;
   }
 
+  const base = options?.origin ? `${options.origin}/api/v10` : RouteBases.api;
+
   let tries = 0;
   while (tries < 5) {
     tries += 1;
-    const response = await fetch(
-      `${DISCORD_API}/v${DISCORD_API_V}${route}${search}`,
-      { method, ...init, headers, body },
-    );
+    const response = await fetch(`${base}${route}${search}`, {
+      method,
+      ...init,
+      headers,
+      body,
+    });
     // TODO: bucket cache to prevent 429s entirely
     const rHeaders = response.headers;
     if (response.status === 429) {
@@ -136,11 +140,16 @@ export const discordRequest = async <T>(
   throw Error(`Failed to receive a good response for ${method} ${route}`);
 };
 
-export const getWebhook = async (id: string, token: string, rest?: REST) => {
+export const getWebhook = async (
+  id: string,
+  token: string,
+  rest?: REST,
+  origin?: string,
+) => {
   const data = await discordRequest<RESTGetAPIWebhookWithTokenResult>(
     RequestMethod.Get,
     `/webhooks/${id}/${token}`,
-    { rest },
+    { rest, origin },
   );
   return data;
 };
@@ -151,6 +160,7 @@ export const getWebhookMessage = async (
   messageId: string,
   threadId?: string,
   rest?: REST,
+  origin?: string,
 ) => {
   const query = threadId
     ? new URLSearchParams({ thread_id: threadId })
@@ -158,7 +168,7 @@ export const getWebhookMessage = async (
   const data = await discordRequest<RESTGetAPIWebhookWithTokenMessageResult>(
     RequestMethod.Get,
     `/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`,
-    { query, rest },
+    { query, rest, origin },
   );
   return data;
 };
@@ -290,9 +300,11 @@ export const executeWebhook = async (
     threadId?: string;
     rest?: REST;
     withComponents?: boolean;
+    origin?: string;
   },
 ) => {
-  const { files, attachments, threadId, rest, withComponents } = options;
+  const { files, attachments, threadId, rest, withComponents, origin } =
+    options;
 
   const query = new URLSearchParams({ wait: "true" });
   if (threadId) {
@@ -382,6 +394,7 @@ export const executeWebhook = async (
               : "application/json",
         },
       },
+      origin,
     },
   );
 
@@ -399,9 +412,11 @@ export const updateWebhookMessage = async (
     threadId?: string;
     rest?: REST;
     withComponents?: boolean;
+    origin?: string;
   },
 ) => {
-  const { files, attachments, threadId, rest, withComponents } = options;
+  const { files, attachments, threadId, rest, withComponents, origin } =
+    options;
 
   const query = new URLSearchParams();
   if (threadId) {
@@ -490,6 +505,7 @@ export const updateWebhookMessage = async (
               : "application/json",
         },
       },
+      origin,
     },
   );
 

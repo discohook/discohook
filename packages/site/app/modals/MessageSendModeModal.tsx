@@ -20,7 +20,7 @@ export const MessageSendModeModal = ({
 
   return (
     <Modal title={t("switchSendMode")} {...props} size="sm">
-      <p className="-mt-2">{t("switchSendModeBody")}</p>
+      <p>{t("switchSendModeBody")}</p>
       <div className="space-y-1 mt-2">
         {data.messages.length > 0 ? (
           data.messages.map((message, i) => {
@@ -66,7 +66,7 @@ export const MessageSendModeModal = ({
             );
           })
         ) : (
-          <p>{t("noMessages")}</p>
+          <p>{t("sendNoMessages")}</p>
         )}
       </div>
     </Modal>

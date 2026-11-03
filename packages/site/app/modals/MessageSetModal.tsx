@@ -1,8 +1,4 @@
-import {
-  type APIWebhook,
-  ButtonStyle,
-  RESTJSONErrorCodes,
-} from "discord-api-types/v10";
+import { ButtonStyle, RESTJSONErrorCodes } from "discord-api-types/v10";
 import { type ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button, TextButton } from "~/components/Button";
@@ -15,9 +11,20 @@ import { TargetType } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { getWebhookMessage } from "~/util/discord";
-import type { DraftTargetWebhook, TargetMap } from "./MessageSendModal";
+import type {
+  DraftTargetWebhook,
+  DraftTargetWebhookProxy,
+  TargetMap,
+} from "./MessageSendModal";
 import { Modal, ModalFooter, type ModalProps } from "./Modal";
 import { ListTarget } from "./TargetAddModal";
+
+const findWebhookTarget = (targets: TargetMap, webhookId: string) =>
+  Object.entries(targets).find(
+    ([key]) =>
+      key === `${TargetType.Webhook}:${webhookId}` ||
+      key.startsWith(`${TargetType.WebhookProxy}:${webhookId}-`),
+  )?.[1] as DraftTargetWebhook | DraftTargetWebhookProxy | undefined;
 
 export const MessageSetModal = (
   props: ModalProps & {
@@ -35,7 +42,9 @@ export const MessageSetModal = (
   const message =
     messageIndex !== undefined ? data.messages[messageIndex] : undefined;
 
-  const [webhook, setWebhook] = useState<APIWebhook>();
+  const [target, setTarget] = useState<
+    DraftTargetWebhook | DraftTargetWebhookProxy
+  >();
   const [messageLink, setMessageLink] =
     useState<[string | undefined, string | undefined, string]>();
   const [error, setError] = useState<ReactNode>();
@@ -43,24 +52,25 @@ export const MessageSetModal = (
   const setOpen = (s: boolean) => {
     props.setOpen(s);
     if (!s) {
-      setWebhook(undefined);
+      setTarget(undefined);
       setMessageLink(undefined);
       setError(undefined);
     }
   };
 
   const possibleWebhooks = Object.values(targets).filter(
-    (w): w is DraftTargetWebhook =>
-      w.type !== TargetType.Webhook
+    (w): w is DraftTargetWebhook | DraftTargetWebhookProxy =>
+      w.type !== TargetType.Webhook && w.type !== TargetType.WebhookProxy
         ? false
         : messageLink && w.webhook.guild_id && messageLink[0]
           ? w.webhook.guild_id === messageLink[0]
           : true,
   );
   if (message?.data?.webhook_id) {
-    const extantWebhookMatch = targets[
-      `${TargetType.Webhook}:${message.data.webhook_id}`
-    ] as DraftTargetWebhook | undefined;
+    const extantWebhookMatch = findWebhookTarget(
+      targets,
+      message.data.webhook_id,
+    );
     if (extantWebhookMatch && !possibleWebhooks.includes(extantWebhookMatch)) {
       possibleWebhooks.splice(0, 0, extantWebhookMatch);
     }
@@ -70,13 +80,7 @@ export const MessageSetModal = (
   useEffect(() => {
     if (message) {
       if (message.data.webhook_id) {
-        setWebhook(
-          (
-            targets[
-              `${TargetType.Webhook}:${message.data.webhook_id}`
-            ] as DraftTargetWebhook
-          )?.webhook,
-        );
+        setTarget(findWebhookTarget(targets, message.data.webhook_id));
       }
       if (message.reference) {
         const match = message.reference.match(MESSAGE_REF_RE);
@@ -116,30 +120,36 @@ export const MessageSetModal = (
       <p className="text-sm font-medium">{t("webhook")}</p>
       <div className="space-y-1">
         {Object.keys(possibleWebhooks).length > 0 ? (
-          Object.entries(possibleWebhooks).map(([targetId, target]) => (
+          Object.entries(possibleWebhooks).map(([targetId, listTarget]) => (
             <label key={`target-${targetId}`} className="cursor-pointer">
               <input
                 type="radio"
                 name="webhook"
-                checked={!!webhook && target.webhook.id === webhook.id}
+                checked={
+                  !!target && listTarget.webhook.id === target.webhook.id
+                }
                 onChange={(e) => {
-                  if (e.currentTarget.checked) setWebhook(target.webhook);
+                  if (e.currentTarget.checked) setTarget(listTarget);
                 }}
                 onClick={() => {
-                  if (webhook && target.webhook.id === webhook.id) {
-                    setWebhook(undefined);
+                  if (target && listTarget.webhook.id === target.webhook.id) {
+                    setTarget(undefined);
                   }
                 }}
                 hidden
               />
               <ListTarget
                 t={t}
-                target={target}
-                channel={cache?.channel.get(target.webhook.channel_id)}
+                target={listTarget}
+                channel={
+                  listTarget.webhook.channel_id
+                    ? cache?.channel.get(listTarget.webhook.channel_id)
+                    : undefined
+                }
                 endComponent={
                   <CoolIcon
                     icon={
-                      !!webhook && webhook.id === target.webhook.id
+                      !!target && target.webhook.id === listTarget.webhook.id
                         ? "Radio_Fill"
                         : "Radio_Unchecked"
                     }
@@ -195,25 +205,45 @@ export const MessageSetModal = (
           {t("setMessageLink")}
         </Button>
         <Button
-          disabled={!messageLink || !webhook}
+          disabled={!messageLink || !target}
           className="my-auto ms-2"
           discordstyle={ButtonStyle.Secondary}
           onClick={async () => {
             setError(undefined);
-            if (messageLink && webhook) {
-              if (messageLink[0] && webhook.guild_id !== messageLink[0]) {
+            if (messageLink && target) {
+              if (
+                messageLink[0] &&
+                target.webhook.guild_id !== messageLink[0]
+              ) {
                 setError("Webhook server ID does not match message link.");
                 return;
               }
-              if (!webhook.token) {
+              if (!target.webhook.token) {
                 setError("Webhook had no token.");
                 return;
               }
+              const config =
+                target.type === TargetType.WebhookProxy
+                  ? target.config
+                  : undefined;
+              if (config && !config.endpoints.get_webhook_message?.allowed) {
+                setError(
+                  "The alternate host does not allow fetching webhook messages.",
+                );
+                return;
+              }
 
+              const origin =
+                target.type === TargetType.WebhookProxy
+                  ? target.origin
+                  : undefined;
               let msg = await getWebhookMessage(
-                webhook.id,
-                webhook.token,
+                target.webhook.id,
+                target.webhook.token,
                 messageLink[2],
+                undefined,
+                undefined,
+                origin,
               );
               let threadId: string | undefined;
               if (
@@ -225,10 +255,12 @@ export const MessageSetModal = (
                   `Message ID ${messageLink[2]} not found in webhook channel, trying again with ${messageLink[1]} as thread ID`,
                 );
                 msg = await getWebhookMessage(
-                  webhook.id,
-                  webhook.token,
+                  target.webhook.id,
+                  target.webhook.token,
                   messageLink[2],
                   messageLink[1],
+                  undefined,
+                  origin,
                 );
                 // Success, save the thread ID in the query data so we don't
                 // need to do this again while editing

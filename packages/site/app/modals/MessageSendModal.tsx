@@ -34,6 +34,7 @@ import {
 import type { CacheManager } from "~/util/cache/CacheManager";
 import { MESSAGE_REF_RE } from "~/util/constants";
 import { isActionRow } from "~/util/discord";
+import type { DiscordWebhookProxySchema } from "~/util/discord/alt-hosts";
 import { useSafeFetcher } from "~/util/loader";
 import { getMessageDisplayName } from "~/util/message";
 import { submitMessage, type SubmitMessageResult } from "~/util/submitMessage";
@@ -106,6 +107,7 @@ export const useMessageSubmissionManager = (
     const results: SubmitMessageResult[] = [];
     for (const target of targets) {
       switch (target.type) {
+        case TargetType.WebhookProxy:
         case TargetType.Webhook: {
           const { webhook } = target;
           // If a message created a forum thread, assume subsequent
@@ -322,12 +324,19 @@ export type DraftTargetWebhook = {
   type: TargetType.Webhook;
   webhook: APIWebhook;
 };
+export type DraftTargetWebhookProxy = {
+  type: TargetType.WebhookProxy;
+  origin: string;
+  config: DiscordWebhookProxySchema;
+  webhook: APIWebhook;
+};
 export type DraftTargetBot = TargetBot & { token: string };
 export type DraftTargetFluxerWebhook = TargetFluxerWebhook & {
   webhook: FluxerAPIWebhookWithoutUser;
 };
 export type Target =
   | DraftTargetWebhook
+  | DraftTargetWebhookProxy
   | DraftTargetBot
   | DraftTargetFluxerWebhook;
 
@@ -338,9 +347,11 @@ export const getTargetKey = (target: Target): TargetKey =>
     target.type === TargetType.Webhook ||
     target.type === TargetType.FluxerWebhook
       ? target.webhook.id
-      : target.type === TargetType.Bot
-        ? `${target.application_id}-${target.channel_id}`
-        : ""
+      : target.type === TargetType.WebhookProxy
+        ? `${target.webhook.id}-${target.origin}`
+        : target.type === TargetType.Bot
+          ? `${target.application_id}-${target.channel_id}`
+          : ""
   }`;
 
 export const draftTargetToQueryTarget = (target: Target): QueryDataTarget => {
@@ -349,6 +360,13 @@ export const draftTargetToQueryTarget = (target: Target): QueryDataTarget => {
       return {
         type: target.type,
         url: `https://discord.com/api/webhooks/${target.webhook.id}/${target.webhook.token}`,
+      };
+    case TargetType.WebhookProxy:
+      return {
+        type: target.type,
+        origin: target.origin,
+        id: target.webhook.id,
+        token: target.webhook.token ?? "",
       };
     case TargetType.Bot: {
       const { token: _, ...rest } = target;
