@@ -1739,6 +1739,13 @@ export default function Index() {
                   >
                     API
                   </a>
+                  <Link
+                    to="/blog/discohook-alternative"
+                    className="underline hover:no-underline"
+                    target="_blank"
+                  >
+                    Blog
+                  </Link>
                   {location.hostname === "discohook.app" && (
                     <span>Email: "hello" at {location.hostname}</span>
                   )}
