@@ -6,6 +6,7 @@ import {
   ComponentType,
   MessageFlags,
 } from "discord-api-types/v10";
+import type React from "react";
 import {
   useCallback,
   useEffect,
@@ -62,7 +63,7 @@ import { MessageFlagsEditModal } from "~/modals/MessageFlagsEditModal";
 import {
   type DraftTargetFluxerWebhook,
   type DraftTargetWebhook,
-  DraftTargetWebhookProxy,
+  type DraftTargetWebhookProxy,
   getTargetKey,
   MessageSendModal,
   type TargetKey,
@@ -105,7 +106,7 @@ import {
   getWebhook,
 } from "~/util/discord";
 import {
-  DiscordWebhookProxySchema,
+  type DiscordWebhookProxySchema,
   getAlternateHostConfiguration,
 } from "~/util/discord/alt-hosts";
 import { useDragManager } from "~/util/drag";
@@ -305,6 +306,50 @@ const SpainBlockageWarning = ({
     </div>
   </InfoBox>
 );
+
+const updateStateUrl = (
+  backupId: bigint | undefined,
+  data: QueryData,
+  setUrlTooLong: React.Dispatch<React.SetStateAction<boolean>>,
+  lastDataParamRef: React.MutableRefObject<string | null>,
+  historyNavDataRef: React.MutableRefObject<QueryData | null>,
+  force = false,
+) => {
+  const pathUrl = location.origin + location.pathname;
+  const encoded = base64UrlEncode(JSON.stringify(data));
+  if (backupId === undefined) {
+    // URLs on Cloudflare are limited to 16KB
+    // We might want to lower this even more since the
+    // browser starts to complain at 4,096 bytes
+    const fullUrl = new URL(`${pathUrl}?data=${encoded}`);
+    if (fullUrl.toString().length >= 16000) {
+      setUrlTooLong(true);
+      if (lastDataParamRef.current !== null) {
+        lastDataParamRef.current = null;
+        safePushState({ path: pathUrl }, pathUrl);
+      }
+    } else {
+      setUrlTooLong(false);
+      if (
+        (historyNavDataRef.current === data ||
+          encoded === lastDataParamRef.current) &&
+        !force
+      ) {
+        return;
+      }
+      lastDataParamRef.current = encoded;
+      safePushState({ path: fullUrl.toString() }, fullUrl.toString());
+    }
+  } else {
+    // Make sure it stays there, we also want to wipe any other params
+    setUrlTooLong(false);
+    if (historyNavDataRef.current === data) {
+      return;
+    }
+    const fullUrl = `${pathUrl}?backup=${backupId}`;
+    safePushState({ path: fullUrl.toString() }, fullUrl.toString());
+  }
+};
 
 export default function Index() {
   const { t } = useTranslation();
@@ -587,18 +632,27 @@ export default function Index() {
 
       document.title = "Discohook";
       if (parsed.success) {
-        if (parsed.data?.backup_id !== undefined) {
-          setBackupId(BigInt(parsed.data.backup_id));
-        } else {
-          setBackupId(undefined);
-        }
+        const backupId =
+          parsed.data?.backup_id !== undefined
+            ? BigInt(parsed.data.backup_id)
+            : undefined;
+        setBackupId(backupId);
+
         const newData: QueryData = { version: "d2", ...parsed.data };
         historyNavDataRef.current = newData;
         setData(newData);
         setBadLoadData(undefined);
-        setUrlTooLong(false);
         loadInitialTargets(parsed.data.targets ?? []);
         loadMessageComponents(parsed.data, setData);
+
+        updateStateUrl(
+          backupId,
+          newData,
+          setUrlTooLong,
+          lastDataParamRef,
+          historyNavDataRef,
+          true,
+        );
       } else {
         console.log("QueryData failed parsing:", parsed.error.format());
         const newData: QueryData = {
@@ -663,37 +717,6 @@ export default function Index() {
       meBackupsFetcher.load("/me/backups?limit=10&sort=updatedAt.d");
     }
   }, [isLanding, userId, meBackupsFetcher]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
-  useEffect(() => {
-    if (shareId) {
-      fetch(`${apiUrl(BRoutes.share(shareId))}?with_new_targets=true`, {
-        method: "GET",
-      }).then((r) => {
-        if (r.status === 200) {
-          r.json().then((d: any) => {
-            const qd: QueryData = d.data;
-            if (!qd.messages) {
-              // This shouldn't happen but it could if something was saved wrong
-              qd.messages = [];
-            }
-            historyNavDataRef.current = qd;
-            setData(qd);
-            loadInitialTargets(qd.targets ?? []);
-            loadMessageComponents(qd, setData);
-          });
-        } else {
-          r.json().then((d: any) => {
-            setBadShareData(d as InvalidShareIdData);
-          });
-        }
-      });
-    } else if (backupIdParsed.success) {
-      loadDataFromBackupId(backupIdParsed.data);
-    } else {
-      loadDataFromParam(searchParams.get("data"));
-    }
-  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -764,40 +787,46 @@ export default function Index() {
       }
     }
 
-    const pathUrl = location.origin + location.pathname;
-    const encoded = base64UrlEncode(JSON.stringify(data));
-    if (backupId === undefined) {
-      // URLs on Cloudflare are limited to 16KB
-      // We might want to lower this even more since the
-      // browser starts to complain at 4,096 bytes
-      const fullUrl = new URL(`${pathUrl}?data=${encoded}`);
-      if (fullUrl.toString().length >= 16000) {
-        setUrlTooLong(true);
-        if (lastDataParamRef.current !== null) {
-          lastDataParamRef.current = null;
-          safePushState({ path: pathUrl }, pathUrl);
-        }
-      } else {
-        setUrlTooLong(false);
-        if (
-          historyNavDataRef.current === data ||
-          encoded === lastDataParamRef.current
-        ) {
-          return;
-        }
-        lastDataParamRef.current = encoded;
-        safePushState({ path: fullUrl.toString() }, fullUrl.toString());
-      }
-    } else {
-      // Make sure it stays there, we also want to wipe any other params
-      setUrlTooLong(false);
-      if (historyNavDataRef.current === data) {
-        return;
-      }
-      const fullUrl = `${pathUrl}?backup=${backupId}`;
-      safePushState({ path: fullUrl.toString() }, fullUrl.toString());
-    }
+    updateStateUrl(
+      backupId,
+      data,
+      setUrlTooLong,
+      lastDataParamRef,
+      historyNavDataRef,
+    );
   }, [backupId, data, updateCount]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once, on page load
+  useEffect(() => {
+    if (shareId) {
+      fetch(`${apiUrl(BRoutes.share(shareId))}?with_new_targets=true`, {
+        method: "GET",
+      }).then((r) => {
+        if (r.status === 200) {
+          r.json().then((d: any) => {
+            const qd: QueryData = d.data;
+            if (!qd.messages) {
+              // This shouldn't happen but it could if something was saved wrong
+              qd.messages = [];
+            }
+            historyNavDataRef.current = qd;
+            setData(qd);
+            loadInitialTargets(qd.targets ?? []);
+            loadMessageComponents(qd, setData);
+          });
+        } else {
+          r.json().then((d: any) => {
+            setBadShareData(d as InvalidShareIdData);
+          });
+        }
+      });
+    } else if (backupIdParsed.success) {
+      loadDataFromBackupId(backupIdParsed.data);
+    } else {
+      loadDataFromParam(searchParams.get("data"));
+    }
+  }, []);
+
   const messagesWithReference = data.messages.filter(
     (m) => !!m.reference,
   ).length;
