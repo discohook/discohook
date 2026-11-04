@@ -187,32 +187,41 @@ const headingRule = defineRule({
 
     if (capture.level === 1) {
       return (
-        <h4
+        <h1
           className={twMerge(
             common,
-            "text-[calc(var(--font-size)*1.5)] first:mt-2",
+            "text-[calc(var(--base-font-size)*1.5)] first:mt-2",
+            "first:group-data-[type='17']/parent:mt-0",
           )}
         >
           {render(capture.content)}
-        </h4>
+        </h1>
       );
     }
     if (capture.level === 2) {
       return (
-        <h5
+        <h2
           className={twMerge(
             common,
-            "text-[calc(var(--font-size)*1.25)] first:mt-2",
+            "text-[calc(var(--base-font-size)*1.25)] first:mt-2",
+            "first:group-data-[type='17']/parent:mt-0",
           )}
         >
           {render(capture.content)}
-        </h5>
+        </h2>
       );
     }
     return (
-      <h6 className={twMerge(common, "text-[length:--font-size] first:mt-1")}>
+      <h3
+        className={twMerge(
+          common,
+          "text-[length:--base-font-size] first:mt-1",
+          "first:group-data-[type='17']/parent:mt-0",
+          "last:mb-0",
+        )}
+      >
         {render(capture.content)}
-      </h6>
+      </h3>
     );
   },
 });
@@ -1363,7 +1372,13 @@ export const Markdown: React.FC<{
     }
   }, [result, cache]);
 
-  return <div>{renderMarkdownNodes(result.nodes, resolver.resolved, t)}</div>;
+  return (
+    // @ts-expect-error we could probably just hardcode this in the heading
+    // rule, OR properly set it upstream according to font scaling preferences
+    <div style={{ "--base-font-size": "1rem" }}>
+      {renderMarkdownNodes(result.nodes, resolver.resolved, t)}
+    </div>
+  );
 };
 
 /**
