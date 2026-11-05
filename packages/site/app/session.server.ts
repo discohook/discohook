@@ -299,7 +299,7 @@ const regenerateToken = async (env: Env, origin: string, userId: bigint) => {
     },
   });
 
-  const permExpireAt = new Date().getTime() + 21_600_000;
+  const permExpireAt = Date.now() + 21_600_000;
   if (memberships.length !== 0) {
     // Generate a Lua script to mass-SET up to 200 keys and their expiration
     // dates. Webdis doesn't support MULTI or pipelining, so this is sort of

@@ -7,12 +7,12 @@ import {
   ButtonStyle,
   ComponentType,
   RESTJSONErrorCodes,
-  WebhookType
+  WebhookType,
 } from "discord-api-types/v10";
 import {
   type BitFlagResolvable,
   PermissionFlags,
-  PermissionsBitField
+  PermissionsBitField,
 } from "discord-bitflag";
 import { getDate } from "discord-snowflake";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
@@ -46,7 +46,7 @@ import {
   actionableMentionStyle,
   codeStyle,
   linkClassName,
-  Markdown
+  Markdown,
 } from "~/components/preview/Markdown";
 import { bioMarkdownFeatures, ProfilePreview } from "~/components/profile";
 import { Prose } from "~/components/Prose";
