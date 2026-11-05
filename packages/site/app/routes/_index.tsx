@@ -674,7 +674,7 @@ export default function Index() {
     async (backupId: bigint) => {
       console.log(`Loading backup ${backupId}`);
       const res = await fetch(
-        `${apiUrl(BRoutes.backups(backupId))}?data=true`,
+        `${apiUrl(BRoutes.backups(backupId))}?data=true&refresh_attachment_urls=true`,
         { method: "GET" },
       );
       if (res.status === 200) {
@@ -1529,7 +1529,7 @@ export default function Index() {
                           )}
                           onClick={async () => {
                             const res = await fetch(
-                              `${apiUrl(BRoutes.backups(backup.id))}?data=true`,
+                              `${apiUrl(BRoutes.backups(backup.id))}?data=true&refresh_attachment_urls=true`,
                               { method: "GET" },
                             );
                             if (!res.ok) {

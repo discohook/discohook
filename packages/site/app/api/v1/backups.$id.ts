@@ -81,6 +81,7 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
   }
 
   const data = "data" in backup ? (backup.data as QueryData) : undefined;
+  const dev = context.env.ENVIRONMENT === "dev";
   if (data && refreshAttachments) {
     let anyChanged = false;
     let refreshFailed = false;
@@ -93,11 +94,13 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     // add urls to refresh and automatically refresh the chunk then reset
     // if it's about to "overflow"
     const addUrl = async (url: string, replace: (newUrl: string) => void) => {
+      if (dev) console.log(`Handling ${url}`);
       if (!isDiscordAttachmentUrl(url)) return;
       // skip future attempts at refreshing if the endpoint failed once
       if (refreshFailed) return;
 
       const parsed = parseAttachmentUrl(url);
+      if (dev) console.log(`Expires: ${parsed.ex?.toString?.()}`);
       if (parsed.ex) {
         // over 2s away from expiring, ignore
         if (parsed.ex.getTime() > now + 2000) {
@@ -115,6 +118,9 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
       if (extant) extant.push(replace);
       else refreshUrlCallbacks.set(url, [replace]);
 
+      if (dev) {
+        console.log(`URLs: ${refreshUrlCallbacks.size}/${MAX_REFRESH_URLS}`);
+      }
       if (refreshUrlCallbacks.size >= MAX_REFRESH_URLS) {
         // slice should not actually be necessary, but just in case
         const urls = Array.from(refreshUrlCallbacks.keys()).slice(
@@ -232,7 +238,10 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
       context.waitUntil(
         db
           .update(backups)
-          .set({ data })
+          .set({
+            data,
+            previewImageUrl: findMessagesPreviewImageUrl(data.messages),
+          })
           .where(eq(backups.id, id))
           .catch(() => {}),
       );

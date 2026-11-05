@@ -416,7 +416,7 @@ export const MessageBackupsModal = (
                               }
                               const loadedBackup =
                                 await backupFetcher.loadAsync(
-                                  `${apiUrl(BRoutes.backups(b.id))}?data=true`,
+                                  `${apiUrl(BRoutes.backups(b.id))}?data=true&refresh_attachment_urls=true`,
                                 );
                               // Always true, this is just a type guard
                               if ("data" in loadedBackup && loadedBackup.data) {
@@ -458,7 +458,7 @@ export const MessageBackupsModal = (
                               }
                               const loadedBackup =
                                 await backupFetcher.loadAsync(
-                                  `${apiUrl(BRoutes.backups(b.id))}?data=true`,
+                                  `${apiUrl(BRoutes.backups(b.id))}?data=true&refresh_attachment_urls=true`,
                                 );
                               // Always true, this is just a type guard
                               if ("data" in loadedBackup && loadedBackup.data) {
@@ -518,6 +518,7 @@ export const MessageBackupsModal = (
                   .fill(undefined)
                   .map((_, i) => (
                     <div
+                      // biome-ignore lint/suspicious/noArrayIndexKey: no real key available
                       key={`backup-skeleton-${i}`}
                       className="rounded-lg border border-border-normal dark:border-border-normal-dark bg-gray-200 dark:bg-gray-800 p-2 flex transition gap-2"
                     >
