@@ -249,27 +249,40 @@ export const useMessageSubmissionManager = (
                 forumThreadId = result.data.channel_id;
               }
 
-              auditLogFetcher.submit(
-                {
-                  type: message.reference ? "edit" : "send",
-                  threadId:
-                    result.data.position !== undefined
-                      ? result.data.channel_id
-                      : undefined,
-                },
-                {
-                  method: "POST",
-                  action: apiUrl(
-                    BRoutes.messageLog(
-                      webhook.id,
-                      // We needed the token in order to arrive at a success state
-                      // biome-ignore lint/style/noNonNullAssertion: ^
-                      webhook.token!,
-                      result.data.id,
+              // This endpoint is for keeping track of message activity &
+              // un-drafting components. Therefore we don't call it unless the
+              // server can make an unproxied request with the true webhook
+              // token. If we allowed an alternate host to report message
+              // content, we can't really verify that information.
+              // Furthermore, usually proxies are for webhooks owned by
+              // different applications.
+              if (
+                target.type === TargetType.Webhook ||
+                (target.type === TargetType.WebhookProxy &&
+                  !target.config.tokens_proprietary)
+              ) {
+                auditLogFetcher.submit(
+                  {
+                    type: message.reference ? "edit" : "send",
+                    threadId:
+                      result.data.position !== undefined
+                        ? result.data.channel_id
+                        : undefined,
+                  },
+                  {
+                    method: "POST",
+                    action: apiUrl(
+                      BRoutes.messageLog(
+                        webhook.id,
+                        // We needed the token in order to arrive at a success state
+                        // biome-ignore lint/style/noNonNullAssertion: ^
+                        webhook.token!,
+                        result.data.id,
+                      ),
                     ),
-                  ),
-                },
-              );
+                  },
+                );
+              }
             }
 
             updateMessages({

@@ -33,6 +33,7 @@ import {
   type TargetFluxerWebhook,
   TargetType,
   type TargetWebhook,
+  TargetWebhookProxy,
   ZodQueryDataMessageDataBase,
 } from "./QueryData-raw";
 
@@ -146,6 +147,14 @@ export const ZodQueryDataTargetWebhook: z.ZodType<TargetWebhook> = z.object({
   url: z.string(),
 });
 
+export const ZodQueryDataTargetWebhookProxy: z.ZodType<TargetWebhookProxy> =
+  z.object({
+    type: z.literal(TargetType.WebhookProxy),
+    origin: z.string(),
+    id: z.string(),
+    token: z.string(),
+  });
+
 export const ZodQueryDataTargetBot: z.ZodType<TargetBot> = z.object({
   type: z.literal(TargetType.Bot),
   application_id: z.string(),
@@ -162,6 +171,7 @@ export const ZodQueryDataTargetFluxerWebhook: z.ZodType<TargetFluxerWebhook> =
 
 export const ZodQueryDataTarget: z.ZodType<QueryDataTarget> = z.union([
   ZodQueryDataTargetWebhook,
+  ZodQueryDataTargetWebhookProxy,
   ZodQueryDataTargetBot,
   ZodQueryDataTargetFluxerWebhook,
 ]);

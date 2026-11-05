@@ -30,7 +30,7 @@ import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
 import { PostChannelIcon } from "~/components/icons/channel";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { FluxerLogo, Logo } from "~/components/icons/Logo";
+import { FluxerLogo, Logo, WebhookProxyLogo } from "~/components/icons/Logo";
 import { InfoBox } from "~/components/InfoBox";
 import { linkClassName } from "~/components/preview/Markdown";
 import { Message } from "~/components/preview/Message.client";
@@ -564,13 +564,13 @@ export default function Index() {
               target.origin,
             );
             if (webhook.id) {
-              const target: DraftTargetWebhookProxy = {
+              const newTarget: DraftTargetWebhookProxy = {
                 type: TargetType.WebhookProxy,
-                origin,
+                origin: target.origin,
                 config,
                 webhook,
               };
-              updateTargets({ [getTargetKey(target)]: target });
+              updateTargets({ [getTargetKey(newTarget)]: newTarget });
             }
             if (
               webhook.guild_id &&
@@ -1269,6 +1269,11 @@ export default function Index() {
                     />
                     {target.type === TargetType.FluxerWebhook ? (
                       <FluxerLogo className="text-[#F5F4FC] size-4 rounded-full bg-fluxer absolute -bottom-0.5 -end-0.5" />
+                    ) : target.type === TargetType.WebhookProxy ? (
+                      <WebhookProxyLogo
+                        origin={target.origin}
+                        className="text-[#F5F4FC] size-4 rounded-full absolute -bottom-0.5 -end-0.5"
+                      />
                     ) : null}
                   </div>
                   <div className="truncate my-auto">

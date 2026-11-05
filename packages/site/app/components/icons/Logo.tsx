@@ -1,5 +1,5 @@
-import { twJoin } from "tailwind-merge";
-import { type IconFC, Svg } from "./Svg";
+import { twJoin, twMerge } from "tailwind-merge";
+import { type IconFC, IconFCProps, Svg } from "./Svg";
 
 export const Logo = (props: { pink?: boolean }) => (
   <Svg width={32} height={32} viewBox="8 8 16 16">
@@ -42,6 +42,28 @@ export const FluxerLogo: IconFC = (props) => (
     />
   </Svg>
 );
+
+export const proxyCollectionColor = "hsl(242, calc(70% * 1), 55%)";
+export const ProxyCollectionLogo: IconFC = (props) => (
+  <img
+    src="https://cdn.clct.app/logo/whitenobg.png"
+    alt=""
+    className={twMerge("size-4 rounded-full bg-[#4756EA]", props?.className)}
+  />
+);
+
+export const WebhookProxyLogo = ({
+  origin,
+  ...props
+}: IconFCProps & { origin: string }) => {
+  switch (origin) {
+    case "https://wh-beta.clct.app":
+    case "https://wh.clct.app":
+      return <ProxyCollectionLogo {...props} />;
+    default:
+      return null;
+  }
+};
 
 export const StoatLogo: IconFC = (props) => (
   <Svg

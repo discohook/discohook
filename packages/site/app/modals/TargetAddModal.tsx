@@ -15,7 +15,7 @@ import { AsyncGuildSelect } from "~/components/AsyncGuildSelect";
 import { Button } from "~/components/Button";
 import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
-import { FluxerLogo } from "~/components/icons/Logo";
+import { FluxerLogo, WebhookProxyLogo } from "~/components/icons/Logo";
 import { linkClassName } from "~/components/preview/Markdown";
 import { ProfilePreview } from "~/components/profile";
 import { RadioishBox } from "~/components/Radio";
@@ -66,6 +66,7 @@ export const getGenericTargetInfo = (
 ): GenericListedTargetInfo => {
   switch (target.type) {
     case TargetType.Webhook:
+    case TargetType.WebhookProxy:
       return {
         name: target.webhook.name ?? "Webhook",
         avatar: cdnImgAttributes(64, (size) =>
@@ -118,6 +119,11 @@ export const ListTarget = ({
         <img {...info.avatar} className="rounded-full size-8" alt={info.name} />
         {target.type === TargetType.FluxerWebhook ? (
           <FluxerLogo className="text-[#F5F4FC] size-4 rounded-full bg-fluxer absolute -bottom-0.5 -end-0.5" />
+        ) : target.type === TargetType.WebhookProxy ? (
+          <WebhookProxyLogo
+            origin={target.origin}
+            className="absolute -bottom-0.5 -end-0.5"
+          />
         ) : null}
       </div>
       <div className="truncate">
@@ -205,8 +211,7 @@ const AddWebhookTarget = ({
         const target: Target = proxy
           ? {
               type: TargetType.WebhookProxy,
-              origin: proxy.origin,
-              config: proxy.config,
+              ...proxy,
               webhook,
             }
           : { type: TargetType.Webhook, webhook };
@@ -431,24 +436,20 @@ const AddWebhookTarget = ({
                 return;
               }
               let origin: string | undefined;
+              let config: DiscordWebhookProxySchema | undefined | null;
               if (url.origin !== "https://discord.com") {
                 try {
-                  const config = await getAlternateHostConfiguration(
-                    url.origin,
-                  );
+                  config = await getAlternateHostConfiguration(url.origin);
                   if (config === null) {
                     setUrlError(t("unsupportedWebhookProxy"));
                     return;
                   }
                   origin = url.origin;
-                  setProxy({ origin, config });
                 } catch (e) {
                   console.error(e);
                   setUrlError(t("invalidWebhookProxyConfiguration"));
                   return;
                 }
-              } else {
-                setProxy(undefined);
               }
 
               const webhook = await getWebhook(
@@ -461,6 +462,11 @@ const AddWebhookTarget = ({
                 setWebhook(webhook);
                 setThreadId(match[3] || undefined);
                 setWillApplyThread(false);
+                if (config && origin) {
+                  setProxy({ origin, config });
+                } else {
+                  setProxy(undefined);
+                }
               } else if ("message" in webhook) {
                 setUrlError(webhook.message as string);
                 setThreadId(undefined);
@@ -589,7 +595,9 @@ const AddWebhookTarget = ({
                   if (cache && webhook.guild_id) {
                     cache.fetchGuildCacheable(webhook.guild_id);
                   }
-                  const target: Target = { type: TargetType.Webhook, webhook };
+                  const target: Target = proxy
+                    ? { type: TargetType.WebhookProxy, ...proxy, webhook }
+                    : { type: TargetType.Webhook, webhook };
                   updateTargets({ [getTargetKey(target)]: target });
                   if (willApplyThread && applyThreadId && threadId) {
                     applyThreadId(threadId);

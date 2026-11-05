@@ -14,7 +14,7 @@ import type { Env } from "~/types/env";
 import { TargetType } from "~/types/QueryData-raw";
 import { WEBHOOK_URL_RE } from "~/util/constants";
 import { isDiscordError } from "~/util/discord";
-import { submitMessage } from "~/util/submitMessage";
+import { type MinimalTarget, submitMessage } from "~/util/submitMessage";
 import { snowflakeAsString, zxParseQuery } from "~/util/zod";
 
 const { parseExpression } = cronParser;
@@ -68,11 +68,35 @@ export class DurableScheduler implements DurableObject {
     // let messageIndex = -1;
 
     const targets = (backup.data.targets ?? [])
-      .map(({ url }) => {
-        const match = url.match(WEBHOOK_URL_RE);
-        return match
-          ? { id: match[1], token: match[2], application_id: null }
-          : undefined;
+      .map((target): MinimalTarget | undefined => {
+        switch (target.type) {
+          case undefined:
+          case TargetType.Webhook: {
+            const match = target.url.match(WEBHOOK_URL_RE);
+            return match
+              ? {
+                  type: TargetType.Webhook,
+                  webhook: {
+                    id: match[1],
+                    token: match[2],
+                    application_id: null,
+                  },
+                }
+              : undefined;
+          }
+          // case TargetType.WebhookProxy:
+          //   return {
+          //     type: target.type,
+          //     origin: target.origin,
+          //     webhook: {
+          //       id: target.id,
+          //       token: target.token,
+          //       application_id: null,
+          //     },
+          //   };
+          default:
+            return undefined;
+        }
       })
       .filter((v): v is NonNullable<typeof v> => !!v);
     if (targets.length === 0) {
@@ -86,7 +110,7 @@ export class DurableScheduler implements DurableObject {
       for (const target of targets) {
         try {
           const result = await submitMessage(
-            { type: TargetType.Webhook, webhook: target },
+            target,
             message,
             // TODO: pull files from S3
             undefined,

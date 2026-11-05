@@ -114,7 +114,10 @@ export type DiscordWebhookProxySchema = z.infer<
   typeof DiscordWebhookProxySchema
 >;
 
-export const allowedOrigins: string[] = [];
+export const allowedOrigins: string[] = [
+  "https://wh-beta.clct.app",
+  "https://wh.clct.app",
+];
 
 export const getAlternateHostConfiguration = async (
   origin: string,
@@ -126,11 +129,11 @@ export const getAlternateHostConfiguration = async (
   );
   if (res.ok) {
     const body = await DiscordWebhookProxySchema.parseAsync(await res.json());
-    if (!body.cors_origin_allowed) {
-      throw Error(
-        "The current origin is not allowed by the alternate host according to its advertised configuration.",
-      );
-    }
+    // if (!body.cors_origin_allowed) {
+    //   throw Error(
+    //     "The current origin is not allowed by the alternate host according to its advertised configuration.",
+    //   );
+    // }
     return body;
   }
   return null;
