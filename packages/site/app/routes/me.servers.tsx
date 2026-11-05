@@ -10,7 +10,7 @@ import { Twemoji } from "~/components/icons/Twemoji";
 import { getUser } from "~/session.server";
 import { and, discordMembers, eq, getDb } from "~/store.server";
 import { cdn, cdnImgAttributes } from "~/util/discord";
-import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
+import { type ActionArgs, jsonR, type LoaderArgs } from "~/util/loader";
 import { snowflakeAsString, zxParseForm } from "~/util/zod";
 
 export const loader = async ({ request, context }: LoaderArgs) => {
@@ -64,7 +64,7 @@ export const action = async ({ request, context }: ActionArgs) => {
         throw jsonR(
           {
             message:
-              "You are not a member of this server. You may need to log in again.",
+              "Could not find you in this server. You may need to log in again.",
           },
           404,
         );

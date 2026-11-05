@@ -617,7 +617,7 @@ export const getTokenGuildPermissions = async (
             ...e.rawError,
             message:
               e.code === RESTJSONErrorCodes.UnknownMember
-                ? "You are not a member of this server"
+                ? "Could not find you in this server"
                 : e.rawError.message,
           },
           e.status,
@@ -746,7 +746,7 @@ export const getTokenGuildChannelPermissions = async (
             ...e.rawError,
             message:
               e.code === RESTJSONErrorCodes.UnknownMember
-                ? "You are not a member of this server"
+                ? "Could not find you in this server"
                 : e.rawError.message,
           },
           e.status,
