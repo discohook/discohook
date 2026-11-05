@@ -1,7 +1,9 @@
+import { ComponentType } from "discord-api-types/v10";
 import { z } from "zod/v3";
 import { getUser, getUserId } from "~/session.server";
 import { ZodQueryData } from "~/types/QueryData";
-import { jsonR, type ActionArgs, type LoaderArgs } from "~/util/loader";
+import { extractComponentsByType } from "~/util/discord";
+import { type ActionArgs, jsonR, type LoaderArgs } from "~/util/loader";
 import { zxParseJson, zxParseQuery } from "~/util/zod";
 import {
   backups,
@@ -87,6 +89,28 @@ export const findMessagesPreviewImageUrl = (
         candidates.author.push(embed.author.icon_url);
       if (isValidImageUrl(embed.footer?.icon_url))
         candidates.footer.push(embed.footer.icon_url);
+    }
+    if (message.data.components) {
+      const mediaComponents = extractComponentsByType(message.data.components, [
+        ComponentType.Thumbnail,
+        ComponentType.MediaGallery,
+      ]);
+      for (const component of mediaComponents) {
+        switch (component.type) {
+          case ComponentType.Thumbnail: {
+            candidates.thumbnail.push(component.media.url);
+            break;
+          }
+          case ComponentType.MediaGallery: {
+            for (const item of component.items) {
+              candidates.image.push(item.media.url);
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      }
     }
     previewImageUrl =
       candidates.thumbnail[0] ??
