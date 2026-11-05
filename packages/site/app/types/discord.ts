@@ -49,3 +49,12 @@ export const ZodMessageFlags = z.number().refine((val): val is MessageFlags => {
     return false;
   }
 });
+
+export interface RefreshedAttachment {
+  original: string;
+  refreshed: string;
+}
+
+export interface RESTPostAPIRefreshAttachmentURLs {
+  refreshed_urls: RefreshedAttachment[];
+}

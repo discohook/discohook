@@ -1,16 +1,25 @@
-// Default-imported because this CJS package isn't statically analyzable for
-// named exports under Vite's SSR module runner.
+import { REST } from "@discordjs/rest";
 import cronParser from "cron-parser";
+import { ComponentType } from "discord-api-types/v10";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { doubleDecode, getUserId } from "~/session.server";
 import { backups, getDb } from "~/store.server";
-import { ZodQueryData, type QueryData } from "~/types/QueryData";
-import { onlyActionRows } from "~/util/discord";
+import type {
+  RefreshedAttachment,
+  RESTPostAPIRefreshAttachmentURLs,
+} from "~/types/discord";
+import { type QueryData, ZodQueryData } from "~/types/QueryData";
 import {
-  jsonR,
+  extractComponentsByType,
+  isDiscordAttachmentUrl,
+  onlyActionRows,
+  parseAttachmentUrl,
+} from "~/util/discord";
+import {
   type ActionArgs,
+  jsonR,
   type LoaderArgs,
   type SerializeFrom,
 } from "~/util/loader";
@@ -21,13 +30,29 @@ import {
   zxParseQuery,
 } from "~/util/zod";
 import { findMessagesPreviewImageUrl } from "./backups";
+
+// Default-imported cronParser because this CJS package isn't statically
+// analyzable for named exports under Vite's SSR module runner.
 const { parseExpression } = cronParser;
+
+const MAX_REFRESH_URLS = 50;
+const processRefresh = async (
+  urls: string[],
+  rest: REST,
+): Promise<RefreshedAttachment[]> => {
+  const refreshed = (await rest.post("/attachments/refresh-urls", {
+    body: { attachment_urls: urls },
+  })) as RESTPostAPIRefreshAttachmentURLs;
+  return refreshed.refreshed_urls;
+};
 
 export const loader = async ({ request, params, context }: LoaderArgs) => {
   const { id } = zxParseParams(params, { id: snowflakeAsString() });
-  const { data: returnData } = zxParseQuery(request, {
-    data: z.optional(zx.BoolAsString),
-  });
+  const { data: returnData, refresh_attachment_urls: refreshAttachments } =
+    zxParseQuery(request, {
+      data: zx.BoolAsString.optional(),
+      refresh_attachment_urls: zx.BoolAsString.optional(),
+    });
   const userId = await getUserId(request, context, true);
 
   const db = getDb(context.env.HYPERDRIVE);
@@ -55,12 +80,168 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
     );
   }
 
+  const data = "data" in backup ? (backup.data as QueryData) : undefined;
+  if (data && refreshAttachments) {
+    let anyChanged = false;
+    let refreshFailed = false;
+    const now = Date.now();
+
+    const refreshUrlCallbacks = new Map<string, ((newUrl: string) => void)[]>();
+    const refreshedUrls = new Map<string, string>();
+    const rest = new REST().setToken(context.env.DISCORD_BOT_TOKEN);
+
+    // add urls to refresh and automatically refresh the chunk then reset
+    // if it's about to "overflow"
+    const addUrl = async (url: string, replace: (newUrl: string) => void) => {
+      if (!isDiscordAttachmentUrl(url)) return;
+      // skip future attempts at refreshing if the endpoint failed once
+      if (refreshFailed) return;
+
+      const parsed = parseAttachmentUrl(url);
+      if (parsed.ex) {
+        // over 2s away from expiring, ignore
+        if (parsed.ex.getTime() > now + 2000) {
+          return;
+        }
+      }
+
+      const alreadyRefreshed = refreshedUrls.get(url);
+      if (alreadyRefreshed) {
+        replace(alreadyRefreshed);
+        return;
+      }
+
+      const extant = refreshUrlCallbacks.get(url);
+      if (extant) extant.push(replace);
+      else refreshUrlCallbacks.set(url, [replace]);
+
+      if (refreshUrlCallbacks.size >= MAX_REFRESH_URLS) {
+        // slice should not actually be necessary, but just in case
+        const urls = Array.from(refreshUrlCallbacks.keys()).slice(
+          0,
+          MAX_REFRESH_URLS,
+        );
+        let refreshed: RefreshedAttachment[] = [];
+        try {
+          refreshed = await processRefresh(urls, rest);
+          anyChanged = true;
+        } catch {
+          refreshFailed = true;
+        }
+        for (const attachment of refreshed) {
+          const replaceFuncs =
+            refreshUrlCallbacks.get(attachment.original) ?? [];
+          for (const replace of replaceFuncs) {
+            replace(attachment.refreshed);
+          }
+          refreshedUrls.set(attachment.original, attachment.refreshed);
+        }
+        refreshUrlCallbacks.clear();
+      }
+    };
+
+    // iterate every image prop in every message
+    for (const { data: message } of data.messages) {
+      if (message.avatar_url) {
+        await addUrl(message.avatar_url, (url) => {
+          message.avatar_url = url;
+        });
+      }
+      if (message.author?.icon_url) {
+        await addUrl(message.author.icon_url, (url) => {
+          if (!message.author) return;
+          message.author.icon_url = url;
+        });
+      }
+      for (const embed of message.embeds ?? []) {
+        if (embed.author?.icon_url) {
+          await addUrl(embed.author.icon_url, (url) => {
+            if (!embed.author) return;
+            embed.author.icon_url = url;
+          });
+        }
+        if (embed.footer?.icon_url) {
+          await addUrl(embed.footer.icon_url, (url) => {
+            if (!embed.footer) return;
+            embed.footer.icon_url = url;
+          });
+        }
+        if (embed.image?.url) {
+          await addUrl(embed.image.url, (url) => {
+            if (!embed.image) return;
+            embed.image.url = url;
+          });
+        }
+        if (embed.thumbnail?.url) {
+          await addUrl(embed.thumbnail.url, (url) => {
+            if (!embed.thumbnail) return;
+            embed.thumbnail.url = url;
+          });
+        }
+      }
+      if (message.components) {
+        const mediaComponents = extractComponentsByType(message.components, [
+          ComponentType.Thumbnail,
+          ComponentType.MediaGallery,
+        ]);
+        for (const component of mediaComponents) {
+          switch (component.type) {
+            case ComponentType.Thumbnail: {
+              await addUrl(component.media.url, (url) => {
+                component.media.url = url;
+              });
+              break;
+            }
+            case ComponentType.MediaGallery: {
+              for (const item of component.items) {
+                await addUrl(item.media.url, (url) => {
+                  item.media.url = url;
+                });
+              }
+              break;
+            }
+            default:
+              break;
+          }
+        }
+      }
+    }
+
+    // replace remainder of urls between e.g. 1-49, 51-99
+    if (refreshUrlCallbacks.size !== 0 && !refreshFailed) {
+      const urls = Array.from(refreshUrlCallbacks.keys()).slice(
+        0,
+        MAX_REFRESH_URLS,
+      );
+      let refreshed: RefreshedAttachment[] = [];
+      try {
+        refreshed = await processRefresh(urls, rest);
+        anyChanged = true;
+      } catch {}
+      for (const attachment of refreshed) {
+        const replaceFuncs = refreshUrlCallbacks.get(attachment.original) ?? [];
+        for (const replace of replaceFuncs) {
+          replace(attachment.refreshed);
+        }
+        refreshedUrls.set(attachment.original, attachment.refreshed);
+      }
+    }
+
+    // save changed data
+    if (anyChanged) {
+      context.waitUntil(
+        db
+          .update(backups)
+          .set({ data })
+          .where(eq(backups.id, id))
+          .catch(() => {}),
+      );
+    }
+  }
+
   return {
     ...backup,
-    data:
-      "data" in backup
-        ? doubleDecode<QueryData>(backup.data as QueryData)
-        : null,
+    data: data ? doubleDecode(data) : null,
   };
 };
 
@@ -110,7 +291,7 @@ export const action = async ({ request, params, context }: ActionArgs) => {
       .datetime()
       .transform((v) => new Date(v))
       .refine(
-        (d) => d.getTime() - new Date().getTime() >= 30_000,
+        (d) => d.getTime() - Date.now() >= 30_000,
         "Scheduled time must be at least 30 seconds in the future",
       )
       .nullable()
