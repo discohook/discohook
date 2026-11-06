@@ -960,5 +960,11 @@
     "tooFarPast": "هذا التاريخ في الماضي (على الأقل {{ date, M/D/YYYY }})",
     "tooFarFuture": "هذا التاريخ في المستقبل البعيد (على الأقصى {{ date, M/D/YYYY }})",
     "linkContainerTooLarge": "هذه الحاوية من الممكن ان تكون اكبر من ما يمكن عرضه على ديسكورد",
-    "linkContainerTooManyGalleryItems": "حاويات روابط العرض المسبق يجب ان تحتوي على الأقصى {{maximum}} عناصر معرض الوسائط (حاليا {{count}} عناصر اكثر من الحد الأقصى)"
+    "linkContainerTooManyGalleryItems": "حاويات روابط العرض المسبق يجب ان تحتوي على الأقصى {{maximum}} عناصر معرض الوسائط (حاليا {{count}} عناصر اكثر من الحد الأقصى)",
+    "defaultButtonsWarning": "<bold>انتبه!</bold> يبدو انك لم تقوم بإزالة الأزرار الافتراضية. قد يحير هذا اعضاء السيرفر الخاص بك.",
+    "defaultButtonsRemoveAll": "الحل: إزالة 2 أزرار",
+    "defaultButtonsRemoveSupport": "الحل: إزالة رابط سيرفر المساعدة",
+    "defaultButtonsRemoveBot": "الحل: إزالة رابط دعوة البوت",
+    "unsupportedWebhookProxy": "لا يوجد دعم لهذا المضيف.",
+    "invalidWebhookProxyConfiguration": "لم يتم تهيئة هذا المضيف بشكل صحيح."
 }
