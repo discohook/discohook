@@ -531,15 +531,23 @@ const AddWebhookTarget = ({
             )}
           >
             <div className="w-1/3 me-4 my-auto">
-              {avatarUrl ? (
-                <img
-                  className="rounded-full size-24 m-auto"
-                  src={avatarUrl}
-                  alt={webhook?.name ?? "Webhook"}
-                />
-              ) : (
-                <div className="rounded-full size-24 bg-gray-400 dark:bg-gray-600 m-auto" />
-              )}
+              <div className="m-auto relative w-fit">
+                {avatarUrl ? (
+                  <img
+                    className="rounded-full size-24"
+                    src={avatarUrl}
+                    alt={webhook?.name ?? "Webhook"}
+                  />
+                ) : (
+                  <div className="rounded-full size-24 bg-gray-400 dark:bg-gray-600" />
+                )}
+                {proxy && webhook ? (
+                  <WebhookProxyLogo
+                    origin={proxy.origin}
+                    className="absolute size-8 -bottom-0 -end-0"
+                  />
+                ) : null}
+              </div>
             </div>
             <div className="grow">
               {webhook ? (
