@@ -5,7 +5,14 @@ import {
   WebhookType,
 } from "discord-api-types/v10";
 import { getDate } from "discord-snowflake";
-import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { twJoin } from "tailwind-merge";
@@ -17,6 +24,7 @@ import { useError } from "~/components/Error";
 import { CoolIcon } from "~/components/icons/CoolIcon";
 import { FluxerLogo, WebhookProxyLogo } from "~/components/icons/Logo";
 import { linkClassName } from "~/components/preview/Markdown";
+import { UsernameBadgeWithTooltip } from "~/components/preview/Message.client";
 import { ProfilePreview } from "~/components/profile";
 import { RadioishBox } from "~/components/Radio";
 import { TextInput } from "~/components/TextInput";
@@ -34,6 +42,7 @@ import {
 import {
   type DiscordWebhookProxySchema,
   getAlternateHostConfiguration,
+  getAltHostName,
 } from "~/util/discord/alt-hosts";
 import { fluxerWebhookAvatarUrl, getFluxerWebhook } from "~/util/fluxer";
 import { useApiLoader, useSafeFetcher } from "~/util/loader";
@@ -99,6 +108,33 @@ export const getGenericTargetInfo = (
   }
 };
 
+export const ProxyDisclaimerBadge = ({
+  t,
+  origin,
+}: {
+  t: TFunction;
+  origin: string;
+}) => {
+  const name = getAltHostName(origin);
+  const host = useMemo(() => {
+    try {
+      return new URL(origin).host;
+    } catch {
+      return origin;
+    }
+  }, [origin]);
+  return (
+    <UsernameBadgeWithTooltip
+      label={t("badge.proxy")}
+      className="ltr:ml-0 rtl:mr-0 mt-0 flex"
+      triggerClassName="ms-1 self-center"
+      tooltip={t("proxyDisclaimer", {
+        replace: { platform: name ?? host },
+      })}
+    />
+  );
+};
+
 export const ListTarget = ({
   t,
   target,
@@ -138,6 +174,9 @@ export const ListTarget = ({
                 className="text-blurple-500 dark:text-blurple-400"
               />
             </span>
+          ) : null}
+          {target.type === TargetType.WebhookProxy ? (
+            <ProxyDisclaimerBadge t={t} origin={target.origin} />
           ) : null}
         </div>
         <p className="text-muted dark:text-muted-dark text-xs">

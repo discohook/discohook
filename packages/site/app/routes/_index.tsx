@@ -77,7 +77,7 @@ import { MessageShareModal } from "~/modals/MessageShareModal";
 import { DialogPortal, ModalFooter } from "~/modals/Modal";
 import { ShareExpiredModal } from "~/modals/ShareExpiredModal";
 import { SimpleTextModal } from "~/modals/SimpleTextModal";
-import { getGenericTargetInfo, TargetAddModal } from "~/modals/TargetAddModal";
+import { getGenericTargetInfo, ProxyDisclaimerBadge, TargetAddModal } from "~/modals/TargetAddModal";
 import { TargetEditModal } from "~/modals/WebhookEditModal";
 import type { loader as MeBackupsLoader } from "~/routes/me.backups";
 import { getSessionStorage, getUserId } from "~/session.server";
@@ -1293,6 +1293,9 @@ export default function Index() {
                           </span>
                         ) : null}
                       </p>
+                      {target.type === TargetType.WebhookProxy ? (
+                        <ProxyDisclaimerBadge t={t} origin={target.origin} />
+                      ) : null}
                     </div>
                   </div>
                   <div className="ms-auto space-x-2 rtl:space-x-reverse my-auto shrink-0 text-xl">

@@ -1,4 +1,6 @@
 import { twJoin, twMerge } from "tailwind-merge";
+import { getAltHostName } from "~/util/discord/alt-hosts";
+import { CoolIcon } from "./CoolIcon";
 import { type IconFC, IconFCProps, Svg } from "./Svg";
 
 export const Logo = (props: { pink?: boolean }) => (
@@ -43,25 +45,37 @@ export const FluxerLogo: IconFC = (props) => (
   </Svg>
 );
 
-export const proxyCollectionColor = "hsl(242, calc(70% * 1), 55%)";
-export const ProxyCollectionLogo: IconFC = (props) => (
-  <img
-    src="https://cdn.clct.app/logo/whitenobg.png"
-    alt=""
-    className={twMerge("size-4 rounded-full bg-[#4756EA]", props?.className)}
-  />
-);
-
 export const WebhookProxyLogo = ({
   origin,
   ...props
 }: IconFCProps & { origin: string }) => {
+  const name = getAltHostName(origin) ?? "a proxy";
   switch (origin) {
     case "https://wh-beta.clct.app":
     case "https://wh.clct.app":
-      return <ProxyCollectionLogo {...props} />;
+      return (
+        <img
+          title={`Requests sent to ${name} (${origin}), not Discord (discord.com)`}
+          src="https://cdn.clct.app/logo/whitenobg.png"
+          alt=""
+          className={twMerge(
+            "size-4 rounded-full bg-[#4756EA]",
+            props?.className,
+          )}
+        />
+      );
     default:
-      return null;
+      return (
+        <div
+          title={`Requests sent to ${origin}, not Discord (discord.com)`}
+          className={twMerge(
+            "size-4 rounded-full bg-[#516970] text-white flex text-sm",
+            props.className,
+          )}
+        >
+          <CoolIcon icon="Link_Horizontal" className="m-auto" />
+        </div>
+      );
   }
 };
 

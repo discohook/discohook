@@ -1,4 +1,5 @@
 import { Avatar } from "@base-ui/react/avatar";
+import { Tooltip } from "@base-ui/react/tooltip";
 import type { APIEmbedImage, APIWebhook } from "discord-api-types/v10";
 import {
   MessageFlags,
@@ -61,18 +62,20 @@ export const getAuthorType = (
   return AuthorType.Webhook;
 };
 
+interface UsernameBadgeProps {
+  label: string;
+  verified?: boolean;
+  className?: string;
+}
+
 export const UsernameBadge = ({
   label,
   verified,
   className,
-}: {
-  label: string;
-  verified?: boolean;
-  className?: string;
-}) => (
+}: UsernameBadgeProps) => (
   <span
     className={twMerge(
-      "font-semibold align-top ml-1 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]",
+      "font-semibold align-top ltr:ml-1 rtl:mr-1 mt-[0.3em] text-[0.75rem] rounded bg-blurple text-white items-center inline-flex px-[0.275rem] h-[0.9375rem]",
       className,
     )}
   >
@@ -80,7 +83,7 @@ export const UsernameBadge = ({
       <Svg
         width={16}
         height={16}
-        className="w-[0.9375rem] h-[0.9375rem] -ml-1 inline-block"
+        className="w-[0.9375rem] h-[0.9375rem] ltr:-ml-1 rtl:-mr-1 inline-block"
       >
         <path
           fill="currentColor"
@@ -92,6 +95,70 @@ export const UsernameBadge = ({
     ) : null}
     {label}
   </span>
+);
+
+export const UsernameBadgeWithTooltip = ({
+  tooltip,
+  delay = 0,
+  triggerClassName = "",
+  ...badgeProps
+}: UsernameBadgeProps & {
+  tooltip: string;
+  delay?: number;
+  triggerClassName?: string;
+}) => (
+  <Tooltip.Provider delay={delay}>
+    <Tooltip.Root>
+      <Tooltip.Trigger aria-label={tooltip} className={triggerClassName}>
+        <UsernameBadge {...badgeProps} />
+      </Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Positioner
+          sideOffset={10}
+          side="top"
+          align="center"
+          className="z-40"
+        >
+          <Tooltip.Popup
+            className={twJoin(
+              "relative overflow-visible flex origin-[var(--transform-origin)] rounded-lg px-2 py-1 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[instant]:duration-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0",
+              "bg-gray-50 dark:bg-gray-800 outline outline-1 outline-gray-200 dark:outline-gray-600",
+              "shadow-lg dark:shadow-none dark:-outline-offset-1",
+            )}
+          >
+            <Tooltip.Arrow
+              className="pointer-events-none z-10 block"
+              style={{
+                top: "auto",
+                bottom: "-6px",
+              }}
+            >
+              <svg
+                width="18"
+                height="8"
+                viewBox="0 0 18 8"
+                aria-hidden="true"
+                className="block"
+              >
+                <path
+                  d="M1 1H17L10.8 6.4C9.77 7.29 8.23 7.29 7.2 6.4L1 1Z"
+                  className="fill-gray-50 dark:fill-gray-800"
+                />
+                <path
+                  d="M1 1L7.2 6.4C8.23 7.29 9.77 7.29 10.8 6.4L17 1"
+                  className="stroke-gray-200 dark:stroke-gray-600"
+                  fill="none"
+                  strokeWidth="1"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Tooltip.Arrow>
+            <p className="text-sm font-medium">{tooltip}</p>
+          </Tooltip.Popup>
+        </Tooltip.Positioner>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  </Tooltip.Provider>
 );
 
 export const Message: React.FC<{

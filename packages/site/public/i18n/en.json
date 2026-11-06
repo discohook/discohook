@@ -98,6 +98,7 @@
   "invalidWebhookUrl": "Invalid webhook URL. They start with https://discord.com/api/webhooks/...",
   "unsupportedWebhookProxy": "This alternate host is not supported.",
   "invalidWebhookProxyConfiguration": "This alternate host is configured improperly.",
+  "proxyDisclaimer": "Your message will be sent through {{platform}}, which is not operated by Discohook or Discord.",
   "backToServerSelection": "Back to server selection",
   "createdAtBy": "Created on {{ createdAt, MMM D, YYYY }} by {{username}}",
   "someone": "someone",
@@ -760,7 +761,8 @@
   "todayAt": "{{ date, h:mm A }}",
   "badge": {
     "app": "APP",
-    "server": "SERVER"
+    "server": "SERVER",
+    "proxy": "PROXY"
   },
   "roles": "Roles",
   "channels": "Channels",

@@ -119,6 +119,16 @@ export const allowedOrigins: string[] = [
   "https://wh.clct.app",
 ];
 
+export const getAltHostName = (origin: string) => {
+  switch (origin) {
+    case "https://wh-beta.clct.app":
+    case "https://wh.clct.app":
+      return "Collection";
+    default:
+      return null;
+  }
+};
+
 export const getAlternateHostConfiguration = async (
   origin: string,
 ): Promise<DiscordWebhookProxySchema | null> => {
