@@ -1,8 +1,6 @@
-import type {
-  APIMessageTopLevelComponent,
-  ComponentType,
-} from "discord-api-types/v10";
-import { useState } from "react";
+import type { APIMessageTopLevelComponent } from "discord-api-types/v10";
+import { useRef, useState } from "react";
+import type { ActionRowDragData, ComponentPath } from "./componentTree";
 
 export enum DragType {
   // message elements
@@ -22,19 +20,20 @@ type DragDataMap = {
   [DragType.Attachment]: null;
   [DragType.TopLevelComponent]: {
     type: APIMessageTopLevelComponent["type"];
-    index: number;
-    parentType?: ComponentType.Container;
+    path: ComponentPath;
+    /** Preview text shown in the floating drag ghost. */
+    label: string;
   };
-  [DragType.ActionRowComponent]: null;
+  [DragType.ActionRowComponent]: ActionRowDragData & { label: string };
   [DragType.SelectOption]: null;
   [DragType.SectionText]: null;
   [DragType.GalleryItem]: null;
   [DragType.Backup]: null;
 };
 
-type DragData<T extends keyof DragDataMap> = DragDataMap[T];
+export type DragData<T extends keyof DragDataMap> = DragDataMap[T];
 
-type OnDropCallback = (scopeId: string, args: unknown) => void;
+export type OnDropCallback = (scopeId: string, args: unknown) => void;
 
 interface DragManagerState {
   type: DragType | null;
@@ -44,10 +43,17 @@ interface DragManagerState {
   focusedKey?: string;
 }
 
+type PointerMoveListener = (x: number, y: number) => void;
+
 export class DragManager {
   constructor(
     private state: DragManagerState,
     private setState: React.Dispatch<React.SetStateAction<DragManagerState>>,
+    /**
+     * subscribing doesn't rerun all the time because this is ref-based and
+     * stable across renders
+     */
+    private pointerListeners: Set<PointerMoveListener>,
   ) {}
 
   get type() {
@@ -93,9 +99,37 @@ export class DragManager {
   end() {
     this.setState({ type: null });
   }
+
+  /**
+   * Called by the active pointer-drag source on every `pointermove`.
+   * Pretty much just for the drag label functionality
+   */
+  reportPointerMove(x: number, y: number) {
+    for (const cb of this.pointerListeners) cb(x, y);
+  }
+
+  /** Returns an unsubscribe function */
+  subscribePointerMove(cb: PointerMoveListener): () => void {
+    this.pointerListeners.add(cb);
+    return () => {
+      this.pointerListeners.delete(cb);
+    };
+  }
+}
+
+/**
+ * type "guard" for `drag.data` to be a specific `DragType`. we should
+ * probably make this more ts-native somehow since this is kinda yucky
+ */
+export function getDragData<T extends DragType>(
+  drag: DragManager | undefined,
+  type: T,
+): DragData<T> | undefined {
+  return drag?.type === type ? (drag.data as DragData<T>) : undefined;
 }
 
 export const useDragManager = () => {
-  const [data, setData] = useState<DragManagerState>({ type: null });
-  return new DragManager(data, setData);
+  const [state, setState] = useState<DragManagerState>({ type: null });
+  const pointerListeners = useRef(new Set<PointerMoveListener>()).current;
+  return new DragManager(state, setState, pointerListeners);
 };

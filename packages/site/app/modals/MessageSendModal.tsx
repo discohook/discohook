@@ -178,7 +178,7 @@ export const useMessageSubmissionManager = (
                   };
                   break;
                 }
-                const withoutFlow = structuredClone(updated);
+                const { _key: _, ...withoutFlow } = structuredClone(updated);
                 (
                   rowsWithoutFlows[rowsWithoutFlows.length - 1] as typeof row
                 ).components.push(withoutFlow);

@@ -73,6 +73,7 @@ import type {
 } from "~/types/QueryData";
 import { TargetType } from "~/types/QueryData-raw";
 import { useCache } from "~/util/cache/CacheManager";
+import type { ComponentPath } from "~/util/componentTree";
 import {
   MAX_ACTION_ROW_WIDTH,
   MAX_TOTAL_COMPONENTS,
@@ -115,7 +116,7 @@ interface KVComponentEditorState {
     name: string;
     avatar: string | null;
   };
-  path?: number[];
+  path?: ComponentPath;
 }
 
 export const loader = async ({ request, context, params }: LoaderArgs) => {
@@ -880,7 +881,7 @@ const AddRowPromptButton = ({
 };
 
 // This probably shouldn't be its own function
-const isSectionAccessory = (data: Data, path: number[]): boolean => {
+const isSectionAccessory = (data: Data, path: ComponentPath): boolean => {
   const first = data.components[path[0]];
   if (first?.type === ComponentType.Container) {
     const second = first.components[path[1]];
@@ -900,7 +901,7 @@ const MoveComponentButton = ({
   setData,
 }: {
   t: TFunction;
-  path: number[];
+  path: ComponentPath;
   siblings: APIComponentInMessageActionRow[];
   component: APIComponentInMessageActionRow;
   data: Data;
@@ -960,9 +961,9 @@ export const getActionRowComponentPath = (
   draft?: boolean,
 ): {
   found: APIComponentInMessageActionRow;
-  path: number[];
+  path: ComponentPath;
 } => {
-  let compPath: number[] = [];
+  let compPath: ComponentPath = [];
   let absoluteI = -1;
   let resultComponent: APIComponentInMessageActionRow | undefined;
   for (const row of components) {
@@ -1080,7 +1081,7 @@ export const getActionRowComponentPath = (
 // Modified from bot/src/commands/components/delete.tsx extractComponentByPath
 export const replaceComponentByPath = (
   allComponents: APIMessageTopLevelComponent[],
-  path: number[],
+  path: ComponentPath,
   replacement: APIComponentInMessageActionRow | null,
 ) => {
   // let parent: APIContainerComponent | undefined;
@@ -1217,8 +1218,8 @@ export default () => {
   // TODO: use this to reduce "flicker" when opening/closing modal
   // const [editingFlowOpen, setEditingFlowOpen] = useState(false);
   const [editingFlow, setEditingFlow] = useState<EditingFlowData | undefined>();
-  // const [initialPath, setInitialPath] = useState<number[]>();
-  const [path, setPath] = useState<number[]>([0, 0]);
+  // const [initialPath, setInitialPath] = useState<ComponentPath>();
+  const [path, setPath] = useState<ComponentPath>([0, 0]);
 
   const [data, setData] = useReducer(
     (current: Data, newData: Partial<Data>) => {

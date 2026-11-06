@@ -15,9 +15,18 @@ import type {
   APIButtonComponentWithCustomId,
   APIComponentInMessageActionRow,
   APIStringSelectComponent,
+  QueryData,
 } from "~/types/QueryData";
+import {
+  type ComponentPath,
+  getComponentWidth,
+  moveActionRowComponent,
+  resolveActionRow,
+} from "~/util/componentTree";
 import { MAX_ACTION_ROW_WIDTH } from "~/util/constants";
+import { type DragManager, DragType } from "~/util/drag";
 import { getZodErrorMessage, type SerializeFrom } from "~/util/loader";
+import { usePointerDragSource } from "~/util/usePointerDrag";
 import type { SetErrorFunction } from "../Error";
 import { CoolIcon, type CoolIconsGlyph } from "../icons/CoolIcon";
 import { getComponentText, getRowWidth } from "./TopLevelComponentEditor";
@@ -120,6 +129,11 @@ export const IndividualComponentEditor: React.FC<{
   component: APIComponentInMessageActionRow;
   index: number;
   row: APIActionRowComponent<APIComponentInMessageActionRow>;
+  /** Only required for dragging */
+  rowPath?: ComponentPath;
+  /** Only required for dragging */
+  message?: QueryData["messages"][number];
+  drag?: DragManager;
   updateRow: (
     row?: APIActionRowComponent<APIComponentInMessageActionRow>,
   ) => void;
@@ -132,6 +146,9 @@ export const IndividualComponentEditor: React.FC<{
   component,
   index,
   row,
+  rowPath,
+  message,
+  drag,
   updateRow,
   onClick,
   actionsBar,
@@ -152,8 +169,44 @@ export const IndividualComponentEditor: React.FC<{
       ? false
       : !!componentFoundBackupsHook[0][String(componentId)]?.length;
 
+  const { onPointerDown, dragging } = usePointerDragSource(
+    rowPath && message ? drag : undefined,
+    DragType.ActionRowComponent,
+    () => ({
+      data: {
+        componentType: component.type,
+        width: getComponentWidth(component),
+        rowPath: rowPath as ComponentPath,
+        index,
+        label: previewText ?? t(`component.${component.type}`),
+      },
+      onDrop(_messageId, args) {
+        if (!message) return;
+        const opts = args as { rowPath: ComponentPath; index: number };
+        const destRow = resolveActionRow(
+          message.data.components ?? [],
+          opts.rowPath,
+        );
+        if (!destRow) return;
+        moveActionRowComponent(row, index, destRow, opts.index);
+        updateRow();
+      },
+    }),
+  );
+
   return (
     <div className="flex text-base text-gray-600 dark:text-gray-400 rounded-lg bg-blurple/10 hover:bg-blurple/15 border border-blurple/30 shadow hover:shadow-lg transition font-semibold select-none">
+      {rowPath && message ? (
+        <div
+          className={twJoin(
+            "touch-none shrink-0 my-auto ms-2 text-lg flex items-center",
+            dragging ? "cursor-grabbing" : "cursor-grab",
+          )}
+          onPointerDown={onPointerDown}
+        >
+          <CoolIcon icon="Drag_Vertical" />
+        </div>
+      ) : null}
       <button
         type="button"
         className="flex p-2 h-full w-full my-auto truncate disabled:animate-pulse"

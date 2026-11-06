@@ -1,4 +1,7 @@
+import { type APIButtonComponent, ComponentType } from "discord-api-types/v10";
 import type { TFunction } from "~/types/i18next";
+import type { APIMessageTopLevelComponent, WithKey } from "~/types/QueryData";
+import { hasCustomId } from "./discord";
 
 export const copyText = (text: string) => {
   const input = document.createElement("textarea");
@@ -51,6 +54,68 @@ export const randomString = (length: number, onlyDigits = false) => {
 
   return result;
 };
+
+/**
+ * we need to create stable internal identifiers for pretty much everything
+ * in order to properly preserve the collapsed/open state when data changes
+ * index. this works basically the same way as message._id
+ */
+export const getStableKey = <T extends { _key?: string }>(item: T): string => {
+  if (item._key) return item._key;
+  const key = randomString(10);
+  item._key = key;
+  return key;
+};
+
+// `_key` is editor-only state and we generally don't want it to go anywhere
+// else, but it wouldn't be a big deal if it did
+export const stripKey = <T extends { _key?: string }>(
+  item: T,
+  options?: { removeCustomId?: boolean },
+): T => {
+  const { _key, ...rest } = item;
+  if (
+    options?.removeCustomId &&
+    // should be called something like "supports custom id" or "needs custom
+    // id" as it's type-based and doesn't actually read custom_id
+    !hasCustomId(rest as unknown as APIButtonComponent) &&
+    "custom_id" in rest
+  ) {
+    rest.custom_id = undefined;
+  }
+  return rest as T;
+};
+
+export const stripComponentKeys = <T extends APIMessageTopLevelComponent>(
+  components: T[],
+  options?: { removeCustomId?: boolean },
+): T[] =>
+  components.map((component) => {
+    const stripped = stripKey(component);
+    switch (stripped.type) {
+      case ComponentType.Container:
+        return {
+          ...stripped,
+          components: stripComponentKeys(stripped.components, options),
+        } as T;
+
+      case ComponentType.ActionRow:
+        return {
+          ...stripped,
+          components: stripped.components.map((c) => stripKey(c, options)),
+        } as T;
+      case ComponentType.Section:
+        return {
+          ...stripped,
+          accessory: stripKey(
+            stripped.accessory as WithKey<typeof stripped.accessory>,
+            options,
+          ),
+        };
+      default:
+        return stripped;
+    }
+  });
 
 export const base64Decode = (urlSafeBase64: string) => {
   const base64 = urlSafeBase64.replace(/-/g, "+").replace(/_/g, "/");

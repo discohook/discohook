@@ -161,6 +161,7 @@ export const FlowEditModal = (
                 {flow.actions.map((action, ai) => (
                   <FlowActionEditor
                     t={t}
+                    // biome-ignore lint/suspicious/noArrayIndexKey: actions have no other id
                     key={`edit-flow-action-${ai}`}
                     guildId={guildId}
                     flow={flow}
@@ -498,6 +499,7 @@ const FlowCheckActionsEditor: React.FC<{
           <div className="space-y-1 mb-0.5">
             {(action.then ?? []).map((a, ai) => (
               <FlowActionEditor
+                // biome-ignore lint/suspicious/noArrayIndexKey: actions have no other id
                 key={`edit-flow-action-${i}-then-${ai}`}
                 guildId={guildId}
                 flow={{ actions: action.then }}
@@ -545,6 +547,7 @@ const FlowCheckActionsEditor: React.FC<{
           <div className="space-y-1 mb-0.5">
             {(action.else ?? []).map((a, ai) => (
               <FlowActionEditor
+                // biome-ignore lint/suspicious/noArrayIndexKey: actions have no other id
                 key={`edit-flow-action-${i}-else-${ai}`}
                 guildId={guildId}
                 flow={{ actions: action.else }}

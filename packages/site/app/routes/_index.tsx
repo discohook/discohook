@@ -25,6 +25,7 @@ import type { InvalidShareIdData } from "~/api/v1/share.$shareId";
 import type { ApiGetCurrentUser } from "~/api/v1/users.@me";
 import { Button } from "~/components/Button";
 import { ButtonSelect } from "~/components/ButtonSelect";
+import { DragLabel } from "~/components/editor/DragLabel";
 import { MessageEditor } from "~/components/editor/MessageEditor.client";
 import { useError } from "~/components/Error";
 import { Header } from "~/components/Header";
@@ -1625,6 +1626,7 @@ export default function Index() {
               );
             })
           )}
+          <DragLabel drag={drag} />
           <div className="px-4">
             {!isLanding ? (
               <Dialog.Root

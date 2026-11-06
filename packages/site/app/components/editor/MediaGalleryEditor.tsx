@@ -8,6 +8,7 @@ import type { SetDraftFile } from "~/modals/UploadFileModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
+import type { ComponentPath } from "~/util/componentTree";
 import { MAX_GALLERY_ITEMS } from "~/util/constants";
 import type { DragManager } from "~/util/drag";
 import { Button } from "../Button";
@@ -24,6 +25,7 @@ export const MediaGalleryEditor: React.FC<{
   component: APIMediaGalleryComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   files: DraftFile[];
@@ -37,6 +39,7 @@ export const MediaGalleryEditor: React.FC<{
   component: gallery,
   parent,
   index: i,
+  path,
   data,
   setData,
   files,
@@ -56,6 +59,7 @@ export const MediaGalleryEditor: React.FC<{
       component={gallery}
       parent={parent}
       index={i}
+      path={path}
       data={data}
       setData={setData}
       drag={drag}

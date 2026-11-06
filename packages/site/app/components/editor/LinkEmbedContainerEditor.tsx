@@ -149,6 +149,7 @@ export const LinkEmbedContainerEditor: React.FC<{
         }
         data={queryData}
         index={0}
+        path={[0]}
         setData={(newData) => {
           const newMessage = newData.messages[0];
           const newContainer = newMessage?.data.components?.[0];

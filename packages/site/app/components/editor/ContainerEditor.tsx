@@ -9,10 +9,16 @@ import { twJoin } from "tailwind-merge";
 import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
-import type { APIMessageTopLevelComponent, QueryData } from "~/types/QueryData";
+import type {
+  APIMessageTopLevelComponent,
+  QueryData,
+  WithKey,
+} from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
+import type { ComponentPath } from "~/util/componentTree";
 import { MAX_TOTAL_COMPONENTS } from "~/util/constants";
 import type { DragManager } from "~/util/drag";
+import { getStableKey } from "~/util/text";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
 import { collapsibleStyles } from "../collapsible";
@@ -21,7 +27,7 @@ import { InfoBox } from "../InfoBox";
 import { ColorPickerPopoverWithTrigger } from "../pickers/ColorPickerPopover";
 import { ActionRowEditor } from "./ActionRowEditor";
 import { decimalToHex } from "./ColorPicker";
-import { DragArea } from "./DragArea";
+import { TopLevelDropSlot, TopLevelEmptyDropSlot } from "./DragArea";
 import { FileEditor, FileEditorDud } from "./FileEditor";
 import { MediaGalleryEditor } from "./MediaGalleryEditor";
 import { SectionEditor } from "./SectionEditor";
@@ -114,6 +120,7 @@ export const ContainerEditor: React.FC<{
   component: APIContainerComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   cache: CacheManager | undefined;
@@ -137,6 +144,7 @@ export const ContainerEditor: React.FC<{
     component: container,
     parent,
     index: i,
+    path,
     data,
     setData,
     drag,
@@ -220,6 +228,7 @@ export const ContainerEditor: React.FC<{
         message={message}
         parent={parent}
         index={i}
+        path={path}
         data={data}
         setData={setData}
         className={twJoin(
@@ -228,7 +237,7 @@ export const ContainerEditor: React.FC<{
           "group-data-[open]/top-2:rounded-b-none",
           "group-data-[open]/top-2:border-b border-gray-300 dark:border-gray-700",
         )}
-        triggerClassName="p-2 ps-4"
+        triggerClassName="p-2 ps-0"
         drag={drag}
         groupNestLevel={2}
         actionsBar={actionsBar}
@@ -239,114 +248,120 @@ export const ContainerEditor: React.FC<{
             {errors.map((k) => t(k)).join("\n")}
           </InfoBox>
         )}
-        <div className="grid gap-2 mt-2 pl-2">
-          <div>
-            <Checkbox
-              label={t("markSpoiler")}
-              checked={container.spoiler ?? false}
-              onCheckedChange={(checked) => {
-                container.spoiler = checked;
+        <div className="space-y-2 mt-2">
+          <div className="grid gap-2 pl-2">
+            <div>
+              <Checkbox
+                label={t("markSpoiler")}
+                checked={container.spoiler ?? false}
+                onCheckedChange={(checked) => {
+                  container.spoiler = checked;
+                  setData({ ...data });
+                }}
+              />
+            </div>
+            <ColorPickerPopoverWithTrigger
+              t={t}
+              value={container.accent_color}
+              onValueChange={(color) => {
+                container.accent_color = color ?? null;
                 setData({ ...data });
               }}
             />
           </div>
-          <ColorPickerPopoverWithTrigger
-            t={t}
-            value={container.accent_color}
-            onValueChange={(color) => {
-              container.accent_color = color ?? null;
-              setData({ ...data });
-            }}
-          />
-        </div>
-        <div className="mt-2 space-y-2">
-          {container.components.map((child, ci) => {
-            const key = `message-${mid}-container-${i}-child-${ci}`;
-            return (
-              // biome-ignore lint/a11y/noStaticElementInteractions: we can't nest all this in a button
-              <div
-                key={key}
-                className="relative"
-                onDragOver={() => drag?.setFocusKey(key)}
-                onDragExit={() => drag?.setFocusKey(undefined)}
-              >
-                <AutoTopLevelComponentEditor
-                  {...props}
-                  parent={container}
-                  index={ci}
-                  component={child}
-                  interactiveComponents={interactiveComponents}
-                />
-                <DragArea
-                  visible={drag?.isFocused(key) ?? false}
-                  position={
-                    !drag?.data || !drag.data.parentType
-                      ? "bottom"
-                      : i < drag.data.index
-                        ? "top"
-                        : "bottom"
-                  }
-                  onDrop={() => {
+          <div className="space-y-1">
+            {container.components.map((child, ci) => {
+              const key = getStableKey(child as WithKey<typeof child>);
+              const childPath = [...path, ci];
+              return (
+                <TopLevelDropSlot
+                  key={key}
+                  drag={drag}
+                  dropKey={key}
+                  destParentType={ComponentType.Container}
+                  onDrop={(isAfter) => {
                     drag?.end();
-                    drag?.onDrop?.(mid, { path: [i, ci] });
+                    drag?.onDrop?.(mid, {
+                      path: [...path, isAfter ? ci + 1 : ci],
+                    });
                   }}
-                />
-              </div>
-            );
-          })}
-          <div className="flex ms-2">
-            <div>
-              <ButtonSelect
-                disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
-                options={addChildOptions}
-                onValueChange={(value) => {
-                  switch (value) {
-                    case ComponentType.TextDisplay: {
-                      container.components.push({
-                        type: ComponentType.TextDisplay,
-                        content: "",
-                      });
-                      setData({ ...data });
-                      break;
-                    }
-                    case ComponentType.File: {
-                      container.components.push({
-                        type: ComponentType.File,
-                        file: { url: "" },
-                      });
-                      setData({ ...data });
-                      break;
-                    }
-                    case ComponentType.MediaGallery: {
-                      container.components.push({
-                        type: ComponentType.MediaGallery,
-                        items: [],
-                      });
-                      setData({ ...data });
-                      break;
-                    }
-                    case ComponentType.Separator: {
-                      container.components.push({
-                        type: ComponentType.Separator,
-                      });
-                      setData({ ...data });
-                      break;
-                    }
-                    case ComponentType.ActionRow: {
-                      container.components.push({
-                        type: ComponentType.ActionRow,
-                        components: [],
-                      });
-                      setData({ ...data });
-                      break;
-                    }
-                    default:
-                      break;
-                  }
+                >
+                  <AutoTopLevelComponentEditor
+                    {...props}
+                    parent={container}
+                    index={ci}
+                    path={childPath}
+                    component={child}
+                    interactiveComponents={interactiveComponents}
+                  />
+                </TopLevelDropSlot>
+              );
+            })}
+            {container.components.length === 0 && (
+              <TopLevelEmptyDropSlot
+                drag={drag}
+                dropKey={`message-${mid}-container-${i}-empty`}
+                destParentType={ComponentType.Container}
+                onDrop={() => {
+                  drag?.end();
+                  drag?.onDrop?.(mid, { path: [...path, 0] });
                 }}
-              >
-                {t("add")}
-              </ButtonSelect>
+              />
+            )}
+            <div className="flex ms-2">
+              <div>
+                <ButtonSelect
+                  disabled={allComponentsCount >= MAX_TOTAL_COMPONENTS}
+                  options={addChildOptions}
+                  onValueChange={(value) => {
+                    switch (value) {
+                      case ComponentType.TextDisplay: {
+                        container.components.push({
+                          type: ComponentType.TextDisplay,
+                          content: "",
+                        });
+                        setData({ ...data });
+                        break;
+                      }
+                      case ComponentType.File: {
+                        container.components.push({
+                          type: ComponentType.File,
+                          file: { url: "" },
+                        });
+                        setData({ ...data });
+                        break;
+                      }
+                      case ComponentType.MediaGallery: {
+                        container.components.push({
+                          type: ComponentType.MediaGallery,
+                          items: [],
+                        });
+                        setData({ ...data });
+                        break;
+                      }
+                      case ComponentType.Separator: {
+                        container.components.push({
+                          type: ComponentType.Separator,
+                        });
+                        setData({ ...data });
+                        break;
+                      }
+                      case ComponentType.ActionRow: {
+                        container.components.push({
+                          type: ComponentType.ActionRow,
+                          components: [],
+                        });
+                        setData({ ...data });
+                        break;
+                      }
+                      default:
+                        break;
+                    }
+                  }}
+                >
+                  {t("add")}
+                </ButtonSelect>
+              </div>
             </div>
           </div>
         </div>

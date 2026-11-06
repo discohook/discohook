@@ -1,28 +1,31 @@
 import { Collapsible } from "@base-ui/react/collapsible";
 import {
-  type APIActionRowComponent,
-  type APIComponentInContainer,
-  type APIComponentInModalActionRow,
-  type APIContainerComponent,
-  type APIMessageComponent,
   ButtonStyle,
   ComponentType,
+  type APIComponentInContainer,
+  type APIContainerComponent,
+  type APIMessageComponent,
 } from "discord-api-types/v10";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
-import type {
-  APIComponentInMessageActionRow,
-  APIMessageTopLevelComponent,
-  QueryData,
-} from "~/types/QueryData";
+import type { APIMessageTopLevelComponent, QueryData } from "~/types/QueryData";
+import type { ComponentPath } from "~/util/componentTree";
+import {
+  isTopLevelDropValid,
+  moveTopLevelComponentByPath,
+} from "~/util/componentTree";
 import { MAX_TOTAL_COMPONENTS, MAX_V1_ROWS } from "~/util/constants";
 import { isComponentsV2 } from "~/util/discord";
-import type { DragManager } from "~/util/drag";
+import { DragType, type DragManager } from "~/util/drag";
+import { randomString } from "~/util/text";
+import { usePointerDragSource } from "~/util/usePointerDrag";
 import { collapsibleStyles } from "../collapsible";
 import { CoolIcon } from "../icons/CoolIcon";
 import { InfoBox } from "../InfoBox";
 import { resolveAttachmentUri } from "../preview/Embed";
+
+export { getComponentWidth, getRowWidth } from "~/util/componentTree";
 
 /** Also strips query and fragment */
 const stripProtocol = (uri: string) => {
@@ -72,36 +75,6 @@ export const getComponentText = (
     default:
       return;
   }
-};
-
-export const getComponentWidth = (component: {
-  type: ComponentType;
-}): number => {
-  switch (component.type) {
-    case ComponentType.Button:
-      return 1;
-    case ComponentType.StringSelect:
-    case ComponentType.UserSelect:
-    case ComponentType.RoleSelect:
-    case ComponentType.MentionableSelect:
-    case ComponentType.ChannelSelect:
-    case ComponentType.TextInput:
-      return 5;
-    default:
-      break;
-  }
-  return 0;
-};
-
-export const getRowWidth = (
-  row: APIActionRowComponent<
-    APIComponentInMessageActionRow | APIComponentInModalActionRow
-  >,
-): number => {
-  return row.components.reduce(
-    (last, component) => getComponentWidth(component) + last,
-    0,
-  );
 };
 
 export const getComponentErrors = (
@@ -155,6 +128,7 @@ export interface TopLevelComponentEditorContainerProps {
   component: APIMessageTopLevelComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   open?: boolean;
@@ -168,6 +142,7 @@ export const TopLevelComponentEditorContainer = ({
   component,
   parent,
   index: i,
+  path,
   data,
   setData,
   open,
@@ -179,7 +154,7 @@ export const TopLevelComponentEditorContainer = ({
   return (
     <Collapsible.Root
       className={twJoin(
-        "group/top-1 rounded-lg p-2 pl-4 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow",
+        "group/top-1 rounded-lg p-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow",
       )}
       defaultOpen={open}
     >
@@ -189,6 +164,7 @@ export const TopLevelComponentEditorContainer = ({
         message={message}
         parent={parent}
         index={i}
+        path={path}
         data={data}
         setData={setData}
         errors={errors}
@@ -211,6 +187,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   t,
   component,
   index: i,
+  path,
   message,
   parent,
   data,
@@ -227,6 +204,7 @@ export const TopLevelComponentEditorContainerSummary = ({
   component: APIMessageTopLevelComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   setData: React.Dispatch<QueryData>;
   data: QueryData;
   className?: string;
@@ -246,6 +224,35 @@ export const TopLevelComponentEditorContainerSummary = ({
   // const mid = getQdMessageId(message);
   const previewText = getComponentText(component);
 
+  const { onPointerDown, dragging } = usePointerDragSource(
+    drag,
+    DragType.TopLevelComponent,
+    () => ({
+      data: {
+        type: component.type,
+        path,
+        label: previewText ?? t(`component.${component.type}`),
+      },
+      onDrop(messageId, args) {
+        const msg = data.messages.find((m) => m._id === messageId);
+        if (!msg) {
+          console.error(
+            "Drop callback referenced unknown message ID",
+            messageId,
+          );
+          return;
+        }
+        msg.data.components = msg.data.components ?? [];
+        const opts = args as { path: ComponentPath };
+        const destParentType =
+          opts.path.length === 2 ? ComponentType.Container : undefined;
+        if (!isTopLevelDropValid(component.type, destParentType)) return;
+        moveTopLevelComponentByPath(msg.data.components, path, opts.path);
+        setData({ ...data });
+      },
+    }),
+  );
+
   const allComponentsCount =
     message.data.components
       ?.map((c) => 1 + ("components" in c ? c.components.length : 0))
@@ -264,65 +271,25 @@ export const TopLevelComponentEditorContainerSummary = ({
         className,
       )}
     >
+      {drag ? (
+        <div
+          className={twJoin(
+            "touch-none shrink-0 text-lg flex items-center",
+            // Make the handle always at the same x pos
+            groupNestLevel === 2 ? "ps-3" : "ps-2",
+            dragging ? "cursor-grabbing" : "cursor-grab",
+          )}
+          onPointerDown={onPointerDown}
+        >
+          <CoolIcon icon="Drag_Vertical" />
+        </div>
+      ) : null}
       <Collapsible.Trigger
         className={twJoin(
           "truncate flex items-center text-lg grow font-semibold cursor-default select-none",
           groupNestLevel === 1 ? "group/trigger-1" : "group/trigger-2",
           triggerClassName,
-          // "cursor-grab",
         )}
-        // Not ready yet
-        // draggable={!!drag}
-        // onDragStart={(e) => {
-        //   e.dataTransfer.effectAllowed = "move";
-        //   drag?.start(DragType.TopLevelComponent, {
-        //     data: {
-        //       type: component.type,
-        //       index: i,
-        //       parentType: parent?.type,
-        //     },
-        //     onDrop(messageId, args) {
-        //       const msg = data.messages.find((m) => m._id === messageId);
-        //       if (!msg) {
-        //         console.error(
-        //           "Drop callback referenced unknown message ID",
-        //           messageId,
-        //         );
-        //         return;
-        //       }
-
-        //       const components = msg.data.components ?? [];
-        //       msg.data.components = components;
-
-        //       const opts = args as { path: number[] };
-        //       if (opts.path.length === 1) {
-        //         siblings.splice(i, 1);
-        //         components.splice(opts.path[0], 0, component);
-        //       } else {
-        //         const container = components[opts.path[0]];
-        //         if (!container) {
-        //           // biome-ignore format: long
-        //           console.error("Invalid path", opts.path, "which referenced a parentable element where there was none");
-        //           return;
-        //         }
-        //         if (container.type !== ComponentType.Container) {
-        //           // biome-ignore format: long
-        //           console.error("Path referenced a container (17) at", opts.path[0], "but the component found there was type", container.type);
-        //           return;
-        //         }
-
-        //         siblings.splice(i, 1);
-        //         container.components.splice(
-        //           opts.path[1],
-        //           0,
-        //           component as APIComponentInContainer,
-        //         );
-        //       }
-        //       setData({ ...data });
-        //     },
-        //   });
-        // }}
-        // onDragEnd={() => drag?.end()}
       >
         <CoolIcon
           icon="Chevron_Right"
@@ -391,11 +358,14 @@ export const TopLevelComponentEditorContainerSummary = ({
             actionsBar?.copy ??
             (() => {
               const cloned = structuredClone(component);
+              cloned._key = randomString(10);
               // strip all custom IDs, which must be unique per message
               if ("components" in cloned) {
                 for (const child of cloned.components) {
+                  child._key = randomString(10);
                   if ("components" in child) {
                     for (const childChild of child.components) {
+                      childChild._key = randomString(10);
                       if ("custom_id" in childChild) {
                         childChild.custom_id = "";
                       }

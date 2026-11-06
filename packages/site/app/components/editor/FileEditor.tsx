@@ -8,6 +8,8 @@ import { twJoin } from "tailwind-merge";
 import type { SetDraftFile } from "~/modals/UploadFileModal";
 import type { DraftFile } from "~/routes/_index";
 import type { QueryData } from "~/types/QueryData";
+import type { ComponentPath } from "~/util/componentTree";
+import type { DragManager } from "~/util/drag";
 import {
   attachmentFromFile,
   fileInputChangeHandler,
@@ -26,8 +28,10 @@ export const FileEditor: React.FC<{
   component: APIFileComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
+  drag?: DragManager;
   open?: boolean;
   files: DraftFile[];
   setFiles: SetDraftFile;
@@ -36,8 +40,10 @@ export const FileEditor: React.FC<{
   component,
   parent,
   index: i,
+  path,
   data,
   setData,
+  drag,
   open,
   files,
   setFiles,
@@ -58,8 +64,10 @@ export const FileEditor: React.FC<{
       component={component}
       parent={parent}
       index={i}
+      path={path}
       data={data}
       setData={setData}
+      drag={drag}
       open={open}
       files={files}
     >
@@ -170,11 +178,24 @@ export const FileEditorDud: React.FC<{
   component: APIFileComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
+  drag?: DragManager;
   open?: boolean;
   files: DraftFile[];
-}> = ({ message, component, parent, index: i, data, setData, open, files }) => {
+}> = ({
+  message,
+  component,
+  parent,
+  index: i,
+  path,
+  data,
+  setData,
+  drag,
+  open,
+  files,
+}) => {
   const { t } = useTranslation();
   return (
     <TopLevelComponentEditorContainer
@@ -183,8 +204,10 @@ export const FileEditorDud: React.FC<{
       component={component}
       parent={parent}
       index={i}
+      path={path}
       data={data}
       setData={setData}
+      drag={drag}
       open={open}
       files={files}
     >

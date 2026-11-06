@@ -5,6 +5,7 @@ import {
 } from "discord-api-types/v10";
 import { useTranslation } from "react-i18next";
 import type { QueryData } from "~/types/QueryData";
+import type { ComponentPath } from "~/util/componentTree";
 import type { DragManager } from "~/util/drag";
 import { Checkbox } from "../Checkbox";
 import { useError } from "../Error";
@@ -16,11 +17,22 @@ export const SeparatorEditor: React.FC<{
   component: APISeparatorComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   drag?: DragManager;
   open?: boolean;
-}> = ({ message, component, parent, index: i, data, setData, drag, open }) => {
+}> = ({
+  message,
+  component,
+  parent,
+  index: i,
+  path,
+  data,
+  setData,
+  drag,
+  open,
+}) => {
   const { t } = useTranslation();
   const [error] = useError(t);
 
@@ -31,6 +43,7 @@ export const SeparatorEditor: React.FC<{
       component={component}
       parent={parent}
       index={i}
+      path={path}
       data={data}
       setData={setData}
       drag={drag}

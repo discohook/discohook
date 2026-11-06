@@ -8,6 +8,7 @@ import {
 import { useTranslation } from "react-i18next";
 import type { APIButtonComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
+import type { ComponentPath } from "~/util/componentTree";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
 import type { DragManager } from "~/util/drag";
 import { ButtonSelect } from "../ButtonSelect";
@@ -21,6 +22,7 @@ export const TextDisplayEditor: React.FC<{
   component: APITextDisplayComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   cache?: CacheManager;
@@ -32,6 +34,7 @@ export const TextDisplayEditor: React.FC<{
   component,
   parent,
   index: i,
+  path,
   data,
   setData,
   cache,
@@ -49,6 +52,7 @@ export const TextDisplayEditor: React.FC<{
       component={component}
       parent={parent}
       index={i}
+      path={path}
       data={data}
       setData={setData}
       drag={drag}

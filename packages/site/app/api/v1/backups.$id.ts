@@ -5,12 +5,16 @@ import { eq } from "drizzle-orm";
 import { z } from "zod/v3";
 import { zx } from "zodix";
 import { doubleDecode, getUserId } from "~/session.server";
-import { backups, getDb } from "~/store.server";
+import {
+  backups,
+  getDb,
+  type QueryData as StoreQueryData,
+} from "~/store.server";
 import type {
   RefreshedAttachment,
   RESTPostAPIRefreshAttachmentURLs,
 } from "~/types/discord";
-import { type QueryData, ZodQueryData } from "~/types/QueryData";
+import { type QueryData, type WithKey, ZodQueryData } from "~/types/QueryData";
 import {
   extractComponentsByType,
   isDiscordAttachmentUrl,
@@ -23,6 +27,7 @@ import {
   type LoaderArgs,
   type SerializeFrom,
 } from "~/util/loader";
+import { stripComponentKeys, stripKey } from "~/util/text";
 import {
   snowflakeAsString,
   zxParseJson,
@@ -235,12 +240,13 @@ export const loader = async ({ request, params, context }: LoaderArgs) => {
 
     // save changed data
     if (anyChanged) {
+      const storeData = data as unknown as StoreQueryData;
       context.waitUntil(
         db
           .update(backups)
           .set({
-            data,
-            previewImageUrl: findMessagesPreviewImageUrl(data.messages),
+            data: storeData,
+            previewImageUrl: findMessagesPreviewImageUrl(storeData.messages),
           })
           .where(eq(backups.id, id))
           .catch(() => {}),
@@ -263,6 +269,13 @@ export type ApiGetBackupWithData = ApiGetBackup & {
 const removeExtraneousBackupData = (data: QueryData): QueryData => {
   // `_id` is editor-only state
   data.messages = data.messages.map(({ _id: _, ...m }) => {
+    m.data.components = stripComponentKeys(m.data.components ?? []);
+    m.data.embeds = (m.data.embeds ?? []).map((embed) => ({
+      ...stripKey(embed),
+      fields: embed.fields?.map((field) =>
+        stripKey(field as WithKey<typeof field>),
+      ),
+    }));
     for (const row of onlyActionRows(m.data.components ?? [], true)) {
       // We don't want to store flow data in backups since
       // it is already stored in DiscordMessageComponent.data
@@ -364,14 +377,16 @@ export const action = async ({ request, params, context }: ActionArgs) => {
   }
 
   const nextRunAt = cron ? cron.next().toDate() : scheduleAt;
+  // we have already stripped identifiers & flows above in the zod transform
+  const storeData = data as unknown as StoreQueryData | undefined;
   const updated = (
     await db
       .update(backups)
       .set({
         name,
-        data,
-        previewImageUrl: data
-          ? findMessagesPreviewImageUrl(data.messages)
+        data: storeData,
+        previewImageUrl: storeData
+          ? findMessagesPreviewImageUrl(storeData.messages)
           : undefined,
         scheduled: isScheduled,
         nextRunAt,

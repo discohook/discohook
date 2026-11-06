@@ -5,10 +5,10 @@ import { Trans, useTranslation } from "react-i18next";
 import { twJoin, twMerge } from "tailwind-merge";
 import type { DraftFile } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
-import type { QueryData } from "~/types/QueryData";
+import type { QueryData, WithKey } from "~/types/QueryData";
 import type { APIEmbed } from "~/types/QueryData-raw";
 import type { CacheManager } from "~/util/cache/CacheManager";
-import { randomString } from "~/util/text";
+import { getStableKey, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { FileOrUrlInput } from "../FileOrUrlInput";
@@ -154,7 +154,6 @@ export const DetectGifUrlFooter = ({
 
 export const EmbedEditor: React.FC<{
   message: QueryData["messages"][number];
-  messageIndex: number;
   embed: APIEmbed;
   embedIndex: number;
   data: QueryData;
@@ -166,7 +165,6 @@ export const EmbedEditor: React.FC<{
   cdn?: string;
 }> = ({
   message,
-  messageIndex: mi,
   embed,
   embedIndex: i,
   data,
@@ -310,7 +308,9 @@ export const EmbedEditor: React.FC<{
                 type="button"
                 className={localIndexMax + 1 >= localMaxMembers ? "hidden" : ""}
                 onClick={() => {
-                  messageEmbeds.splice(i + 1, 0, structuredClone(embed));
+                  const cloned = structuredClone(embed);
+                  cloned._key = randomString(10);
+                  messageEmbeds.splice(i + 1, 0, cloned);
                   setData({ ...data });
                 }}
               >
@@ -552,7 +552,7 @@ export const EmbedEditor: React.FC<{
                   <div className="ms-2 md:ms-4 transition-[margin-inline-start]">
                     {embed.fields.map((field, fi) => (
                       <EmbedFieldEditorSection
-                        key={`edit-message-${mi}-embed-${i}-field-${fi}`}
+                        key={getStableKey(field as WithKey<APIEmbedField>)}
                         embed={embed}
                         updateEmbed={updateEmbed}
                         field={field}
@@ -943,7 +943,9 @@ const EmbedFieldEditorSection: React.FC<
         copy: {
           hidden: embedFields.length >= 25,
           onClick() {
-            embedFields.splice(index + 1, 0, structuredClone(field));
+            const cloned = structuredClone(field);
+            // cloned._key = randomString(10);
+            embedFields.splice(index + 1, 0, cloned);
             updateEmbed({});
           },
         },

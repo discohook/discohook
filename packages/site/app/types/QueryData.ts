@@ -1,20 +1,20 @@
 import {
   type APIButtonComponentWithCustomId as _APIButtonComponentWithCustomId,
   type APIChannelSelectComponent as _APIChannelSelectComponent,
+  type APIContainerComponent as _APIContainerComponent,
+  type APIFileComponent as _APIFileComponent,
   type APIMentionableSelectComponent as _APIMentionableSelectComponent,
   type APIRoleSelectComponent as _APIRoleSelectComponent,
+  type APISectionComponent as _APISectionComponent,
   type APIStringSelectComponent as _APIStringSelectComponent,
+  type APITextDisplayComponent as _APITextDisplayComponent,
   type APIUserSelectComponent as _APIUserSelectComponent,
   type APIActionRowComponent,
   type APIButtonComponentBase,
   type APIComponentInActionRow,
-  type APIContainerComponent,
-  type APIFileComponent,
   type APIMediaGalleryComponent,
   type APISectionAccessoryComponent,
-  type APISectionComponent,
   type APISeparatorComponent,
-  type APITextDisplayComponent,
   ButtonStyle,
   ComponentType,
 } from "discord-api-types/v10";
@@ -33,7 +33,7 @@ import {
   type TargetFluxerWebhook,
   TargetType,
   type TargetWebhook,
-  TargetWebhookProxy,
+  type TargetWebhookProxy,
   ZodQueryDataMessageDataBase,
 } from "./QueryData-raw";
 
@@ -47,6 +47,9 @@ export interface APIButtonComponentWithURL
    * An internal Discohook ID for tracking within the editor
    */
   custom_id?: string;
+  // TODO: remove custom_id on link buttons in favor of _key
+  /** editor-only identifier */
+  _key?: string;
 }
 
 // I don't see any way to key these components in the way we do with e.g. URL
@@ -56,32 +59,46 @@ export interface APIButtonComponentWithSkuId
   extends APIButtonComponentBase<ButtonStyle.Premium> {
   sku_id: string;
   custom_id?: string;
+  /** editor-only identifier */
+  _key?: string;
 }
 
 export interface APIButtonComponentWithCustomId
   extends _APIButtonComponentWithCustomId {
   flow?: DraftFlow;
+  /** editor-only identifier */
+  _key?: string;
 }
 
 export interface APIStringSelectComponent extends _APIStringSelectComponent {
   flows?: Record<string, DraftFlow>;
+  /** editor-only identifier */
+  _key?: string;
 }
 
 export interface APIUserSelectComponent extends _APIUserSelectComponent {
   flow?: DraftFlow;
+  /** editor-only identifier */
+  _key?: string;
 }
 
 export interface APIRoleSelectComponent extends _APIRoleSelectComponent {
   flow?: DraftFlow;
+  /** editor-only identifier */
+  _key?: string;
 }
 
 export interface APIMentionableSelectComponent
   extends _APIMentionableSelectComponent {
   flow?: DraftFlow;
+  /** editor-only identifier */
+  _key?: string;
 }
 
 export interface APIChannelSelectComponent extends _APIChannelSelectComponent {
   flow?: DraftFlow;
+  /** editor-only identifier */
+  _key?: string;
 }
 
 export type APIButtonComponent =
@@ -106,14 +123,30 @@ export type APIComponentInMessageActionRow =
   | APIButtonComponent
   | APISelectMenuComponent;
 
-export type APIMessageTopLevelComponent =
-  | APIActionRowComponent<APIComponentInMessageActionRow>
-  | APIContainerComponent
-  | APIFileComponent
-  | APIMediaGalleryComponent
+export type APITextDisplayComponent = WithKey<_APITextDisplayComponent>;
+
+export type APIComponentInContainer =
+  | WithKey<APIActionRowComponent<APIComponentInMessageActionRow>>
+  | WithKey<_APIFileComponent>
+  | WithKey<APIMediaGalleryComponent>
   | APISectionComponent
-  | APISeparatorComponent
+  | WithKey<APISeparatorComponent>
   | APITextDisplayComponent;
+
+export type APIContainerComponent = WithKey<
+  _APIContainerComponent & { components: APIComponentInContainer[] }
+>;
+
+export type APISectionComponent = WithKey<
+  _APISectionComponent & { components: APITextDisplayComponent[] }
+>;
+
+/** append editor key to each type */
+export type WithKey<T> = T & { _key?: string };
+
+export type APIMessageTopLevelComponent =
+  | APIComponentInContainer
+  | APIContainerComponent;
 
 export interface QueryData {
   version?: QueryDataVersion;

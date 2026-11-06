@@ -12,12 +12,16 @@ import { z } from "zod/v3";
 import { ZodAPITopLevelComponentRaw } from "./components-raw";
 import { ZodMessageFlags } from "./discord";
 
-/**
- * Discord may not return `null` but it will accept the value in payloads.
- * We're modifying this type to maintain compatibility with prior Discohook
- * versions, which used `null` instead of `undefined`.
- */
-export type APIEmbed = Omit<_APIEmbed, "color"> & { color?: number | null };
+export type APIEmbed = Omit<_APIEmbed, "color"> & {
+  /**
+   * Discord may not return `null` but it will accept the value in payloads.
+   * We're modifying this type to maintain compatibility with prior Discohook
+   * versions, which used `null` instead of `undefined`.
+   */
+  color?: number | null;
+  /** editor-only identifier */
+  _key?: string;
+};
 
 /** Extending for internal state */
 export type APIAttachment = _APIAttachment & {

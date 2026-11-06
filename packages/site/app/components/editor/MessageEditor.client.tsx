@@ -30,7 +30,11 @@ import { Modal, ModalFooter, type ModalProps } from "~/modals/Modal";
 import type { SetDraftFile } from "~/modals/UploadFileModal";
 import { type DraftFile, getQdMessageId } from "~/routes/_index";
 import type { TFunction } from "~/types/i18next";
-import { type QueryData, ZodQueryDataMessage } from "~/types/QueryData";
+import {
+  type QueryData,
+  WithKey,
+  ZodQueryDataMessage,
+} from "~/types/QueryData";
 import { type APIAttachment, TargetType } from "~/types/QueryData-raw";
 import type {
   CacheManager,
@@ -63,7 +67,7 @@ import {
 import { useSafeFetcher } from "~/util/loader";
 import { experimentEnabled, useLocalStorage } from "~/util/localstorage";
 import { getMessageDisplayName } from "~/util/message";
-import { copyText, fileSize, randomString } from "~/util/text";
+import { copyText, fileSize, getStableKey, randomString } from "~/util/text";
 import { Button } from "../Button";
 import { ButtonSelect } from "../ButtonSelect";
 import { Checkbox } from "../Checkbox";
@@ -78,7 +82,7 @@ import { TextArea } from "../TextArea";
 import { TextInput } from "../TextInput";
 import { ActionRowEditor } from "./ActionRowEditor";
 import { AutoTopLevelComponentEditor } from "./ContainerEditor";
-import { DragArea } from "./DragArea";
+import { TopLevelDropSlot, TopLevelEmptyDropSlot } from "./DragArea";
 import {
   DetectGifUrlFooter,
   EmbedEditor,
@@ -541,6 +545,7 @@ const AttachmentUploadedModal = (
   const { uploaded, ...restProps } = props;
 
   const [draft, setDraft] = useState(name);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fire on name change, nothing else
   useEffect(() => setDraft(name), [name]);
 
   return (
@@ -1542,9 +1547,8 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             )}
             {message.data.embeds.map((embed, ei) => (
               <EmbedEditor
-                key={`edit-message-${id}-embed-${ei}`}
+                key={getStableKey(embed)}
                 message={message}
-                messageIndex={i}
                 embed={embed}
                 embedIndex={ei}
                 data={data}
@@ -1598,12 +1602,13 @@ const StandardMessageEditor: React.FC<MessageEditorChildProps> = ({
             ) : null}
             <div className="space-y-1">
               {onlyActionRows(message.data.components).map((row, ri) => (
-                <div key={`edit-message-${id}-row-${ri}`}>
+                <div key={getStableKey(row as WithKey<typeof row>)}>
                   <ActionRowEditor
                     message={message}
                     component={row}
                     parent={undefined}
                     index={ri}
+                    path={[ri]}
                     data={data}
                     setData={setData}
                     cache={cache}
@@ -2000,18 +2005,22 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
         )}
         <div className="space-y-1">
           {components.map((component, i) => {
-            const key = `${mid}-top-${i}`;
+            const key = getStableKey(component);
             return (
-              // biome-ignore lint/a11y/noStaticElementInteractions: we can't nest all this in a button
-              <div
-                key={`top-level-component-${i}`}
-                className="relative"
-                onDragOver={() => drag?.setFocusKey(key)}
-                onDragExit={() => drag?.setFocusKey(undefined)}
+              <TopLevelDropSlot
+                key={key}
+                drag={drag}
+                dropKey={key}
+                destParentType={undefined}
+                onDrop={(isAfter) => {
+                  drag?.end();
+                  drag?.onDrop?.(mid, { path: [isAfter ? i + 1 : i] });
+                }}
               >
                 <AutoTopLevelComponentEditor
                   message={message}
                   index={i}
+                  path={[i]}
                   data={data}
                   setData={setData}
                   cache={cache}
@@ -2025,23 +2034,20 @@ const ComponentMessageEditor: React.FC<MessageEditorChildProps> = ({
                   drag={drag}
                   open
                 />
-                <DragArea
-                  visible={drag?.isFocused(key) ?? false}
-                  position={
-                    !drag?.data || drag.data.parentType
-                      ? "bottom"
-                      : i < drag.data.index
-                        ? "top"
-                        : "bottom"
-                  }
-                  onDrop={() => {
-                    drag?.end();
-                    drag?.onDrop?.(mid, { path: [i] });
-                  }}
-                />
-              </div>
+              </TopLevelDropSlot>
             );
           })}
+          {components.length === 0 && (
+            <TopLevelEmptyDropSlot
+              drag={drag}
+              dropKey={`${mid}-top-empty`}
+              destParentType={undefined}
+              onDrop={() => {
+                drag?.end();
+                drag?.onDrop?.(mid, { path: [0] });
+              }}
+            />
+          )}
         </div>
         <div className="flex space-x-2 rtl:space-x-reverse">
           <div>

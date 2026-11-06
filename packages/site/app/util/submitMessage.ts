@@ -16,14 +16,13 @@ import { MESSAGE_REF_RE } from "~/util/constants";
 import {
   type DraftRawFile,
   executeWebhook,
-  hasCustomId,
-  isActionRow,
   isComponentsV2,
   isSnowflakeSafe,
   onlyActionRows,
   updateWebhookMessage,
 } from "~/util/discord";
 import { executeFluxerWebhook } from "~/util/fluxer";
+import { stripComponentKeys } from "./text";
 
 export type SubmitMessageResult =
   | {
@@ -152,7 +151,7 @@ export const submitMessage = async (
       // - the webhook is not owned by an application, and
       // - there are components, and
       // - the message is using components v2 (required), or there are
-      //   only non-actionable components (link buttons)
+      //   only non-interactive components (link buttons)
       // and `undefined` otherwise (let default behavior take over)
       const withComponents = webhook.application_id
         ? undefined
@@ -165,7 +164,7 @@ export const submitMessage = async (
             for (const row of onlyActionRows(message.data.components)) {
               for (const child of row.components) {
                 // Any child encountered that is not a link
-                // button (a V1 non-actionable component)
+                // button (a V1 non-interactive component)
                 if (
                   !(
                     child.type === ComponentType.Button &&
@@ -181,42 +180,10 @@ export const submitMessage = async (
 
       let data: APIMessage | DiscordErrorData;
       const components = message.data.components
-        ? structuredClone(message.data.components).map((component) => {
-            // Remove tracking IDs to avoid error from Discord.
-            // We should really just use a custom prop instead.
-            if (isActionRow(component)) {
-              for (const child of component.components) {
-                if (!hasCustomId(child)) {
-                  child.custom_id = undefined;
-                }
-              }
-              // TODO: unnecessary duplication, reduce
-            } else if (component.type === ComponentType.Container) {
-              for (const child of component.components) {
-                if (isActionRow(child)) {
-                  for (const subChild of child.components) {
-                    if (!hasCustomId(subChild)) {
-                      subChild.custom_id = undefined;
-                    }
-                  }
-                } else if (
-                  child.type === ComponentType.Section &&
-                  child.accessory.type === ComponentType.Button &&
-                  !hasCustomId(child.accessory)
-                ) {
-                  // @ts-expect-error
-                  child.accessory.custom_id = undefined;
-                }
-              }
-            } else if (
-              component.type === ComponentType.Section &&
-              component.accessory.type === ComponentType.Button &&
-              !hasCustomId(component.accessory)
-            ) {
-              // @ts-expect-error
-              component.accessory.custom_id = undefined;
-            }
-            return component;
+        ? // Remove tracking IDs to avoid error from Discord.
+          // We should really just use a custom prop instead.
+          stripComponentKeys(structuredClone(message.data.components), {
+            removeCustomId: true,
           })
         : [];
 

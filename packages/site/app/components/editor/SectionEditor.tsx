@@ -12,6 +12,7 @@ import type { SetDraftFile } from "~/modals/UploadFileModal";
 import type { DraftFile } from "~/routes/_index";
 import type { APIButtonComponent, QueryData } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
+import type { ComponentPath } from "~/util/componentTree";
 import { MAX_TOTAL_COMPONENTS_CHARACTERS } from "~/util/constants";
 import type { DragManager } from "~/util/drag";
 import { Button } from "../Button";
@@ -30,6 +31,7 @@ export const SectionEditor: React.FC<{
   component: APISectionComponent;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   cache?: CacheManager;
@@ -47,6 +49,7 @@ export const SectionEditor: React.FC<{
   component: section,
   parent,
   index: i,
+  path,
   data,
   setData,
   cache,
@@ -83,6 +86,7 @@ export const SectionEditor: React.FC<{
       component={section}
       parent={parent}
       index={i}
+      path={path}
       data={data}
       setData={setData}
       drag={drag}

@@ -7,7 +7,6 @@ import {
 import { useTranslation } from "react-i18next";
 import type { z } from "zod/v3";
 import type { ComponentFoundBackupHook } from "~/api/v1/components.$id.backups";
-import { getComponentId } from "~/api/v1/log.webhooks.$webhookId.$webhookToken.messages.$messageId";
 import type { EditingComponentData } from "~/modals/ComponentEditModal";
 import { getQdMessageId } from "~/routes/_index";
 import type { ZodAPIMessageActionRowComponent } from "~/types/components";
@@ -16,11 +15,14 @@ import type {
   QueryData,
 } from "~/types/QueryData";
 import type { CacheManager } from "~/util/cache/CacheManager";
+import type { ComponentPath } from "~/util/componentTree";
 import { MAX_ACTION_ROW_WIDTH } from "~/util/constants";
 import type { DragManager } from "~/util/drag";
+import { getStableKey } from "~/util/text";
 import { ButtonSelect } from "../ButtonSelect";
 import { useError } from "../Error";
 import { IndividualComponentEditor, submitComponent } from "./ComponentEditor";
+import { ActionRowDropSlot, ActionRowEmptyDropSlot } from "./DragArea";
 import {
   getRowWidth,
   TopLevelComponentEditorContainer,
@@ -100,6 +102,7 @@ export const ActionRowEditor: React.FC<{
   component: APIActionRowComponent<APIComponentInMessageActionRow>;
   parent: APIContainerComponent | undefined;
   index: number;
+  path: ComponentPath;
   data: QueryData;
   setData: React.Dispatch<QueryData>;
   setEditingComponent: React.Dispatch<
@@ -115,6 +118,7 @@ export const ActionRowEditor: React.FC<{
   component: row,
   parent,
   index: i,
+  path,
   data,
   setData,
   setEditingComponent,
@@ -135,6 +139,7 @@ export const ActionRowEditor: React.FC<{
       component={row}
       parent={parent}
       index={i}
+      path={path}
       data={data}
       setData={setData}
       drag={drag}
@@ -143,159 +148,189 @@ export const ActionRowEditor: React.FC<{
       {error}
       <div className="space-y-1">
         {row.components.map((component, ci) => {
-          const id = getComponentId(component)?.toString();
+          const key = getStableKey(component);
           return (
-            <IndividualComponentEditor
-              key={`edit-message-${mid}-component-${id}-${ci}`}
-              component={component}
-              index={ci}
+            <ActionRowDropSlot
+              key={key}
+              drag={drag}
+              dropKey={key}
               row={row}
-              updateRow={() => setData({ ...data })}
-              componentFoundBackupsHook={componentFoundBackupsHook}
-              onClick={() => {
-                if (
-                  (component.type === ComponentType.Button &&
-                    component.style !== ButtonStyle.Link &&
-                    component.style !== ButtonStyle.Premium) ||
-                  component.type === ComponentType.UserSelect ||
-                  component.type === ComponentType.RoleSelect ||
-                  component.type === ComponentType.MentionableSelect ||
-                  component.type === ComponentType.ChannelSelect
-                ) {
-                  component.flow = component.flow ?? { actions: [] };
-                } else if (component.type === ComponentType.StringSelect) {
-                  component.flows = component.flows ?? {};
-                }
-                setEditingComponent(
-                  getSetEditingComponentProps({
-                    component,
-                    row,
-                    componentIndex: ci,
-                    data,
-                    setData,
-                    setEditingComponent,
-                  }),
-                );
+              rowPath={path}
+              onDrop={(isAfter) => {
+                drag?.end();
+                drag?.onDrop?.(mid, {
+                  rowPath: path,
+                  index: isAfter ? ci + 1 : ci,
+                });
               }}
-            />
+            >
+              <IndividualComponentEditor
+                component={component}
+                index={ci}
+                row={row}
+                rowPath={path}
+                message={message}
+                drag={drag}
+                updateRow={() => setData({ ...data })}
+                componentFoundBackupsHook={componentFoundBackupsHook}
+                onClick={() => {
+                  if (
+                    (component.type === ComponentType.Button &&
+                      component.style !== ButtonStyle.Link &&
+                      component.style !== ButtonStyle.Premium) ||
+                    component.type === ComponentType.UserSelect ||
+                    component.type === ComponentType.RoleSelect ||
+                    component.type === ComponentType.MentionableSelect ||
+                    component.type === ComponentType.ChannelSelect
+                  ) {
+                    component.flow = component.flow ?? { actions: [] };
+                  } else if (component.type === ComponentType.StringSelect) {
+                    component.flows = component.flows ?? {};
+                  }
+                  setEditingComponent(
+                    getSetEditingComponentProps({
+                      component,
+                      row,
+                      componentIndex: ci,
+                      data,
+                      setData,
+                      setEditingComponent,
+                    }),
+                  );
+                }}
+              />
+            </ActionRowDropSlot>
           );
         })}
-      </div>
-      <ButtonSelect<ComponentType | "linkButton">
-        name="component-type"
-        options={
-          interactiveComponents
-            ? [
-                {
-                  label: t("component.2"),
-                  value: ComponentType.Button,
-                  disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
-                },
-                {
-                  label: t("linkButton"),
-                  value: "linkButton",
-                  disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
-                },
-                {
-                  label: t("component.3"),
-                  value: ComponentType.StringSelect,
-                  disabled: getRowWidth(row) > 0,
-                },
-                {
-                  label: t("component.5"),
-                  value: ComponentType.UserSelect,
-                  disabled: getRowWidth(row) > 0,
-                },
-                {
-                  label: t("component.6"),
-                  value: ComponentType.RoleSelect,
-                  disabled: getRowWidth(row) > 0,
-                },
-                {
-                  label: t("component.7"),
-                  value: ComponentType.MentionableSelect,
-                  disabled: getRowWidth(row) > 0,
-                },
-                {
-                  label: t("component.8"),
-                  value: ComponentType.ChannelSelect,
-                  disabled: getRowWidth(row) > 0,
-                },
-              ]
-            : [
-                {
-                  label: t("linkButton"),
-                  value: "linkButton",
-                  disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
-                },
-              ]
-        }
-        disabled={getRowWidth(row) >= MAX_ACTION_ROW_WIDTH}
-        onValueChange={async (type) => {
-          let submitData:
-            | z.infer<typeof ZodAPIMessageActionRowComponent>
-            | undefined;
-          switch (type) {
-            case "linkButton": {
-              submitData = {
-                type: ComponentType.Button,
-                style: ButtonStyle.Link,
-                url: "https://discohook.app",
-              };
-              break;
-            }
-            case ComponentType.Button: {
-              submitData = {
-                type,
-                style: ButtonStyle.Primary,
-                custom_id: "",
-              };
-              break;
-            }
-            case ComponentType.StringSelect: {
-              submitData = {
-                type,
-                custom_id: "",
-                options: [],
-              };
-              break;
-            }
-            case ComponentType.UserSelect:
-            case ComponentType.RoleSelect:
-            case ComponentType.MentionableSelect:
-            case ComponentType.ChannelSelect: {
-              submitData = {
-                type,
-                custom_id: "",
-              };
-              break;
-            }
-            default:
-              break;
-          }
-          if (submitData && interactiveComponents) {
-            const i =
-              row.components.push({
-                ...submitData,
-                _state: "submitting",
-              } as unknown as typeof submitData) - 1;
-            setData({ ...data });
+        {row.components.length === 0 && (
+          <ActionRowEmptyDropSlot
+            drag={drag}
+            dropKey={`edit-message-${mid}-row-${path.join("-")}-empty`}
+            row={row}
+            rowPath={path}
+            onDrop={() => {
+              drag?.end();
+              drag?.onDrop?.(mid, { rowPath: path, index: 0 });
+            }}
+          />
+        )}
 
-            const component = await submitComponent(submitData, setError);
-            if (component) {
-              // setError callback should reasonably handle else state
-              row.components.splice(i, 1, component);
-              // TODO: remove `_state` so user can edit unsaved component?
-            }
-            setData({ ...data });
-          } else if (submitData) {
-            row.components.push(submitData);
-            setData({ ...data });
+        <ButtonSelect<ComponentType | "linkButton">
+          name="component-type"
+          options={
+            interactiveComponents
+              ? [
+                  {
+                    label: t("component.2"),
+                    value: ComponentType.Button,
+                    disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
+                  },
+                  {
+                    label: t("linkButton"),
+                    value: "linkButton",
+                    disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
+                  },
+                  {
+                    label: t("component.3"),
+                    value: ComponentType.StringSelect,
+                    disabled: getRowWidth(row) > 0,
+                  },
+                  {
+                    label: t("component.5"),
+                    value: ComponentType.UserSelect,
+                    disabled: getRowWidth(row) > 0,
+                  },
+                  {
+                    label: t("component.6"),
+                    value: ComponentType.RoleSelect,
+                    disabled: getRowWidth(row) > 0,
+                  },
+                  {
+                    label: t("component.7"),
+                    value: ComponentType.MentionableSelect,
+                    disabled: getRowWidth(row) > 0,
+                  },
+                  {
+                    label: t("component.8"),
+                    value: ComponentType.ChannelSelect,
+                    disabled: getRowWidth(row) > 0,
+                  },
+                ]
+              : [
+                  {
+                    label: t("linkButton"),
+                    value: "linkButton",
+                    disabled: getRowWidth(row) >= MAX_ACTION_ROW_WIDTH,
+                  },
+                ]
           }
-        }}
-      >
-        {t("addComponent")}
-      </ButtonSelect>
+          disabled={getRowWidth(row) >= MAX_ACTION_ROW_WIDTH}
+          onValueChange={async (type) => {
+            let submitData:
+              | z.infer<typeof ZodAPIMessageActionRowComponent>
+              | undefined;
+            switch (type) {
+              case "linkButton": {
+                submitData = {
+                  type: ComponentType.Button,
+                  style: ButtonStyle.Link,
+                  url: "https://discohook.app",
+                };
+                break;
+              }
+              case ComponentType.Button: {
+                submitData = {
+                  type,
+                  style: ButtonStyle.Primary,
+                  custom_id: "",
+                };
+                break;
+              }
+              case ComponentType.StringSelect: {
+                submitData = {
+                  type,
+                  custom_id: "",
+                  options: [],
+                };
+                break;
+              }
+              case ComponentType.UserSelect:
+              case ComponentType.RoleSelect:
+              case ComponentType.MentionableSelect:
+              case ComponentType.ChannelSelect: {
+                submitData = {
+                  type,
+                  custom_id: "",
+                };
+                break;
+              }
+              default:
+                break;
+            }
+            if (submitData && interactiveComponents) {
+              const i =
+                row.components.push({
+                  ...submitData,
+                  _state: "submitting",
+                } as unknown as typeof submitData) - 1;
+              setData({ ...data });
+
+              const component = await submitComponent(submitData, setError);
+              if (component) {
+                // setError callback should reasonably handle else state
+                row.components.splice(i, 1, component);
+                // TODO: remove `_state` so user can edit unsaved component?
+              }
+              setData({ ...data });
+            } else if (submitData) {
+              row.components.push(submitData);
+              setData({ ...data });
+            }
+          }}
+        >
+          {t("addComponent")}
+        </ButtonSelect>
+      </div>
     </TopLevelComponentEditorContainer>
   );
 };
