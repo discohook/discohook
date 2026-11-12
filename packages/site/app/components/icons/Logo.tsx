@@ -47,6 +47,7 @@ export const FluxerLogo: IconFC = (props) => (
 
 export const WebhookProxyLogo = ({
   origin,
+  className,
   ...props
 }: IconFCProps & { origin: string }) => {
   const name = getAltHostName(origin) ?? "a proxy";
@@ -54,15 +55,35 @@ export const WebhookProxyLogo = ({
     case "https://wh-beta.clct.app":
     case "https://wh.clct.app":
       return (
-        <img
+        <div
           title={`Requests sent to ${name} (${origin}), not Discord (discord.com)`}
-          src="https://cdn.clct.app/logo/whitenobg.png"
-          alt=""
           className={twMerge(
-            "size-4 rounded-full bg-[#4756EA]",
-            props?.className,
+            "size-4 rounded-full bg-[#4756EA] p-[5%]",
+            className,
           )}
-        />
+        >
+          <Svg {...props} className="size-full" viewBox="0 0 1080 1080">
+            <defs>
+              <linearGradient
+                id="linear-gradient"
+                x1="540"
+                y1="525.59"
+                x2="540"
+                y2="643.22"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stop-color="#fff" />
+                <stop offset=".18" stop-color="#f6f6f6" />
+                <stop offset=".52" stop-color="#eaeaea" />
+                <stop offset=".61" stop-color="#fff" />
+              </linearGradient>
+            </defs>
+            <path
+              fill="url(#linear-gradient)"
+              d="M218.51,586.16h-1.62s0,350.77,0,350.77h264.62s0-208.82,0-208.82c0-78.4-63.55-141.95-141.95-141.95h-5.71s0-155.72,0-155.72c0-12.57,10.19-22.76,22.76-22.76h241.87s0,29.2,0,29.2c0,82.44,66.83,149.28,149.28,149.28h-1.62s0,350.77,0,350.77h264.62s0-208.82,0-208.82c0-78.4-63.55-141.95-141.95-141.95h-5.71s0-247.63,0-247.63c0-107.95-87.51-195.47-195.47-195.47h-402.93c-107.96,0-195.47,87.51-195.47,195.47v98.35c0,82.44,66.83,149.28,149.28,149.28Z"
+            />
+          </Svg>
+        </div>
       );
     default:
       return (
@@ -70,7 +91,7 @@ export const WebhookProxyLogo = ({
           title={`Requests sent to ${origin}, not Discord (discord.com)`}
           className={twMerge(
             "size-4 rounded-full bg-[#516970] text-white flex text-sm",
-            props.className,
+            className,
           )}
         >
           <CoolIcon icon="Link_Horizontal" className="m-auto" />
