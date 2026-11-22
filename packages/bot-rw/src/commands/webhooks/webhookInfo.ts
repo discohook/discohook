@@ -4,8 +4,8 @@ import {
   EmbedBuilder,
   inlineCode,
   spoiler,
-  TimestampStyles,
   time,
+  TimestampStyles,
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import dedent from "dedent-js";
@@ -240,6 +240,20 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
     ? // if we're going to need the URL right away, bother with the possible extra fetch
       await getWebhook(ctx.client, webhookId)
     : await ctx.client.api.webhooks.get(webhookId);
+
+  const guildId = ctx.interaction.guild_id;
+  if (!guildId) {
+    return ctx.reply({
+      content: "This is a guild-only operation.",
+      ephemeral: true,
+    });
+  }
+  if (!webhook.guild_id || webhook.guild_id !== guildId) {
+    return ctx.reply({
+      content: "No matching webhook in this server.",
+      ephemeral: true,
+    });
+  }
 
   const tokenAccessible = webhook.application_id
     ? !!parseApplicationsValue()[webhook.application_id]
