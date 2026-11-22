@@ -18,7 +18,7 @@ import {
   Routes,
   WebhookType,
 } from "discord-api-types/v10";
-import { PermissionFlags } from "discord-bitflag";
+import { PermissionFlags, PermissionsBitField } from "discord-bitflag";
 import { getDate, type Snowflake } from "discord-snowflake";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, webhooks } from "store";
@@ -218,9 +218,31 @@ export const getWebhook = async (
   throw Error("Could not retrieve the webhook.");
 };
 
+interface GetPermissionsData {
+  permissions: string;
+}
+
+const getInteractionUserChannelPermissions = async (
+  ctx: InteractionContext,
+  channelId: string,
+) => {
+  if (ctx.interaction.channel?.id === channelId) {
+    return ctx.userPermissons;
+  }
+  try {
+    const resp = (await ctx.rest.get(
+      `/channels/${channelId}/permissions/member/${ctx.user.id}`,
+    )) as GetPermissionsData;
+    return new PermissionsBitField(BigInt(resp.permissions));
+  } catch {
+    return new PermissionsBitField(0);
+  }
+};
+
 export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
   const webhookId = ctx.getStringOption("webhook").value;
-  const showUrl = ctx.getBooleanOption("show-url")?.value ?? false;
+  let showUrl = ctx.getBooleanOption("show-url")?.value ?? false;
+
   const webhook = showUrl
     ? // if we're going to need the URL right away, bother with the possible extra fetch
       await getWebhook(webhookId, ctx.env)
@@ -245,6 +267,27 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
     : webhook.type === WebhookType.Incoming;
 
   const embeds = [getWebhookInfoEmbed(webhook)];
+  let userPermissons = ctx.userPermissons;
+  if (showUrl && webhook.token) {
+    if (!webhook.channel_id) {
+      return ctx.reply({
+        content:
+          "The webhook has no channel, so your permissions could not be verified.",
+        ephemeral: true,
+      });
+    }
+    userPermissons = await getInteractionUserChannelPermissions(
+      ctx,
+      webhook.channel_id,
+    );
+    if (!userPermissons.has(PermissionFlags.ManageWebhooks)) {
+      showUrl = false;
+      embeds[0].setFooter({
+        text: "You don't have the appropriate permissions to read the webhook's token.",
+      });
+    }
+  }
+
   if (showUrl) {
     embeds.push(
       getWebhookUrlEmbed(
@@ -261,7 +304,7 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
 
   if (
     !showUrl &&
-    ctx.userPermissons.has(PermissionFlags.ManageWebhooks) &&
+    userPermissons.has(PermissionFlags.ManageWebhooks) &&
     !webhook.token &&
     !tokenAccessible
   ) {
@@ -275,7 +318,7 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
   }
 
   const components =
-    !showUrl && ctx.userPermissons.has(PermissionFlags.ManageWebhooks)
+    !showUrl && userPermissons.has(PermissionFlags.ManageWebhooks)
       ? [
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
@@ -302,12 +345,6 @@ export const webhookInfoCallback: ChatInputAppCommandCallback = async (ctx) => {
 const processUseWebhookButtonBoilerplate = async (
   ctx: InteractionContext<APIMessageComponentButtonInteraction>,
 ) => {
-  if (!ctx.userPermissons.has(PermissionFlags.ManageWebhooks)) {
-    return ctx.reply({
-      content: "You need the manage webhooks permission.",
-      ephemeral: true,
-    });
-  }
   const guildId = ctx.interaction.guild_id;
   if (!guildId) {
     return ctx.reply({
@@ -333,6 +370,25 @@ const processUseWebhookButtonBoilerplate = async (
       content: "This webhook belongs to a different server.",
       ephemeral: true,
     });
+  }
+  if (dbWebhook?.token || webhook.token) {
+    if (!webhook.channel_id) {
+      return ctx.reply({
+        content:
+          "The webhook has no channel, so your permissions could not be verified.",
+        ephemeral: true,
+      });
+    }
+    const permissions = await getInteractionUserChannelPermissions(
+      ctx,
+      webhook.channel_id,
+    );
+    if (!permissions.has(PermissionFlags.ManageWebhooks)) {
+      return ctx.reply({
+        content: `You need the manage webhooks permission in <#${webhook.channel_id}>.`,
+        ephemeral: true,
+      });
+    }
   }
 
   db.insert(webhooks)
