@@ -263,7 +263,8 @@
     "botInteractionUrl": "رابط وصول التفاعلات",
     "badge": {
         "app": "برنامج",
-        "server": "سيرفر"
+        "server": "سيرفر",
+        "proxy": "وكيل"
     },
     "addToServer": "اضافة الى السيرفر",
     "scheduling": "الجدولة",
@@ -966,5 +967,6 @@
     "defaultButtonsRemoveSupport": "الحل: إزالة رابط سيرفر المساعدة",
     "defaultButtonsRemoveBot": "الحل: إزالة رابط دعوة البوت",
     "unsupportedWebhookProxy": "لا يوجد دعم لهذا المضيف.",
-    "invalidWebhookProxyConfiguration": "لم يتم تهيئة هذا المضيف بشكل صحيح."
+    "invalidWebhookProxyConfiguration": "لم يتم تهيئة هذا المضيف بشكل صحيح.",
+    "proxyDisclaimer": "سيتم إرسال رسالتك إلى {{platform}}, و هي غير مشغلة من قبل ديسكوهوك او ديسكورد."
 }
